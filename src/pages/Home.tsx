@@ -131,10 +131,10 @@ const Home = () => {
               </a>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="ghost">
+              <Button variant="ghost" onClick={() => window.location.href = "/auth"}>
                 Connexion
               </Button>
-              <Button variant="hero">
+              <Button variant="hero" onClick={() => window.location.href = "/auth"}>
                 Essai Gratuit
               </Button>
             </div>
