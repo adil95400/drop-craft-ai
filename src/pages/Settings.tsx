@@ -173,46 +173,48 @@ const Settings = () => {
         </Button>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-6">
-        {/* Left Sidebar - Navigation */}
-        <Card className="border-border bg-card shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <SettingsIcon className="h-5 w-5 text-primary" />
-              Configuration
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Tabs defaultValue="profile" orientation="vertical" className="w-full">
-              <TabsList className="grid w-full grid-cols-1 h-auto bg-transparent">
-                <TabsTrigger value="profile" className="justify-start w-full">
+      <Tabs defaultValue="profile" className="w-full">
+        <div className="grid lg:grid-cols-4 gap-6">
+          {/* Left Sidebar - Navigation */}
+          <Card className="border-border bg-card shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <SettingsIcon className="h-5 w-5 text-primary" />
+                Configuration
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <TabsList className="grid w-full grid-cols-1 h-auto bg-transparent p-1 space-y-1">
+                <TabsTrigger value="profile" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <User className="mr-2 h-4 w-4" />
                   Profil
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="justify-start w-full">
+                <TabsTrigger value="notifications" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Bell className="mr-2 h-4 w-4" />
                   Notifications
                 </TabsTrigger>
-                <TabsTrigger value="security" className="justify-start w-full">
+                <TabsTrigger value="security" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Shield className="mr-2 h-4 w-4" />
                   Sécurité
                 </TabsTrigger>
-                <TabsTrigger value="integrations" className="justify-start w-full">
+                <TabsTrigger value="integrations" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Database className="mr-2 h-4 w-4" />
                   Intégrations
                 </TabsTrigger>
-                <TabsTrigger value="billing" className="justify-start w-full">
+                <TabsTrigger value="billing" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <CreditCard className="mr-2 h-4 w-4" />
                   Facturation
                 </TabsTrigger>
-                <TabsTrigger value="api" className="justify-start w-full">
+                <TabsTrigger value="api" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Key className="mr-2 h-4 w-4" />
                   API
                 </TabsTrigger>
               </TabsList>
+            </CardContent>
+          </Card>
 
-              {/* Right Content Area */}
-              <div className="lg:col-span-3 ml-6">
+          {/* Right Content Area */}
+          <div className="lg:col-span-3">
                 
                 {/* Profile Tab */}
                 <TabsContent value="profile" className="mt-0">
@@ -723,12 +725,10 @@ const Settings = () => {
                     </CardContent>
                   </Card>
                 </TabsContent>
-              </div>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
-      </div>
+          </div>
+        </div>
+      </Tabs>
+    </div>
     </AppLayout>
   );
 };
