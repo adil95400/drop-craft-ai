@@ -12,6 +12,7 @@ import SEO from "./pages/SEO";
 import Winners from "./pages/Winners";
 import CRM from "./pages/CRM";
 import Settings from "./pages/Settings";
+import Blog from "./pages/Blog";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/seo" element={<SEO />} />
           <Route path="/winners" element={<Winners />} />
           <Route path="/crm" element={<CRM />} />
+          <Route path="/blog" element={<Blog />} />
           <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
