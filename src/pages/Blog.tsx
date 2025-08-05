@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Clock, Edit3, Eye, Plus, Sparkles, Tag, TrendingUp } from "lucide-react";
+import { AppLayout } from "@/layouts/AppLayout";
 
 const Blog = () => {
   const [selectedPost, setSelectedPost] = useState<string | null>(null);
@@ -47,7 +48,8 @@ const Blog = () => {
   const categories = ["Tendances", "Marketing", "SEO", "Analyses", "Guides", "Actualités"];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95">
+    <AppLayout>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95">
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -398,7 +400,8 @@ const Blog = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 

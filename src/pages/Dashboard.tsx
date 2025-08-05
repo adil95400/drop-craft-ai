@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { useProducts } from "@/hooks/useProducts";
 import { useOrders } from "@/hooks/useOrders";
 import { useCustomers } from "@/hooks/useCustomers";
+import { AppLayout } from "@/layouts/AppLayout";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -96,7 +97,8 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-6 space-y-6">
+    <AppLayout>
+      <div className="min-h-screen bg-background p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -287,7 +289,8 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 

@@ -21,6 +21,7 @@ import {
   Import,
   Globe
 } from "lucide-react";
+import { AppLayout } from "@/layouts/AppLayout";
 
 const Reviews = () => {
   const [selectedReview, setSelectedReview] = useState<string | null>(null);
@@ -99,7 +100,8 @@ const Reviews = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95">
+    <AppLayout>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95">
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -527,7 +529,8 @@ const Reviews = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 

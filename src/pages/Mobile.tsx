@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AppLayout } from "@/layouts/AppLayout";
 
 export default function Mobile() {
   const [appDownloads, setAppDownloads] = useState(12847);
@@ -36,7 +37,8 @@ export default function Mobile() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <AppLayout>
+      <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -290,6 +292,7 @@ export default function Mobile() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

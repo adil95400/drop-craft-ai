@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AppLayout } from "@/layouts/AppLayout";
 
 export default function Integrations() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,7 +54,8 @@ export default function Integrations() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <AppLayout>
+      <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -268,6 +270,7 @@ export default function Integrations() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

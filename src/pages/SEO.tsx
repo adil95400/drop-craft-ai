@@ -23,6 +23,7 @@ import {
   Copy,
   Download
 } from "lucide-react";
+import { AppLayout } from "@/layouts/AppLayout";
 
 const SEO = () => {
   const [url, setUrl] = useState("");
@@ -188,7 +189,8 @@ R: Oui, livraison gratuite dès 49€ d'achat.
   ];
 
   return (
-    <div className="min-h-screen bg-background p-6 space-y-6">
+    <AppLayout>
+      <div className="min-h-screen bg-background p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -507,7 +509,8 @@ R: Oui, livraison gratuite dès 49€ d'achat.
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 

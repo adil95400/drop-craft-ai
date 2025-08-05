@@ -21,6 +21,7 @@ import {
   ExternalLink,
   Filter
 } from "lucide-react";
+import { AppLayout } from "@/layouts/AppLayout";
 
 const Tracking = () => {
   const [trackingNumber, setTrackingNumber] = useState("");
@@ -156,7 +157,8 @@ const Tracking = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-6 space-y-6">
+    <AppLayout>
+      <div className="min-h-screen bg-background p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -431,7 +433,8 @@ const Tracking = () => {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 

@@ -30,6 +30,7 @@ import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { ProductDetail } from "@/components/catalog/ProductDetail";
 import { WinnerSuggestions } from "@/components/catalog/WinnerSuggestions";
 import { useToast } from "@/hooks/use-toast";
+import { AppLayout } from "@/layouts/AppLayout";
 
 const Marketplace = () => {
   const { toast } = useToast();
@@ -275,7 +276,8 @@ const Marketplace = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95">
+    <AppLayout>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95">
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -626,7 +628,8 @@ const Marketplace = () => {
           isFavorite={favorites.includes(selectedProduct.id)}
         />
       )}
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 

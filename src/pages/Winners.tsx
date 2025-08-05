@@ -19,6 +19,7 @@ import {
   RefreshCw,
   Download
 } from "lucide-react";
+import { AppLayout } from "@/layouts/AppLayout";
 
 const Winners = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -204,7 +205,8 @@ const Winners = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background p-6 space-y-6">
+    <AppLayout>
+      <div className="min-h-screen bg-background p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -445,7 +447,8 @@ const Winners = () => {
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 

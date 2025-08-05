@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AppLayout } from "@/layouts/AppLayout";
 
 export default function Orders() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,7 +72,8 @@ export default function Orders() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <AppLayout>
+      <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -226,6 +228,7 @@ export default function Orders() {
           </Table>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AppLayout>
   );
 }

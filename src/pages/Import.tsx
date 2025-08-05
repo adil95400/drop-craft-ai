@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Users, Package, TrendingUp, Zap, History, Settings } from "lucide-react"
 import { toast } from "sonner"
 import { useProducts } from "@/hooks/useProducts"
+import { AppLayout } from "@/layouts/AppLayout"
 
 const Import = () => {
   const [selectedMethod, setSelectedMethod] = useState("")
@@ -135,7 +136,8 @@ const Import = () => {
   ]
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <AppLayout>
+      <div className="container mx-auto p-6 space-y-8">
       <ImportHeader 
         importCount={products.length}
         onQuickImport={handleQuickImport}
@@ -254,7 +256,8 @@ const Import = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AppLayout>
   )
 }
 
