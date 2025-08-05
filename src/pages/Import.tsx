@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Users, Package, TrendingUp, Zap, History, Settings } from "lucide-react"
 import { toast } from "sonner"
 import { useProducts } from "@/hooks/useProducts"
+import { useImport } from "@/hooks/useImport"
 import { AppLayout } from "@/layouts/AppLayout"
 
 const Import = () => {
@@ -17,66 +18,89 @@ const Import = () => {
   const [importProgress, setImportProgress] = useState(0)
   const [importResults, setImportResults] = useState<any[]>([])
   const { products, addProduct } = useProducts()
+  const { importHistory, addImportRecord, updateImportRecord } = useImport()
 
-  const handleImport = (importData: any) => {
+  const handleImport = async (importData: any) => {
     setIsImporting(true)
     setImportProgress(0)
     setImportResults([])
 
-    const interval = setInterval(() => {
-      setImportProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setIsImporting(false)
-          
-          // Simuler des résultats d'import réalistes
-          const mockResults = [
-            {
-              id: "1",
-              name: "Smartphone Gaming Pro Max",
-              price: 599.99,
-              status: "success" as const,
-              image_url: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
-              category: "Électronique",
-              supplier: "TechDirect"
-            },
-            {
-              id: "2", 
-              name: "Écouteurs Sans Fil Premium",
-              price: 149.99,
-              status: "warning" as const,
-              issues: ["Description courte", "Mots-clés SEO manquants"],
-              image_url: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
-              category: "Audio",
-              supplier: "SoundMax"
-            },
-            {
-              id: "3",
-              name: "Montre Connectée Sport",
-              price: 299.99,
-              status: "success" as const,
-              image_url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
-              category: "Wearables",
-              supplier: "FitTech"
-            },
-            {
-              id: "4",
-              name: "Chargeur Rapide 65W",
-              price: 39.99,
-              status: "error" as const,
-              issues: ["Prix incohérent", "Fournisseur non vérifié"],
-              category: "Accessoires",
-              supplier: "PowerPlus"
-            }
-          ]
-          
-          setImportResults(mockResults)
-          toast.success(`Import terminé ! ${mockResults.length} produits traités`)
-          return 100
-        }
-        return prev + 10
+    try {
+      // Créer un enregistrement d'import
+      const importRecord = addImportRecord({
+        source_type: importData.type,
+        source_url: importData.type === 'url' ? importData.data : undefined,
+        status: 'processing',
+        products_imported: 0,
+        errors_count: 0
       })
-    }, 300)
+
+      const interval = setInterval(async () => {
+        setImportProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval)
+            setIsImporting(false)
+            
+            // Simuler des résultats d'import réalistes
+            const mockResults = [
+              {
+                id: "1",
+                name: "Smartphone Gaming Pro Max",
+                price: 599.99,
+                status: "success" as const,
+                image_url: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
+                category: "Électronique",
+                supplier: "TechDirect"
+              },
+              {
+                id: "2", 
+                name: "Écouteurs Sans Fil Premium",
+                price: 149.99,
+                status: "warning" as const,
+                issues: ["Description courte", "Mots-clés SEO manquants"],
+                image_url: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
+                category: "Audio",
+                supplier: "SoundMax"
+              },
+              {
+                id: "3",
+                name: "Montre Connectée Sport",
+                price: 299.99,
+                status: "success" as const,
+                image_url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+                category: "Wearables",
+                supplier: "FitTech"
+              },
+              {
+                id: "4",
+                name: "Chargeur Rapide 65W",
+                price: 39.99,
+                status: "error" as const,
+                issues: ["Prix incohérent", "Fournisseur non vérifié"],
+                category: "Accessoires",
+                supplier: "PowerPlus"
+              }
+            ]
+            
+            setImportResults(mockResults)
+            
+            // Mettre à jour l'enregistrement d'import
+            updateImportRecord(importRecord.id, {
+              status: 'completed',
+              products_imported: mockResults.filter(r => r.status === 'success').length,
+              errors_count: mockResults.filter(r => r.status === 'error').length
+            })
+            
+            toast.success(`Import terminé ! ${mockResults.length} produits traités`)
+            return 100
+          }
+          return prev + 10
+        })
+      }, 300)
+    } catch (error) {
+      setIsImporting(false)
+      toast.error("Erreur lors de l'import")
+    }
   }
 
   const handleQuickImport = () => {
@@ -192,9 +216,9 @@ const Import = () => {
             <History className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">247</div>
+            <div className="text-2xl font-bold">{importHistory.length}</div>
             <p className="text-xs text-muted-foreground">
-              Imports ce mois-ci
+              Imports effectués
             </p>
           </CardContent>
         </Card>
