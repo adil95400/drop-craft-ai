@@ -15,6 +15,11 @@ import Settings from "./pages/Settings";
 import Blog from "./pages/Blog";
 import Reviews from "./pages/Reviews";
 import Marketplace from "./pages/Marketplace";
+import Orders from "./pages/Orders";
+import Automation from "./pages/Automation";
+import Integrations from "./pages/Integrations";
+import Stock from "./pages/Stock";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,13 +35,18 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/import" element={<Import />} />
-          <Route path="/tracking" element={<Tracking />} />
-          <Route path="/seo" element={<SEO />} />
-          <Route path="/winners" element={<Winners />} />
-          <Route path="/crm" element={<CRM />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/reviews" element={<Reviews />} />
           <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/automation" element={<Automation />} />
+          <Route path="/integrations" element={<Integrations />} />
+          <Route path="/crm" element={<CRM />} />
+          <Route path="/reviews" element={<Reviews />} />
+          <Route path="/seo" element={<SEO />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/stock" element={<Stock />} />
+          <Route path="/tracking" element={<Tracking />} />
+          <Route path="/winners" element={<Winners />} />
+          <Route path="/blog" element={<Blog />} />
           <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
