@@ -1,169 +1,92 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Users, 
+  Search, 
+  Filter, 
+  Plus, 
   Mail, 
   Phone, 
-  Tag,
-  Plus,
-  Search,
-  Filter,
-  Download,
-  Upload,
-  MessageSquare,
+  MapPin,
   Calendar,
+  DollarSign,
+  ShoppingBag,
+  Star,
+  MoreVertical,
+  Edit,
+  Trash2,
+  MessageSquare,
   Target,
   TrendingUp,
-  DollarSign,
-  Zap
+  Eye
 } from "lucide-react";
 
 const CRM = () => {
-  const [selectedContact, setSelectedContact] = useState<any>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("all");
-  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const contacts = [
+  const customers = [
     {
       id: 1,
       name: "Marie Dubois",
-      email: "marie.dubois@gmail.com",
+      email: "marie.dubois@email.com",
       phone: "+33 6 12 34 56 78",
-      status: "client",
-      tags: ["VIP", "Electronics"],
-      totalSpent: 1240,
-      lastOrder: "2024-01-12",
-      orders: 8,
-      source: "Google Ads",
-      score: 95
+      location: "Paris, France",
+      avatar: "",
+      totalOrders: 12,
+      totalSpent: 2847,
+      lastOrder: "Il y a 3 jours",
+      status: "VIP",
+      segment: "Gold",
+      satisfaction: 4.8
     },
     {
       id: 2,
       name: "Pierre Martin",
-      email: "pierre.martin@outlook.fr",
-      phone: "+33 6 98 76 54 32",
-      status: "prospect",
-      tags: ["Hot Lead", "Fashion"],
-      totalSpent: 0,
-      lastOrder: null,
-      orders: 0,
-      source: "Facebook",
-      score: 78
+      email: "pierre.martin@gmail.com",
+      phone: "+33 6 87 65 43 21",
+      location: "Lyon, France",
+      avatar: "",
+      totalOrders: 8,
+      totalSpent: 1567,
+      lastOrder: "Il y a 1 semaine",
+      status: "Actif",
+      segment: "Silver",
+      satisfaction: 4.5
     },
     {
       id: 3,
-      name: "Sophie Laurent",
-      email: "sophie.laurent@yahoo.com",
-      phone: "+33 6 11 22 33 44",
-      status: "lead",
-      tags: ["Beauty", "Newsletter"],
-      totalSpent: 89,
-      lastOrder: "2024-01-10",
-      orders: 1,
-      source: "Organic",
-      score: 65
-    },
-    {
-      id: 4,
-      name: "Thomas Bernard",
-      email: "thomas.bernard@gmail.com",
-      phone: "+33 6 55 66 77 88",
-      status: "client",
-      tags: ["Loyal", "Gaming"],
-      totalSpent: 890,
-      lastOrder: "2024-01-08",
-      orders: 12,
-      source: "Referral",
-      score: 88
+      name: "Sophie Leclerc",
+      email: "sophie.leclerc@outlook.com",
+      phone: "+33 7 11 22 33 44",
+      location: "Marseille, France",
+      avatar: "",
+      totalOrders: 15,
+      totalSpent: 3421,
+      lastOrder: "Hier",
+      status: "VIP",
+      segment: "Platinum",
+      satisfaction: 4.9
     }
   ];
 
-  const zapierIntegrations = [
-    {
-      name: "Google Sheets",
-      description: "Synchroniser les contacts avec votre spreadsheet",
-      status: "connected",
-      icon: "📊"
-    },
-    {
-      name: "Mailchimp",
-      description: "Ajouter automatiquement à vos listes email", 
-      status: "available",
-      icon: "📧"
-    },
-    {
-      name: "Notion",
-      description: "Créer des pages client dans votre workspace",
-      status: "available", 
-      icon: "📝"
-    },
-    {
-      name: "Airtable",
-      description: "Gérer vos contacts dans une base structurée",
-      status: "connected",
-      icon: "🗃️"
-    },
-    {
-      name: "Slack",
-      description: "Notifications de nouveaux leads",
-      status: "available",
-      icon: "💬"
-    },
-    {
-      name: "HubSpot",
-      description: "Synchronisation CRM bidirectionnelle",
-      status: "available",
-      icon: "🎯"
-    }
+  const segments = [
+    { name: "Platinum", count: 45, color: "bg-purple-500", revenue: "€89,420" },
+    { name: "Gold", count: 127, color: "bg-yellow-500", revenue: "€67,890" },
+    { name: "Silver", count: 289, color: "bg-gray-400", revenue: "€34,567" },
+    { name: "Bronze", count: 456, color: "bg-orange-600", revenue: "€12,345" }
   ];
 
-  const handleSendEmail = (contact: any) => {
-    toast({
-      title: "Email envoyé",
-      description: `Message envoyé à ${contact.name}`,
-    });
-  };
-
-  const handleZapierConnect = (integration: any) => {
-    toast({
-      title: `Connexion ${integration.name}`,
-      description: "Configuration de l'intégration...",
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "client": return "text-green-600 bg-green-100";
-      case "prospect": return "text-blue-600 bg-blue-100"; 
-      case "lead": return "text-yellow-600 bg-yellow-100";
-      default: return "text-gray-600 bg-gray-100";
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "client": return "Client";
-      case "prospect": return "Prospect";
-      case "lead": return "Lead";
-      default: return "Inconnu";
-    }
-  };
-
-  const filteredContacts = contacts.filter(contact => {
-    const matchesSearch = contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         contact.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = selectedStatus === "all" || contact.status === selectedStatus;
-    
-    return matchesSearch && matchesStatus;
-  });
+  const stats = [
+    { title: "Total Clients", value: "2,847", change: "+12.5%", icon: Users },
+    { title: "Clients Actifs", value: "1,234", change: "+8.2%", icon: Target },
+    { title: "Satisfaction", value: "4.7/5", change: "+0.3", icon: Star },
+    { title: "Rétention", value: "87%", change: "+5.1%", icon: TrendingUp }
+  ];
 
   return (
     <div className="min-h-screen bg-background p-6 space-y-6">
@@ -171,309 +94,207 @@ const CRM = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            CRM & Zapier
+            CRM
           </h1>
           <p className="text-muted-foreground mt-1">
-            Gérez vos contacts et automatisez vos workflows
+            Gestion de la relation client
           </p>
         </div>
-        <div className="flex space-x-3">
-          <Button variant="outline">
-            <Upload className="mr-2 h-4 w-4" />
-            Importer
-          </Button>
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Exporter
-          </Button>
-          <Button variant="hero">
-            <Plus className="mr-2 h-4 w-4" />
-            Nouveau Contact
-          </Button>
-        </div>
+        <Button variant="hero">
+          <Plus className="mr-2 h-4 w-4" />
+          Nouveau Client
+        </Button>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-border bg-card shadow-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Contacts</CardTitle>
-            <Users className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1,247</div>
-            <p className="text-xs text-muted-foreground">+12% ce mois</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card shadow-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Nouveaux Leads</CardTitle>
-            <Target className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">89</div>
-            <p className="text-xs text-muted-foreground">Cette semaine</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card shadow-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taux Conversion</CardTitle>
-            <TrendingUp className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">23.4%</div>
-            <p className="text-xs text-muted-foreground">Lead → Client</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card shadow-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">LTV Moyenne</CardTitle>
-            <DollarSign className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">€342</div>
-            <p className="text-xs text-muted-foreground">Par client</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Left Side - Contacts List */}
-        <div className="lg:col-span-2 space-y-6">
-          
-          {/* Filters */}
-          <Card className="border-border bg-card shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5 text-primary" />
-                Filtres
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <Card key={index} className="border-border bg-card shadow-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {stat.title}
               </CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Recherche</Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Nom, email..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Statut</Label>
-                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tous</SelectItem>
-                      <SelectItem value="client">Clients</SelectItem>
-                      <SelectItem value="prospect">Prospects</SelectItem>
-                      <SelectItem value="lead">Leads</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-green-500">{stat.change} vs mois dernier</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-                <div className="flex items-end">
-                  <Button variant="outline" className="w-full">
-                    Filtres Avancés
-                  </Button>
+      <Tabs defaultValue="customers" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="customers">Clients</TabsTrigger>
+          <TabsTrigger value="segments">Segments</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="customers" className="space-y-6">
+          {/* Search and Filters */}
+          <Card className="border-border bg-card shadow-card">
+            <CardContent className="pt-6">
+              <div className="flex gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Rechercher des clients..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
+                <Button variant="outline">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filtres
+                </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Contacts List */}
-          <Card className="border-border bg-card shadow-card">
-            <CardHeader>
-              <CardTitle>Contacts ({filteredContacts.length})</CardTitle>
-              <CardDescription>Gérez vos relations client</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {filteredContacts.map((contact) => (
-                  <div 
-                    key={contact.id} 
-                    className={`p-4 border border-border rounded-lg cursor-pointer transition-all hover:shadow-card ${
-                      selectedContact?.id === contact.id ? 'ring-2 ring-primary shadow-glow' : ''
-                    }`}
-                    onClick={() => setSelectedContact(contact)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold">
-                          {contact.name.split(' ').map(n => n[0]).join('')}
+          {/* Customers List */}
+          <div className="grid gap-4">
+            {customers.map((customer) => (
+              <Card key={customer.id} className="border-border bg-card shadow-card hover:shadow-glow transition-all duration-300">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={customer.avatar} />
+                        <AvatarFallback className="bg-gradient-primary text-primary-foreground">
+                          {customer.name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{customer.name}</h3>
+                          <Badge variant={customer.status === "VIP" ? "default" : "secondary"}>
+                            {customer.status}
+                          </Badge>
+                          <Badge variant="outline">{customer.segment}</Badge>
                         </div>
-                        <div>
-                          <div className="font-semibold">{contact.name}</div>
-                          <div className="text-sm text-muted-foreground">{contact.email}</div>
-                          <div className="flex items-center space-x-2 mt-1">
-                            {contact.tags.map((tag, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                          <div className="flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            {customer.email}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            {customer.phone}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {customer.location}
                           </div>
                         </div>
                       </div>
-                      
-                      <div className="text-right space-y-1">
-                        <Badge className={getStatusColor(contact.status)}>
-                          {getStatusText(contact.status)}
-                        </Badge>
-                        <div className="text-sm text-muted-foreground">
-                          Score: {contact.score}/100
+                    </div>
+
+                    <div className="flex items-center space-x-8">
+                      <div className="text-center">
+                        <div className="text-sm text-muted-foreground">Commandes</div>
+                        <div className="font-semibold">{customer.totalOrders}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-sm text-muted-foreground">Total dépensé</div>
+                        <div className="font-semibold">€{customer.totalSpent.toLocaleString()}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-sm text-muted-foreground">Satisfaction</div>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-semibold">{customer.satisfaction}</span>
                         </div>
-                        <div className="text-sm font-medium">
-                          €{contact.totalSpent.toLocaleString()}
-                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-sm text-muted-foreground">Dernière commande</div>
+                        <div className="font-semibold">{customer.lastOrder}</div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
-        {/* Right Side - Contact Details & Zapier */}
-        <div className="space-y-6">
-          
-          {/* Contact Details */}
-          {selectedContact ? (
-            <Card className="border-border bg-card shadow-glow">
-              <CardHeader>
-                <CardTitle>{selectedContact.name}</CardTitle>
-                <CardDescription>Détails du contact</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{selectedContact.email}</span>
+        <TabsContent value="segments" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {segments.map((segment, index) => (
+              <Card key={index} className="border-border bg-card shadow-card">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full ${segment.color}`}></div>
+                      {segment.name}
+                    </CardTitle>
+                    <Badge variant="outline">{segment.count}</Badge>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{selectedContact.phone}</span>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="text-2xl font-bold">{segment.revenue}</div>
+                    <div className="text-sm text-muted-foreground">Revenus générés</div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Tag className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{selectedContact.source}</span>
-                  </div>
-                </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div className="bg-muted/50 rounded-lg p-3">
-                    <div className="text-lg font-bold">{selectedContact.orders}</div>
-                    <div className="text-xs text-muted-foreground">Commandes</div>
-                  </div>
-                  <div className="bg-muted/50 rounded-lg p-3">
-                    <div className="text-lg font-bold">€{selectedContact.totalSpent}</div>
-                    <div className="text-xs text-muted-foreground">Dépensé</div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Note rapide</Label>
-                  <Textarea 
-                    placeholder="Ajouter une note..."
-                    className="min-h-[80px]"
-                  />
-                </div>
-
-                <div className="flex space-x-2">
-                  <Button 
-                    variant="hero" 
-                    className="flex-1"
-                    onClick={() => handleSendEmail(selectedContact)}
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    Email
-                  </Button>
-                  <Button variant="outline" className="flex-1">
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    SMS
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="border-border bg-card shadow-card">
-              <CardContent className="text-center py-12">
-                <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">Sélectionnez un contact</h3>
-                <p className="text-muted-foreground">
-                  Cliquez sur un contact pour voir les détails
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Zapier Integrations */}
           <Card className="border-border bg-card shadow-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-primary" />
-                Intégrations Zapier
-              </CardTitle>
-              <CardDescription>Automatisez vos workflows</CardDescription>
+              <CardTitle>Répartition des Segments</CardTitle>
+              <CardDescription>Distribution des clients par segment</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {zapierIntegrations.map((integration, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-lg">{integration.icon}</span>
-                      <div>
-                        <div className="font-medium text-sm">{integration.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {integration.description}
-                        </div>
-                      </div>
-                    </div>
-                    <Button 
-                      variant={integration.status === "connected" ? "outline" : "default"}
-                      size="sm"
-                      onClick={() => handleZapierConnect(integration)}
-                    >
-                      {integration.status === "connected" ? "Configuré" : "Connecter"}
-                    </Button>
-                  </div>
-                ))}
+              <div className="h-64 flex items-center justify-center text-muted-foreground">
+                Graphique de répartition (Chart.js/Recharts)
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
 
-          {/* Quick Actions */}
-          <Card className="border-border bg-card shadow-card">
-            <CardHeader>
-              <CardTitle>Actions Rapides</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start">
-                <Calendar className="mr-2 h-4 w-4" />
-                Planifier suivi
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <Target className="mr-2 h-4 w-4" />
-                Créer campagne
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <Mail className="mr-2 h-4 w-4" />
-                Email en masse
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        <TabsContent value="analytics" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="border-border bg-card shadow-card">
+              <CardHeader>
+                <CardTitle>Évolution des clients</CardTitle>
+                <CardDescription>Nouveaux clients par mois</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64 flex items-center justify-center text-muted-foreground">
+                  Graphique d'évolution (Chart.js/Recharts)
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border bg-card shadow-card">
+              <CardHeader>
+                <CardTitle>Taux de rétention</CardTitle>
+                <CardDescription>Fidélité client par cohorte</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64 flex items-center justify-center text-muted-foreground">
+                  Graphique de rétention (Chart.js/Recharts)
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
