@@ -25,9 +25,19 @@ import {
   AlertCircle,
   Plus
 } from "lucide-react";
+import { CatalogHeader } from "@/components/catalog/CatalogHeader";
+import { ProductGrid } from "@/components/catalog/ProductGrid";
+import { ProductDetail } from "@/components/catalog/ProductDetail";
+import { WinnerSuggestions } from "@/components/catalog/WinnerSuggestions";
+import { useToast } from "@/hooks/use-toast";
 
 const Marketplace = () => {
+  const { toast } = useToast();
   const [selectedSupplier, setSelectedSupplier] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<any>({});
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   const suppliers = [
     {
@@ -105,38 +115,137 @@ const Marketplace = () => {
     { name: "Santé & Bien-être", count: 18000, trend: "+22%" }
   ];
 
-  const topProducts = [
+  const catalogProducts = [
     {
       id: "1",
-      name: "Casque Bluetooth Sans Fil",
-      supplier: "BigBuy",
-      price: "24.99€",
-      margin: "45%",
-      stock: 1250,
+      name: "Casque Gaming RGB Pro Max",
+      supplier: "TechDirect",
+      supplierLogo: "",
+      price: 89.99,
+      costPrice: 45.99,
+      margin: 49,
+      rating: 4.8,
+      reviews: 1234,
       sales: 890,
-      trend: "+25%"
+      stock: 1250,
+      trend: "+25%",
+      category: "Gaming",
+      imageUrl: "https://images.unsplash.com/photo-1599669454699-248893623440?w=400",
+      isWinner: true,
+      isTrending: true,
+      isBestSeller: false,
+      deliveryTime: "3-5 jours",
+      tags: ["Gaming", "RGB", "Sans fil"],
+      description: "Casque gaming professionnel avec éclairage RGB personnalisable et son surround 7.1."
     },
     {
-      id: "2", 
-      name: "Chaise de Bureau Ergonomique",
-      supplier: "VidaXL", 
-      price: "189.00€",
-      margin: "30%",
-      stock: 45,
-      sales: 156,
-      trend: "+12%"
+      id: "2",
+      name: "Montre Connectée Fitness Pro",
+      supplier: "FitTech",
+      supplierLogo: "",
+      price: 149.99,
+      costPrice: 89.99,
+      margin: 40,
+      rating: 4.6,
+      reviews: 856,
+      sales: 567,
+      stock: 890,
+      trend: "+18%",
+      category: "Fitness",
+      imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",
+      isWinner: true,
+      isTrending: false,
+      isBestSeller: true,
+      deliveryTime: "2-4 jours",
+      tags: ["Fitness", "Santé", "Connectée"],
+      description: "Montre connectée avec suivi avancé de la santé, GPS intégré et autonomie 7 jours."
     },
     {
       id: "3",
-      name: "T-Shirt Personnalisé",
-      supplier: "Printful",
-      price: "19.95€", 
-      margin: "60%",
-      stock: 9999,
-      sales: 2340,
-      trend: "+35%"
+      name: "Écouteurs Sans Fil Premium",
+      supplier: "SoundMax",
+      supplierLogo: "",
+      price: 79.99,
+      costPrice: 35.99,
+      margin: 55,
+      rating: 4.7,
+      reviews: 2341,
+      sales: 1456,
+      stock: 567,
+      trend: "+32%",
+      category: "Audio",
+      imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400",
+      isWinner: false,
+      isTrending: true,
+      isBestSeller: true,
+      deliveryTime: "1-3 jours",
+      tags: ["Audio", "Premium", "ANC"],
+      description: "Écouteurs sans fil avec réduction de bruit active et charge sans fil."
+    },
+    {
+      id: "4",
+      name: "Smartphone Gaming Beast",
+      supplier: "MobileMax",
+      supplierLogo: "",
+      price: 599.99,
+      costPrice: 359.99,
+      margin: 40,
+      rating: 4.9,
+      reviews: 567,
+      sales: 234,
+      stock: 123,
+      trend: "+45%",
+      category: "Mobile",
+      imageUrl: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
+      isWinner: true,
+      isTrending: true,
+      isBestSeller: false,
+      deliveryTime: "5-7 jours",
+      tags: ["Gaming", "5G", "Performance"],
+      description: "Smartphone gaming avec processeur ultra-puissant et système de refroidissement avancé."
     }
   ];
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  const handleFilterChange = (newFilters: any) => {
+    setFilters({ ...filters, ...newFilters });
+  };
+
+  const handleProductClick = (product: any) => {
+    setSelectedProduct(product);
+  };
+
+  const handleImportProduct = (product: any) => {
+    toast({
+      title: "Produit importé",
+      description: `${product.name} a été ajouté à votre catalogue`,
+    });
+  };
+
+  const handleToggleFavorite = (productId: string) => {
+    setFavorites(prev => 
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  const handleViewProduct = (productId: string) => {
+    const product = catalogProducts.find(p => p.id === productId);
+    if (product) {
+      setSelectedProduct(product);
+    }
+  };
+
+  const handleAnalyzeNiche = (niche: string) => {
+    toast({
+      title: "Analyse de niche",
+      description: `Analyse de la niche "${niche}" en cours...`,
+    });
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -236,11 +345,11 @@ const Marketplace = () => {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="suppliers" className="space-y-6">
+        <Tabs defaultValue="catalog" className="space-y-6">
           <TabsList className="bg-muted/50 border border-border/50">
-            <TabsTrigger value="suppliers">Fournisseurs</TabsTrigger>
             <TabsTrigger value="catalog">Catalogue</TabsTrigger>
-            <TabsTrigger value="trending">Tendances</TabsTrigger>
+            <TabsTrigger value="winners">Winners IA</TabsTrigger>
+            <TabsTrigger value="suppliers">Fournisseurs</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
 
@@ -394,86 +503,24 @@ const Marketplace = () => {
           </TabsContent>
 
           <TabsContent value="catalog" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Categories Sidebar */}
-              <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg">Catégories</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {categories.map((category) => (
-                    <div key={category.name} className="flex items-center justify-between p-2 hover:bg-muted/50 rounded cursor-pointer">
-                      <div>
-                        <p className="font-medium text-sm">{category.name}</p>
-                        <p className="text-xs text-muted-foreground">{category.count.toLocaleString()}</p>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {category.trend}
-                      </Badge>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
+            <CatalogHeader 
+              onSearch={handleSearch}
+              onFilterChange={handleFilterChange}
+            />
+            <ProductGrid 
+              products={catalogProducts}
+              onProductClick={handleProductClick}
+              onImportProduct={handleImportProduct}
+              onToggleFavorite={handleToggleFavorite}
+              favorites={favorites}
+            />
+          </TabsContent>
 
-              {/* Products Grid */}
-              <div className="lg:col-span-3 space-y-4">
-                <div className="flex items-center gap-4">
-                  <Input 
-                    placeholder="Rechercher des produits..." 
-                    className="flex-1"
-                  />
-                  <Button variant="outline">
-                    <Filter className="w-4 h-4 mr-2" />
-                    Filtres
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {topProducts.map((product) => (
-                    <Card key={product.id} className="border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all">
-                      <CardContent className="p-4">
-                        <div className="space-y-3">
-                          <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
-                            <Package className="w-12 h-12 text-muted-foreground" />
-                          </div>
-                          
-                          <div>
-                            <h3 className="font-medium text-sm">{product.name}</h3>
-                            <p className="text-xs text-muted-foreground">par {product.supplier}</p>
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-bold text-primary">{product.price}</p>
-                              <p className="text-xs text-muted-foreground">Marge {product.margin}</p>
-                            </div>
-                            <Badge variant="secondary" className="text-xs">
-                              {product.trend}
-                            </Badge>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div>
-                              <p className="text-muted-foreground">Stock</p>
-                              <p className="font-medium">{product.stock}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Ventes</p>
-                              <p className="font-medium">{product.sales}</p>
-                            </div>
-                          </div>
-
-                          <Button size="sm" className="w-full">
-                            <ShoppingCart className="w-4 h-4 mr-2" />
-                            Importer
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </div>
+          <TabsContent value="winners" className="space-y-6">
+            <WinnerSuggestions 
+              onViewProduct={handleViewProduct}
+              onAnalyzeNiche={handleAnalyzeNiche}
+            />
           </TabsContent>
 
           <TabsContent value="trending" className="space-y-6">
@@ -489,7 +536,7 @@ const Marketplace = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {topProducts.map((product, index) => (
+                  {catalogProducts.map((product, index) => (
                     <div key={product.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
                       <div className="flex items-center gap-3">
                         <Badge variant="outline">#{index + 1}</Badge>
@@ -568,6 +615,17 @@ const Marketplace = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Product Detail Modal */}
+      {selectedProduct && (
+        <ProductDetail
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onImport={handleImportProduct}
+          onToggleFavorite={handleToggleFavorite}
+          isFavorite={favorites.includes(selectedProduct.id)}
+        />
+      )}
     </div>
   );
 };
