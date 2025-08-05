@@ -167,11 +167,11 @@ const Home = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button variant="premium" size="lg" className="group">
+              <Button variant="hero" size="lg" className="group" onClick={() => window.location.href = "/auth"}>
                 Commencer Gratuitement
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button variant="outline" size="lg" className="group">
+              <Button variant="outline" size="lg" className="group" onClick={() => window.location.href = "/dashboard"}>
                 <Play className="mr-2 h-5 w-5" />
                 Voir la Démo
               </Button>
@@ -341,9 +341,10 @@ const Home = () => {
                     ))}
                   </ul>
                   <Button 
-                    variant={plan.popular ? "premium" : "outline"} 
+                    variant={plan.popular ? "hero" : "outline"} 
                     className="w-full mt-6"
                     size="lg"
+                    onClick={() => window.location.href = "/auth"}
                   >
                     {plan.popular ? "Commencer maintenant" : "Choisir ce plan"}
                   </Button>
@@ -368,11 +369,11 @@ const Home = () => {
               Rejoignez des milliers d'entrepreneurs qui ont déjà fait le choix de l'innovation
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="premium" size="lg" className="group">
+              <Button variant="hero" size="lg" className="group" onClick={() => window.location.href = "/auth"}>
                 Commencer Gratuitement
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" onClick={() => window.location.href = "/support"}>
                 Contacter l'équipe
               </Button>
             </div>

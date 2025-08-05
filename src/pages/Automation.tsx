@@ -1,221 +1,234 @@
 import { useState } from "react";
-import { Bot, Zap, Brain, Wand2, MessageSquare, Image, Globe, CheckCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import { 
+  Zap, 
+  Settings, 
+  Play, 
+  Pause,
+  Plus,
+  MoreVertical,
+  Clock,
+  Target,
+  TrendingUp,
+  Bot,
+  Workflow,
+  Mail,
+  ShoppingCart
+} from "lucide-react";
 
-export default function Automation() {
-  const [prompt, setPrompt] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
+const Automation = () => {
+  const [automations, setAutomations] = useState([
+    {
+      id: 1,
+      name: "Synchronisation Prix Automatique",
+      description: "Met à jour les prix des produits en fonction des fournisseurs",
+      status: "active",
+      trigger: "Chaque heure",
+      lastRun: "Il y a 5 min",
+      success: 98
+    },
+    {
+      id: 2,
+      name: "Import Produits Gagnants",
+      description: "Importe automatiquement les produits tendances d'AliExpress",
+      status: "active",
+      trigger: "Quotidien à 08:00",
+      lastRun: "Il y a 2h",
+      success: 95
+    },
+    {
+      id: 3,
+      name: "Mise à jour Stock",
+      description: "Vérifie et met à jour le stock disponible chez les fournisseurs",
+      status: "paused",
+      trigger: "Toutes les 2h",
+      lastRun: "Il y a 6h",
+      success: 92
+    },
+    {
+      id: 4,
+      name: "Email Abandon Panier",
+      description: "Envoie des emails aux clients qui ont abandonné leur panier",
+      status: "active",
+      trigger: "Après 1h d'inactivité",
+      lastRun: "Il y a 15 min",
+      success: 87
+    }
+  ]);
 
-  const automations = [
+  const workflows = [
     {
-      name: "Génération Produits IA",
-      description: "Création automatique de fiches produits complètes",
-      icon: <Wand2 className="w-5 h-5" />,
-      status: "active",
-      executions: 1247
+      name: "Nouveau Produit Importé",
+      steps: ["Import produit", "Optimisation SEO", "Création variations", "Publication"],
+      active: true
     },
     {
-      name: "Traduction Automatique",
-      description: "Traduction multi-langue en temps réel",
-      icon: <Globe className="w-5 h-5" />,
-      status: "active", 
-      executions: 892
+      name: "Commande Reçue",
+      steps: ["Validation commande", "Transmission fournisseur", "Email confirmation", "Suivi colis"],
+      active: true
     },
     {
-      name: "Génération Images IA",
-      description: "Création d'images produits avec DALL-E",
-      icon: <Image className="w-5 h-5" />,
-      status: "active",
-      executions: 456
-    },
-    {
-      name: "Coach IA 24/7",
-      description: "Assistant personnel pour optimisations",
-      icon: <MessageSquare className="w-5 h-5" />,
-      status: "active",
-      executions: 2341
+      name: "Produit en Rupture",
+      steps: ["Détection rupture", "Masquer produit", "Email notification", "Recherche alternative"],
+      active: false
     }
   ];
 
-  const handleGenerate = async () => {
-    setIsGenerating(true);
-    // Simulate AI generation
-    setTimeout(() => {
-      setIsGenerating(false);
-    }, 3000);
+  const toggleAutomation = (id: number) => {
+    setAutomations(automations.map(automation => 
+      automation.id === id 
+        ? { ...automation, status: automation.status === "active" ? "paused" : "active" }
+        : automation
+    ));
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="min-h-screen bg-background p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Automatisation IA</h1>
-          <p className="text-muted-foreground">Automatisez votre business avec l'intelligence artificielle</p>
+          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Automation
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Automatisez vos processus de dropshipping
+          </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <Brain className="w-4 h-4 mr-2" />
-            Coach IA
-          </Button>
-          <Button>
-            <Bot className="w-4 h-4 mr-2" />
-            Nouvelle Automation
-          </Button>
-        </div>
+        <Button variant="hero">
+          <Plus className="mr-2 h-4 w-4" />
+          Nouvelle Automation
+        </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Automations Actives</p>
-                <p className="text-2xl font-bold">12</p>
-              </div>
-              <Zap className="w-8 h-8 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Exécutions/Mois</p>
-                <p className="text-2xl font-bold">4,936</p>
-              </div>
-              <Bot className="w-8 h-8 text-blue-600" />
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="border-border bg-card shadow-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Automations Actives
+            </CardTitle>
+            <Zap className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">12</div>
+            <p className="text-xs text-muted-foreground">+2 ce mois</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Temps Économisé</p>
-                <p className="text-2xl font-bold">234h</p>
-              </div>
-              <Brain className="w-8 h-8 text-green-600" />
-            </div>
+        <Card className="border-border bg-card shadow-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Taux de Réussite
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">94.2%</div>
+            <p className="text-xs text-muted-foreground">+1.2% ce mois</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Score IA</p>
-                <p className="text-2xl font-bold">98%</p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-emerald-600" />
-            </div>
+        <Card className="border-border bg-card shadow-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Temps Économisé
+            </CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">47h</div>
+            <p className="text-xs text-muted-foreground">Cette semaine</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border bg-card shadow-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Actions Exécutées
+            </CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">2,847</div>
+            <p className="text-xs text-muted-foreground">Aujourd'hui</p>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="generator" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="generator">Générateur IA</TabsTrigger>
+      {/* Main Content */}
+      <Tabs defaultValue="automations" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="automations">Automations</TabsTrigger>
-          <TabsTrigger value="coach">Coach IA</TabsTrigger>
-          <TabsTrigger value="audit">Audit IA</TabsTrigger>
+          <TabsTrigger value="workflows">Workflows</TabsTrigger>
+          <TabsTrigger value="triggers">Déclencheurs</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="generator" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Wand2 className="w-5 h-5" />
-                Générateur IA Universel
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Textarea
-                placeholder="Décrivez ce que vous voulez générer (produit, description, campagne email, landing page...)"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                rows={4}
-              />
-              <div className="flex gap-2">
-                <Button onClick={handleGenerate} disabled={isGenerating}>
-                  {isGenerating ? (
-                    <>
-                      <Bot className="w-4 h-4 mr-2 animate-spin" />
-                      Génération en cours...
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="w-4 h-4 mr-2" />
-                      Générer avec IA
-                    </>
-                  )}
-                </Button>
-                <Button variant="outline">Templates</Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="cursor-pointer hover:shadow-lg transition-all">
-              <CardContent className="p-4 text-center space-y-2">
-                <Wand2 className="w-8 h-8 mx-auto text-primary" />
-                <h3 className="font-semibold">Fiche Produit</h3>
-                <p className="text-sm text-muted-foreground">Titre, description, SEO</p>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:shadow-lg transition-all">
-              <CardContent className="p-4 text-center space-y-2">
-                <Image className="w-8 h-8 mx-auto text-primary" />
-                <h3 className="font-semibold">Images IA</h3>
-                <p className="text-sm text-muted-foreground">DALL-E, fonds blancs</p>
-              </CardContent>
-            </Card>
-
-            <Card className="cursor-pointer hover:shadow-lg transition-all">
-              <CardContent className="p-4 text-center space-y-2">
-                <Globe className="w-8 h-8 mx-auto text-primary" />
-                <h3 className="font-semibold">Landing Page</h3>
-                <p className="text-sm text-muted-foreground">Page optimisée SEO</p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
         <TabsContent value="automations" className="space-y-6">
-          <div className="grid gap-4">
-            {automations.map((automation, index) => (
-              <Card key={index}>
-                <CardContent className="p-4">
+          <div className="grid gap-6">
+            {automations.map((automation) => (
+              <Card key={automation.id} className="border-border bg-card shadow-card">
+                <CardHeader>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        {automation.icon}
+                    <div className="flex items-center space-x-4">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Bot className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-semibold">{automation.name}</h3>
-                        <p className="text-sm text-muted-foreground">{automation.description}</p>
+                        <CardTitle className="text-lg">{automation.name}</CardTitle>
+                        <CardDescription>{automation.description}</CardDescription>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">Exécutions</p>
-                        <p className="font-semibold">{automation.executions.toLocaleString()}</p>
-                      </div>
+                    <div className="flex items-center space-x-3">
                       <Badge variant={automation.status === "active" ? "default" : "secondary"}>
-                        {automation.status === "active" ? "Actif" : "Inactif"}
+                        {automation.status === "active" ? "Actif" : "Pausé"}
                       </Badge>
-                      <Button variant="outline" size="sm">
-                        Configurer
+                      <Switch 
+                        checked={automation.status === "active"}
+                        onCheckedChange={() => toggleAutomation(automation.id)}
+                      />
+                      <Button variant="ghost" size="sm">
+                        <MoreVertical className="h-4 w-4" />
                       </Button>
                     </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <div className="text-sm text-muted-foreground">Déclencheur</div>
+                      <div className="font-medium">{automation.trigger}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Dernière exécution</div>
+                      <div className="font-medium">{automation.lastRun}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Taux de réussite</div>
+                      <div className="font-medium">{automation.success}%</div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-2 mt-4">
+                    <Button variant="outline" size="sm">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Configurer
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      {automation.status === "active" ? (
+                        <>
+                          <Pause className="mr-2 h-4 w-4" />
+                          Pause
+                        </>
+                      ) : (
+                        <>
+                          <Play className="mr-2 h-4 w-4" />
+                          Démarrer
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -223,90 +236,135 @@ export default function Automation() {
           </div>
         </TabsContent>
 
-        <TabsContent value="coach" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" />
-                Coach IA Personnel 24/7
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-blue-600 rounded-full">
-                      <Bot className="w-4 h-4 text-white" />
+        <TabsContent value="workflows" className="space-y-6">
+          <div className="grid gap-6">
+            {workflows.map((workflow, index) => (
+              <Card key={index} className="border-border bg-card shadow-card">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="p-2 rounded-lg bg-accent/10">
+                        <Workflow className="h-5 w-5 text-accent" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{workflow.name}</CardTitle>
+                        <CardDescription>
+                          {workflow.steps.length} étapes configurées
+                        </CardDescription>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-blue-800">
-                        <strong>Recommandation du jour :</strong> Vos produits "smartphone" performent bien. 
-                        Je recommande d'ajouter des accessoires complémentaires pour augmenter le panier moyen.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-green-600 rounded-full">
-                      <CheckCircle className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-green-800">
-                        <strong>Opportunité détectée :</strong> Le taux de conversion de votre page "montres" 
-                        peut être amélioré en optimisant les descriptions produits.
-                      </p>
+                    <div className="flex items-center space-x-3">
+                      <Badge variant={workflow.active ? "default" : "secondary"}>
+                        {workflow.active ? "Actif" : "Inactif"}
+                      </Badge>
+                      <Switch checked={workflow.active} />
                     </div>
                   </div>
-                </div>
-
-                <Button className="w-full">
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Discuter avec le Coach IA
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {workflow.steps.map((step, stepIndex) => (
+                      <Badge key={stepIndex} variant="outline">
+                        {stepIndex + 1}. {step}
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex justify-end space-x-2 mt-4">
+                    <Button variant="outline" size="sm">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Modifier
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      Tester
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
 
-        <TabsContent value="audit" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Audit IA de vos Produits</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+        <TabsContent value="triggers" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="border-border bg-card shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  Déclencheurs Temporels
+                </CardTitle>
+                <CardDescription>Automations basées sur le temps</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
                   <div>
-                    <h4 className="font-semibold">iPhone 15 Pro</h4>
-                    <p className="text-sm text-muted-foreground">Dernière analyse il y a 2h</p>
+                    <div className="font-medium">Quotidien</div>
+                    <div className="text-sm text-muted-foreground">5 automations</div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600">87%</div>
-                    <p className="text-sm text-muted-foreground">Score qualité</p>
-                  </div>
+                  <Switch checked />
                 </div>
-
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
                   <div>
-                    <h4 className="font-semibold">Casque Bluetooth</h4>
-                    <p className="text-sm text-muted-foreground">Dernière analyse il y a 5h</p>
+                    <div className="font-medium">Horaire</div>
+                    <div className="text-sm text-muted-foreground">3 automations</div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-orange-600">64%</div>
-                    <p className="text-sm text-muted-foreground">Score qualité</p>
-                  </div>
+                  <Switch checked />
                 </div>
+                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                  <div>
+                    <div className="font-medium">Hebdomadaire</div>
+                    <div className="text-sm text-muted-foreground">2 automations</div>
+                  </div>
+                  <Switch />
+                </div>
+              </CardContent>
+            </Card>
 
-                <Button className="w-full" variant="outline">
-                  Lancer Audit Complet
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            <Card className="border-border bg-card shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-accent" />
+                  Déclencheurs d'Événements
+                </CardTitle>
+                <CardDescription>Automations basées sur les actions</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <div className="font-medium">Nouvelle commande</div>
+                      <div className="text-sm text-muted-foreground">4 automations</div>
+                    </div>
+                  </div>
+                  <Switch checked />
+                </div>
+                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <div className="font-medium">Abandon panier</div>
+                      <div className="text-sm text-muted-foreground">2 automations</div>
+                    </div>
+                  </div>
+                  <Switch checked />
+                </div>
+                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <div className="font-medium">Produit populaire</div>
+                      <div className="text-sm text-muted-foreground">1 automation</div>
+                    </div>
+                  </div>
+                  <Switch />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
   );
-}
+};
+
+export default Automation;
