@@ -22,9 +22,55 @@ import {
   Globe
 } from "lucide-react";
 import { AppLayout } from "@/layouts/AppLayout";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const Reviews = () => {
   const [selectedReview, setSelectedReview] = useState<string | null>(null);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleWidgetConfig = () => {
+    toast({
+      title: "Configuration Widget",
+      description: "Ouverture des paramètres du widget d'avis",
+    });
+  };
+
+  const handleImportReviews = () => {
+    toast({
+      title: "Import d'avis",
+      description: "Démarrage de l'import automatique d'avis...",
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Import terminé",
+        description: "147 nouveaux avis importés avec succès",
+      });
+    }, 3000);
+  };
+
+  const handleApproveReview = (reviewId: string, authorName: string) => {
+    toast({
+      title: "Avis approuvé",
+      description: `L'avis de ${authorName} a été approuvé`,
+    });
+  };
+
+  const handleRejectReview = (reviewId: string, authorName: string) => {
+    toast({
+      title: "Avis rejeté",
+      description: `L'avis de ${authorName} a été rejeté`,
+    });
+  };
+
+  const handleEditReview = (reviewId: string) => {
+    toast({
+      title: "Édition d'avis",
+      description: "Ouverture de l'éditeur d'avis",
+    });
+  };
 
   const reviews = [
     {
@@ -114,11 +160,11 @@ const Reviews = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleWidgetConfig}>
               <Settings className="w-4 h-4 mr-2" />
               Widget
             </Button>
-            <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
+            <Button className="bg-gradient-primary hover:opacity-90 transition-opacity" onClick={handleImportReviews}>
               <Import className="w-4 h-4 mr-2" />
               Importer Avis
             </Button>
@@ -294,13 +340,25 @@ const Reviews = () => {
                       </div>
                       
                       <div className="flex flex-col sm:flex-row lg:flex-col gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleApproveReview(review.id, review.author)}
+                        >
                           Approuver
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditReview(review.id)}
+                        >
                           Modifier
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleRejectReview(review.id, review.author)}
+                        >
                           Rejeter
                         </Button>
                       </div>

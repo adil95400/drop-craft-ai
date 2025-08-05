@@ -110,13 +110,13 @@ const Dashboard = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={() => navigate("/notifications")}>
             <Bell className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={() => navigate("/settings")}>
             <Settings className="h-4 w-4" />
           </Button>
-          <Button variant="default" className="bg-gradient-primary hover:opacity-90">
+          <Button variant="default" className="bg-gradient-primary hover:opacity-90" onClick={() => navigate("/import")}>
             Nouveau Projet
           </Button>
         </div>

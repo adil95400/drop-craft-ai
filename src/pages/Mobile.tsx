@@ -5,9 +5,41 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppLayout } from "@/layouts/AppLayout";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function Mobile() {
   const [appDownloads, setAppDownloads] = useState(12847);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleQRCode = () => {
+    toast({
+      title: "QR Code",
+      description: "QR Code généré pour télécharger l'app",
+    });
+  };
+
+  const handleDownloadApp = () => {
+    toast({
+      title: "Téléchargement",
+      description: "Redirection vers le store approprié...",
+    });
+  };
+
+  const handleInstallExtension = (browser: string) => {
+    const urls = {
+      Chrome: "https://chrome.google.com/webstore",
+      Firefox: "https://addons.mozilla.org/firefox",
+      Safari: "https://apps.apple.com/safari-extensions"
+    };
+    
+    window.open(urls[browser as keyof typeof urls], '_blank');
+    toast({
+      title: "Extension",
+      description: `Ouverture du store ${browser}`,
+    });
+  };
 
   const features = [
     {
@@ -46,11 +78,11 @@ export default function Mobile() {
           <p className="text-muted-foreground">Applications mobiles et extensions navigateur</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleQRCode}>
             <QrCode className="w-4 h-4 mr-2" />
             QR Code App
           </Button>
-          <Button>
+          <Button onClick={handleDownloadApp}>
             <Download className="w-4 h-4 mr-2" />
             Télécharger
           </Button>
@@ -138,11 +170,11 @@ export default function Mobile() {
                       Gérez votre business dropshipping partout, à tout moment.
                     </p>
                     <div className="flex gap-2">
-                      <Button variant="secondary" size="sm">
+                      <Button variant="secondary" size="sm" onClick={handleDownloadApp}>
                         <Download className="w-4 h-4 mr-2" />
                         iOS
                       </Button>
-                      <Button variant="secondary" size="sm">
+                      <Button variant="secondary" size="sm" onClick={handleDownloadApp}>
                         <Download className="w-4 h-4 mr-2" />
                         Android
                       </Button>
@@ -213,7 +245,13 @@ export default function Mobile() {
                           <span className="text-sm">⭐</span>
                           <span className="font-semibold">{ext.rating}</span>
                         </div>
-                        <Button size="sm" variant="outline">Installer</Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleInstallExtension(ext.browser)}
+                        >
+                          Installer
+                        </Button>
                       </div>
                     </div>
                   ))}

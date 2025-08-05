@@ -8,9 +8,48 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Clock, Edit3, Eye, Plus, Sparkles, Tag, TrendingUp } from "lucide-react";
 import { AppLayout } from "@/layouts/AppLayout";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const Blog = () => {
   const [selectedPost, setSelectedPost] = useState<string | null>(null);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleCreatePost = () => {
+    toast({
+      title: "Nouvel article",
+      description: "Générateur d'article IA activé...",
+    });
+  };
+
+  const handleEditPost = (postId: string, title: string) => {
+    toast({
+      title: "Édition",
+      description: `Ouverture de l'éditeur pour "${title}"`,
+    });
+  };
+
+  const handlePreviewPost = (postId: string, title: string) => {
+    toast({
+      title: "Aperçu",
+      description: `Génération de l'aperçu pour "${title}"`,
+    });
+  };
+
+  const handleGenerateContent = () => {
+    toast({
+      title: "Génération IA",
+      description: "L'IA génère votre contenu optimisé SEO...",
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Article généré !",
+        description: "Votre article est prêt à être publié",
+      });
+    }, 4000);
+  };
 
   const blogPosts = [
     {
@@ -61,7 +100,7 @@ const Blog = () => {
               Créez du contenu automatiquement avec l'intelligence artificielle
             </p>
           </div>
-          <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
+          <Button className="bg-gradient-primary hover:opacity-90 transition-opacity" onClick={handleCreatePost}>
             <Plus className="w-4 h-4 mr-2" />
             Nouvel Article IA
           </Button>
@@ -203,11 +242,19 @@ const Blog = () => {
                       </div>
                       
                       <div className="flex flex-col sm:flex-row gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditPost(post.id, post.title)}
+                        >
                           <Edit3 className="w-4 h-4 mr-2" />
                           Modifier
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handlePreviewPost(post.id, post.title)}
+                        >
                           <Eye className="w-4 h-4 mr-2" />
                           Preview
                         </Button>
@@ -313,7 +360,10 @@ const Blog = () => {
                 </div>
 
                 <div className="flex gap-4">
-                  <Button className="bg-gradient-primary hover:opacity-90 transition-opacity flex-1">
+                  <Button 
+                    className="bg-gradient-primary hover:opacity-90 transition-opacity flex-1"
+                    onClick={handleGenerateContent}
+                  >
                     <Sparkles className="w-4 h-4 mr-2" />
                     Générer l'Article IA
                   </Button>

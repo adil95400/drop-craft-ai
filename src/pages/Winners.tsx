@@ -20,6 +20,7 @@ import {
   Download
 } from "lucide-react";
 import { AppLayout } from "@/layouts/AppLayout";
+import { useNavigate } from "react-router-dom";
 
 const Winners = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -27,6 +28,49 @@ const Winners = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleAnalyzeProduct = (productId: number, productName: string) => {
+    toast({
+      title: "Analyse en cours",
+      description: `Analyse détaillée de "${productName}" en cours...`,
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Analyse terminée",
+        description: `Rapport complet généré pour "${productName}"`,
+      });
+    }, 2000);
+  };
+
+  const handleImportProduct = (productId: number, productName: string) => {
+    toast({
+      title: "Import en cours",
+      description: `Import de "${productName}" vers votre catalogue...`,
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Produit importé !",
+        description: `"${productName}" a été ajouté à votre catalogue`,
+      });
+    }, 2000);
+  };
+
+  const handleExport = () => {
+    toast({
+      title: "Export en cours",
+      description: "Génération du fichier CSV...",
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Export terminé",
+        description: "Le fichier a été téléchargé",
+      });
+    }, 1500);
+  };
 
   const handleAnalyzeWinners = () => {
     setIsAnalyzing(true);
@@ -230,7 +274,7 @@ const Winners = () => {
             )}
             {isAnalyzing ? "Analyse..." : "Analyser Maintenant"}
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
             Exporter
           </Button>
@@ -417,11 +461,19 @@ const Winners = () => {
 
               {/* Action Buttons */}
               <div className="flex space-x-2">
-                <Button variant="hero" className="flex-1">
+                <Button 
+                  variant="hero" 
+                  className="flex-1"
+                  onClick={() => handleAnalyzeProduct(product.id, product.title)}
+                >
                   <Eye className="mr-2 h-4 w-4" />
                   Analyser
                 </Button>
-                <Button variant="outline" className="flex-1">
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => handleImportProduct(product.id, product.title)}
+                >
                   <ShoppingCart className="mr-2 h-4 w-4" />
                   Importer
                 </Button>

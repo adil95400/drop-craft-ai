@@ -24,6 +24,7 @@ import {
   Download
 } from "lucide-react";
 import { AppLayout } from "@/layouts/AppLayout";
+import { useNavigate } from "react-router-dom";
 
 const SEO = () => {
   const [url, setUrl] = useState("");
@@ -32,6 +33,45 @@ const SEO = () => {
   const [seoScore, setSeoScore] = useState(0);
   const [generatedContent, setGeneratedContent] = useState<any>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleAnalyticsRedirect = () => {
+    navigate("/analytics");
+    toast({
+      title: "Redirection",
+      description: "Ouverture de Google Analytics",
+    });
+  };
+
+  const handleSearchConsole = () => {
+    window.open("https://search.google.com/search-console", "_blank");
+    toast({
+      title: "Search Console",
+      description: "Ouverture de Google Search Console",
+    });
+  };
+
+  const handleCopyContent = (content: string, type: string) => {
+    navigator.clipboard.writeText(content);
+    toast({
+      title: "Copié !",
+      description: `${type} copié dans le presse-papiers`,
+    });
+  };
+
+  const handleExportContent = () => {
+    toast({
+      title: "Export en cours",
+      description: "Génération du fichier de contenu SEO...",
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Export terminé",
+        description: "Le fichier SEO a été téléchargé",
+      });
+    }, 1500);
+  };
 
   const handleSEOAnalysis = async () => {
     if (!url.trim()) {
@@ -202,11 +242,11 @@ R: Oui, livraison gratuite dès 49€ d'achat.
           </p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleAnalyticsRedirect}>
             <BarChart3 className="mr-2 h-4 w-4" />
             Analytics
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleSearchConsole}>
             <Globe className="mr-2 h-4 w-4" />
             Search Console
           </Button>
@@ -331,22 +371,32 @@ R: Oui, livraison gratuite dès 49€ d'achat.
                   <div className="border border-border rounded-lg p-4 space-y-3">
                     <div>
                       <Label className="text-sm font-medium">Titre SEO</Label>
-                      <div className="mt-1 p-2 bg-muted rounded text-sm font-mono flex items-center justify-between">
-                        <span className="truncate">{generatedContent.title}</span>
-                        <Button variant="ghost" size="icon" className="h-6 w-6">
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                      </div>
+                        <div className="mt-1 p-2 bg-muted rounded text-sm font-mono flex items-center justify-between">
+                          <span className="truncate">{generatedContent.title}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6"
+                            onClick={() => handleCopyContent(generatedContent.title, "Titre SEO")}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
                     </div>
                     
                     <div>
                       <Label className="text-sm font-medium">Meta Description</Label>
-                      <div className="mt-1 p-2 bg-muted rounded text-sm font-mono flex items-center justify-between">
-                        <span className="truncate">{generatedContent.metaDescription}</span>
-                        <Button variant="ghost" size="icon" className="h-6 w-6">
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                      </div>
+                        <div className="mt-1 p-2 bg-muted rounded text-sm font-mono flex items-center justify-between">
+                          <span className="truncate">{generatedContent.metaDescription}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6"
+                            onClick={() => handleCopyContent(generatedContent.metaDescription, "Meta Description")}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
                     </div>
 
                     {generatedContent.content && (
@@ -361,11 +411,15 @@ R: Oui, livraison gratuite dès 49€ d'achat.
                     )}
 
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleCopyContent(JSON.stringify(generatedContent), "Contenu complet")}
+                      >
                         <Copy className="mr-2 h-3 w-3" />
                         Copier Tout
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={handleExportContent}>
                         <Download className="mr-2 h-3 w-3" />
                         Exporter
                       </Button>

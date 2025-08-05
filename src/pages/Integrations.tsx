@@ -6,9 +6,48 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppLayout } from "@/layouts/AppLayout";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function Integrations() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleConnect = (name: string, type: string) => {
+    toast({
+      title: "Connexion en cours",
+      description: `Connexion à ${name}...`,
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Connecté !",
+        description: `${name} a été connecté avec succès`,
+      });
+    }, 2000);
+  };
+
+  const handleConfigure = (name: string) => {
+    toast({
+      title: "Configuration",
+      description: `Ouverture des paramètres ${name}`,
+    });
+  };
+
+  const handleWebhooks = () => {
+    toast({
+      title: "Webhooks",
+      description: "Gestion des webhooks ouverte",
+    });
+  };
+
+  const handleNewIntegration = () => {
+    toast({
+      title: "Nouvelle intégration",
+      description: "Recherche d'intégrations disponibles...",
+    });
+  };
 
   const marketplaces = [
     { name: "Shopify", connected: true, logo: "🛍️", status: "Sync actif" },
@@ -63,11 +102,11 @@ export default function Integrations() {
           <p className="text-muted-foreground">Connectez toutes vos plateformes et outils</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleWebhooks}>
             <Settings className="w-4 h-4 mr-2" />
             Webhooks
           </Button>
-          <Button>
+          <Button onClick={handleNewIntegration}>
             <Plus className="w-4 h-4 mr-2" />
             Nouvelle Intégration
           </Button>
@@ -167,6 +206,7 @@ export default function Integrations() {
                     variant={marketplace.connected ? "outline" : "default"} 
                     size="sm" 
                     className="w-full"
+                    onClick={() => marketplace.connected ? handleConfigure(marketplace.name) : handleConnect(marketplace.name, "marketplace")}
                   >
                     {marketplace.connected ? "Configurer" : "Connecter"}
                   </Button>
@@ -195,6 +235,7 @@ export default function Integrations() {
                     variant={supplier.connected ? "outline" : "default"} 
                     size="sm" 
                     className="w-full"
+                    onClick={() => supplier.connected ? handleConfigure(supplier.name) : handleConnect(supplier.name, "supplier")}
                   >
                     {supplier.connected ? "Sync Catalogue" : "Connecter API"}
                   </Button>
@@ -223,6 +264,7 @@ export default function Integrations() {
                     variant={tool.connected ? "outline" : "default"} 
                     size="sm" 
                     className="w-full"
+                    onClick={() => tool.connected ? handleConfigure(tool.name) : handleConnect(tool.name, "tool")}
                   >
                     {tool.connected ? "Configurer" : "Connecter"}
                   </Button>

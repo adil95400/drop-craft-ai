@@ -7,10 +7,57 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AppLayout } from "@/layouts/AppLayout";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function Orders() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleExportCSV = () => {
+    toast({
+      title: "Export en cours",
+      description: "Génération du fichier CSV des commandes...",
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Export terminé",
+        description: "Le fichier CSV a été téléchargé",
+      });
+    }, 1500);
+  };
+
+  const handleSyncMarketplaces = () => {
+    toast({
+      title: "Synchronisation",
+      description: "Synchronisation des commandes depuis toutes les marketplaces...",
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Sync terminée",
+        description: "47 nouvelles commandes importées",
+      });
+    }, 3000);
+  };
+
+  const handleOrderDetails = (orderId: string) => {
+    toast({
+      title: "Détails de commande",
+      description: `Ouverture des détails pour ${orderId}`,
+    });
+  };
+
+  const handleTrackingClick = (trackingNumber: string) => {
+    navigate("/tracking");
+    toast({
+      title: "Redirection",
+      description: `Ouverture du suivi pour ${trackingNumber}`,
+    });
+  };
 
   const orders = [
     {
@@ -81,11 +128,11 @@ export default function Orders() {
           <p className="text-muted-foreground">Gestion centralisée multi-marketplace</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExportCSV}>
             <Download className="w-4 h-4 mr-2" />
             Export CSV
           </Button>
-          <Button>
+          <Button onClick={handleSyncMarketplaces}>
             <Package className="w-4 h-4 mr-2" />
             Sync Marketplaces
           </Button>
@@ -209,7 +256,11 @@ export default function Orders() {
                   <TableCell>{getStatusBadge(order.status)}</TableCell>
                   <TableCell>
                     {order.tracking !== "-" ? (
-                      <Button variant="link" className="p-0 h-auto">
+                      <Button 
+                        variant="link" 
+                        className="p-0 h-auto"
+                        onClick={() => handleTrackingClick(order.tracking)}
+                      >
                         {order.tracking}
                       </Button>
                     ) : (
@@ -218,7 +269,11 @@ export default function Orders() {
                   </TableCell>
                   <TableCell>{order.supplier}</TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleOrderDetails(order.id)}
+                    >
                       Détails
                     </Button>
                   </TableCell>

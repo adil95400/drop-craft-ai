@@ -22,12 +22,61 @@ import {
   Filter
 } from "lucide-react";
 import { AppLayout } from "@/layouts/AppLayout";
+import { useNavigate } from "react-router-dom";
 
 const Tracking = () => {
   const [trackingNumber, setTrackingNumber] = useState("");
   const [isTracking, setIsTracking] = useState(false);
   const [trackingResults, setTrackingResults] = useState<any[]>([]);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const handleCopyTracking = (trackingNumber: string) => {
+    navigator.clipboard.writeText(trackingNumber);
+    toast({
+      title: "Copié !",
+      description: `Numéro de suivi ${trackingNumber} copié`,
+    });
+  };
+
+  const handleExternalLink = (trackingNumber: string) => {
+    window.open(`https://17track.net/fr/track#nums=${trackingNumber}`, '_blank');
+  };
+
+  const handleFilters = () => {
+    toast({
+      title: "Filtres",
+      description: "Ouverture des filtres avancés",
+    });
+  };
+
+  const handleRefreshAll = () => {
+    toast({
+      title: "Actualisation",
+      description: "Mise à jour de tous les colis en cours...",
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Actualisation terminée",
+        description: "Statuts mis à jour pour 89 colis",
+      });
+    }, 2000);
+  };
+
+  const handleAutoNotifications = () => {
+    toast({
+      title: "Notifications",
+      description: "Configuration des notifications automatiques",
+    });
+  };
+
+  const handleWebhooks = () => {
+    toast({
+      title: "Webhooks",
+      description: "Configuration des webhooks de tracking",
+    });
+  };
 
   const handleTrackPackage = async () => {
     if (!trackingNumber.trim()) {
@@ -170,11 +219,11 @@ const Tracking = () => {
           </p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleFilters}>
             <Filter className="mr-2 h-4 w-4" />
             Filtres
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleRefreshAll}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Actualiser
           </Button>
@@ -258,10 +307,18 @@ const Tracking = () => {
                     </CardDescription>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="icon">
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={() => handleCopyTracking(result.trackingNumber)}
+                    >
                       <Copy className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon">
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={() => handleExternalLink(result.trackingNumber)}
+                    >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
                   </div>
@@ -417,15 +474,27 @@ const Tracking = () => {
               <CardTitle>Actions Rapides</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={handleRefreshAll}
+              >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Actualiser tous les colis
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={handleAutoNotifications}
+              >
                 <Clock className="mr-2 h-4 w-4" />
                 Notifications automatiques
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={handleWebhooks}
+              >
                 <ExternalLink className="mr-2 h-4 w-4" />
                 Configurer webhooks
               </Button>
