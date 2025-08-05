@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { AppLayout } from "@/layouts/AppLayout";
 import { 
   Zap, 
   Settings, 
@@ -21,6 +24,8 @@ import {
 } from "lucide-react";
 
 const Automation = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [automations, setAutomations] = useState([
     {
       id: 1,
@@ -86,8 +91,17 @@ const Automation = () => {
     ));
   };
 
+  const handleNewAutomation = () => {
+    navigate('/automation');
+    toast({
+      title: "Nouvelle automation",
+      description: "Assistant de création d'automation ouvert",
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-background p-6 space-y-6">
+    <AppLayout>
+      <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -98,7 +112,7 @@ const Automation = () => {
             Automatisez vos processus de dropshipping
           </p>
         </div>
-        <Button variant="hero">
+        <Button variant="hero" onClick={handleNewAutomation}>
           <Plus className="mr-2 h-4 w-4" />
           Nouvelle Automation
         </Button>
@@ -363,7 +377,8 @@ const Automation = () => {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 

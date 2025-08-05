@@ -2,6 +2,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { AppLayout } from "@/layouts/AppLayout";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -16,6 +19,22 @@ import {
 } from "lucide-react";
 
 const Analytics = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleExport = () => {
+    toast({
+      title: "Export démarré",
+      description: "Votre rapport sera téléchargé dans quelques instants",
+    });
+  };
+
+  const handleRefresh = () => {
+    toast({
+      title: "Données actualisées",
+      description: "Les analytics ont été mis à jour",
+    });
+  };
   const stats = [
     {
       title: "Revenus Totaux",
@@ -56,7 +75,8 @@ const Analytics = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-6 space-y-6">
+    <AppLayout>
+      <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -68,15 +88,15 @@ const Analytics = () => {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Filter className="mr-2 h-4 w-4" />
             Filtres
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
             Exporter
           </Button>
-          <Button variant="hero">
+          <Button variant="hero" onClick={handleRefresh}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Actualiser
           </Button>
@@ -201,7 +221,8 @@ const Analytics = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 

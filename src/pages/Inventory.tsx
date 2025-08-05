@@ -1,370 +1,396 @@
-import { useState } from "react"
-import { AppLayout } from "@/layouts/AppLayout"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Progress } from "@/components/ui/progress"
-import { Search, AlertTriangle, Package, Users, TrendingDown, TrendingUp, Plus, Download, Filter } from "lucide-react"
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { AppLayout } from "@/layouts/AppLayout";
+import { 
+  Package, 
+  Search, 
+  Filter, 
+  Plus,
+  Eye,
+  Edit,
+  AlertTriangle,
+  TrendingDown,
+  TrendingUp,
+  BarChart3,
+  Download,
+  Upload,
+  Truck,
+  Clock,
+  CheckCircle,
+  X
+} from "lucide-react";
 
-export default function Inventory() {
-  const [searchQuery, setSearchQuery] = useState("")
+const Inventory = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const inventory = [
+  const handleExport = () => {
+    toast({
+      title: "Export démarré",
+      description: "Votre inventaire sera téléchargé dans quelques instants",
+    });
+  };
+
+  const handleImport = () => {
+    navigate('/import');
+  };
+
+  const handleNewProduct = () => {
+    navigate('/catalogue');
+    toast({
+      title: "Nouveau produit",
+      description: "Formulaire de création de produit ouvert",
+    });
+  };
+
+  const handleRestock = (productName: string) => {
+    toast({
+      title: "Réapprovisionnement",
+      description: `Demande de réappro pour ${productName} envoyée`,
+    });
+  };
+
+  const products = [
     {
-      id: 1,
-      name: "Montre Sport Pro",
-      sku: "MSP-001",
-      currentStock: 45,
-      minStock: 10,
-      maxStock: 100,
-      supplier: "Tech Supplies",
-      lastRestocked: "2024-01-15",
-      status: "in_stock",
-      price: 89.99
+      id: "PRD-001",
+      name: "Montre Connectée Pro",
+      sku: "WCH-PRO-001",
+      category: "Électronique",
+      stock: 23,
+      lowStockThreshold: 10,
+      price: 199,
+      supplier: "TechSupply Co",
+      lastUpdated: "Il y a 2h",
+      status: "active",
+      image: ""
     },
     {
-      id: 2,
+      id: "PRD-002", 
       name: "Écouteurs Bluetooth",
-      sku: "EB-002",
-      currentStock: 5,
-      minStock: 15,
-      maxStock: 80,
-      supplier: "AudioTech",
-      lastRestocked: "2024-01-10",
+      sku: "EBT-001",
+      category: "Audio",
+      stock: 5,
+      lowStockThreshold: 15,
+      price: 89,
+      supplier: "AudioMax",
+      lastUpdated: "Il y a 1h",
       status: "low_stock",
-      price: 45.99
+      image: ""
     },
     {
-      id: 3,
-      name: "Câble USB-C",
-      sku: "USC-003",
-      currentStock: 0,
-      minStock: 20,
-      maxStock: 200,
-      supplier: "Cable Co",
-      lastRestocked: "2024-01-05",
+      id: "PRD-003",
+      name: "Chargeur Sans Fil",
+      sku: "CSF-001",
+      category: "Accessoires",
+      stock: 0,
+      lowStockThreshold: 20,
+      price: 45,
+      supplier: "PowerTech",
+      lastUpdated: "Il y a 30 min",
       status: "out_of_stock",
-      price: 12.99
-    }
-  ]
-
-  const suppliers = [
-    {
-      id: 1,
-      name: "Tech Supplies",
-      products: 156,
-      avgDelivery: "5-7 jours",
-      reliability: 98,
-      status: "active"
+      image: ""
     },
     {
-      id: 2,
-      name: "AudioTech",
-      products: 89,
-      avgDelivery: "3-5 jours",
-      reliability: 95,
-      status: "active"
-    },
-    {
-      id: 3,
-      name: "Cable Co",
-      products: 234,
-      avgDelivery: "7-10 jours",
-      reliability: 87,
-      status: "warning"
+      id: "PRD-004",
+      name: "Coque iPhone Premium",
+      sku: "CIP-001",
+      category: "Accessoires",
+      stock: 156,
+      lowStockThreshold: 25,
+      price: 25,
+      supplier: "CaseMaster",
+      lastUpdated: "Il y a 4h",
+      status: "active",
+      image: ""
     }
-  ]
+  ];
 
-  const getStockStatusColor = (status: string) => {
-    switch (status) {
-      case 'in_stock': return 'bg-green-500'
-      case 'low_stock': return 'bg-yellow-500'
-      case 'out_of_stock': return 'bg-red-500'
-      default: return 'bg-gray-500'
-    }
-  }
+  const stats = [
+    { title: "Total Produits", value: "2,341", change: "+5.2%", icon: Package },
+    { title: "Stock Faible", value: "47", change: "+12%", icon: AlertTriangle },
+    { title: "Ruptures", value: "8", change: "-25%", icon: X },
+    { title: "Valeur Stock", value: "€234,567", change: "+8.1%", icon: BarChart3 }
+  ];
 
-  const getStockStatusText = (status: string) => {
-    switch (status) {
-      case 'in_stock': return 'En stock'
-      case 'low_stock': return 'Stock faible'
-      case 'out_of_stock': return 'Rupture'
-      default: return 'Inconnu'
+  const lowStockProducts = products.filter(p => p.status === "low_stock" || p.status === "out_of_stock");
+
+  const getStatusBadge = (status: string, stock: number, threshold: number) => {
+    if (stock === 0) {
+      return <Badge variant="destructive">Rupture</Badge>;
+    } else if (stock <= threshold) {
+      return <Badge variant="secondary" className="bg-orange-500 text-white">Stock faible</Badge>;
+    } else {
+      return <Badge variant="default" className="bg-green-500">En stock</Badge>;
     }
-  }
+  };
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-6 space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Stock & Fournisseurs</h1>
-            <p className="text-muted-foreground mt-2">
-              Gérez votre inventaire et vos relations fournisseurs
+            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Inventaire
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Gestion du stock et des produits
             </p>
           </div>
-          
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Download className="w-4 h-4 mr-2" />
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={handleExport}>
+              <Download className="mr-2 h-4 w-4" />
               Exporter
             </Button>
-            <Button className="bg-primary hover:bg-primary/90">
-              <Plus className="w-4 h-4 mr-2" />
-              Ajouter Produit
+            <Button variant="outline" onClick={handleImport}>
+              <Upload className="mr-2 h-4 w-4" />
+              Importer
+            </Button>
+            <Button variant="hero" onClick={handleNewProduct}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau Produit
             </Button>
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Package className="h-8 w-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Total Produits</p>
-                  <p className="text-2xl font-bold">1,247</p>
-                  <p className="text-sm text-green-600">+23 cette semaine</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <AlertTriangle className="h-8 w-8 text-orange-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Alertes Stock</p>
-                  <p className="text-2xl font-bold">15</p>
-                  <p className="text-sm text-red-600">Attention requise</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Fournisseurs</p>
-                  <p className="text-2xl font-bold">12</p>
-                  <p className="text-sm text-green-600">10 actifs</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <TrendingUp className="h-8 w-8 text-purple-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Valeur Stock</p>
-                  <p className="text-2xl font-bold">€125K</p>
-                  <p className="text-sm text-green-600">+8.2% vs mois dernier</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {stats.map((stat, index) => (
+            <Card key={index} className="border-border bg-card shadow-card">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {stat.title}
+                </CardTitle>
+                <stat.icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
+                <p className="text-xs text-green-500">{stat.change} vs mois dernier</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="inventory" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="inventory">Inventaire</TabsTrigger>
+        <Tabs defaultValue="products" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="products">Produits</TabsTrigger>
+            <TabsTrigger value="low-stock">Stock Faible</TabsTrigger>
             <TabsTrigger value="suppliers">Fournisseurs</TabsTrigger>
-            <TabsTrigger value="alerts">Alertes</TabsTrigger>
-            <TabsTrigger value="history">Historique</TabsTrigger>
+            <TabsTrigger value="movements">Mouvements</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="inventory">
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Inventaire</CardTitle>
-                    <CardDescription>
-                      Gérez votre stock et surveillez les niveaux
-                    </CardDescription>
+          <TabsContent value="products" className="space-y-6">
+            {/* Search and Filters */}
+            <Card className="border-border bg-card shadow-card">
+              <CardContent className="pt-6">
+                <div className="flex gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Rechercher des produits..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
                   </div>
-                  <Button variant="outline" size="sm">
-                    <Filter className="w-4 h-4 mr-2" />
+                  <select className="px-4 py-2 border border-border rounded-md bg-background">
+                    <option>Toutes les catégories</option>
+                    <option>Électronique</option>
+                    <option>Audio</option>
+                    <option>Accessoires</option>
+                  </select>
+                  <Button variant="outline">
+                    <Filter className="mr-2 h-4 w-4" />
                     Filtres
                   </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {/* Search */}
-                <div className="relative mb-6">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Rechercher par nom, SKU..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
+              </CardContent>
+            </Card>
 
-                {/* Inventory Table */}
-                <div className="space-y-4">
-                  {inventory.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
+            {/* Products List */}
+            <div className="grid gap-4">
+              {products.map((product) => (
+                <Card key={product.id} className="border-border bg-card shadow-card hover:shadow-glow transition-all duration-300">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                          <Package className="w-6 h-6 text-muted-foreground" />
+                        <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                          <Package className="h-8 w-8 text-muted-foreground" />
                         </div>
                         <div>
-                          <h3 className="font-semibold">{item.name}</h3>
-                          <p className="text-sm text-muted-foreground">SKU: {item.sku}</p>
-                          <p className="text-sm text-muted-foreground">Fournisseur: {item.supplier}</p>
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-semibold text-lg">{product.name}</h3>
+                            {getStatusBadge(product.status, product.stock, product.lowStockThreshold)}
+                          </div>
+                          <div className="space-y-1 text-sm text-muted-foreground">
+                            <div>SKU: {product.sku} • {product.category}</div>
+                            <div>Fournisseur: {product.supplier}</div>
+                            <div>Mis à jour: {product.lastUpdated}</div>
+                          </div>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center space-x-6">
+
+                      <div className="flex items-center space-x-8">
                         <div className="text-center">
-                          <div className="font-semibold">{item.currentStock}</div>
-                          <div className="text-sm text-muted-foreground">Stock actuel</div>
-                          <Progress 
-                            value={(item.currentStock / item.maxStock) * 100} 
-                            className="w-16 mt-1"
-                          />
+                          <div className="text-sm text-muted-foreground">Stock</div>
+                          <div className={`text-2xl font-bold ${
+                            product.stock === 0 ? 'text-red-500' : 
+                            product.stock <= product.lowStockThreshold ? 'text-orange-500' : 
+                            'text-green-500'
+                          }`}>
+                            {product.stock}
+                          </div>
                         </div>
-                        
                         <div className="text-center">
-                          <div className="font-semibold">€{item.price}</div>
-                          <div className="text-sm text-muted-foreground">Prix unitaire</div>
+                          <div className="text-sm text-muted-foreground">Seuil</div>
+                          <div className="font-semibold">{product.lowStockThreshold}</div>
                         </div>
-                        
                         <div className="text-center">
-                          <Badge className={getStockStatusColor(item.status)}>
-                            {getStockStatusText(item.status)}
-                          </Badge>
+                          <div className="text-sm text-muted-foreground">Prix</div>
+                          <div className="font-semibold">€{product.price}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm text-muted-foreground">Valeur Stock</div>
+                          <div className="font-semibold">€{(product.stock * product.price).toLocaleString()}</div>
                         </div>
 
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm">Modifier</Button>
-                          <Button variant="outline" size="sm">Réappro</Button>
+                        <div className="flex items-center space-x-2">
+                          <Button variant="ghost" size="sm" onClick={() => navigate(`/catalogue/${product.id}`)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => navigate(`/catalogue/${product.id}/edit`)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleRestock(product.name)}>
+                            <Truck className="mr-2 h-4 w-4" />
+                            Réappro
+                          </Button>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </TabsContent>
 
-          <TabsContent value="suppliers">
-            <Card>
+          <TabsContent value="low-stock" className="space-y-6">
+            <Card className="border-border bg-card shadow-card">
               <CardHeader>
-                <CardTitle>Fournisseurs</CardTitle>
-                <CardDescription>
-                  Gérez vos relations avec les fournisseurs
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {suppliers.map((supplier) => (
-                    <Card key={supplier.id}>
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-lg">{supplier.name}</CardTitle>
-                            <p className="text-sm text-muted-foreground">{supplier.products} produits</p>
-                          </div>
-                          <Badge 
-                            variant={supplier.status === 'active' ? 'default' : 'destructive'}
-                            className={supplier.status === 'active' ? 'bg-green-500' : ''}
-                          >
-                            {supplier.status === 'active' ? 'Actif' : 'Attention'}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Délai livraison</span>
-                            <span className="text-sm font-medium">{supplier.avgDelivery}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Fiabilité</span>
-                            <span className="text-sm font-medium">{supplier.reliability}%</span>
-                          </div>
-                          <Progress value={supplier.reliability} className="mt-2" />
-                          <div className="flex gap-2 pt-2">
-                            <Button variant="outline" size="sm" className="flex-1">
-                              Voir Détails
-                            </Button>
-                            <Button size="sm" className="flex-1">
-                              Contacter
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="alerts">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <AlertTriangle className="w-5 h-5 mr-2 text-orange-600" />
-                  Alertes Stock
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-orange-500" />
+                  Produits en Stock Faible
                 </CardTitle>
-                <CardDescription>
-                  Surveillez les produits nécessitant votre attention
-                </CardDescription>
+                <CardDescription>Produits nécessitant un réapprovisionnement</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border border-red-200 bg-red-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <AlertTriangle className="w-5 h-5 text-red-600" />
+                  {lowStockProducts.map((product) => (
+                    <div key={product.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
                       <div>
-                        <h3 className="font-semibold">Câble USB-C - Rupture de stock</h3>
-                        <p className="text-sm text-muted-foreground">Stock: 0 / Min: 20</p>
+                        <div className="font-medium">{product.name}</div>
+                        <div className="text-sm text-muted-foreground">{product.sku} • {product.supplier}</div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-center">
+                          <div className="text-sm text-muted-foreground">Stock actuel</div>
+                          <div className={`font-semibold ${product.stock === 0 ? 'text-red-500' : 'text-orange-500'}`}>
+                            {product.stock}
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm text-muted-foreground">Seuil</div>
+                          <div className="font-semibold">{product.lowStockThreshold}</div>
+                        </div>
+                        <Button variant="hero" size="sm" onClick={() => handleRestock(product.name)}>
+                          <Truck className="mr-2 h-4 w-4" />
+                          Réapprovisionner
+                        </Button>
                       </div>
                     </div>
-                    <Button size="sm" variant="destructive">Action requise</Button>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <TrendingDown className="w-5 h-5 text-yellow-600" />
-                      <div>
-                        <h3 className="font-semibold">Écouteurs Bluetooth - Stock faible</h3>
-                        <p className="text-sm text-muted-foreground">Stock: 5 / Min: 15</p>
-                      </div>
-                    </div>
-                    <Button size="sm" variant="outline">Réapprovisionner</Button>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="history">
-            <Card>
+          <TabsContent value="suppliers" className="space-y-6">
+            <Card className="border-border bg-card shadow-card">
               <CardHeader>
-                <CardTitle>Historique des Mouvements</CardTitle>
-                <CardDescription>
-                  Suivez l'historique des entrées et sorties de stock
-                </CardDescription>
+                <CardTitle>Fournisseurs</CardTitle>
+                <CardDescription>Gestion des partenaires et fournisseurs</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Historique des Mouvements</h3>
-                  <p className="text-muted-foreground">Consultez l'historique détaillé de vos stocks</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { name: "TechSupply Co", products: 45, status: "Actif", lastOrder: "Il y a 2 jours" },
+                    { name: "AudioMax", products: 23, status: "Actif", lastOrder: "Il y a 1 semaine" },
+                    { name: "PowerTech", products: 12, status: "Inactif", lastOrder: "Il y a 1 mois" },
+                    { name: "CaseMaster", products: 67, status: "Actif", lastOrder: "Hier" }
+                  ].map((supplier, index) => (
+                    <div key={index} className="p-4 border border-border rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold">{supplier.name}</h3>
+                        <Badge variant={supplier.status === "Actif" ? "default" : "secondary"}>
+                          {supplier.status}
+                        </Badge>
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div>{supplier.products} produits</div>
+                        <div>Dernière commande: {supplier.lastOrder}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="movements" className="space-y-6">
+            <Card className="border-border bg-card shadow-card">
+              <CardHeader>
+                <CardTitle>Mouvements de Stock</CardTitle>
+                <CardDescription>Historique des entrées et sorties</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[
+                    { type: "Vente", product: "Montre Connectée Pro", quantity: -2, date: "Il y a 1h", reason: "Commande #ORD-001" },
+                    { type: "Réception", product: "Écouteurs Bluetooth", quantity: +50, date: "Il y a 3h", reason: "Livraison fournisseur" },
+                    { type: "Ajustement", product: "Chargeur Sans Fil", quantity: -5, date: "Il y a 1 jour", reason: "Produits endommagés" },
+                    { type: "Vente", product: "Coque iPhone Premium", quantity: -8, date: "Il y a 2 jours", reason: "Commandes multiples" }
+                  ].map((movement, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <div className={`p-2 rounded-lg ${
+                          movement.type === "Vente" ? "bg-red-100 text-red-600" :
+                          movement.type === "Réception" ? "bg-green-100 text-green-600" :
+                          "bg-orange-100 text-orange-600"
+                        }`}>
+                          {movement.type === "Vente" && <TrendingDown className="h-4 w-4" />}
+                          {movement.type === "Réception" && <TrendingUp className="h-4 w-4" />}
+                          {movement.type === "Ajustement" && <Edit className="h-4 w-4" />}
+                        </div>
+                        <div>
+                          <div className="font-medium">{movement.product}</div>
+                          <div className="text-sm text-muted-foreground">{movement.reason}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className={`font-semibold ${movement.quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {movement.quantity > 0 ? '+' : ''}{movement.quantity}
+                        </div>
+                        <div className="text-sm text-muted-foreground">{movement.date}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -372,5 +398,7 @@ export default function Inventory() {
         </Tabs>
       </div>
     </AppLayout>
-  )
-}
+  );
+};
+
+export default Inventory;

@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { AppLayout } from "@/layouts/AppLayout";
 import { 
   Users, 
   Search, 
@@ -27,6 +30,8 @@ import {
 } from "lucide-react";
 
 const CRM = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
 
   const customers = [
@@ -88,8 +93,17 @@ const CRM = () => {
     { title: "Rétention", value: "87%", change: "+5.1%", icon: TrendingUp }
   ];
 
+  const handleNewCustomer = () => {
+    navigate('/crm');
+    toast({
+      title: "Nouveau client",
+      description: "Formulaire de création de client ouvert",
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-background p-6 space-y-6">
+    <AppLayout>
+      <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -100,7 +114,7 @@ const CRM = () => {
             Gestion de la relation client
           </p>
         </div>
-        <Button variant="hero">
+        <Button variant="hero" onClick={handleNewCustomer}>
           <Plus className="mr-2 h-4 w-4" />
           Nouveau Client
         </Button>
@@ -295,7 +309,8 @@ const CRM = () => {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AppLayout>
   );
 };
 
