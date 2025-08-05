@@ -48,8 +48,8 @@ export function AppLayout({ children }: AppLayoutProps) {
                     <User className="h-4 w-4 text-primary-foreground" />
                   </div>
                   <div className="hidden md:block text-left">
-                    <div className="text-sm font-medium">John Doe</div>
-                    <div className="text-xs text-muted-foreground">Plan Pro</div>
+                    <div className="text-sm font-medium">Admin User</div>
+                    <div className="text-xs text-muted-foreground">Plan Enterprise</div>
                   </div>
                 </Button>
               </div>
