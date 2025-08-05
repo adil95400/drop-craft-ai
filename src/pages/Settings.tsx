@@ -7,7 +7,10 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -25,7 +28,17 @@ import {
   Monitor,
   Mail,
   Smartphone,
-  Database
+  Database,
+  Copy,
+  Eye,
+  EyeOff,
+  Trash2,
+  Plus,
+  Check,
+  X,
+  Crown,
+  Briefcase,
+  Users
 } from "lucide-react";
 
 const Settings = () => {
@@ -51,15 +64,27 @@ const Settings = () => {
     woocommerce: false,
     bigcommerce: false,
     amazon: true,
-    aliexpress: true
+    aliexpress: true,
+    ebay: false,
+    facebook: true,
+    google: false
   });
 
+  const [apiKeys, setApiKeys] = useState([
+    { id: 1, name: "Production API", key: "sk_live_***************************", visible: false, created: "2024-01-15" },
+    { id: 2, name: "Development API", key: "sk_test_***************************", visible: false, created: "2024-01-10" }
+  ]);
+
+  const [theme, setTheme] = useState("system");
+  const [language, setLanguage] = useState("fr");
+
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSaveProfile = () => {
     toast({
       title: "Profil sauvegardé",
-      description: "Vos informations ont été mises à jour",
+      description: "Vos informations ont été mises à jour avec succès",
     });
   };
 
@@ -71,9 +96,39 @@ const Settings = () => {
   };
 
   const handleApiKeyGenerate = () => {
+    const newKey = {
+      id: Date.now(),
+      name: "Nouvelle API Key",
+      key: `sk_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
+      visible: false,
+      created: new Date().toISOString().split('T')[0]
+    };
+    setApiKeys([...apiKeys, newKey]);
     toast({
       title: "Clé API générée",
       description: "Nouvelle clé d'API créée avec succès",
+    });
+  };
+
+  const toggleKeyVisibility = (id: number) => {
+    setApiKeys(apiKeys.map(key => 
+      key.id === id ? { ...key, visible: !key.visible } : key
+    ));
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copié !",
+      description: "Clé API copiée dans le presse-papier",
+    });
+  };
+
+  const deleteApiKey = (id: number) => {
+    setApiKeys(apiKeys.filter(key => key.id !== id));
+    toast({
+      title: "Clé supprimée",
+      description: "La clé API a été supprimée",
     });
   };
 
@@ -500,44 +555,168 @@ const Settings = () => {
                   <Card className="border-border bg-card shadow-card">
                     <CardHeader>
                       <CardTitle>Clés API</CardTitle>
-                      <CardDescription>Gérez l'accès à votre API</CardDescription>
+                      <CardDescription>Gérez l'accès à votre API Shopopti Pro</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                          <div>
-                            <div className="font-medium">Clé API Production</div>
-                            <div className="text-sm text-muted-foreground font-mono">sk_prod_••••••••••••••••</div>
+                        {apiKeys.map((apiKey) => (
+                          <div key={apiKey.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                            <div className="flex-1">
+                              <div className="font-medium">{apiKey.name}</div>
+                              <div className="text-sm text-muted-foreground font-mono">
+                                {apiKey.visible ? apiKey.key : `${apiKey.key.substring(0, 12)}${'•'.repeat(20)}`}
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                Créée le {apiKey.created}
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => toggleKeyVisibility(apiKey.id)}
+                              >
+                                {apiKey.visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => copyToClipboard(apiKey.key)}
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => deleteApiKey(apiKey.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                          <Button variant="outline" size="sm">
-                            Révéler
-                          </Button>
-                        </div>
-                        <div className="flex items-center justify-between p-4 border border-border rounded-lg">
-                          <div>
-                            <div className="font-medium">Clé API Test</div>
-                            <div className="text-sm text-muted-foreground font-mono">sk_test_••••••••••••••••</div>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            Révéler
-                          </Button>
-                        </div>
+                        ))}
                       </div>
 
                       <Button onClick={handleApiKeyGenerate} variant="hero">
-                        <Key className="mr-2 h-4 w-4" />
+                        <Plus className="mr-2 h-4 w-4" />
                         Générer Nouvelle Clé
                       </Button>
 
-                      <div className="bg-muted/50 rounded-lg p-4">
-                        <h4 className="font-semibold mb-2">Documentation API</h4>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          Accédez à notre documentation complète pour intégrer l'API Shopopti Pro dans vos applications.
-                        </p>
-                        <Button variant="outline" size="sm">
-                          <Globe className="mr-2 h-4 w-4" />
-                          Voir la Documentation
-                        </Button>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Card className="border-border bg-muted/30">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm">Documentation API</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-sm text-muted-foreground mb-3">
+                              Guide complet pour intégrer notre API
+                            </p>
+                            <Button variant="outline" size="sm" onClick={() => navigate('/integrations')}>
+                              <Globe className="mr-2 h-4 w-4" />
+                              Voir Documentation
+                            </Button>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="border-border bg-muted/30">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm">Limite d'utilisation</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span>Utilisé ce mois</span>
+                                <span>2,847 / 10,000</span>
+                              </div>
+                              <div className="w-full bg-secondary rounded-full h-2">
+                                <div className="bg-primary h-2 rounded-full" style={{ width: '28%' }}></div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Preferences Tab */}
+                  <Card className="border-border bg-card shadow-card mt-6">
+                    <CardHeader>
+                      <CardTitle>Préférences Globales</CardTitle>
+                      <CardDescription>Configurez l'apparence et le comportement de l'application</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                          <Label>Thème</Label>
+                          <Select value={theme} onValueChange={setTheme}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choisir un thème" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="light">
+                                <div className="flex items-center gap-2">
+                                  <Sun className="h-4 w-4" />
+                                  Clair
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="dark">
+                                <div className="flex items-center gap-2">
+                                  <Moon className="h-4 w-4" />
+                                  Sombre
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="system">
+                                <div className="flex items-center gap-2">
+                                  <Monitor className="h-4 w-4" />
+                                  Système
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-3">
+                          <Label>Langue</Label>
+                          <Select value={language} onValueChange={setLanguage}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choisir une langue" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="fr">🇫🇷 Français</SelectItem>
+                              <SelectItem value="en">🇬🇧 English</SelectItem>
+                              <SelectItem value="es">🇪🇸 Español</SelectItem>
+                              <SelectItem value="de">🇩🇪 Deutsch</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h4 className="font-semibold">Paramètres d'affichage</h4>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium">Mode compact</div>
+                              <div className="text-sm text-muted-foreground">Réduire l'espacement de l'interface</div>
+                            </div>
+                            <Switch />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium">Animations</div>
+                              <div className="text-sm text-muted-foreground">Activer les transitions animées</div>
+                            </div>
+                            <Switch defaultChecked />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium">Sons système</div>
+                              <div className="text-sm text-muted-foreground">Sons pour les notifications</div>
+                            </div>
+                            <Switch />
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
