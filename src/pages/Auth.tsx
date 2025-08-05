@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import { 
   Mail, 
   Lock, 
@@ -23,7 +24,7 @@ import {
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const { signIn, signUp, resetPassword } = useAuth();
 
   const [loginForm, setLoginForm] = useState({
     email: "",
@@ -41,58 +42,43 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userEmail", loginForm.email);
-      
-      toast({
-        title: "Connexion réussie !",
-        description: "Bienvenue dans Shopopti Pro",
-      });
-      
-      window.location.href = "/dashboard";
-      setIsLoading(false);
-    }, 1500);
+    const { error } = await signIn(loginForm.email, loginForm.password);
+    
+    if (!error) {
+      // Success handled in useAuth hook
+    }
+    
+    setIsLoading(false);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (registerForm.password !== registerForm.confirmPassword) {
-      toast({
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas",
-        variant: "destructive"
-      });
       return;
     }
 
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userEmail", registerForm.email);
-      
-      toast({
-        title: "Compte créé !",
-        description: "Bienvenue dans Shopopti Pro",
-      });
-      
-      window.location.href = "/dashboard";
-      setIsLoading(false);
-    }, 1500);
+    const { error } = await signUp(registerForm.email, registerForm.password, {
+      full_name: registerForm.name,
+    });
+    
+    if (!error) {
+      // Success handled in useAuth hook
+    }
+    
+    setIsLoading(false);
   };
 
   const handleOAuthLogin = (provider: string) => {
-    toast({
-      title: `Connexion ${provider}`,
-      description: "Redirection en cours...",
-    });
+    // OAuth implementation would go here
+    console.log(`OAuth login with ${provider}`);
   };
 
   return (
+    <AuthGuard requireAuth={false}>
+    {/* ... keep existing return content ... */}
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
         
@@ -360,6 +346,7 @@ const Auth = () => {
         </Card>
       </div>
     </div>
+    </AuthGuard>
   );
 };
 
