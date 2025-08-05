@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Import from "./pages/Import";
+import Catalogue from "./pages/Catalogue";
 import Tracking from "./pages/Tracking";
 import SEO from "./pages/SEO";
 import Winners from "./pages/Winners";
@@ -20,6 +21,12 @@ import Automation from "./pages/Automation";
 import Integrations from "./pages/Integrations";
 import Stock from "./pages/Stock";
 import Analytics from "./pages/Analytics";
+import Marketing from "./pages/Marketing";
+import Inventory from "./pages/Inventory";
+import Plugins from "./pages/Plugins";
+import Extension from "./pages/Extension";
+import Mobile from "./pages/Mobile";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,16 +42,23 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/import" element={<Import />} />
+          <Route path="/catalogue" element={<Catalogue />} />
           <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/orders" element={<Orders />} />
-          <Route path="/automation" element={<Automation />} />
-          <Route path="/integrations" element={<Integrations />} />
           <Route path="/crm" element={<CRM />} />
+          <Route path="/tracking" element={<Tracking />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/seo" element={<SEO />} />
+          <Route path="/marketing" element={<Marketing />} />
+          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/automation" element={<Automation />} />
+          <Route path="/plugins" element={<Plugins />} />
+          <Route path="/extension" element={<Extension />} />
+          <Route path="/mobile" element={<Mobile />} />
+          <Route path="/integrations" element={<Integrations />} />
+          <Route path="/support" element={<Support />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/stock" element={<Stock />} />
-          <Route path="/tracking" element={<Tracking />} />
           <Route path="/winners" element={<Winners />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/settings" element={<Settings />} />

@@ -15,7 +15,21 @@ import {
   Settings,
   Store,
   Crown,
-  ChevronDown
+  ChevronDown,
+  Upload,
+  Bookmark,
+  MessageSquare,
+  TrendingUp,
+  Puzzle,
+  Smartphone,
+  Chrome,
+  HelpCircle,
+  Shield,
+  Download,
+  Megaphone,
+  PieChart,
+  Camera,
+  Globe
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -46,39 +60,50 @@ const menuItems = [
   {
     title: "Catalogue & Sourcing",
     items: [
-      { title: "Import Produits", url: "/import", icon: Package },
+      { title: "Import Produits", url: "/import", icon: Upload },
+      { title: "Catalogue", url: "/catalogue", icon: Package },
       { title: "Marketplace", url: "/marketplace", icon: Store },
       { title: "Winners", url: "/winners", icon: Crown },
     ]
   },
   {
-    title: "Commandes & Logistique", 
+    title: "Commandes & Clients",
     items: [
       { title: "Commandes", url: "/orders", icon: ShoppingCart },
+      { title: "CRM", url: "/crm", icon: Users },
       { title: "Tracking", url: "/tracking", icon: Truck },
-      { title: "Stock", url: "/stock", icon: Warehouse },
     ]
   },
   {
-    title: "Automatisation & IA",
+    title: "Marketing & Contenu",
     items: [
+      { title: "Reviews", url: "/reviews", icon: Star },
+      { title: "SEO & Blog", url: "/seo", icon: Search },
+      { title: "Marketing", url: "/marketing", icon: Megaphone },
+    ]
+  },
+  {
+    title: "Gestion & Stock",
+    items: [
+      { title: "Stock & Fournisseurs", url: "/inventory", icon: Warehouse },
       { title: "Automation", url: "/automation", icon: Bot },
+    ]
+  },
+  {
+    title: "Outils & Extensions",
+    items: [
+      { title: "Plugins / App Store", url: "/plugins", icon: Puzzle },
+      { title: "Extension Chrome", url: "/extension", icon: Chrome },
+      { title: "Mobile App", url: "/mobile", icon: Smartphone },
       { title: "Intégrations", url: "/integrations", icon: Zap },
     ]
   },
   {
-    title: "Marketing & Client",
+    title: "Support & Configuration",
     items: [
-      { title: "CRM", url: "/crm", icon: Users },
-      { title: "Reviews", url: "/reviews", icon: Star },
-      { title: "SEO", url: "/seo", icon: Search },
-      { title: "Blog", url: "/blog", icon: FileText },
-    ]
-  },
-  {
-    title: "Configuration",
-    items: [
+      { title: "Support", url: "/support", icon: HelpCircle },
       { title: "Paramètres", url: "/settings", icon: Settings },
+      { title: "Admin", url: "/admin", icon: Shield, adminOnly: true },
     ]
   }
 ];
