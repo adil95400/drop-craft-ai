@@ -110,19 +110,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      toast({
-        title: "Déconnexion",
-        description: "Vous avez été déconnecté avec succès.",
-      });
+      // Use secure sign out utility
+      const { performSecureSignOut } = await import('@/utils/auth');
+      await performSecureSignOut(supabase);
     } catch (error: any) {
       toast({
         title: "Erreur",
         description: error.message,
         variant: "destructive",
       });
+      // Force redirect anyway
+      window.location.href = '/auth';
     }
   };
 

@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Zap, ArrowLeft, Mail, Lock, User, Building } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -66,11 +67,29 @@ const Auth = () => {
     setIsLoading(false);
   };
 
-  const handleGoogleAuth = () => {
-    toast({
-      title: "Connexion Google",
-      description: "OAuth Google sera implémenté prochainement",
-    });
+  const handleGoogleAuth = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "Erreur OAuth Google",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erreur de connexion",
+        description: "Impossible de se connecter avec Google",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
