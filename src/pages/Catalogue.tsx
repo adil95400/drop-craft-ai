@@ -71,11 +71,10 @@ export default function Catalogue() {
 
   const handleAddToCart = (product: any) => {
     addProduct({
+      user_id: '', // Set by mutation
       name: product.name,
       price: parseFloat(product.price),
-      cost: parseFloat(product.price) * 0.6,
-      margin: 40,
-      supplier: product.supplier,
+      cost_price: parseFloat(product.price) * 0.6,
       category: product.category,
       status: "active" as const,
       image_url: product.image,

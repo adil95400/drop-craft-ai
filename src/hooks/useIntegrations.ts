@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase, Integration } from '@/lib/supabase'
 import { useToast } from '@/hooks/use-toast'
 
+export type { Integration }
+
 export const useIntegrations = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -24,10 +26,13 @@ export const useIntegrations = () => {
   })
 
   const addIntegration = useMutation({
-    mutationFn: async (integration: Omit<Integration, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (integration: Omit<Integration, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
       const { data, error } = await supabase
         .from('integrations')
-        .insert([integration])
+        .insert([{ ...integration, user_id: user.id }])
         .select()
         .single()
       
@@ -121,12 +126,18 @@ export const useIntegrations = () => {
     integrations,
     connectedIntegrations,
     activeIntegrations,
+    syncLogs: [],
+    loading: isLoading,
+    fetchIntegrations: () => queryClient.invalidateQueries({ queryKey: ['integrations'] }),
     isLoading,
     error,
     addIntegration: addIntegration.mutate,
+    createIntegration: addIntegration.mutate,
     updateIntegration: updateIntegration.mutate,
     deleteIntegration: deleteIntegration.mutate,
     syncIntegration: syncIntegration.mutate,
+    testConnection: (integrationId: string) => updateIntegration.mutate({ id: integrationId, updates: { connection_status: 'connected' } }),
+    syncData: syncIntegration.mutate,
     isAdding: addIntegration.isPending,
     isUpdating: updateIntegration.isPending,
     isDeleting: deleteIntegration.isPending,

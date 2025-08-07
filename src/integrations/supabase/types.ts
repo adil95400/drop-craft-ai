@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          created_at: string
+          description: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          description: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          description?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -51,6 +90,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      import_jobs: {
+        Row: {
+          created_at: string
+          error_rows: number | null
+          errors: string[] | null
+          file_data: Json | null
+          id: string
+          mapping_config: Json | null
+          processed_rows: number | null
+          result_data: Json | null
+          source_type: string
+          source_url: string | null
+          status: string
+          success_rows: number | null
+          total_rows: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_rows?: number | null
+          errors?: string[] | null
+          file_data?: Json | null
+          id?: string
+          mapping_config?: Json | null
+          processed_rows?: number | null
+          result_data?: Json | null
+          source_type: string
+          source_url?: string | null
+          status?: string
+          success_rows?: number | null
+          total_rows?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_rows?: number | null
+          errors?: string[] | null
+          file_data?: Json | null
+          id?: string
+          mapping_config?: Json | null
+          processed_rows?: number | null
+          result_data?: Json | null
+          source_type?: string
+          source_url?: string | null
+          status?: string
+          success_rows?: number | null
+          total_rows?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       integrations: {
         Row: {

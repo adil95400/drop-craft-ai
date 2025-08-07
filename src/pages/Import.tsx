@@ -35,7 +35,7 @@ const Import = () => {
     try {
       // Créer un enregistrement d'import
       const importRecord = addImportRecord({
-        source_type: importData.type,
+        sourceType: importData.type,
         source_url: importData.type === 'url' ? importData.data : undefined,
         status: 'processing',
         products_imported: 0,
@@ -119,11 +119,10 @@ const Import = () => {
     
     validProducts.forEach(product => {
       addProduct({
+        user_id: '', // Will be set by mutation
         name: product.name,
         price: product.price,
-        cost: product.price * 0.6,
-        margin: 40,
-        supplier: product.supplier,
+        cost_price: product.price * 0.6,
         category: product.category || "Divers",
         status: "active" as const,
         image_url: product.image_url,

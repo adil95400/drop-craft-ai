@@ -74,7 +74,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
 
   const handleSave = async () => {
     try {
-      await updateIntegration(integration.id, config);
+      await updateIntegration({ id: integration.id, updates: config });
       setIsConfigOpen(false);
       onEdit?.(config);
     } catch (error) {
@@ -98,7 +98,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
   const handleSync = async (syncType: 'products' | 'orders' | 'inventory' | 'customers') => {
     setIsSyncing(syncType);
     try {
-      await syncData(integration.id, syncType);
+      await syncData({ integrationId: integration.id, syncType });
     } catch (error) {
       console.error(`Error syncing ${syncType}:`, error);
     } finally {
@@ -143,7 +143,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
             </Badge>
             <Switch
               checked={integration.is_active}
-              onCheckedChange={(checked) => updateIntegration(integration.id, { is_active: checked })}
+              onCheckedChange={(checked) => updateIntegration({ id: integration.id, updates: { is_active: checked } })}
             />
           </div>
         </div>
