@@ -3,12 +3,13 @@ import { ImportHeader } from "@/components/import/ImportHeader"
 import { ImportMethods } from "@/components/import/ImportMethods"
 import { ImportInterface } from "@/components/import/ImportInterface"
 import { ImportResults } from "@/components/import/ImportResults"
+import { SupplierSelector } from "@/components/import/SupplierSelector"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { Users, Package, TrendingUp, Zap, History, Settings, Clock, CheckCircle, AlertTriangle, FileImage, Globe, Database, Cpu } from "lucide-react"
+import { Users, Package, TrendingUp, Zap, History, Settings, Clock, CheckCircle, AlertTriangle, FileImage, Globe, Database, Cpu, Store } from "lucide-react"
 import { toast } from "sonner"
 import { useProducts } from "@/hooks/useProducts"
 import { useImport } from "@/hooks/useImport"
@@ -19,7 +20,7 @@ const Import = () => {
   const [isImporting, setIsImporting] = useState(false)
   const [importProgress, setImportProgress] = useState(0)
   const [importResults, setImportResults] = useState<any[]>([])
-  const [activeTab, setActiveTab] = useState("methods")
+  const [activeTab, setActiveTab] = useState("suppliers")
   const [scheduleImports, setScheduleImports] = useState([
     { id: 1, name: "AliExpress Weekly", frequency: "weekly", nextRun: "2025-01-15", active: true },
     { id: 2, name: "Amazon Daily", frequency: "daily", nextRun: "2025-01-08", active: false }
@@ -231,13 +232,31 @@ const Import = () => {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="suppliers">Fournisseurs</TabsTrigger>
             <TabsTrigger value="methods">Méthodes</TabsTrigger>
             <TabsTrigger value="smart">Import Smart</TabsTrigger>
             <TabsTrigger value="bulk">Import Masse</TabsTrigger>
             <TabsTrigger value="schedule">Planification</TabsTrigger>
             <TabsTrigger value="history">Historique</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="suppliers" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Store className="h-5 w-5" />
+                  Import depuis vos Fournisseurs
+                </CardTitle>
+                <CardDescription>
+                  Connectez-vous directement à plus de 100 fournisseurs et marketplaces
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SupplierSelector />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="methods" className="space-y-6">
             <ImportMethods 
