@@ -1,93 +1,108 @@
 import { useState, useEffect } from 'react'
 import { useToast } from '@/hooks/use-toast'
 
-export interface Notification {
+type Notification = {
   id: string
   title: string
   message: string
   type: 'info' | 'success' | 'warning' | 'error'
-  timestamp: string
+  timestamp: Date
   read: boolean
   action?: {
     label: string
-    onClick: () => void
+    url: string
   }
 }
 
 export const useNotifications = () => {
+  const { toast } = useToast()
   const [notifications, setNotifications] = useState<Notification[]>([
     {
       id: '1',
-      title: 'Nouveau produit gagnant détecté',
-      message: 'Coque iPhone transparente - 15% d\'augmentation des ventes',
+      title: 'Nouvelle commande',
+      message: 'Vous avez reçu une nouvelle commande #1234',
       type: 'success',
-      timestamp: new Date().toISOString(),
-      read: false
+      timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+      read: false,
+      action: { label: 'Voir la commande', url: '/orders' }
     },
     {
       id: '2',
       title: 'Stock faible',
-      message: 'Écouteurs Bluetooth - 5 unités restantes',
+      message: '5 produits ont un stock inférieur à 10 unités',
       type: 'warning',
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      read: false
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      read: false,
+      action: { label: 'Gérer le stock', url: '/inventory' }
     },
     {
       id: '3',
       title: 'Synchronisation terminée',
-      message: '47 nouveaux produits importés depuis AliExpress',
+      message: 'Import de 24 nouveaux produits depuis Shopify',
       type: 'info',
-      timestamp: new Date(Date.now() - 7200000).toISOString(),
-      read: true
+      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+      read: true,
+      action: { label: 'Voir les produits', url: '/catalogue' }
+    },
+    {
+      id: '4',
+      title: 'Erreur de synchronisation',
+      message: 'Échec de la synchronisation avec Amazon',
+      type: 'error',
+      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+      read: true,
+      action: { label: 'Réessayer', url: '/integrations' }
     }
   ])
-  const [loading, setLoading] = useState(false)
-  const { toast } = useToast()
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, read: true } : notif
+  const markAsRead = (notificationId: string) => {
+    setNotifications(prev =>
+      prev.map(notif =>
+        notif.id === notificationId ? { ...notif, read: true } : notif
       )
     )
   }
 
   const markAllAsRead = () => {
-    setNotifications(prev => 
+    setNotifications(prev =>
       prev.map(notif => ({ ...notif, read: true }))
     )
-    toast({
-      title: "Notifications",
-      description: "Toutes les notifications ont été marquées comme lues",
-    })
   }
 
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id))
-    toast({
-      title: "Notification supprimée",
-      description: "La notification a été supprimée",
-    })
+  const deleteNotification = (notificationId: string) => {
+    setNotifications(prev =>
+      prev.filter(notif => notif.id !== notificationId)
+    )
   }
 
-  const clearAll = () => {
-    setNotifications([])
+  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: Date.now().toString(),
+      timestamp: new Date(),
+      read: false
+    }
+    
+    setNotifications(prev => [newNotification, ...prev])
+    
+    // Show toast for new notifications
     toast({
-      title: "Notifications effacées",
-      description: "Toutes les notifications ont été supprimées",
+      title: notification.title,
+      description: notification.message,
+      variant: notification.type === 'error' ? 'destructive' : 'default'
     })
   }
 
   const unreadCount = notifications.filter(n => !n.read).length
+  const recentNotifications = notifications.slice(0, 5)
 
   return {
     notifications,
-    loading,
+    recentNotifications,
     unreadCount,
     markAsRead,
     markAllAsRead,
     deleteNotification,
-    clearAll,
-    refetch: () => {}
+    addNotification
   }
 }

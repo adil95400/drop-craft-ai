@@ -1,6 +1,32 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase, Product } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+
+type Product = {
+  id: string
+  user_id: string
+  name: string
+  description?: string
+  price: number
+  cost_price?: number
+  sku?: string
+  category?: string
+  stock_quantity?: number
+  status: 'active' | 'inactive' | 'archived'
+  image_url?: string
+  weight?: number
+  dimensions?: any
+  tags?: string[]
+  supplier_id?: string
+  supplier?: string
+  profit_margin?: number
+  shopify_id?: string
+  seo_title?: string
+  seo_description?: string
+  seo_keywords?: string[]
+  created_at: string
+  updated_at: string
+}
 
 export const useProducts = () => {
   const { toast } = useToast()
@@ -24,10 +50,13 @@ export const useProducts = () => {
   })
 
   const addProduct = useMutation({
-    mutationFn: async (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
       const { data, error } = await supabase
         .from('products')
-        .insert([product])
+        .insert([{ ...product, user_id: user.id }])
         .select()
         .single()
       
@@ -89,8 +118,17 @@ export const useProducts = () => {
     }
   })
 
+  const stats = {
+    total: products.length,
+    active: products.filter(p => p.status === 'active').length,
+    inactive: products.filter(p => p.status === 'inactive').length,
+    lowStock: products.filter(p => (p.stock_quantity || 0) < 10).length,
+    totalValue: products.reduce((sum, p) => sum + (p.price * (p.stock_quantity || 0)), 0)
+  }
+
   return {
     products,
+    stats,
     isLoading,
     error,
     addProduct: addProduct.mutate,

@@ -119,7 +119,6 @@ const Import = () => {
     
     validProducts.forEach(product => {
       addProduct({
-        user_id: '', // Will be set by mutation
         name: product.name,
         price: product.price,
         cost_price: product.price * 0.6,

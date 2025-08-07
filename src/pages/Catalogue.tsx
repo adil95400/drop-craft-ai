@@ -71,7 +71,6 @@ export default function Catalogue() {
 
   const handleAddToCart = (product: any) => {
     addProduct({
-      user_id: '', // Set by mutation
       name: product.name,
       price: parseFloat(product.price),
       cost_price: parseFloat(product.price) * 0.6,
