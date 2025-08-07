@@ -1,6 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase, Integration } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+
+type Integration = {
+  id: string
+  user_id: string
+  platform_name: string
+  platform_type: string
+  platform_url?: string
+  api_key?: string
+  api_secret?: string
+  access_token?: string
+  refresh_token?: string
+  shop_domain?: string
+  seller_id?: string
+  store_config?: any
+  connection_status: 'connected' | 'disconnected' | 'error'
+  is_active: boolean
+  sync_frequency: 'manual' | 'hourly' | 'daily' | 'weekly'
+  last_sync_at?: string
+  created_at: string
+  updated_at: string
+}
 
 export type { Integration }
 
