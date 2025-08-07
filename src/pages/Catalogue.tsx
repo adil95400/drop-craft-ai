@@ -11,6 +11,9 @@ import { Search, Filter, Star, Heart, ShoppingCart, Eye, Package, TrendingUp, Gr
 import { useProducts } from "@/hooks/useProducts"
 import { useCatalogProducts, CatalogProduct } from "@/hooks/useCatalogProducts"
 import { CatalogProductGrid } from "@/components/catalog/CatalogProductGrid"
+import { CatalogAnalytics } from "@/components/catalog/CatalogAnalytics"
+import { BulkImportDialog } from "@/components/catalog/BulkImportDialog"
+import { AdvancedFilters } from "@/components/catalog/AdvancedFilters"
 import { toast } from "sonner"
 
 export default function Catalogue() {
@@ -313,69 +316,7 @@ export default function Catalogue() {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Performance</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm">Produits analysés</span>
-                      <span className="font-bold">{stats.total}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Note moyenne</span>
-                      <span className="font-bold">{stats.averageRating.toFixed(1)}/5</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Valeur totale</span>
-                      <span className="font-bold">{stats.totalValue.toLocaleString()}€</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Top Catégories</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {categories.slice(0, 3).map(category => (
-                      <div key={category} className="flex justify-between">
-                        <span className="text-sm">{category}</span>
-                        <span className="font-bold">
-                          {products.filter(p => p.category === category).length}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Tendances</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm">Produits winners</span>
-                      <Badge variant="outline" className="text-green-600">{stats.winners}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">En tendance</span>
-                      <Badge variant="outline" className="text-blue-600">{stats.trending}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Best sellers</span>
-                      <Badge variant="outline" className="text-purple-600">{stats.bestsellers}</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <CatalogAnalytics products={products} stats={stats} />
           </TabsContent>
         </Tabs>
 
