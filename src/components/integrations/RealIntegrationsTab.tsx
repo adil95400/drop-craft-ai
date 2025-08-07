@@ -3,10 +3,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { useIntegrations } from '@/hooks/useIntegrations';
 import { IntegrationCard } from './IntegrationCard';
 import { AddIntegrationDialog } from './AddIntegrationDialog';
-import { Search, RefreshCw, TrendingUp, Zap, AlertCircle } from 'lucide-react';
+import { Search, RefreshCw, TrendingUp, Zap, AlertCircle, BarChart3, Clock, CheckCircle2, Activity, Globe, Database } from 'lucide-react';
 import { useState, useMemo } from 'react';
 
 export const RealIntegrationsTab = () => {
@@ -213,15 +214,91 @@ export const RealIntegrationsTab = () => {
             </CardContent>
           </Card>
 
+          {/* Performance Metrics */}
+          <Card className="border-border bg-card shadow-card">
+            <CardHeader>
+              <CardTitle className="text-lg">📊 Performance</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Taux de réussite sync</span>
+                  <span className="font-medium">94%</span>
+                </div>
+                <Progress value={94} className="h-2" />
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Uptime moyen</span>
+                  <span className="font-medium">99.2%</span>
+                </div>
+                <Progress value={99.2} className="h-2" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="text-center p-2 bg-muted/20 rounded">
+                  <div className="text-lg font-bold text-primary">2.5s</div>
+                  <div className="text-xs text-muted-foreground">Temps réponse</div>
+                </div>
+                <div className="text-center p-2 bg-muted/20 rounded">
+                  <div className="text-lg font-bold text-primary">1.2k</div>
+                  <div className="text-xs text-muted-foreground">Requêtes/h</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Système Status */}
+          <Card className="border-border bg-card shadow-card">
+            <CardHeader>
+              <CardTitle className="text-lg">🔄 État du système</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  <span className="text-sm">APIs externes</span>
+                </div>
+                <Badge variant="secondary" className="bg-green-100 text-green-700">Opérationnel</Badge>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-blue-500" />
+                  <span className="text-sm">Synchronisation</span>
+                </div>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-700">Actif</Badge>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Database className="w-4 h-4 text-orange-500" />
+                  <span className="text-sm">Base de données</span>
+                </div>
+                <Badge variant="secondary" className="bg-orange-100 text-orange-700">Maintenance</Badge>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-green-500" />
+                  <span className="text-sm">Réseau</span>
+                </div>
+                <Badge variant="secondary" className="bg-green-100 text-green-700">Normal</Badge>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Tips */}
           <Card className="border-border bg-card shadow-card">
             <CardHeader>
-              <CardTitle className="text-lg">💡 Conseils</CardTitle>
+              <CardTitle className="text-lg">💡 Conseils pro</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <p>• Testez régulièrement vos connexions pour éviter les erreurs</p>
-              <p>• Configurez la synchronisation automatique pour économiser du temps</p>
-              <p>• Surveillez les logs pour détecter les problèmes rapidement</p>
+              <p>• <strong>Webhook :</strong> Configurez les webhooks pour des mises à jour en temps réel</p>
+              <p>• <strong>Limite API :</strong> Respectez les quotas pour éviter les blocages</p>
+              <p>• <strong>Monitoring :</strong> Surveillez les performances via l'onglet Analytics</p>
+              <p>• <strong>Backup :</strong> Exportez régulièrement vos configurations</p>
             </CardContent>
           </Card>
         </div>
