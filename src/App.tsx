@@ -34,6 +34,13 @@ import FAQ from "./pages/FAQ";
 import Security from "./pages/Security";
 import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
+import CRMLeads from "./pages/CRMLeads";
+import CRMActivity from "./pages/CRMActivity";
+import CRMCalendar from "./pages/CRMCalendar";
+import CRMEmails from "./pages/CRMEmails";
+import CRMCalls from "./pages/CRMCalls";
+import TrackingInTransit from "./pages/TrackingInTransit";
+import TrackingToday from "./pages/TrackingToday";
 
 const queryClient = new QueryClient();
 
@@ -183,6 +190,43 @@ const App = () => (
           <Route path="/notifications" element={
             <AuthGuard>
               <Notifications />
+            </AuthGuard>
+          } />
+          {/* CRM Routes */}
+          <Route path="/crm/leads" element={
+            <AuthGuard>
+              <CRMLeads />
+            </AuthGuard>
+          } />
+          <Route path="/crm/activity" element={
+            <AuthGuard>
+              <CRMActivity />
+            </AuthGuard>
+          } />
+          <Route path="/crm/calendar" element={
+            <AuthGuard>
+              <CRMCalendar />
+            </AuthGuard>
+          } />
+          <Route path="/crm/emails" element={
+            <AuthGuard>
+              <CRMEmails />
+            </AuthGuard>
+          } />
+          <Route path="/crm/calls" element={
+            <AuthGuard>
+              <CRMCalls />
+            </AuthGuard>
+          } />
+          {/* Tracking Routes */}
+          <Route path="/tracking/in-transit" element={
+            <AuthGuard>
+              <TrackingInTransit />
+            </AuthGuard>
+          } />
+          <Route path="/tracking/today" element={
+            <AuthGuard>
+              <TrackingToday />
             </AuthGuard>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
