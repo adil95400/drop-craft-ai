@@ -19,7 +19,9 @@ export default function CRM() {
   const { customers, stats, isLoading, addCustomer } = useCustomers()
 
   const filteredCustomers = customers.filter(customer => {
-    const matchesSearch = customer.email.toLowerCase().includes(searchTerm.toLowerCase())
+    const customerName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
+    const matchesSearch = customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         customer.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || customer.status === statusFilter
     return matchesSearch && matchesStatus
   })
@@ -29,15 +31,22 @@ export default function CRM() {
     const formData = new FormData(e.currentTarget)
     
     const customerData = {
-      name: formData.get('name') as string,
+      user_id: '', // Will be set by the mutation
       email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
+      first_name: formData.get('name') as string,
+      last_name: '',
+      phone: formData.get('phone') as string || '',
+      status: 'active' as const,
+      last_order_date: null,
       address: {
         street: formData.get('street') as string,
         city: formData.get('city') as string,
         postal_code: formData.get('postal_code') as string,
         country: formData.get('country') as string,
-      }
+      },
+      platform_customer_id: null,
+      tags: [],
+      updated_at: new Date().toISOString()
     }
 
     addCustomer(customerData)
@@ -220,11 +229,11 @@ export default function CRM() {
                     <div className="flex items-center gap-3">
                       <Avatar>
                         <AvatarFallback>
-                          {customer.email.charAt(0).toUpperCase()}
+                          {customer.first_name?.charAt(0).toUpperCase() || customer.email.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">{customer.email}</div>
+                        <div className="font-medium">{customer.first_name || customer.email}</div>
                         <div className="text-sm text-muted-foreground">
                           ID: {customer.id.slice(0, 8)}...
                         </div>
