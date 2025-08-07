@@ -14,7 +14,119 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      integrations: {
+        Row: {
+          access_token: string | null
+          api_key: string | null
+          api_secret: string | null
+          connection_status: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          platform_name: string
+          platform_type: string
+          platform_url: string | null
+          refresh_token: string | null
+          seller_id: string | null
+          shop_domain: string | null
+          store_config: Json | null
+          sync_frequency: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          api_key?: string | null
+          api_secret?: string | null
+          connection_status?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          platform_name: string
+          platform_type: string
+          platform_url?: string | null
+          refresh_token?: string | null
+          seller_id?: string | null
+          shop_domain?: string | null
+          store_config?: Json | null
+          sync_frequency?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          api_key?: string | null
+          api_secret?: string | null
+          connection_status?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          platform_name?: string
+          platform_type?: string
+          platform_url?: string | null
+          refresh_token?: string | null
+          seller_id?: string | null
+          shop_domain?: string | null
+          store_config?: Json | null
+          sync_frequency?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sync_logs: {
+        Row: {
+          completed_at: string | null
+          error_message: string | null
+          id: string
+          integration_id: string
+          records_failed: number | null
+          records_processed: number | null
+          records_succeeded: number | null
+          started_at: string
+          status: string
+          sync_data: Json | null
+          sync_type: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          integration_id: string
+          records_failed?: number | null
+          records_processed?: number | null
+          records_succeeded?: number | null
+          started_at?: string
+          status: string
+          sync_data?: Json | null
+          sync_type: string
+        }
+        Update: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          integration_id?: string
+          records_failed?: number | null
+          records_processed?: number | null
+          records_succeeded?: number | null
+          started_at?: string
+          status?: string
+          sync_data?: Json | null
+          sync_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_logs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

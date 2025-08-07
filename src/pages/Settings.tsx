@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/layouts/AppLayout";
+import { RealIntegrationsTab } from "@/components/integrations/RealIntegrationsTab";
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -457,40 +458,7 @@ const Settings = () => {
 
                 {/* Integrations Tab */}
                 <TabsContent value="integrations" className="mt-0">
-                  <Card className="border-border bg-card shadow-card">
-                    <CardHeader>
-                      <CardTitle>Intégrations</CardTitle>
-                      <CardDescription>Connectez vos plateformes e-commerce</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      {[
-                        { name: "Shopify", icon: "🛒", connected: integrations.shopify, key: "shopify" },
-                        { name: "WooCommerce", icon: "🏪", connected: integrations.woocommerce, key: "woocommerce" },
-                        { name: "BigCommerce", icon: "🛍️", connected: integrations.bigcommerce, key: "bigcommerce" },
-                        { name: "Amazon", icon: "📦", connected: integrations.amazon, key: "amazon" },
-                        { name: "AliExpress", icon: "🇨🇳", connected: integrations.aliexpress, key: "aliexpress" }
-                      ].map((integration, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <span className="text-2xl">{integration.icon}</span>
-                            <div>
-                              <div className="font-medium">{integration.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {integration.connected ? "Connecté" : "Non connecté"}
-                              </div>
-                            </div>
-                          </div>
-                          <Switch
-                            checked={integration.connected}
-                            onCheckedChange={(checked) => setIntegrations({
-                              ...integrations, 
-                              [integration.key]: checked
-                            })}
-                          />
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
+                  <RealIntegrationsTab />
                 </TabsContent>
 
                 {/* Billing Tab */}
