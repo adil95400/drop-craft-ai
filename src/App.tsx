@@ -180,6 +180,7 @@ const App = () => (
               <Security />
             </AuthGuard>
           } />
+          <Route path="/notifications" element={
             <AuthGuard>
               <Notifications />
             </AuthGuard>
