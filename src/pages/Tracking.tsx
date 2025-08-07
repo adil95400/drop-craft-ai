@@ -1,510 +1,247 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
-import { 
-  Package, 
-  Search, 
-  MapPin, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle, 
-  Truck,
-  Plane,
-  Ship,
-  RefreshCw,
-  Copy,
-  ExternalLink,
-  Filter
-} from "lucide-react";
-import { AppLayout } from "@/layouts/AppLayout";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react'
+import { Package, Truck, MapPin, Clock, Search, Filter, Eye } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Progress } from '@/components/ui/progress'
+import { useOrders } from '@/hooks/useOrders'
 
-const Tracking = () => {
-  const [trackingNumber, setTrackingNumber] = useState("");
-  const [isTracking, setIsTracking] = useState(false);
-  const [trackingResults, setTrackingResults] = useState<any[]>([]);
-  const { toast } = useToast();
-  const navigate = useNavigate();
+const trackingSteps = [
+  { id: 'pending', label: 'En attente', icon: Clock },
+  { id: 'processing', label: 'Traitement', icon: Package },
+  { id: 'shipped', label: 'Expédié', icon: Truck },
+  { id: 'delivered', label: 'Livré', icon: MapPin }
+]
 
-  const handleCopyTracking = (trackingNumber: string) => {
-    navigator.clipboard.writeText(trackingNumber);
-    toast({
-      title: "Copié !",
-      description: `Numéro de suivi ${trackingNumber} copié`,
-    });
-  };
+const getStatusProgress = (status: string): number => {
+  const statusMap: { [key: string]: number } = {
+    'pending': 25,
+    'processing': 50,
+    'shipped': 75,
+    'delivered': 100,
+    'cancelled': 0
+  }
+  return statusMap[status] || 0
+}
 
-  const handleExternalLink = (trackingNumber: string) => {
-    window.open(`https://17track.net/fr/track#nums=${trackingNumber}`, '_blank');
-  };
+const getStatusColor = (status: string): string => {
+  const colorMap: { [key: string]: string } = {
+    'pending': 'bg-yellow-500',
+    'processing': 'bg-blue-500',
+    'shipped': 'bg-purple-500',
+    'delivered': 'bg-green-500',
+    'cancelled': 'bg-red-500'
+  }
+  return colorMap[status] || 'bg-gray-500'
+}
 
-  const handleFilters = () => {
-    toast({
-      title: "Filtres",
-      description: "Ouverture des filtres avancés",
-    });
-  };
+export default function Tracking() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const { orders, stats, isLoading } = useOrders()
 
-  const handleRefreshAll = () => {
-    toast({
-      title: "Actualisation",
-      description: "Mise à jour de tous les colis en cours...",
-    });
-    
-    setTimeout(() => {
-      toast({
-        title: "Actualisation terminée",
-        description: "Statuts mis à jour pour 89 colis",
-      });
-    }, 2000);
-  };
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.tracking_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.id.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter
+    return matchesSearch && matchesStatus
+  })
 
-  const handleAutoNotifications = () => {
-    toast({
-      title: "Notifications",
-      description: "Configuration des notifications automatiques",
-    });
-  };
-
-  const handleWebhooks = () => {
-    toast({
-      title: "Webhooks",
-      description: "Configuration des webhooks de tracking",
-    });
-  };
-
-  const handleTrackPackage = async () => {
-    if (!trackingNumber.trim()) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez entrer un numéro de suivi",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsTracking(true);
-    
-    // Simulate API call to 17track
-    setTimeout(() => {
-      const mockResult = {
-        trackingNumber: trackingNumber,
-        carrier: "China Post",
-        status: "in_transit",
-        currentLocation: "Paris, France",
-        destination: "Lyon, France",
-        estimatedDelivery: "2024-01-15",
-        events: [
-          {
-            date: "2024-01-10 14:30",
-            location: "Paris CDG Airport",
-            status: "Arrived at destination country",
-            icon: Plane
-          },
-          {
-            date: "2024-01-09 08:15",
-            location: "Shanghai, China",
-            status: "Departed from origin country",
-            icon: Plane
-          },
-          {
-            date: "2024-01-08 16:45",
-            location: "Shanghai Sorting Center",
-            status: "Package sorted",
-            icon: Package
-          },
-          {
-            date: "2024-01-08 10:20",
-            location: "Shenzhen, China",
-            status: "Package shipped",
-            icon: Truck
-          }
-        ]
-      };
-
-      setTrackingResults([mockResult]);
-      setIsTracking(false);
-      
-      toast({
-        title: "Suivi trouvé !",
-        description: "Informations de livraison mises à jour",
-      });
-    }, 2000);
-  };
-
-  const recentTrackings = [
-    {
-      id: "LP123456789CN",
-      customer: "Marie Dubois",
-      product: "iPhone Case",
-      status: "delivered",
-      carrier: "La Poste",
-      date: "2024-01-12",
-      location: "Lyon, France"
-    },
-    {
-      id: "1Z999AA1234567890",
-      customer: "Pierre Martin",
-      product: "Wireless Headphones",
-      status: "in_transit", 
-      carrier: "UPS",
-      date: "2024-01-11",
-      location: "Paris, France"
-    },
-    {
-      id: "CP123456789US",
-      customer: "Sophie Laurent",
-      product: "Smart Watch",
-      status: "exception",
-      carrier: "China Post",
-      date: "2024-01-10",
-      location: "Customs Office"
-    },
-    {
-      id: "DHL123456789",
-      customer: "Thomas Bernard",
-      product: "Gaming Mouse",
-      status: "delivered",
-      carrier: "DHL",
-      date: "2024-01-09",
-      location: "Marseille, France"
-    }
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "delivered": return "text-green-600 bg-green-100";
-      case "in_transit": return "text-blue-600 bg-blue-100";
-      case "exception": return "text-red-600 bg-red-100";
-      case "pending": return "text-yellow-600 bg-yellow-100";
-      default: return "text-gray-600 bg-gray-100";
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "delivered": return "Livré";
-      case "in_transit": return "En transit";
-      case "exception": return "Problème";
-      case "pending": return "En attente";
-      default: return "Inconnu";
-    }
-  };
-
-  const carriers = [
-    { name: "17Track", logo: "📦", active: true, packages: "2.1M+" },
-    { name: "China Post", logo: "🇨🇳", active: true, packages: "500K+" },
-    { name: "La Poste", logo: "🇫🇷", active: true, packages: "300K+" },
-    { name: "DHL", logo: "📮", active: true, packages: "200K+" },
-    { name: "UPS", logo: "🚚", active: true, packages: "150K+" },
-    { name: "FedEx", logo: "✈️", active: true, packages: "120K+" }
-  ];
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center">Chargement du suivi des commandes...</div>
+      </div>
+    )
+  }
 
   return (
-    <AppLayout>
-      <div className="min-h-screen bg-background p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Suivi des Colis
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Trackez vos commandes en temps réel avec 17track.net
+          <h1 className="text-3xl font-bold text-foreground">Suivi des Commandes</h1>
+          <p className="text-muted-foreground mt-2">
+            Suivez l'état et la livraison de toutes vos commandes
           </p>
-        </div>
-        <div className="flex space-x-3">
-          <Button variant="outline" onClick={handleFilters}>
-            <Filter className="mr-2 h-4 w-4" />
-            Filtres
-          </Button>
-          <Button variant="outline" onClick={handleRefreshAll}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Actualiser
-          </Button>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Left Side - Tracking Interface */}
-        <div className="lg:col-span-2 space-y-6">
-          
-          {/* Tracking Search */}
-          <Card className="border-border bg-card shadow-card">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Commandes</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.total}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">En Transit</CardTitle>
+            <Truck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.shipped || 0}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Livrées</CardTitle>
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.delivered || 0}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">En Attente</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.pending || 0}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Orders Tracking List */}
+      <div className="space-y-4">
+        {filteredOrders.map((order) => (
+          <Card key={order.id}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Search className="h-5 w-5 text-primary" />
-                Rechercher un Colis
-              </CardTitle>
-              <CardDescription>
-                Entrez le numéro de suivi pour obtenir les informations en temps réel
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex space-x-3">
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="tracking-number">Numéro de suivi</Label>
-                  <Input
-                    id="tracking-number"
-                    placeholder="LP123456789CN, 1Z999AA1234567890..."
-                    value={trackingNumber}
-                    onChange={(e) => setTrackingNumber(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleTrackPackage()}
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button 
-                    onClick={handleTrackPackage}
-                    disabled={isTracking}
-                    variant="hero"
-                  >
-                    {isTracking ? (
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Search className="mr-2 h-4 w-4" />
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Commande #{order.order_number}</CardTitle>
+                  <CardDescription>
+                    {order.tracking_number && (
+                      <span>Tracking: {order.tracking_number}</span>
                     )}
-                    Tracker
-                  </Button>
+                    {!order.tracking_number && (
+                      <span>Pas encore de numéro de suivi</span>
+                    )}
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge 
+                    variant={order.status === 'delivered' ? 'default' : 'secondary'}
+                    className={`${getStatusColor(order.status)} text-white`}
+                  >
+                    {order.status === 'pending' && 'En attente'}
+                    {order.status === 'processing' && 'En traitement'}
+                    {order.status === 'shipped' && 'Expédié'}
+                    {order.status === 'delivered' && 'Livré'}
+                    {order.status === 'cancelled' && 'Annulé'}
+                  </Badge>
+                  <span className="text-sm text-muted-foreground">
+                    {order.total_amount.toLocaleString('fr-FR')}€
+                  </span>
                 </div>
               </div>
-
-              {isTracking && (
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <RefreshCw className="h-4 w-4 animate-spin text-primary" />
-                    <span className="text-sm">Recherche en cours sur 17track.net...</span>
-                  </div>
-                  <Progress value={66} className="w-full" />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Tracking Results */}
-          {trackingResults.map((result, index) => (
-            <Card key={index} className="border-border bg-card shadow-glow">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Package className="h-5 w-5 text-primary" />
-                      {result.trackingNumber}
-                    </CardTitle>
-                    <CardDescription className="flex items-center gap-4 mt-2">
-                      <span className="flex items-center gap-1">
-                        <Truck className="h-4 w-4" />
-                        {result.carrier}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {result.currentLocation}
-                      </span>
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="icon"
-                      onClick={() => handleCopyTracking(result.trackingNumber)}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="icon"
-                      onClick={() => handleExternalLink(result.trackingNumber)}
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                
-                {/* Status Summary */}
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <div className="text-sm text-muted-foreground">Statut</div>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                        <span className="font-medium">En transit</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Position actuelle</div>
-                      <div className="font-medium mt-1">{result.currentLocation}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Livraison estimée</div>
-                      <div className="font-medium mt-1">{result.estimatedDelivery}</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Timeline */}
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Historique de livraison</h4>
-                  <div className="space-y-4">
-                    {result.events.map((event: any, eventIndex: number) => (
-                      <div key={eventIndex} className="flex items-start space-x-4">
-                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                          <event.icon className="h-4 w-4 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <div className="font-medium">{event.status}</div>
-                            <div className="text-sm text-muted-foreground">{event.date}</div>
-                          </div>
-                          <div className="text-sm text-muted-foreground mt-1">{event.location}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-
-          {/* Recent Trackings */}
-          <Card className="border-border bg-card shadow-card">
-            <CardHeader>
-              <CardTitle>Suivis Récents</CardTitle>
-              <CardDescription>Dernières commandes trackées</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentTrackings.map((tracking, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border border-border rounded-lg hover:shadow-card transition-all">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                        <Package className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <div className="font-medium">{tracking.id}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {tracking.customer} • {tracking.product}
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {tracking.carrier} • {tracking.date}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right space-y-1">
-                      <Badge className={getStatusColor(tracking.status)}>
-                        {getStatusText(tracking.status)}
-                      </Badge>
-                      <div className="text-xs text-muted-foreground">
-                        {tracking.location}
-                      </div>
-                    </div>
+                {/* Progress Bar */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Progression</span>
+                    <span>{getStatusProgress(order.status)}%</span>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                  <Progress value={getStatusProgress(order.status)} />
+                </div>
 
-        {/* Right Side - Stats & Settings */}
-        <div className="space-y-6">
-          
-          {/* Quick Stats */}
-          <Card className="border-border bg-card shadow-card">
-            <CardHeader>
-              <CardTitle>Statistiques</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Colis trackés</span>
-                <span className="font-semibold">1,247</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Livrés ce mois</span>
-                <span className="font-semibold text-green-600">892</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">En transit</span>
-                <span className="font-semibold text-blue-600">234</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Délai moyen</span>
-                <span className="font-semibold">12.5 jours</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Taux de livraison</span>
-                <span className="font-semibold text-green-600">96.8%</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Carriers */}
-          <Card className="border-border bg-card shadow-card">
-            <CardHeader>
-              <CardTitle>Transporteurs</CardTitle>
-              <CardDescription>Intégrations actives</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {carriers.map((carrier, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-lg">{carrier.logo}</span>
-                      <div>
-                        <div className="font-medium">{carrier.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {carrier.packages} colis
+                {/* Tracking Steps */}
+                <div className="flex justify-between items-center relative">
+                  {trackingSteps.map((step, index) => {
+                    const isActive = getStatusProgress(order.status) >= (index + 1) * 25
+                    const Icon = step.icon
+                    
+                    return (
+                      <div key={step.id} className="flex flex-col items-center space-y-1">
+                        <div className={`
+                          w-8 h-8 rounded-full flex items-center justify-center
+                          ${isActive 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-muted text-muted-foreground'
+                          }
+                        `}>
+                          <Icon className="h-4 w-4" />
                         </div>
+                        <span className={`text-xs ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                          {step.label}
+                        </span>
                       </div>
-                    </div>
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    )
+                  })}
+                  
+                  {/* Connection Line */}
+                  <div className="absolute top-4 left-4 right-4 h-0.5 bg-muted -z-10">
+                    <div 
+                      className="h-full bg-primary transition-all duration-300"
+                      style={{ width: `${getStatusProgress(order.status)}%` }}
+                    />
                   </div>
-                ))}
+                </div>
+
+                {/* Order Info */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+                  <div>
+                    <span className="text-sm text-muted-foreground">Date de commande</span>
+                    <p className="font-medium">
+                      {new Date(order.created_at || '').toLocaleDateString('fr-FR')}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-muted-foreground">Statut</span>
+                    <p className="font-medium">
+                      {order.status === 'pending' && 'En attente'}
+                      {order.status === 'processing' && 'En traitement'}
+                      {order.status === 'shipped' && 'Expédié'}
+                      {order.status === 'delivered' && 'Livré'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 pt-2">
+                  <Button variant="outline" size="sm">
+                    <Eye className="h-4 w-4 mr-2" />
+                    Voir Détails
+                  </Button>
+                  {order.tracking_number && (
+                    <Button variant="outline" size="sm">
+                      <Truck className="h-4 w-4 mr-2" />
+                      Suivre le Colis
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
+        ))}
 
-          {/* Quick Actions */}
-          <Card className="border-border bg-card shadow-card">
-            <CardHeader>
-              <CardTitle>Actions Rapides</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={handleRefreshAll}
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Actualiser tous les colis
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={handleAutoNotifications}
-              >
-                <Clock className="mr-2 h-4 w-4" />
-                Notifications automatiques
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={handleWebhooks}
-              >
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Configurer webhooks
-              </Button>
+        {filteredOrders.length === 0 && (
+          <Card>
+            <CardContent className="text-center py-8">
+              <p className="text-muted-foreground">
+                {searchTerm || statusFilter !== 'all' 
+                  ? 'Aucune commande trouvée avec ces filtres'
+                  : 'Aucune commande pour le moment'
+                }
+              </p>
             </CardContent>
           </Card>
-        </div>
+        )}
       </div>
-      </div>
-    </AppLayout>
-  );
-};
-
-export default Tracking;
+    </div>
+  )
+}
