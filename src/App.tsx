@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -28,6 +29,7 @@ import Extension from "./pages/Extension";
 import Mobile from "./pages/Mobile";
 import Support from "./pages/Support";
 import Admin from "./pages/Admin";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,31 +41,136 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/import" element={<Import />} />
-          <Route path="/catalogue" element={<Catalogue />} />
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/crm" element={<CRM />} />
-          <Route path="/tracking" element={<Tracking />} />
-          <Route path="/reviews" element={<Reviews />} />
-          <Route path="/seo" element={<SEO />} />
-          <Route path="/marketing" element={<Marketing />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/automation" element={<Automation />} />
-          <Route path="/plugins" element={<Plugins />} />
-          <Route path="/extension" element={<Extension />} />
-          <Route path="/mobile" element={<Mobile />} />
-          <Route path="/integrations" element={<Integrations />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/stock" element={<Stock />} />
-          <Route path="/winners" element={<Winners />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/" element={
+            <AuthGuard requireAuth={false}>
+              <Index />
+            </AuthGuard>
+          } />
+          <Route path="/auth" element={
+            <AuthGuard requireAuth={false}>
+              <Auth />
+            </AuthGuard>
+          } />
+          <Route path="/dashboard" element={
+            <AuthGuard>
+              <Dashboard />
+            </AuthGuard>
+          } />
+          <Route path="/import" element={
+            <AuthGuard>
+              <Import />
+            </AuthGuard>
+          } />
+          <Route path="/catalogue" element={
+            <AuthGuard>
+              <Catalogue />
+            </AuthGuard>
+          } />
+          <Route path="/marketplace" element={
+            <AuthGuard>
+              <Marketplace />
+            </AuthGuard>
+          } />
+          <Route path="/orders" element={
+            <AuthGuard>
+              <Orders />
+            </AuthGuard>
+          } />
+          <Route path="/crm" element={
+            <AuthGuard>
+              <CRM />
+            </AuthGuard>
+          } />
+          <Route path="/tracking" element={
+            <AuthGuard>
+              <Tracking />
+            </AuthGuard>
+          } />
+          <Route path="/reviews" element={
+            <AuthGuard>
+              <Reviews />
+            </AuthGuard>
+          } />
+          <Route path="/seo" element={
+            <AuthGuard>
+              <SEO />
+            </AuthGuard>
+          } />
+          <Route path="/marketing" element={
+            <AuthGuard>
+              <Marketing />
+            </AuthGuard>
+          } />
+          <Route path="/inventory" element={
+            <AuthGuard>
+              <Inventory />
+            </AuthGuard>
+          } />
+          <Route path="/automation" element={
+            <AuthGuard>
+              <Automation />
+            </AuthGuard>
+          } />
+          <Route path="/plugins" element={
+            <AuthGuard>
+              <Plugins />
+            </AuthGuard>
+          } />
+          <Route path="/extension" element={
+            <AuthGuard>
+              <Extension />
+            </AuthGuard>
+          } />
+          <Route path="/mobile" element={
+            <AuthGuard>
+              <Mobile />
+            </AuthGuard>
+          } />
+          <Route path="/integrations" element={
+            <AuthGuard>
+              <Integrations />
+            </AuthGuard>
+          } />
+          <Route path="/support" element={
+            <AuthGuard>
+              <Support />
+            </AuthGuard>
+          } />
+          <Route path="/analytics" element={
+            <AuthGuard>
+              <Analytics />
+            </AuthGuard>
+          } />
+          <Route path="/stock" element={
+            <AuthGuard>
+              <Stock />
+            </AuthGuard>
+          } />
+          <Route path="/winners" element={
+            <AuthGuard>
+              <Winners />
+            </AuthGuard>
+          } />
+          <Route path="/blog" element={
+            <AuthGuard>
+              <Blog />
+            </AuthGuard>
+          } />
+          <Route path="/settings" element={
+            <AuthGuard>
+              <Settings />
+            </AuthGuard>
+          } />
+          <Route path="/admin" element={
+            <AuthGuard>
+              <Admin />
+            </AuthGuard>
+          } />
+          <Route path="/notifications" element={
+            <AuthGuard>
+              <Notifications />
+            </AuthGuard>
+          } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
