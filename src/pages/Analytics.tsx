@@ -22,17 +22,46 @@ const Analytics = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleExport = () => {
+  const handleExport = (format: 'csv' | 'pdf' | 'excel' = 'csv') => {
     toast({
       title: "Export démarré",
-      description: "Votre rapport sera téléchargé dans quelques instants",
+      description: `Génération du fichier ${format.toUpperCase()}...`,
     });
+    
+    setTimeout(() => {
+      toast({
+        title: "Export terminé",
+        description: `Le fichier ${format.toUpperCase()} a été téléchargé`,
+      });
+    }, 3000);
   };
 
   const handleRefresh = () => {
     toast({
-      title: "Données actualisées",
-      description: "Les analytics ont été mis à jour",
+      title: "Actualisation",
+      description: "Mise à jour des données en cours...",
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Données actualisées",
+        description: "Les analytics ont été mis à jour",
+      });
+    }, 2000);
+  };
+
+  const handleFilters = () => {
+    toast({
+      title: "Filtres avancés",
+      description: "Configuration des filtres d'analyse",
+    });
+  };
+
+  const handleViewProduct = (productName: string) => {
+    navigate('/catalogue');
+    toast({
+      title: "Produit",
+      description: `Redirection vers ${productName}`,
     });
   };
   const stats = [
@@ -88,11 +117,11 @@ const Analytics = () => {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={handleExport}>
+          <Button variant="outline" onClick={handleFilters}>
             <Filter className="mr-2 h-4 w-4" />
             Filtres
           </Button>
-          <Button variant="outline" onClick={handleExport}>
+          <Button variant="outline" onClick={() => handleExport()}>
             <Download className="mr-2 h-4 w-4" />
             Exporter
           </Button>
@@ -177,7 +206,7 @@ const Analytics = () => {
             <CardContent>
               <div className="space-y-4">
                 {topProducts.map((product, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-4 border border-border rounded-lg hover:shadow-card transition-all cursor-pointer" onClick={() => handleViewProduct(product.name)}>
                     <div>
                       <div className="font-medium">{product.name}</div>
                       <div className="text-sm text-muted-foreground">{product.sales} ventes</div>

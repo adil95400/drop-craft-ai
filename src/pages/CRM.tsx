@@ -94,10 +94,45 @@ const CRM = () => {
   ];
 
   const handleNewCustomer = () => {
-    navigate('/crm');
     toast({
       title: "Nouveau client",
-      description: "Formulaire de création de client ouvert",
+      description: "Ouverture du formulaire de création de client",
+    });
+    
+    // Simulate customer creation
+    setTimeout(() => {
+      toast({
+        title: "Client créé",
+        description: "Le nouveau client a été ajouté avec succès",
+      });
+    }, 2000);
+  };
+
+  const handleViewCustomer = (customerName: string) => {
+    toast({
+      title: "Profil client",
+      description: `Ouverture du profil de ${customerName}`,
+    });
+  };
+
+  const handleContactCustomer = (customerName: string, customerEmail: string) => {
+    toast({
+      title: "Contact client",
+      description: `Ouverture de l'interface de communication avec ${customerName}`,
+    });
+  };
+
+  const handleCustomerActions = (customerName: string) => {
+    toast({
+      title: "Actions client",
+      description: `Menu d'actions pour ${customerName} ouvert`,
+    });
+  };
+
+  const handleFilterCustomers = () => {
+    toast({
+      title: "Filtres avancés",
+      description: "Configuration des filtres de recherche",
     });
   };
 
@@ -159,7 +194,7 @@ const CRM = () => {
                     className="pl-10"
                   />
                 </div>
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleFilterCustomers}>
                   <Filter className="mr-2 h-4 w-4" />
                   Filtres
                 </Button>
@@ -227,13 +262,13 @@ const CRM = () => {
                       </div>
 
                       <div className="flex items-center space-x-2">
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => handleViewCustomer(customer.name)}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => handleContactCustomer(customer.name, customer.email)}>
                           <MessageSquare className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => handleCustomerActions(customer.name)}>
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </div>

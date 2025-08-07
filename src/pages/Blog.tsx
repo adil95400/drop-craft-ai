@@ -10,79 +10,40 @@ import { Calendar, Clock, Edit3, Eye, Plus, Sparkles, Tag, TrendingUp } from "lu
 import { AppLayout } from "@/layouts/AppLayout";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useBlog, type BlogConfig } from "@/hooks/useBlog";
 
 const Blog = () => {
-  const [selectedPost, setSelectedPost] = useState<string | null>(null);
+  const { posts, stats, generating, generatePost, editPost, previewPost, publishPost } = useBlog();
   const { toast } = useToast();
   const navigate = useNavigate();
+  
+  const [blogConfig, setBlogConfig] = useState<BlogConfig>({
+    subject: "",
+    category: "Tendances",
+    keywords: "",
+    length: "medium",
+    tone: "professional",
+    instructions: "",
+    includeImages: true,
+    autoPublish: false
+  });
 
   const handleCreatePost = () => {
-    toast({
-      title: "Nouvel article",
-      description: "Générateur d'article IA activé...",
-    });
-  };
-
-  const handleEditPost = (postId: string, title: string) => {
-    toast({
-      title: "Édition",
-      description: `Ouverture de l'éditeur pour "${title}"`,
-    });
-  };
-
-  const handlePreviewPost = (postId: string, title: string) => {
-    toast({
-      title: "Aperçu",
-      description: `Génération de l'aperçu pour "${title}"`,
-    });
-  };
-
-  const handleGenerateContent = () => {
-    toast({
-      title: "Génération IA",
-      description: "L'IA génère votre contenu optimisé SEO...",
-    });
-    
-    setTimeout(() => {
+    if (!blogConfig.subject.trim()) {
       toast({
-        title: "Article généré !",
-        description: "Votre article est prêt à être publié",
+        title: "Erreur",
+        description: "Veuillez entrer un sujet pour l'article",
+        variant: "destructive"
       });
-    }, 4000);
+      return;
+    }
+    
+    generatePost(blogConfig);
   };
 
-  const blogPosts = [
-    {
-      id: "1",
-      title: "10 Produits Tendance à Dropshipper en 2024",
-      excerpt: "Découvrez les produits les plus rentables identifiés par notre IA...",
-      status: "published",
-      category: "Tendances",
-      views: 1250,
-      publishDate: "2024-01-15",
-      aiGenerated: true
-    },
-    {
-      id: "2", 
-      title: "Comment Optimiser ses Conversions avec l'IA",
-      excerpt: "Guide complet pour utiliser l'intelligence artificielle...",
-      status: "draft",
-      category: "Marketing",
-      views: 0,
-      publishDate: "2024-01-20",
-      aiGenerated: true
-    },
-    {
-      id: "3",
-      title: "Analyse des Tendances E-commerce Q1 2024",
-      excerpt: "Rapport détaillé des performances du secteur...",
-      status: "scheduled",
-      category: "Analyses",
-      views: 0,
-      publishDate: "2024-01-25",
-      aiGenerated: false
-    }
-  ];
+  const handleConfigChange = (field: keyof BlogConfig, value: any) => {
+    setBlogConfig(prev => ({ ...prev, [field]: value }));
+  };
 
   const categories = ["Tendances", "Marketing", "SEO", "Analyses", "Guides", "Actualités"];
 
@@ -108,12 +69,12 @@ const Blog = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Articles Publiés</p>
-                  <p className="text-2xl font-bold text-primary">24</p>
+                  <p className="text-2xl font-bold text-primary">{stats.published}</p>
                 </div>
                 <Edit3 className="w-8 h-8 text-primary/60" />
               </div>
@@ -125,7 +86,7 @@ const Blog = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Vues Totales</p>
-                  <p className="text-2xl font-bold text-secondary">12.5K</p>
+                  <p className="text-2xl font-bold text-secondary">{stats.totalViews.toLocaleString()}</p>
                 </div>
                 <Eye className="w-8 h-8 text-secondary/60" />
               </div>
@@ -137,7 +98,7 @@ const Blog = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Programmés</p>
-                  <p className="text-2xl font-bold text-accent">8</p>
+                  <p className="text-2xl font-bold text-accent">{stats.scheduled}</p>
                 </div>
                 <Clock className="w-8 h-8 text-accent/60" />
               </div>
@@ -149,7 +110,7 @@ const Blog = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">IA Générés</p>
-                  <p className="text-2xl font-bold text-gradient">18</p>
+                  <p className="text-2xl font-bold text-gradient">{stats.aiGenerated}</p>
                 </div>
                 <Sparkles className="w-8 h-8 text-primary/60" />
               </div>
@@ -201,7 +162,7 @@ const Blog = () => {
 
             {/* Posts List */}
             <div className="grid gap-4">
-              {blogPosts.map((post) => (
+              {posts.map((post) => (
                 <Card key={post.id} className="border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all">
                   <CardContent className="p-6">
                     <div className="flex flex-col lg:flex-row gap-4 justify-between">
@@ -245,7 +206,7 @@ const Blog = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => handleEditPost(post.id, post.title)}
+                          onClick={() => editPost(post.id)}
                         >
                           <Edit3 className="w-4 h-4 mr-2" />
                           Modifier
@@ -253,7 +214,7 @@ const Blog = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => handlePreviewPost(post.id, post.title)}
+                          onClick={() => previewPost(post.id)}
                         >
                           <Eye className="w-4 h-4 mr-2" />
                           Preview
@@ -282,18 +243,22 @@ const Blog = () => {
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium">Sujet Principal</label>
-                      <Input placeholder="Ex: Produits tendance dropshipping 2024" />
+                      <Input 
+                        placeholder="Ex: Produits tendance dropshipping 2024" 
+                        value={blogConfig.subject}
+                        onChange={(e) => handleConfigChange('subject', e.target.value)}
+                      />
                     </div>
                     
                     <div>
                       <label className="text-sm font-medium">Catégorie</label>
-                      <Select>
+                      <Select value={blogConfig.category} onValueChange={(value) => handleConfigChange('category', value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Choisir une catégorie" />
                         </SelectTrigger>
                         <SelectContent>
                           {categories.map(cat => (
-                            <SelectItem key={cat} value={cat.toLowerCase()}>{cat}</SelectItem>
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -301,12 +266,16 @@ const Blog = () => {
 
                     <div>
                       <label className="text-sm font-medium">Mots-clés SEO</label>
-                      <Input placeholder="dropshipping, ecommerce, tendances..." />
+                      <Input 
+                        placeholder="dropshipping, ecommerce, tendances..." 
+                        value={blogConfig.keywords}
+                        onChange={(e) => handleConfigChange('keywords', e.target.value)}
+                      />
                     </div>
 
                     <div>
                       <label className="text-sm font-medium">Longueur d'article</label>
-                      <Select defaultValue="medium">
+                      <Select value={blogConfig.length} onValueChange={(value) => handleConfigChange('length', value)}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -362,10 +331,11 @@ const Blog = () => {
                 <div className="flex gap-4">
                   <Button 
                     className="bg-gradient-primary hover:opacity-90 transition-opacity flex-1"
-                    onClick={handleGenerateContent}
+                    onClick={handleCreatePost}
+                    disabled={generating}
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Générer l'Article IA
+                    {generating ? "Génération..." : "Générer l'Article IA"}
                   </Button>
                   <Button variant="outline">
                     Aperçu
@@ -396,7 +366,7 @@ const Blog = () => {
                   <div className="space-y-4">
                     <h3 className="font-semibold">Articles Programmés</h3>
                     <div className="space-y-2">
-                      {blogPosts.filter(p => p.status === 'scheduled').map(post => (
+                      {posts.filter(p => p.status === 'scheduled').map(post => (
                         <div key={post.id} className="p-3 border border-border rounded-lg">
                           <p className="font-medium text-sm">{post.title}</p>
                           <p className="text-xs text-muted-foreground">
@@ -432,7 +402,7 @@ const Blog = () => {
                   <CardTitle>Top Articles</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {blogPosts
+                  {posts
                     .sort((a, b) => b.views - a.views)
                     .slice(0, 3)
                     .map((post, index) => (
