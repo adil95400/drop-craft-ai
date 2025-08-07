@@ -349,10 +349,22 @@ const Marketplace = () => {
         {/* Main Content */}
         <Tabs defaultValue="catalog" className="space-y-6">
           <TabsList className="bg-muted/50 border border-border/50">
-            <TabsTrigger value="catalog">Catalogue</TabsTrigger>
-            <TabsTrigger value="winners">Winners IA</TabsTrigger>
-            <TabsTrigger value="suppliers">Fournisseurs</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="catalog" className="flex items-center gap-2">
+              <Package className="w-4 h-4" />
+              Catalogue
+            </TabsTrigger>
+            <TabsTrigger value="winners" className="flex items-center gap-2">
+              <Star className="w-4 h-4" />
+              Winners IA
+            </TabsTrigger>
+            <TabsTrigger value="suppliers" className="flex items-center gap-2">
+              <Store className="w-4 h-4" />
+              Fournisseurs
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Analytics
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="suppliers" className="space-y-4">

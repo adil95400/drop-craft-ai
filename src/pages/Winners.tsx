@@ -265,7 +265,7 @@ const Winners = () => {
           <Button 
             onClick={handleAnalyzeWinners}
             disabled={isAnalyzing}
-            variant="hero"
+            className="bg-gradient-primary hover:opacity-90"
           >
             {isAnalyzing ? (
               <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -462,8 +462,7 @@ const Winners = () => {
               {/* Action Buttons */}
               <div className="flex space-x-2">
                 <Button 
-                  variant="hero" 
-                  className="flex-1"
+                  className="flex-1 bg-gradient-primary hover:opacity-90"
                   onClick={() => handleAnalyzeProduct(product.id, product.title)}
                 >
                   <Eye className="mr-2 h-4 w-4" />
