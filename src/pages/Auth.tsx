@@ -5,16 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, ArrowLeft, Mail, Lock, User, Building } from "lucide-react";
+import { Zap, ArrowLeft, Mail, Lock, User, Building, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { signIn, signUp, user } = useAuth();
+  const { user, loading, signIn, signUp, resetPassword } = useAuth();
 
   const [loginForm, setLoginForm] = useState({
     email: "",
@@ -30,67 +29,113 @@ const Auth = () => {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (user) {
+    if (!loading && user) {
       navigate("/dashboard");
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginForm.email || !loginForm.password) return;
-    
-    setIsLoading(true);
-    const { error } = await signIn(loginForm.email, loginForm.password);
-    
-    if (!error) {
-      navigate("/dashboard");
-    }
-    setIsLoading(false);
-  };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!signupForm.email || !signupForm.password || !signupForm.name) return;
-    
-    setIsLoading(true);
-    const userData = {
-      first_name: signupForm.name.split(' ')[0],
-      last_name: signupForm.name.split(' ').slice(1).join(' '),
-      business_name: signupForm.company
-    };
-    
-    const { error } = await signUp(signupForm.email, signupForm.password, userData);
-    
-    if (!error) {
-      // User will be redirected after email confirmation
-    }
-    setIsLoading(false);
-  };
-
-  const handleGoogleAuth = async () => {
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`
-        }
+    if (!loginForm.email || !loginForm.password) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs",
+        variant: "destructive",
       });
+      return;
+    }
 
+    setIsLoading(true);
+    try {
+      const { error } = await signIn(loginForm.email, loginForm.password);
       if (error) {
         toast({
-          title: "Erreur OAuth Google",
+          title: "Erreur de connexion",
           description: error.message,
           variant: "destructive",
         });
       }
-    } catch (error: any) {
-      toast({
-        title: "Erreur de connexion",
-        description: "Impossible de se connecter avec Google",
-        variant: "destructive",
-      });
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!signupForm.email || !signupForm.password || !signupForm.name) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (signupForm.password.length < 6) {
+      toast({
+        title: "Erreur",
+        description: "Le mot de passe doit contenir au moins 6 caractères",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await signUp(signupForm.email, signupForm.password, {
+        full_name: signupForm.name,
+        company: signupForm.company,
+      });
+      if (error) {
+        toast({
+          title: "Erreur d'inscription",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!loginForm.email) {
+      toast({
+        title: "Email requis",
+        description: "Veuillez saisir votre email pour réinitialiser votre mot de passe",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await resetPassword(loginForm.email);
+    } catch (error) {
+      console.error('Password reset error:', error);
+    }
+  };
+
+  const handleGoogleAuth = () => {
+    toast({
+      title: "Connexion Google",
+      description: "Fonctionnalité à implémenter",
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -180,7 +225,12 @@ const Auth = () => {
                   </Button>
 
                   <div className="text-center">
-                    <Button variant="link" className="text-sm">
+                    <Button 
+                      variant="link" 
+                      className="text-sm"
+                      onClick={handleForgotPassword}
+                      type="button"
+                    >
                       Mot de passe oublié ?
                     </Button>
                   </div>

@@ -24,6 +24,8 @@ export type Database = {
           id: string
           ip_address: string | null
           metadata: Json | null
+          severity: string | null
+          source: string | null
           user_agent: string | null
           user_id: string
         }
@@ -36,6 +38,8 @@ export type Database = {
           id?: string
           ip_address?: string | null
           metadata?: Json | null
+          severity?: string | null
+          source?: string | null
           user_agent?: string | null
           user_id: string
         }
@@ -48,6 +52,8 @@ export type Database = {
           id?: string
           ip_address?: string | null
           metadata?: Json | null
+          severity?: string | null
+          source?: string | null
           user_agent?: string | null
           user_id?: string
         }
@@ -90,6 +96,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      customers: {
+        Row: {
+          address: Json | null
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          status: string | null
+          total_orders: number | null
+          total_spent: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          address?: Json | null
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          status?: string | null
+          total_orders?: number | null
+          total_spent?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: Json | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          status?: string | null
+          total_orders?: number | null
+          total_spent?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       import_jobs: {
         Row: {
@@ -152,8 +200,10 @@ export type Database = {
           api_secret: string | null
           connection_status: string | null
           created_at: string
+          encrypted_credentials: Json | null
           id: string
           is_active: boolean | null
+          last_error: string | null
           last_sync_at: string | null
           platform_name: string
           platform_type: string
@@ -163,6 +213,7 @@ export type Database = {
           shop_domain: string | null
           store_config: Json | null
           sync_frequency: string | null
+          sync_settings: Json | null
           updated_at: string
           user_id: string
         }
@@ -172,8 +223,10 @@ export type Database = {
           api_secret?: string | null
           connection_status?: string | null
           created_at?: string
+          encrypted_credentials?: Json | null
           id?: string
           is_active?: boolean | null
+          last_error?: string | null
           last_sync_at?: string | null
           platform_name: string
           platform_type: string
@@ -183,6 +236,7 @@ export type Database = {
           shop_domain?: string | null
           store_config?: Json | null
           sync_frequency?: string | null
+          sync_settings?: Json | null
           updated_at?: string
           user_id: string
         }
@@ -192,8 +246,10 @@ export type Database = {
           api_secret?: string | null
           connection_status?: string | null
           created_at?: string
+          encrypted_credentials?: Json | null
           id?: string
           is_active?: boolean | null
+          last_error?: string | null
           last_sync_at?: string | null
           platform_name?: string
           platform_type?: string
@@ -203,10 +259,118 @@ export type Database = {
           shop_domain?: string | null
           store_config?: Json | null
           sync_frequency?: string | null
+          sync_settings?: Json | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      order_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          order_id: string
+          product_id: string | null
+          product_name: string
+          product_sku: string | null
+          quantity: number
+          total_price: number | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          order_id: string
+          product_id?: string | null
+          product_name: string
+          product_sku?: string | null
+          quantity?: number
+          total_price?: number | null
+          unit_price: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          order_id?: string
+          product_id?: string | null
+          product_name?: string
+          product_sku?: string | null
+          quantity?: number
+          total_price?: number | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          billing_address: Json | null
+          created_at: string | null
+          currency: string | null
+          customer_id: string | null
+          id: string
+          notes: string | null
+          order_number: string
+          shipping_address: Json | null
+          status: string | null
+          total_amount: number
+          tracking_number: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          billing_address?: Json | null
+          created_at?: string | null
+          currency?: string | null
+          customer_id?: string | null
+          id?: string
+          notes?: string | null
+          order_number: string
+          shipping_address?: Json | null
+          status?: string | null
+          total_amount?: number
+          tracking_number?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          billing_address?: Json | null
+          created_at?: string | null
+          currency?: string | null
+          customer_id?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string
+          shipping_address?: Json | null
+          status?: string | null
+          total_amount?: number
+          tracking_number?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -293,6 +457,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          company: string | null
+          created_at: string | null
+          email_notifications: boolean | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          company?: string | null
+          created_at?: string | null
+          email_notifications?: boolean | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          company?: string | null
+          created_at?: string | null
+          email_notifications?: boolean | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       suppliers: {
         Row: {
