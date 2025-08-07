@@ -30,6 +30,8 @@ import Extension from "./pages/Extension";
 import Mobile from "./pages/Mobile";
 import Support from "./pages/Support";
 import Admin from "./pages/Admin";
+import FAQ from "./pages/FAQ";
+import Security from "./pages/Security";
 import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
@@ -168,7 +170,16 @@ const App = () => (
               <Admin />
             </AuthGuard>
           } />
-          <Route path="/notifications" element={
+          <Route path="/faq" element={
+            <AuthGuard>
+              <FAQ />
+            </AuthGuard>
+          } />
+          <Route path="/security" element={
+            <AuthGuard>
+              <Security />
+            </AuthGuard>
+          } />
             <AuthGuard>
               <Notifications />
             </AuthGuard>
