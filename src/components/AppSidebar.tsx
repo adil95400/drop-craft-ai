@@ -29,7 +29,23 @@ import {
   Megaphone,
   PieChart,
   Camera,
-  Globe
+  Globe,
+  UserPlus,
+  Activity,
+  Calendar,
+  Mail,
+  Phone,
+  Target,
+  MapPin,
+  Clock,
+  Package2,
+  MessageCircle,
+  ThumbsUp,
+  AlertTriangle,
+  TrendingDown,
+  CheckCircle2,
+  XCircle,
+  Pause
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -67,17 +83,54 @@ const menuItems = [
     ]
   },
   {
-    title: "Commandes & Clients",
+    title: "CRM - Gestion Clients",
+    icon: Users,
+    isPro: true,
+    items: [
+      { title: "Vue d'ensemble CRM", url: "/crm", icon: Users },
+      { title: "Nouveaux Clients", url: "/crm/leads", icon: UserPlus },
+      { title: "Activité Client", url: "/crm/activity", icon: Activity },
+      { title: "Calendrier RDV", url: "/crm/calendar", icon: Calendar },
+      { title: "Email Marketing", url: "/crm/emails", icon: Mail },
+      { title: "Appels & Contacts", url: "/crm/calls", icon: Phone },
+    ]
+  },
+  {
+    title: "Suivi des Commandes",
+    icon: Truck,
+    isPro: true,
+    items: [
+      { title: "Tableau de Bord", url: "/tracking", icon: Truck },
+      { title: "En Transit", url: "/tracking/in-transit", icon: MapPin },
+      { title: "Livraisons Aujourd'hui", url: "/tracking/today", icon: Clock },
+      { title: "Commandes Livrées", url: "/tracking/delivered", icon: CheckCircle2 },
+      { title: "Problèmes & Retards", url: "/tracking/issues", icon: AlertTriangle },
+      { title: "Retours & SAV", url: "/tracking/returns", icon: XCircle },
+    ]
+  },
+  {
+    title: "Gestion des Avis",
+    icon: Star,
+    isPro: true,
+    items: [
+      { title: "Tous les Avis", url: "/reviews", icon: Star },
+      { title: "Avis Positifs", url: "/reviews/positive", icon: ThumbsUp },
+      { title: "Avis à Modérer", url: "/reviews/pending", icon: Pause },
+      { title: "Avis Négatifs", url: "/reviews/negative", icon: TrendingDown },
+      { title: "Réponses aux Avis", url: "/reviews/responses", icon: MessageCircle },
+      { title: "Analytics Avis", url: "/reviews/analytics", icon: PieChart },
+    ]
+  },
+  {
+    title: "Commandes & Ventes",
     items: [
       { title: "Commandes", url: "/orders", icon: ShoppingCart },
-      { title: "CRM", url: "/crm", icon: Users },
-      { title: "Tracking", url: "/tracking", icon: Truck },
+      { title: "Produits", url: "/inventory", icon: Package2 },
     ]
   },
   {
     title: "Marketing & Contenu",
     items: [
-      { title: "Reviews", url: "/reviews", icon: Star },
       { title: "SEO & Blog", url: "/seo", icon: Search },
       { title: "Marketing", url: "/marketing", icon: Megaphone },
     ]
@@ -168,7 +221,15 @@ export function AppSidebar() {
               >
                 <CollapsibleTrigger asChild>
                   <SidebarGroupLabel className="group/label cursor-pointer flex items-center justify-between hover:bg-muted/50 rounded px-2">
-                    <span>{group.title}</span>
+                    <div className="flex items-center gap-2">
+                      {group.icon && <group.icon className="h-4 w-4" />}
+                      <span>{group.title}</span>
+                      {group.isPro && (
+                        <div className="ml-1 px-1.5 py-0.5 text-xs bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-md font-medium">
+                          PRO
+                        </div>
+                      )}
+                    </div>
                     <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/label:rotate-180" />
                   </SidebarGroupLabel>
                 </CollapsibleTrigger>
