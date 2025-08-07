@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,11 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Zap, ArrowLeft, Mail, Lock, User, Building } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { signIn, signUp, user } = useAuth();
 
   const [loginForm, setLoginForm] = useState({
     email: "",
@@ -25,42 +27,49 @@ const Auth = () => {
     company: ""
   });
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    if (!loginForm.email || !loginForm.password) return;
     
-    // Simulate login API call
-    setTimeout(() => {
-      localStorage.setItem("isAuthenticated", "true");
-      toast({
-        title: "Connexion réussie",
-        description: "Bienvenue dans Shopopti Pro !",
-      });
+    setIsLoading(true);
+    const { error } = await signIn(loginForm.email, loginForm.password);
+    
+    if (!error) {
       navigate("/dashboard");
-      setIsLoading(false);
-    }, 1500);
+    }
+    setIsLoading(false);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    if (!signupForm.email || !signupForm.password || !signupForm.name) return;
     
-    // Simulate signup API call
-    setTimeout(() => {
-      localStorage.setItem("isAuthenticated", "true");
-      toast({
-        title: "Compte créé avec succès",
-        description: "Bienvenue dans Shopopti Pro !",
-      });
-      navigate("/dashboard");
-      setIsLoading(false);
-    }, 1500);
+    setIsLoading(true);
+    const userData = {
+      first_name: signupForm.name.split(' ')[0],
+      last_name: signupForm.name.split(' ').slice(1).join(' '),
+      business_name: signupForm.company
+    };
+    
+    const { error } = await signUp(signupForm.email, signupForm.password, userData);
+    
+    if (!error) {
+      // User will be redirected after email confirmation
+    }
+    setIsLoading(false);
   };
 
   const handleGoogleAuth = () => {
     toast({
       title: "Connexion Google",
-      description: "Fonctionnalité à implémenter",
+      description: "OAuth Google sera implémenté prochainement",
     });
   };
 
