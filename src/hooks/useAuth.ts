@@ -62,14 +62,11 @@ export const useAuth = () => {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      // Temporarily commented until migration is approved
-      // const { data: profile, error } = await supabase
-      //   .from('profiles')
-      //   .select('*')
-      //   .eq('id', userId)
-      //   .single();
-      const profile = null;
-      const error = null;
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching profile:', error);
@@ -229,15 +226,12 @@ export const useAuth = () => {
     try {
       if (!authState.user) throw new Error('User not authenticated');
 
-      // Temporarily commented until migration is approved
-      // const { data, error } = await supabase
-      //   .from('profiles')
-      //   .update(updates)
-      //   .eq('id', authState.user.id)
-      //   .select()
-      //   .single();
-      const data = null;
-      const error = null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', authState.user.id)
+        .select()
+        .single();
 
       if (error) throw error;
 
