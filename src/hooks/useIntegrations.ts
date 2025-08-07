@@ -1,257 +1,135 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
-export interface Integration {
-  id: string;
-  user_id: string;
-  platform_type: 'ecommerce' | 'marketplace' | 'payment' | 'marketing';
-  platform_name: string;
-  platform_url?: string;
-  api_key?: string;
-  api_secret?: string;
-  access_token?: string;
-  refresh_token?: string;
-  shop_domain?: string;
-  seller_id?: string;
-  store_config: Record<string, any>;
-  connection_status: 'connected' | 'disconnected' | 'error';
-  last_sync_at?: string;
-  sync_frequency: 'hourly' | 'daily' | 'weekly' | 'manual';
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface SyncLog {
-  id: string;
-  integration_id: string;
-  sync_type: 'products' | 'orders' | 'inventory' | 'customers';
-  status: 'success' | 'error' | 'in_progress';
-  records_processed: number;
-  records_succeeded: number;
-  records_failed: number;
-  error_message?: string;
-  sync_data: Record<string, any>;
-  started_at: string;
-  completed_at?: string;
-}
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { supabase, Integration } from '@/lib/supabase'
+import { useToast } from '@/hooks/use-toast'
 
 export const useIntegrations = () => {
-  const [integrations, setIntegrations] = useState<Integration[]>([]);
-  const [syncLogs, setSyncLogs] = useState<SyncLog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
 
-  const fetchIntegrations = async () => {
-    try {
+  const {
+    data: integrations = [],
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: ['integrations'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('integrations')
         .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setIntegrations(data as Integration[] || []);
-    } catch (error) {
-      console.error('Error fetching integrations:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les intégrations",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      return data as Integration[]
     }
-  };
+  })
 
-  const fetchSyncLogs = async (integrationId?: string) => {
-    try {
-      let query = supabase
-        .from('sync_logs')
-        .select('*')
-        .order('started_at', { ascending: false });
-
-      if (integrationId) {
-        query = query.eq('integration_id', integrationId);
-      }
-
-      const { data, error } = await query.limit(50);
-      if (error) throw error;
-      setSyncLogs(data as SyncLog[] || []);
-    } catch (error) {
-      console.error('Error fetching sync logs:', error);
-    }
-  };
-
-  const createIntegration = async (integration: Omit<Integration, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
+  const addIntegration = useMutation({
+    mutationFn: async (integration: Omit<Integration, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
         .from('integrations')
-        .insert([{ ...integration, user_id: user.id }])
+        .insert([integration])
         .select()
-        .single();
-
-      if (error) throw error;
-
-      setIntegrations(prev => [data as Integration, ...prev]);
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['integrations'] })
       toast({
-        title: "Intégration créée",
-        description: `${integration.platform_name} a été ajouté avec succès`,
-      });
-
-      return data;
-    } catch (error) {
-      console.error('Error creating integration:', error);
+        title: "Intégration ajoutée",
+        description: "L'intégration a été configurée avec succès.",
+      })
+    },
+    onError: () => {
       toast({
         title: "Erreur",
-        description: "Impossible de créer l'intégration",
+        description: "Impossible d'ajouter l'intégration.",
         variant: "destructive",
-      });
-      throw error;
+      })
     }
-  };
+  })
 
-  const updateIntegration = async (id: string, updates: Partial<Integration>) => {
-    try {
+  const updateIntegration = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Integration> }) => {
       const { data, error } = await supabase
         .from('integrations')
         .update(updates)
         .eq('id', id)
         .select()
-        .single();
-
-      if (error) throw error;
-
-      setIntegrations(prev => 
-        prev.map(integration => 
-          integration.id === id ? data as Integration : integration
-        )
-      );
-
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['integrations'] })
       toast({
         title: "Intégration mise à jour",
-        description: "Les paramètres ont été sauvegardés",
-      });
-
-      return data;
-    } catch (error) {
-      console.error('Error updating integration:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour l'intégration",
-        variant: "destructive",
-      });
-      throw error;
+        description: "L'intégration a été mise à jour avec succès.",
+      })
     }
-  };
+  })
 
-  const deleteIntegration = async (id: string) => {
-    try {
+  const deleteIntegration = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('integrations')
         .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setIntegrations(prev => prev.filter(integration => integration.id !== id));
+        .eq('id', id)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['integrations'] })
       toast({
         title: "Intégration supprimée",
-        description: "L'intégration a été supprimée avec succès",
-      });
-    } catch (error) {
-      console.error('Error deleting integration:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer l'intégration",
-        variant: "destructive",
-      });
-      throw error;
+        description: "L'intégration a été supprimée avec succès.",
+      })
     }
-  };
+  })
 
-  const testConnection = async (id: string) => {
-    try {
-      // This would call an edge function to test the connection
-      const { data, error } = await supabase.functions.invoke('test-integration', {
-        body: { integration_id: id }
-      });
-
-      if (error) throw error;
-
-      const status = data.success ? 'connected' : 'error';
-      await updateIntegration(id, { 
-        connection_status: status,
-        last_sync_at: new Date().toISOString()
-      });
-
-      toast({
-        title: status === 'connected' ? "Connexion réussie" : "Connexion échouée",
-        description: status === 'connected' 
-          ? "L'intégration fonctionne correctement" 
-          : data.error || "Erreur de connexion",
-        variant: status === 'connected' ? "default" : "destructive",
-      });
-
-      return status === 'connected';
-    } catch (error) {
-      console.error('Error testing connection:', error);
-      await updateIntegration(id, { connection_status: 'error' });
-      toast({
-        title: "Erreur de test",
-        description: "Impossible de tester la connexion",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
-
-  const syncData = async (id: string, syncType: SyncLog['sync_type']) => {
-    try {
+  const syncIntegration = useMutation({
+    mutationFn: async ({ integrationId, syncType }: { integrationId: string; syncType: string }) => {
       const { data, error } = await supabase.functions.invoke('sync-integration', {
-        body: { integration_id: id, sync_type: syncType }
-      });
-
-      if (error) throw error;
-
+        body: { integration_id: integrationId, sync_type: syncType }
+      })
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['integrations'] })
       toast({
         title: "Synchronisation lancée",
-        description: `Synchronisation ${syncType} en cours...`,
-      });
-
-      // Refresh sync logs
-      await fetchSyncLogs(id);
-      
-      return data;
-    } catch (error) {
-      console.error('Error syncing data:', error);
+        description: "La synchronisation des données a commencé.",
+      })
+    },
+    onError: () => {
       toast({
         title: "Erreur de synchronisation",
-        description: "Impossible de lancer la synchronisation",
+        description: "Impossible de lancer la synchronisation.",
         variant: "destructive",
-      });
-      throw error;
+      })
     }
-  };
+  })
 
-  useEffect(() => {
-    fetchIntegrations();
-    fetchSyncLogs();
-  }, []);
+  const connectedIntegrations = integrations.filter(i => i.connection_status === 'connected')
+  const activeIntegrations = integrations.filter(i => i.is_active)
 
   return {
     integrations,
-    syncLogs,
-    loading,
-    createIntegration,
-    updateIntegration,
-    deleteIntegration,
-    testConnection,
-    syncData,
-    fetchIntegrations,
-    fetchSyncLogs,
-  };
-};
+    connectedIntegrations,
+    activeIntegrations,
+    isLoading,
+    error,
+    addIntegration: addIntegration.mutate,
+    updateIntegration: updateIntegration.mutate,
+    deleteIntegration: deleteIntegration.mutate,
+    syncIntegration: syncIntegration.mutate,
+    isAdding: addIntegration.isPending,
+    isUpdating: updateIntegration.isPending,
+    isDeleting: deleteIntegration.isPending,
+    isSyncing: syncIntegration.isPending
+  }
+}
