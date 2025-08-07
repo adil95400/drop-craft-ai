@@ -59,6 +59,126 @@ export type Database = {
         }
         Relationships: []
       }
+      catalog_products: {
+        Row: {
+          attributes: Json | null
+          availability_status: string | null
+          brand: string | null
+          category: string | null
+          competition_score: number | null
+          cost_price: number | null
+          created_at: string | null
+          currency: string | null
+          delivery_time: string | null
+          description: string | null
+          ean: string | null
+          external_id: string
+          id: string
+          image_url: string | null
+          image_urls: string[] | null
+          is_bestseller: boolean | null
+          is_trending: boolean | null
+          is_winner: boolean | null
+          last_updated: string | null
+          name: string
+          original_price: number | null
+          price: number
+          profit_margin: number | null
+          rating: number | null
+          reviews_count: number | null
+          sales_count: number | null
+          seo_data: Json | null
+          shipping_cost: number | null
+          sku: string | null
+          stock_quantity: number | null
+          subcategory: string | null
+          supplier_id: string
+          supplier_name: string
+          supplier_url: string | null
+          tags: string[] | null
+          trend_score: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          attributes?: Json | null
+          availability_status?: string | null
+          brand?: string | null
+          category?: string | null
+          competition_score?: number | null
+          cost_price?: number | null
+          created_at?: string | null
+          currency?: string | null
+          delivery_time?: string | null
+          description?: string | null
+          ean?: string | null
+          external_id: string
+          id?: string
+          image_url?: string | null
+          image_urls?: string[] | null
+          is_bestseller?: boolean | null
+          is_trending?: boolean | null
+          is_winner?: boolean | null
+          last_updated?: string | null
+          name: string
+          original_price?: number | null
+          price?: number
+          profit_margin?: number | null
+          rating?: number | null
+          reviews_count?: number | null
+          sales_count?: number | null
+          seo_data?: Json | null
+          shipping_cost?: number | null
+          sku?: string | null
+          stock_quantity?: number | null
+          subcategory?: string | null
+          supplier_id: string
+          supplier_name: string
+          supplier_url?: string | null
+          tags?: string[] | null
+          trend_score?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          attributes?: Json | null
+          availability_status?: string | null
+          brand?: string | null
+          category?: string | null
+          competition_score?: number | null
+          cost_price?: number | null
+          created_at?: string | null
+          currency?: string | null
+          delivery_time?: string | null
+          description?: string | null
+          ean?: string | null
+          external_id?: string
+          id?: string
+          image_url?: string | null
+          image_urls?: string[] | null
+          is_bestseller?: boolean | null
+          is_trending?: boolean | null
+          is_winner?: boolean | null
+          last_updated?: string | null
+          name?: string
+          original_price?: number | null
+          price?: number
+          profit_margin?: number | null
+          rating?: number | null
+          reviews_count?: number | null
+          sales_count?: number | null
+          seo_data?: Json | null
+          shipping_cost?: number | null
+          sku?: string | null
+          stock_quantity?: number | null
+          subcategory?: string | null
+          supplier_id?: string
+          supplier_name?: string
+          supplier_url?: string | null
+          tags?: string[] | null
+          trend_score?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -372,6 +492,47 @@ export type Database = {
           },
         ]
       }
+      price_alerts: {
+        Row: {
+          catalog_product_id: string
+          created_at: string | null
+          current_price: number
+          id: string
+          is_active: boolean | null
+          target_price: number
+          triggered_at: string | null
+          user_id: string
+        }
+        Insert: {
+          catalog_product_id: string
+          created_at?: string | null
+          current_price: number
+          id?: string
+          is_active?: boolean | null
+          target_price: number
+          triggered_at?: string | null
+          user_id: string
+        }
+        Update: {
+          catalog_product_id?: string
+          created_at?: string | null
+          current_price?: number
+          id?: string
+          is_active?: boolean | null
+          target_price?: number
+          triggered_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_alerts_catalog_product_id_fkey"
+            columns: ["catalog_product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category: string | null
@@ -488,6 +649,41 @@ export type Database = {
         }
         Relationships: []
       }
+      sourcing_history: {
+        Row: {
+          action: string
+          catalog_product_id: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          catalog_product_id: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          catalog_product_id?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sourcing_history_catalog_product_id_fkey"
+            columns: ["catalog_product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           api_endpoint: string | null
@@ -586,12 +782,44 @@ export type Database = {
           },
         ]
       }
+      user_favorites: {
+        Row: {
+          catalog_product_id: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          catalog_product_id: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          catalog_product_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_favorites_catalog_product_id_fkey"
+            columns: ["catalog_product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_profit_margin: {
+        Args: { price: number; cost_price: number }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

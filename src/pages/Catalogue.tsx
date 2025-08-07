@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { AppLayout } from "@/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -7,10 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Search, Filter, Star, Heart, ShoppingCart, Eye, Package, TrendingUp, Grid3X3, List, Bookmark, BarChart3, Zap, Download, Settings, Bell, Target, Crown } from "lucide-react"
-import { useCatalogProducts, useSourcingHistory, usePriceAlerts } from "@/hooks/useCatalogProducts"
+import { Search, Filter, Star, Heart, ShoppingCart, Eye, Package, TrendingUp, Grid3X3, List, Bookmark, BarChart3, Zap, Download, Settings, Crown } from "lucide-react"
 import { useProducts } from "@/hooks/useProducts"
-import { EnhancedProductGrid } from "@/components/catalog/EnhancedProductGrid"
+import { useCatalogProducts, CatalogProduct } from "@/hooks/useCatalogProducts"
+import { CatalogProductGrid } from "@/components/catalog/CatalogProductGrid"
 import { toast } from "sonner"
 
 export default function Catalogue() {
@@ -19,86 +19,84 @@ export default function Catalogue() {
   const [selectedSupplier, setSelectedSupplier] = useState("all")
   const [priceRange, setPriceRange] = useState("all")
   const [sortBy, setSortBy] = useState("rating")
-  const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null)
   const [activeTab, setActiveTab] = useState("all")
-
-  // Enhanced filters
-  const catalogFilters = useMemo(() => ({
+  
+  const { addProduct } = useProducts()
+  
+  // Filtres pour les produits du catalogue
+  const filters = {
     search: searchQuery || undefined,
     category: selectedCategory !== "all" ? selectedCategory : undefined,
     supplier: selectedSupplier !== "all" ? selectedSupplier : undefined,
-    minPrice: priceRange === "0-25" ? 0 : priceRange === "25-50" ? 25 : priceRange === "50-100" ? 50 : priceRange === "100+" ? 100 : undefined,
-    maxPrice: priceRange === "0-25" ? 25 : priceRange === "25-50" ? 50 : priceRange === "50-100" ? 100 : undefined,
-    isWinner: activeTab === "winners" ? true : undefined,
-    isTrending: activeTab === "trending" ? true : undefined,
-    sortBy: sortBy as any,
-    sortOrder: 'desc' as const
-  }), [searchQuery, selectedCategory, selectedSupplier, priceRange, sortBy, activeTab])
-
+    ...(activeTab === "trending" && { isTrending: true }),
+    ...(activeTab === "winners" && { isWinner: true }),
+    ...(activeTab === "bestsellers" && { isBestseller: true })
+  }
+  
   const { 
-    products: catalogProducts, 
-    favorites, 
+    products, 
+    categories, 
+    suppliers, 
+    userFavorites, 
     stats,
     isLoading,
-    toggleFavorite,
-    importProduct,
-    isImporting
-  } = useCatalogProducts(catalogFilters)
+    addToFavorites,
+    removeFromFavorites,
+    addSourcingHistory 
+  } = useCatalogProducts(filters)
 
-  const { history } = useSourcingHistory()
-  const { alerts, createAlert } = usePriceAlerts()
-  const { addProduct } = useProducts()
+  // Filtrer les produits selon l'onglet actif
+  const filteredProducts = activeTab === "favorites" 
+    ? products.filter(p => userFavorites.includes(p.id))
+    : products
 
-  // Real data from Supabase
-  const filteredProducts = useMemo(() => {
-    let filtered = catalogProducts;
-    
-    if (activeTab === "favorites") {
-      filtered = catalogProducts.filter(p => favorites.includes(p.id));
+  const handleToggleFavorite = (productId: string, isFavorite: boolean) => {
+    if (isFavorite) {
+      removeFromFavorites(productId)
+    } else {
+      addToFavorites(productId)
     }
     
-    return filtered;
-  }, [catalogProducts, favorites, activeTab])
-
-  const categories = [
-    { value: "all", label: "Toutes catégories", count: stats.total },
-    { value: "Électronique", label: "Électronique", count: catalogProducts.filter(p => p.category === "Électronique").length },
-    { value: "Mode", label: "Mode & Beauté", count: catalogProducts.filter(p => p.category === "Mode").length },
-    { value: "Maison", label: "Maison & Jardin", count: catalogProducts.filter(p => p.category === "Maison").length },
-    { value: "Sport", label: "Sport & Loisirs", count: catalogProducts.filter(p => p.category === "Sport").length },
-    { value: "Santé", label: "Santé & Bien-être", count: catalogProducts.filter(p => p.category === "Santé").length }
-  ]
-
-  const suppliers = useMemo(() => {
-    const supplierCounts = catalogProducts.reduce((acc, product) => {
-      acc[product.supplier] = (acc[product.supplier] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return [
-      { value: "all", label: "Tous fournisseurs", count: stats.total },
-      ...Object.entries(supplierCounts).map(([supplier, count]) => ({
-        value: supplier,
-        label: supplier,
-        count
-      }))
-    ];
-  }, [catalogProducts, stats.total])
-
-  const handleProductClick = (product: any) => {
-    setSelectedProduct(product);
+    // Ajouter à l'historique de sourcing
+    addSourcingHistory({ 
+      productId, 
+      action: isFavorite ? 'unfavorite' : 'favorite' 
+    })
   }
 
-  const handleImportProduct = (product: any) => {
-    importProduct(product);
+  const handleImportProduct = (product: CatalogProduct) => {
+    addProduct({
+      name: product.name,
+      price: product.price,
+      cost_price: product.cost_price || product.price * 0.6,
+      category: product.category,
+      status: "active" as const,
+      image_url: product.image_url,
+      description: product.description || `Produit importé: ${product.name}`,
+      supplier: product.supplier_name,
+      sku: product.sku,
+      tags: product.tags
+    })
+    
+    // Ajouter à l'historique de sourcing
+    addSourcingHistory({ 
+      productId: product.id, 
+      action: 'import',
+      metadata: { import_date: new Date().toISOString() }
+    })
+    
+    toast.success(`${product.name} ajouté au catalogue !`)
   }
 
-  const handleToggleFavorite = (productId: string) => {
-    toggleFavorite(productId);
-  }
-
-  const handleCreatePriceAlert = (productId: string, targetPrice: number) => {
-    createAlert({ productId, targetPrice });
+  const handleProductClick = (product: CatalogProduct) => {
+    setSelectedProduct(product)
+    
+    // Ajouter à l'historique de sourcing
+    addSourcingHistory({ 
+      productId: product.id, 
+      action: 'view' 
+    })
   }
 
   return (
@@ -109,7 +107,7 @@ export default function Catalogue() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Catalogue & Sourcing</h1>
             <p className="text-muted-foreground mt-2">
-              Découvrez et importez des produits gagnants pour votre boutique
+              Découvrez et importez des produits gagnants avec de vraies données
             </p>
           </div>
           
@@ -125,82 +123,8 @@ export default function Catalogue() {
           </div>
         </div>
 
-        {/* Enhanced Search & Filters */}
-        <div className="space-y-4">
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher des produits, marques, références..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Button variant="outline">
-              <Filter className="w-4 h-4 mr-2" />
-              Filtres Avancés
-            </Button>
-          </div>
-
-          {/* Advanced Filters */}
-          <div className="flex flex-wrap gap-4">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Catégorie" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map(category => (
-                  <SelectItem key={category.value} value={category.value}>
-                    {category.label} ({category.count})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Fournisseur" />
-              </SelectTrigger>
-              <SelectContent>
-                {suppliers.map(supplier => (
-                  <SelectItem key={supplier.value} value={supplier.value}>
-                    {supplier.label} ({supplier.count})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={priceRange} onValueChange={setPriceRange}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Prix" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous prix</SelectItem>
-                <SelectItem value="0-25">0€ - 25€</SelectItem>
-                <SelectItem value="25-50">25€ - 50€</SelectItem>
-                <SelectItem value="50-100">50€ - 100€</SelectItem>
-                <SelectItem value="100+">100€+</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Trier par" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="rating">Mieux notés</SelectItem>
-                <SelectItem value="price-asc">Prix croissant</SelectItem>
-                <SelectItem value="price-desc">Prix décroissant</SelectItem>
-                <SelectItem value="popular">Popularité</SelectItem>
-                <SelectItem value="newest">Nouveautés</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Quick Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -239,12 +163,88 @@ export default function Catalogue() {
               <div className="flex items-center gap-3">
                 <Heart className="w-8 h-8 text-red-500" />
                 <div>
-                  <p className="text-2xl font-bold">{favorites.length}</p>
+                  <p className="text-2xl font-bold">{userFavorites.length}</p>
                   <p className="text-sm text-muted-foreground">Favoris</p>
                 </div>
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Enhanced Search & Filters */}
+        <div className="space-y-4 mb-6">
+          <div className="flex gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher des produits, marques, références..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Button variant="outline">
+              <Filter className="w-4 h-4 mr-2" />
+              Filtres Avancés
+            </Button>
+          </div>
+
+          {/* Advanced Filters */}
+          <div className="flex flex-wrap gap-4">
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Catégorie" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes catégories</SelectItem>
+                {categories.map(category => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Fournisseur" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous fournisseurs</SelectItem>
+                {suppliers.map(supplier => (
+                  <SelectItem key={supplier.id} value={supplier.id}>
+                    {supplier.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={priceRange} onValueChange={setPriceRange}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Prix" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous prix</SelectItem>
+                <SelectItem value="0-25">0€ - 25€</SelectItem>
+                <SelectItem value="25-50">25€ - 50€</SelectItem>
+                <SelectItem value="50-100">50€ - 100€</SelectItem>
+                <SelectItem value="100+">100€+</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Trier par" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="rating">Mieux notés</SelectItem>
+                <SelectItem value="price-asc">Prix croissant</SelectItem>
+                <SelectItem value="price-desc">Prix décroissant</SelectItem>
+                <SelectItem value="popular">Popularité</SelectItem>
+                <SelectItem value="newest">Nouveautés</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Enhanced Tabs */}
@@ -264,7 +264,7 @@ export default function Catalogue() {
             </TabsTrigger>
             <TabsTrigger value="favorites" className="flex items-center gap-2">
               <Heart className="w-4 h-4" />
-              Favoris ({favorites.length})
+              Favoris ({userFavorites.length})
             </TabsTrigger>
             <TabsTrigger value="analytics" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
@@ -273,53 +273,44 @@ export default function Catalogue() {
           </TabsList>
 
           <TabsContent value="all" className="space-y-6">
-            <EnhancedProductGrid
+            <CatalogProductGrid
               products={filteredProducts}
-              favorites={favorites}
               onProductClick={handleProductClick}
               onImportProduct={handleImportProduct}
               onToggleFavorite={handleToggleFavorite}
-              onCreatePriceAlert={handleCreatePriceAlert}
-              isLoading={isLoading}
+              favorites={userFavorites}
             />
           </TabsContent>
 
           <TabsContent value="winners" className="space-y-6">
-            <EnhancedProductGrid
+            <CatalogProductGrid
               products={filteredProducts}
-              favorites={favorites}
               onProductClick={handleProductClick}
               onImportProduct={handleImportProduct}
               onToggleFavorite={handleToggleFavorite}
-              onCreatePriceAlert={handleCreatePriceAlert}
-              isLoading={isLoading}
+              favorites={userFavorites}
             />
           </TabsContent>
 
           <TabsContent value="trending" className="space-y-6">
-            <EnhancedProductGrid
+            <CatalogProductGrid
               products={filteredProducts}
-              favorites={favorites}
               onProductClick={handleProductClick}
               onImportProduct={handleImportProduct}
               onToggleFavorite={handleToggleFavorite}
-              onCreatePriceAlert={handleCreatePriceAlert}
-              isLoading={isLoading}
+              favorites={userFavorites}
             />
           </TabsContent>
 
           <TabsContent value="favorites" className="space-y-6">
-            <EnhancedProductGrid
+            <CatalogProductGrid
               products={filteredProducts}
-              favorites={favorites}
               onProductClick={handleProductClick}
               onImportProduct={handleImportProduct}
               onToggleFavorite={handleToggleFavorite}
-              onCreatePriceAlert={handleCreatePriceAlert}
-              isLoading={isLoading}
+              favorites={userFavorites}
             />
           </TabsContent>
-
 
           <TabsContent value="analytics" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -330,16 +321,16 @@ export default function Catalogue() {
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-sm">Vues produits</span>
-                      <span className="font-bold">15.2K</span>
+                      <span className="text-sm">Produits analysés</span>
+                      <span className="font-bold">{stats.total}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm">Ajouts panier</span>
-                      <span className="font-bold">1.8K</span>
+                      <span className="text-sm">Note moyenne</span>
+                      <span className="font-bold">{stats.averageRating.toFixed(1)}/5</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm">Conversions</span>
-                      <span className="font-bold">11.8%</span>
+                      <span className="text-sm">Valeur totale</span>
+                      <span className="font-bold">{stats.totalValue.toLocaleString()}€</span>
                     </div>
                   </div>
                 </CardContent>
@@ -351,10 +342,12 @@ export default function Catalogue() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {categories.slice(1, 4).map(category => (
-                      <div key={category.value} className="flex justify-between">
-                        <span className="text-sm">{category.label}</span>
-                        <span className="font-bold">{category.count}</span>
+                    {categories.slice(0, 3).map(category => (
+                      <div key={category} className="flex justify-between">
+                        <span className="text-sm">{category}</span>
+                        <span className="font-bold">
+                          {products.filter(p => p.category === category).length}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -368,16 +361,16 @@ export default function Catalogue() {
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-sm">Cette semaine</span>
-                      <Badge variant="outline" className="text-green-600">+24%</Badge>
+                      <span className="text-sm">Produits winners</span>
+                      <Badge variant="outline" className="text-green-600">{stats.winners}</Badge>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm">Ce mois</span>
-                      <Badge variant="outline" className="text-green-600">+156%</Badge>
+                      <span className="text-sm">En tendance</span>
+                      <Badge variant="outline" className="text-blue-600">{stats.trending}</Badge>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm">Prédiction</span>
-                      <Badge variant="outline" className="text-blue-600">+89%</Badge>
+                      <span className="text-sm">Best sellers</span>
+                      <Badge variant="outline" className="text-purple-600">{stats.bestsellers}</Badge>
                     </div>
                   </div>
                 </CardContent>
@@ -385,6 +378,55 @@ export default function Catalogue() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Product Detail Dialog */}
+        <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>{selectedProduct?.name}</DialogTitle>
+            </DialogHeader>
+            {selectedProduct && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <img 
+                    src={selectedProduct.image_url || "/placeholder.svg"} 
+                    alt={selectedProduct.name}
+                    className="w-full h-64 object-cover rounded-lg"
+                  />
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-lg">{selectedProduct.name}</h3>
+                    <p className="text-muted-foreground">{selectedProduct.description}</p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-primary">
+                      {selectedProduct.price}€
+                    </span>
+                    <Badge variant="outline">
+                      {selectedProduct.profit_margin.toFixed(0)}% marge
+                    </Badge>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      className="flex-1"
+                      onClick={() => handleImportProduct(selectedProduct)}
+                    >
+                      <Package className="w-4 h-4 mr-2" />
+                      Importer
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => handleToggleFavorite(selectedProduct.id, userFavorites.includes(selectedProduct.id))}
+                    >
+                      <Heart className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   )
