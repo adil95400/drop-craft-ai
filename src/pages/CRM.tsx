@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Users, UserPlus, Mail, Phone, MapPin, Calendar, TrendingUp, Search, Filter } from 'lucide-react'
+import { Users, UserPlus, Mail, Phone, TrendingUp, Search, Target, Activity, Calendar, PhoneCall, MessageSquare, Star, BarChart3, Crown, Zap, Bell, Filter, Download, Eye, Edit, Trash2, MoreHorizontal, ArrowUp, ArrowDown, CheckCircle2, XCircle, Clock, DollarSign } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -10,12 +10,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Progress } from '@/components/ui/progress'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import { AppLayout } from '@/layouts/AppLayout'
 import { useCustomers } from '@/hooks/useCustomers'
 
 export default function CRM() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [segmentFilter, setSegmentFilter] = useState<string>('all')
+  const [sortField, setSortField] = useState<string>('created_at')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([])
   const { customers, stats, isLoading, addCustomer } = useCustomers()
 
   const filteredCustomers = customers.filter(customer => {
@@ -23,7 +32,36 @@ export default function CRM() {
     const matchesSearch = customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          customer.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || customer.status === statusFilter
-    return matchesSearch && matchesStatus
+    
+    let matchesSegment = true
+    if (segmentFilter !== 'all') {
+      const totalSpent = customer.total_spent || 0
+      switch (segmentFilter) {
+        case 'vip':
+          matchesSegment = totalSpent > 5000
+          break
+        case 'premium':
+          matchesSegment = totalSpent > 1000 && totalSpent <= 5000
+          break
+        case 'regular':
+          matchesSegment = totalSpent > 100 && totalSpent <= 1000
+          break
+        case 'new':
+          matchesSegment = totalSpent <= 100
+          break
+      }
+    }
+    
+    return matchesSearch && matchesStatus && matchesSegment
+  }).sort((a, b) => {
+    const aValue = sortField === 'name' ? `${a.first_name || ''} ${a.last_name || ''}` : a[sortField as keyof typeof a]
+    const bValue = sortField === 'name' ? `${b.first_name || ''} ${b.last_name || ''}` : b[sortField as keyof typeof b]
+    
+    if (sortDirection === 'asc') {
+      return aValue > bValue ? 1 : -1
+    } else {
+      return aValue < bValue ? 1 : -1
+    }
   })
 
   const handleAddCustomer = (e: React.FormEvent<HTMLFormElement>) => {
@@ -54,16 +92,54 @@ export default function CRM() {
     e.currentTarget.reset()
   }
 
+  const getCustomerSegment = (totalSpent: number) => {
+    if (totalSpent > 5000) return { label: 'VIP', color: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' }
+    if (totalSpent > 1000) return { label: 'Premium', color: 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' }
+    if (totalSpent > 100) return { label: 'Régulier', color: 'bg-green-500 text-white' }
+    return { label: 'Nouveau', color: 'bg-gray-500 text-white' }
+  }
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('desc')
+    }
+  }
+
+  const toggleCustomerSelection = (customerId: string) => {
+    setSelectedCustomers(prev => 
+      prev.includes(customerId) 
+        ? prev.filter(id => id !== customerId)
+        : [...prev, customerId]
+    )
+  }
+
+  const toggleAllCustomers = () => {
+    if (selectedCustomers.length === filteredCustomers.length) {
+      setSelectedCustomers([])
+    } else {
+      setSelectedCustomers(filteredCustomers.map(c => c.id))
+    }
+  }
+
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">Chargement des clients...</div>
-      </div>
+      <AppLayout>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="text-muted-foreground">Chargement des données CRM...</p>
+          </div>
+        </div>
+      </AppLayout>
     )
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <AppLayout>
+      <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -294,6 +370,7 @@ export default function CRM() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AppLayout>
   )
 }
