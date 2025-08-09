@@ -4,12 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
-import { useOAuthSupplier } from '@/hooks/useOAuthSupplier'
+import { SecureCredentialForm } from '@/components/integrations/SecureCredentialForm'
+import { supabase } from '@/integrations/supabase/client'
 import { SUPPLIERS, SUPPLIER_CATEGORIES, getSuppliersByCategory, getPopularSuppliers, type Supplier } from '@/data/suppliers'
 
 interface SupplierConfigDialogProps {
@@ -20,20 +21,91 @@ interface SupplierConfigDialogProps {
 
 const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialogProps) => {
   const { toast } = useToast()
-  const { initiateOAuth } = useOAuthSupplier()
   const [isConnecting, setIsConnecting] = useState(false)
   const [currentStep, setCurrentStep] = useState<'auth' | 'methods' | 'features'>('auth')
   const [authData, setAuthData] = useState({
-    apiKey: '',
-    storeUrl: '',
     isConnected: false
   })
   const [selectedMethods, setSelectedMethods] = useState<string[]>([])
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
-  const [importSettings, setImportSettings] = useState({
-    importLimit: '100',
-    autoSync: false
-  })
+
+  // Enhanced import methods with more comprehensive options
+  const importMethods = [
+    { id: 'csv', name: 'CSV', description: 'Fichiers séparés par virgules', icon: '📊', color: 'border-blue-400 bg-blue-50 dark:bg-blue-950/20' },
+    { id: 'excel', name: 'Excel', description: 'Fichiers .xlsx/.xls', icon: '📈', color: 'border-green-400 bg-green-50 dark:bg-green-950/20' },
+    { id: 'xml', name: 'XML', description: 'Données structurées XML', icon: '🔗', color: 'border-purple-400 bg-purple-50 dark:bg-purple-950/20' },
+    { id: 'api', name: 'API', description: 'Connexion API temps réel', icon: '⚡', color: 'border-orange-400 bg-orange-50 dark:bg-orange-950/20' },
+    { id: 'ftp', name: 'FTP', description: 'Transfert fichiers FTP/SFTP', icon: '🌐', color: 'border-cyan-400 bg-cyan-50 dark:bg-cyan-950/20' },
+    { id: 'url', name: 'URL', description: 'Import depuis URL web', icon: '🔗', color: 'border-pink-400 bg-pink-50 dark:bg-pink-950/20' },
+    { id: 'json', name: 'JSON', description: 'Format JSON structuré', icon: '📋', color: 'border-indigo-400 bg-indigo-50 dark:bg-indigo-950/20' },
+    { id: 'shopify', name: 'Shopify', description: 'Export Shopify natif', icon: '🛒', color: 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/20' }
+  ]
+
+  // Comprehensive features available for all suppliers
+  const availableFeatures = [
+    { id: 'sync_stock', name: 'Synchronisation stock', description: 'Mise à jour automatique des stocks', icon: '📦' },
+    { id: 'import_catalog', name: 'Import catalogue', description: 'Import massif de produits', icon: '📚' },
+    { id: 'order_management', name: 'Gestion commandes', description: 'Suivi et gestion des commandes', icon: '🛒' },
+    { id: 'product_import', name: 'Import produits', description: 'Import sélectif de produits', icon: '⬇️' },
+    { id: 'price_tracking', name: 'Suivi prix', description: 'Surveillance des prix concurrents', icon: '💰' },
+    { id: 'realtime_stock', name: 'Stock temps réel', description: 'Synchronisation en temps réel', icon: '📊' },
+    { id: 'marketplace_management', name: 'Gestion marketplace', description: 'Multi-marketplace management', icon: '🏪' },
+    { id: 'analytics', name: 'Analytics avancées', description: 'Analyses et rapports détaillés', icon: '📈' },
+    { id: 'auto_pricing', name: 'Prix automatiques', description: 'Ajustement automatique des prix', icon: '🎯' },
+    { id: 'inventory_alerts', name: 'Alertes stock', description: 'Notifications de stock bas', icon: '🔔' },
+    { id: 'sales_management', name: 'Gestion ventes', description: 'Suivi des ventes et CA', icon: '💳' },
+    { id: 'competitor_analysis', name: 'Analyse concurrence', description: 'Surveillance de la concurrence', icon: '🔍' }
+  ]
+
+  const handleConnect = async (credentials: Record<string, string>) => {
+    try {
+      setIsConnecting(true)
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast({
+          title: "Authentification requise",
+          description: "Veuillez vous connecter pour configurer les intégrations",
+          variant: "destructive"
+        })
+        return
+      }
+
+      // Save user-specific credentials to Supabase
+      const { error } = await supabase
+        .from('integrations')
+        .upsert({
+          user_id: user.id,
+          platform_name: supplier.name,
+          platform_type: supplier.category,
+          platform_url: `https://${supplier.name}.com`,
+          encrypted_credentials: credentials,
+          connection_status: 'connected',
+          is_active: true
+        })
+
+      if (error) {
+        throw error
+      }
+
+      setAuthData({ isConnected: true })
+      toast({
+        title: "✅ Connexion réussie",
+        description: `Configuration ${supplier.displayName} sauvegardée avec succès`
+      })
+      setCurrentStep('methods')
+    } catch (error) {
+      console.error('Connection error:', error)
+      toast({
+        title: "Erreur de connexion",
+        description: "Impossible de sauvegarder la configuration",
+        variant: "destructive"
+      })
+    } finally {
+      setIsConnecting(false)
+    }
+  }
 
   const handleOAuthConnect = async () => {
     setIsConnecting(true)
@@ -47,12 +119,8 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
       // Simulate OAuth process for demo
       await new Promise(resolve => setTimeout(resolve, 1500))
       
-      setAuthData(prev => ({ ...prev, isConnected: true }))
-      toast({
-        title: "✅ Connexion OAuth réussie",
-        description: `Votre compte ${supplier.displayName} a été connecté avec succès`
-      })
-      setCurrentStep('methods')
+      // Save OAuth connection
+      await handleConnect({ oauth_token: 'simulated_oauth_token', provider: supplier.name })
       
     } catch (error: any) {
       toast({
@@ -63,24 +131,6 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
     } finally {
       setIsConnecting(false)
     }
-  }
-
-  const handleApiKeyAuth = () => {
-    if (!authData.apiKey) {
-      toast({
-        title: "Configuration requise",
-        description: "Veuillez saisir votre clé API",
-        variant: "destructive"
-      })
-      return
-    }
-
-    setAuthData(prev => ({ ...prev, isConnected: true }))
-    toast({
-      title: "Authentification réussie",
-      description: `Connexion établie avec ${supplier.displayName}`
-    })
-    setCurrentStep('methods')
   }
 
   const handleMethodToggle = (method: string) => {
@@ -99,7 +149,7 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
     )
   }
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (selectedMethods.length === 0) {
       toast({
         title: "Sélection requise",
@@ -109,17 +159,81 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
       return
     }
 
-    toast({
-      title: "Configuration terminée",
-      description: `${supplier.displayName} configuré avec ${selectedMethods.length} méthode(s) et ${selectedFeatures.length} fonctionnalité(s)`
-    })
-    
-    onClose()
+    try {
+      // Update integration with selected methods and features
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase
+          .from('integrations')
+          .update({
+            sync_settings: {
+              import_methods: selectedMethods,
+              features: selectedFeatures,
+              configured_at: new Date().toISOString()
+            }
+          })
+          .eq('user_id', user.id)
+          .eq('platform_name', supplier.name)
+      }
+
+      toast({
+        title: "✅ Configuration terminée",
+        description: `${supplier.displayName} configuré avec ${selectedMethods.length} méthode(s) et ${selectedFeatures.length} fonctionnalité(s)`
+      })
+      
+      onClose()
+    } catch (error) {
+      console.error('Save configuration error:', error)
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder la configuration finale",
+        variant: "destructive"
+      })
+    }
   }
 
-  const needsOAuth = supplier.requiresAuth && supplier.authType === 'oauth'
-  const needsApiKey = supplier.requiresAuth && supplier.authType === 'api_key'
-  const needsCredentials = supplier.requiresAuth && supplier.authType === 'credentials'
+  const getCredentialFields = () => {
+    switch (supplier.authType) {
+      case 'api_key':
+        return [
+          {
+            name: 'api_key',
+            label: 'Clé API',
+            type: 'password' as const,
+            required: true,
+            placeholder: 'Votre clé API personnelle',
+            description: `Obtenez votre clé API depuis votre compte ${supplier.displayName}`
+          }
+        ]
+      case 'credentials':
+        return [
+          {
+            name: 'username',
+            label: 'Nom d\'utilisateur',
+            type: 'text' as const,
+            required: true,
+            placeholder: 'Votre nom d\'utilisateur'
+          },
+          {
+            name: 'password',
+            label: 'Mot de passe',
+            type: 'password' as const,
+            required: true,
+            placeholder: 'Votre mot de passe'
+          },
+          {
+            name: 'store_url',
+            label: 'URL du magasin',
+            type: 'url' as const,
+            required: false,
+            placeholder: 'https://votre-magasin.com',
+            description: 'URL de votre boutique (si applicable)'
+          }
+        ]
+      default:
+        return []
+    }
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -174,10 +288,10 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <Shield className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">Authentification sécurisée</h3>
+              <h3 className="text-lg font-semibold">Authentification personnelle</h3>
             </div>
 
-            {!supplier.requiresAuth && (
+            {!supplier.requiresAuth ? (
               <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
                 <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
                   <CheckCircle className="h-4 w-4" />
@@ -191,14 +305,12 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
-            )}
-
-            {needsOAuth && (
+            ) : supplier.authType === 'oauth' ? (
               <div className="space-y-4">
                 <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
                   <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Connexion OAuth</h4>
                   <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
-                    Connectez votre compte {supplier.displayName} de manière sécurisée via OAuth.
+                    Connectez votre compte {supplier.displayName} personnel de manière sécurisée.
                   </p>
                   {!authData.isConnected ? (
                     <Button 
@@ -217,61 +329,13 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
                   )}
                 </div>
               </div>
-            )}
-
-            {needsApiKey && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Clé API</label>
-                  <Input
-                    type="password"
-                    placeholder="Entrez votre clé API..."
-                    value={authData.apiKey}
-                    onChange={(e) => setAuthData(prev => ({ ...prev, apiKey: e.target.value }))}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Obtenez votre clé API dans les paramètres développeur de {supplier.displayName}
-                  </p>
-                </div>
-                <Button 
-                  onClick={handleApiKeyAuth} 
-                  disabled={!authData.apiKey}
-                  className="w-full"
-                >
-                  <Key className="h-4 w-4 mr-2" />
-                  Authentifier
-                </Button>
-              </div>
-            )}
-
-            {needsCredentials && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">URL du magasin</label>
-                  <Input
-                    placeholder="https://monmagasin.example.com"
-                    value={authData.storeUrl}
-                    onChange={(e) => setAuthData(prev => ({ ...prev, storeUrl: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Clé d'accès</label>
-                  <Input
-                    type="password"
-                    placeholder="Clé d'accès du magasin..."
-                    value={authData.apiKey}
-                    onChange={(e) => setAuthData(prev => ({ ...prev, apiKey: e.target.value }))}
-                  />
-                </div>
-                <Button 
-                  onClick={handleApiKeyAuth}
-                  disabled={!authData.storeUrl || !authData.apiKey}
-                  className="w-full"
-                >
-                  <Shield className="h-4 w-4 mr-2" />
-                  Valider les identifiants
-                </Button>
-              </div>
+            ) : (
+              <SecureCredentialForm
+                platform={supplier.displayName}
+                fields={getCredentialFields()}
+                onSubmit={handleConnect}
+                isLoading={isConnecting}
+              />
             )}
 
             {authData.isConnected && (
@@ -288,79 +352,36 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <Download className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">Méthodes d'import disponibles</h3>
+              <h3 className="text-lg font-semibold">Choisissez vos méthodes d'import</h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {supplier.supportedFormats.map((method) => {
-                const isSelected = selectedMethods.includes(method)
-                const methodConfig = {
-                  'CSV': { 
-                    icon: '📊', 
-                    description: 'Import de fichiers CSV avec mapping',
-                    color: 'border-blue-400 bg-blue-50 dark:bg-blue-950/20'
-                  },
-                  'XML': { 
-                    icon: '🔗', 
-                    description: 'Import de flux XML automatisé',
-                    color: 'border-green-400 bg-green-50 dark:bg-green-950/20'
-                  },
-                  'API': { 
-                    icon: '⚡', 
-                    description: 'Synchronisation API temps réel',
-                    color: 'border-purple-400 bg-purple-50 dark:bg-purple-950/20'
-                  },
-                  'Excel': { 
-                    icon: '📈', 
-                    description: 'Import de fichiers Excel/XLSX',
-                    color: 'border-orange-400 bg-orange-50 dark:bg-orange-950/20'
-                  },
-                  'FTP': { 
-                    icon: '🌐', 
-                    description: 'Import automatique via FTP',
-                    color: 'border-cyan-400 bg-cyan-50 dark:bg-cyan-950/20'
-                  },
-                  'URL': { 
-                    icon: '🔗', 
-                    description: 'Import depuis URL web',
-                    color: 'border-pink-400 bg-pink-50 dark:bg-pink-950/20'
-                  },
-                  'TSV': { 
-                    icon: '📋', 
-                    description: 'Import de fichiers TSV',
-                    color: 'border-indigo-400 bg-indigo-50 dark:bg-indigo-950/20'
-                  }
-                }
-                
-                const config = methodConfig[method as keyof typeof methodConfig] || {
-                  icon: '📄',
-                  description: `Import ${method}`,
-                  color: 'border-gray-400 bg-gray-50 dark:bg-gray-950/20'
-                }
+              {importMethods.map((method) => {
+                const isSelected = selectedMethods.includes(method.id)
                 
                 return (
                   <div
-                    key={method}
+                    key={method.id}
                     className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
                       isSelected 
-                        ? `${config.color} border-primary ring-2 ring-primary/20` 
+                        ? `${method.color} border-primary ring-2 ring-primary/20` 
                         : 'border-border hover:border-primary/50 hover:bg-primary/5'
                     }`}
-                    onClick={() => handleMethodToggle(method)}
+                    onClick={() => handleMethodToggle(method.id)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 flex-1">
-                        <div className="text-2xl">{config.icon}</div>
+                        <div className="text-2xl">{method.icon}</div>
                         <div>
-                          <h4 className="font-semibold">{method}</h4>
+                          <h4 className="font-semibold">{method.name}</h4>
                           <p className="text-sm text-muted-foreground">
-                            {config.description}
+                            {method.description}
                           </p>
                         </div>
                       </div>
                       <Checkbox 
                         checked={isSelected}
-                        onCheckedChange={() => handleMethodToggle(method)}
+                        onCheckedChange={() => handleMethodToggle(method.id)}
                         className="ml-3"
                       />
                     </div>
@@ -368,6 +389,10 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
                 )
               })}
             </div>
+
+            <p className="text-xs text-muted-foreground text-center">
+              Sélectionnez une ou plusieurs méthodes selon vos préférences d'import
+            </p>
 
             <div className="flex gap-2 pt-4">
               <Button variant="outline" onClick={() => setCurrentStep('auth')}>
@@ -393,52 +418,33 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
               <h3 className="text-lg font-semibold">Fonctionnalités à activer</h3>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              {supplier.features.map((feature) => {
-                const isSelected = selectedFeatures.includes(feature)
-                const featureConfig = {
-                  'Synchronisation stock': { icon: '📦', description: 'Mise à jour automatique des stocks', color: 'border-blue-400 bg-blue-50 dark:bg-blue-950/20' },
-                  'Import catalogue': { icon: '📚', description: 'Import complet du catalogue produits', color: 'border-green-400 bg-green-50 dark:bg-green-950/20' },
-                  'Gestion commandes': { icon: '🛒', description: 'Traitement des commandes automatisé', color: 'border-purple-400 bg-purple-50 dark:bg-purple-950/20' },
-                  'Import produits': { icon: '⬇️', description: 'Import de nouveaux produits', color: 'border-orange-400 bg-orange-50 dark:bg-orange-950/20' },
-                  'Suivi prix': { icon: '💰', description: 'Surveillance des prix en temps réel', color: 'border-yellow-400 bg-yellow-50 dark:bg-yellow-950/20' },
-                  'Stock temps réel': { icon: '📊', description: 'Synchronisation stock en direct', color: 'border-cyan-400 bg-cyan-50 dark:bg-cyan-950/20' },
-                  'Gestion ventes': { icon: '💳', description: 'Gestion des ventes et transactions', color: 'border-pink-400 bg-pink-50 dark:bg-pink-950/20' },
-                  'Analytics': { icon: '📈', description: 'Analyses et rapports détaillés', color: 'border-indigo-400 bg-indigo-50 dark:bg-indigo-950/20' },
-                  'Catalogue produits': { icon: '📋', description: 'Gestion du catalogue produits', color: 'border-teal-400 bg-teal-50 dark:bg-teal-950/20' },
-                  'Prix en temps réel': { icon: '⚡', description: 'Mise à jour prix instantanée', color: 'border-red-400 bg-red-50 dark:bg-red-950/20' },
-                  'Gestion marketplace': { icon: '🏪', description: 'Interface marketplace complète', color: 'border-emerald-400 bg-emerald-50 dark:bg-emerald-950/20' }
-                }
-                
-                const config = featureConfig[feature as keyof typeof featureConfig] || {
-                  icon: '✨',
-                  description: `Fonctionnalité ${feature}`,
-                  color: 'border-gray-400 bg-gray-50 dark:bg-gray-950/20'
-                }
+            <div className="grid grid-cols-1 gap-3 max-h-80 overflow-y-auto">
+              {availableFeatures.map((feature) => {
+                const isSelected = selectedFeatures.includes(feature.id)
                 
                 return (
                   <div
-                    key={feature}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                    key={feature.id}
+                    className={`p-3 border rounded-lg cursor-pointer transition-all ${
                       isSelected 
-                        ? `${config.color} border-primary ring-2 ring-primary/20` 
+                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
                         : 'border-border hover:border-primary/50 hover:bg-primary/5'
                     }`}
-                    onClick={() => handleFeatureToggle(feature)}
+                    onClick={() => handleFeatureToggle(feature.id)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 flex-1">
-                        <div className="text-2xl">{config.icon}</div>
+                        <div className="text-xl">{feature.icon}</div>
                         <div>
-                          <h4 className="font-semibold">{feature}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {config.description}
+                          <h4 className="font-medium text-sm">{feature.name}</h4>
+                          <p className="text-xs text-muted-foreground">
+                            {feature.description}
                           </p>
                         </div>
                       </div>
                       <Checkbox 
                         checked={isSelected}
-                        onCheckedChange={() => handleFeatureToggle(feature)}
+                        onCheckedChange={() => handleFeatureToggle(feature.id)}
                         className="ml-3"
                       />
                     </div>
@@ -447,49 +453,21 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
               })}
             </div>
 
-            {/* Import Settings */}
-            <div className="space-y-3 p-4 border rounded-lg bg-muted/20">
-              <h4 className="font-medium">Paramètres d'import</h4>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Limite d'import</label>
-                <Select value={importSettings.importLimit} onValueChange={(value) => 
-                  setImportSettings(prev => ({ ...prev, importLimit: value }))
-                }>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="50">50 produits</SelectItem>
-                    <SelectItem value="100">100 produits</SelectItem>
-                    <SelectItem value="500">500 produits</SelectItem>
-                    <SelectItem value="1000">1000 produits</SelectItem>
-                    <SelectItem value="unlimited">Illimité</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="autoSync"
-                  checked={importSettings.autoSync}
-                  onCheckedChange={(checked) => 
-                    setImportSettings(prev => ({ ...prev, autoSync: checked as boolean }))
-                  }
-                />
-                <label htmlFor="autoSync" className="text-sm font-medium">
-                  Synchronisation automatique quotidienne
-                </label>
-              </div>
-            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Activez les fonctionnalités selon vos besoins business
+            </p>
 
             <div className="flex gap-2 pt-4">
               <Button variant="outline" onClick={() => setCurrentStep('methods')}>
                 Retour
               </Button>
-              <Button onClick={handleComplete} className="flex-1">
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Terminer la configuration
+              <Button 
+                onClick={handleComplete}
+                disabled={selectedFeatures.length === 0}
+                className="flex-1"
+              >
+                Finaliser la configuration
+                <CheckCircle className="h-4 w-4 ml-2" />
               </Button>
             </div>
           </div>
@@ -500,79 +478,206 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
 }
 
 export const EnhancedSupplierSelector = () => {
-  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [authFilter, setAuthFilter] = useState<'all' | 'oauth' | 'api_key' | 'no_auth'>('all')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedAuthType, setSelectedAuthType] = useState<string>('all')
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
+  const [isConfigDialogOpen, setIsConfigDialogOpen] = useState(false)
 
   const filteredSuppliers = SUPPLIERS.filter(supplier => {
-    const matchesCategory = selectedCategory === 'all' || supplier.category === selectedCategory
     const matchesSearch = supplier.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          supplier.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesAuth = authFilter === 'all' || 
-                       (authFilter === 'oauth' && supplier.authType === 'oauth') ||
-                       (authFilter === 'api_key' && supplier.authType === 'api_key') ||
-                       (authFilter === 'no_auth' && !supplier.requiresAuth)
-    return matchesCategory && matchesSearch && matchesAuth && supplier.status === 'active'
+    const matchesCategory = selectedCategory === 'all' || supplier.category === selectedCategory
+    const matchesAuthType = selectedAuthType === 'all' || 
+                           (selectedAuthType === 'no_auth' && !supplier.requiresAuth) ||
+                           (selectedAuthType !== 'no_auth' && supplier.authType === selectedAuthType)
+    
+    return matchesSearch && matchesCategory && matchesAuthType
   })
 
-  const popularSuppliers = getPopularSuppliers().filter(s => s.status === 'active')
+  const popularSuppliers = getPopularSuppliers()
+  const categories = Object.values(SUPPLIER_CATEGORIES)
 
-  const getStatusBadge = (supplier: Supplier) => {
-    if (supplier.isNew) return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Nouveau</Badge>
-    if (supplier.isPopular) return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Populaire</Badge>
-    if (supplier.status === 'beta') return <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">Beta</Badge>
-    return null
+  const handleConfigureSupplier = (supplier: Supplier) => {
+    setSelectedSupplier(supplier)
+    setIsConfigDialogOpen(true)
   }
 
-  const getAuthBadge = (supplier: Supplier) => {
-    if (!supplier.requiresAuth) return <Badge variant="outline" className="text-xs">Sans Auth</Badge>
-    if (supplier.authType === 'oauth') return <Badge variant="default" className="text-xs bg-blue-600">OAuth</Badge>
-    if (supplier.authType === 'api_key') return <Badge variant="default" className="text-xs bg-purple-600">API Key</Badge>
-    if (supplier.authType === 'credentials') return <Badge variant="default" className="text-xs bg-gray-600">Credentials</Badge>
-    return null
+  const getAuthTypeLabel = (authType: string | undefined, requiresAuth: boolean) => {
+    if (!requiresAuth) return 'Aucune auth'
+    switch (authType) {
+      case 'oauth': return 'OAuth'
+      case 'api_key': return 'Clé API'
+      case 'credentials': return 'Identifiants'
+      default: return 'Auth requise'
+    }
+  }
+
+  const getAuthTypeBadgeVariant = (authType: string | undefined, requiresAuth: boolean) => {
+    if (!requiresAuth) return 'secondary'
+    switch (authType) {
+      case 'oauth': return 'default'
+      case 'api_key': return 'outline'
+      case 'credentials': return 'destructive'
+      default: return 'secondary'
+    }
   }
 
   return (
-    <div className="space-y-6">
-      {/* Popular Suppliers */}
+    <div className="space-y-6 p-6">
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Star className="h-5 w-5 text-yellow-500" />
-          <h3 className="text-lg font-semibold">Fournisseurs Populaires</h3>
-          <Badge variant="secondary">OAuth Ready</Badge>
+        <h2 className="text-2xl font-bold">Sélecteur de fournisseurs avancé</h2>
+        <p className="text-muted-foreground">
+          Choisissez et configurez vos fournisseurs avec vos propres identifiants
+        </p>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-4">
+        <div className="flex-1 min-w-[300px]">
+          <Input
+            placeholder="Rechercher un fournisseur..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full"
+          />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {popularSuppliers.slice(0, 4).map((supplier) => (
-            <Card key={supplier.id} className="cursor-pointer hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-2xl">{supplier.icon}</div>
+        
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Catégorie" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les catégories</SelectItem>
+            {categories.map(category => (
+              <SelectItem key={category} value={category}>{category}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedAuthType} onValueChange={setSelectedAuthType}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Type d'auth" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les types</SelectItem>
+            <SelectItem value="no_auth">Sans auth</SelectItem>
+            <SelectItem value="oauth">OAuth</SelectItem>
+            <SelectItem value="api_key">Clé API</SelectItem>
+            <SelectItem value="credentials">Identifiants</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Popular Suppliers */}
+      {searchTerm === '' && selectedCategory === 'all' && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Star className="h-5 w-5 text-yellow-500" />
+            Fournisseurs populaires
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {popularSuppliers.slice(0, 8).map(supplier => (
+              <Card key={supplier.id} className="hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{supplier.icon}</span>
+                      <div>
+                        <CardTitle className="text-sm">{supplier.displayName}</CardTitle>
+                        <CardDescription className="text-xs">{supplier.description}</CardDescription>
+                      </div>
+                    </div>
+                    {supplier.isPopular && <Crown className="h-4 w-4 text-yellow-500" />}
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-1">
+                      {supplier.supportedFormats.slice(0, 3).map(format => (
+                        <Badge key={format} variant="outline" className="text-xs">{format}</Badge>
+                      ))}
+                      {supplier.supportedFormats.length > 3 && (
+                        <Badge variant="outline" className="text-xs">+{supplier.supportedFormats.length - 3}</Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Badge variant={getAuthTypeBadgeVariant(supplier.authType, supplier.requiresAuth)} className="text-xs">
+                        {getAuthTypeLabel(supplier.authType, supplier.requiresAuth)}
+                      </Badge>
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleConfigureSupplier(supplier)}
+                        className="text-xs"
+                      >
+                        Configurer
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* All Suppliers */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">
+          Tous les fournisseurs ({filteredSuppliers.length})
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredSuppliers.map(supplier => (
+            <Card key={supplier.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{supplier.icon}</span>
+                    <div>
+                      <CardTitle className="text-sm flex items-center gap-1">
+                        {supplier.displayName}
+                        {supplier.isNew && <Badge className="text-xs bg-green-500">Nouveau</Badge>}
+                        {supplier.status === 'beta' && <Badge variant="outline" className="text-xs">Beta</Badge>}
+                      </CardTitle>
+                      <CardDescription className="text-xs">{supplier.description}</CardDescription>
+                    </div>
+                  </div>
                   <div className="flex flex-col gap-1">
-                    {getStatusBadge(supplier)}
-                    {getAuthBadge(supplier)}
+                    {supplier.isPopular && <Crown className="h-4 w-4 text-yellow-500" />}
+                    {supplier.isNew && <Sparkles className="h-4 w-4 text-green-500" />}
                   </div>
                 </div>
-                <h4 className="font-medium mb-1">{supplier.displayName}</h4>
-                <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                  {supplier.description}
-                </p>
-                <div className="space-y-2">
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-3">
                   <div className="flex flex-wrap gap-1">
-                    {supplier.supportedFormats.slice(0, 2).map((format, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {format}
-                      </Badge>
+                    {supplier.supportedFormats.slice(0, 3).map(format => (
+                      <Badge key={format} variant="outline" className="text-xs">{format}</Badge>
                     ))}
+                    {supplier.supportedFormats.length > 3 && (
+                      <Badge variant="outline" className="text-xs">+{supplier.supportedFormats.length - 3}</Badge>
+                    )}
                   </div>
-                  <Button 
-                    size="sm" 
-                    className="w-full" 
-                    onClick={() => setSelectedSupplier(supplier)}
-                  >
-                    <Settings className="h-3 w-3 mr-1" />
-                    Configurer
-                  </Button>
+                  <div className="flex flex-wrap gap-1">
+                    {supplier.features.slice(0, 2).map(feature => (
+                      <Badge key={feature} variant="secondary" className="text-xs">{feature}</Badge>
+                    ))}
+                    {supplier.features.length > 2 && (
+                      <Badge variant="secondary" className="text-xs">+{supplier.features.length - 2}</Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Badge variant={getAuthTypeBadgeVariant(supplier.authType, supplier.requiresAuth)} className="text-xs">
+                      {getAuthTypeLabel(supplier.authType, supplier.requiresAuth)}
+                    </Badge>
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleConfigureSupplier(supplier)}
+                      className="text-xs"
+                    >
+                      Configurer
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -580,116 +685,15 @@ export const EnhancedSupplierSelector = () => {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Tous les Fournisseurs</h3>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <Input
-              placeholder="Rechercher un fournisseur..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full sm:w-64">
-              <SelectValue placeholder="Catégorie" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toutes les catégories</SelectItem>
-              {Object.values(SUPPLIER_CATEGORIES).map(category => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={authFilter} onValueChange={(value: any) => setAuthFilter(value)}>
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Type d'auth" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous types</SelectItem>
-              <SelectItem value="oauth">OAuth uniquement</SelectItem>
-              <SelectItem value="api_key">API Key uniquement</SelectItem>
-              <SelectItem value="no_auth">Sans authentification</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Suppliers Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filteredSuppliers.map((supplier) => (
-          <Card key={supplier.id} className="cursor-pointer hover:shadow-lg transition-all">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <div className="text-2xl">{supplier.icon}</div>
-                <div className="flex flex-col items-end gap-1">
-                  {supplier.requiresAuth && <Key className="h-3 w-3 text-muted-foreground" />}
-                  {getStatusBadge(supplier)}
-                </div>
-              </div>
-              <CardTitle className="text-base">{supplier.displayName}</CardTitle>
-              <CardDescription className="text-xs line-clamp-2">
-                {supplier.description}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-wrap gap-1">
-                    {supplier.supportedFormats.slice(0, 2).map((format, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {format}
-                      </Badge>
-                    ))}
-                    {supplier.supportedFormats.length > 2 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{supplier.supportedFormats.length - 2}
-                      </Badge>
-                    )}
-                  </div>
-                  {getAuthBadge(supplier)}
-                </div>
-                
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Globe className="h-3 w-3" />
-                  {supplier.regions.join(', ')}
-                </div>
-
-                <div className="text-xs text-muted-foreground">
-                  <span className="font-medium">{supplier.features.length}</span> fonctionnalités disponibles
-                </div>
-
-                <Button 
-                  size="sm" 
-                  className="w-full" 
-                  onClick={() => setSelectedSupplier(supplier)}
-                >
-                  <Settings className="h-3 w-3 mr-1" />
-                  Configuration OAuth
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {filteredSuppliers.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">
-            Aucun fournisseur trouvé avec ces critères.
-          </p>
-        </div>
-      )}
-
-      {/* Enhanced Configuration Dialog */}
+      {/* Configuration Dialog */}
       {selectedSupplier && (
         <SupplierConfigDialog
           supplier={selectedSupplier}
-          isOpen={!!selectedSupplier}
-          onClose={() => setSelectedSupplier(null)}
+          isOpen={isConfigDialogOpen}
+          onClose={() => {
+            setIsConfigDialogOpen(false)
+            setSelectedSupplier(null)
+          }}
         />
       )}
     </div>
