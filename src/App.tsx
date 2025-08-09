@@ -52,6 +52,11 @@ import CRMUltraPro from "./pages/CRMUltraPro";
 import CRMProspectsUltraPro from "./pages/CRMProspectsUltraPro";
 import SuiviEnTransitUltraPro from "./pages/SuiviEnTransitUltraPro";
 import AvisPositifUltraPro from "./pages/AvisPositifUltraPro";
+import AutomationUltraPro from "./pages/AutomationUltraPro";
+import BlogUltraPro from "./pages/BlogUltraPro";
+import SEOUltraPro from "./pages/SEOUltraPro";
+import SecurityUltraPro from "./pages/SecurityUltraPro";
+import SupportUltraPro from "./pages/SupportUltraPro";
 
 const queryClient = new QueryClient();
 
@@ -294,6 +299,31 @@ const App = () => (
           <Route path="/avis/positif-ultra-pro" element={
             <AuthGuard>
               <AvisPositifUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/automation/ultra-pro" element={
+            <AuthGuard>
+              <AutomationUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/blog/ultra-pro" element={
+            <AuthGuard>
+              <BlogUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/seo/ultra-pro" element={
+            <AuthGuard>
+              <SEOUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/security/ultra-pro" element={
+            <AuthGuard>
+              <SecurityUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/support/ultra-pro" element={
+            <AuthGuard>
+              <SupportUltraPro />
             </AuthGuard>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
