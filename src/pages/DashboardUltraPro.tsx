@@ -152,17 +152,17 @@ export default function DashboardUltraPro() {
               </SelectContent>
             </Select>
             
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="hover-scale">
               <RefreshCw className="h-4 w-4 mr-2" />
               Actualiser
             </Button>
             
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="hover-scale">
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
             
-            <Button size="sm">
+            <Button size="sm" className="hover-scale bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
               <Bot className="h-4 w-4 mr-2" />
               IA Insights
             </Button>
@@ -170,7 +170,7 @@ export default function DashboardUltraPro() {
         </div>
 
         {/* Alertes importantes */}
-        <Card className="border-l-4 border-l-primary">
+        <Card className="border-l-4 border-l-primary animate-fade-in">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
@@ -183,7 +183,7 @@ export default function DashboardUltraPro() {
           <CardContent>
             <div className="space-y-2">
               {alerts.map((alert, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20 hover-scale transition-all duration-200 cursor-pointer">
                   <span className="text-sm">{alert.message}</span>
                   <Badge variant={getAlertColor(alert.severity)}>{alert.severity}</Badge>
                 </div>
@@ -193,13 +193,15 @@ export default function DashboardUltraPro() {
         </Card>
 
         {/* KPIs principaux */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in"
+             style={{ animationDelay: '0.1s' }}>
           {kpis.map((kpi, index) => {
             const Icon = kpi.icon
             const TrendIcon = kpi.trend === 'up' ? TrendingUp : TrendingDown
             
             return (
-              <Card key={index} className="relative overflow-hidden">
+              <Card key={index} className="relative overflow-hidden hover-scale hover:shadow-lg transition-all duration-300"
+                    style={{ animationDelay: `${index * 0.1}s` }}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <Icon className="h-5 w-5 text-muted-foreground" />
@@ -225,7 +227,7 @@ export default function DashboardUltraPro() {
         {/* Graphiques principaux */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Évolution des ventes */}
-          <Card className="lg:col-span-2">
+          <Card className="lg:col-span-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -265,7 +267,7 @@ export default function DashboardUltraPro() {
         </div>
 
         {/* Analyses détaillées */}
-        <Tabs defaultValue="products" className="space-y-4">
+        <Tabs defaultValue="products" className="space-y-4 animate-fade-in" style={{ animationDelay: '0.4s' }}>
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="products">Top Produits</TabsTrigger>
             <TabsTrigger value="regions">Régions</TabsTrigger>
@@ -274,7 +276,7 @@ export default function DashboardUltraPro() {
           </TabsList>
 
           <TabsContent value="products">
-            <Card>
+            <Card className="hover:shadow-lg transition-all duration-300">
               <CardHeader>
                 <CardTitle>Produits les plus performants</CardTitle>
                 <CardDescription>Classement par chiffre d'affaires</CardDescription>
@@ -284,7 +286,7 @@ export default function DashboardUltraPro() {
                   {topProducts.map((product, index) => {
                     const GrowthIcon = getGrowthIcon(product.growth)
                     return (
-                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border bg-muted/20">
+                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border bg-muted/20 hover-scale transition-all duration-200 cursor-pointer">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">
                             {index + 1}
@@ -310,7 +312,7 @@ export default function DashboardUltraPro() {
           </TabsContent>
 
           <TabsContent value="regions">
-            <Card>
+            <Card className="hover:shadow-lg transition-all duration-300">
               <CardHeader>
                 <CardTitle>Performance par région</CardTitle>
                 <CardDescription>Répartition géographique des ventes</CardDescription>
@@ -318,7 +320,7 @@ export default function DashboardUltraPro() {
               <CardContent>
                 <div className="space-y-4">
                   {regionData.map((region, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 rounded-lg border bg-muted/20">
+                    <div key={index} className="flex items-center justify-between p-4 rounded-lg border bg-muted/20 hover-scale transition-all duration-200 cursor-pointer">
                       <div className="flex items-center gap-4">
                         <Globe className="h-5 w-5 text-muted-foreground" />
                         <div>
@@ -341,8 +343,8 @@ export default function DashboardUltraPro() {
           </TabsContent>
 
           <TabsContent value="channels">
-            <Card>
-              <CardHeader>
+              <Card className="hover:shadow-lg transition-all duration-300">
+                <CardHeader>
                 <CardTitle>Canaux de vente</CardTitle>
                 <CardDescription>Répartition des revenus par plateforme</CardDescription>
               </CardHeader>
@@ -370,7 +372,7 @@ export default function DashboardUltraPro() {
                   </div>
                   <div className="flex-1 space-y-3">
                     {channelData.map((channel, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+                      <div key={index} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20 hover-scale transition-all duration-200 cursor-pointer">
                         <div className="flex items-center gap-3">
                           <div 
                             className="w-4 h-4 rounded-full" 
@@ -391,8 +393,8 @@ export default function DashboardUltraPro() {
           </TabsContent>
 
           <TabsContent value="conversion">
-            <Card>
-              <CardHeader>
+              <Card className="hover:shadow-lg transition-all duration-300">
+                <CardHeader>
                 <CardTitle>Entonnoir de conversion</CardTitle>
                 <CardDescription>Analyse du parcours client</CardDescription>
               </CardHeader>
