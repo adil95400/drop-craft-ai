@@ -49,6 +49,9 @@ import InventoryUltraPro from "./pages/InventoryUltraPro";
 import OrdersUltraPro from "./pages/OrdersUltraPro";
 import SuppliersUltraPro from "./pages/SuppliersUltraPro";
 import CRMUltraPro from "./pages/CRMUltraPro";
+import CRMProspectsUltraPro from "./pages/CRMProspectsUltraPro";
+import SuiviEnTransitUltraPro from "./pages/SuiviEnTransitUltraPro";
+import AvisPositifUltraPro from "./pages/AvisPositifUltraPro";
 
 const queryClient = new QueryClient();
 
@@ -276,6 +279,21 @@ const App = () => (
           <Route path="/crm-ultra-pro" element={
             <AuthGuard>
               <CRMUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/crm/prospects-ultra-pro" element={
+            <AuthGuard>
+              <CRMProspectsUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/suivi/en-transit-ultra-pro" element={
+            <AuthGuard>
+              <SuiviEnTransitUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/avis/positif-ultra-pro" element={
+            <AuthGuard>
+              <AvisPositifUltraPro />
             </AuthGuard>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
