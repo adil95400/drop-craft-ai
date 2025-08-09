@@ -143,18 +143,34 @@ export default function CRM() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">CRM - Gestion Clients</h1>
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+            <Users className="w-8 h-8 text-primary" />
+            CRM - Gestion Clients
+          </h1>
           <p className="text-muted-foreground mt-2">
-            Gérez vos relations clients et suivez leur activité
+            Gérez vos relations clients avec intelligence artificielle et analyses avancées
           </p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90">
-              <UserPlus className="w-4 h-4 mr-2" />
-              Nouveau Client
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Analytics Avancées
+          </Button>
+          <Button variant="outline" size="sm">
+            <Target className="w-4 h-4 mr-2" />
+            Segmentation IA
+          </Button>
+          <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white">
+            <Crown className="w-4 h-4 mr-2" />
+            CRM Ultra Pro
+          </Button>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-primary hover:bg-primary/90">
+                <UserPlus className="w-4 h-4 mr-2" />
+                Nouveau Client
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Ajouter un Client</DialogTitle>
@@ -197,7 +213,8 @@ export default function CRM() {
               </Button>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Stats Cards */}

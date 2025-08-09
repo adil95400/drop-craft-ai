@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Package, Truck, MapPin, Clock, Search, Filter, Eye } from 'lucide-react'
+import { Package, Truck, MapPin, Clock, Search, Filter, Eye, Crown } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -64,10 +64,27 @@ export default function Tracking() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Suivi des Commandes</h1>
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+            <Truck className="w-8 h-8 text-primary" />
+            Suivi des Commandes
+          </h1>
           <p className="text-muted-foreground mt-2">
-            Suivez l'état et la livraison de toutes vos commandes
+            Suivez l'état et la livraison de toutes vos commandes en temps réel
           </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Filter className="w-4 h-4 mr-2" />
+            Filtres
+          </Button>
+          <Button variant="outline" size="sm">
+            <Eye className="w-4 h-4 mr-2" />
+            Vue Temps Réel
+          </Button>
+          <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
+            <Crown className="w-4 h-4 mr-2" />
+            Tracking Ultra Pro
+          </Button>
         </div>
       </div>
 

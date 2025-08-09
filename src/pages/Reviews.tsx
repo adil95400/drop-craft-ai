@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Star, ThumbsUp, Filter, Search } from 'lucide-react'
+import { Star, ThumbsUp, Filter, Search, Crown } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -49,10 +49,27 @@ export default function Reviews() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Avis Clients</h1>
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+            <Star className="w-8 h-8 text-primary" />
+            Avis Clients
+          </h1>
           <p className="text-muted-foreground mt-2">
-            Gérez et analysez les avis de vos clients
+            Gérez et analysez les avis de vos clients avec des outils avancés
           </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Filter className="w-4 h-4 mr-2" />
+            Filtres Avancés
+          </Button>
+          <Button variant="outline" size="sm">
+            <Search className="w-4 h-4 mr-2" />
+            Recherche IA
+          </Button>
+          <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white">
+            <Crown className="w-4 h-4 mr-2" />
+            Reviews Ultra Pro
+          </Button>
         </div>
       </div>
 

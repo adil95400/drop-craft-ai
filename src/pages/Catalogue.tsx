@@ -108,16 +108,27 @@ export default function Catalogue() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Catalogue & Sourcing</h1>
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+              <Package className="w-8 h-8 text-primary" />
+              Catalogue & Sourcing
+            </h1>
             <p className="text-muted-foreground mt-2">
-              Découvrez et importez des produits gagnants avec de vraies données
+              Découvrez et importez des produits gagnants avec IA prédictive
             </p>
           </div>
           
           <div className="flex gap-2">
             <Button variant="outline" size="sm">
               <Filter className="w-4 h-4 mr-2" />
-              Filtres
+              Filtres IA
+            </Button>
+            <Button variant="outline" size="sm">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Analytics Marché
+            </Button>
+            <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
+              <Crown className="w-4 h-4 mr-2" />
+              Catalogue Ultra Pro
             </Button>
             <Button className="bg-primary hover:bg-primary/90">
               <Package className="w-4 h-4 mr-2" />
