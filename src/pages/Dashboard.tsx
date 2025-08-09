@@ -15,7 +15,8 @@ import {
   Settings,
   Euro,
   ArrowUp,
-  Activity
+  Activity,
+  Zap
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProducts } from "@/hooks/useProducts";
@@ -115,6 +116,14 @@ const Dashboard = () => {
           </Button>
           <Button variant="outline" size="icon" onClick={() => navigate("/settings")}>
             <Settings className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="premium" 
+            onClick={() => navigate("/dashboard/ultra-pro")}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
+          >
+            <Zap className="mr-2 h-4 w-4" />
+            Ultra Pro
           </Button>
           <Button variant="default" className="bg-gradient-primary hover:opacity-90" onClick={() => navigate("/import")}>
             Nouveau Projet
