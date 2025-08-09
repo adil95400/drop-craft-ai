@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Star, ThumbsUp, ThumbsDown, TrendingUp, MessageSquare, Filter, Download, Eye, Edit, Trash2, MoreHorizontal, Search, AlertTriangle, CheckCircle2, Clock, Bot, Target, Zap, BarChart3, Users, Calendar, Globe, Award, Shield, Heart } from 'lucide-react'
+import { Star, ThumbsUp, ThumbsDown, TrendingUp, MessageSquare, Filter, Download, Eye, Edit, Trash2, MoreHorizontal, Search, AlertTriangle, CheckCircle2, Clock, Bot, Target, Zap, BarChart3, Users, Calendar, Globe, Award, Shield, Heart, Mail } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
