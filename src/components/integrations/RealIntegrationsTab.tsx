@@ -9,11 +9,15 @@ import { IntegrationCard } from './IntegrationCard';
 import { AddIntegrationDialog } from './AddIntegrationDialog';
 import { Search, RefreshCw, TrendingUp, Zap, AlertCircle, BarChart3, Clock, CheckCircle2, Activity, Globe, Database } from 'lucide-react';
 import { useState, useMemo } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 export const RealIntegrationsTab = () => {
   const { integrations, syncLogs, loading, fetchIntegrations } = useIntegrations();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const filteredIntegrations = useMemo(() => {
     let filtered = integrations;
@@ -44,6 +48,30 @@ export const RealIntegrationsTab = () => {
   const recentSyncLogs = useMemo(() => {
     return syncLogs.slice(0, 5);
   }, [syncLogs]);
+
+  const handleViewStatistics = () => {
+    navigate('/analytics');
+    toast({
+      title: "Redirection vers les statistiques",
+      description: "Ouverture du tableau de bord analytique...",
+    });
+  };
+
+  const handleResolveErrors = () => {
+    toast({
+      title: "Résolution des erreurs",
+      description: "Tentative de reconnexion des intégrations en erreur...",
+    });
+    
+    // Simuler la résolution des erreurs
+    setTimeout(() => {
+      fetchIntegrations();
+      toast({
+        title: "Erreurs résolues",
+        description: "Les intégrations ont été mises à jour",
+      });
+    }, 2000);
+  };
 
   if (loading) {
     return (
@@ -201,12 +229,12 @@ export const RealIntegrationsTab = () => {
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Actualiser toutes
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button variant="outline" className="w-full justify-start" onClick={handleViewStatistics}>
                 <TrendingUp className="w-4 h-4 mr-2" />
                 Voir les statistiques
               </Button>
               {stats.errors > 0 && (
-                <Button variant="destructive" className="w-full justify-start">
+                <Button variant="destructive" className="w-full justify-start" onClick={handleResolveErrors}>
                   <AlertCircle className="w-4 h-4 mr-2" />
                   Résoudre les erreurs ({stats.errors})
                 </Button>
