@@ -13,23 +13,34 @@ serve(async (req) => {
   }
 
   try {
+    // Create Supabase client with service role for admin operations
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     const { integration_id, sync_type } = await req.json();
 
-    // Get integration details
+    console.log(`Starting sync for integration ${integration_id}, type: ${sync_type}`);
+
+    // Get integration details with service role to bypass RLS
     const { data: integration, error } = await supabase
       .from('integrations')
       .select('*')
       .eq('id', integration_id)
       .single();
 
-    if (error || !integration) {
+    if (error) {
+      console.error('Database error:', error);
+      throw new Error(`Database error: ${error.message}`);
+    }
+
+    if (!integration) {
+      console.error('Integration not found:', integration_id);
       throw new Error('Integration not found');
     }
+
+    console.log(`Found integration: ${integration.platform_name} for user ${integration.user_id}`);
 
     // Create sync log entry
     const { data: syncLog, error: logError } = await supabase
