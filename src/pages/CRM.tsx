@@ -160,7 +160,10 @@ export default function CRM() {
             <Target className="w-4 h-4 mr-2" />
             Segmentation IA
           </Button>
-          <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white">
+          <Button 
+            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+            onClick={() => window.location.href = '/crm-ultra-pro'}
+          >
             <Crown className="w-4 h-4 mr-2" />
             CRM Ultra Pro
           </Button>

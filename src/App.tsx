@@ -57,6 +57,8 @@ import BlogUltraPro from "./pages/BlogUltraPro";
 import SEOUltraPro from "./pages/SEOUltraPro";
 import SecurityUltraPro from "./pages/SecurityUltraPro";
 import SupportUltraPro from "./pages/SupportUltraPro";
+import TrackingUltraPro from "./pages/TrackingUltraPro";
+import CatalogueUltraPro from "./pages/CatalogueUltraPro";
 
 const queryClient = new QueryClient();
 
@@ -329,6 +331,16 @@ const App = () => (
           <Route path="/dashboard/ultra-pro" element={
             <AuthGuard>
               <DashboardUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/tracking/ultra-pro" element={
+            <AuthGuard>
+              <TrackingUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/catalogue/ultra-pro" element={
+            <AuthGuard>
+              <CatalogueUltraPro />
             </AuthGuard>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

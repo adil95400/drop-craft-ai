@@ -126,7 +126,10 @@ export default function Catalogue() {
               <BarChart3 className="w-4 h-4 mr-2" />
               Analytics Marché
             </Button>
-            <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
+            <Button 
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+              onClick={() => window.location.href = '/catalogue/ultra-pro'}
+            >
               <Crown className="w-4 h-4 mr-2" />
               Catalogue Ultra Pro
             </Button>

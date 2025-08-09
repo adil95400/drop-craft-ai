@@ -81,7 +81,10 @@ export default function Tracking() {
             <Eye className="w-4 h-4 mr-2" />
             Vue Temps Réel
           </Button>
-          <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
+          <Button 
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+            onClick={() => window.location.href = '/tracking/ultra-pro'}
+          >
             <Crown className="w-4 h-4 mr-2" />
             Tracking Ultra Pro
           </Button>
