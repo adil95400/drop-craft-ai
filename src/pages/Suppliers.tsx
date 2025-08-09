@@ -100,19 +100,30 @@ const Suppliers = () => {
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Fournisseurs</h1>
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <Package className="w-8 h-8 text-primary" />
+              Fournisseurs
+            </h1>
             <p className="text-muted-foreground">
-              Gérez vos partenaires et fournisseurs
+              Gérez vos partenaires avec intelligence artificielle
             </p>
           </div>
           
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Nouveau fournisseur
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Button 
+              className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white"
+              onClick={() => window.location.href = '/suppliers-ultra-pro'}
+            >
+              <Package className="w-4 h-4 mr-2" />
+              Suppliers Ultra Pro
+            </Button>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nouveau fournisseur
+                </Button>
+              </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>Ajouter un fournisseur</DialogTitle>
@@ -186,7 +197,8 @@ const Suppliers = () => {
                 </Button>
               </div>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
 
         {/* Stats Cards */}

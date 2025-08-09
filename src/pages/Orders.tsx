@@ -124,13 +124,23 @@ export default function Orders() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Commandes</h1>
-          <p className="text-muted-foreground">Gestion centralisée multi-marketplace</p>
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+            <Package className="w-8 h-8 text-primary" />
+            Commandes
+          </h1>
+          <p className="text-muted-foreground">Gestion centralisée multi-marketplace avec analytics avancées</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="w-4 h-4 mr-2" />
             Export CSV
+          </Button>
+          <Button 
+            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+            onClick={() => window.location.href = '/orders-ultra-pro'}
+          >
+            <Package className="w-4 h-4 mr-2" />
+            Orders Ultra Pro
           </Button>
           <Button onClick={handleSyncMarketplaces}>
             <Package className="w-4 h-4 mr-2" />

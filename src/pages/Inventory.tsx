@@ -137,11 +137,12 @@ const Inventory = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+              <Package className="w-8 h-8 text-primary" />
               Inventaire
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Gestion du stock et des produits
+            <p className="text-muted-foreground mt-2">
+              Gestion intelligente du stock avec IA prédictive
             </p>
           </div>
           <div className="flex gap-3">
@@ -152,6 +153,13 @@ const Inventory = () => {
             <Button variant="outline" onClick={handleImport}>
               <Upload className="mr-2 h-4 w-4" />
               Importer
+            </Button>
+            <Button 
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+              onClick={() => window.location.href = '/inventory-ultra-pro'}
+            >
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Inventory Ultra Pro
             </Button>
             <Button variant="hero" onClick={handleNewProduct}>
               <Plus className="mr-2 h-4 w-4" />
