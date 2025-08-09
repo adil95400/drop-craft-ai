@@ -15,7 +15,8 @@ import {
   Calendar,
   Download,
   Filter,
-  RefreshCw
+  RefreshCw,
+  Zap
 } from "lucide-react";
 
 const Analytics = () => {
@@ -128,6 +129,14 @@ const Analytics = () => {
           <Button variant="hero" onClick={handleRefresh}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Actualiser
+          </Button>
+          <Button 
+            variant="premium" 
+            onClick={() => navigate("/analytics/ultra-pro")}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
+          >
+            <Zap className="mr-2 h-4 w-4" />
+            Ultra Pro
           </Button>
         </div>
       </div>

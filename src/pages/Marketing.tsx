@@ -4,8 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Megaphone, Mail, Users, BarChart3, Zap, Settings, Calendar, Target } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 export default function Marketing() {
+  const navigate = useNavigate()
+  
   const campaigns = [
     {
       id: 1,
@@ -56,6 +59,14 @@ export default function Marketing() {
             <Button className="bg-primary hover:bg-primary/90">
               <Megaphone className="w-4 h-4 mr-2" />
               Nouvelle Campagne
+            </Button>
+            <Button 
+              variant="premium" 
+              onClick={() => navigate("/marketing/ultra-pro")}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Ultra Pro
             </Button>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Shield, AlertTriangle, Lock, Key, Eye, UserCheck, Activity, Clock } from 'lucide-react'
+import { Shield, AlertTriangle, Lock, Key, Eye, UserCheck, Activity, Clock, Zap } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -7,6 +7,8 @@ import { Switch } from '@/components/ui/switch'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { AppLayout } from '@/layouts/AppLayout'
+import { useNavigate } from 'react-router-dom'
 
 const securityMetrics = {
   securityScore: 85,
@@ -111,6 +113,7 @@ const vulnerabilities = [
 ]
 
 export default function Security() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('dashboard')
 
   const getSeverityColor = (severity: string) => {
@@ -141,6 +144,7 @@ export default function Security() {
   }
 
   return (
+    <AppLayout>
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -153,10 +157,20 @@ export default function Security() {
             Surveillez et protégez votre plateforme contre les menaces
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
-          <Eye className="w-4 h-4 mr-2" />
-          Scan de Sécurité
-        </Button>
+        <div className="flex gap-2">
+          <Button className="bg-primary hover:bg-primary/90">
+            <Eye className="w-4 h-4 mr-2" />
+            Scan de Sécurité
+          </Button>
+          <Button 
+            variant="premium" 
+            onClick={() => navigate("/security/ultra-pro")}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
+          >
+            <Zap className="w-4 h-4 mr-2" />
+            Ultra Pro
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -467,5 +481,6 @@ export default function Security() {
         </TabsContent>
       </Tabs>
     </div>
+    </AppLayout>
   )
 }
