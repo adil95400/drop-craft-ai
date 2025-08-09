@@ -4,7 +4,18 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Globe, Settings, Zap, CheckCircle, AlertCircle, Loader2, ExternalLink } from "lucide-react"
+import { 
+  Globe, 
+  Settings, 
+  Zap, 
+  CheckCircle, 
+  AlertCircle, 
+  Loader2, 
+  ExternalLink,
+  Network,
+  Shield,
+  Star
+} from "lucide-react"
 
 interface Supplier {
   id: string
@@ -17,6 +28,7 @@ interface Supplier {
   features: string[]
   isPro?: boolean
   apiEndpoint?: string
+  rating?: number
 }
 
 export const AdvancedSupplierIntegration = () => {
@@ -30,7 +42,8 @@ export const AdvancedSupplierIntegration = () => {
       icon: '🛒',
       description: 'Plus grand marketplace mondial avec millions de produits',
       features: ['API Fournisseur', 'Import automatique', 'Suivi commandes'],
-      isPro: true
+      isPro: true,
+      rating: 4.8
     },
     {
       id: 'amazon',
@@ -41,7 +54,8 @@ export const AdvancedSupplierIntegration = () => {
       icon: '📦',
       description: 'Marketplace premium avec livraison rapide',
       features: ['API Avancée', 'FBA Integration', 'Prime shipping'],
-      isPro: true
+      isPro: true,
+      rating: 4.9
     },
     {
       id: 'bigbuy',
@@ -51,7 +65,8 @@ export const AdvancedSupplierIntegration = () => {
       products: 892,
       icon: '🏪',
       description: 'Fournisseur européen B2B spécialisé dropshipping',
-      features: ['Stock européen', 'Livraison 24-48h', 'API complète']
+      features: ['Stock européen', 'Livraison 24-48h', 'API complète'],
+      rating: 4.7
     },
     {
       id: 'eprolo',
@@ -61,7 +76,8 @@ export const AdvancedSupplierIntegration = () => {
       products: 567,
       icon: '🚀',
       description: 'Solution complète dropshipping avec entrepôts globaux',
-      features: ['Entrepôts US/EU', 'Branding privé', 'Qualité contrôlée']
+      features: ['Entrepôts US/EU', 'Branding privé', 'Qualité contrôlée'],
+      rating: 4.6
     },
     {
       id: 'xmlftp',
@@ -72,7 +88,8 @@ export const AdvancedSupplierIntegration = () => {
       icon: '🔗',
       description: 'Import automatique des flux fournisseurs',
       features: ['Import automatique', 'Flux temps réel', 'Multi-formats'],
-      isPro: true
+      isPro: true,
+      rating: 4.5
     },
     {
       id: 'chrome',
@@ -83,7 +100,8 @@ export const AdvancedSupplierIntegration = () => {
       icon: '🌐',
       description: 'Import en 1 clic depuis n\'importe quel site',
       features: ['1-click import', 'Multi-sites', 'OCR Images'],
-      isPro: true
+      isPro: true,
+      rating: 4.4
     }
   ])
 
@@ -127,7 +145,6 @@ export const AdvancedSupplierIntegration = () => {
 
     setConnectingSupplier(supplier.id)
     
-    // Simulate connection process
     setTimeout(() => {
       setSuppliers(prev => prev.map(s => 
         s.id === supplier.id 
@@ -154,33 +171,107 @@ export const AdvancedSupplierIntegration = () => {
     }, 3000)
   }
 
+  const connectedSuppliers = suppliers.filter(s => s.status === 'connected').length
+  const totalProducts = suppliers.filter(s => s.status === 'connected').reduce((sum, s) => sum + s.products, 0)
+
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Intégrations Fournisseurs Avancées
+    <div className="space-y-8">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-hero p-8 rounded-2xl overflow-hidden">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative">
+          <div className="flex items-center justify-between mb-6">
+            <div className="text-white">
+              <h2 className="text-3xl font-bold mb-2">Fournisseurs Ultra Pro</h2>
+              <p className="text-xl opacity-90">
+                Connectez-vous directement à plus de 100 fournisseurs mondiaux
+              </p>
+            </div>
+            <Badge className="bg-gradient-accent text-white px-4 py-2 font-bold animate-pulse-glow">
+              <Network className="h-4 w-4 mr-2" />
+              NETWORK PRO
+            </Badge>
+          </div>
+
+          {/* Integration Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-smooth">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-white">
+                    <div className="text-2xl font-bold">{connectedSuppliers}</div>
+                    <p className="text-sm opacity-80">Fournisseurs Connectés</p>
+                  </div>
+                  <div className="p-2 bg-green-500/20 rounded-lg">
+                    <CheckCircle className="h-5 w-5 text-green-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-smooth">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-white">
+                    <div className="text-2xl font-bold">{totalProducts.toLocaleString()}</div>
+                    <p className="text-sm opacity-80">Produits Disponibles</p>
+                  </div>
+                  <div className="p-2 bg-blue-500/20 rounded-lg">
+                    <Globe className="h-5 w-5 text-blue-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-smooth">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-white">
+                    <div className="text-2xl font-bold">99.8%</div>
+                    <p className="text-sm opacity-80">Fiabilité API</p>
+                  </div>
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <Shield className="h-5 w-5 text-purple-400" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Suppliers Grid */}
+      <Card className="border-0 shadow-card">
+        <CardHeader className="pb-6">
+          <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Intégrations Fournisseurs
           </CardTitle>
-          <CardDescription>
-            Connectez-vous directement à plus de 100 fournisseurs et marketplaces
+          <CardDescription className="text-lg">
+            Connectez-vous aux meilleures plateformes mondiales de dropshipping
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {suppliers.map((supplier) => (
-              <Card key={supplier.id} className="relative hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/20">
+              <Card 
+                key={supplier.id} 
+                className="group relative overflow-hidden border-2 transition-all duration-300 hover:shadow-glow hover-scale"
+              >
                 {supplier.isPro && (
-                  <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold">
+                  <Badge className="absolute -top-2 -right-2 bg-gradient-accent text-white font-bold z-10">
+                    <Star className="h-3 w-3 mr-1" />
                     PRO
                   </Badge>
                 )}
-                <CardHeader className="pb-3">
+                
+                <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{supplier.icon}</span>
+                      <div className="p-3 bg-primary/10 rounded-xl group-hover:scale-110 transition-transform">
+                        <span className="text-2xl">{supplier.icon}</span>
+                      </div>
                       <div>
-                        <h3 className="font-semibold">{supplier.name}</h3>
+                        <h3 className="font-bold text-lg">{supplier.name}</h3>
                         <div className="flex items-center gap-2">
                           {getStatusIcon(supplier.status)}
                           <Badge className={getStatusColor(supplier.status)}>
@@ -192,32 +283,54 @@ export const AdvancedSupplierIntegration = () => {
                       </div>
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">{supplier.description}</p>
+                  
+                  {supplier.rating && (
+                    <div className="flex items-center gap-1 mt-2">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className={`h-4 w-4 ${i < Math.floor(supplier.rating!) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                        />
+                      ))}
+                      <span className="text-sm text-muted-foreground ml-1">{supplier.rating}</span>
+                    </div>
+                  )}
+                  
+                  <p className="text-sm text-muted-foreground mt-2">{supplier.description}</p>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-1">
+                
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
                     {supplier.features.map((feature, index) => (
                       <div key={index} className="flex items-center gap-2 text-sm">
-                        <CheckCircle className="h-3 w-3 text-green-600" />
+                        <CheckCircle className="h-3 w-3 text-green-600 flex-shrink-0" />
                         <span>{feature}</span>
                       </div>
                     ))}
                   </div>
                   
                   {supplier.status === 'connected' && (
-                    <div className="flex items-center justify-between py-2 px-3 bg-green-50 rounded">
-                      <span className="text-sm font-medium text-green-800">
-                        {supplier.products.toLocaleString()} produits
-                      </span>
-                      <Button variant="ghost" size="sm">
+                    <div className="flex items-center justify-between py-3 px-4 bg-green-50 rounded-lg">
+                      <div>
+                        <span className="text-sm font-medium text-green-800">
+                          {supplier.products.toLocaleString()} produits
+                        </span>
+                        <div className="text-xs text-green-600">Synchronisé</div>
+                      </div>
+                      <Button variant="ghost" size="sm" className="text-green-600 hover:bg-green-100">
                         <ExternalLink className="h-4 w-4" />
                       </Button>
                     </div>
                   )}
                   
                   <Button 
-                    className="w-full" 
-                    variant={supplier.status === 'connected' ? 'outline' : supplier.isPro ? 'default' : 'secondary'}
+                    className={`w-full ${
+                      supplier.status === 'connected' 
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600' 
+                        : supplier.isPro 
+                          ? 'bg-gradient-primary hover:bg-gradient-accent' 
+                          : 'bg-secondary hover:bg-secondary/80'
+                    } transition-all duration-300`}
                     onClick={() => handleConnect(supplier)}
                     disabled={connectingSupplier === supplier.id}
                   >
@@ -237,7 +350,10 @@ export const AdvancedSupplierIntegration = () => {
                         Connecter PRO
                       </>
                     ) : (
-                      'Connecter'
+                      <>
+                        <Globe className="h-4 w-4 mr-2" />
+                        Connecter
+                      </>
                     )}
                   </Button>
                 </CardContent>
@@ -247,15 +363,16 @@ export const AdvancedSupplierIntegration = () => {
         </CardContent>
       </Card>
 
+      {/* Configuration Dialog */}
       <Dialog open={configDialog.open} onOpenChange={(open) => setConfigDialog({ open, supplier: null })}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-3">
               <span className="text-2xl">{configDialog.supplier?.icon}</span>
-              Configuration {configDialog.supplier?.name}
+              Configuration {configDialog.supplier?.name} PRO
             </DialogTitle>
             <DialogDescription>
-              Configurez votre intégration {configDialog.supplier?.name} PRO
+              Configurez votre intégration sécurisée avec {configDialog.supplier?.name}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -273,7 +390,10 @@ export const AdvancedSupplierIntegration = () => {
                 <Input placeholder="https://example.com/feed.xml" />
               </div>
             )}
-            <Button onClick={handleProConnect} className="w-full">
+            <Button 
+              onClick={handleProConnect} 
+              className="w-full bg-gradient-primary hover:bg-gradient-accent"
+            >
               <Zap className="h-4 w-4 mr-2" />
               Connecter {configDialog.supplier?.name}
             </Button>
