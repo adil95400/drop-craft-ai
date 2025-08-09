@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Import from "./pages/Import";
+import ImportUltraPro from "./pages/ImportUltraPro";
 import Catalogue from "./pages/Catalogue";
 import Tracking from "./pages/Tracking";
 import SEO from "./pages/SEO";
@@ -104,6 +105,11 @@ const App = () => (
           <Route path="/import" element={
             <AuthGuard>
               <Import />
+            </AuthGuard>
+          } />
+          <Route path="/import-ultra-pro" element={
+            <AuthGuard>
+              <ImportUltraPro />
             </AuthGuard>
           } />
           <Route path="/catalogue" element={
