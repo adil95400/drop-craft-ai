@@ -111,7 +111,7 @@ const Suppliers = () => {
           
           <div className="flex gap-2">
             <Button 
-              className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white"
+              className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
               onClick={() => window.location.href = '/suppliers-ultra-pro'}
             >
               <Package className="w-4 h-4 mr-2" />

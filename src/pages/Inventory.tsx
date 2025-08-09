@@ -155,7 +155,7 @@ const Inventory = () => {
               Importer
             </Button>
             <Button 
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
               onClick={() => window.location.href = '/inventory-ultra-pro'}
             >
               <BarChart3 className="mr-2 h-4 w-4" />
