@@ -326,6 +326,11 @@ const App = () => (
               <SupportUltraPro />
             </AuthGuard>
           } />
+          <Route path="/dashboard/ultra-pro" element={
+            <AuthGuard>
+              <DashboardUltraPro />
+            </AuthGuard>
+          } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
