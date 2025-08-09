@@ -94,7 +94,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r">
+    <Sidebar className="border-r fixed left-0 top-0 h-full w-64 z-50 bg-background">
       <div className="p-4 border-b">
         <div className="flex items-center gap-3">
           <img src="/src/assets/shopopti-logo.png" alt="Shopopti Pro" className="w-8 h-8" />
