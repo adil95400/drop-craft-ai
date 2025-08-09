@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { Users, Package, TrendingUp, Zap, History, Settings, Clock, CheckCircle, AlertTriangle, FileImage, Globe, Database, Cpu, Store, Crown } from "lucide-react"
+import { Users, Package, TrendingUp, Zap, History, Settings, Clock, CheckCircle, AlertTriangle, FileImage, Globe, Database, Cpu, Store, Crown, Download, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { useProducts } from "@/hooks/useProducts"
 import { useImport } from "@/hooks/useImport"
@@ -169,17 +169,32 @@ const Import = () => {
     <AppLayout>
       <div className="container mx-auto p-6 space-y-8">
         <div className="flex items-center justify-between">
-          <ImportHeader 
-            importCount={products.length}
-            onQuickImport={handleQuickImport}
-          />
-          <Button 
-            onClick={() => window.location.href = '/import-ultra-pro'} 
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold px-6 py-3"
-          >
-            <Crown className="h-5 w-5 mr-2" />
-            Passer à Ultra Pro
-          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+              <Package className="w-8 h-8 text-primary" />
+              Import Produits
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Importez vos produits depuis n'importe quelle source avec l'IA
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => window.open('/template.csv')}>
+              <Download className="mr-2 h-4 w-4" />
+              Template CSV
+            </Button>
+            <Button 
+              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300"
+              onClick={() => window.location.href = '/import-ultra-pro'}
+            >
+              <Zap className="mr-2 h-4 w-4" />
+              Import Ultra Pro
+            </Button>
+            <Button variant="hero" onClick={handleQuickImport}>
+              <Plus className="mr-2 h-4 w-4" />
+              Import Rapide
+            </Button>
+          </div>
         </div>
 
         {/* Quick Stats */}
