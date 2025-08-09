@@ -41,6 +41,14 @@ import CRMEmails from "./pages/CRMEmails";
 import CRMCalls from "./pages/CRMCalls";
 import TrackingInTransit from "./pages/TrackingInTransit";
 import TrackingToday from "./pages/TrackingToday";
+import ReviewsUltraPro from "./pages/ReviewsUltraPro";
+import AnalyticsUltraPro from "./pages/AnalyticsUltraPro";
+import MarketingUltraPro from "./pages/MarketingUltraPro";
+import DashboardUltraPro from "./pages/DashboardUltraPro";
+import InventoryUltraPro from "./pages/InventoryUltraPro";
+import OrdersUltraPro from "./pages/OrdersUltraPro";
+import SuppliersUltraPro from "./pages/SuppliersUltraPro";
+import CRMUltraPro from "./pages/CRMUltraPro";
 
 const queryClient = new QueryClient();
 
@@ -227,6 +235,47 @@ const App = () => (
           <Route path="/tracking/today" element={
             <AuthGuard>
               <TrackingToday />
+            </AuthGuard>
+          } />
+          {/* Ultra Pro Routes */}
+          <Route path="/reviews-ultra-pro" element={
+            <AuthGuard>
+              <ReviewsUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/analytics-ultra-pro" element={
+            <AuthGuard>
+              <AnalyticsUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/marketing-ultra-pro" element={
+            <AuthGuard>
+              <MarketingUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/dashboard-ultra-pro" element={
+            <AuthGuard>
+              <DashboardUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/inventory-ultra-pro" element={
+            <AuthGuard>
+              <InventoryUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/orders-ultra-pro" element={
+            <AuthGuard>
+              <OrdersUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/suppliers-ultra-pro" element={
+            <AuthGuard>
+              <SuppliersUltraPro />
+            </AuthGuard>
+          } />
+          <Route path="/crm-ultra-pro" element={
+            <AuthGuard>
+              <CRMUltraPro />
             </AuthGuard>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
