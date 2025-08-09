@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
+import { useOAuthSupplier } from '@/hooks/useOAuthSupplier'
 import { SUPPLIERS, SUPPLIER_CATEGORIES, getSuppliersByCategory, getPopularSuppliers, type Supplier } from '@/data/suppliers'
 
 interface SupplierConfigDialogProps {
@@ -19,6 +20,7 @@ interface SupplierConfigDialogProps {
 
 const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialogProps) => {
   const { toast } = useToast()
+  const { initiateOAuth, isConnecting } = useOAuthSupplier()
   const [currentStep, setCurrentStep] = useState<'auth' | 'methods' | 'features'>('auth')
   const [authData, setAuthData] = useState({
     apiKey: '',
@@ -32,21 +34,32 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
     autoSync: false
   })
 
-  const handleOAuthConnect = () => {
-    // Simulate OAuth flow
-    toast({
-      title: "Connexion OAuth",
-      description: `Redirection vers ${supplier.displayName} pour l'autorisation...`
-    })
-    
-    setTimeout(() => {
-      setAuthData(prev => ({ ...prev, isConnected: true }))
+  const handleOAuthConnect = async () => {
+    try {
       toast({
-        title: "Connexion réussie",
-        description: `Votre compte ${supplier.displayName} a été connecté avec succès`
+        title: "Démarrage OAuth",
+        description: `Initialisation de la connexion avec ${supplier.displayName}...`
       })
-      setCurrentStep('methods')
-    }, 2000)
+      
+      await initiateOAuth(supplier.id)
+      
+      // Simulate successful connection for demo
+      setTimeout(() => {
+        setAuthData(prev => ({ ...prev, isConnected: true }))
+        toast({
+          title: "Connexion OAuth simulée",
+          description: `Votre compte ${supplier.displayName} a été connecté (démo)`
+        })
+        setCurrentStep('methods')
+      }, 2000)
+      
+    } catch (error: any) {
+      toast({
+        title: "Erreur OAuth",
+        description: error.message || "Impossible de se connecter",
+        variant: "destructive"
+      })
+    }
   }
 
   const handleApiKeyAuth = () => {
@@ -185,9 +198,13 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
                     Connectez votre compte {supplier.displayName} de manière sécurisée via OAuth.
                   </p>
                   {!authData.isConnected ? (
-                    <Button onClick={handleOAuthConnect} className="w-full">
+                    <Button 
+                      onClick={handleOAuthConnect} 
+                      className="w-full"
+                      disabled={isConnecting}
+                    >
                       <Globe className="h-4 w-4 mr-2" />
-                      Se connecter à {supplier.displayName}
+                      {isConnecting ? 'Connexion...' : `Se connecter à ${supplier.displayName}`}
                     </Button>
                   ) : (
                     <div className="flex items-center gap-2 text-green-600">
@@ -273,32 +290,33 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {supplier.supportedFormats.map((method) => (
-                <Card 
+                <div
                   key={method}
-                  className={`cursor-pointer transition-all ${
-                    selectedMethods.includes(method) ? 'ring-2 ring-primary bg-primary/5' : 'hover:shadow-md'
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    selectedMethods.includes(method) 
+                      ? 'border-primary bg-primary/10' 
+                      : 'border-border hover:border-primary/50'
                   }`}
                   onClick={() => handleMethodToggle(method)}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium">{method}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {method === 'CSV' && 'Import de fichiers CSV'}
-                          {method === 'XML' && 'Import de flux XML'}
-                          {method === 'API' && 'Synchronisation API temps réel'}
-                          {method === 'Excel' && 'Import de fichiers Excel'}
-                          {method === 'URL' && 'Import depuis URL'}
-                        </p>
-                      </div>
-                      <Checkbox 
-                        checked={selectedMethods.includes(method)}
-                        onChange={() => handleMethodToggle(method)}
-                      />
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h4 className="font-medium">{method}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {method === 'CSV' && 'Import de fichiers CSV'}
+                        {method === 'XML' && 'Import de flux XML'}
+                        {method === 'API' && 'Synchronisation API temps réel'}
+                        {method === 'Excel' && 'Import de fichiers Excel'}
+                        {method === 'URL' && 'Import depuis URL'}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
+                    <Checkbox 
+                      checked={selectedMethods.includes(method)}
+                      onCheckedChange={() => handleMethodToggle(method)}
+                      className="ml-3"
+                    />
+                  </div>
+                </div>
               ))}
             </div>
 
@@ -328,44 +346,45 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
 
             <div className="grid grid-cols-1 gap-3">
               {supplier.features.map((feature) => (
-                <Card 
+                <div
                   key={feature}
-                  className={`cursor-pointer transition-all ${
-                    selectedFeatures.includes(feature) ? 'ring-2 ring-primary bg-primary/5' : 'hover:shadow-md'
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    selectedFeatures.includes(feature) 
+                      ? 'border-primary bg-primary/10' 
+                      : 'border-border hover:border-primary/50'
                   }`}
                   onClick={() => handleFeatureToggle(feature)}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="text-lg">
-                          {feature.includes('stock') && '📦'}
-                          {feature.includes('prix') && '💰'}
-                          {feature.includes('catalogue') && '📚'}
-                          {feature.includes('commande') && '🛒'}
-                          {feature.includes('Import') && '⬇️'}
-                          {feature.includes('Suivi') && '👀'}
-                          {feature.includes('Gestion') && '⚙️'}
-                          {feature.includes('Analytics') && '📊'}
-                          {!feature.includes('stock') && !feature.includes('prix') && 
-                           !feature.includes('catalogue') && !feature.includes('commande') &&
-                           !feature.includes('Import') && !feature.includes('Suivi') &&
-                           !feature.includes('Gestion') && !feature.includes('Analytics') && '✨'}
-                        </div>
-                        <div>
-                          <h4 className="font-medium">{feature}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Fonctionnalité disponible pour {supplier.displayName}
-                          </p>
-                        </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="text-lg">
+                        {feature.includes('stock') && '📦'}
+                        {feature.includes('prix') && '💰'}
+                        {feature.includes('catalogue') && '📚'}
+                        {feature.includes('commande') && '🛒'}
+                        {feature.includes('Import') && '⬇️'}
+                        {feature.includes('Suivi') && '👀'}
+                        {feature.includes('Gestion') && '⚙️'}
+                        {feature.includes('Analytics') && '📊'}
+                        {!feature.includes('stock') && !feature.includes('prix') && 
+                         !feature.includes('catalogue') && !feature.includes('commande') &&
+                         !feature.includes('Import') && !feature.includes('Suivi') &&
+                         !feature.includes('Gestion') && !feature.includes('Analytics') && '✨'}
                       </div>
-                      <Checkbox 
-                        checked={selectedFeatures.includes(feature)}
-                        onChange={() => handleFeatureToggle(feature)}
-                      />
+                      <div>
+                        <h4 className="font-medium">{feature}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Fonctionnalité disponible pour {supplier.displayName}
+                        </p>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
+                    <Checkbox 
+                      checked={selectedFeatures.includes(feature)}
+                      onCheckedChange={() => handleFeatureToggle(feature)}
+                      className="ml-3"
+                    />
+                  </div>
+                </div>
               ))}
             </div>
 
