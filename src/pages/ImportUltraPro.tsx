@@ -14,10 +14,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { 
   Upload, Download, Zap, Brain, Globe, FileImage, Database, Link, 
   Clock, CheckCircle, AlertTriangle, X, Eye, Edit, Settings, 
-  TrendingUp, Target, Cpu, Sparkles, BarChart3, Users, Package
+  TrendingUp, Target, Cpu, Sparkles, BarChart3, Users, Package, Store
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductImports } from "@/hooks/useProductImports";
+import { EnhancedSupplierSelector } from "@/components/import/EnhancedSupplierSelector";
 
 const ImportUltraPro = () => {
   const {
@@ -445,48 +446,13 @@ const ImportUltraPro = () => {
           </TabsContent>
 
           <TabsContent value="suppliers" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {suppliers.map((supplier, index) => (
-                <Card key={index} className="shadow-lg hover:shadow-xl transition-all duration-300">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="text-2xl">{supplier.icon}</div>
-                        <div>
-                          <h3 className="font-bold">{supplier.name}</h3>
-                          <p className="text-sm text-muted-foreground">{supplier.description}</p>
-                        </div>
-                      </div>
-                      <Badge variant={supplier.status === 'connected' ? 'default' : 'secondary'}>
-                        {supplier.status === 'connected' ? 'Connecté' : 'Disponible'}
-                      </Badge>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="text-sm">
-                        <span className="text-muted-foreground">Produits disponibles: </span>
-                        <span className="font-semibold">{supplier.products.toLocaleString()}</span>
-                      </div>
-                      <Button 
-                        className="w-full"
-                        variant={supplier.status === 'connected' ? 'default' : 'outline'}
-                        onClick={() => supplier.status === 'connected' && handleSupplierImport(supplier.name)}
-                      >
-                        {supplier.status === 'connected' ? (
-                          <>
-                            <Database className="w-4 h-4 mr-2" />
-                            Synchroniser
-                          </>
-                        ) : (
-                          <>
-                            <Settings className="w-4 h-4 mr-2" />
-                            Connecter
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="space-y-6">
+              <div className="flex items-center gap-2">
+                <Store className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold">Fournisseurs avec OAuth</h3>
+                <Badge variant="default" className="bg-green-600">Authentification Sécurisée</Badge>
+              </div>
+              <EnhancedSupplierSelector />
             </div>
           </TabsContent>
 
