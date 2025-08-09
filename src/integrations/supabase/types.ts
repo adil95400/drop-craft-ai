@@ -59,6 +59,48 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_optimization_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          input_data: Json
+          job_type: string
+          output_data: Json | null
+          progress: number | null
+          started_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          input_data: Json
+          job_type: string
+          output_data?: Json | null
+          progress?: number | null
+          started_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          input_data?: Json
+          job_type?: string
+          output_data?: Json | null
+          progress?: number | null
+          started_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       catalog_products: {
         Row: {
           attributes: Json | null
@@ -309,6 +351,93 @@ export type Database = {
           success_rows?: number | null
           total_rows?: number | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      imported_products: {
+        Row: {
+          ai_score: number | null
+          category: string | null
+          competition_level: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          id: string
+          image_urls: string[] | null
+          import_job_id: string | null
+          import_price: number | null
+          metadata: Json | null
+          name: string
+          original_price: number | null
+          original_product_id: string | null
+          seo_optimized: boolean | null
+          sku: string | null
+          source_platform: string
+          status: string | null
+          subcategory: string | null
+          suggested_price: number | null
+          supplier_info: Json | null
+          tags: string[] | null
+          translation_status: string | null
+          trend_score: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_score?: number | null
+          category?: string | null
+          competition_level?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_urls?: string[] | null
+          import_job_id?: string | null
+          import_price?: number | null
+          metadata?: Json | null
+          name: string
+          original_price?: number | null
+          original_product_id?: string | null
+          seo_optimized?: boolean | null
+          sku?: string | null
+          source_platform: string
+          status?: string | null
+          subcategory?: string | null
+          suggested_price?: number | null
+          supplier_info?: Json | null
+          tags?: string[] | null
+          translation_status?: string | null
+          trend_score?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_score?: number | null
+          category?: string | null
+          competition_level?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_urls?: string[] | null
+          import_job_id?: string | null
+          import_price?: number | null
+          metadata?: Json | null
+          name?: string
+          original_price?: number | null
+          original_product_id?: string | null
+          seo_optimized?: boolean | null
+          sku?: string | null
+          source_platform?: string
+          status?: string | null
+          subcategory?: string | null
+          suggested_price?: number | null
+          supplier_info?: Json | null
+          tags?: string[] | null
+          translation_status?: string | null
+          trend_score?: number | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -646,6 +775,51 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      scheduled_imports: {
+        Row: {
+          created_at: string | null
+          filter_config: Json | null
+          frequency: string
+          id: string
+          is_active: boolean | null
+          last_execution: string | null
+          name: string
+          next_execution: string
+          optimization_settings: Json | null
+          platform: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          filter_config?: Json | null
+          frequency: string
+          id?: string
+          is_active?: boolean | null
+          last_execution?: string | null
+          name: string
+          next_execution: string
+          optimization_settings?: Json | null
+          platform: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          filter_config?: Json | null
+          frequency?: string
+          id?: string
+          is_active?: boolean | null
+          last_execution?: string | null
+          name?: string
+          next_execution?: string
+          optimization_settings?: Json | null
+          platform?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }

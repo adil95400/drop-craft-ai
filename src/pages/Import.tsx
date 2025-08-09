@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
-import { Users, Package, TrendingUp, Zap, History, Settings, Clock, CheckCircle, AlertTriangle, FileImage, Globe, Database, Cpu, Store } from "lucide-react"
+import { Users, Package, TrendingUp, Zap, History, Settings, Clock, CheckCircle, AlertTriangle, FileImage, Globe, Database, Cpu, Store, Crown } from "lucide-react"
 import { toast } from "sonner"
 import { useProducts } from "@/hooks/useProducts"
 import { useImport } from "@/hooks/useImport"
@@ -168,10 +168,19 @@ const Import = () => {
   return (
     <AppLayout>
       <div className="container mx-auto p-6 space-y-8">
-        <ImportHeader 
-          importCount={products.length}
-          onQuickImport={handleQuickImport}
-        />
+        <div className="flex items-center justify-between">
+          <ImportHeader 
+            importCount={products.length}
+            onQuickImport={handleQuickImport}
+          />
+          <Button 
+            onClick={() => window.location.href = '/import-ultra-pro'} 
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold px-6 py-3"
+          >
+            <Crown className="h-5 w-5 mr-2" />
+            Passer à Ultra Pro
+          </Button>
+        </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
