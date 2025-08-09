@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppSidebar } from "@/components/AppSidebar";
+import Suppliers from "./pages/Suppliers";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -378,13 +379,18 @@ const App = () => (
               <StockUltraPro />
             </AuthGuard>
           } />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
           <Route path="/reviews/positive" element={
             <AuthGuard>
               <AvisPositifUltraPro />
             </AuthGuard>
           } />
+          <Route path="/suppliers" element={
+            <AuthGuard>
+              <Suppliers />
+            </AuthGuard>
+          } />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
                 </div>
               </main>

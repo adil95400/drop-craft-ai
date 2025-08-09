@@ -1,8 +1,8 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { 
-  Home, Package, Users, BarChart3, Settings, CreditCard, Truck, Star, 
-  Search, Target, ShoppingCart, Smartphone, Puzzle, Zap, Shield, HelpCircle,
-  FileText, MessageSquare, Calendar, Database, TrendingUp, Bell, Globe
+  Home, Package, Users, BarChart3, Settings, ShoppingCart, Truck, Star, 
+  Search, Target, Smartphone, Puzzle, Zap, Shield, HelpCircle,
+  FileText, MessageSquare, Database, Bell, Globe, ChevronDown, ChevronRight
 } from "lucide-react";
 import {
   Sidebar,
@@ -13,100 +13,153 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { useState } from "react";
 
-const mainItems = [
-  { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Catalogue", url: "/catalogue", icon: Package },
-  { title: "Commandes", url: "/orders", icon: ShoppingCart },
-  { title: "Inventaire", url: "/inventory", icon: Database },
-  { title: "Stock", url: "/stock", icon: Package },
-  { title: "Fournisseurs", url: "/suppliers", icon: Users },
-];
-
-const businessItems = [
-  { title: "CRM", url: "/crm", icon: Users },
-  { title: "Marketing", url: "/marketing", icon: Target },
-  { title: "Avis", url: "/reviews", icon: Star },
-  { title: "Analytics", url: "/analytics", icon: BarChart3 },
-  { title: "SEO", url: "/seo", icon: Search },
-  { title: "Blog", url: "/blog", icon: FileText },
-];
-
-const toolsItems = [
-  { title: "Suivi", url: "/tracking", icon: Truck },
-  { title: "Automation", url: "/automation", icon: Zap },
-  { title: "Import", url: "/import", icon: FileText },
-  { title: "Plugins", url: "/plugins", icon: Puzzle },
-  { title: "Mobile", url: "/mobile", icon: Smartphone },
-  { title: "Extension", url: "/extension", icon: Globe },
-];
-
-const supportItems = [
-  { title: "Support", url: "/support", icon: HelpCircle },
-  { title: "Sécurité", url: "/security", icon: Shield },
-  { title: "FAQ", url: "/faq", icon: MessageSquare },
-  { title: "Notifications", url: "/notifications", icon: Bell },
-  { title: "Paramètres", url: "/settings", icon: Settings },
+const navigationItems = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: Home,
+  },
+  {
+    title: "E-commerce",
+    icon: ShoppingCart,
+    items: [
+      { title: "Catalogue", url: "/catalogue", icon: Package },
+      { title: "Commandes", url: "/orders", icon: ShoppingCart },
+      { title: "Inventaire", url: "/inventory", icon: Database },
+      { title: "Stock", url: "/stock", icon: Package },
+      { title: "Fournisseurs", url: "/suppliers", icon: Users },
+    ],
+  },
+  {
+    title: "CRM & Marketing", 
+    icon: Users,
+    items: [
+      { title: "CRM", url: "/crm", icon: Users },
+      { title: "Marketing", url: "/marketing", icon: Target },
+      { title: "Avis", url: "/reviews", icon: Star },
+      { title: "Analytics", url: "/analytics", icon: BarChart3 },
+      { title: "SEO", url: "/seo", icon: Search },
+      { title: "Blog", url: "/blog", icon: FileText },
+    ],
+  },
+  {
+    title: "Outils",
+    icon: Puzzle,
+    items: [
+      { title: "Suivi", url: "/tracking", icon: Truck },
+      { title: "Automation", url: "/automation", icon: Zap },
+      { title: "Import", url: "/import", icon: FileText },
+      { title: "Plugins", url: "/plugins", icon: Puzzle },
+      { title: "Mobile", url: "/mobile", icon: Smartphone },
+      { title: "Extension", url: "/extension", icon: Globe },
+    ],
+  },
+  {
+    title: "Support",
+    icon: HelpCircle,
+    items: [
+      { title: "Support", url: "/support", icon: HelpCircle },
+      { title: "Sécurité", url: "/security", icon: Shield },
+      { title: "FAQ", url: "/faq", icon: MessageSquare },
+      { title: "Notifications", url: "/notifications", icon: Bell },
+      { title: "Paramètres", url: "/settings", icon: Settings },
+    ],
+  },
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
-  const collapsed = state === "collapsed";
+  const [openGroups, setOpenGroups] = useState<string[]>(["E-commerce", "CRM & Marketing", "Outils", "Support"]);
 
-  const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/');
-  const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive ? "bg-primary/10 text-primary font-medium border-r-2 border-primary" : "hover:bg-muted/50";
-
-  const renderMenuItems = (items: typeof mainItems) => (
-    <SidebarMenu>
-      {items.map((item) => (
-        <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton asChild>
-            <NavLink to={item.url} className={getNavCls}>
-              <item.icon className="mr-2 h-4 w-4" />
-              {!collapsed && <span>{item.title}</span>}
-            </NavLink>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      ))}
-    </SidebarMenu>
-  );
+  const isActive = (url: string) => currentPath === url || currentPath.startsWith(url + '/');
+  
+  const toggleGroup = (title: string) => {
+    setOpenGroups(prev => 
+      prev.includes(title) 
+        ? prev.filter(group => group !== title)
+        : [...prev, title]
+    );
+  };
 
   return (
-    <Sidebar
-      className={collapsed ? "w-14" : "w-60"}
-      collapsible="icon"
-    >
+    <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{!collapsed && "Principal"}</SidebarGroupLabel>
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
-            {renderMenuItems(mainItems)}
-          </SidebarGroupContent>
-        </SidebarGroup>
+            <SidebarMenu>
+              {navigationItems.map((item) => {
+                if (!item.items) {
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <NavLink 
+                          to={item.url!} 
+                          className={({ isActive }) => 
+                            isActive ? "bg-primary/10 text-primary font-medium" : ""
+                          }
+                        >
+                          <item.icon className="mr-2 h-4 w-4" />
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                }
 
-        <SidebarGroup>
-          <SidebarGroupLabel>{!collapsed && "Business"}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {renderMenuItems(businessItems)}
-          </SidebarGroupContent>
-        </SidebarGroup>
+                const isGroupOpen = openGroups.includes(item.title);
+                const hasActiveChild = item.items.some(subItem => isActive(subItem.url));
 
-        <SidebarGroup>
-          <SidebarGroupLabel>{!collapsed && "Outils"}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {renderMenuItems(toolsItems)}
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>{!collapsed && "Support"}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            {renderMenuItems(supportItems)}
+                return (
+                  <Collapsible key={item.title} open={isGroupOpen} onOpenChange={() => toggleGroup(item.title)}>
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton>
+                          <item.icon className="mr-2 h-4 w-4" />
+                          <span>{item.title}</span>
+                          {isGroupOpen ? (
+                            <ChevronDown className="ml-auto h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="ml-auto h-4 w-4" />
+                          )}
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {item.items.map((subItem) => (
+                            <SidebarMenuSubItem key={subItem.title}>
+                              <SidebarMenuSubButton asChild>
+                                <NavLink 
+                                  to={subItem.url} 
+                                  className={({ isActive }) => 
+                                    isActive ? "bg-primary/10 text-primary font-medium" : ""
+                                  }
+                                >
+                                  <subItem.icon className="mr-2 h-4 w-4" />
+                                  <span>{subItem.title}</span>
+                                </NavLink>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                );
+              })}
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
