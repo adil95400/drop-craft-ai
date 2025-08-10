@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AppLayout } from "@/layouts/AppLayout";
+
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -119,8 +119,7 @@ export default function Orders() {
   };
 
   return (
-    <AppLayout>
-      <div className="space-y-6 p-6">
+    <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -293,7 +292,6 @@ export default function Orders() {
           </Table>
         </CardContent>
       </Card>
-      </div>
-    </AppLayout>
+    </div>
   );
 }

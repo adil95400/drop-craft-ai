@@ -97,11 +97,11 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-hero bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Dashboard Shopopti Pro
           </h1>
           <p className="text-muted-foreground mt-1">

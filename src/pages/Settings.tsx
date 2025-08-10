@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { AppLayout } from "@/layouts/AppLayout";
+
 import { RealIntegrationsTab } from "@/components/integrations/RealIntegrationsTab";
 import { 
   Settings as SettingsIcon, 
@@ -156,8 +156,7 @@ const Settings = () => {
   ];
 
   return (
-    <AppLayout>
-      <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -697,7 +696,6 @@ const Settings = () => {
         </div>
       </Tabs>
     </div>
-    </AppLayout>
   );
 };
 

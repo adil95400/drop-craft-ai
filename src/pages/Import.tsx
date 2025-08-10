@@ -13,7 +13,7 @@ import { Users, Package, TrendingUp, Zap, History, Settings, Clock, CheckCircle,
 import { toast } from "sonner"
 import { useProducts } from "@/hooks/useProducts"
 import { useImport } from "@/hooks/useImport"
-import { AppLayout } from "@/layouts/AppLayout"
+
 
 const Import = () => {
   const [selectedMethod, setSelectedMethod] = useState("")
@@ -166,8 +166,7 @@ const Import = () => {
   ]
 
   return (
-    <AppLayout>
-      <div className="container mx-auto p-6 space-y-8">
+    <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
@@ -570,9 +569,8 @@ const Import = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </AppLayout>
-  )
-}
+    </div>
+  );
+};
 
-export default Import
+export default Import;
