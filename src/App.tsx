@@ -78,14 +78,14 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <SidebarProvider>
-            <div className="min-h-screen flex w-full">
+            <div className="min-h-screen flex w-full bg-background">
               <AppSidebar />
-              <main className="flex-1">
-                <header className="h-12 flex items-center border-b bg-background px-4">
+              <main className="flex-1 flex flex-col min-w-0">
+                <header className="h-12 flex items-center border-b bg-background px-4 flex-shrink-0">
                   <SidebarTrigger className="mr-4" />
-                  <h2 className="font-semibold text-foreground">Dashboard</h2>
+                  <h2 className="font-semibold text-foreground">Shopopti Pro</h2>
                 </header>
-                <div className="flex-1">
+                <div className="flex-1 overflow-auto">
                   <Routes>
           <Route path="/" element={
             <AuthGuard requireAuth={false}>
@@ -397,7 +397,7 @@ const App = () => (
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
+         </Routes>
                 </div>
               </main>
             </div>

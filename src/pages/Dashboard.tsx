@@ -98,8 +98,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <AppLayout>
-      <div className="min-h-screen bg-background p-6 space-y-6">
+    <div className="min-h-screen bg-background p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -123,9 +122,6 @@ const Dashboard = () => {
           >
             <Zap className="mr-2 h-4 w-4" />
             Dashboard Ultra Pro
-          </Button>
-          <Button variant="default" className="bg-gradient-primary hover:opacity-90" onClick={() => navigate("/import")}>
-            Nouveau Projet
           </Button>
         </div>
       </div>
@@ -235,70 +231,7 @@ const Dashboard = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-border bg-card shadow-soft">
-          <CardHeader>
-            <CardTitle>Activité Récente</CardTitle>
-            <CardDescription>Dernières actions sur votre compte</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[
-              { action: "Import de 24 produits", time: "Il y a 2h", status: "success" },
-              { action: "Mise à jour SEO", time: "Il y a 4h", status: "info" },
-              { action: "Nouvelle commande #1234", time: "Il y a 6h", status: "success" },
-              { action: "Sync Shopify", time: "Il y a 8h", status: "warning" }
-            ].map((activity, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                <div>
-                  <p className="text-sm font-medium">{activity.action}</p>
-                  <p className="text-xs text-muted-foreground">{activity.time}</p>
-                </div>
-                <Badge variant={activity.status === "success" ? "default" : "secondary"}>
-                  {activity.status}
-                </Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card shadow-soft">
-          <CardHeader>
-            <CardTitle>Performance</CardTitle>
-            <CardDescription>Aperçu de vos métriques clés</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Taux de conversion</span>
-                <span className="text-sm font-medium text-primary">3.2%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div className="bg-gradient-primary h-2 rounded-full" style={{ width: "32%" }}></div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Satisfaction client</span>
-                <span className="text-sm font-medium text-primary">94%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div className="bg-gradient-accent h-2 rounded-full" style={{ width: "94%" }}></div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Croissance</span>
-                <span className="text-sm font-medium text-primary">+23%</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div className="bg-gradient-hero h-2 rounded-full" style={{ width: "75%" }}></div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      </div>
-    </AppLayout>
+    </div>
   );
 };
 
