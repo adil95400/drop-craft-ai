@@ -615,4 +615,4 @@ const AutomationUltraPro = () => {
   )
 }
 
-export default AutomationUltraPro
+export default AutomationUltraPro;

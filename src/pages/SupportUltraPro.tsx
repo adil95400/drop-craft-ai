@@ -786,4 +786,4 @@ const SupportUltraPro = () => {
   )
 }
 
-export default SupportUltraPro
+export default SupportUltraPro;

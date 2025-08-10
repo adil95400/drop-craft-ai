@@ -707,4 +707,4 @@ const BlogUltraPro = () => {
   )
 }
 
-export default BlogUltraPro
+export default BlogUltraPro;

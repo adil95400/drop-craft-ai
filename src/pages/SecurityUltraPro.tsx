@@ -755,4 +755,4 @@ const SecurityUltraPro = () => {
   )
 }
 
-export default SecurityUltraPro
+export default SecurityUltraPro;

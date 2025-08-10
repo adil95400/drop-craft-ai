@@ -649,4 +649,4 @@ const Integrations = () => {
   )
 }
 
-export default Integrations
+export default Integrations;

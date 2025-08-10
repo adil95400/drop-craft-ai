@@ -752,4 +752,4 @@ const SEOUltraPro = () => {
   )
 }
 
-export default SEOUltraPro
+export default SEOUltraPro;
