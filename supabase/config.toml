@@ -55,6 +55,24 @@ verify_jwt = true
 [functions.sync-integration] 
 verify_jwt = true
 
+[functions.shopify-integration]
+verify_jwt = false
+
+[functions.aliexpress-integration]
+verify_jwt = false
+
+[functions.tracking-integration]
+verify_jwt = false
+
+[functions.marketing-integration]
+verify_jwt = false
+
+[functions.bigbuy-integration]
+verify_jwt = false
+
+[functions.reviews-integration]
+verify_jwt = false
+
 [edge-runtime]
 enabled = true
 ip_version = "ipv4"
