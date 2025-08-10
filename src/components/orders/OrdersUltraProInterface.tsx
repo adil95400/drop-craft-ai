@@ -71,7 +71,7 @@ export function OrdersUltraProInterface() {
   }
 
   const handleStatusUpdate = (orderId: string, newStatus: string) => {
-    updateOrderStatus({ orderId, status: newStatus })
+    updateOrderStatus({ id: orderId, status: newStatus as "pending" | "shipped" | "processing" | "delivered" | "cancelled" })
   }
 
   const handleTrackingUpdate = (orderId: string, trackingNumber: string) => {
@@ -79,8 +79,7 @@ export function OrdersUltraProInterface() {
   }
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         order.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = order.order_number.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = !statusFilter || order.status === statusFilter
     return matchesSearch && matchesStatus
   })
@@ -159,7 +158,7 @@ export function OrdersUltraProInterface() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Revenus</p>
-                <p className="text-2xl font-bold">{stats.totalRevenue.toFixed(0)}€</p>
+                <p className="text-2xl font-bold">{stats.revenue.toFixed(0)}€</p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-500" />
             </div>
@@ -210,8 +209,7 @@ export function OrdersUltraProInterface() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="font-semibold text-lg">#{order.order_number}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Client: {order.customer?.name || 'Client anonyme'} • 
+                       <p className="text-sm text-muted-foreground">
                         {new Date(order.created_at).toLocaleDateString()}
                       </p>
                     </div>
@@ -224,7 +222,7 @@ export function OrdersUltraProInterface() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Articles</p>
-                      <p className="text-sm">{order.items?.length || 0} article(s)</p>
+                      <p className="text-sm">{order.order_items?.length || 0} article(s)</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Numéro de suivi</p>
@@ -232,7 +230,7 @@ export function OrdersUltraProInterface() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Transporteur</p>
-                      <p className="text-sm">{order.carrier || 'Non défini'}</p>
+                      <p className="text-sm">Non défini</p>
                     </div>
                   </div>
 
@@ -269,7 +267,7 @@ export function OrdersUltraProInterface() {
                         size="sm"
                         onClick={() => trackPackage({ 
                           trackingNumber: order.tracking_number!, 
-                          carrier: order.carrier 
+                          carrier: 'auto'
                         })}
                         disabled={isTracking}
                       >

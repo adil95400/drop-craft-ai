@@ -309,7 +309,13 @@ export const useImportUltraPro = () => {
     startAIOptimization: startAIOptimization.mutate,
     isAIOptimizing: startAIOptimization.isPending,
     createScheduledImport: createScheduledImport.mutate,
-    toggleScheduledImport: toggleScheduledImport.mutate
+    toggleScheduledImport: toggleScheduledImport.mutate,
+    // Additional methods needed by ImportUltraProInterface
+    createImport: bulkImport.mutate,
+    bulkOptimizeWithAI: startAIOptimization.mutate,
+    isCreatingImport: bulkImport.isPending,
+    isCreatingScheduled: createScheduledImport.isPending,
+    isBulkOptimizing: startAIOptimization.isPending
   }
 }
 

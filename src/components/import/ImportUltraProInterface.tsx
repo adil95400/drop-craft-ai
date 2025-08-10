@@ -47,14 +47,17 @@ export function ImportUltraProInterface() {
     if (!selectedFile) return
     
     createImport({
-      type: 'file',
-      file: selectedFile,
-      ai_optimization: aiOptimization,
-      mapping_config: {},
-      settings: {
-        auto_publish: false,
-        price_markup: 1.2,
-        category_mapping: true
+      type: 'complete_catalog',
+      platform: 'file',
+      filters: {
+        file: selectedFile,
+        ai_optimization: aiOptimization,
+        mapping_config: {},
+        settings: {
+          auto_publish: false,
+          price_markup: 1.2,
+          category_mapping: true
+        }
       }
     })
   }
@@ -63,12 +66,15 @@ export function ImportUltraProInterface() {
     if (!importUrl) return
     
     createImport({
-      type: 'url',
-      source_url: importUrl,
-      ai_optimization: aiOptimization,
-      settings: {
-        auto_publish: false,
-        price_markup: 1.2
+      type: 'trending_products',
+      platform: 'url',
+      filters: {
+        source_url: importUrl,
+        ai_optimization: aiOptimization,
+        settings: {
+          auto_publish: false,
+          price_markup: 1.2
+        }
       }
     })
   }
@@ -368,14 +374,14 @@ export function ImportUltraProInterface() {
 
               <div>
                 <Label htmlFor="frequency">Fréquence</Label>
-                <Select value={scheduleFrequency} onValueChange={setScheduleFrequency}>
+                <Select value={scheduleFrequency} onValueChange={(value) => setScheduleFrequency(value as 'daily' | 'weekly' | 'monthly')}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="hourly">Toutes les heures</SelectItem>
                     <SelectItem value="daily">Quotidien</SelectItem>
                     <SelectItem value="weekly">Hebdomadaire</SelectItem>
+                    <SelectItem value="monthly">Mensuel</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -423,7 +429,7 @@ export function ImportUltraProInterface() {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => bulkOptimizeWithAI()}
+              onClick={() => bulkOptimizeWithAI({ job_type: 'seo_enhancement', input_data: {} })}
               disabled={isBulkOptimizing}
             >
               <Zap className="w-4 h-4 mr-1" />

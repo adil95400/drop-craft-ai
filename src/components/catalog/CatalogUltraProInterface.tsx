@@ -369,8 +369,8 @@ export function CatalogUltraProInterface() {
                   <SelectContent>
                     <SelectItem value="">Tous les fournisseurs</SelectItem>
                     {suppliers.map((supplier) => (
-                      <SelectItem key={supplier} value={supplier}>
-                        {supplier}
+                      <SelectItem key={typeof supplier === 'string' ? supplier : supplier.id} value={typeof supplier === 'string' ? supplier : supplier.id}>
+                        {typeof supplier === 'string' ? supplier : supplier.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
