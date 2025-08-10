@@ -22,7 +22,6 @@ import { useNavigate } from "react-router-dom";
 import { useProductsDemo as useProducts } from "@/hooks/useProductsDemo";
 import { useOrdersDemo as useOrders } from "@/hooks/useOrdersDemo";
 import { useCustomersDemo as useCustomers } from "@/hooks/useCustomersDemo";
-import { AppLayout } from "@/layouts/AppLayout";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -98,7 +97,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-6 space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
