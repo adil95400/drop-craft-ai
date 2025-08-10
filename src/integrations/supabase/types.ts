@@ -835,6 +835,60 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          content: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          external_id: string
+          helpful_count: number | null
+          id: string
+          photos: string[] | null
+          platform: string
+          product_id: string | null
+          rating: number
+          status: string | null
+          title: string | null
+          updated_at: string
+          verified_purchase: boolean | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          external_id: string
+          helpful_count?: number | null
+          id?: string
+          photos?: string[] | null
+          platform: string
+          product_id?: string | null
+          rating: number
+          status?: string | null
+          title?: string | null
+          updated_at?: string
+          verified_purchase?: boolean | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          external_id?: string
+          helpful_count?: number | null
+          id?: string
+          photos?: string[] | null
+          platform?: string
+          product_id?: string | null
+          rating?: number
+          status?: string | null
+          title?: string | null
+          updated_at?: string
+          verified_purchase?: boolean | null
+        }
+        Relationships: []
+      }
       scheduled_imports: {
         Row: {
           created_at: string | null
