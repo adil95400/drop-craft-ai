@@ -72,6 +72,34 @@ const SEO = () => {
     }, 1500);
   };
 
+  const handleKeywordResearch = () => {
+    toast({
+      title: "Recherche de mots-clés",
+      description: "Ouverture de l'outil de recherche de mots-clés",
+    });
+  };
+
+  const handleCompetitorAnalysis = () => {
+    toast({
+      title: "Analyse concurrentielle",
+      description: "Lancement de l'analyse concurrentielle",
+    });
+  };
+
+  const handleSchemaGenerator = () => {
+    toast({
+      title: "Génération Schema.org",
+      description: "Ouverture du générateur de balisage structuré",
+    });
+  };
+
+  const handlePositionTracking = () => {
+    toast({
+      title: "Suivi des positions",
+      description: "Ouverture du tableau de suivi des positions",
+    });
+  };
+
   const handleSEOAnalysis = async () => {
     if (!url.trim()) {
       toast({
@@ -228,7 +256,7 @@ R: Oui, livraison gratuite dès 49€ d'achat.
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -549,19 +577,35 @@ R: Oui, livraison gratuite dès 49€ d'achat.
               <CardTitle>Outils SEO</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={handleKeywordResearch}
+              >
                 <Target className="mr-2 h-4 w-4" />
                 Recherche de mots-clés
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={handleCompetitorAnalysis}
+              >
                 <Eye className="mr-2 h-4 w-4" />
                 Analyse concurrentielle
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={handleSchemaGenerator}
+              >
                 <FileText className="mr-2 h-4 w-4" />
                 Génération Schema.org
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={handlePositionTracking}
+              >
                 <TrendingUp className="mr-2 h-4 w-4" />
                 Suivi positions
               </Button>

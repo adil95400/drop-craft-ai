@@ -1,318 +1,473 @@
-import { AppLayout } from "@/layouts/AppLayout"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Megaphone, Mail, Users, BarChart3, Zap, Settings, Calendar, Target } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Target, 
+  Mail, 
+  MessageSquare, 
+  TrendingUp, 
+  Users,
+  Zap,
+  Calendar,
+  BarChart3,
+  Send,
+  Play,
+  Pause,
+  Eye,
+  Edit,
+  Copy,
+  Plus,
+  Filter,
+  ArrowUp,
+  ArrowDown
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export default function Marketing() {
-  const navigate = useNavigate()
-  
+const Marketing = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
+
   const campaigns = [
     {
-      id: 1,
-      name: "Promo Black Friday",
-      type: "Email",
+      id: "1",
+      name: "Black Friday 2024",
+      type: "email",
       status: "active",
-      reach: "15,234",
-      opens: "45%",
-      clicks: "12%",
-      conversions: "8%"
+      budget: "€2,500",
+      spent: "€1,847",
+      conversions: 234,
+      roi: "+280%",
+      reach: "15.2K",
+      engagement: "8.4%"
     },
     {
-      id: 2,
-      name: "Nouveau Client",
-      type: "Automation",
+      id: "2", 
+      name: "Produits iPhone 15",
+      type: "ads",
       status: "active",
-      reach: "2,847",
-      opens: "62%",
-      clicks: "18%",
-      conversions: "15%"
+      budget: "€5,000",
+      spent: "€3,245",
+      conversions: 156,
+      roi: "+190%",
+      reach: "42.1K",
+      engagement: "5.2%"
+    },
+    {
+      id: "3",
+      name: "Retargeting Abandons",
+      type: "retargeting",
+      status: "paused",
+      budget: "€1,200",
+      spent: "€890",
+      conversions: 89,
+      roi: "+150%",
+      reach: "8.7K",
+      engagement: "12.1%"
+    },
+    {
+      id: "4",
+      name: "Newsletter Hebdo",
+      type: "email",
+      status: "active",
+      budget: "€500",
+      spent: "€320",
+      conversions: 67,
+      roi: "+120%",
+      reach: "25.3K",
+      engagement: "6.8%"
     }
-  ]
+  ];
 
-  const segments = [
-    { name: "Nouveaux clients", count: 1247, growth: "+12%" },
-    { name: "Clients VIP", count: 89, growth: "+5%" },
-    { name: "Panier abandonné", count: 456, growth: "-3%" },
-    { name: "Clients inactifs", count: 234, growth: "-8%" }
-  ]
+  const marketingMetrics = [
+    {
+      title: "ROI Moyen",
+      value: "+210%",
+      change: "+15%",
+      trend: "up",
+      icon: TrendingUp,
+      color: "text-green-600"
+    },
+    {
+      title: "Coût/Acquisition",
+      value: "€12.50",
+      change: "-8%",
+      trend: "down",
+      icon: Target,
+      color: "text-blue-600"
+    },
+    {
+      title: "Taux Ouverture",
+      value: "24.8%",
+      change: "+3.2%",
+      trend: "up",
+      icon: Mail,
+      color: "text-purple-600"
+    },
+    {
+      title: "Engagement",
+      value: "7.5%",
+      change: "+1.8%",
+      trend: "up",
+      icon: MessageSquare,
+      color: "text-orange-600"
+    }
+  ];
+
+  const campaignTypes = [
+    { type: "email", label: "Email Marketing", icon: Mail, count: 12 },
+    { type: "ads", label: "Publicités", icon: Target, count: 8 },
+    { type: "social", label: "Réseaux Sociaux", icon: MessageSquare, count: 15 },
+    { type: "retargeting", label: "Retargeting", icon: Users, count: 5 }
+  ];
+
+  const handleCreateCampaign = () => {
+    toast({
+      title: "Nouvelle Campagne",
+      description: "Assistant de création lancé",
+    });
+  };
+
+  const handleCampaignAction = (action: string, campaignId: string) => {
+    toast({
+      title: `Campagne ${action}`,
+      description: `Action effectuée sur la campagne ${campaignId}`,
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active": return "default";
+      case "paused": return "secondary";
+      case "draft": return "outline";
+      default: return "secondary";
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case "email": return Mail;
+      case "ads": return Target;
+      case "social": return MessageSquare;
+      case "retargeting": return Users;
+      default: return Target;
+    }
+  };
 
   return (
-    <AppLayout>
-      <div className="p-6 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Marketing</h1>
-            <p className="text-muted-foreground mt-2">
-              Créez et gérez vos campagnes marketing pour booster vos ventes
-            </p>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Settings className="w-4 h-4 mr-2" />
-              Paramètres
-            </Button>
-            <Button className="bg-primary hover:bg-primary/90">
-              <Megaphone className="w-4 h-4 mr-2" />
-              Nouvelle Campagne
-            </Button>
-            <Button 
-              variant="premium" 
-              onClick={() => navigate("/marketing/ultra-pro")}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
-            >
-              <Zap className="w-4 h-4 mr-2" />
-              Ultra Pro
-            </Button>
-          </div>
+    <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Marketing Pro
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Créez et gérez vos campagnes marketing intelligentes
+          </p>
         </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Mail className="h-8 w-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Emails envoyés</p>
-                  <p className="text-2xl font-bold">24,567</p>
-                  <p className="text-sm text-green-600">+12% vs mois dernier</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Target className="h-8 w-8 text-orange-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Taux d'ouverture</p>
-                  <p className="text-2xl font-bold">48.3%</p>
-                  <p className="text-sm text-green-600">+2.1% vs mois dernier</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <BarChart3 className="h-8 w-8 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Conversions</p>
-                  <p className="text-2xl font-bold">1,234</p>
-                  <p className="text-sm text-green-600">+8.4% vs mois dernier</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-purple-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-muted-foreground">Abonnés</p>
-                  <p className="text-2xl font-bold">18,923</p>
-                  <p className="text-sm text-green-600">+156 cette semaine</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="flex space-x-3">
+          <Button variant="outline">
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Rapports
+          </Button>
+          <Button onClick={handleCreateCampaign}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouvelle Campagne
+          </Button>
+          <Button variant="premium" onClick={() => navigate("/marketing-ultra-pro")}>
+            <Zap className="mr-2 h-4 w-4" />
+            Ultra Pro
+          </Button>
         </div>
+      </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="campaigns" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="campaigns">Campagnes</TabsTrigger>
-            <TabsTrigger value="automation">Automation</TabsTrigger>
-            <TabsTrigger value="segments">Segments</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {marketingMetrics.map((metric, index) => (
+          <Card key={index} className="border-border bg-card shadow-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {metric.title}
+              </CardTitle>
+              <metric.icon className={`h-4 w-4 ${metric.color}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{metric.value}</div>
+              <div className="flex items-center text-xs text-muted-foreground">
+                {metric.trend === "up" ? (
+                  <ArrowUp className="h-3 w-3 text-green-600 mr-1" />
+                ) : (
+                  <ArrowDown className="h-3 w-3 text-red-600 mr-1" />
+                )}
+                <span className={metric.trend === "up" ? "text-green-600" : "text-red-600"}>
+                  {metric.change}
+                </span>
+                <span className="ml-1">vs mois dernier</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-          <TabsContent value="campaigns">
-            <div className="space-y-6">
-              {/* Active Campaigns */}
-              <Card>
-                <CardHeader>
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Left Column - Campaigns */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Campaign Types Overview */}
+          <Card className="border-border bg-card shadow-card">
+            <CardHeader>
+              <CardTitle>Types de Campagnes</CardTitle>
+              <CardDescription>Vue d'ensemble de vos campagnes actives</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {campaignTypes.map((type, index) => (
+                  <div key={index} className="text-center p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                    <type.icon className="h-8 w-8 mx-auto mb-2 text-primary" />
+                    <div className="font-medium text-sm">{type.label}</div>
+                    <div className="text-xs text-muted-foreground">{type.count} campagnes</div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Active Campaigns */}
+          <Card className="border-border bg-card shadow-card">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
                   <CardTitle>Campagnes Actives</CardTitle>
-                  <CardDescription>
-                    Gérez vos campagnes en cours et créez-en de nouvelles
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {campaigns.map((campaign) => (
-                      <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full">
-                            <Mail className="w-5 h-5 text-primary" />
+                  <CardDescription>Gérez vos campagnes en cours</CardDescription>
+                </div>
+                <Button variant="outline" size="sm">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filtrer
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {campaigns.map((campaign) => {
+                  const TypeIcon = getTypeIcon(campaign.type);
+                  return (
+                    <div 
+                      key={campaign.id} 
+                      className="border border-border rounded-lg p-4 hover:bg-muted/20 transition-colors cursor-pointer"
+                      onClick={() => setSelectedCampaign(campaign.id)}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                            <TypeIcon className="h-5 w-5 text-primary" />
                           </div>
                           <div>
-                            <h3 className="font-semibold">{campaign.name}</h3>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="secondary">{campaign.type}</Badge>
-                              <Badge 
-                                variant={campaign.status === 'active' ? 'default' : 'secondary'}
-                                className={campaign.status === 'active' ? 'bg-green-500' : ''}
+                            <h4 className="font-semibold">{campaign.name}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {campaign.reach} portée • ROI {campaign.roi}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={getStatusColor(campaign.status)}>
+                            {campaign.status === "active" ? "Actif" : 
+                             campaign.status === "paused" ? "Pausé" : "Brouillon"}
+                          </Badge>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            {campaign.status === "active" ? (
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCampaignAction("pause", campaign.id);
+                                }}
                               >
-                                {campaign.status}
-                              </Badge>
-                            </div>
+                                <Pause className="h-4 w-4" />
+                              </Button>
+                            ) : (
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCampaignAction("play", campaign.id);
+                                }}
+                              >
+                                <Play className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-6 text-sm">
-                          <div className="text-center">
-                            <div className="font-semibold">{campaign.reach}</div>
-                            <div className="text-muted-foreground">Portée</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="font-semibold">{campaign.opens}</div>
-                            <div className="text-muted-foreground">Ouvertures</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="font-semibold">{campaign.clicks}</div>
-                            <div className="text-muted-foreground">Clics</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="font-semibold text-green-600">{campaign.conversions}</div>
-                            <div className="text-muted-foreground">Conversions</div>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm">Voir</Button>
-                          <Button variant="outline" size="sm">Modifier</Button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
 
-          <TabsContent value="automation">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Zap className="w-5 h-5 mr-2" />
-                  Automation Marketing
-                </CardTitle>
-                <CardDescription>
-                  Configurez des séquences automatisées pour vos clients
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <Card className="p-4">
-                    <h3 className="font-semibold mb-2">Bienvenue Nouveau Client</h3>
-                    <p className="text-sm text-muted-foreground mb-3">Séquence d'onboarding automatique</p>
-                    <Badge className="bg-green-500">Actif</Badge>
-                  </Card>
-                  
-                  <Card className="p-4">
-                    <h3 className="font-semibold mb-2">Panier Abandonné</h3>
-                    <p className="text-sm text-muted-foreground mb-3">Récupération de paniers</p>
-                    <Badge className="bg-green-500">Actif</Badge>
-                  </Card>
-                  
-                  <Card className="p-4">
-                    <h3 className="font-semibold mb-2">Client Inactif</h3>
-                    <p className="text-sm text-muted-foreground mb-3">Réactivation des clients</p>
-                    <Badge variant="secondary">Inactif</Badge>
-                  </Card>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <div className="text-muted-foreground">Budget</div>
+                          <div className="font-medium">{campaign.budget}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Dépensé</div>
+                          <div className="font-medium">{campaign.spent}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Conversions</div>
+                          <div className="font-medium">{campaign.conversions}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Engagement</div>
+                          <div className="font-medium">{campaign.engagement}</div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>Budget utilisé</span>
+                          <span>{Math.round((parseFloat(campaign.spent.replace('€', '').replace(',', '')) / parseFloat(campaign.budget.replace('€', '').replace(',', ''))) * 100)}%</span>
+                        </div>
+                        <Progress 
+                          value={Math.round((parseFloat(campaign.spent.replace('€', '').replace(',', '')) / parseFloat(campaign.budget.replace('€', '').replace(',', ''))) * 100)} 
+                          className="h-2" 
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          {/* Quick Actions */}
+          <Card className="border-border bg-card shadow-card">
+            <CardHeader>
+              <CardTitle>Actions Rapides</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button variant="outline" className="w-full justify-start" onClick={handleCreateCampaign}>
+                <Plus className="mr-2 h-4 w-4" />
+                Créer Email Campaign
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <Target className="mr-2 h-4 w-4" />
+                Nouvelle Pub Facebook
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <Users className="mr-2 h-4 w-4" />
+                Campagne Retargeting
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <Copy className="mr-2 h-4 w-4" />
+                Dupliquer Campagne
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Performance This Month */}
+          <Card className="border-border bg-card shadow-card">
+            <CardHeader>
+              <CardTitle>Performance du Mois</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Emails envoyés</span>
+                <span className="font-semibold">42,567</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Taux d'ouverture</span>
+                <span className="font-semibold text-green-600">24.8%</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Clics</span>
+                <span className="font-semibold">3,247</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Conversions</span>
+                <span className="font-semibold">546</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">ROI Global</span>
+                <span className="font-semibold text-primary">+210%</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Top Performing Content */}
+          <Card className="border-border bg-card shadow-card">
+            <CardHeader>
+              <CardTitle>Meilleurs Contenus</CardTitle>
+              <CardDescription>Vos créations les plus performantes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[
+                  { title: "Black Friday Deal iPhone", engagement: "12.4%", type: "Email" },
+                  { title: "Product Launch Video", engagement: "9.8%", type: "Social" },
+                  { title: "Customer Testimonials", engagement: "8.7%", type: "Ad" },
+                  { title: "Holiday Collection", engagement: "7.2%", type: "Email" }
+                ].map((content, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border border-border rounded-lg">
+                    <div>
+                      <div className="font-medium text-sm">{content.title}</div>
+                      <div className="text-xs text-muted-foreground">{content.type}</div>
+                    </div>
+                    <Badge variant="secondary">{content.engagement}</Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* A/B Testing */}
+          <Card className="border-border bg-card shadow-card">
+            <CardHeader>
+              <CardTitle>Tests A/B Actifs</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="p-3 border border-border rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium text-sm">Sujet Email Campaign</span>
+                    <Badge variant="outline">En cours</Badge>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Version A: 52% • Version B: 48%
+                  </div>
+                  <Progress value={52} className="h-2 mt-2" />
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="segments">
-            <Card>
-              <CardHeader>
-                <CardTitle>Segments Clients</CardTitle>
-                <CardDescription>
-                  Organisez vos clients en segments pour un marketing ciblé
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {segments.map((segment, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h3 className="font-semibold">{segment.name}</h3>
-                        <p className="text-2xl font-bold mt-1">{segment.count.toLocaleString()}</p>
-                      </div>
-                      <div className="text-right">
-                        <Badge 
-                          variant={segment.growth.startsWith('+') ? 'default' : 'destructive'}
-                          className={segment.growth.startsWith('+') ? 'bg-green-500' : ''}
-                        >
-                          {segment.growth}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
+                
+                <div className="p-3 border border-border rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium text-sm">Call-to-Action Button</span>
+                    <Badge variant="default">Terminé</Badge>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Gagnant: Version B (+15% conversion)
+                  </div>
+                  <Progress value={85} className="h-2 mt-2" />
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Performance par Canal</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>Email Marketing</span>
-                      <span className="font-semibold">48.3%</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>SMS Marketing</span>
-                      <span className="font-semibold">62.1%</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Push Notifications</span>
-                      <span className="font-semibold">35.7%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>ROI par Campagne</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>Promo Black Friday</span>
-                      <span className="font-semibold text-green-600">+320%</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Nouveau Client</span>
-                      <span className="font-semibold text-green-600">+156%</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Panier Abandonné</span>
-                      <span className="font-semibold text-green-600">+89%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </AppLayout>
-  )
-}
+    </div>
+  );
+};
+
+export default Marketing;
