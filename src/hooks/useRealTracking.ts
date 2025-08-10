@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { TrackingOrder } from '@/types/database'
 
 interface TrackingInfo {
   tracking_number: string
@@ -16,17 +17,6 @@ interface TrackingInfo {
     details: string
   }>
   last_updated: string
-}
-
-interface TrackingOrder {
-  id: string
-  order_number: string
-  tracking_number: string
-  carrier: string
-  status: string
-  created_at: string
-  customer_name?: string
-  shipping_address?: any
 }
 
 export const useRealTracking = () => {
@@ -47,6 +37,7 @@ export const useRealTracking = () => {
           id,
           order_number,
           tracking_number,
+          carrier,
           status,
           created_at,
           customers(name),
@@ -56,7 +47,17 @@ export const useRealTracking = () => {
         .order('created_at', { ascending: false })
       
       if (error) throw error
-      return data as TrackingOrder[]
+      
+      return data.map(order => ({
+        id: order.id,
+        order_number: order.order_number,
+        tracking_number: order.tracking_number || '',
+        carrier: order.carrier || 'auto',
+        status: order.status || 'pending',
+        created_at: order.created_at,
+        customer_name: order.customers?.name,
+        shipping_address: order.shipping_address
+      })) as TrackingOrder[]
     }
   })
 
