@@ -169,7 +169,7 @@ const Blog = () => {
                       <div className="flex-1 space-y-3">
                         <div className="flex items-center gap-3 flex-wrap">
                           <h3 className="text-xl font-semibold text-foreground">{post.title}</h3>
-                          {post.aiGenerated && (
+                          {post.ai_generated && (
                             <Badge variant="secondary" className="bg-gradient-primary text-primary-foreground">
                               <Sparkles className="w-3 h-3 mr-1" />
                               IA
@@ -193,7 +193,7 @@ const Blog = () => {
                           </div>
                           <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
-                            {new Date(post.publishDate).toLocaleDateString()}
+                             {new Date(post.publish_date).toLocaleDateString()}
                           </div>
                           <div className="flex items-center gap-1">
                             <Eye className="w-4 h-4" />
@@ -370,7 +370,7 @@ const Blog = () => {
                         <div key={post.id} className="p-3 border border-border rounded-lg">
                           <p className="font-medium text-sm">{post.title}</p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(post.publishDate).toLocaleDateString()}
+                            {new Date(post.publish_date).toLocaleDateString()}
                           </p>
                         </div>
                       ))}
