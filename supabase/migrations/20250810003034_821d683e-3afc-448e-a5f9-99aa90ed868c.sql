@@ -1,0 +1,49 @@
+-- Désactiver temporairement RLS pour insérer des données de démonstration
+ALTER TABLE public.suppliers DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.catalog_products DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.customers DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_items DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_favorites DISABLE ROW LEVEL SECURITY;
+
+-- Insérer des fournisseurs de démonstration (sans user_id spécifique)
+INSERT INTO public.suppliers (id, name, contact_email, contact_phone, website, country, status, rating, api_key, api_endpoint) VALUES
+('550e8400-e29b-41d4-a716-446655440001', 'AliExpress Partners', 'partners@aliexpress.com', '+86-571-8502-2088', 'https://partners.aliexpress.com', 'Chine', 'active', 4.5, 'ali_key_123', 'https://api.aliexpress.com/v1/'),
+('550e8400-e29b-41d4-a716-446655440002', 'Amazon FBA Elite', 'elite@amazonfba.com', '+1-206-266-1000', 'https://amazonfba-elite.com', 'USA', 'active', 4.8, 'amz_key_456', 'https://api.amazon.com/fba/'),
+('550e8400-e29b-41d4-a716-446655440003', 'Shopify Direct', 'direct@shopify.com', '+1-613-241-2828', 'https://shopify-direct.com', 'Canada', 'active', 4.6, 'shop_key_789', 'https://api.shopify.com/direct/'),
+('550e8400-e29b-41d4-a716-446655440004', 'DHgate Pro', 'pro@dhgate.com', '+86-10-5100-2000', 'https://dhgate-pro.com', 'Chine', 'active', 4.3, 'dh_key_012', 'https://api.dhgate.com/pro/'),
+('550e8400-e29b-41d4-a716-446655440005', 'European Wholesale', 'contact@eurowholesale.eu', '+49-30-1234-5678', 'https://european-wholesale.eu', 'Allemagne', 'active', 4.7, 'eu_key_345', 'https://api.eurowholesale.eu/v2/')
+ON CONFLICT (id) DO NOTHING;
+
+-- Insérer des produits du catalogue de démonstration
+INSERT INTO public.catalog_products (
+  id, external_id, name, description, price, cost_price, original_price, 
+  category, subcategory, brand, supplier_id, supplier_name, supplier_url,
+  image_url, image_urls, sku, ean, currency, stock_quantity, rating, reviews_count, sales_count,
+  availability_status, delivery_time, shipping_cost, tags, attributes, seo_data,
+  profit_margin, competition_score, trend_score, is_winner, is_trending, is_bestseller
+) VALUES 
+('cat_prod_001', 'AE_12345', 'Écouteurs Bluetooth Sans Fil Pro Max', 'Écouteurs haute qualité avec réduction de bruit active, autonomie 30h, étanche IPX7', 89.99, 25.50, 149.99, 'Électronique', 'Audio', 'TechPro', '550e8400-e29b-41d4-a716-446655440001', 'AliExpress Partners', 'https://aliexpress.com/item/12345', 'https://images.unsplash.com/photo-1590658165737-15a047b5a6b8?w=500', ARRAY['https://images.unsplash.com/photo-1590658165737-15a047b5a6b8?w=500'], 'BT-PRO-MAX-001', '1234567890123', 'EUR', 150, 4.7, 1250, 890, 'in_stock', '7-15 jours', 5.99, ARRAY['bluetooth', 'sans-fil', 'audio', 'sport'], '{"couleurs": ["Noir", "Blanc", "Bleu"], "garantie": "2 ans"}', '{"title": "Écouteurs Bluetooth Pro Max - Son Haute Qualité", "description": "Découvrez nos écouteurs sans fil avec réduction de bruit"}', 253.0, 85, 92, true, true, true),
+
+('cat_prod_002', 'AMZ_67890', 'Montre Connectée Sport Ultra', 'Smartwatch avec GPS, moniteur cardiaque, étanche 50m, écran AMOLED', 199.99, 65.00, 299.99, 'Électronique', 'Wearables', 'FitTech', '550e8400-e29b-41d4-a716-446655440002', 'Amazon FBA Elite', 'https://amazon.com/item/67890', 'https://images.unsplash.com/photo-1544117519-31a4b719223d?w=500', ARRAY['https://images.unsplash.com/photo-1544117519-31a4b719223d?w=500'], 'SW-ULTRA-002', '2345678901234', 'EUR', 75, 4.6, 890, 567, 'in_stock', '3-7 jours', 0.00, ARRAY['smartwatch', 'sport', 'gps', 'santé'], '{"tailles": ["42mm", "46mm"], "couleurs": ["Noir", "Argent"]}', '{"title": "Montre Connectée Sport Ultra - GPS & Santé", "description": "Suivez vos performances avec cette montre connectée ultra-complète"}', 208.0, 78, 88, true, true, false),
+
+('cat_prod_003', 'SH_11111', 'Sac à Dos Voyage Premium', 'Sac à dos anti-vol avec port USB, compartiment laptop 17 pouces, imperméable', 79.99, 22.00, 129.99, 'Mode & Accessoires', 'Bagagerie', 'TravelPro', '550e8400-e29b-41d4-a716-446655440003', 'Shopify Direct', 'https://shopify-direct.com/item/11111', 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500', ARRAY['https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500'], 'BP-PREM-003', '3456789012345', 'EUR', 200, 4.5, 678, 445, 'in_stock', '5-12 jours', 7.50, ARRAY['voyage', 'anti-vol', 'usb', 'imperméable'], '{"capacité": "35L", "couleurs": ["Noir", "Gris", "Bleu"]}', '{"title": "Sac à Dos Voyage Premium Anti-Vol USB", "description": "Le compagnon parfait pour vos voyages"}', 264.0, 72, 85, false, true, true),
+
+('cat_prod_004', 'DH_22222', 'Humidificateur Air Intelligent', 'Humidificateur 6L avec contrôle app, diffuseur huiles essentielles, ultra-silencieux', 129.99, 35.00, 199.99, 'Maison & Jardin', 'Électroménager', 'AirPure', '550e8400-e29b-41d4-a716-446655440004', 'DHgate Pro', 'https://dhgate-pro.com/item/22222', 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=500', ARRAY['https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=500'], 'HUM-SMART-004', '4567890123456', 'EUR', 120, 4.4, 456, 289, 'in_stock', '8-16 jours', 12.00, ARRAY['humidificateur', 'intelligent', 'silencieux', 'aromathérapie'], '{"capacité": "6L", "autonomie": "24h", "wifi": true}', '{"title": "Humidificateur Intelligent 6L avec App", "description": "Contrôlez la humidité de votre maison depuis votre smartphone"}', 271.0, 68, 79, false, false, true),
+
+('cat_prod_005', 'EU_33333', 'Bandes de Résistance Fitness Pro', 'Set de 5 bandes élastiques avec poignées, ancrage porte, guide exercices', 39.99, 8.50, 69.99, 'Sport & Fitness', 'Équipement', 'FitBand', '550e8400-e29b-41d4-a716-446655440005', 'European Wholesale', 'https://european-wholesale.eu/item/33333', 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500', ARRAY['https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500'], 'RB-PRO-005', '5678901234567', 'EUR', 300, 4.8, 1890, 1234, 'in_stock', '3-8 jours', 4.99, ARRAY['fitness', 'résistance', 'musculation', 'portable'], '{"résistance": "5-150 lbs", "matériau": "latex naturel"}', '{"title": "Bandes de Résistance Pro - Kit Fitness Complet", "description": "Transformez votre maison en salle de sport avec ce kit professionnel"}', 370.0, 92, 95, true, true, true),
+
+('cat_prod_006', 'AE_44444', 'Lampe LED Bureau Architecte', 'Lampe de bureau pliable, 3 modes éclairage, contrôle tactile, économique', 45.99, 12.00, 79.99, 'Maison & Jardin', 'Éclairage', 'LightPro', '550e8400-e29b-41d4-a716-446655440001', 'AliExpress Partners', 'https://aliexpress.com/item/44444', 'https://images.unsplash.com/photo-1524234107056-1c1f48f64ab8?w=500', ARRAY['https://images.unsplash.com/photo-1524234107056-1c1f48f64ab8?w=500'], 'LED-ARCH-006', '6789012345678', 'EUR', 180, 4.3, 567, 378, 'in_stock', '6-14 jours', 6.50, ARRAY['led', 'bureau', 'pliable', 'tactile'], '{"puissance": "12W", "couleurs": ["Blanc", "Noir"]}', '{"title": "Lampe LED Bureau Architecte Pliable", "description": "Éclairage parfait pour le travail et les loisirs créatifs"}', 283.0, 75, 82, false, true, false),
+
+('cat_prod_007', 'AMZ_55555', 'Chargeur Sans Fil Rapide 15W', 'Station de charge Qi compatible iPhone/Samsung, refroidissement actif', 34.99, 9.50, 59.99, 'Électronique', 'Accessoires', 'ChargeTech', '550e8400-e29b-41d4-a716-446655440002', 'Amazon FBA Elite', 'https://amazon.com/item/55555', 'https://images.unsplash.com/photo-1609592935234-0b0d5b261c81?w=500', ARRAY['https://images.unsplash.com/photo-1609592935234-0b0d5b261c81?w=500'], 'WC-FAST-007', '7890123456789', 'EUR', 250, 4.6, 789, 523, 'in_stock', '2-5 jours', 3.99, ARRAY['qi', 'sans-fil', 'rapide', 'universel'], '{"puissance": "15W", "compatibilité": ["iPhone", "Samsung", "Google"]}', '{"title": "Chargeur Sans Fil Rapide 15W Qi", "description": "Rechargez rapidement tous vos appareils compatibles Qi"}', 268.0, 88, 87, true, false, true),
+
+('cat_prod_008', 'SH_66666', 'Organisateur Voiture Premium', 'Organisateur siège arrière, multi-poches, support tablette, cuir PU', 29.99, 7.80, 49.99, 'Auto & Moto', 'Accessoires', 'CarOrganize', '550e8400-e29b-41d4-a716-446655440003', 'Shopify Direct', 'https://shopify-direct.com/item/66666', 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=500', ARRAY['https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=500'], 'CO-PREM-008', '8901234567890', 'EUR', 150, 4.4, 345, 289, 'in_stock', '4-10 jours', 5.50, ARRAY['voiture', 'organisateur', 'cuir', 'tablette'], '{"matériau": "Cuir PU", "couleurs": ["Noir", "Marron"]}', '{"title": "Organisateur Voiture Premium Cuir", "description": "Gardez votre voiture organisée avec style et fonctionnalité"}', 284.0, 71, 78, false, false, false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Réactiver RLS
+ALTER TABLE public.suppliers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.catalog_products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_favorites ENABLE ROW LEVEL SECURITY;

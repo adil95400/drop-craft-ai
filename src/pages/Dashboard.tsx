@@ -19,9 +19,9 @@ import {
   Zap
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useProducts } from "@/hooks/useProducts";
-import { useOrders } from "@/hooks/useOrders";
-import { useCustomers } from "@/hooks/useCustomers";
+import { useProductsDemo as useProducts } from "@/hooks/useProductsDemo";
+import { useOrdersDemo as useOrders } from "@/hooks/useOrdersDemo";
+import { useCustomersDemo as useCustomers } from "@/hooks/useCustomersDemo";
 import { AppLayout } from "@/layouts/AppLayout";
 
 const Dashboard = () => {
