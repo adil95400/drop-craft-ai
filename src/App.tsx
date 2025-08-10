@@ -12,8 +12,8 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Import from "./pages/Import";
 import ImportUltraPro from "./pages/ImportUltraPro";
-import Catalogue from "./pages/Catalogue";
-import Tracking from "./pages/Tracking";
+import CatalogueReal from "./pages/CatalogueReal";
+import TrackingReal from "./pages/TrackingReal";
 import SEO from "./pages/SEO";
 import Winners from "./pages/Winners";
 import CRM from "./pages/CRM";
@@ -48,10 +48,10 @@ import ReviewsUltraPro from "./pages/ReviewsUltraPro";
 import AnalyticsUltraPro from "./pages/AnalyticsUltraPro";
 import MarketingUltraPro from "./pages/MarketingUltraPro";
 import DashboardUltraPro from "./pages/DashboardUltraPro";
-import InventoryUltraPro from "./pages/InventoryUltraPro";
-import OrdersUltraPro from "./pages/OrdersUltraPro";
+import InventoryUltraProReal from "./pages/InventoryUltraProReal";
+import OrdersUltraProReal from "./pages/OrdersUltraProReal";
 import SuppliersUltraPro from "./pages/SuppliersUltraPro";
-import CRMUltraPro from "./pages/CRMUltraPro";
+import CRMUltraProReal from "./pages/CRMUltraProReal";
 import CRMProspectsUltraPro from "./pages/CRMProspectsUltraPro";
 import SuiviEnTransitUltraPro from "./pages/SuiviEnTransitUltraPro";
 import AvisPositifUltraPro from "./pages/AvisPositifUltraPro";
@@ -115,7 +115,7 @@ const App = () => (
             <Route path="/catalogue" element={
               <AuthGuard>
                 <AppLayout>
-                  <Catalogue />
+                  <CatalogueReal />
                 </AppLayout>
               </AuthGuard>
             } />
@@ -150,7 +150,7 @@ const App = () => (
             <Route path="/orders-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <OrdersUltraPro />
+                  <OrdersUltraProReal />
                 </AppLayout>
               </AuthGuard>
             } />
@@ -164,7 +164,7 @@ const App = () => (
             <Route path="/crm-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <CRMUltraPro />
+                  <CRMUltraProReal />
                 </AppLayout>
               </AuthGuard>
             } />
@@ -213,7 +213,7 @@ const App = () => (
             <Route path="/tracking" element={
               <AuthGuard>
                 <AppLayout>
-                  <Tracking />
+                  <TrackingReal />
                 </AppLayout>
               </AuthGuard>
             } />
@@ -304,7 +304,7 @@ const App = () => (
             <Route path="/inventory-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <InventoryUltraPro />
+                  <InventoryUltraProReal />
                 </AppLayout>
               </AuthGuard>
             } />
