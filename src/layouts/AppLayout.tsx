@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarProvider, SidebarTrigger, SidebarInset, useSidebar } from "@/components/ui/sidebar";
+import { AppSidebarUltraPro } from "@/components/AppSidebarUltraPro";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
@@ -11,21 +11,20 @@ interface AppLayoutProps {
 export function AppLayout({
   children
 }: AppLayoutProps) {
-  return <SidebarProvider>
-      <div className="min-h-screen w-full bg-background">
-        <AppSidebar />
+  return (
+    <SidebarProvider 
+      defaultOpen={true}
+    >
+      <div className="min-h-screen w-full bg-background flex">
+        <AppSidebarUltraPro />
         
-        <div className="pl-64 min-h-screen flex flex-col">
-          {/* Mobile sidebar trigger */}
-          <div className="lg:hidden fixed top-4 left-4 z-50">
-            <SidebarTrigger />
-          </div>
-          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
-            <div className="flex items-center justify-between px-6 h-full">
+        <SidebarInset className="flex-1 flex flex-col min-w-0">
+          {/* Header with responsive sidebar trigger */}
+          <header className="sticky top-0 z-40 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex items-center justify-between px-4 h-full">
               <div className="flex items-center gap-4">
-                
-                {/* Search */}
-                
+                <SidebarTrigger className="lg:hidden" />
+                {/* Global search could go here */}
               </div>
 
               <div className="flex items-center gap-4">
@@ -39,7 +38,7 @@ export function AppLayout({
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto p-6">
             {children}
           </main>
 
@@ -58,7 +57,8 @@ export function AppLayout({
               </div>
             </div>
           </footer>
-        </div>
+        </SidebarInset>
       </div>
-    </SidebarProvider>;
+    </SidebarProvider>
+  );
 }
