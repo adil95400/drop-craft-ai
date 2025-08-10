@@ -382,7 +382,6 @@ export default function Catalogue() {
             )}
           </DialogContent>
         </Dialog>
-      </div>
     </div>
   )
 }
