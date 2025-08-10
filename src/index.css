@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Modern SaaS Design System - Shopopti Pro */
+    /* Enhanced SaaS Design System - Shopopti Ultra Pro */
     --background: 240 10% 3.9%;
     --foreground: 240 5% 96%;
 
@@ -18,24 +18,31 @@ All colors MUST be HSL.
     --popover: 240 10% 3.9%;
     --popover-foreground: 240 5% 96%;
 
-    /* Tech Blue Primary with Modern Accent */
+    /* Modern Tech Blue with Enhanced Variants */
     --primary: 221 83% 53%;
     --primary-foreground: 240 5% 96%;
     --primary-hover: 221 83% 45%;
     --primary-glow: 221 83% 63%;
+    --primary-soft: 221 83% 90%;
 
     /* Professional Secondary */
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
 
-    /* Subtle Muted Tones */
+    /* Enhanced Muted Tones */
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
 
-    /* Vibrant Accent - Purple Tech */
+    /* Vibrant Accent System */
     --accent: 270 95% 75%;
     --accent-foreground: 240 5.9% 10%;
+    --accent-soft: 270 95% 85%;
 
+    /* Status Colors */
+    --success: 142 76% 36%;
+    --success-foreground: 240 5% 96%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 240 5% 96%;
 
@@ -45,19 +52,24 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
-    /* Modern Gradients for SaaS */
+    /* Enhanced Gradient System */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
     --gradient-accent: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
     --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--primary-glow)) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(142 76% 46%) 100%);
+    --gradient-soft: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--card)) 100%);
     
-    /* Elegant Shadows */
+    /* Premium Shadow System */
     --shadow-card: 0 4px 6px -1px hsl(var(--primary) / 0.1), 0 2px 4px -1px hsl(var(--primary) / 0.06);
     --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
     --shadow-soft: 0 10px 30px -10px hsl(var(--foreground) / 0.1);
+    --shadow-intense: 0 20px 40px -10px hsl(var(--primary) / 0.3);
+    --shadow-floating: 0 25px 50px -12px hsl(var(--primary) / 0.25);
     
-    /* Smooth Animations */
+    /* Advanced Animation System */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     /* Modern Sidebar */
     --sidebar-background: 240 8% 6%;
