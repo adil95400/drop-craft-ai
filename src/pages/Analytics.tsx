@@ -1,266 +1,334 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { AppLayout } from "@/layouts/AppLayout";
+import { Progress } from "@/components/ui/progress";
 import { 
+  BarChart3, 
   TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
-  ShoppingCart, 
   Users, 
-  Package,
+  ShoppingCart, 
+  DollarSign,
+  Eye,
+  Target,
   Calendar,
-  Download,
   Filter,
+  Download,
   RefreshCw,
+  ArrowUp,
+  ArrowDown,
   Zap
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Analytics = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleExport = (format: 'csv' | 'pdf' | 'excel' = 'csv') => {
-    toast({
-      title: "Export démarré",
-      description: `Génération du fichier ${format.toUpperCase()}...`,
-    });
-    
-    setTimeout(() => {
-      toast({
-        title: "Export terminé",
-        description: `Le fichier ${format.toUpperCase()} a été téléchargé`,
-      });
-    }, 3000);
-  };
-
-  const handleRefresh = () => {
-    toast({
-      title: "Actualisation",
-      description: "Mise à jour des données en cours...",
-    });
-    
-    setTimeout(() => {
-      toast({
-        title: "Données actualisées",
-        description: "Les analytics ont été mis à jour",
-      });
-    }, 2000);
-  };
-
-  const handleFilters = () => {
-    toast({
-      title: "Filtres avancés",
-      description: "Configuration des filtres d'analyse",
-    });
-  };
-
-  const handleViewProduct = (productName: string) => {
-    navigate('/catalogue');
-    toast({
-      title: "Produit",
-      description: `Redirection vers ${productName}`,
-    });
-  };
-  const stats = [
+  const [timeRange, setTimeRange] = useState("7d");
+  const metrics = [
     {
-      title: "Revenus Totaux",
-      value: "€47,293",
+      title: "Chiffre d'Affaires",
+      value: "€24,567",
       change: "+12.5%",
       trend: "up",
-      icon: DollarSign
+      icon: DollarSign,
+      color: "text-green-600"
     },
     {
       title: "Commandes",
-      value: "1,847",
+      value: "156",
       change: "+8.2%",
-      trend: "up",
-      icon: ShoppingCart
+      trend: "up", 
+      icon: ShoppingCart,
+      color: "text-blue-600"
     },
     {
-      title: "Clients",
-      value: "892",
-      change: "+23.1%",
-      trend: "up",
-      icon: Users
-    },
-    {
-      title: "Produits Actifs",
-      value: "2,341",
+      title: "Visiteurs",
+      value: "3,247",
       change: "-2.4%",
       trend: "down",
-      icon: Package
+      icon: Users,
+      color: "text-purple-600"
+    },
+    {
+      title: "Taux Conversion",
+      value: "4.8%",
+      change: "+1.2%",
+      trend: "up",
+      icon: Target,
+      color: "text-orange-600"
     }
   ];
 
   const topProducts = [
-    { name: "Montre Connectée Pro", sales: 234, revenue: "€12,450" },
-    { name: "Écouteurs Bluetooth", sales: 189, revenue: "€8,920" },
-    { name: "Chargeur Sans Fil", sales: 156, revenue: "€6,780" },
-    { name: "Coque iPhone Premium", sales: 143, revenue: "€4,290" },
-    { name: "Support Téléphone Auto", sales: 98, revenue: "€2,940" }
+    { name: "iPhone 15 Case Premium", sales: 45, revenue: "€1,350", growth: "+15%" },
+    { name: "Wireless Charger Pro", sales: 38, revenue: "€1,140", growth: "+8%" },
+    { name: "AirPods Case Silicone", sales: 32, revenue: "€960", growth: "+22%" },
+    { name: "Phone Stand Adjustable", sales: 28, revenue: "€840", growth: "+5%" },
+    { name: "Screen Protector Kit", sales: 25, revenue: "€750", growth: "+18%" }
+  ];
+
+  const trafficSources = [
+    { source: "Google Ads", visits: 1247, percentage: 38.4, color: "bg-blue-500" },
+    { source: "Facebook Ads", visits: 896, percentage: 27.6, color: "bg-blue-600" },
+    { source: "Organic Search", visits: 623, percentage: 19.2, color: "bg-green-500" },
+    { source: "Direct", visits: 312, percentage: 9.6, color: "bg-gray-500" },
+    { source: "Email", visits: 169, percentage: 5.2, color: "bg-purple-500" }
+  ];
+
+  const conversionFunnel = [
+    { stage: "Visiteurs", count: 3247, percentage: 100, color: "bg-blue-500" },
+    { stage: "Vues Produit", count: 1623, percentage: 50, color: "bg-blue-600" },
+    { stage: "Ajouts Panier", count: 487, percentage: 15, color: "bg-purple-500" },
+    { stage: "Commandes", count: 156, percentage: 4.8, color: "bg-green-500" }
   ];
 
   return (
-    <AppLayout>
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Analytics
+            Analytics Pro
           </h1>
           <p className="text-muted-foreground mt-1">
-            Tableau de bord des performances et statistiques
+            Analysez vos performances et optimisez vos ventes
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={handleFilters}>
-            <Filter className="mr-2 h-4 w-4" />
-            Filtres
+        <div className="flex space-x-3">
+          <Button variant="outline">
+            <Calendar className="mr-2 h-4 w-4" />
+            {timeRange === "7d" ? "7 jours" : timeRange === "30d" ? "30 jours" : "90 jours"}
           </Button>
-          <Button variant="outline" onClick={() => handleExport()}>
+          <Button variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Exporter
           </Button>
-          <Button variant="hero" onClick={handleRefresh}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Actualiser
-          </Button>
-          <Button 
-            variant="premium" 
-            onClick={() => navigate("/analytics/ultra-pro")}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
-          >
+          <Button variant="premium" onClick={() => navigate("/analytics-ultra-pro")}>
             <Zap className="mr-2 h-4 w-4" />
             Ultra Pro
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Time Range Selector */}
+      <div className="flex space-x-2">
+        {["7d", "30d", "90d"].map((range) => (
+          <Button
+            key={range}
+            variant={timeRange === range ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTimeRange(range)}
+          >
+            {range === "7d" ? "7 jours" : range === "30d" ? "30 jours" : "90 jours"}
+          </Button>
+        ))}
+      </div>
+
+      {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <Card key={index} className="border-border bg-card shadow-card hover:shadow-glow transition-all duration-300">
+        {metrics.map((metric, index) => (
+          <Card key={index} className="border-border bg-card shadow-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.title}
+                {metric.title}
               </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
+              <metric.icon className={`h-4 w-4 ${metric.color}`} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <div className="flex items-center space-x-2 text-sm">
-                {stat.trend === "up" ? (
-                  <TrendingUp className="h-4 w-4 text-green-500" />
+              <div className="text-2xl font-bold">{metric.value}</div>
+              <div className="flex items-center text-xs text-muted-foreground">
+                {metric.trend === "up" ? (
+                  <ArrowUp className="h-3 w-3 text-green-600 mr-1" />
                 ) : (
-                  <TrendingDown className="h-4 w-4 text-red-500" />
+                  <ArrowDown className="h-3 w-3 text-red-600 mr-1" />
                 )}
-                <span className={stat.trend === "up" ? "text-green-500" : "text-red-500"}>
-                  {stat.change}
+                <span className={metric.trend === "up" ? "text-green-600" : "text-red-600"}>
+                  {metric.change}
                 </span>
-                <span className="text-muted-foreground">vs mois dernier</span>
+                <span className="ml-1">vs période précédente</span>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Analytics Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-          <TabsTrigger value="products">Produits</TabsTrigger>
-          <TabsTrigger value="customers">Clients</TabsTrigger>
-          <TabsTrigger value="traffic">Trafic</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border-border bg-card shadow-card">
-              <CardHeader>
-                <CardTitle>Revenus Mensuels</CardTitle>
-                <CardDescription>Évolution des revenus sur les 12 derniers mois</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64 flex items-center justify-center text-muted-foreground">
-                  Graphique des revenus (Chart.js/Recharts)
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Left Column */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* Revenue Chart Placeholder */}
+          <Card className="border-border bg-card shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" />
+                Évolution du Chiffre d'Affaires
+              </CardTitle>
+              <CardDescription>
+                Performance sur les {timeRange === "7d" ? "7 derniers jours" : timeRange === "30d" ? "30 derniers jours" : "90 derniers jours"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 bg-muted/20 rounded-lg flex items-center justify-center">
+                <div className="text-center text-muted-foreground">
+                  <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>Graphique d'évolution du CA</p>
+                  <p className="text-sm">(Intégration prévue)</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card className="border-border bg-card shadow-card">
-              <CardHeader>
-                <CardTitle>Conversion Rate</CardTitle>
-                <CardDescription>Taux de conversion par source de trafic</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64 flex items-center justify-center text-muted-foreground">
-                  Graphique de conversion (Chart.js/Recharts)
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="products" className="space-y-6">
+          {/* Top Products */}
           <Card className="border-border bg-card shadow-card">
             <CardHeader>
               <CardTitle>Top Produits</CardTitle>
-              <CardDescription>Produits les plus performants ce mois</CardDescription>
+              <CardDescription>Vos produits les plus performants</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {topProducts.map((product, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border border-border rounded-lg hover:shadow-card transition-all cursor-pointer" onClick={() => handleViewProduct(product.name)}>
-                    <div>
-                      <div className="font-medium">{product.name}</div>
-                      <div className="text-sm text-muted-foreground">{product.sales} ventes</div>
+                  <div key={index} className="flex items-center justify-between p-3 border border-border rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-primary">#{index + 1}</span>
+                      </div>
+                      <div>
+                        <div className="font-medium">{product.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {product.sales} ventes
+                        </div>
+                      </div>
                     </div>
                     <div className="text-right">
                       <div className="font-semibold">{product.revenue}</div>
-                      <Badge variant="secondary">#{index + 1}</Badge>
+                      <div className="text-sm text-green-600">{product.growth}</div>
                     </div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
 
-        <TabsContent value="customers" className="space-y-6">
+          {/* Conversion Funnel */}
           <Card className="border-border bg-card shadow-card">
             <CardHeader>
-              <CardTitle>Analyse Clients</CardTitle>
-              <CardDescription>Comportement et segmentation des clients</CardDescription>
+              <CardTitle>Entonnoir de Conversion</CardTitle>
+              <CardDescription>Suivez le parcours de vos visiteurs</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-64 flex items-center justify-center text-muted-foreground">
-                Analyse des clients (à implémenter)
+              <div className="space-y-4">
+                {conversionFunnel.map((stage, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">{stage.stage}</span>
+                      <span className="text-muted-foreground">
+                        {stage.count.toLocaleString()} ({stage.percentage}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-muted/30 rounded-full h-3">
+                      <div 
+                        className={`${stage.color} h-3 rounded-full transition-all duration-500`}
+                        style={{ width: `${stage.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="traffic" className="space-y-6">
+        {/* Right Column */}
+        <div className="space-y-6">
+          {/* Traffic Sources */}
           <Card className="border-border bg-card shadow-card">
             <CardHeader>
               <CardTitle>Sources de Trafic</CardTitle>
               <CardDescription>D'où viennent vos visiteurs</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-64 flex items-center justify-center text-muted-foreground">
-                Analyse du trafic (à implémenter)
+              <div className="space-y-4">
+                {trafficSources.map((source, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">{source.source}</span>
+                      <span className="text-muted-foreground">
+                        {source.visits} ({source.percentage}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-muted/30 rounded-full h-2">
+                      <div 
+                        className={`${source.color} h-2 rounded-full transition-all duration-500`}
+                        style={{ width: `${source.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+
+          {/* Quick Actions */}
+          <Card className="border-border bg-card shadow-card">
+            <CardHeader>
+              <CardTitle>Actions Rapides</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button variant="outline" className="w-full justify-start">
+                <Eye className="mr-2 h-4 w-4" />
+                Voir Google Analytics
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <Target className="mr-2 h-4 w-4" />
+                Campagnes Publicitaires
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <Filter className="mr-2 h-4 w-4" />
+                Filtres Avancés
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Actualiser Données
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Performance Summary */}
+          <Card className="border-border bg-card shadow-card">
+            <CardHeader>
+              <CardTitle>Résumé Performance</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Score Global</span>
+                <span className="font-semibold text-green-600">Excellent</span>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span>Performance</span>
+                  <span>92%</span>
+                </div>
+                <Progress value={92} className="h-2" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span>Conversion</span>
+                  <span>85%</span>
+                </div>
+                <Progress value={85} className="h-2" />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span>Engagement</span>
+                  <span>78%</span>
+                </div>
+                <Progress value={78} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </AppLayout>
+    </div>
   );
 };
 
