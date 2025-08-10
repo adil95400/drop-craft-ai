@@ -21,17 +21,19 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="lg:hidden fixed top-4 left-4 z-50">
             <SidebarTrigger />
           </div>
-          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
+          <header className="h-16 border-b bg-gradient-to-r from-background/95 to-muted/50 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 shadow-sm">
             <div className="flex items-center justify-between px-6 h-full">
               <div className="flex items-center gap-4">
-                
-                {/* Search */}
-                <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Rechercher produits, commandes..."
-                    className="pl-9 bg-muted/50"
-                  />
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">SP</span>
+                  </div>
+                  <div className="hidden md:block">
+                    <h1 className="text-lg font-semibold bg-gradient-primary bg-clip-text text-transparent">
+                      Shopopti Pro
+                    </h1>
+                    <p className="text-xs text-muted-foreground">Tableau de bord professionnel</p>
+                  </div>
                 </div>
               </div>
 
