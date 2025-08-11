@@ -1,8 +1,6 @@
 import { ReactNode } from "react";
-import { SidebarProvider, SidebarTrigger, SidebarInset, useSidebar } from "@/components/ui/sidebar";
-import { AppSidebarUltraPro } from "@/components/AppSidebarUltraPro";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
+import { AppSidebarUltraPro } from "@/components/AppSidebarUltraProNew";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { AdminUserDropdown } from "@/components/admin/AdminUserDropdown";
 interface AppLayoutProps {
@@ -12,33 +10,27 @@ export function AppLayout({
   children
 }: AppLayoutProps) {
   return (
-    <SidebarProvider 
-      defaultOpen={true}
-    >
+    <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen w-full bg-background flex">
         <AppSidebarUltraPro />
         
-        <SidebarInset className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <SidebarInset className="flex-1 flex flex-col min-w-0">
           {/* Header with responsive sidebar trigger */}
           <header className="sticky top-0 z-40 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center justify-between px-4 h-full">
               <div className="flex items-center gap-4">
-                <SidebarTrigger className="lg:hidden" />
-                {/* Global search could go here */}
+                <SidebarTrigger />
               </div>
 
               <div className="flex items-center gap-4">
-                {/* Notifications */}
                 <NotificationDropdown />
-
-                {/* User Menu */}
                 <AdminUserDropdown />
               </div>
             </div>
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto p-0">
             {children}
           </main>
 
