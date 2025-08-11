@@ -14,7 +14,7 @@ export function AppLayout({
       <div className="min-h-screen w-full bg-background flex">
         <AppSidebarUltraPro />
         
-        <SidebarInset className="flex-1 flex flex-col min-w-0 transition-[margin] duration-200 ease-linear md:ml-[--sidebar-width] md:peer-data-[state=collapsed]:ml-[--sidebar-width-icon]">
+        <SidebarInset className="flex-1 flex flex-col min-w-0">
           {/* Header with responsive sidebar trigger */}
           <header className="sticky top-0 z-40 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex items-center justify-between px-4 h-full">
@@ -30,7 +30,7 @@ export function AppLayout({
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-auto p-0">
+          <main className="flex-1 overflow-auto">
             {children}
           </main>
 
