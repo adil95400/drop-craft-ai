@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { SidebarProvider } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/AppSidebar"
+import { AppLayout } from "@/layouts/AppLayout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -216,13 +215,10 @@ const SEOUltraPro = () => {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-background to-background/80">
-        <AppSidebar />
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
+    <AppLayout>
+      <div className="max-w-7xl mx-auto space-y-6 p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                   SEO Ultra Pro
@@ -744,11 +740,9 @@ const SEOUltraPro = () => {
                   </Card>
                 </div>
               </TabsContent>
-            </Tabs>
-          </div>
-        </main>
+        </Tabs>
       </div>
-    </SidebarProvider>
+    </AppLayout>
   )
 }
 

@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { SidebarProvider } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/AppSidebar"
+import { AppLayout } from "@/layouts/AppLayout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -165,58 +164,55 @@ const AutomationUltraPro = () => {
   ]
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-background via-background to-background/80">
-        <AppSidebar />
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  Automation Ultra Pro
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                  Automatisez vos processus marketing et commerciaux
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <Button variant="outline" size="sm">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Paramètres
-                </Button>
-                <Button size="sm">
-                  <Bot className="w-4 h-4 mr-2" />
-                  Nouveau workflow
-                </Button>
-              </div>
-            </div>
+    <AppLayout>
+      <div className="max-w-7xl mx-auto space-y-6 p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              Automation Ultra Pro
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Automatisez vos processus marketing et commerciaux
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" size="sm">
+              <Settings className="w-4 h-4 mr-2" />
+              Paramètres
+            </Button>
+            <Button size="sm">
+              <Bot className="w-4 h-4 mr-2" />
+              Nouveau workflow
+            </Button>
+          </div>
+        </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {automationStats.map((stat, index) => (
-                <Card key={index} className="relative overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                        <div className="flex items-center gap-2">
-                          <p className="text-2xl font-bold">{stat.value}</p>
-                          <Badge variant="secondary" className="text-xs">
-                            {stat.change}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className={`p-3 rounded-full bg-primary/10`}>
-                        <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                      </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {automationStats.map((stat, index) => (
+            <Card key={index} className="relative overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-2xl font-bold">{stat.value}</p>
+                      <Badge variant="secondary" className="text-xs">
+                        {stat.change}
+                      </Badge>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  </div>
+                  <div className={`p-3 rounded-full bg-primary/10`}>
+                    <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-            <Tabs defaultValue="workflows" className="space-y-6">
+        <Tabs defaultValue="workflows" className="space-y-6">
               <TabsList className="grid w-full lg:w-[400px] grid-cols-4">
                 <TabsTrigger value="workflows">Workflows</TabsTrigger>
                 <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -607,11 +603,9 @@ const AutomationUltraPro = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
-            </Tabs>
-          </div>
-        </main>
+        </Tabs>
       </div>
-    </SidebarProvider>
+    </AppLayout>
   )
 }
 
