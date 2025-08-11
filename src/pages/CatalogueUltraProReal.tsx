@@ -15,9 +15,11 @@ import { LoadingState } from '@/components/common/LoadingState'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ActionButton } from '@/components/common/ActionButton'
 import { AIAnalysisInterface } from '@/components/ai/AIAnalysisInterface'
+import { useNavigate } from 'react-router-dom'
 
 export default function CatalogueUltraProReal() {
   const { toast } = useToast()
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [priceRange, setPriceRange] = useState("all")
@@ -206,7 +208,7 @@ export default function CatalogueUltraProReal() {
           description="Commencez par ajouter des produits pour voir les analyses IA"
           action={{
             label: "Ajouter des produits",
-            onClick: () => window.location.href = '/import'
+            onClick: () => navigate('/import')
           }}
         />
       </AppLayout>

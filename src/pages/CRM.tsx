@@ -16,6 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { AppLayout } from '@/layouts/AppLayout'
 import { useCustomers } from '@/hooks/useCustomers'
+import { Link } from 'react-router-dom'
 
 export default function CRM() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -160,13 +161,14 @@ export default function CRM() {
             <Target className="w-4 h-4 mr-2" />
             Segmentation IA
           </Button>
-          <Button 
-            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
-            onClick={() => window.location.href = '/crm-ultra-pro'}
-          >
-            <Crown className="w-4 h-4 mr-2" />
-            CRM Ultra Pro
-          </Button>
+          <Link to="/crm-ultra-pro">
+            <Button 
+              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+            >
+              <Crown className="w-4 h-4 mr-2" />
+              CRM Ultra Pro
+            </Button>
+          </Link>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-primary hover:bg-primary/90">

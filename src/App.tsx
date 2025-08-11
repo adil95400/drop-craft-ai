@@ -126,6 +126,13 @@ const App = () => (
                 </AppLayout>
               </AuthGuard>
             } />
+            <Route path="/catalogue-ultra-pro-real" element={
+              <AuthGuard>
+                <AppLayout>
+                  <CatalogueUltraProReal />
+                </AppLayout>
+              </AuthGuard>
+            } />
             <Route path="/catalogue-ultra-pro-advanced" element={
               <AuthGuard>
                 <AppLayout>

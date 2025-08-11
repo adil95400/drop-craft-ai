@@ -13,6 +13,7 @@ import { Users, Package, TrendingUp, Zap, History, Settings, Clock, CheckCircle,
 import { toast } from "sonner"
 import { useProducts } from "@/hooks/useProducts"
 import { useImport } from "@/hooks/useImport"
+import { Link } from "react-router-dom"
 
 
 const Import = () => {
@@ -182,13 +183,14 @@ const Import = () => {
               <Download className="mr-2 h-4 w-4" />
               Template CSV
             </Button>
-            <Button 
-              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={() => window.location.href = '/import-ultra-pro'}
-            >
-              <Zap className="mr-2 h-4 w-4" />
-              Import Ultra Pro
-            </Button>
+            <Link to="/import-ultra-pro">
+              <Button 
+                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <Zap className="mr-2 h-4 w-4" />
+                Import Ultra Pro
+              </Button>
+            </Link>
             <Button variant="hero" onClick={handleQuickImport}>
               <Plus className="mr-2 h-4 w-4" />
               Import Rapide

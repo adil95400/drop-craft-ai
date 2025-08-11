@@ -15,6 +15,7 @@ import { CatalogAnalytics } from "@/components/catalog/CatalogAnalytics"
 import { BulkImportDialog } from "@/components/catalog/BulkImportDialog"
 import { AdvancedFilters } from "@/components/catalog/AdvancedFilters"
 import { toast } from "sonner"
+import { Link } from "react-router-dom"
 
 export default function Catalogue() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -125,13 +126,14 @@ export default function Catalogue() {
               <BarChart3 className="w-4 h-4 mr-2" />
               Analytics Marché
             </Button>
-            <Button 
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-              onClick={() => window.location.href = '/catalogue/ultra-pro'}
-            >
-              <Crown className="w-4 h-4 mr-2" />
-              Catalogue Ultra Pro
-            </Button>
+            <Link to="/catalogue-ultra-pro">
+              <Button 
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+              >
+                <Crown className="w-4 h-4 mr-2" />
+                Catalogue Ultra Pro
+              </Button>
+            </Link>
             <Button className="bg-primary hover:bg-primary/90">
               <Package className="w-4 h-4 mr-2" />
               Importer Sélection

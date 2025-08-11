@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { AppLayout } from "@/layouts/AppLayout";
+import { Link } from "react-router-dom";
 import { 
   Package, 
   Search, 
@@ -154,13 +155,14 @@ const Inventory = () => {
               <Upload className="mr-2 h-4 w-4" />
               Importer
             </Button>
-            <Button 
-              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={() => window.location.href = '/inventory-ultra-pro'}
-            >
-              <BarChart3 className="mr-2 h-4 w-4" />
-              Inventory Ultra Pro
-            </Button>
+            <Link to="/inventory-ultra-pro">
+              <Button 
+                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Inventory Ultra Pro
+              </Button>
+            </Link>
             <Button variant="hero" onClick={handleNewProduct}>
               <Plus className="mr-2 h-4 w-4" />
               Nouveau Produit

@@ -96,7 +96,7 @@ const navigationItems = [
     items: [
       {
         title: "Catalogue Ultra Pro",
-        url: "/catalogue-ultra-pro-real",
+        url: "/catalogue-ultra-pro",
         icon: Package,
         badge: { text: "847", variant: "outline" as const }
       },
