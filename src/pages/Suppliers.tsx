@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { AppLayout } from "@/layouts/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -13,6 +14,7 @@ import { Plus, Edit, Trash2, Phone, Mail, Globe, MapPin, Package } from "lucide-
 import { toast } from "sonner"
 
 const Suppliers = () => {
+  const navigate = useNavigate()
   const [suppliers] = useState([
     {
       id: "1",
@@ -81,7 +83,7 @@ const Suppliers = () => {
 
   const getStatusBadge = (status: string) => {
     return status === "active" ? (
-      <Badge variant="default" className="bg-green-100 text-green-800">
+      <Badge variant="default" className="bg-success text-success-foreground">
         Actif
       </Badge>
     ) : (
@@ -111,8 +113,8 @@ const Suppliers = () => {
           
           <div className="flex gap-2">
             <Button 
-              className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={() => window.location.href = '/suppliers-ultra-pro'}
+              className="bg-gradient-primary hover:bg-gradient-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
+              onClick={() => navigate('/suppliers-ultra-pro')}
             >
               <Package className="w-4 h-4 mr-2" />
               Suppliers Ultra Pro
@@ -321,7 +323,7 @@ const Suppliers = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center">
-                        <span className="text-yellow-500 mr-1">
+                        <span className="text-warning mr-1">
                           {getRatingStars(supplier.rating)}
                         </span>
                         <span className="text-sm">({supplier.rating})</span>
@@ -332,7 +334,7 @@ const Suppliers = () => {
                         <Button variant="ghost" size="sm">
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-800">
+                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>

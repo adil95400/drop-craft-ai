@@ -136,7 +136,7 @@ export default function Orders() {
           </Button>
           <Button 
             className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-            onClick={() => window.location.href = '/orders-ultra-pro'}
+            onClick={() => navigate('/orders-ultra-pro')}
           >
             <Package className="w-4 h-4 mr-2" />
             Orders Ultra Pro

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Truck, Package, CheckCircle2, Clock, AlertTriangle, Search, Filter, Download, RefreshCw, Plus, Eye, Edit, MoreHorizontal, AlertCircle, MapPin, BarChart3 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +16,7 @@ import { ActionButton } from '@/components/common/ActionButton'
 import { useToast } from '@/hooks/use-toast'
 
 export default function TrackingReal() {
+  const navigate = useNavigate()
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -93,15 +95,15 @@ export default function TrackingReal() {
   }
 
   const handleTrackingToday = () => {
-    window.location.href = '/tracking/today'
+    navigate('/tracking/today')
   }
 
   const handleTrackingInTransit = () => {
-    window.location.href = '/tracking/in-transit'
+    navigate('/tracking/in-transit')
   }
 
   const handleUltraPro = () => {
-    window.location.href = '/tracking-ultra-pro'
+    navigate('/tracking-ultra-pro')
   }
 
   if (orders.length === 0) {
@@ -112,7 +114,7 @@ export default function TrackingReal() {
           description="Il n'y a actuellement aucune commande à suivre"
           action={{
             label: "Voir toutes les commandes",
-            onClick: () => window.location.href = '/orders'
+            onClick: () => navigate('/orders')
           }}
         />
       </AppLayout>

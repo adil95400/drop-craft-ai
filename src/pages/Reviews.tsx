@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Star, ThumbsUp, Filter, Search, Crown } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useReviews } from '@/hooks/useReviews'
 
 export default function Reviews() {
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [ratingFilter, setRatingFilter] = useState<string>('all')
   const { reviews, stats, isLoading, markHelpful } = useReviews()
@@ -68,7 +70,7 @@ export default function Reviews() {
           </Button>
           <Button 
             className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
-            onClick={() => window.location.href = '/reviews-ultra-pro'}
+            onClick={() => navigate('/reviews-ultra-pro')}
           >
             <Crown className="w-4 h-4 mr-2" />
             Reviews Ultra Pro

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Package, TrendingUp, AlertTriangle, CheckCircle2, Clock, Search, Filter, Download, RefreshCw, Plus, Eye, Edit, MoreHorizontal, AlertCircle, FileText, Settings, BarChart3 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +16,7 @@ import { ActionButton } from '@/components/common/ActionButton'
 import { useToast } from '@/hooks/use-toast'
 
 export default function CatalogueReal() {
+  const navigate = useNavigate()
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
@@ -99,7 +101,7 @@ export default function CatalogueReal() {
   }
 
   const handleUltraPro = () => {
-    window.location.href = '/catalogue-ultra-pro'
+    navigate('/catalogue-ultra-pro')
   }
 
   if (products.length === 0) {
