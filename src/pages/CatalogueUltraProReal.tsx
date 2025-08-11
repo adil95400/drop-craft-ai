@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast'
 import { LoadingState } from '@/components/common/LoadingState'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ActionButton } from '@/components/common/ActionButton'
+import { AIAnalysisInterface } from '@/components/ai/AIAnalysisInterface'
 
 export default function CatalogueUltraProReal() {
   const { toast } = useToast()
@@ -447,15 +448,15 @@ export default function CatalogueUltraProReal() {
           </TabsContent>
 
           <TabsContent value="predictions">
-            <Card>
-              <CardHeader>
-                <CardTitle>Prédictions IA</CardTitle>
-                <CardDescription>Prévisions basées sur vos données historiques</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Algorithmes de prédiction en cours d'entraînement...</p>
-              </CardContent>
-            </Card>
+            <AIAnalysisInterface 
+              products={products}
+              onAnalysisComplete={(analysis) => {
+                toast({
+                  title: "Analyse IA terminée",
+                  description: "Nouveaux insights disponibles"
+                })
+              }}
+            />
           </TabsContent>
         </Tabs>
       </div>
