@@ -412,7 +412,7 @@ export function AppSidebarUltraPro() {
   }
 
   return (
-    <Sidebar className="border-r bg-sidebar" collapsible="icon">
+    <Sidebar className="border-r bg-sidebar" variant="inset" collapsible="icon">
       {/* Header with logo and search */}
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-3">
