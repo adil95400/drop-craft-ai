@@ -61,7 +61,7 @@ import SEOUltraPro from "./pages/SEOUltraPro";
 import SecurityUltraPro from "./pages/SecurityUltraPro";
 import SupportUltraPro from "./pages/SupportUltraPro";
 import TrackingUltraPro from "./pages/TrackingUltraPro";
-import CatalogueUltraPro from "./pages/CatalogueUltraPro";
+import CatalogueUltraProReal from "./pages/CatalogueUltraProReal";
 import CatalogueUltraProAdvanced from "./pages/CatalogueUltraProAdvanced";
 import PluginsUltraPro from "./pages/PluginsUltraPro";
 import MobileUltraPro from "./pages/MobileUltraPro";
@@ -122,7 +122,7 @@ const App = () => (
             <Route path="/catalogue-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <CatalogueUltraPro />
+                  <CatalogueUltraProReal />
                 </AppLayout>
               </AuthGuard>
             } />
