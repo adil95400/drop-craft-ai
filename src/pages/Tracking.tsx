@@ -30,13 +30,13 @@ const getStatusProgress = (status: string): number => {
 
 const getStatusColor = (status: string): string => {
   const colorMap: { [key: string]: string } = {
-    'pending': 'bg-yellow-500',
-    'processing': 'bg-blue-500',
-    'shipped': 'bg-purple-500',
-    'delivered': 'bg-green-500',
-    'cancelled': 'bg-red-500'
+    'pending': 'bg-warning',
+    'processing': 'bg-primary',
+    'shipped': 'bg-accent',
+    'delivered': 'bg-success',
+    'cancelled': 'bg-destructive'
   }
-  return colorMap[status] || 'bg-gray-500'
+  return colorMap[status] || 'bg-muted'
 }
 
 export default function Tracking() {

@@ -126,9 +126,9 @@ const Inventory = () => {
     if (stock === 0) {
       return <Badge variant="destructive">Rupture</Badge>;
     } else if (stock <= threshold) {
-      return <Badge variant="secondary" className="bg-orange-500 text-white">Stock faible</Badge>;
+      return <Badge variant="secondary" className="bg-warning text-warning-foreground">Stock faible</Badge>;
     } else {
-      return <Badge variant="default" className="bg-green-500">En stock</Badge>;
+      return <Badge variant="default" className="bg-success text-success-foreground">En stock</Badge>;
     }
   };
 
@@ -182,7 +182,7 @@ const Inventory = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-green-500">{stat.change} vs mois dernier</p>
+                <p className="text-xs text-success">{stat.change} vs mois dernier</p>
               </CardContent>
             </Card>
           ))}
@@ -251,9 +251,9 @@ const Inventory = () => {
                         <div className="text-center">
                           <div className="text-sm text-muted-foreground">Stock</div>
                           <div className={`text-2xl font-bold ${
-                            product.stock === 0 ? 'text-red-500' : 
-                            product.stock <= product.lowStockThreshold ? 'text-orange-500' : 
-                            'text-green-500'
+                            product.stock === 0 ? 'text-destructive' : 
+                            product.stock <= product.lowStockThreshold ? 'text-warning' : 
+                            'text-success'
                           }`}>
                             {product.stock}
                           </div>
@@ -294,9 +294,9 @@ const Inventory = () => {
           <TabsContent value="low-stock" className="space-y-6">
             <Card className="border-border bg-card shadow-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-orange-500" />
-                  Produits en Stock Faible
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-warning" />
+                    Produits en Stock Faible
                 </CardTitle>
                 <CardDescription>Produits nécessitant un réapprovisionnement</CardDescription>
               </CardHeader>
@@ -311,7 +311,7 @@ const Inventory = () => {
                       <div className="flex items-center space-x-4">
                         <div className="text-center">
                           <div className="text-sm text-muted-foreground">Stock actuel</div>
-                          <div className={`font-semibold ${product.stock === 0 ? 'text-red-500' : 'text-orange-500'}`}>
+                          <div className={`font-semibold ${product.stock === 0 ? 'text-destructive' : 'text-warning'}`}>
                             {product.stock}
                           </div>
                         </div>
@@ -394,7 +394,7 @@ const Inventory = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className={`font-semibold ${movement.quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className={`font-semibold ${movement.quantity > 0 ? 'text-success' : 'text-destructive'}`}>
                           {movement.quantity > 0 ? '+' : ''}{movement.quantity}
                         </div>
                         <div className="text-sm text-muted-foreground">{movement.date}</div>

@@ -150,8 +150,8 @@ export default function CatalogueUltraProReal() {
             <div className="mt-3 p-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Brain className="w-4 h-4 text-purple-500" />
-                  <span className="text-sm font-medium text-purple-700">Score IA</span>
+                  <Brain className="w-4 h-4 text-accent" />
+                  <span className="text-sm font-medium text-accent-foreground">Score IA</span>
                 </div>
                 <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
                   {Math.floor(Math.random() * 20 + 80)}/100
@@ -266,7 +266,7 @@ export default function CatalogueUltraProReal() {
           <Card className="hover-scale">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <Target className="w-8 h-8 text-green-500" />
+                <Target className="w-8 h-8 text-success" />
                 <div>
                   <p className="text-2xl font-bold">{iaAnalyses.winnersCount}</p>
                   <p className="text-sm text-muted-foreground">Winners IA</p>
@@ -277,7 +277,7 @@ export default function CatalogueUltraProReal() {
           <Card className="hover-scale">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <TrendingUp className="w-8 h-8 text-blue-500" />
+                <TrendingUp className="w-8 h-8 text-primary" />
                 <div>
                   <p className="text-2xl font-bold">{iaAnalyses.opportunities}</p>
                   <p className="text-sm text-muted-foreground">Opportunités</p>
@@ -288,7 +288,7 @@ export default function CatalogueUltraProReal() {
           <Card className="hover-scale">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <Activity className="w-8 h-8 text-orange-500" />
+                <Activity className="w-8 h-8 text-warning" />
                 <div>
                   <p className="text-2xl font-bold">{iaAnalyses.precision}%</p>
                   <p className="text-sm text-muted-foreground">Précision IA</p>
@@ -299,7 +299,7 @@ export default function CatalogueUltraProReal() {
           <Card className="hover-scale">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <Crown className="w-8 h-8 text-yellow-500" />
+                <Crown className="w-8 h-8 text-warning" />
                 <div>
                   <p className="text-2xl font-bold">€{(iaAnalyses.potential / 1000).toFixed(1)}k</p>
                   <p className="text-sm text-muted-foreground">Potentiel identifié</p>
@@ -382,7 +382,7 @@ export default function CatalogueUltraProReal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-green-500" />
+                  <Target className="w-5 h-5 text-success" />
                   Opportunités de Marché Détectées
                 </CardTitle>
               </CardHeader>
@@ -396,7 +396,7 @@ export default function CatalogueUltraProReal() {
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <p className="font-bold text-green-600">{opp.potentiel}</p>
+                          <p className="font-bold text-success">{opp.potentiel}</p>
                           <Badge variant={opp.difficulte === 'Facile' ? 'default' : opp.difficulte === 'Moyen' ? 'secondary' : 'destructive'}>
                             {opp.difficulte}
                           </Badge>
