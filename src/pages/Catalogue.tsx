@@ -118,11 +118,23 @@ export default function Catalogue() {
           </div>
           
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                toast.info(`Filtres IA activés - ${stats.winners} winners détectés`);
+              }}
+            >
               <Filter className="w-4 h-4 mr-2" />
               Filtres IA
             </Button>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                toast.info('Ouverture des analytics de marché...');
+              }}
+            >
               <BarChart3 className="w-4 h-4 mr-2" />
               Analytics Marché
             </Button>
@@ -134,7 +146,17 @@ export default function Catalogue() {
                 Catalogue Ultra Pro
               </Button>
             </Link>
-            <Button className="bg-primary hover:bg-primary/90">
+            <Button 
+              className="bg-primary hover:bg-primary/90"
+              onClick={() => {
+                const selectedCount = userFavorites.length;
+                if (selectedCount === 0) {
+                  toast.error('Aucun produit sélectionné');
+                  return;
+                }
+                toast.success(`Import de ${selectedCount} produits en cours...`);
+              }}
+            >
               <Package className="w-4 h-4 mr-2" />
               Importer Sélection
             </Button>
@@ -201,7 +223,12 @@ export default function Catalogue() {
                 className="pl-9"
               />
             </div>
-            <Button variant="outline">
+            <Button 
+              variant="outline"
+              onClick={() => {
+                toast.info('Filtres avancés : marge >50%, tendance +100%, concurrence faible');
+              }}
+            >
               <Filter className="w-4 h-4 mr-2" />
               Filtres Avancés
             </Button>
@@ -213,7 +240,7 @@ export default function Catalogue() {
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Catégorie" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border shadow-lg z-50">
                 <SelectItem value="all">Toutes catégories</SelectItem>
                 {categories.map(category => (
                   <SelectItem key={category} value={category}>
@@ -227,7 +254,7 @@ export default function Catalogue() {
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Fournisseur" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border shadow-lg z-50">
                 <SelectItem value="all">Tous fournisseurs</SelectItem>
                 {suppliers.map(supplier => (
                   <SelectItem key={supplier.id} value={supplier.id}>
@@ -241,7 +268,7 @@ export default function Catalogue() {
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Prix" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border shadow-lg z-50">
                 <SelectItem value="all">Tous prix</SelectItem>
                 <SelectItem value="0-25">0€ - 25€</SelectItem>
                 <SelectItem value="25-50">25€ - 50€</SelectItem>
@@ -254,7 +281,7 @@ export default function Catalogue() {
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Trier par" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border shadow-lg z-50">
                 <SelectItem value="rating">Mieux notés</SelectItem>
                 <SelectItem value="price-asc">Prix croissant</SelectItem>
                 <SelectItem value="price-desc">Prix décroissant</SelectItem>
