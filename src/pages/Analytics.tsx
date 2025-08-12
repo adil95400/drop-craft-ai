@@ -20,9 +20,11 @@ import {
   Zap
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const Analytics = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [timeRange, setTimeRange] = useState("7d");
   const metrics = [
     {
@@ -95,11 +97,16 @@ const Analytics = () => {
           </p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setTimeRange(timeRange === "7d" ? "30d" : timeRange === "30d" ? "90d" : "7d")}>
             <Calendar className="mr-2 h-4 w-4" />
             {timeRange === "7d" ? "7 jours" : timeRange === "30d" ? "30 jours" : "90 jours"}
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => {
+            toast({
+              title: "Export démarré",
+              description: "Vos données d'analyse sont en cours d'export...",
+            });
+          }}>
             <Download className="mr-2 h-4 w-4" />
             Exporter
           </Button>

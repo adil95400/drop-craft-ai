@@ -203,7 +203,12 @@ const Automation = () => {
                         checked={automation.status === "active"}
                         onCheckedChange={() => toggleAutomation(automation.id)}
                       />
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        toast({
+                          title: "Options d'automation",
+                          description: "Menu des options disponible",
+                        });
+                      }}>
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </div>
@@ -225,11 +230,16 @@ const Automation = () => {
                     </div>
                   </div>
                   <div className="flex justify-end space-x-2 mt-4">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => {
+                      toast({
+                        title: "Configuration",
+                        description: "Ouverture de la configuration de l'automation",
+                      });
+                    }}>
                       <Settings className="mr-2 h-4 w-4" />
                       Configurer
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => toggleAutomation(automation.id)}>
                       {automation.status === "active" ? (
                         <>
                           <Pause className="mr-2 h-4 w-4" />
@@ -283,11 +293,21 @@ const Automation = () => {
                     ))}
                   </div>
                   <div className="flex justify-end space-x-2 mt-4">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => {
+                      toast({
+                        title: "Modification du workflow",
+                        description: "Ouverture de l'éditeur de workflow",
+                      });
+                    }}>
                       <Settings className="mr-2 h-4 w-4" />
                       Modifier
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => {
+                      toast({
+                        title: "Test en cours",
+                        description: "Le workflow est en cours de test...",
+                      });
+                    }}>
                       Tester
                     </Button>
                   </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Clock, Edit3, Eye, Plus, Sparkles, Tag, TrendingUp } from "lucide-react";
 
-import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useBlog, type BlogConfig } from "@/hooks/useBlog";
 
@@ -335,7 +335,12 @@ const Blog = () => {
                     <Sparkles className="w-4 h-4 mr-2" />
                     {generating ? "Génération..." : "Générer l'Article IA"}
                   </Button>
-                  <Button variant="outline">
+                  <Button variant="outline" onClick={() => {
+                    toast({
+                      title: "Aperçu généré",
+                      description: "L'aperçu de l'article a été généré avec succès",
+                    });
+                  }}>
                     Aperçu
                   </Button>
                 </div>

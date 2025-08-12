@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useToast } from "@/hooks/use-toast"
 import { Users, UserPlus, Mail, Phone, TrendingUp, Search, Target, Activity, Calendar, PhoneCall, MessageSquare, Star, BarChart3, Crown, Zap, Bell, Filter, Download, Eye, Edit, Trash2, MoreHorizontal, ArrowUp, ArrowDown, CheckCircle2, XCircle, Clock, DollarSign } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -19,6 +20,7 @@ import { useCustomers } from '@/hooks/useCustomers'
 import { Link } from 'react-router-dom'
 
 export default function CRM() {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [segmentFilter, setSegmentFilter] = useState<string>('all')
@@ -149,11 +151,21 @@ export default function CRM() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => {
+            toast({
+              title: "Analytics Avancées",
+              description: "Ouverture du module d'analytics avancées...",
+            });
+          }}>
             <BarChart3 className="w-4 h-4 mr-2" />
             Analytics Avancées
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => {
+            toast({
+              title: "Segmentation IA",
+              description: "Ouverture de l'outil de segmentation IA...",
+            });
+          }}>
             <Target className="w-4 h-4 mr-2" />
             Segmentation IA
           </Button>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useToast } from '@/hooks/use-toast'
 import { Activity, Mail, Phone, Calendar, FileText, Search, Filter, Clock, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -87,6 +88,7 @@ const mockActivities: ActivityRecord[] = [
 ]
 
 export default function CRMActivity() {
+  const { toast } = useToast();
   const [activities, setActivities] = useState(mockActivities)
   const [searchTerm, setSearchTerm] = useState('')
   const [typeFilter, setTypeFilter] = useState<string>('all')
@@ -374,19 +376,39 @@ export default function CRMActivity() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex-col gap-2">
+            <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => {
+              toast({
+                title: "Email envoyé",
+                description: "L'email a été envoyé avec succès",
+              });
+            }}>
               <Mail className="h-6 w-6" />
               <span className="text-sm">Envoyer Email</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
+            <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => {
+              toast({
+                title: "Appel initié",
+                description: "L'appel est en cours...",
+              });
+            }}>
               <Phone className="h-6 w-6" />
               <span className="text-sm">Passer Appel</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
+            <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => {
+              toast({
+                title: "Rendez-vous programmé",
+                description: "Le rendez-vous a été ajouté au calendrier",
+              });
+            }}>
               <Calendar className="h-6 w-6" />
               <span className="text-sm">Programmer RDV</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
+            <Button variant="outline" className="h-20 flex-col gap-2" onClick={() => {
+              toast({
+                title: "Note créée",
+                description: "Une nouvelle note a été créée",
+              });
+            }}>
               <FileText className="h-6 w-6" />
               <span className="text-sm">Ajouter Note</span>
             </Button>

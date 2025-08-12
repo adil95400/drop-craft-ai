@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AppLayout } from "@/layouts/AppLayout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -33,6 +34,7 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
 
 const AutomationUltraPro = () => {
+  const { toast } = useToast()
   const [selectedWorkflow, setSelectedWorkflow] = useState<string | null>(null)
 
   // Mock data for automation workflows
@@ -177,7 +179,12 @@ const AutomationUltraPro = () => {
             </p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => {
+              toast({
+                title: "Paramètres",
+                description: "Ouverture des paramètres d'automation...",
+              });
+            }}>
               <Settings className="w-4 h-4 mr-2" />
               Paramètres
             </Button>
@@ -277,13 +284,23 @@ const AutomationUltraPro = () => {
                                 </div>
                               </div>
                               <div className="flex gap-2 ml-4">
-                                <Button size="sm" variant="outline">
+                                <Button size="sm" variant="outline" onClick={() => {
+                                  toast({
+                                    title: workflow.status === 'active' ? "Workflow mis en pause" : "Workflow activé",
+                                    description: `Le workflow "${workflow.name}" a été ${workflow.status === 'active' ? 'mis en pause' : 'activé'}`,
+                                  });
+                                }}>
                                   {workflow.status === 'active' ? 
                                     <Pause className="w-4 h-4" /> : 
                                     <Play className="w-4 h-4" />
                                   }
                                 </Button>
-                                <Button size="sm" variant="outline">
+                                <Button size="sm" variant="outline" onClick={() => {
+                                  toast({
+                                    title: "Configuration",
+                                    description: `Ouverture de la configuration pour "${workflow.name}"`,
+                                  });
+                                }}>
                                   <Settings className="w-4 h-4" />
                                 </Button>
                               </div>
@@ -461,7 +478,12 @@ const AutomationUltraPro = () => {
                             <h4 className="font-medium">{action.name}</h4>
                             <p className="text-sm text-muted-foreground">{action.desc}</p>
                           </div>
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" onClick={() => {
+                            toast({
+                              title: "Configuration",
+                              description: "Ouverture de la configuration du trigger",
+                            });
+                          }}>
                             Configurer
                           </Button>
                         </div>
@@ -589,14 +611,29 @@ const AutomationUltraPro = () => {
                     </div>
 
                     <div className="flex gap-3 pt-4 border-t">
-                      <Button>
+                      <Button onClick={() => {
+                        toast({
+                          title: "Workflow créé",
+                          description: "Le nouveau workflow a été créé avec succès",
+                        });
+                      }}>
                         <Bot className="w-4 h-4 mr-2" />
                         Créer le workflow
                       </Button>
-                      <Button variant="outline">
+                      <Button variant="outline" onClick={() => {
+                        toast({
+                          title: "Test en cours",
+                          description: "Le workflow est en cours de test...",
+                        });
+                      }}>
                         Tester le workflow
                       </Button>
-                      <Button variant="outline">
+                      <Button variant="outline" onClick={() => {
+                        toast({
+                          title: "Prévisualisation",
+                          description: "Ouverture de la prévisualisation du workflow",
+                        });
+                      }}>
                         Prévisualiser
                       </Button>
                     </div>

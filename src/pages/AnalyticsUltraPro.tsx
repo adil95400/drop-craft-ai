@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
+import { useToast } from "@/hooks/use-toast"
 const salesData = [
   { name: 'Jan', ventes: 45000, visiteurs: 12000, commandes: 890, conversionRate: 7.4 },
   { name: 'Fév', ventes: 52000, visiteurs: 14000, commandes: 1020, conversionRate: 7.3 },
@@ -59,6 +60,7 @@ const radarData = [
 ]
 
 export default function AnalyticsUltraPro() {
+  const { toast } = useToast()
   const [dateRange, setDateRange] = useState('7d')
   const [activeTab, setActiveTab] = useState('overview')
   const [realTimeMetrics, setRealTimeMetrics] = useState({
@@ -134,12 +136,22 @@ export default function AnalyticsUltraPro() {
               </SelectContent>
             </Select>
             
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => {
+              toast({
+                title: "Actualisation en cours",
+                description: "Les données sont en cours de mise à jour...",
+              });
+            }}>
               <RefreshCw className="h-4 w-4" />
               Actualiser
             </Button>
             
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => {
+              toast({
+                title: "Export en cours",
+                description: "Le rapport détaillé est en cours de génération...",
+              });
+            }}>
               <Download className="h-4 w-4" />
               Export
             </Button>
