@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { AutomationConfigDialog } from "@/components/automation/AutomationConfigDialog";
 import { AutomationOptionsMenu } from "@/components/automation/AutomationOptionsMenu";
+import { NewAutomationDialog } from "@/components/automation/NewAutomationDialog";
 
 import { 
   Zap, 
@@ -29,6 +30,7 @@ const Automation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
+  const [newAutomationDialogOpen, setNewAutomationDialogOpen] = useState(false);
   const [selectedAutomation, setSelectedAutomation] = useState<any>(null);
   const [automations, setAutomations] = useState([
     {
@@ -96,11 +98,7 @@ const Automation = () => {
   };
 
   const handleNewAutomation = () => {
-    navigate('/automation');
-    toast({
-      title: "Nouvelle automation",
-      description: "Assistant de création d'automation ouvert",
-    });
+    setNewAutomationDialogOpen(true);
   };
 
   const handleConfigure = (automationId: number) => {
@@ -409,6 +407,12 @@ const Automation = () => {
           automation={selectedAutomation}
         />
       )}
+
+      {/* New Automation Dialog */}
+      <NewAutomationDialog
+        open={newAutomationDialogOpen}
+        onOpenChange={setNewAutomationDialogOpen}
+      />
     </div>
   );
 };
