@@ -19,7 +19,7 @@ import {
   RefreshCw,
   Download
 } from "lucide-react";
-import { AppLayout } from "@/layouts/AppLayout";
+
 import { useNavigate } from "react-router-dom";
 
 const Winners = () => {
@@ -249,8 +249,7 @@ const Winners = () => {
   });
 
   return (
-    <AppLayout>
-      <div className="min-h-screen bg-background p-6 space-y-6">
+    <div className="min-h-screen bg-background p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -498,8 +497,7 @@ const Winners = () => {
           </CardContent>
         </Card>
       )}
-      </div>
-    </AppLayout>
+    </div>
   );
 };
 

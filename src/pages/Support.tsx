@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { AppLayout } from "@/layouts/AppLayout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -90,8 +89,7 @@ export default function Support() {
   }
 
   return (
-    <AppLayout>
-      <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
@@ -410,7 +408,6 @@ export default function Support() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
-    </AppLayout>
+    </div>
   )
 }

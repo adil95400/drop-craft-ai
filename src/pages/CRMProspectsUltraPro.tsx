@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { AppLayout } from '@/layouts/AppLayout'
+
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
 
 // Données des prospects
@@ -291,8 +291,7 @@ export default function CRMProspectsUltraPro() {
   }
 
   return (
-    <AppLayout>
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Header avec contrôles */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
@@ -696,7 +695,6 @@ export default function CRMProspectsUltraPro() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </AppLayout>
+    </div>
   )
 }

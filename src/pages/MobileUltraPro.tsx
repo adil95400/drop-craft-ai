@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { AppLayout } from "@/layouts/AppLayout";
+
 import { useToast } from "@/hooks/use-toast";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
@@ -68,8 +68,7 @@ export default function MobileUltraPro() {
   };
 
   return (
-    <AppLayout>
-      <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -301,7 +300,6 @@ export default function MobileUltraPro() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
-    </AppLayout>
+    </div>
   );
 }

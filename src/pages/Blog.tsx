@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Clock, Edit3, Eye, Plus, Sparkles, Tag, TrendingUp } from "lucide-react";
-import { AppLayout } from "@/layouts/AppLayout";
+
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useBlog, type BlogConfig } from "@/hooks/useBlog";

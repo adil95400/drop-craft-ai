@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-import { AppLayout } from '@/layouts/AppLayout'
+
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
 
 // Données des avis positifs
@@ -254,8 +254,7 @@ export default function AvisPositifUltraPro() {
   }
 
   return (
-    <AppLayout>
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Header avec contrôles */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
@@ -755,7 +754,6 @@ export default function AvisPositifUltraPro() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
-    </AppLayout>
+    </div>
   )
 }

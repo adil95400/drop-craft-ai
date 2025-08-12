@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { AppLayout } from "@/layouts/AppLayout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -242,8 +241,7 @@ const Integrations = () => {
   }
 
   return (
-    <AppLayout>
-      <div className="container mx-auto p-6 space-y-8">
+    <div className="container mx-auto p-6 space-y-8">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Intégrations</h1>
@@ -644,8 +642,7 @@ const Integrations = () => {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
-    </AppLayout>
+    </div>
   )
 }
 

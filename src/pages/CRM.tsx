@@ -14,7 +14,7 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { AppLayout } from '@/layouts/AppLayout'
+
 import { useCustomers } from '@/hooks/useCustomers'
 import { Link } from 'react-router-dom'
 
@@ -126,20 +126,17 @@ export default function CRM() {
 
   if (isLoading) {
     return (
-      <AppLayout>
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="text-muted-foreground">Chargement des données CRM...</p>
-          </div>
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Chargement des données CRM...</p>
         </div>
-      </AppLayout>
+      </div>
     )
   }
 
   return (
-    <AppLayout>
-      <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -391,7 +388,6 @@ export default function CRM() {
           )}
         </CardContent>
       </Card>
-      </div>
-    </AppLayout>
+    </div>
   )
 }

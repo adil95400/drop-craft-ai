@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { AppLayout } from '@/layouts/AppLayout'
+
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 
 // Données des colis en transit
@@ -313,8 +313,7 @@ export default function SuiviEnTransitUltraPro() {
   }
 
   return (
-    <AppLayout>
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Header avec contrôles */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
@@ -839,7 +838,6 @@ export default function SuiviEnTransitUltraPro() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
-    </AppLayout>
+    </div>
   )
 }

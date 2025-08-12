@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { AppLayout } from "@/layouts/AppLayout";
+
 import { useToast } from "@/hooks/use-toast";
 
 export default function PluginsUltraPro() {
@@ -94,8 +94,7 @@ export default function PluginsUltraPro() {
   };
 
   return (
-    <AppLayout>
-      <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -351,7 +350,6 @@ export default function PluginsUltraPro() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
-    </AppLayout>
+    </div>
   );
 }

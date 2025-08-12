@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { AppLayout } from '@/layouts/AppLayout'
+
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { useRealOrders } from '@/hooks/useRealOrders'
 import { LoadingState } from '@/components/common/LoadingState'
@@ -118,22 +118,19 @@ export default function OrdersUltraProReal() {
 
   if (orders.length === 0) {
     return (
-      <AppLayout>
-        <EmptyState 
-          title="Aucune commande"
-          description="Aucune commande trouvée pour les critères sélectionnés"
-          action={{
-            label: "Nouvelle commande",
-            onClick: handleNewOrder
-          }}
-        />
-      </AppLayout>
+      <EmptyState 
+        title="Aucune commande"
+        description="Aucune commande trouvée pour les critères sélectionnés"
+        action={{
+          label: "Nouvelle commande",
+          onClick: handleNewOrder
+        }}
+      />
     )
   }
 
   return (
-    <AppLayout>
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
@@ -351,7 +348,6 @@ export default function OrdersUltraProReal() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </AppLayout>
+    </div>
   )
 }

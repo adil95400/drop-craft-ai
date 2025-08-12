@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, Pie } from 'recharts'
-import { AppLayout } from '@/layouts/AppLayout'
+
 import { useOrders } from '@/hooks/useOrders'
 
 // Données simulées pour le tracking avancé
@@ -93,20 +93,17 @@ export default function TrackingUltraPro() {
 
   if (isLoading) {
     return (
-      <AppLayout>
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="text-muted-foreground">Chargement du suivi avancé...</p>
-          </div>
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Chargement du suivi avancé...</p>
         </div>
-      </AppLayout>
+      </div>
     )
   }
 
   return (
-    <AppLayout>
-      <div className="space-y-6 p-6 animate-fade-in">
+    <div className="space-y-6 p-6 animate-fade-in">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -471,7 +468,6 @@ export default function TrackingUltraPro() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
-    </AppLayout>
+    </div>
   )
 }

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { AppLayout } from '@/layouts/AppLayout'
+
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 import { useRealProducts } from '@/hooks/useRealProducts'
 import { LoadingState } from '@/components/common/LoadingState'
@@ -117,22 +117,19 @@ export default function InventoryUltraProReal() {
 
   if (products.length === 0) {
     return (
-      <AppLayout>
-        <EmptyState 
-          title="Aucun produit en inventaire"
-          description="Commencez par ajouter des produits à votre inventaire"
-          action={{
-            label: "Ajouter un produit",
-            onClick: handleAddProduct
-          }}
-        />
-      </AppLayout>
+      <EmptyState 
+        title="Aucun produit en inventaire"
+        description="Commencez par ajouter des produits à votre inventaire"
+        action={{
+          label: "Ajouter un produit",
+          onClick: handleAddProduct
+        }}
+      />
     )
   }
 
   return (
-    <AppLayout>
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Header avec contrôles */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
@@ -340,7 +337,6 @@ export default function InventoryUltraProReal() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </AppLayout>
+    </div>
   )
 }

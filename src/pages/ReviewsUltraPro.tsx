@@ -13,7 +13,7 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
-import { AppLayout } from '@/layouts/AppLayout'
+
 
 interface Review {
   id: string
@@ -161,8 +161,7 @@ export default function ReviewsUltraPro() {
   }
 
   return (
-    <AppLayout>
-      <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6">
         {/* Header avec Actions Avancées */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div>
@@ -755,7 +754,6 @@ export default function ReviewsUltraPro() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
-    </AppLayout>
+    </div>
   )
 }

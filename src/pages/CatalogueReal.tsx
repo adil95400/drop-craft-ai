@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { AppLayout } from '@/layouts/AppLayout'
+
 import { useRealProducts } from '@/hooks/useRealProducts'
 import { LoadingState } from '@/components/common/LoadingState'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -106,22 +106,19 @@ export default function CatalogueReal() {
 
   if (products.length === 0) {
     return (
-      <AppLayout>
-        <EmptyState 
-          title="Aucun produit dans le catalogue"
-          description="Commencez par ajouter des produits à votre catalogue"
-          action={{
-            label: "Ajouter un produit",
-            onClick: handleAddProduct
-          }}
-        />
-      </AppLayout>
+      <EmptyState 
+        title="Aucun produit dans le catalogue"
+        description="Commencez par ajouter des produits à votre catalogue"
+        action={{
+          label: "Ajouter un produit",
+          onClick: handleAddProduct
+        }}
+      />
     )
   }
 
   return (
-    <AppLayout>
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
@@ -326,7 +323,6 @@ export default function CatalogueReal() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </AppLayout>
+    </div>
   )
 }

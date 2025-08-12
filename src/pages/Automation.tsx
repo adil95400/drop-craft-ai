@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { AppLayout } from "@/layouts/AppLayout";
+
 import { 
   Zap, 
   Settings, 
@@ -100,8 +100,7 @@ const Automation = () => {
   };
 
   return (
-    <AppLayout>
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -377,8 +376,7 @@ const Automation = () => {
           </div>
         </TabsContent>
       </Tabs>
-      </div>
-    </AppLayout>
+    </div>
   );
 };
 

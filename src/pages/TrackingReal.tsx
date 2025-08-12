@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { AppLayout } from '@/layouts/AppLayout'
+
 import { useRealOrders } from '@/hooks/useRealOrders'
 import { LoadingState } from '@/components/common/LoadingState'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -108,16 +108,14 @@ export default function TrackingReal() {
 
   if (orders.length === 0) {
     return (
-      <AppLayout>
-        <EmptyState 
-          title="Aucune commande à suivre"
-          description="Il n'y a actuellement aucune commande à suivre"
-          action={{
-            label: "Voir toutes les commandes",
-            onClick: () => navigate('/orders')
-          }}
-        />
-      </AppLayout>
+      <EmptyState 
+        title="Aucune commande à suivre"
+        description="Il n'y a actuellement aucune commande à suivre"
+        action={{
+          label: "Voir toutes les commandes",
+          onClick: () => navigate('/orders')
+        }}
+      />
     )
   }
 
@@ -127,8 +125,7 @@ export default function TrackingReal() {
   )
 
   return (
-    <AppLayout>
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
@@ -336,7 +333,6 @@ export default function TrackingReal() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </AppLayout>
+    </div>
   )
 }
