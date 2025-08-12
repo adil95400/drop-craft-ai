@@ -98,18 +98,17 @@ const Suppliers = () => {
   }
 
   return (
-    <AppLayout>
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Package className="w-8 h-8 text-primary" />
-              Fournisseurs
-            </h1>
-            <p className="text-muted-foreground">
-              Gérez vos partenaires avec intelligence artificielle
-            </p>
-          </div>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <Package className="w-8 h-8 text-primary" />
+            Fournisseurs
+          </h1>
+          <p className="text-muted-foreground">
+            Gérez vos partenaires avec intelligence artificielle
+          </p>
+        </div>
           
           <div className="flex gap-2">
             <Button 
@@ -346,7 +345,7 @@ const Suppliers = () => {
           </CardContent>
         </Card>
       </div>
-    </AppLayout>
+    </div>
   )
 }
 

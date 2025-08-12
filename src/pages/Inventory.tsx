@@ -133,42 +133,41 @@ const Inventory = () => {
   };
 
   return (
-    <AppLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              <Package className="w-8 h-8 text-primary" />
-              Inventaire
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Gestion intelligente du stock avec IA prédictive
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="mr-2 h-4 w-4" />
-              Exporter
-            </Button>
-            <Button variant="outline" onClick={handleImport}>
-              <Upload className="mr-2 h-4 w-4" />
-              Importer
-            </Button>
-            <Link to="/inventory-ultra-pro">
-              <Button 
-                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Inventory Ultra Pro
-              </Button>
-            </Link>
-            <Button variant="hero" onClick={handleNewProduct}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nouveau Produit
-            </Button>
-          </div>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+            <Package className="w-8 h-8 text-primary" />
+            Inventaire
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Gestion intelligente du stock avec IA prédictive
+          </p>
         </div>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" />
+            Exporter
+          </Button>
+          <Button variant="outline" onClick={handleImport}>
+            <Upload className="mr-2 h-4 w-4" />
+            Importer
+          </Button>
+          <Link to="/inventory-ultra-pro">
+            <Button 
+              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Inventory Ultra Pro
+            </Button>
+          </Link>
+          <Button variant="hero" onClick={handleNewProduct}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouveau Produit
+          </Button>
+        </div>
+      </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -407,7 +406,7 @@ const Inventory = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </AppLayout>
+    </div>
   );
 };
 
