@@ -233,22 +233,7 @@ export default function CatalogueUltraPro() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto animate-fade-in">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              <Brain className="w-8 h-8 text-primary" />
-              Catalogue Ultra Pro
-              <Badge variant="outline" className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
-                <Sparkles className="w-3 h-3 mr-1" />
-                IA Avancée
-              </Badge>
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Sourcing intelligent avec IA prédictive et analyses de marché en temps réel
-            </p>
-          </div>
-          
           <div className="flex gap-2">
             <Button 
               variant={iaMode ? "default" : "outline"} 

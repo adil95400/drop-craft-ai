@@ -234,17 +234,8 @@ const ImportUltraPro = () => {
   return (
     <AppLayout>
       <div className="min-h-screen bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-pink-50/50 p-6">
-        {/* Header Ultra Pro */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Import Ultra Pro
-              </h1>
-              <p className="text-lg text-muted-foreground mt-2">
-                Import intelligent avec IA avancée et automation complète
-              </p>
-            </div>
             <div className="flex items-center gap-4">
               <Badge variant="default" className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2">
                 <Zap className="w-4 h-4 mr-2" />
