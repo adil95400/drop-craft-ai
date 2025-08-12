@@ -7,6 +7,10 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { useRealAnalytics } from '@/hooks/useRealAnalytics';
+import { useModals } from '@/hooks/useModals';
+import { useAI } from '@/hooks/useAI';
+import { useToast } from '@/hooks/use-toast';
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
@@ -164,32 +168,104 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accen
 export default function DashboardUltraPro() {
   const [dateRange, setDateRange] = useState('7d');
   const [selectedMetric, setSelectedMetric] = useState('revenue');
+  
+  // Hooks pour les fonctionnalités
+  const { analytics, isLoading, generateReport, isGeneratingReport } = useRealAnalytics();
+  const { openModal } = useModals();
+  const { generateInsights, isGeneratingInsights } = useAI();
+  const { toast } = useToast();
 
-  // KPIs principaux
+  // Handlers pour les boutons
+  const handleRefresh = async () => {
+    toast({
+      title: "Actualisation",
+      description: "Mise à jour des données en cours...",
+    });
+    window.location.reload();
+  };
+
+  const handleExport = () => {
+    openModal('exportData');
+  };
+
+  const handleAIInsights = async () => {
+    try {
+      await generateInsights({
+        analysisType: 'sales_trends',
+        data: {
+          salesData: analytics?.salesByDay || [],
+          products: analytics?.topProducts || [],
+          periods: [dateRange]
+        },
+        timeRange: dateRange,
+        metrics: ['sales', 'conversion', 'traffic']
+      });
+      
+      toast({
+        title: "IA Insights",
+        description: "Analyse IA générée avec succès!",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer l'analyse IA",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAlertClick = (alert: any) => {
+    switch (alert.type) {
+      case 'stock':
+        openModal('settings');
+        break;
+      case 'order':
+        toast({
+          title: "Pic de commandes",
+          description: "Analyse détaillée disponible dans les rapports",
+        });
+        break;
+      case 'error':
+        toast({
+          title: "Erreur de synchronisation",
+          description: "Vérifiez vos intégrations dans les paramètres",
+          variant: "destructive",
+        });
+        break;
+      case 'success':
+        toast({
+          title: "Félicitations!",
+          description: "Nouveau record établi cette semaine",
+        });
+        break;
+    }
+  };
+
+  // KPIs principaux - utilise les vraies données si disponibles
   const kpis = [{
     title: 'Chiffre d\'affaires',
-    value: '€ 127,543',
+    value: analytics?.revenue ? `€ ${analytics.revenue.toLocaleString()}` : '€ 127,543',
     change: '+12.5%',
     trend: 'up',
     icon: Euro,
     description: 'vs mois dernier'
   }, {
     title: 'Commandes',
-    value: '1,247',
+    value: analytics?.orders?.toString() || '1,247',
     change: '+8.3%',
     trend: 'up',
     icon: ShoppingCart,
     description: 'nouvelles commandes'
   }, {
     title: 'Produits vendus',
-    value: '3,892',
+    value: analytics?.products?.toString() || '3,892',
     change: '+15.7%',
     trend: 'up',
     icon: Package,
     description: 'unités vendues'
   }, {
     title: 'Taux conversion',
-    value: '4.2%',
+    value: analytics?.conversionRate ? `${analytics.conversionRate.toFixed(1)}%` : '4.2%',
     change: '-0.3%',
     trend: 'down',
     icon: Target,
@@ -241,18 +317,34 @@ export default function DashboardUltraPro() {
               </SelectContent>
             </Select>
             
-            <Button variant="outline" size="sm" className="hover-scale">
-              <RefreshCw className="h-4 w-4 mr-2" />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="hover-scale"
+              onClick={handleRefresh}
+              disabled={isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Actualiser
             </Button>
             
-            <Button variant="outline" size="sm" className="hover-scale">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="hover-scale"
+              onClick={handleExport}
+            >
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
             
-            <Button size="sm" className="hover-scale bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-              <Bot className="h-4 w-4 mr-2" />
+            <Button 
+              size="sm" 
+              className="hover-scale bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              onClick={handleAIInsights}
+              disabled={isGeneratingInsights}
+            >
+              <Bot className={`h-4 w-4 mr-2 ${isGeneratingInsights ? 'animate-spin' : ''}`} />
               IA Insights
             </Button>
           </div>
@@ -271,7 +363,11 @@ export default function DashboardUltraPro() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {alerts.map((alert, index) => <div key={index} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20 hover-scale transition-all duration-200 cursor-pointer">
+              {alerts.map((alert, index) => <div 
+                key={index} 
+                className="flex items-center justify-between p-3 rounded-lg border bg-muted/20 hover-scale transition-all duration-200 cursor-pointer"
+                onClick={() => handleAlertClick(alert)}
+              >
                   <span className="text-sm">{alert.message}</span>
                   <Badge variant={getAlertColor(alert.severity)}>{alert.severity}</Badge>
                 </div>)}
@@ -336,7 +432,7 @@ export default function DashboardUltraPro() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={salesData}>
+                <AreaChart data={analytics?.salesByDay || salesData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
