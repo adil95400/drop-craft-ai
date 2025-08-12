@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { AppLayout } from "@/layouts/AppLayout"
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -109,22 +109,22 @@ const Suppliers = () => {
             Gérez vos partenaires avec intelligence artificielle
           </p>
         </div>
-          
-          <div className="flex gap-2">
-            <Button 
-              className="bg-gradient-primary hover:bg-gradient-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={() => navigate('/suppliers-ultra-pro')}
-            >
-              <Package className="w-4 h-4 mr-2" />
-              Suppliers Ultra Pro
-            </Button>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nouveau fournisseur
-                </Button>
-              </DialogTrigger>
+        
+        <div className="flex gap-2">
+          <Button 
+            className="bg-gradient-primary hover:bg-gradient-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
+            onClick={() => navigate('/suppliers-ultra-pro')}
+          >
+            <Package className="w-4 h-4 mr-2" />
+            Suppliers Ultra Pro
+          </Button>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Nouveau fournisseur
+              </Button>
+            </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>Ajouter un fournisseur</DialogTitle>
@@ -198,9 +198,9 @@ const Suppliers = () => {
                 </Button>
               </div>
             </DialogContent>
-            </Dialog>
-          </div>
+          </Dialog>
         </div>
+      </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -344,9 +344,8 @@ const Suppliers = () => {
             </Table>
           </CardContent>
         </Card>
-      </div>
     </div>
-  )
-}
+  );
+};
 
 export default Suppliers;
