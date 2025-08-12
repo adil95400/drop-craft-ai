@@ -1,83 +1,95 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthGuard } from "@/components/auth/AuthGuard";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { AppLayout } from "@/layouts/AppLayout";
-import Suppliers from "./pages/Suppliers";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import Import from "./pages/Import";
-import ImportUltraPro from "./pages/ImportUltraPro";
-import CatalogueReal from "./pages/CatalogueReal";
-import TrackingReal from "./pages/TrackingReal";
-import SEO from "./pages/SEO";
-import Winners from "./pages/Winners";
-import CRM from "./pages/CRM";
-import Settings from "./pages/Settings";
-import Blog from "./pages/Blog";
-import Reviews from "./pages/Reviews";
-import Marketplace from "./pages/Marketplace";
-import Orders from "./pages/Orders";
-import Automation from "./pages/Automation";
-import Integrations from "./pages/Integrations";
-import Stock from "./pages/Stock";
-import Analytics from "./pages/Analytics";
-import Marketing from "./pages/Marketing";
-import Inventory from "./pages/Inventory";
-import Plugins from "./pages/Plugins";
-import Extension from "./pages/Extension";
-import Mobile from "./pages/Mobile";
-import Support from "./pages/Support";
-import Admin from "./pages/Admin";
-import FAQ from "./pages/FAQ";
-import Security from "./pages/Security";
-import Notifications from "./pages/Notifications";
-import NotFound from "./pages/NotFound";
-import CRMLeads from "./pages/CRMLeads";
-import CRMActivity from "./pages/CRMActivity";
-import CRMCalendar from "./pages/CRMCalendar";
-import CRMEmails from "./pages/CRMEmails";
-import CRMCalls from "./pages/CRMCalls";
-import TrackingInTransit from "./pages/TrackingInTransit";
-import TrackingToday from "./pages/TrackingToday";
-import ReviewsUltraPro from "./pages/ReviewsUltraPro";
-import AnalyticsUltraPro from "./pages/AnalyticsUltraPro";
-import MarketingUltraPro from "./pages/MarketingUltraPro";
-import DashboardUltraPro from "./pages/DashboardUltraPro";
-import InventoryUltraProReal from "./pages/InventoryUltraProReal";
-import OrdersUltraProReal from "./pages/OrdersUltraProReal";
-import SuppliersUltraPro from "./pages/SuppliersUltraPro";
-import CRMUltraProReal from "./pages/CRMUltraProReal";
-import CRMProspectsUltraPro from "./pages/CRMProspectsUltraPro";
-import SuiviEnTransitUltraPro from "./pages/SuiviEnTransitUltraPro";
-import AvisPositifUltraPro from "./pages/AvisPositifUltraPro";
-import AutomationUltraPro from "./pages/AutomationUltraPro";
-import BlogUltraPro from "./pages/BlogUltraPro";
-import SEOUltraPro from "./pages/SEOUltraPro";
-import SecurityUltraPro from "./pages/SecurityUltraPro";
-import SupportUltraPro from "./pages/SupportUltraPro";
-import TrackingUltraPro from "./pages/TrackingUltraPro";
-import CatalogueUltraProReal from "./pages/CatalogueUltraProReal";
-import CatalogueUltraProAdvanced from "./pages/CatalogueUltraProAdvanced";
-import PluginsUltraPro from "./pages/PluginsUltraPro";
-import MobileUltraPro from "./pages/MobileUltraPro";
-import ExtensionUltraPro from "./pages/ExtensionUltraPro";
-import StockUltraPro from "./pages/StockUltraPro";
+import React, { Suspense } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { AuthGuard } from '@/components/auth/AuthGuard';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { AppLayout } from '@/layouts/AppLayout';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { PageSkeleton } from '@/components/common/PageSkeleton';
+
+// Lazy loaded heavy pages
+import {
+  DashboardLazy,
+  DashboardUltraProLazy,
+  ImportLazy,
+  ImportUltraProLazy,
+  CatalogueRealLazy,
+  CatalogueUltraProRealLazy,
+  CatalogueUltraProAdvancedLazy,
+  OrdersLazy,
+  OrdersUltraProRealLazy,
+  CRMLazy,
+  CRMUltraProRealLazy,
+  CRMProspectsUltraProLazy,
+  TrackingRealLazy,
+  TrackingUltraProLazy,
+  SEOLazy,
+  SEOUltraProLazy,
+  MarketingLazy,
+  MarketingUltraProLazy,
+  InventoryLazy,
+  InventoryUltraProRealLazy,
+  AutomationLazy,
+  AutomationUltraProLazy,
+  AnalyticsLazy,
+  AnalyticsUltraProLazy,
+  ReviewsLazy,
+  ReviewsUltraProLazy,
+  SecurityLazy,
+  SecurityUltraProLazy,
+  SupportLazy,
+  SupportUltraProLazy,
+  BlogLazy,
+  BlogUltraProLazy,
+  PluginsLazy,
+  PluginsUltraProLazy,
+  MobileLazy,
+  MobileUltraProLazy,
+  ExtensionLazy,
+  ExtensionUltraProLazy,
+  StockLazy,
+  StockUltraProLazy,
+  SuppliersLazy,
+  SuppliersUltraProLazy,
+  AdminLazy,
+} from '@/components/lazy/LazyPages';
+
+// Light pages (direct imports)
+import Index from './pages/Index';
+import Auth from './pages/Auth';
+import Suppliers from './pages/Suppliers';
+import Winners from './pages/Winners';
+import Settings from './pages/Settings';
+import Marketplace from './pages/Marketplace';
+import Integrations from './pages/Integrations';
+import FAQ from './pages/FAQ';
+import Notifications from './pages/Notifications';
+import NotFound from './pages/NotFound';
+import CRMLeads from './pages/CRMLeads';
+import CRMActivity from './pages/CRMActivity';
+import CRMCalendar from './pages/CRMCalendar';
+import CRMEmails from './pages/CRMEmails';
+import CRMCalls from './pages/CRMCalls';
+import TrackingInTransit from './pages/TrackingInTransit';
+import TrackingToday from './pages/TrackingToday';
+import SuiviEnTransitUltraPro from './pages/SuiviEnTransitUltraPro';
+import AvisPositifUltraPro from './pages/AvisPositifUltraPro';
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
             {/* Public routes */}
             <Route path="/" element={
               <AuthGuard requireAuth={false}>
@@ -94,49 +106,63 @@ const App = () => (
             <Route path="/dashboard" element={
               <AuthGuard>
                 <AppLayout>
-                  <Dashboard />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <DashboardLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/import" element={
               <AuthGuard>
                 <AppLayout>
-                  <Import />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <ImportLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/import-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <ImportUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <ImportUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/catalogue" element={
               <AuthGuard>
                 <AppLayout>
-                  <CatalogueReal />
+                  <Suspense fallback={<PageSkeleton variant="grid" />}>
+                    <CatalogueRealLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/catalogue-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <CatalogueUltraProReal />
+                  <Suspense fallback={<PageSkeleton variant="grid" />}>
+                    <CatalogueUltraProRealLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/catalogue-ultra-pro-real" element={
               <AuthGuard>
                 <AppLayout>
-                  <CatalogueUltraProReal />
+                  <Suspense fallback={<PageSkeleton variant="grid" />}>
+                    <CatalogueUltraProRealLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/catalogue-ultra-pro-advanced" element={
               <AuthGuard>
                 <AppLayout>
-                  <CatalogueUltraProAdvanced />
+                  <Suspense fallback={<PageSkeleton variant="grid" />}>
+                    <CatalogueUltraProAdvancedLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
@@ -150,28 +176,36 @@ const App = () => (
             <Route path="/orders" element={
               <AuthGuard>
                 <AppLayout>
-                  <Orders />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <OrdersLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/orders-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <OrdersUltraProReal />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <OrdersUltraProRealLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/crm" element={
               <AuthGuard>
                 <AppLayout>
-                  <CRM />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <CRMLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/crm-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <CRMUltraProReal />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <CRMUltraProRealLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
@@ -213,21 +247,27 @@ const App = () => (
             <Route path="/crm/prospects-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <CRMProspectsUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <CRMProspectsUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/tracking" element={
               <AuthGuard>
                 <AppLayout>
-                  <TrackingReal />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <TrackingRealLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/tracking-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <TrackingUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <TrackingUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
@@ -255,14 +295,18 @@ const App = () => (
             <Route path="/reviews" element={
               <AuthGuard>
                 <AppLayout>
-                  <Reviews />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <ReviewsLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/reviews-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <ReviewsUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <ReviewsUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
@@ -276,98 +320,126 @@ const App = () => (
             <Route path="/seo" element={
               <AuthGuard>
                 <AppLayout>
-                  <SEO />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <SEOLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/seo-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <SEOUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <SEOUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/marketing" element={
               <AuthGuard>
                 <AppLayout>
-                  <Marketing />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <MarketingLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/marketing-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <MarketingUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <MarketingUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/inventory" element={
               <AuthGuard>
                 <AppLayout>
-                  <Inventory />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <InventoryLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/inventory-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <InventoryUltraProReal />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <InventoryUltraProRealLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/automation" element={
               <AuthGuard>
                 <AppLayout>
-                  <Automation />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <AutomationLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/automation-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <AutomationUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <AutomationUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/plugins" element={
               <AuthGuard>
                 <AppLayout>
-                  <Plugins />
+                  <Suspense fallback={<PageSkeleton variant="grid" />}>
+                    <PluginsLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/plugins-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <PluginsUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="grid" />}>
+                    <PluginsUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/extension" element={
               <AuthGuard>
                 <AppLayout>
-                  <Extension />
+                  <Suspense fallback={<PageSkeleton variant="detail" />}>
+                    <ExtensionLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/extension-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <ExtensionUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="detail" />}>
+                    <ExtensionUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/mobile" element={
               <AuthGuard>
                 <AppLayout>
-                  <Mobile />
+                  <Suspense fallback={<PageSkeleton variant="detail" />}>
+                    <MobileLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/mobile-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <MobileUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="detail" />}>
+                    <MobileUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
@@ -381,42 +453,54 @@ const App = () => (
             <Route path="/support" element={
               <AuthGuard>
                 <AppLayout>
-                  <Support />
+                  <Suspense fallback={<PageSkeleton variant="detail" />}>
+                    <SupportLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/support-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <SupportUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="detail" />}>
+                    <SupportUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/analytics" element={
               <AuthGuard>
                 <AppLayout>
-                  <Analytics />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <AnalyticsLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/analytics-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <AnalyticsUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <AnalyticsUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/stock" element={
               <AuthGuard>
                 <AppLayout>
-                  <Stock />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <StockLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/stock-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <StockUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <StockUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
@@ -430,14 +514,18 @@ const App = () => (
             <Route path="/blog" element={
               <AuthGuard>
                 <AppLayout>
-                  <Blog />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <BlogLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/blog-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <BlogUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <BlogUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
@@ -451,7 +539,9 @@ const App = () => (
             <Route path="/admin" element={
               <AuthGuard>
                 <AppLayout>
-                  <Admin />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <AdminLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
@@ -465,14 +555,18 @@ const App = () => (
             <Route path="/security" element={
               <AuthGuard>
                 <AppLayout>
-                  <Security />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <SecurityLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/security-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <SecurityUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <SecurityUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
@@ -493,14 +587,18 @@ const App = () => (
             <Route path="/suppliers-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <SuppliersUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                    <SuppliersUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/dashboard-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <DashboardUltraPro />
+                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                    <DashboardUltraProLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />
@@ -512,6 +610,7 @@ const App = () => (
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
