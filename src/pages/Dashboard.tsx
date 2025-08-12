@@ -97,7 +97,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -109,15 +109,9 @@ const Dashboard = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" onClick={() => navigate("/notifications")}>
-            <Bell className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => navigate("/settings")}>
-            <Settings className="h-4 w-4" />
-          </Button>
           <Button 
             className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300"
-            onClick={() => navigate("/dashboard/ultra-pro")}
+            onClick={() => navigate("/dashboard-ultra-pro")}
           >
             <Zap className="mr-2 h-4 w-4" />
             Dashboard Ultra Pro

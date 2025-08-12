@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
-import { AppSidebarUltraPro } from "@/components/AppSidebarUltraProNew";
+import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { AdminUserDropdown } from "@/components/admin/AdminUserDropdown";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,13 +11,10 @@ interface AppLayoutProps {
 
 // Composant Header unifié
 const AppHeader = ({ showTrigger = false }: { showTrigger?: boolean }) => (
-  <header className="sticky top-0 z-30 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-    <div className="flex items-center justify-between px-4 h-full">
-      <div className="flex items-center gap-4">
-        {showTrigger && <SidebarTrigger aria-label="Toggle navigation menu" />}
-        <h1 className="font-semibold text-foreground">Dashboard</h1>
-      </div>
-      <div className="flex items-center gap-4">
+  <header className="sticky top-0 z-30 h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="flex items-center justify-end px-6 h-full">
+      {showTrigger && <SidebarTrigger className="mr-auto" aria-label="Toggle navigation menu" />}
+      <div className="flex items-center gap-3">
         <NotificationDropdown />
         <AdminUserDropdown />
       </div>
@@ -34,8 +31,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Desktop Grid Layout */}
         <div className="hidden md:grid md:grid-cols-[280px_1fr] min-h-screen">
           {/* Desktop Sidebar - Fixed position */}
-          <div className="z-20 border-r bg-sidebar">
-            <AppSidebarUltraPro />
+          <div className="z-20">
+            <AppSidebar />
           </div>
           
           {/* Desktop Content */}
@@ -43,7 +40,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             <AppHeader />
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto min-w-0 p-6">
+            <main className="flex-1 overflow-auto min-w-0 p-4 lg:p-6 bg-background">
               {children}
             </main>
 
@@ -67,13 +64,13 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Mobile Layout with Off-canvas Sidebar */}
         <div className="md:hidden min-h-screen">
-          <AppSidebarUltraPro />
+          <AppSidebar />
           
           <SidebarInset className="flex flex-col min-h-screen">
             <AppHeader showTrigger />
 
             {/* Mobile Content */}
-            <main className="flex-1 overflow-auto min-w-0 p-4">
+            <main className="flex-1 overflow-auto min-w-0 p-4 bg-background">
               {children}
             </main>
 
