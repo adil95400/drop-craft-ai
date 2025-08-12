@@ -10,6 +10,8 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { AppLayout } from '@/layouts/AppLayout';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { OptimizedSkeleton } from '@/components/common/OptimizedSkeleton';
+import { ModalContextProvider } from '@/hooks/useModalHelpers';
+import { ModalProvider } from '@/components/ModalProvider';
 
 // Lazy loaded heavy pages
 import {
@@ -85,10 +87,12 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+        <ModalContextProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <ModalProvider>
+              <BrowserRouter>
             <Routes>
             {/* Public routes */}
             <Route path="/" element={
@@ -607,9 +611,11 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+      </ModalProvider>
+    </TooltipProvider>
+  </ModalContextProvider>
+</AuthProvider>
+</QueryClientProvider>
   </ErrorBoundary>
 );
 
