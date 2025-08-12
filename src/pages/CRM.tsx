@@ -26,10 +26,10 @@ export default function CRM() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([])
-  const { customers, stats, isLoading, addCustomer } = useCustomers()
+  const { customers, customerStats: stats, createCustomer: addCustomer, isLoading } = useCustomers()
 
   const filteredCustomers = customers.filter(customer => {
-    const customerName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
+    const customerName = customer.name
     const matchesSearch = customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          customer.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || customer.status === statusFilter
@@ -55,8 +55,8 @@ export default function CRM() {
     
     return matchesSearch && matchesStatus && matchesSegment
   }).sort((a, b) => {
-    const aValue = sortField === 'name' ? `${a.first_name || ''} ${a.last_name || ''}` : a[sortField as keyof typeof a]
-    const bValue = sortField === 'name' ? `${b.first_name || ''} ${b.last_name || ''}` : b[sortField as keyof typeof b]
+    const aValue = sortField === 'name' ? a.name : a[sortField as keyof typeof a]
+    const bValue = sortField === 'name' ? b.name : b[sortField as keyof typeof b]
     
     if (sortDirection === 'asc') {
       return aValue > bValue ? 1 : -1
@@ -70,21 +70,20 @@ export default function CRM() {
     const formData = new FormData(e.currentTarget)
     
     const customerData = {
-      user_id: '', // Will be set by the mutation
+      name: formData.get('name') as string,
       email: formData.get('email') as string,
-      first_name: formData.get('name') as string,
-      last_name: '',
       phone: formData.get('phone') as string || '',
       status: 'active' as const,
-      last_order_date: null,
+      total_orders: 0,
+      total_spent: 0,
       address: {
         street: formData.get('street') as string,
         city: formData.get('city') as string,
-        postal_code: formData.get('postal_code') as string,
+        postalCode: formData.get('postal_code') as string,
         country: formData.get('country') as string,
       },
-      platform_customer_id: null,
-      tags: [],
+      user_id: 'current-user-id',
+      created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }
 
@@ -263,7 +262,7 @@ export default function CRM() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.averageOrderValue?.toFixed(0) || 0}€</div>
+            <div className="text-2xl font-bold">{stats.avgOrderValue?.toFixed(0) || 0}€</div>
           </CardContent>
         </Card>
       </div>
@@ -327,11 +326,11 @@ export default function CRM() {
                     <div className="flex items-center gap-3">
                       <Avatar>
                         <AvatarFallback>
-                          {customer.first_name?.charAt(0).toUpperCase() || customer.email.charAt(0).toUpperCase()}
+                          {customer.name?.charAt(0).toUpperCase() || customer.email.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">{customer.first_name || customer.email}</div>
+                        <div className="font-medium">{customer.name || customer.email}</div>
                         <div className="text-sm text-muted-foreground">
                           ID: {customer.id.slice(0, 8)}...
                         </div>
