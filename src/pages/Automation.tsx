@@ -6,6 +6,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { AutomationConfigDialog } from "@/components/automation/AutomationConfigDialog";
+import { AutomationOptionsMenu } from "@/components/automation/AutomationOptionsMenu";
 
 import { 
   Zap, 
@@ -26,6 +28,8 @@ import {
 const Automation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [configDialogOpen, setConfigDialogOpen] = useState(false);
+  const [selectedAutomation, setSelectedAutomation] = useState<any>(null);
   const [automations, setAutomations] = useState([
     {
       id: 1,
@@ -97,6 +101,14 @@ const Automation = () => {
       title: "Nouvelle automation",
       description: "Assistant de création d'automation ouvert",
     });
+  };
+
+  const handleConfigure = (automationId: number) => {
+    const automation = automations.find(a => a.id === automationId);
+    if (automation) {
+      setSelectedAutomation(automation);
+      setConfigDialogOpen(true);
+    }
   };
 
   return (
@@ -203,14 +215,11 @@ const Automation = () => {
                         checked={automation.status === "active"}
                         onCheckedChange={() => toggleAutomation(automation.id)}
                       />
-                      <Button variant="ghost" size="sm" onClick={() => {
-                        toast({
-                          title: "Options d'automation",
-                          description: "Menu des options disponible",
-                        });
-                      }}>
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
+                      <AutomationOptionsMenu 
+                        automation={automation}
+                        onToggle={toggleAutomation}
+                        onConfigure={handleConfigure}
+                      />
                     </div>
                   </div>
                 </CardHeader>
@@ -230,12 +239,7 @@ const Automation = () => {
                     </div>
                   </div>
                   <div className="flex justify-end space-x-2 mt-4">
-                    <Button variant="outline" size="sm" onClick={() => {
-                      toast({
-                        title: "Configuration",
-                        description: "Ouverture de la configuration de l'automation",
-                      });
-                    }}>
+                    <Button variant="outline" size="sm" onClick={() => handleConfigure(automation.id)}>
                       <Settings className="mr-2 h-4 w-4" />
                       Configurer
                     </Button>
@@ -396,6 +400,15 @@ const Automation = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Configuration Dialog */}
+      {selectedAutomation && (
+        <AutomationConfigDialog
+          open={configDialogOpen}
+          onOpenChange={setConfigDialogOpen}
+          automation={selectedAutomation}
+        />
+      )}
     </div>
   );
 };
