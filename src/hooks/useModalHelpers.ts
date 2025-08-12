@@ -80,3 +80,37 @@ export const useGeneralModals = () => {
     openSupportTicket: () => openModal('supportTicket'),
   };
 };
+
+// Main hook export
+export const useModalHelpers = () => {
+  const { openModal } = useModalContext();
+  
+  return {
+    // Product modals
+    openCreateProduct: (data?: any) => openModal('createProduct', data),
+    openStockAdjustment: (data?: any) => openModal('stockAdjustment', data),
+    
+    // Order modals
+    openCreateOrder: (data?: any) => openModal('createOrder', data),
+    openTracking: (data?: any) => openModal('tracking', data),
+    
+    // Marketing modals
+    openCreateCampaign: (data?: any) => openModal('createCampaign', data),
+    openSEOOptimization: (data?: any) => openModal('seoOptimization', data),
+    openBlogPost: (data?: any) => openModal('blogPost', data),
+    
+    // Data modals
+    openImport: (data?: any) => openModal('importData', data),
+    openExport: (data?: any) => openModal('exportData', data),
+    
+    // Customer modal
+    openCreateCustomer: (data?: any) => openModal('createCustomer', data),
+    
+    // Integration modal
+    openCreateIntegration: (data?: any) => openModal('createIntegration', data),
+    
+    // Settings and support
+    openSettings: (data?: any) => openModal('settings', data),
+    openSupportTicket: (data?: any) => openModal('supportTicket', data)
+  };
+};

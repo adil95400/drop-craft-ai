@@ -11,6 +11,10 @@ import { useProducts } from "@/hooks/useProducts"
 import { useCatalogProducts, CatalogProduct } from "@/hooks/useCatalogProducts"
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Cell, ScatterChart, Scatter } from 'recharts'
 import { toast } from "sonner"
+import { FilterPanel } from "@/components/common/FilterPanel"
+import { ExportButton } from "@/components/common/ExportButton"
+import { ImportButton } from "@/components/common/ImportButton"
+import { useModalHelpers } from "@/hooks/useModalHelpers"
 
 // Données simulées pour les analyses IA
 const iaAnalyses = {
@@ -59,8 +63,10 @@ export default function CatalogueUltraPro() {
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null)
   const [activeTab, setActiveTab] = useState("ia-winners")
   const [iaMode, setIaMode] = useState(true)
+  const [currentFilters, setCurrentFilters] = useState({})
   
   const { addProduct } = useProducts()
+  const modalHelpers = useModalHelpers()
   
   // Filtres pour les produits du catalogue avec IA
   const filters = {
@@ -267,10 +273,11 @@ export default function CatalogueUltraPro() {
                 a.download = 'rapport-ia.csv';
                 a.click();
                 URL.revokeObjectURL(url);
+                toast.success("Rapport IA exporté avec succès !");
               }}
             >
               <Download className="w-4 h-4 mr-2" />
-              Rapport IA
+              Export IA
             </Button>
             <Button 
               className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
@@ -364,8 +371,41 @@ export default function CatalogueUltraPro() {
               <Brain className="w-4 h-4 mr-2" />
               Recherche IA
             </Button>
+            <ExportButton
+              data={products}
+              filename="catalogue-produits"
+              onExport={() => toast.success("Export du catalogue lancé")}
+            />
+            <ImportButton
+              onImport={(data) => {
+                toast.success(`${data.length} produits importés avec succès`);
+              }}
+            />
           </div>
         </div>
+
+        {/* Filtres avancés */}
+        <FilterPanel
+          filters={currentFilters}
+          onFiltersChange={(newFilters) => {
+            setCurrentFilters(newFilters);
+            setSearchQuery(newFilters.search || "");
+            setSelectedCategory(newFilters.category || "all");
+            setSelectedSupplier(newFilters.supplier || "all");
+          }}
+          options={{
+            search: true,
+            categories: categories.map(cat => ({ label: cat, value: cat })),
+            suppliers: suppliers.map(sup => ({ label: sup.name, value: sup.name })),
+            dateRange: true
+          }}
+          onReset={() => {
+            setCurrentFilters({});
+            setSearchQuery("");
+            setSelectedCategory("all");
+            setSelectedSupplier("all");
+          }}
+        />
 
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

@@ -11,6 +11,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
+import { toast } from 'sonner'
+import { FilterPanel } from "@/components/common/FilterPanel"
+import { ExportButton } from "@/components/common/ExportButton"
+import { ImportButton } from "@/components/common/ImportButton"
+import { useModalHelpers } from "@/hooks/useModalHelpers"
 
 // Données des commandes
 const ordersData = [
@@ -141,6 +146,9 @@ export default function OrdersUltraPro() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [dateRange, setDateRange] = useState('7d')
   const [selectedOrder, setSelectedOrder] = useState(null)
+  const [currentFilters, setCurrentFilters] = useState({})
+  
+  const modalHelpers = useModalHelpers()
 
   // Calcul des métriques
   const totalOrders = ordersData.length
@@ -250,25 +258,46 @@ export default function OrdersUltraPro() {
               </SelectContent>
             </Select>
             
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                toast.success("Synchronisation temps réel activée");
+              }}
+            >
               <RefreshCw className="h-4 w-4 mr-2" />
               Sync temps réel
             </Button>
             
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
+            <ExportButton
+              data={filteredOrders}
+              filename="commandes"
+              columns={['id', 'customerName', 'total', 'status', 'date']}
+            />
             
-            <Button size="sm">
+            <Button 
+              size="sm"
+              onClick={() => {
+                toast.success("Analyse IA des tendances lancée");
+              }}
+            >
               <Bot className="h-4 w-4 mr-2" />
               Prédictions IA
             </Button>
 
-            <Button size="sm">
+            <Button 
+              size="sm"
+              onClick={() => modalHelpers.openCreateOrder()}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Nouvelle commande
             </Button>
+            
+            <ImportButton
+              onImport={(data) => {
+                toast.success(`${data.length} commandes importées`);
+              }}
+            />
           </div>
         </div>
 

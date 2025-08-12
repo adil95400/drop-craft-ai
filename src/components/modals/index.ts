@@ -12,3 +12,4 @@ export { TrackingDialog } from './TrackingDialog';
 export { SEOOptimizationDialog } from './SEOOptimizationDialog';
 export { BlogPostDialog } from './BlogPostDialog';
 export { SupportTicketDialog } from './SupportTicketDialog';
+export { BulkActionsDialog } from './BulkActionsDialog';

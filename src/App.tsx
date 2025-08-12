@@ -116,6 +116,15 @@ const App = () => (
                 </AppLayout>
               </AuthGuard>
             } />
+            <Route path="/dashboard/ultra-pro" element={
+              <AuthGuard>
+                <AppLayout>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
+                    <DashboardUltraProLazy />
+                  </Suspense>
+                </AppLayout>
+              </AuthGuard>
+            } />
             <Route path="/import" element={
               <AuthGuard>
                 <AppLayout>
