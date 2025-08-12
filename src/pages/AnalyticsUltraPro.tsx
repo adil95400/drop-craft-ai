@@ -7,8 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
-import { AppLayout } from '@/layouts/AppLayout'
-
 const salesData = [
   { name: 'Jan', ventes: 45000, visiteurs: 12000, commandes: 890, conversionRate: 7.4 },
   { name: 'Fév', ventes: 52000, visiteurs: 14000, commandes: 1020, conversionRate: 7.3 },
@@ -109,8 +107,7 @@ export default function AnalyticsUltraPro() {
   }
 
   return (
-    <AppLayout>
-      <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6">
         {/* Header avec Contrôles Temps Réel */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div>
@@ -807,6 +804,5 @@ export default function AnalyticsUltraPro() {
           </TabsContent>
         </Tabs>
       </div>
-    </AppLayout>
   )
 }

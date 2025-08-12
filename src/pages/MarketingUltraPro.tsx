@@ -11,7 +11,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from '@/components/ui/textarea'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
-import { AppLayout } from '@/layouts/AppLayout'
 
 interface Campaign {
   id: string
@@ -149,8 +148,7 @@ export default function MarketingUltraPro() {
   }
 
   return (
-    <AppLayout>
-      <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6">
         {/* Header avec Actions */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div>
@@ -863,6 +861,5 @@ export default function MarketingUltraPro() {
           </TabsContent>
         </Tabs>
       </div>
-    </AppLayout>
   )
 }
