@@ -9,7 +9,7 @@ import { AuthGuard } from '@/components/auth/AuthGuard';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AppLayout } from '@/layouts/AppLayout';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
-import { PageSkeleton } from '@/components/common/PageSkeleton';
+import { OptimizedSkeleton } from '@/components/common/OptimizedSkeleton';
 
 // Lazy loaded heavy pages
 import {
@@ -106,7 +106,7 @@ const App = () => (
             <Route path="/dashboard" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <DashboardLazy />
                   </Suspense>
                 </AppLayout>
@@ -115,7 +115,7 @@ const App = () => (
             <Route path="/import" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <ImportLazy />
                   </Suspense>
                 </AppLayout>
@@ -124,7 +124,7 @@ const App = () => (
             <Route path="/import-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <ImportUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -133,7 +133,7 @@ const App = () => (
             <Route path="/catalogue" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="grid" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="grid" />}>
                     <CatalogueRealLazy />
                   </Suspense>
                 </AppLayout>
@@ -142,7 +142,7 @@ const App = () => (
             <Route path="/catalogue-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="grid" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="grid" />}>
                     <CatalogueUltraProRealLazy />
                   </Suspense>
                 </AppLayout>
@@ -151,7 +151,7 @@ const App = () => (
             <Route path="/catalogue-ultra-pro-real" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="grid" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="grid" />}>
                     <CatalogueUltraProRealLazy />
                   </Suspense>
                 </AppLayout>
@@ -160,7 +160,7 @@ const App = () => (
             <Route path="/catalogue-ultra-pro-advanced" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="grid" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="grid" />}>
                     <CatalogueUltraProAdvancedLazy />
                   </Suspense>
                 </AppLayout>
@@ -176,7 +176,7 @@ const App = () => (
             <Route path="/orders" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <OrdersLazy />
                   </Suspense>
                 </AppLayout>
@@ -185,7 +185,7 @@ const App = () => (
             <Route path="/orders-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <OrdersUltraProRealLazy />
                   </Suspense>
                 </AppLayout>
@@ -194,7 +194,7 @@ const App = () => (
             <Route path="/crm" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <CRMLazy />
                   </Suspense>
                 </AppLayout>
@@ -203,7 +203,7 @@ const App = () => (
             <Route path="/crm-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <CRMUltraProRealLazy />
                   </Suspense>
                 </AppLayout>
@@ -247,7 +247,7 @@ const App = () => (
             <Route path="/crm/prospects-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <CRMProspectsUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -256,7 +256,7 @@ const App = () => (
             <Route path="/tracking" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <TrackingRealLazy />
                   </Suspense>
                 </AppLayout>
@@ -265,7 +265,7 @@ const App = () => (
             <Route path="/tracking-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <TrackingUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -295,7 +295,7 @@ const App = () => (
             <Route path="/reviews" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <ReviewsLazy />
                   </Suspense>
                 </AppLayout>
@@ -304,7 +304,7 @@ const App = () => (
             <Route path="/reviews-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <ReviewsUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -320,7 +320,7 @@ const App = () => (
             <Route path="/seo" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <SEOLazy />
                   </Suspense>
                 </AppLayout>
@@ -329,7 +329,7 @@ const App = () => (
             <Route path="/seo-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <SEOUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -338,7 +338,7 @@ const App = () => (
             <Route path="/marketing" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <MarketingLazy />
                   </Suspense>
                 </AppLayout>
@@ -347,7 +347,7 @@ const App = () => (
             <Route path="/marketing-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <MarketingUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -356,7 +356,7 @@ const App = () => (
             <Route path="/inventory" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <InventoryLazy />
                   </Suspense>
                 </AppLayout>
@@ -365,7 +365,7 @@ const App = () => (
             <Route path="/inventory-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <InventoryUltraProRealLazy />
                   </Suspense>
                 </AppLayout>
@@ -374,7 +374,7 @@ const App = () => (
             <Route path="/automation" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <AutomationLazy />
                   </Suspense>
                 </AppLayout>
@@ -383,7 +383,7 @@ const App = () => (
             <Route path="/automation-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <AutomationUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -392,7 +392,7 @@ const App = () => (
             <Route path="/plugins" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="grid" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="grid" />}>
                     <PluginsLazy />
                   </Suspense>
                 </AppLayout>
@@ -401,7 +401,7 @@ const App = () => (
             <Route path="/plugins-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="grid" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="grid" />}>
                     <PluginsUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -410,7 +410,7 @@ const App = () => (
             <Route path="/extension" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="detail" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <ExtensionLazy />
                   </Suspense>
                 </AppLayout>
@@ -419,7 +419,7 @@ const App = () => (
             <Route path="/extension-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="detail" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <ExtensionUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -428,7 +428,7 @@ const App = () => (
             <Route path="/mobile" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="detail" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <MobileLazy />
                   </Suspense>
                 </AppLayout>
@@ -437,7 +437,7 @@ const App = () => (
             <Route path="/mobile-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="detail" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <MobileUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -453,7 +453,7 @@ const App = () => (
             <Route path="/support" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="detail" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <SupportLazy />
                   </Suspense>
                 </AppLayout>
@@ -462,7 +462,7 @@ const App = () => (
             <Route path="/support-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="detail" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <SupportUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -471,7 +471,7 @@ const App = () => (
             <Route path="/analytics" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <AnalyticsLazy />
                   </Suspense>
                 </AppLayout>
@@ -480,7 +480,7 @@ const App = () => (
             <Route path="/analytics-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <AnalyticsUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -489,7 +489,7 @@ const App = () => (
             <Route path="/stock" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <StockLazy />
                   </Suspense>
                 </AppLayout>
@@ -498,7 +498,7 @@ const App = () => (
             <Route path="/stock-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <StockUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -514,7 +514,7 @@ const App = () => (
             <Route path="/blog" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <BlogLazy />
                   </Suspense>
                 </AppLayout>
@@ -523,7 +523,7 @@ const App = () => (
             <Route path="/blog-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <BlogUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -539,7 +539,7 @@ const App = () => (
             <Route path="/admin" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <AdminLazy />
                   </Suspense>
                 </AppLayout>
@@ -555,7 +555,7 @@ const App = () => (
             <Route path="/security" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <SecurityLazy />
                   </Suspense>
                 </AppLayout>
@@ -564,7 +564,7 @@ const App = () => (
             <Route path="/security-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <SecurityUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -587,7 +587,7 @@ const App = () => (
             <Route path="/suppliers-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="list" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <SuppliersUltraProLazy />
                   </Suspense>
                 </AppLayout>
@@ -596,7 +596,7 @@ const App = () => (
             <Route path="/dashboard-ultra-pro" element={
               <AuthGuard>
                 <AppLayout>
-                  <Suspense fallback={<PageSkeleton variant="dashboard" />}>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <DashboardUltraProLazy />
                   </Suspense>
                 </AppLayout>
