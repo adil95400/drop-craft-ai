@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { useRealIntegrations } from "@/hooks/useRealIntegrations";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CreateIntegrationDialogProps {
   open: boolean;
@@ -15,6 +17,7 @@ interface CreateIntegrationDialogProps {
 
 export const CreateIntegrationDialog = ({ open, onOpenChange }: CreateIntegrationDialogProps) => {
   const { toast } = useToast();
+  const { addIntegration, isAdding } = useRealIntegrations();
   const [formData, setFormData] = useState({
     name: "",
     type: "",
@@ -25,21 +28,56 @@ export const CreateIntegrationDialog = ({ open, onOpenChange }: CreateIntegratio
     enabled: true
   });
 
-  const handleCreate = () => {
-    toast({
-      title: "Intégration créée avec succès",
-      description: `L'intégration "${formData.name}" a été configurée.`,
-    });
-    onOpenChange(false);
-    setFormData({
-      name: "",
-      type: "",
-      apiKey: "",
-      apiSecret: "",
-      webhookUrl: "",
-      description: "",
-      enabled: true
-    });
+  const handleCreate = async () => {
+    if (!formData.name || !formData.type || !formData.apiKey) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour créer une intégration",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      addIntegration({
+        platform_name: formData.name,
+        platform_type: formData.type,
+        api_key: formData.apiKey,
+        api_secret: formData.apiSecret || null,
+        platform_url: formData.webhookUrl || null,
+        is_active: formData.enabled,
+        connection_status: 'disconnected',
+        user_id: user.id
+      });
+
+      onOpenChange(false);
+      setFormData({
+        name: "",
+        type: "",
+        apiKey: "",
+        apiSecret: "",
+        webhookUrl: "",
+        description: "",
+        enabled: true
+      });
+    } catch (error) {
+      console.error('Error creating integration:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la création de l'intégration",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -138,8 +176,8 @@ export const CreateIntegrationDialog = ({ open, onOpenChange }: CreateIntegratio
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
           </Button>
-          <Button onClick={handleCreate}>
-            Créer l'intégration
+          <Button onClick={handleCreate} disabled={isAdding}>
+            {isAdding ? "Création..." : "Créer l'intégration"}
           </Button>
         </DialogFooter>
       </DialogContent>

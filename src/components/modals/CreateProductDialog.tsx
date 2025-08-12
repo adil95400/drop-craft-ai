@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useRealProducts } from "@/hooks/useRealProducts";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CreateProductDialogProps {
   open: boolean;
@@ -13,6 +15,7 @@ interface CreateProductDialogProps {
 
 export const CreateProductDialog = ({ open, onOpenChange }: CreateProductDialogProps) => {
   const { toast } = useToast();
+  const { addProduct, isAdding } = useRealProducts();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -22,20 +25,67 @@ export const CreateProductDialog = ({ open, onOpenChange }: CreateProductDialogP
     sku: ""
   });
 
-  const handleCreate = () => {
-    toast({
-      title: "Produit créé avec succès",
-      description: `"${formData.name}" a été ajouté au catalogue.`,
-    });
-    onOpenChange(false);
-    setFormData({
-      name: "",
-      description: "",
-      price: "",
-      category: "",
-      supplier: "",
-      sku: ""
-    });
+  const handleCreate = async () => {
+    if (!formData.name || !formData.price) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour créer un produit",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      addProduct({
+        name: formData.name,
+        description: formData.description || null,
+        price: parseFloat(formData.price),
+        category: formData.category || null,
+        supplier: formData.supplier || null,
+        sku: formData.sku || null,
+        status: 'active',
+        user_id: user.id,
+        cost_price: 0,
+        stock_quantity: 0,
+        profit_margin: 0,
+        image_url: null,
+        seo_title: null,
+        seo_description: null,
+        seo_keywords: null,
+        tags: null,
+        weight: null,
+        dimensions: null,
+        supplier_id: null,
+        shopify_id: null
+      });
+
+      onOpenChange(false);
+      setFormData({
+        name: "",
+        description: "",
+        price: "",
+        category: "",
+        supplier: "",
+        sku: ""
+      });
+    } catch (error) {
+      console.error('Error creating product:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la création du produit",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -108,8 +158,8 @@ export const CreateProductDialog = ({ open, onOpenChange }: CreateProductDialogP
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
           </Button>
-          <Button onClick={handleCreate}>
-            Créer le produit
+          <Button onClick={handleCreate} disabled={isAdding}>
+            {isAdding ? "Création..." : "Créer le produit"}
           </Button>
         </DialogFooter>
       </DialogContent>

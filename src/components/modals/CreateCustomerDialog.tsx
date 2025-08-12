@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useRealCustomers } from "@/hooks/useRealCustomers";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CreateCustomerDialogProps {
   open: boolean;
@@ -14,6 +16,7 @@ interface CreateCustomerDialogProps {
 
 export const CreateCustomerDialog = ({ open, onOpenChange }: CreateCustomerDialogProps) => {
   const { toast } = useToast();
+  const { addCustomer, isAdding } = useRealCustomers();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -25,22 +28,61 @@ export const CreateCustomerDialog = ({ open, onOpenChange }: CreateCustomerDialo
     segment: "regular"
   });
 
-  const handleCreate = () => {
-    toast({
-      title: "Client créé avec succès",
-      description: `${formData.firstName} ${formData.lastName} a été ajouté.`,
-    });
-    onOpenChange(false);
-    setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      address: "",
-      city: "",
-      country: "",
-      segment: "regular"
-    });
+  const handleCreate = async () => {
+    if (!formData.firstName || !formData.lastName || !formData.email) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour créer un client",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      addCustomer({
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        phone: formData.phone || null,
+        user_id: user.id,
+        status: 'active',
+        total_spent: 0,
+        total_orders: 0,
+        address: {
+          street: formData.address,
+          city: formData.city,
+          country: formData.country
+        }
+      } as any);
+
+      onOpenChange(false);
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        address: "",
+        city: "",
+        country: "",
+        segment: "regular"
+      });
+    } catch (error) {
+      console.error('Error creating customer:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la création du client",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -148,8 +190,8 @@ export const CreateCustomerDialog = ({ open, onOpenChange }: CreateCustomerDialo
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
           </Button>
-          <Button onClick={handleCreate}>
-            Créer le client
+          <Button onClick={handleCreate} disabled={isAdding}>
+            {isAdding ? "Création..." : "Créer le client"}
           </Button>
         </DialogFooter>
       </DialogContent>
