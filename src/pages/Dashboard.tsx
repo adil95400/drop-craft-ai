@@ -2,40 +2,33 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  BarChart3, 
-  Package, 
-  TrendingUp, 
-  Users, 
-  ShoppingCart, 
-  Eye, 
-  Import,
-  Search,
-  Bell,
-  Settings,
-  Euro,
-  ArrowUp,
-  Activity,
-  Zap
-} from "lucide-react";
+import { BarChart3, Package, TrendingUp, Users, ShoppingCart, Eye, Import, Search, Bell, Settings, Euro, ArrowUp, Activity, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProductsDemo as useProducts } from "@/hooks/useProductsDemo";
 import { useOrdersDemo as useOrders } from "@/hooks/useOrdersDemo";
 import { useCustomersDemo as useCustomers } from "@/hooks/useCustomersDemo";
-
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { products, isLoading: productsLoading } = useProducts();
-  const { orders, stats: orderStats, isLoading: ordersLoading } = useOrders();
-  const { customers, stats: customerStats, isLoading: customersLoading } = useCustomers();
-  
+  const {
+    products,
+    isLoading: productsLoading
+  } = useProducts();
+  const {
+    orders,
+    stats: orderStats,
+    isLoading: ordersLoading
+  } = useOrders();
+  const {
+    customers,
+    stats: customerStats,
+    isLoading: customersLoading
+  } = useCustomers();
   const [realtimeStats, setRealtimeStats] = useState({
     todayOrders: 0,
     todayRevenue: 0,
     conversionRate: 3.2,
     growthRate: 12.5
   });
-
   useEffect(() => {
     // Simulate realtime updates
     const interval = setInterval(() => {
@@ -47,61 +40,50 @@ const Dashboard = () => {
         growthRate: Number((Math.random() * 20 + 5).toFixed(1))
       }));
     }, 30000);
-
     return () => clearInterval(interval);
   }, []);
-
-  const quickActions = [
-    {
-      title: "Import Produits",
-      description: "Importer depuis AliExpress, Amazon",
-      icon: Import,
-      badge: "Pro",
-      action: () => navigate("/import")
-    },
-    {
-      title: "Suivi Colis",
-      description: "Tracker les commandes en cours",
-      icon: Package,
-      badge: `${orderStats.processing + orderStats.pending} actifs`,
-      action: () => navigate("/tracking")
-    },
-    {
-      title: "SEO Analyzer",
-      description: "Optimiser vos pages produits",
-      icon: Search,
-      badge: "IA+",
-      action: () => navigate("/seo")
-    },
-    {
-      title: "Produits Gagnants",
-      description: "Découvrir les tendances",
-      icon: TrendingUp,
-      badge: "Hot",
-      action: () => navigate("/winners")
-    },
-    {
-      title: "CRM Clients",
-      description: "Gérer vos relations clients",
-      icon: Users,
-      badge: `${customerStats.active} actifs`,
-      action: () => navigate("/crm")
-    },
-    {
-      title: "Blog IA",
-      description: "Générer du contenu automatiquement",
-      icon: Activity,
-      badge: "IA Pro",
-      action: () => navigate("/blog")
-    }
-  ];
-
-  return (
-    <div className="space-y-6">
+  const quickActions = [{
+    title: "Import Produits",
+    description: "Importer depuis AliExpress, Amazon",
+    icon: Import,
+    badge: "Pro",
+    action: () => navigate("/import")
+  }, {
+    title: "Suivi Colis",
+    description: "Tracker les commandes en cours",
+    icon: Package,
+    badge: `${orderStats.processing + orderStats.pending} actifs`,
+    action: () => navigate("/tracking")
+  }, {
+    title: "SEO Analyzer",
+    description: "Optimiser vos pages produits",
+    icon: Search,
+    badge: "IA+",
+    action: () => navigate("/seo")
+  }, {
+    title: "Produits Gagnants",
+    description: "Découvrir les tendances",
+    icon: TrendingUp,
+    badge: "Hot",
+    action: () => navigate("/winners")
+  }, {
+    title: "CRM Clients",
+    description: "Gérer vos relations clients",
+    icon: Users,
+    badge: `${customerStats.active} actifs`,
+    action: () => navigate("/crm")
+  }, {
+    title: "Blog IA",
+    description: "Générer du contenu automatiquement",
+    icon: Activity,
+    badge: "IA Pro",
+    action: () => navigate("/blog")
+  }];
+  return <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-indigo-500">
             Dashboard Shopopti Pro
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -109,10 +91,13 @@ const Dashboard = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button 
-            className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300"
-            onClick={() => navigate("/dashboard-ultra-pro")}
-          >
+          <Button variant="outline" size="icon" onClick={() => navigate("/notifications")}>
+            <Bell className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={() => navigate("/settings")}>
+            <Settings className="h-4 w-4" />
+          </Button>
+          <Button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300" onClick={() => navigate("/dashboard/ultra-pro")}>
             <Zap className="mr-2 h-4 w-4" />
             Dashboard Ultra Pro
           </Button>
@@ -199,33 +184,23 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {quickActions.map((action, index) => (
-              <div
-                key={index}
-                className="p-4 border border-border rounded-lg hover:border-primary/50 transition-all duration-300 cursor-pointer group hover:shadow-card animate-slide-up bg-gradient-to-br from-background to-muted/20"
-                style={{ animationDelay: `${index * 100}ms` }}
-                onClick={action.action}
-              >
+            {quickActions.map((action, index) => <div key={index} className="p-4 border border-border rounded-lg hover:border-primary/50 transition-all duration-300 cursor-pointer group hover:shadow-card animate-slide-up bg-gradient-to-br from-background to-muted/20" style={{
+            animationDelay: `${index * 100}ms`
+          }} onClick={action.action}>
                 <div className="flex items-start justify-between mb-3">
                   <div className="p-2 bg-gradient-to-br from-primary/10 to-primary/20 rounded-lg group-hover:from-primary/20 group-hover:to-primary/30 transition-all">
                     <action.icon className="h-5 w-5 text-primary" />
                   </div>
-                  <Badge 
-                    variant={action.badge.includes("Pro") || action.badge.includes("IA") ? "default" : "secondary"}
-                    className="text-xs font-medium"
-                  >
+                  <Badge variant={action.badge.includes("Pro") || action.badge.includes("IA") ? "default" : "secondary"} className="text-xs font-medium">
                     {action.badge}
                   </Badge>
                 </div>
                 <h3 className="font-semibold text-sm mb-1">{action.title}</h3>
                 <p className="text-xs text-muted-foreground">{action.description}</p>
-              </div>
-            ))}
+              </div>)}
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default Dashboard;
