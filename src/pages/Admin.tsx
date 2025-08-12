@@ -8,7 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Search, Shield, Users, BarChart3, Settings, Ban, UserCheck, Download, Eye, AlertTriangle } from "lucide-react"
+import { Progress } from "@/components/ui/progress"
+import { AnimatedCounter } from "@/components/ui/animated-counter"
+import { Search, Shield, Users, BarChart3, Settings, Ban, UserCheck, Download, Eye, AlertTriangle, TrendingUp, Activity, Clock, Globe, Server, Database, Zap } from "lucide-react"
 
 export default function Admin() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -23,7 +25,8 @@ export default function Admin() {
       status: "active",
       lastLogin: "Il y a 2h",
       products: 156,
-      revenue: "€2,450"
+      revenue: "€2,450",
+      avatar: "/lovable-uploads/aa11c615-9c0c-4dbf-b691-586cf4f9c53a.png"
     },
     {
       id: 2,
@@ -34,7 +37,8 @@ export default function Admin() {
       status: "active",
       lastLogin: "Il y a 1j",
       products: 89,
-      revenue: "€1,230"
+      revenue: "€1,230",
+      avatar: "/lovable-uploads/aa11c615-9c0c-4dbf-b691-586cf4f9c53a.png"
     },
     {
       id: 3,
@@ -45,7 +49,8 @@ export default function Admin() {
       status: "suspended",
       lastLogin: "Il y a 5j",
       products: 23,
-      revenue: "€340"
+      revenue: "€340",
+      avatar: "/lovable-uploads/aa11c615-9c0c-4dbf-b691-586cf4f9c53a.png"
     }
   ]
 
@@ -69,10 +74,38 @@ export default function Admin() {
   ]
 
   const systemStats = [
-    { label: "Utilisateurs Totaux", value: "2,847", growth: "+12%" },
-    { label: "Organisations", value: "156", growth: "+8%" },
-    { label: "Revenus Mensuel", value: "€125K", growth: "+25%" },
-    { label: "Uptime", value: "99.9%", growth: "Stable" }
+    { 
+      label: "Utilisateurs Totaux", 
+      value: 2847, 
+      growth: "+12%", 
+      icon: Users,
+      color: "text-blue-500",
+      bgColor: "bg-blue-50"
+    },
+    { 
+      label: "Organisations", 
+      value: 156, 
+      growth: "+8%", 
+      icon: BarChart3,
+      color: "text-green-500",
+      bgColor: "bg-green-50"
+    },
+    { 
+      label: "Revenus Mensuel", 
+      value: "€125K", 
+      growth: "+25%", 
+      icon: TrendingUp,
+      color: "text-purple-500",
+      bgColor: "bg-purple-50"
+    },
+    { 
+      label: "Uptime", 
+      value: "99.9%", 
+      growth: "Stable", 
+      icon: Activity,
+      color: "text-emerald-500",
+      bgColor: "bg-emerald-50"
+    }
   ]
 
   const getStatusColor = (status: string) => {
@@ -95,12 +128,12 @@ export default function Admin() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-6 max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center">
-              <Shield className="w-8 h-8 mr-3 text-red-600" />
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+              <Shield className="w-8 h-8 text-red-600" />
               Administration
             </h1>
             <p className="text-muted-foreground mt-2">
@@ -142,34 +175,55 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* System Stats */}
+        {/* Enhanced System Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {systemStats.map((stat, index) => (
-            <Card key={index}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
-                    <p className="text-2xl font-bold">{stat.value}</p>
-                    <p className="text-sm text-green-600">{stat.growth}</p>
+          {systemStats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={index} className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className={`absolute inset-0 ${stat.bgColor} opacity-5`} />
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                      <div className="flex items-center gap-2">
+                        {typeof stat.value === 'number' ? (
+                          <p className="text-2xl font-bold">
+                            <AnimatedCounter value={stat.value} />
+                          </p>
+                        ) : (
+                          <p className="text-2xl font-bold">{stat.value}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3 text-green-500" />
+                        <p className="text-sm text-green-600 font-medium">{stat.growth}</p>
+                      </div>
+                    </div>
+                    <div className={`p-3 rounded-lg ${stat.bgColor}`}>
+                      <Icon className={`h-6 w-6 ${stat.color}`} />
+                    </div>
                   </div>
-                  <BarChart3 className="h-8 w-8 text-primary" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
-        {/* Search */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher utilisateurs, organisations..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        {/* Enhanced Search */}
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher utilisateurs, organisations, logs système..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-12 text-base"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Tabs */}
         <Tabs defaultValue="users" className="space-y-6">
@@ -202,71 +256,79 @@ export default function Admin() {
               <CardContent>
                 <div className="space-y-4">
                   {users.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <Avatar>
-                          <AvatarImage src={`/placeholder-avatar-${user.id}.jpg`} />
-                          <AvatarFallback>
-                            {user.name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold">{user.name}</h3>
-                            <Badge className={getRoleColor(user.role)}>
-                              {user.role === 'admin' ? 'Admin' : 'Utilisateur'}
-                            </Badge>
+                    <Card key={user.id} className="hover:shadow-md transition-shadow duration-200">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <Avatar className="h-12 w-12">
+                              <AvatarImage src={user.avatar} />
+                              <AvatarFallback className="bg-primary/10">
+                                {user.name.split(' ').map(n => n[0]).join('')}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="flex items-center gap-3 mb-1">
+                                <h3 className="font-semibold text-lg">{user.name}</h3>
+                                <Badge className={`${getRoleColor(user.role)} text-white`}>
+                                  {user.role === 'admin' ? 'Admin' : 'Utilisateur'}
+                                </Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  {user.plan}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">{user.email}</p>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-muted-foreground">
+                                <div>
+                                  <span className="font-medium">Produits:</span> {user.products}
+                                </div>
+                                <div>
+                                  <span className="font-medium">CA:</span> {user.revenue}
+                                </div>
+                                <div>
+                                  <span className="font-medium">Connexion:</span> {user.lastLogin}
+                                </div>
+                                <div>
+                                  <Badge className={`${getStatusColor(user.status)} text-white text-xs`}>
+                                    {user.status === 'active' ? 'Actif' : 'Suspendu'}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
-                          <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                            <span>Plan: {user.plan}</span>
-                            <span>•</span>
-                            <span>{user.products} produits</span>
-                            <span>•</span>
-                            <span>CA: {user.revenue}</span>
-                            <span>•</span>
-                            <span>Dernière connexion: {user.lastLogin}</span>
+                          
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => alert(`Voir les détails de ${user.name}`)}
+                              aria-label={`Voir les détails de ${user.name}`}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => alert(`Modifier ${user.name}`)}
+                              aria-label={`Modifier ${user.name}`}
+                            >
+                              <Settings className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => {
+                                if (confirm(`Suspendre ${user.name} ?`)) {
+                                  alert(`${user.name} suspendu`);
+                                }
+                              }}
+                              aria-label={`Suspendre ${user.name}`}
+                            >
+                              <Ban className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        <Badge className={getStatusColor(user.status)}>
-                          {user.status === 'active' ? 'Actif' : 'Suspendu'}
-                        </Badge>
-                        
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => alert(`Voir les détails de ${user.name}`)}
-                            aria-label={`Voir les détails de ${user.name}`}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => alert(`Modifier ${user.name}`)}
-                            aria-label={`Modifier ${user.name}`}
-                          >
-                            <Settings className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="destructive" 
-                            size="sm"
-                            onClick={() => {
-                              if (confirm(`Suspendre ${user.name} ?`)) {
-                                alert(`${user.name} suspendu`);
-                              }
-                            }}
-                            aria-label={`Suspendre ${user.name}`}
-                          >
-                            <Ban className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               </CardContent>
