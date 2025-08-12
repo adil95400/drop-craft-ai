@@ -15,8 +15,8 @@ export default function Customers() {
   const { customers, isLoading } = useCustomers();
 
   const filteredCustomers = customers?.filter(customer => {
-    const matchesSearch = (customer.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (customer.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         customer.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || customer.status === filterStatus;
     return matchesSearch && matchesStatus;
   }) || [];
@@ -25,7 +25,6 @@ export default function Customers() {
     switch (status) {
       case 'active': return 'bg-success text-success-foreground';
       case 'inactive': return 'bg-muted text-muted-foreground';
-      case 'vip': return 'bg-primary text-primary-foreground';
       default: return 'bg-secondary text-secondary-foreground';
     }
   };
@@ -84,7 +83,6 @@ export default function Customers() {
                   <SelectItem value="all">Tous les statuts</SelectItem>
                   <SelectItem value="active">Actif</SelectItem>
                   <SelectItem value="inactive">Inactif</SelectItem>
-                  <SelectItem value="vip">VIP</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -105,8 +103,7 @@ export default function Customers() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <Avatar className="h-12 w-12">
-                        <AvatarImage src={customer.avatar} alt={customer.name} />
-                        <AvatarFallback>{customer.name?.charAt(0)}</AvatarFallback>
+                        <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>
                         <h3 className="font-semibold text-foreground">{customer.name}</h3>
@@ -129,8 +126,8 @@ export default function Customers() {
                         {customer.status}
                       </Badge>
                       <div className="text-right">
-                        <p className="font-semibold text-foreground">{customer.totalOrders} commandes</p>
-                        <p className="text-sm text-muted-foreground">{customer.totalSpent}€ dépensés</p>
+                        <p className="font-semibold text-foreground">{customer.total_orders} commandes</p>
+                        <p className="text-sm text-muted-foreground">{customer.total_spent}€ dépensés</p>
                       </div>
                     </div>
                   </div>
@@ -141,33 +138,32 @@ export default function Customers() {
 
           <TabsContent value="grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCustomers.map((customer) => (
-              <Card key={customer.id} className="transition-colors hover:bg-muted/50">
-                <CardContent className="p-6">
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <Avatar className="h-16 w-16">
-                      <AvatarImage src={customer.avatar} alt={customer.name} />
-                      <AvatarFallback>{customer.name?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold text-foreground">{customer.name}</h3>
-                      <p className="text-sm text-muted-foreground">{customer.email}</p>
-                    </div>
-                    <Badge className={getStatusColor(customer.status)}>
-                      {customer.status}
-                    </Badge>
-                    <div className="grid grid-cols-2 gap-4 w-full text-center">
+                <Card key={customer.id} className="transition-colors hover:bg-muted/50">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col items-center text-center space-y-4">
+                      <Avatar className="h-16 w-16">
+                        <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
                       <div>
-                        <p className="text-lg font-semibold text-foreground">{customer.totalOrders}</p>
-                        <p className="text-xs text-muted-foreground">Commandes</p>
+                        <h3 className="font-semibold text-foreground">{customer.name}</h3>
+                        <p className="text-sm text-muted-foreground">{customer.email}</p>
                       </div>
-                      <div>
-                        <p className="text-lg font-semibold text-foreground">{customer.totalSpent}€</p>
-                        <p className="text-xs text-muted-foreground">Dépensés</p>
+                      <Badge className={getStatusColor(customer.status)}>
+                        {customer.status}
+                      </Badge>
+                      <div className="grid grid-cols-2 gap-4 w-full text-center">
+                        <div>
+                          <p className="text-lg font-semibold text-foreground">{customer.total_orders}</p>
+                          <p className="text-xs text-muted-foreground">Commandes</p>
+                        </div>
+                        <div>
+                          <p className="text-lg font-semibold text-foreground">{customer.total_spent}€</p>
+                          <p className="text-xs text-muted-foreground">Dépensés</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
             ))}
           </TabsContent>
 
@@ -178,34 +174,24 @@ export default function Customers() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-foreground">{customers?.length || 0}</p>
-                        <p className="text-sm text-muted-foreground">Total Clients</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-success">
-                          {customers?.filter(c => c.status === 'active').length || 0}
-                        </p>
-                        <p className="text-sm text-muted-foreground">Clients Actifs</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-primary">
-                          {customers?.filter(c => c.status === 'vip').length || 0}
-                        </p>
-                        <p className="text-sm text-muted-foreground">Clients VIP</p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-foreground">{customers?.length || 0}</p>
+                          <p className="text-sm text-muted-foreground">Total Clients</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-success">
+                            {customers?.filter(c => c.status === 'active').length || 0}
+                          </p>
+                          <p className="text-sm text-muted-foreground">Clients Actifs</p>
+                        </div>
+                      </CardContent>
+                    </Card>
                 </div>
               </CardContent>
             </Card>
