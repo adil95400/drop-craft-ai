@@ -241,3 +241,6 @@ All colors MUST be HSL.
 .transition-bounce {
   transition: var(--transition-bounce);
 }
+
+/* Import optimized styles */
+@import './styles/optimized.css';
