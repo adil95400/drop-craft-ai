@@ -9,6 +9,22 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
+// Composant Header unifié
+const AppHeader = ({ showTrigger = false }: { showTrigger?: boolean }) => (
+  <header className="sticky top-0 z-30 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="flex items-center justify-between px-4 h-full">
+      <div className="flex items-center gap-4">
+        {showTrigger && <SidebarTrigger aria-label="Toggle navigation menu" />}
+        <h1 className="font-semibold text-foreground">Dashboard</h1>
+      </div>
+      <div className="flex items-center gap-4">
+        <NotificationDropdown />
+        <AdminUserDropdown />
+      </div>
+    </div>
+  </header>
+);
+
 export function AppLayout({ children }: AppLayoutProps) {
   const isMobile = useIsMobile();
 
@@ -24,18 +40,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           
           {/* Desktop Content */}
           <div className="flex flex-col min-w-0">
-            {/* Header */}
-            <header className="sticky top-0 z-30 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <div className="flex items-center justify-between px-4 h-full">
-                <div className="flex items-center gap-4">
-                  <h1 className="font-semibold text-foreground">Dashboard</h1>
-                </div>
-                <div className="flex items-center gap-4">
-                  <NotificationDropdown />
-                  <AdminUserDropdown />
-                </div>
-              </div>
-            </header>
+            <AppHeader />
 
             {/* Main Content */}
             <main className="flex-1 overflow-auto min-w-0 p-6">
@@ -65,19 +70,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <AppSidebarUltraPro />
           
           <SidebarInset className="flex flex-col min-h-screen">
-            {/* Mobile Header */}
-            <header className="sticky top-0 z-30 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <div className="flex items-center justify-between px-4 h-full">
-                <div className="flex items-center gap-4">
-                  <SidebarTrigger aria-label="Toggle navigation menu" />
-                  <h1 className="font-semibold text-foreground">Dashboard</h1>
-                </div>
-                <div className="flex items-center gap-4">
-                  <NotificationDropdown />
-                  <AdminUserDropdown />
-                </div>
-              </div>
-            </header>
+            <AppHeader showTrigger />
 
             {/* Mobile Content */}
             <main className="flex-1 overflow-auto min-w-0 p-4">
