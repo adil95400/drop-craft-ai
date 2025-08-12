@@ -83,7 +83,7 @@ const Dashboard = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-indigo-500">
+          <h1 className="text-3xl font-bold text-indigo-500">
             Dashboard Shopopti Pro
           </h1>
           <p className="text-muted-foreground mt-1">
