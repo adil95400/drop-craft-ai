@@ -219,14 +219,14 @@ export default function DashboardUltraPro() {
         return 'outline';
     }
   };
-  return <AppLayout>
-      <div className="p-6 space-y-6">
-        {/* Header avec contrôles */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-indigo-500">Dashboard Ultra Pro</h1>
-            <p className="text-muted-foreground">Vue d'ensemble complète de votre business</p>
-          </div>
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header avec contrôles */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-indigo-500">Dashboard Ultra Pro</h1>
+          <p className="text-muted-foreground">Vue d'ensemble complète de votre business</p>
+        </div>
           
           <div className="flex items-center gap-3">
             <Select value={dateRange} onValueChange={setDateRange}>
@@ -482,6 +482,6 @@ export default function DashboardUltraPro() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
-    </AppLayout>;
+    </div>
+  );
 }
