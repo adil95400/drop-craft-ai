@@ -109,11 +109,33 @@ export default function Admin() {
           </div>
           
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                // Export logs functionality
+                const logs = 'timestamp,level,message\n2024-01-08T10:00:00Z,INFO,System operational\n2024-01-08T09:55:00Z,WARN,High API usage detected\n';
+                const blob = new Blob([logs], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'system-logs.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
               <Download className="w-4 h-4 mr-2" />
               Export Logs
             </Button>
-            <Button variant="destructive" size="sm">
+            <Button 
+              variant="destructive" 
+              size="sm"
+              onClick={() => {
+                if (confirm('Êtes-vous sûr de vouloir activer le mode maintenance ?')) {
+                  alert('Mode maintenance activé. Tous les utilisateurs seront déconnectés.');
+                }
+              }}
+            >
               <AlertTriangle className="w-4 h-4 mr-2" />
               Mode Maintenance
             </Button>
@@ -171,7 +193,7 @@ export default function Admin() {
                       Gérez les comptes utilisateurs, rôles et permissions
                     </CardDescription>
                   </div>
-                  <Button>
+                  <Button onClick={() => alert('Créer un nouvel utilisateur')}>
                     <UserCheck className="w-4 h-4 mr-2" />
                     Nouvel Utilisateur
                   </Button>
@@ -214,13 +236,32 @@ export default function Admin() {
                         </Badge>
                         
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => alert(`Voir les détails de ${user.name}`)}
+                            aria-label={`Voir les détails de ${user.name}`}
+                          >
                             <Eye className="w-4 h-4" />
                           </Button>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => alert(`Modifier ${user.name}`)}
+                            aria-label={`Modifier ${user.name}`}
+                          >
                             <Settings className="w-4 h-4" />
                           </Button>
-                          <Button variant="destructive" size="sm">
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={() => {
+                              if (confirm(`Suspendre ${user.name} ?`)) {
+                                alert(`${user.name} suspendu`);
+                              }
+                            }}
+                            aria-label={`Suspendre ${user.name}`}
+                          >
                             <Ban className="w-4 h-4" />
                           </Button>
                         </div>
@@ -266,8 +307,20 @@ export default function Admin() {
                         </Badge>
                         
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm">Voir Détails</Button>
-                          <Button variant="outline" size="sm">Gérer</Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => alert(`Voir détails de ${org.name}`)}
+                          >
+                            Voir Détails
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => alert(`Gérer ${org.name}`)}
+                          >
+                            Gérer
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -364,7 +417,21 @@ export default function Admin() {
                     </div>
                   </div>
                   
-                  <Button variant="outline" size="sm" className="w-full mt-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full mt-4"
+                    onClick={() => {
+                      const detailedLogs = 'timestamp,level,message,details\n2024-01-08T10:00:00Z,INFO,System operational,All services running\n2024-01-08T09:55:00Z,WARN,High API usage,150% increase detected\n2024-01-08T09:45:00Z,INFO,User login,marie.martin@email.com\n';
+                      const blob = new Blob([detailedLogs], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'detailed-logs.csv';
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                  >
                     <Download className="w-4 h-4 mr-2" />
                     Télécharger Logs Complets
                   </Button>

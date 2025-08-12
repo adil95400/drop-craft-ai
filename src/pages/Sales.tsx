@@ -66,7 +66,20 @@ export default function Sales() {
               <SelectItem value="1y">Cette année</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" className="gap-2">
+          <Button 
+            variant="outline" 
+            className="gap-2"
+            onClick={() => {
+              const salesReport = `Date,Revenue,Orders,AOV\n${new Date().toLocaleDateString()},${salesData.totalRevenue},${salesData.totalOrders},${salesData.avgOrderValue}`;
+              const blob = new Blob([salesReport], { type: 'text/csv' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'sales-report.csv';
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
             <Download className="h-4 w-4" />
             Exporter
           </Button>

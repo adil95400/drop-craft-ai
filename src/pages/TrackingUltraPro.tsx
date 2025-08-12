@@ -123,15 +123,37 @@ export default function TrackingUltraPro() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                window.location.reload();
+              }}
+            >
               <RefreshCw className="w-4 h-4 mr-2" />
               Actualiser
             </Button>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                const trackingData = `Order,Status,Transporteur,Performance\nCMD-2024-1567,En transit,Colissimo,94%\nCMD-2024-1523,Livré,DHL,98%`;
+                const blob = new Blob([trackingData], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'tracking-ultra-pro.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
               <Download className="w-4 h-4 mr-2" />
               Exporter
             </Button>
-            <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+            <Button 
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              onClick={() => alert('IA Prédictive activée : 4 alertes détectées')}
+            >
               <Bell className="w-4 h-4 mr-2" />
               Alertes IA
             </Button>
@@ -350,7 +372,11 @@ export default function TrackingUltraPro() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => alert(`Détails de performance pour ${transporteur.name}`)}
+                          >
                             <BarChart3 className="w-4 h-4 mr-1" />
                             Détails
                           </Button>

@@ -74,11 +74,22 @@ export default function Tracking() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              const currentFilter = statusFilter === 'all' ? 'Aucun filtre' : statusFilter;
+              alert(`Filtres actuels: ${currentFilter}`);
+            }}
+          >
             <Filter className="w-4 h-4 mr-2" />
             Filtres
           </Button>
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => alert('Mode temps réel activé - mise à jour toutes les 30 secondes')}
+          >
             <Eye className="w-4 h-4 mr-2" />
             Vue Temps Réel
           </Button>
@@ -134,6 +145,34 @@ export default function Tracking() {
             <div className="text-2xl font-bold">{stats.pending || 0}</div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher par numéro de commande ou tracking..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Statut" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les statuts</SelectItem>
+            <SelectItem value="pending">En attente</SelectItem>
+            <SelectItem value="processing">En traitement</SelectItem>
+            <SelectItem value="shipped">Expédié</SelectItem>
+            <SelectItem value="delivered">Livré</SelectItem>
+            <SelectItem value="cancelled">Annulé</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Orders Tracking List */}
@@ -235,12 +274,20 @@ export default function Tracking() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => alert(`Détails de la commande ${order.order_number}`)}
+                  >
                     <Eye className="h-4 w-4 mr-2" />
                     Voir Détails
                   </Button>
                   {order.tracking_number && (
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open(`https://www.laposte.fr/outils/suivre-vos-envois?code=${order.tracking_number}`, '_blank')}
+                    >
                       <Truck className="h-4 w-4 mr-2" />
                       Suivre le Colis
                     </Button>

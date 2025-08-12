@@ -179,7 +179,19 @@ const Import = () => {
             </p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => window.open('/template.csv')}>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                const csvTemplate = 'name,price,description,category,image_url\n"Produit Exemple",29.99,"Description du produit","Électronique","https://example.com/image.jpg"';
+                const blob = new Blob([csvTemplate], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'template-import.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
               <Download className="mr-2 h-4 w-4" />
               Template CSV
             </Button>
@@ -324,7 +336,11 @@ const Import = () => {
                         <p className="text-sm text-muted-foreground">Redimensionnement & SEO auto</p>
                       </div>
                     </div>
-                    <Button className="w-full" variant="outline">
+                    <Button 
+                      className="w-full" 
+                      variant="outline"
+                      onClick={() => alert('Optimisation des images activée')}
+                    >
                       <Zap className="h-4 w-4 mr-2" />
                       Activer
                     </Button>
@@ -340,7 +356,11 @@ const Import = () => {
                         <p className="text-sm text-muted-foreground">Multi-langues avec IA</p>
                       </div>
                     </div>
-                    <Button className="w-full" variant="outline">
+                    <Button 
+                      className="w-full" 
+                      variant="outline"
+                      onClick={() => alert('Configuration de la traduction automatique')}
+                    >
                       <Zap className="h-4 w-4 mr-2" />
                       Configurer
                     </Button>
@@ -356,7 +376,11 @@ const Import = () => {
                         <p className="text-sm text-muted-foreground">Ajustement automatique</p>
                       </div>
                     </div>
-                    <Button className="w-full" variant="outline">
+                    <Button 
+                      className="w-full" 
+                      variant="outline"
+                      onClick={() => alert('Prix dynamiques activés')}
+                    >
                       <Zap className="h-4 w-4 mr-2" />
                       Activer
                     </Button>

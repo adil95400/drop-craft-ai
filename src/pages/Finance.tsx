@@ -93,7 +93,20 @@ export default function Finance() {
               <SelectItem value="1y">Cette année</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" className="gap-2">
+          <Button 
+            variant="outline" 
+            className="gap-2"
+            onClick={() => {
+              const financeReport = `Category,Amount\nRevenue,${financialData.revenue.total}\nExpenses,${financialData.expenses.total}\nNet Profit,${financialData.profit.net}`;
+              const blob = new Blob([financeReport], { type: 'text/csv' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'finance-report.csv';
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
             <Download className="h-4 w-4" />
             Exporter
           </Button>
