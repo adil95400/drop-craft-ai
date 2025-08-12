@@ -11,6 +11,8 @@ import { useRealAnalytics } from '@/hooks/useRealAnalytics';
 import { useModals } from '@/hooks/useModals';
 import { useAI } from '@/hooks/useAI';
 import { useToast } from '@/hooks/use-toast';
+import { DashboardNotificationToast } from '@/components/dashboard/DashboardNotificationToast';
+import { AIInsightsModal } from '@/components/dashboard/AIInsightsModal';
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
@@ -168,6 +170,8 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accen
 export default function DashboardUltraPro() {
   const [dateRange, setDateRange] = useState('7d');
   const [selectedMetric, setSelectedMetric] = useState('revenue');
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [dismissedAlerts, setDismissedAlerts] = useState<number[]>([]);
   
   // Hooks pour les fonctionnalités
   const { analytics, isLoading, generateReport, isGeneratingReport } = useRealAnalytics();
@@ -188,58 +192,14 @@ export default function DashboardUltraPro() {
     openModal('exportData');
   };
 
-  const handleAIInsights = async () => {
-    try {
-      await generateInsights({
-        analysisType: 'sales_trends',
-        data: {
-          salesData: analytics?.salesByDay || [],
-          products: analytics?.topProducts || [],
-          periods: [dateRange]
-        },
-        timeRange: dateRange,
-        metrics: ['sales', 'conversion', 'traffic']
-      });
-      
-      toast({
-        title: "IA Insights",
-        description: "Analyse IA générée avec succès!",
-      });
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de générer l'analyse IA",
-        variant: "destructive",
-      });
-    }
+  const handleAIInsights = () => {
+    setShowAIModal(true);
   };
 
-  const handleAlertClick = (alert: any) => {
-    switch (alert.type) {
-      case 'stock':
-        openModal('settings');
-        break;
-      case 'order':
-        toast({
-          title: "Pic de commandes",
-          description: "Analyse détaillée disponible dans les rapports",
-        });
-        break;
-      case 'error':
-        toast({
-          title: "Erreur de synchronisation",
-          description: "Vérifiez vos intégrations dans les paramètres",
-          variant: "destructive",
-        });
-        break;
-      case 'success':
-        toast({
-          title: "Félicitations!",
-          description: "Nouveau record établi cette semaine",
-        });
-        break;
-    }
+  const handleDismissAlert = (index: number) => {
+    setDismissedAlerts(prev => [...prev, index]);
   };
+
 
   // KPIs principaux - utilise les vraies données si disponibles
   const kpis = [{
@@ -363,14 +323,23 @@ export default function DashboardUltraPro() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {alerts.map((alert, index) => <div 
-                key={index} 
-                className="flex items-center justify-between p-3 rounded-lg border bg-muted/20 hover-scale transition-all duration-200 cursor-pointer"
-                onClick={() => handleAlertClick(alert)}
-              >
-                  <span className="text-sm">{alert.message}</span>
-                  <Badge variant={getAlertColor(alert.severity)}>{alert.severity}</Badge>
-                </div>)}
+              {alerts
+                .filter((_, index) => !dismissedAlerts.includes(index))
+                .map((alert, index) => (
+                  <DashboardNotificationToast
+                    key={index}
+                    message={alert.message}
+                    type={alert.type as any}
+                    severity={alert.severity as any}
+                    onDismiss={() => handleDismissAlert(index)}
+                  />
+                ))
+              }
+              {alerts.filter((_, index) => !dismissedAlerts.includes(index)).length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Aucune alerte active
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -578,6 +547,12 @@ export default function DashboardUltraPro() {
             </Card>
           </TabsContent>
         </Tabs>
-    </div>
+
+        {/* Modal IA Insights */}
+        <AIInsightsModal 
+          open={showAIModal} 
+          onOpenChange={setShowAIModal} 
+        />
+      </div>
   );
 }
