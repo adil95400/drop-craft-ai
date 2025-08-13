@@ -6,30 +6,35 @@ import { useToast } from '@/hooks/use-toast'
 export interface ImportedProduct {
   id: string
   user_id: string
-  original_product_id?: string
-  source_platform: string
+  import_id?: string
   name: string
   description?: string
-  original_price?: number
-  import_price?: number
-  suggested_price?: number
+  price: number
+  cost_price?: number
   currency: string
   sku?: string
   category?: string
-  subcategory?: string
-  tags?: string[]
+  supplier_name?: string
+  supplier_url?: string
+  supplier_product_id?: string
   image_urls?: string[]
-  supplier_info?: any
-  seo_optimized: boolean
-  translation_status: 'original' | 'translated' | 'optimized'
-  ai_score: number
-  competition_level: 'low' | 'medium' | 'high'
-  trend_score: number
-  status: 'pending' | 'approved' | 'rejected' | 'imported'
-  import_job_id?: string
-  metadata?: any
+  video_urls?: string[]
+  tags?: string[]
+  keywords?: string[]
+  meta_title?: string
+  meta_description?: string
+  status: 'draft' | 'published' | 'archived'
+  review_status: 'pending' | 'approved' | 'rejected'
+  ai_optimized?: boolean
+  ai_optimization_data?: any
+  ai_score?: number
+  ai_recommendations?: any
+  import_quality_score?: number
+  data_completeness_score?: number
   created_at: string
   updated_at: string
+  reviewed_at?: string
+  published_at?: string
 }
 
 export interface ScheduledImport {
@@ -137,24 +142,21 @@ export const useImportUltraPro = () => {
           .from('imported_products')
           .insert(batch.map(product => ({
             user_id: user.id,
-            source_platform: product.source_platform!,
             name: product.name!,
             description: product.description,
-            original_price: product.original_price,
-            import_price: product.import_price,
-            suggested_price: product.suggested_price,
+            price: product.suggested_price || product.original_price || 0,
+            cost_price: product.import_price,
             currency: product.currency || 'EUR',
             sku: product.sku,
             category: product.category,
-            subcategory: product.subcategory,
+            supplier_name: product.source_platform,
             tags: product.tags,
             image_urls: product.image_urls,
             ai_score: product.ai_score || 0,
-            trend_score: product.trend_score || 0,
-            competition_level: product.competition_level || 'medium',
-            translation_status: product.translation_status || 'original',
-            status: product.status || 'pending',
-            original_product_id: product.original_product_id
+            status: 'draft',
+            review_status: 'pending',
+            ai_optimized: false,
+            supplier_product_id: product.original_product_id
           })))
         
         if (error) throw error
@@ -320,7 +322,7 @@ export const useImportUltraPro = () => {
 }
 
 // Generate mock products for different import types
-function generateMockProducts(type: string, platform: string): Partial<ImportedProduct>[] {
+function generateMockProducts(type: string, platform: string): any[] {
   const baseProducts = [
     {
       source_platform: platform,
@@ -330,14 +332,9 @@ function generateMockProducts(type: string, platform: string): Partial<ImportedP
       import_price: 350.00,
       suggested_price: 549.99,
       category: "Électronique",
-      subcategory: "Smartphones",
       tags: ["gaming", "performance", "android"],
       image_urls: ["https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400"],
-      ai_score: 8.5,
-      trend_score: 9.2,
-      competition_level: "medium" as const,
-      translation_status: "original" as const,
-      status: "pending" as const
+      ai_score: 8.5
     },
     {
       source_platform: platform,
@@ -347,14 +344,9 @@ function generateMockProducts(type: string, platform: string): Partial<ImportedP
       import_price: 80.00,
       suggested_price: 129.99,
       category: "Audio",
-      subcategory: "Écouteurs",
       tags: ["bluetooth", "premium", "wireless"],
       image_urls: ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400"],
-      ai_score: 7.8,
-      trend_score: 8.1,
-      competition_level: "high" as const,
-      translation_status: "original" as const,
-      status: "pending" as const
+      ai_score: 7.8
     }
   ]
 

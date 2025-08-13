@@ -81,9 +81,9 @@ export const BulkImportUltraPro = () => {
   }
 
   const stats = {
-    success: importedProducts.filter(p => p.status === 'imported').length,
-    warnings: importedProducts.filter(p => p.status === 'pending').length,
-    errors: importedProducts.filter(p => p.status === 'rejected').length
+    success: importedProducts.filter(p => p.status === 'published').length,
+    warnings: importedProducts.filter(p => p.status === 'draft').length,
+    errors: importedProducts.filter(p => p.status === 'archived').length
   }
 
   return (
