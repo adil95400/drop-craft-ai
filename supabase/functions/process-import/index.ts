@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,176 +7,154 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const supabase = createClient(
+    const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    const { import_job_id } = await req.json();
-
-    console.log('Processing import job:', import_job_id);
-
-    // Get the import job details
-    const { data: importJob, error: jobError } = await supabase
-      .from('import_jobs')
-      .select('*')
-      .eq('id', import_job_id)
-      .single();
-
-    if (jobError || !importJob) {
-      console.error('Error fetching import job:', jobError);
-      return new Response(
-        JSON.stringify({ error: 'Import job not found' }),
-        { 
-          status: 404, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
         }
-      );
-    }
+      }
+    )
 
-    // Update status to processing
-    await supabase
+    const authHeader = req.headers.get('Authorization')!
+    supabaseClient.auth.setSession({
+      access_token: authHeader.replace('Bearer ', ''),
+      refresh_token: ''
+    })
+
+    const { importJobId, fileData, mappingConfig } = await req.json()
+    
+    console.log('Processing import job:', importJobId)
+
+    // Update job status to processing
+    await supabaseClient
       .from('import_jobs')
       .update({ 
         status: 'processing',
-        started_at: new Date().toISOString()
+        processed_rows: 0,
+        success_rows: 0,
+        error_rows: 0
       })
-      .eq('id', import_job_id);
+      .eq('id', importJobId)
 
-    // Process the import based on source type
-    let result;
-    switch (importJob.source_type) {
-      case 'csv':
-        result = await processCsvImport(importJob, supabase);
-        break;
-      case 'shopify':
-        result = await processShopifyImport(importJob, supabase);
-        break;
-      case 'aliexpress':
-        result = await processAliExpressImport(importJob, supabase);
-        break;
-      default:
-        throw new Error(`Unsupported source type: ${importJob.source_type}`);
-    }
+    // Simulate processing with some realistic data
+    const totalRows = fileData.length
+    let processedRows = 0
+    let successRows = 0
+    let errorRows = 0
+    const errors: string[] = []
 
-    // Update the import job with results
-    await supabase
-      .from('import_jobs')
-      .update({
-        status: result.success ? 'completed' : 'failed',
-        processed_rows: result.processed,
-        success_rows: result.success_count,
-        error_rows: result.error_count,
-        errors: result.errors,
-        result_data: result.data,
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', import_job_id);
-
-    console.log('Import job completed:', result);
-
-    return new Response(
-      JSON.stringify({ success: true, result }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-
-  } catch (error) {
-    console.error('Error processing import:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-  }
-});
-
-async function processCsvImport(importJob: any, supabase: any) {
-  const { file_data, mapping_config, user_id } = importJob;
-  const results = {
-    success: true,
-    processed: 0,
-    success_count: 0,
-    error_count: 0,
-    errors: [] as string[],
-    data: []
-  };
-
-  try {
-    for (const row of file_data) {
-      results.processed++;
+    // Process each row
+    for (let i = 0; i < fileData.length; i++) {
+      const row = fileData[i]
       
       try {
-        // Map CSV fields to product fields
-        const productData = {
-          user_id,
-          name: row[mapping_config.name] || 'Produit sans nom',
-          description: row[mapping_config.description] || '',
-          price: parseFloat(row[mapping_config.price] || '0'),
-          sku: row[mapping_config.sku] || '',
-          category: row[mapping_config.category] || '',
-          stock_quantity: parseInt(row[mapping_config.stock_quantity] || '0'),
-          image_url: row[mapping_config.image_url] || '',
-          status: 'active'
-        };
-
-        // Insert product
-        const { data, error } = await supabase
-          .from('products')
-          .insert([productData])
-          .select()
-          .single();
-
-        if (error) {
-          results.errors.push(`Ligne ${results.processed}: ${error.message}`);
-          results.error_count++;
-        } else {
-          results.success_count++;
-          results.data.push(data);
+        // Map fields according to configuration
+        const mappedProduct = {
+          name: row[mappingConfig.name] || `Product ${i + 1}`,
+          description: row[mappingConfig.description] || '',
+          price: parseFloat(row[mappingConfig.price]) || 0,
+          cost_price: parseFloat(row[mappingConfig.cost_price]) || 0,
+          sku: row[mappingConfig.sku] || `SKU-${Date.now()}-${i}`,
+          category: row[mappingConfig.category] || 'Divers',
+          image_url: row[mappingConfig.image_url] || null
         }
-      } catch (rowError) {
-        results.errors.push(`Ligne ${results.processed}: ${rowError.message}`);
-        results.error_count++;
+
+        // Validate required fields
+        if (!mappedProduct.name || mappedProduct.price <= 0) {
+          throw new Error(`Row ${i + 1}: Missing required fields`)
+        }
+
+        // Insert into imported_products table
+        const { error: insertError } = await supabaseClient
+          .from('imported_products')
+          .insert([{
+            import_id: importJobId,
+            ...mappedProduct,
+            status: 'draft',
+            review_status: 'pending'
+          }])
+
+        if (insertError) throw insertError
+
+        successRows++
+      } catch (error) {
+        console.error(`Error processing row ${i + 1}:`, error)
+        errors.push(`Row ${i + 1}: ${error.message}`)
+        errorRows++
       }
+
+      processedRows++
+
+      // Update progress every 10 rows or at the end
+      if (processedRows % 10 === 0 || processedRows === totalRows) {
+        await supabaseClient
+          .from('import_jobs')
+          .update({
+            processed_rows: processedRows,
+            success_rows: successRows,
+            error_rows: errorRows,
+            errors: errors
+          })
+          .eq('id', importJobId)
+      }
+
+      // Small delay to simulate processing
+      await new Promise(resolve => setTimeout(resolve, 50))
     }
+
+    // Final update
+    await supabaseClient
+      .from('import_jobs')
+      .update({
+        status: 'completed',
+        processed_rows: processedRows,
+        success_rows: successRows,
+        error_rows: errorRows,
+        errors: errors,
+        result_data: {
+          summary: {
+            total: totalRows,
+            success: successRows,
+            errors: errorRows
+          },
+          completion_time: new Date().toISOString()
+        }
+      })
+      .eq('id', importJobId)
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        processed: processedRows,
+        successful: successRows,
+        failed: errorRows,
+        errors: errors
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    )
+
   } catch (error) {
-    results.success = false;
-    results.errors.push(`Erreur générale: ${error.message}`);
+    console.error('Import processing error:', error)
+    
+    return new Response(
+      JSON.stringify({ 
+        error: error.message || 'Failed to process import',
+        success: false 
+      }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    )
   }
-
-  return results;
-}
-
-async function processShopifyImport(importJob: any, supabase: any) {
-  // Simulate Shopify import
-  return {
-    success: true,
-    processed: 10,
-    success_count: 8,
-    error_count: 2,
-    errors: ['Produit 3: Stock indisponible', 'Produit 7: Prix invalide'],
-    data: []
-  };
-}
-
-async function processAliExpressImport(importJob: any, supabase: any) {
-  // Simulate AliExpress import
-  return {
-    success: true,
-    processed: 15,
-    success_count: 12,
-    error_count: 3,
-    errors: ['Produit 5: Image non trouvée', 'Produit 9: Description manquante', 'Produit 13: Catégorie invalide'],
-    data: []
-  };
-}
+})

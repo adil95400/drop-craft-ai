@@ -71,6 +71,7 @@ export const useImportUltraPro = () => {
   const queryClient = useQueryClient()
   const [bulkImportProgress, setBulkImportProgress] = useState(0)
   const [activeBulkImport, setActiveBulkImport] = useState<string | null>(null)
+  const [currentAIJob, setCurrentAIJob] = useState<string | null>(null)
 
   // Get imported products
   const { data: importedProducts = [], isLoading: isLoadingProducts } = useQuery({
