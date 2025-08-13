@@ -20,6 +20,7 @@ import {
   Zap
 } from 'lucide-react'
 import { useImportUltraPro } from '@/hooks/useImportUltraPro'
+import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 
 interface ImportUltraProInterfaceProps {
@@ -88,13 +89,23 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
       }
 
       // Call URL import edge function
-      const { data, error } = await fetch('/api/import-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: importUrl })
-      }).then(res => res.json())
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
 
-      if (error) throw new Error(error)
+      const { data, error } = await supabase.functions.invoke('url-import', {
+        body: {
+          url: importUrl,
+          userId: user.id,
+          options: {
+            extract_images: true,
+            analyze_content: true,
+            auto_categorize: true
+          }
+        }
+      })
+
+      if (error) throw new Error(error.message)
+      if (!data.success) throw new Error(data.error || 'Import failed')
 
       toast.success(`Import réussi ! ${data?.products?.length || 1} produit(s) importé(s)`)
       onImportComplete?.(data)
