@@ -235,47 +235,45 @@ export default function CatalogueUltraPro() {
   return (
     <AppLayout>
       <div className="p-6 max-w-7xl mx-auto animate-fade-in">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div className="flex gap-2">
-            <Button 
-              variant={iaMode ? "default" : "outline"} 
-              size="sm"
-              onClick={() => {
-                setIaMode(!iaMode);
-                toast.info(`Mode IA ${!iaMode ? 'activé' : 'désactivé'}`);
-              }}
-            >
-              <Bot className="w-4 h-4 mr-2" />
-              Mode IA
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                const reportData = `Analyse IA,Winners: ${stats.winners},Tendances: ${stats.trending}`;
-                const blob = new Blob([reportData], { type: 'text/csv' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'rapport-ia.csv';
-                a.click();
-                URL.revokeObjectURL(url);
-                toast.success("Rapport IA exporté avec succès !");
-              }}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export IA
-            </Button>
-            <Button 
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-              onClick={() => {
-                toast.success('Auto-Import IA activé - 12 nouveaux winners ajoutés automatiquement');
-              }}
-            >
-              <Zap className="w-4 h-4 mr-2" />
-              Auto-Import IA
-            </Button>
-          </div>
+        <div className="flex gap-2 mb-8">
+          <Button 
+            variant={iaMode ? "default" : "outline"} 
+            size="sm"
+            onClick={() => {
+              setIaMode(!iaMode);
+              toast.info(`Mode IA ${!iaMode ? 'activé' : 'désactivé'}`);
+            }}
+          >
+            <Bot className="w-4 h-4 mr-2" />
+            Mode IA
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              const reportData = `Analyse IA,Winners: ${stats.winners},Tendances: ${stats.trending}`;
+              const blob = new Blob([reportData], { type: 'text/csv' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'rapport-ia.csv';
+              a.click();
+              URL.revokeObjectURL(url);
+              toast.success("Rapport IA exporté avec succès !");
+            }}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export IA
+          </Button>
+          <Button 
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            onClick={() => {
+              toast.success('Auto-Import IA activé - 12 nouveaux winners ajoutés automatiquement');
+            }}
+          >
+            <Zap className="w-4 h-4 mr-2" />
+            Auto-Import IA
+          </Button>
         </div>
 
         {/* Métriques IA */}

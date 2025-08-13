@@ -168,24 +168,6 @@ const AutomationUltraPro = () => {
   return (
     <AppLayout>
       <div className="max-w-7xl mx-auto space-y-6 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div></div>
-          <div className="flex gap-3">
-            <Button variant="outline" size="sm" onClick={() => {
-              toast({
-                title: "Paramètres",
-                description: "Ouverture des paramètres d'automation...",
-              });
-            }}>
-              <Settings className="w-4 h-4 mr-2" />
-              Paramètres
-            </Button>
-            <Button size="sm">
-              <Bot className="w-4 h-4 mr-2" />
-              Nouveau workflow
-            </Button>
-          </div>
-        </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
