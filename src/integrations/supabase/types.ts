@@ -623,7 +623,7 @@ export type Database = {
           product_id: string | null
           product_name: string
           product_sku: string | null
-          quantity: number
+          qty: number
           total_price: number | null
           unit_price: number
         }
@@ -634,7 +634,7 @@ export type Database = {
           product_id?: string | null
           product_name: string
           product_sku?: string | null
-          quantity?: number
+          qty?: number
           total_price?: number | null
           unit_price: number
         }
@@ -645,7 +645,7 @@ export type Database = {
           product_id?: string | null
           product_name?: string
           product_sku?: string | null
-          quantity?: number
+          qty?: number
           total_price?: number | null
           unit_price?: number
         }
@@ -1049,6 +1049,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      shipments: {
+        Row: {
+          carrier: string | null
+          created_at: string | null
+          id: string
+          last_sync_at: string | null
+          order_id: string
+          status: string | null
+          tracking_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          carrier?: string | null
+          created_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          order_id: string
+          status?: string | null
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          carrier?: string | null
+          created_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          order_id?: string
+          status?: string | null
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sourcing_history: {
         Row: {
