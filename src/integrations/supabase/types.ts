@@ -414,90 +414,113 @@ export type Database = {
       }
       imported_products: {
         Row: {
+          ai_optimization_data: Json | null
+          ai_optimized: boolean | null
+          ai_recommendations: Json | null
           ai_score: number | null
           category: string | null
-          competition_level: string | null
+          cost_price: number | null
           created_at: string | null
           currency: string | null
+          data_completeness_score: number | null
           description: string | null
           id: string
           image_urls: string[] | null
-          import_job_id: string | null
-          import_price: number | null
-          metadata: Json | null
+          import_id: string | null
+          import_quality_score: number | null
+          keywords: string[] | null
+          meta_description: string | null
+          meta_title: string | null
           name: string
-          original_price: number | null
-          original_product_id: string | null
-          seo_optimized: boolean | null
+          price: number
+          published_at: string | null
+          review_status: string | null
+          reviewed_at: string | null
           sku: string | null
-          source_platform: string
           status: string | null
-          subcategory: string | null
-          suggested_price: number | null
-          supplier_info: Json | null
+          supplier_name: string | null
+          supplier_product_id: string | null
+          supplier_url: string | null
           tags: string[] | null
-          translation_status: string | null
-          trend_score: number | null
           updated_at: string | null
           user_id: string
+          video_urls: string[] | null
         }
         Insert: {
+          ai_optimization_data?: Json | null
+          ai_optimized?: boolean | null
+          ai_recommendations?: Json | null
           ai_score?: number | null
           category?: string | null
-          competition_level?: string | null
+          cost_price?: number | null
           created_at?: string | null
           currency?: string | null
+          data_completeness_score?: number | null
           description?: string | null
           id?: string
           image_urls?: string[] | null
-          import_job_id?: string | null
-          import_price?: number | null
-          metadata?: Json | null
+          import_id?: string | null
+          import_quality_score?: number | null
+          keywords?: string[] | null
+          meta_description?: string | null
+          meta_title?: string | null
           name: string
-          original_price?: number | null
-          original_product_id?: string | null
-          seo_optimized?: boolean | null
+          price: number
+          published_at?: string | null
+          review_status?: string | null
+          reviewed_at?: string | null
           sku?: string | null
-          source_platform: string
           status?: string | null
-          subcategory?: string | null
-          suggested_price?: number | null
-          supplier_info?: Json | null
+          supplier_name?: string | null
+          supplier_product_id?: string | null
+          supplier_url?: string | null
           tags?: string[] | null
-          translation_status?: string | null
-          trend_score?: number | null
           updated_at?: string | null
           user_id: string
+          video_urls?: string[] | null
         }
         Update: {
+          ai_optimization_data?: Json | null
+          ai_optimized?: boolean | null
+          ai_recommendations?: Json | null
           ai_score?: number | null
           category?: string | null
-          competition_level?: string | null
+          cost_price?: number | null
           created_at?: string | null
           currency?: string | null
+          data_completeness_score?: number | null
           description?: string | null
           id?: string
           image_urls?: string[] | null
-          import_job_id?: string | null
-          import_price?: number | null
-          metadata?: Json | null
+          import_id?: string | null
+          import_quality_score?: number | null
+          keywords?: string[] | null
+          meta_description?: string | null
+          meta_title?: string | null
           name?: string
-          original_price?: number | null
-          original_product_id?: string | null
-          seo_optimized?: boolean | null
+          price?: number
+          published_at?: string | null
+          review_status?: string | null
+          reviewed_at?: string | null
           sku?: string | null
-          source_platform?: string
           status?: string | null
-          subcategory?: string | null
-          suggested_price?: number | null
-          supplier_info?: Json | null
+          supplier_name?: string | null
+          supplier_product_id?: string | null
+          supplier_url?: string | null
           tags?: string[] | null
-          translation_status?: string | null
-          trend_score?: number | null
           updated_at?: string | null
           user_id?: string
+          video_urls?: string[] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "imported_products_import_id_fkey"
+            columns: ["import_id"]
+            isOneToOne: false
+            referencedRelation: "product_imports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       integrations: {
         Row: {
@@ -742,6 +765,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      product_imports: {
+        Row: {
+          ai_optimization_results: Json | null
+          ai_processing_enabled: boolean | null
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          import_config: Json | null
+          import_data: Json | null
+          import_type: string
+          processing_time_ms: number | null
+          products_failed: number | null
+          products_imported: number | null
+          quality_score: number | null
+          source_name: string | null
+          source_url: string | null
+          started_at: string | null
+          status: string | null
+          total_products: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_optimization_results?: Json | null
+          ai_processing_enabled?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          import_config?: Json | null
+          import_data?: Json | null
+          import_type: string
+          processing_time_ms?: number | null
+          products_failed?: number | null
+          products_imported?: number | null
+          quality_score?: number | null
+          source_name?: string | null
+          source_url?: string | null
+          started_at?: string | null
+          status?: string | null
+          total_products?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_optimization_results?: Json | null
+          ai_processing_enabled?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          import_config?: Json | null
+          import_data?: Json | null
+          import_type?: string
+          processing_time_ms?: number | null
+          products_failed?: number | null
+          products_imported?: number | null
+          quality_score?: number | null
+          source_name?: string | null
+          source_url?: string | null
+          started_at?: string | null
+          status?: string | null
+          total_products?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       products: {
         Row: {
