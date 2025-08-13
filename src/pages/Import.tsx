@@ -13,6 +13,7 @@ import { Users, Package, TrendingUp, Zap, History, Settings, Clock, CheckCircle,
 import { toast } from "sonner"
 import { useProducts } from "@/hooks/useProducts"
 import { useImport } from "@/hooks/useImport"
+import { useModalHelpers } from "@/hooks/useModalHelpers"
 import { Link } from "react-router-dom"
 
 
@@ -28,6 +29,7 @@ const Import = () => {
   ])
   const { products, addProduct } = useProducts()
   const { importHistory, addImportRecord, updateImportRecord } = useImport()
+  const modalHelpers = useModalHelpers()
 
   const handleImport = async (importData: any) => {
     setIsImporting(true)
@@ -576,7 +578,12 @@ const Import = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {suppliers.map((supplier, index) => (
-                <Card key={index} className="text-center hover:shadow-md transition-shadow cursor-pointer" onClick={() => toast.success(`Configuration de ${supplier.name}`)}>
+                <Card 
+                  key={index} 
+                  className="text-center hover:shadow-md transition-shadow cursor-pointer" 
+                  onClick={() => modalHelpers.openCreateIntegration()}
+                  data-testid="supplier-card"
+                >
                   <CardContent className="p-4">
                     <div className="text-3xl mb-2">{supplier.logo}</div>
                     <h3 className="font-semibold">{supplier.name}</h3>

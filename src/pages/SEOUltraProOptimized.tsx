@@ -41,6 +41,7 @@ import {
 } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell } from 'recharts'
 import { toast } from 'sonner'
+import { AsyncButton } from "@/components/ui/async-button"
 
 const SEOUltraProOptimized = () => {
   const [selectedKeyword, setSelectedKeyword] = useState<string | null>(null)
@@ -395,13 +396,20 @@ const SEOUltraProOptimized = () => {
                     IA active - {aiSuggestions.length} optimisations automatiques identifiées
                   </p>
                 </div>
-                <Button 
+                <AsyncButton 
                   className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                  onClick={() => toast.success("Optimisations IA appliquées automatiquement")}
+                  onClick={async () => {
+                    // Simulate AI optimization process
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    // In real app: await applyAIOptimizations();
+                  }}
+                  icon={<Sparkles className="w-4 h-4" />}
+                  loadingText="Application en cours..."
+                  successMessage="Optimisations IA appliquées automatiquement"
+                  data-testid="ai-optimize-all-button"
                 >
-                  <Sparkles className="w-4 h-4 mr-2" />
                   Appliquer tout
-                </Button>
+                </AsyncButton>
               </div>
             </CardContent>
           </Card>
@@ -767,13 +775,20 @@ const SEOUltraProOptimized = () => {
                               <span>Difficulté: {suggestion.difficulty}</span>
                             </div>
                           </div>
-                          <Button 
+                          <AsyncButton 
                             className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                            onClick={() => toast.success(`Génération IA lancée pour: ${suggestion.title}`)}
+                            onClick={async () => {
+                              // Simulate AI content generation
+                              await new Promise(resolve => setTimeout(resolve, 2000));
+                              // In real app: await generateContent(suggestion);
+                            }}
+                            icon={<Sparkles className="w-4 h-4" />}
+                            loadingText="Génération..."
+                            successMessage={`Contenu généré pour: ${suggestion.title}`}
+                            data-testid="generate-content-button"
                           >
-                            <Sparkles className="w-4 h-4 mr-2" />
                             Générer
-                          </Button>
+                          </AsyncButton>
                         </div>
                       </CardContent>
                     </Card>

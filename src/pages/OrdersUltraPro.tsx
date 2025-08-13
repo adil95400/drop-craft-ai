@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 import { toast } from 'sonner'
+import { AsyncButton } from "@/components/ui/async-button"
 import { FilterPanel } from "@/components/common/FilterPanel"
 import { ExportButton } from "@/components/common/ExportButton"
 import { ImportButton } from "@/components/common/ImportButton"
@@ -258,16 +259,21 @@ export default function OrdersUltraPro() {
               </SelectContent>
             </Select>
             
-            <Button 
+            <AsyncButton 
               variant="outline" 
               size="sm"
-              onClick={() => {
-                toast.success("Synchronisation temps réel activée");
+              onClick={async () => {
+                // Simulate real sync
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                // In real app: await syncOrders();
               }}
+              icon={<RefreshCw className="h-4 w-4" />}
+              loadingText="Synchronisation..."
+              successMessage="Synchronisation temps réel activée"
+              data-testid="sync-button"
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
               Sync temps réel
-            </Button>
+            </AsyncButton>
             
             <ExportButton
               data={filteredOrders}
@@ -275,19 +281,25 @@ export default function OrdersUltraPro() {
               columns={['id', 'customerName', 'total', 'status', 'date']}
             />
             
-            <Button 
+            <AsyncButton 
               size="sm"
-              onClick={() => {
-                toast.success("Analyse IA des tendances lancée");
+              onClick={async () => {
+                // Simulate AI analysis
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                // In real app: await generateAIInsights();
               }}
+              icon={<Bot className="h-4 w-4" />}
+              loadingText="Analyse en cours..."
+              successMessage="Analyse IA des tendances terminée"
+              data-testid="ai-analysis-button"
             >
-              <Bot className="h-4 w-4 mr-2" />
               Prédictions IA
-            </Button>
+            </AsyncButton>
 
             <Button 
               size="sm"
               onClick={() => modalHelpers.openCreateOrder()}
+              data-testid="new-order-button"
             >
               <Plus className="h-4 w-4 mr-2" />
               Nouvelle commande
