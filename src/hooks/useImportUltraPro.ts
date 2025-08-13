@@ -213,31 +213,20 @@ export const useImportUltraPro = () => {
       
       if (error) throw error
 
-      // Simulate AI processing
-      setTimeout(async () => {
-        await supabase
-          .from('ai_optimization_jobs')
-          .update({
-            status: 'processing',
-            started_at: new Date().toISOString(),
-            progress: 50
-          })
-          .eq('id', data.id)
-        
-        setTimeout(async () => {
-          await supabase
-            .from('ai_optimization_jobs')
-            .update({
-              status: 'completed',
-              completed_at: new Date().toISOString(),
-              progress: 100,
-              output_data: { processed: true, optimized_count: Math.floor(Math.random() * 100) + 50 }
-            })
-            .eq('id', data.id)
-          
-          queryClient.invalidateQueries({ queryKey: ['ai-optimization-jobs'] })
-        }, 3000)
-      }, 1000)
+      setCurrentAIJob(data.id)
+
+      // Call the AI optimization edge function
+      const { error: functionError } = await supabase.functions.invoke('ai-optimizer', {
+        body: {
+          jobId: data.id,
+          jobType: params.job_type,
+          inputData: params.input_data
+        }
+      })
+
+      if (functionError) {
+        console.error('AI optimization function error:', functionError)
+      }
 
       return data
     },
@@ -247,6 +236,14 @@ export const useImportUltraPro = () => {
         description: "Le traitement par IA a commencé",
       })
       queryClient.invalidateQueries({ queryKey: ['ai-optimization-jobs'] })
+    },
+    onError: (error) => {
+      toast({
+        title: "Erreur d'optimisation",
+        description: "Impossible de lancer l'optimisation IA",
+        variant: "destructive"
+      })
+      setCurrentAIJob(null)
     }
   })
 
