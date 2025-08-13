@@ -5,20 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
-  Upload, Download, Zap, Brain, Globe, FileImage, Database, Link, 
-  Clock, CheckCircle, AlertTriangle, X, Eye, Edit, Settings, 
+  Upload, Zap, Brain, Globe, FileImage, Database, Link, 
+  Clock, CheckCircle, X, Eye, Edit, Settings,
   TrendingUp, Target, Cpu, Sparkles, BarChart3, Users, Package, Store
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductImports } from "@/hooks/useProductImports";
 import { EnhancedSupplierSelector } from "@/components/import/EnhancedSupplierSelector";
+import { ImportURLInterface } from "@/components/import/ImportURLInterface";
 
 const ImportUltraPro = () => {
   const {
@@ -35,55 +33,7 @@ const ImportUltraPro = () => {
   const [selectedTab, setSelectedTab] = useState("dashboard");
   const [isImporting, setIsImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
-  const [importUrl, setImportUrl] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  // Simuler un import URL avec vraies données
-  const handleUrlImport = async () => {
-    if (!importUrl.trim()) {
-      toast.error("Veuillez saisir une URL");
-      return;
-    }
-
-    setIsImporting(true);
-    setImportProgress(0);
-
-    try {
-      // Créer l'import en base
-      const importRecord = await createImport({
-        import_type: 'url',
-        source_name: 'Import URL',
-        source_url: importUrl,
-      });
-
-      // Simuler le progress
-      const interval = setInterval(() => {
-        setImportProgress(prev => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setIsImporting(false);
-            toast.success("Import URL terminé avec succès !");
-            return 100;
-          }
-          return prev + 20;
-        });
-      }, 500);
-
-      // Mettre à jour l'import après 3 secondes
-      setTimeout(() => {
-        updateImport(importRecord.id, {
-          status: 'completed',
-          products_imported: 1,
-          total_products: 1,
-          completed_at: new Date().toISOString()
-        });
-      }, 3000);
-
-    } catch (error) {
-      setIsImporting(false);
-      toast.error("Erreur lors de l'import URL");
-    }
-  };
 
   // Simuler un import CSV
   const handleFileImport = async () => {
@@ -333,37 +283,11 @@ const ImportUltraPro = () => {
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Import Rapide */}
-              <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Zap className="w-5 h-5 text-blue-600" />
-                    Import Rapide
-                  </CardTitle>
-                  <CardDescription>Import instantané avec IA</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="import-url">URL du produit</Label>
-                    <Input
-                      id="import-url"
-                      placeholder="https://www.aliexpress.com/item/..."
-                      value={importUrl}
-                      onChange={(e) => setImportUrl(e.target.value)}
-                    />
-                  </div>
-                  <Button 
-                    onClick={handleUrlImport}
-                    disabled={isImporting}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  >
-                    <Link className="w-4 h-4 mr-2" />
-                    Importer depuis URL
-                  </Button>
-                </CardContent>
-              </Card>
+            <ImportURLInterface />
+          </TabsContent>
 
+          <TabsContent value="methods" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Import Fichier */}
               <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
                 <CardHeader>
@@ -393,47 +317,74 @@ const ImportUltraPro = () => {
                   </Button>
                 </CardContent>
               </Card>
-            </div>
 
-            {/* Derniers Imports */}
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle>Derniers Imports</CardTitle>
-                <CardDescription>Historique des imports récents</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {imports.slice(0, 5).map((importItem) => (
-                    <div key={importItem.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 rounded-lg bg-blue-100">
-                          {importItem.import_type === 'url' && <Link className="w-5 h-5 text-blue-600" />}
-                          {importItem.import_type === 'csv' && <Upload className="w-5 h-5 text-green-600" />}
-                          {importItem.import_type === 'api' && <Database className="w-5 h-5 text-purple-600" />}
-                        </div>
-                        <div>
-                          <div className="font-medium">{importItem.source_name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {importItem.products_imported} produits importés sur {importItem.total_products}
-                          </div>
-                        </div>
+              {/* Import IA Avancé */}
+              <Card className="shadow-lg border-0 bg-gradient-to-br from-purple-50 to-blue-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Brain className="w-5 h-5 text-purple-600" />
+                    Import IA Avancé
+                  </CardTitle>
+                  <CardDescription>Analyse concurrentielle et optimisation automatique</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-sm text-gray-600">
+                    L'IA analyse vos concurrents et importe automatiquement les meilleurs produits
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge variant="outline">Auto-Discovery</Badge>
+                    <Badge variant="outline">Scoring IA</Badge>
+                    <Badge variant="outline">Trends Analysis</Badge>
+                  </div>
+                  <Button 
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Lancer l'IA Scout
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="ai-features" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {aiFeatures.map((feature, index) => (
+                <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow border-0 bg-gradient-to-br from-white to-gray-50">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={`p-3 rounded-lg ${
+                        feature.status === 'active' ? 'bg-green-100' : 
+                        feature.status === 'premium' ? 'bg-purple-100' : 'bg-gray-100'
+                      }`}>
+                        <feature.icon className={`w-6 h-6 ${
+                          feature.status === 'active' ? 'text-green-600' : 
+                          feature.status === 'premium' ? 'text-purple-600' : 'text-gray-600'
+                        }`} />
                       </div>
-                      <div className="text-right">
-                        <Badge className={getStatusColor(importItem.status)}>
-                          {importItem.status === 'completed' && <CheckCircle className="w-3 h-3 mr-1" />}
-                          {importItem.status === 'processing' && <Clock className="w-3 h-3 mr-1" />}
-                          {importItem.status === 'failed' && <X className="w-3 h-3 mr-1" />}
-                          {importItem.status}
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{feature.title}</h3>
+                        <Badge className={
+                          feature.status === 'active' ? 'bg-green-100 text-green-800' : 
+                          feature.status === 'premium' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+                        }>
+                          {feature.status}
                         </Badge>
-                        <div className="text-sm text-muted-foreground mt-1">
-                          {new Date(importItem.created_at).toLocaleDateString('fr-FR')}
-                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    <p className="text-sm text-gray-600 mb-4">{feature.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-900">
+                        {feature.processed.toLocaleString()} traités
+                      </span>
+                      <Button size="sm" variant="outline">
+                        <Settings className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </TabsContent>
 
           <TabsContent value="suppliers" className="space-y-6">

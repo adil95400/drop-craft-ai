@@ -27,7 +27,7 @@ export const useImport = () => {
   const { toast } = useToast()
   const [currentStep, setCurrentStep] = useState(1)
   const [importFile, setImportFile] = useState<File | null>(null)
-  const [importData, setImportData] = useState<any[]>([])
+  const [importData, setImportData] = useState<any>(null)
   const [mappingConfig, setMappingConfig] = useState<Record<string, string>>({})
   const [previewData, setPreviewData] = useState<any[]>([])
 
@@ -135,7 +135,7 @@ export const useImport = () => {
       })
       setCurrentStep(1)
       setImportFile(null)
-      setImportData([])
+      setImportData(null)
       setMappingConfig({})
     },
     onError: () => {
@@ -157,11 +157,11 @@ export const useImport = () => {
       return data
     },
     onSuccess: (data) => {
-      setImportData(data.products || [])
+      setImportData(data)
       setCurrentStep(2)
       toast({
-        title: "Données récupérées",
-        description: `${data.products?.length || 0} produits trouvés.`,
+        title: "Import réussi !",
+        description: `${data.products?.length || 0} produits analysés avec IA. Confiance: ${Math.round(data.ai_confidence || 0)}%`,
       })
     },
     onError: () => {
