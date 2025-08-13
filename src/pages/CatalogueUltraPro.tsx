@@ -234,7 +234,7 @@ export default function CatalogueUltraPro() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-7xl mx-auto animate-fade-in">
+      <div className="p-6 max-w-7xl mx-auto animate-fade-in space-y-6">
         <div className="flex gap-2 mb-8">
           <Button 
             variant={iaMode ? "default" : "outline"} 
