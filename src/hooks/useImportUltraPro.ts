@@ -119,57 +119,48 @@ export const useImportUltraPro = () => {
   // Bulk import mutation
   const bulkImport = useMutation({
     mutationFn: async (params: {
-      type: 'complete_catalog' | 'trending_products' | 'winners_detected'
+      type: 'complete_catalog' | 'trending_products' | 'winners_detected' | 'global_bestsellers'
       platform: string
       filters?: any
     }) => {
       setActiveBulkImport(params.type)
       setBulkImportProgress(0)
 
-      // Simulate bulk import with progress
-      const mockProducts = generateMockProducts(params.type, params.platform)
-      
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      // Process in batches
-      const batchSize = 50
-      let processed = 0
+      // Call the appropriate integration edge function based on platform
+      let functionName = 'aliexpress-integration'
+      if (params.platform === 'bigbuy') functionName = 'bigbuy-integration'
       
-      for (let i = 0; i < mockProducts.length; i += batchSize) {
-        const batch = mockProducts.slice(i, i + batchSize)
-        
-        const { error } = await supabase
-          .from('imported_products')
-          .insert(batch.map(product => ({
-            user_id: user.id,
-            name: product.name!,
-            description: product.description,
-            price: product.suggested_price || product.original_price || 0,
-            cost_price: product.import_price,
-            currency: product.currency || 'EUR',
-            sku: product.sku,
-            category: product.category,
-            supplier_name: product.source_platform,
-            tags: product.tags,
-            image_urls: product.image_urls,
-            ai_score: product.ai_score || 0,
-            status: 'draft',
-            review_status: 'pending',
-            ai_optimized: false,
-            supplier_product_id: product.original_product_id
-          })))
-        
-        if (error) throw error
-        
-        processed += batch.length
-        setBulkImportProgress((processed / mockProducts.length) * 100)
-        
-        // Simulate processing delay
-        await new Promise(resolve => setTimeout(resolve, 500))
+      // Update progress to 10% - starting import
+      setBulkImportProgress(10)
+
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: {
+          importType: params.type,
+          filters: params.filters || {},
+          userId: user.id
+        }
+      })
+
+      if (error) {
+        console.error('Import function error:', error)
+        throw new Error(`Import failed: ${error.message}`)
       }
 
-      return { imported: mockProducts.length }
+      if (!data.success) {
+        throw new Error(data.error || 'Import failed')
+      }
+
+      // Simulate real-time progress updates
+      const progressSteps = [20, 40, 60, 80, 95, 100]
+      for (const step of progressSteps) {
+        setBulkImportProgress(step)
+        await new Promise(resolve => setTimeout(resolve, 800))
+      }
+
+      return data.data
     },
     onSuccess: (data) => {
       toast({
