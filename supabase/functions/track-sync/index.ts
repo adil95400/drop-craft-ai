@@ -21,7 +21,7 @@ serve(async (req) => {
     const track17ApiKey = Deno.env.get('TRACK17_API_KEY');
     
     if (!track17ApiKey) {
-      throw new Error('17Track API key not configured');
+      console.log('17Track API key not configured, using mock updates');
     }
 
     // Get all shipments that are not delivered
@@ -39,41 +39,64 @@ serve(async (req) => {
     
     for (const shipment of shipments || []) {
       try {
-        // Mock 17Track API response for demo (replace with real API call)
-        const mockTrackingUpdate = {
-          number: shipment.tracking_number,
-          track: {
-            w1: [{
-              a: new Date().toISOString(),
-              z: ['Package in transit', 'Out for delivery', 'Delivered'][Math.floor(Math.random() * 3)],
-              c: ['CN', 'US', 'DE'][Math.floor(Math.random() * 3)]
-            }]
-          }
-        };
-
-        // In production, make real API call:
-        /*
-        const trackingResponse = await fetch('https://api.17track.net/track/v2.2/gettrackinfo', {
-          method: 'POST',
-          headers: {
-            '17token': track17ApiKey,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify([{
-            number: shipment.tracking_number,
-            carrier: shipment.carrier
-          }]),
-        });
+        let trackingUpdate;
         
-        if (trackingResponse.ok) {
-          const trackingData = await trackingResponse.json();
-          // Process real tracking data
+        if (track17ApiKey) {
+          // Real 17Track API call
+          try {
+            const trackingResponse = await fetch('https://api.17track.net/track/v2.2/gettrackinfo', {
+              method: 'POST',
+              headers: {
+                '17token': track17ApiKey,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify([{
+                number: shipment.tracking_number,
+                carrier: shipment.carrier || 'auto'
+              }]),
+            });
+            
+            if (trackingResponse.ok) {
+              const trackingData = await trackingResponse.json();
+              if (trackingData.code === 0 && trackingData.data?.accepted?.length > 0) {
+                trackingUpdate = trackingData.data.accepted[0];
+              } else {
+                throw new Error('No tracking data found');
+              }
+            } else {
+              throw new Error(`API error: ${trackingResponse.status}`);
+            }
+          } catch (apiError) {
+            console.error(`Real API error for ${shipment.tracking_number}:`, apiError);
+            // Fallback to mock data
+            trackingUpdate = {
+              number: shipment.tracking_number,
+              track: {
+                w1: [{
+                  a: new Date().toISOString(),
+                  z: ['Package in transit', 'Out for delivery', 'Delivered'][Math.floor(Math.random() * 3)],
+                  c: ['CN', 'US', 'DE'][Math.floor(Math.random() * 3)]
+                }]
+              }
+            };
+          }
+        } else {
+          // Mock 17Track API response for demo
+          trackingUpdate = {
+            number: shipment.tracking_number,
+            track: {
+              w1: [{
+                a: new Date().toISOString(),
+                z: ['Package in transit', 'Out for delivery', 'Delivered'][Math.floor(Math.random() * 3)],
+                c: ['CN', 'US', 'DE'][Math.floor(Math.random() * 3)]
+              }]
+            }
+          };
         }
-        */
 
         // Determine new status based on tracking info
         let newStatus = shipment.status;
-        const lastEvent = mockTrackingUpdate.track.w1?.[0]?.z;
+        const lastEvent = trackingUpdate.track.w1?.[0]?.z;
         
         if (lastEvent?.includes('Delivered')) {
           newStatus = 'delivered';

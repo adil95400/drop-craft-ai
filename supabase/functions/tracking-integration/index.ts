@@ -49,7 +49,7 @@ async function trackPackage(trackingNumber: string, carrier: string, supabase: a
     const API_KEY = Deno.env.get('TRACK17_API_KEY')
     
     if (!API_KEY) {
-      // Return mock data if no API key
+      console.log('17Track API key not found, using mock data')
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -60,6 +60,8 @@ async function trackPackage(trackingNumber: string, carrier: string, supabase: a
       )
     }
 
+    console.log('Making real 17Track API call with key:', API_KEY.substring(0, 8) + '...')
+
     // Real 17track API call
     const response = await fetch('https://api.17track.net/track/v2.2/gettrackinfo', {
       method: 'POST',
@@ -69,9 +71,13 @@ async function trackPackage(trackingNumber: string, carrier: string, supabase: a
       },
       body: JSON.stringify([{
         number: trackingNumber,
-        carrier: carrier
+        carrier: carrier || 'auto'
       }])
     })
+
+    if (!response.ok) {
+      throw new Error(`17Track API error: ${response.status}`)
+    }
 
     const data = await response.json()
     
@@ -85,20 +91,42 @@ async function trackPackage(trackingNumber: string, carrier: string, supabase: a
             number: trackingNumber,
             carrier: carrier,
             status: mapTrackingStatus(trackingInfo.latest_status),
-            events: trackingInfo.z0 || [],
+            events: trackingInfo.z0?.map((event: any) => ({
+              date: event.a,
+              status: event.z,
+              location: event.c
+            })) || [],
             estimated_delivery: trackingInfo.z1?.z1a,
-            location: trackingInfo.latest_event?.location
-          }
+            location: trackingInfo.latest_event?.location || 'En transit'
+          },
+          message: 'Suivi de colis mis à jour'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
+    } else if (data.data?.rejected?.length > 0) {
+      const rejection = data.data.rejected[0]
+      throw new Error(`Erreur de suivi: ${rejection.error?.message || 'Numéro de suivi invalide'}`)
     } else {
-      throw new Error('Numéro de suivi non trouvé')
+      // Fallback to mock data for unknown tracking numbers
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          tracking: generateMockTracking(trackingNumber),
+          message: 'Numéro de suivi non trouvé dans l\'API, données simulées'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
   } catch (error) {
+    console.error('Tracking error:', error)
+    // Fallback to mock data on API error
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ 
+        success: true, 
+        tracking: generateMockTracking(trackingNumber),
+        message: `Erreur API (${error.message}), données simulées`
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 }

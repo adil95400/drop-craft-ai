@@ -46,19 +46,94 @@ serve(async (req) => {
 
 async function searchProducts(apiKey: string, appSecret: string, keywords: string, category: string, supabase: any) {
   try {
-    // AliExpress API call would go here
-    // For now, we'll use a mock response structure
-    const mockProducts = generateMockAliExpressProducts(keywords, category)
+    // Get AliExpress API key from environment
+    const ALIEXPRESS_API_KEY = Deno.env.get('ALIEXPRESS_API_KEY')
+    
+    if (!ALIEXPRESS_API_KEY) {
+      console.log('AliExpress API key not found, using mock data')
+      const mockProducts = generateMockAliExpressProducts(keywords, category)
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          products: mockProducts,
+          total: mockProducts.length,
+          message: `${mockProducts.length} produits trouvés (données de test)`
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        products: mockProducts,
-        total: mockProducts.length,
-        message: `${mockProducts.length} produits trouvés sur AliExpress`
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    // Real AliExpress API call
+    console.log('Making real AliExpress API call with key:', ALIEXPRESS_API_KEY.substring(0, 8) + '...')
+    
+    try {
+      // AliExpress Dropshipping API call
+      const response = await fetch('https://api.aliexpress.com/dropshipping/product/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${ALIEXPRESS_API_KEY}`
+        },
+        body: JSON.stringify({
+          keywords: keywords,
+          category: category,
+          page: 1,
+          page_size: 20,
+          sort: 'sale_count_desc'
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`AliExpress API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      // Transform AliExpress data to our format
+      const products = data.products?.map((product: any) => ({
+        id: product.product_id,
+        title: product.subject,
+        description: product.description,
+        price: product.target_sale_price,
+        original_price: product.target_original_price,
+        image_url: product.product_main_image_url,
+        images: product.product_video_url ? [product.product_main_image_url] : [],
+        category: category || 'general',
+        tags: [keywords, 'aliexpress', 'imported'],
+        sku: `AE-${product.product_id}`,
+        url: product.product_detail_url,
+        orders: product.evaluate_rate || 0,
+        rating: product.avg_evaluation_rating || 0,
+        shipping_cost: product.freight?.value || 2.99,
+        supplier: {
+          name: product.owner_member_display,
+          rating: product.evaluate_rate || 0
+        }
+      })) || []
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          products: products,
+          total: products.length,
+          message: `${products.length} produits trouvés sur AliExpress`
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    } catch (apiError) {
+      console.error('AliExpress API error:', apiError)
+      // Fallback to mock data
+      const mockProducts = generateMockAliExpressProducts(keywords, category)
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          products: mockProducts,
+          total: mockProducts.length,
+          message: `${mockProducts.length} produits trouvés (API indisponible, données de test)`
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
   } catch (error) {
     return new Response(
       JSON.stringify({ error: error.message }),
