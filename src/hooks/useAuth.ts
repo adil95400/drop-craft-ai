@@ -295,11 +295,31 @@ export const useAuth = () => {
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         }
       });
 
       if (error) {
-        logSecurityEvent('google_login_failed', 'warning', 'Google login failed');
+        console.error('Google OAuth error:', error);
+        logSecurityEvent('google_login_failed', 'warning', `Google login failed: ${error.message}`);
+        
+        // Provide specific error messages based on error type
+        let errorMessage = "Impossible de se connecter avec Google";
+        if (error.message.includes('403')) {
+          errorMessage = "Configuration Google OAuth requise. Veuillez contacter l'administrateur.";
+        } else if (error.message.includes('redirect')) {
+          errorMessage = "Erreur de redirection. Vérifiez la configuration des domaines.";
+        }
+        
+        toast({
+          title: "Erreur de connexion Google",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        
         throw error;
       }
 
@@ -308,11 +328,7 @@ export const useAuth = () => {
 
       return { data, error: null };
     } catch (error: any) {
-      toast({
-        title: "Erreur de connexion Google",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error('Google sign in error:', error);
       return { data: null, error };
     }
   };
