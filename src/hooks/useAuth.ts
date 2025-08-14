@@ -281,10 +281,47 @@ export const useAuth = () => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      cleanupAuthState();
+      
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        }
+      });
+
+      if (error) {
+        logSecurityEvent('google_login_failed', 'warning', 'Google login failed');
+        throw error;
+      }
+
+      // Log successful Google login attempt
+      logSecurityEvent('google_login_success', 'info', 'Google login initiated');
+
+      return { data, error: null };
+    } catch (error: any) {
+      toast({
+        title: "Erreur de connexion Google",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { data: null, error };
+    }
+  };
+
   return {
     ...authState,
     signUp,
     signIn,
+    signInWithGoogle,
     signOut,
     resetPassword,
     updateProfile,
