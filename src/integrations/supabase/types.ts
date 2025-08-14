@@ -529,15 +529,19 @@ export type Database = {
           api_secret: string | null
           connection_status: string | null
           created_at: string
+          credential_access_log: Json | null
+          credential_encryption_version: number | null
           encrypted_credentials: Json | null
           id: string
           is_active: boolean | null
+          last_credential_access: string | null
           last_error: string | null
           last_sync_at: string | null
           platform_name: string
           platform_type: string
           platform_url: string | null
           refresh_token: string | null
+          require_additional_auth: boolean | null
           seller_id: string | null
           shop_domain: string | null
           store_config: Json | null
@@ -552,15 +556,19 @@ export type Database = {
           api_secret?: string | null
           connection_status?: string | null
           created_at?: string
+          credential_access_log?: Json | null
+          credential_encryption_version?: number | null
           encrypted_credentials?: Json | null
           id?: string
           is_active?: boolean | null
+          last_credential_access?: string | null
           last_error?: string | null
           last_sync_at?: string | null
           platform_name: string
           platform_type: string
           platform_url?: string | null
           refresh_token?: string | null
+          require_additional_auth?: boolean | null
           seller_id?: string | null
           shop_domain?: string | null
           store_config?: Json | null
@@ -575,15 +583,19 @@ export type Database = {
           api_secret?: string | null
           connection_status?: string | null
           created_at?: string
+          credential_access_log?: Json | null
+          credential_encryption_version?: number | null
           encrypted_credentials?: Json | null
           id?: string
           is_active?: boolean | null
+          last_credential_access?: string | null
           last_error?: string | null
           last_sync_at?: string | null
           platform_name?: string
           platform_type?: string
           platform_url?: string | null
           refresh_token?: string | null
+          require_additional_auth?: boolean | null
           seller_id?: string | null
           shop_domain?: string | null
           store_config?: Json | null
@@ -1357,6 +1369,13 @@ export type Database = {
             referencedRelation: "integrations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "sync_logs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_api_keys: {
@@ -1447,7 +1466,84 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      integrations_safe: {
+        Row: {
+          connection_status: string | null
+          created_at: string | null
+          has_access_token: boolean | null
+          has_api_key: boolean | null
+          has_api_secret: boolean | null
+          has_encrypted_credentials: boolean | null
+          has_refresh_token: boolean | null
+          id: string | null
+          is_active: boolean | null
+          last_credential_access: string | null
+          last_error: string | null
+          last_sync_at: string | null
+          platform_name: string | null
+          platform_type: string | null
+          platform_url: string | null
+          require_additional_auth: boolean | null
+          seller_id: string | null
+          shop_domain: string | null
+          store_config: Json | null
+          sync_frequency: string | null
+          sync_settings: Json | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          connection_status?: string | null
+          created_at?: string | null
+          has_access_token?: never
+          has_api_key?: never
+          has_api_secret?: never
+          has_encrypted_credentials?: never
+          has_refresh_token?: never
+          id?: string | null
+          is_active?: boolean | null
+          last_credential_access?: string | null
+          last_error?: string | null
+          last_sync_at?: string | null
+          platform_name?: string | null
+          platform_type?: string | null
+          platform_url?: string | null
+          require_additional_auth?: boolean | null
+          seller_id?: string | null
+          shop_domain?: string | null
+          store_config?: Json | null
+          sync_frequency?: string | null
+          sync_settings?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          connection_status?: string | null
+          created_at?: string | null
+          has_access_token?: never
+          has_api_key?: never
+          has_api_secret?: never
+          has_encrypted_credentials?: never
+          has_refresh_token?: never
+          id?: string | null
+          is_active?: boolean | null
+          last_credential_access?: string | null
+          last_error?: string | null
+          last_sync_at?: string | null
+          platform_name?: string | null
+          platform_type?: string | null
+          platform_url?: string | null
+          require_additional_auth?: boolean | null
+          seller_id?: string | null
+          shop_domain?: string | null
+          store_config?: Json | null
+          sync_frequency?: string | null
+          sync_settings?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_profit_margin: {
@@ -1508,6 +1604,15 @@ export type Database = {
       is_supplier_owner: {
         Args: { _supplier_id: string; _user_id: string }
         Returns: boolean
+      }
+      log_credential_access: {
+        Args: {
+          access_type: string
+          integration_id: string
+          ip_address_param?: string
+          user_id_param?: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { useSecureCredentials } from '@/hooks/useSecureCredentials'
 
 export interface Integration {
   id: string
@@ -24,21 +25,19 @@ export interface Integration {
 export const useRealIntegrations = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const { storeCredentials, retrieveCredentials, deleteCredentials } = useSecureCredentials()
 
   const { data: integrations = [], isLoading, error } = useQuery({
     queryKey: ['real-integrations'],
     queryFn: async () => {
+      // Use the safe view that doesn't expose credentials
       const { data, error } = await supabase
-        .from('integrations')
+        .from('integrations_safe')
         .select('*')
         .order('created_at', { ascending: false })
       
       if (error) throw error
-      // Filter out legacy credential fields for security
-      return data.map(item => {
-        const { api_key, api_secret, access_token, refresh_token, ...secureItem } = item
-        return secureItem as Integration
-      })
+      return data as Integration[]
     },
   })
 
@@ -60,16 +59,10 @@ export const useRealIntegrations = () => {
       
       // Store credentials securely if provided
       if (credentials && Object.keys(credentials).length > 0) {
-        const { error: credError } = await supabase.functions.invoke('secure-credentials', {
-          body: {
-            integrationId: data.id,
-            credentials,
-            action: 'store'
-          }
-        })
+        const credResult = await storeCredentials(data.id, credentials)
         
-        if (credError) {
-          console.error('Failed to store credentials:', credError)
+        if (!credResult.success) {
+          console.error('Failed to store credentials:', credResult.error)
           throw new Error('Échec de la sauvegarde sécurisée des identifiants')
         }
       }
@@ -239,6 +232,10 @@ export const useRealIntegrations = () => {
 
   const deleteIntegration = useMutation({
     mutationFn: async (id: string) => {
+      // First, securely delete credentials
+      await deleteCredentials(id)
+      
+      // Then delete the integration record
       const { error } = await supabase
         .from('integrations')
         .delete()
@@ -248,7 +245,7 @@ export const useRealIntegrations = () => {
       
       toast({
         title: "Intégration supprimée",
-        description: "L'intégration a été supprimée avec succès"
+        description: "L'intégration et ses identifiants ont été supprimés de manière sécurisée"
       })
     },
     onSuccess: () => {
