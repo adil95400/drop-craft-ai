@@ -37,6 +37,11 @@ import {
 } from 'lucide-react';
 import { Integration, useIntegrations } from '@/hooks/useIntegrations';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+interface IntegrationConfigState extends Integration {
+  credentials?: Record<string, string>;
+}
 
 interface IntegrationCardProps {
   integration: Integration;
@@ -46,7 +51,7 @@ interface IntegrationCardProps {
 export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) => {
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
-  const [config, setConfig] = useState(integration);
+  const [config, setConfig] = useState<IntegrationConfigState>({ ...integration, credentials: {} });
   const [testResult, setTestResult] = useState<any>(null);
   const [isTesting, setIsTesting] = useState(false);
   const [isSyncing, setIsSyncing] = useState<string>('');
@@ -76,11 +81,45 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
 
   const handleSave = async () => {
     try {
-      await updateIntegration({ id: integration.id, updates: config });
+      const { credentials, ...updateData } = config;
+      
+      // Store credentials securely if they exist
+      if (credentials && Object.keys(credentials).length > 0) {
+        const { error: credError } = await supabase.functions.invoke('secure-credentials', {
+          body: {
+            integrationId: integration.id,
+            credentials,
+            action: 'update'
+          }
+        });
+        
+        if (credError) {
+          console.error('Failed to update credentials:', credError);
+          toast({
+            title: "Erreur de sécurité",
+            description: "Impossible de sauvegarder les identifiants de manière sécurisée",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+      
+      // Update integration metadata
+      await updateIntegration({ id: integration.id, updates: updateData });
       setIsConfigOpen(false);
-      onEdit?.(config);
+      onEdit?.(updateData as Integration);
+      
+      toast({
+        title: "Configuration sauvegardée",
+        description: "Les paramètres ont été mis à jour avec succès",
+      });
     } catch (error) {
       console.error('Error updating integration:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder la configuration",
+        variant: "destructive",
+      });
     }
   };
 
@@ -223,8 +262,8 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
                         <Input
                           id="api_key"
                           type="password"
-                          value={config.api_key || ''}
-                          onChange={(e) => setConfig({...config, api_key: e.target.value})}
+                          value={config.credentials?.api_key || ''}
+                          onChange={(e) => setConfig({...config, credentials: {...config.credentials, api_key: e.target.value}})}
                         />
                       </div>
                       <div className="space-y-2">
@@ -232,8 +271,8 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
                         <Input
                           id="access_token"
                           type="password"
-                          value={config.access_token || ''}
-                          onChange={(e) => setConfig({...config, access_token: e.target.value})}
+                          value={config.credentials?.access_token || ''}
+                          onChange={(e) => setConfig({...config, credentials: {...config.credentials, access_token: e.target.value}})}
                         />
                       </div>
                       <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
@@ -261,8 +300,8 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
                         <Input
                           id="api_key"
                           type="password"
-                          value={config.api_key || ''}
-                          onChange={(e) => setConfig({...config, api_key: e.target.value})}
+                          value={config.credentials?.api_key || ''}
+                          onChange={(e) => setConfig({...config, credentials: {...config.credentials, api_key: e.target.value}})}
                         />
                       </div>
                       <div className="space-y-2">
@@ -270,8 +309,8 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
                         <Input
                           id="api_secret"
                           type="password"
-                          value={config.api_secret || ''}
-                          onChange={(e) => setConfig({...config, api_secret: e.target.value})}
+                          value={config.credentials?.api_secret || ''}
+                          onChange={(e) => setConfig({...config, credentials: {...config.credentials, api_secret: e.target.value}})}
                         />
                       </div>
                       <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
@@ -300,8 +339,8 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
                         <Input
                           id="api_key"
                           type="password"
-                          value={config.api_key || ''}
-                          onChange={(e) => setConfig({...config, api_key: e.target.value})}
+                          value={config.credentials?.api_key || ''}
+                          onChange={(e) => setConfig({...config, credentials: {...config.credentials, api_key: e.target.value}})}
                         />
                       </div>
                       <div className="space-y-2">
@@ -309,8 +348,8 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
                         <Input
                           id="api_secret"
                           type="password"
-                          value={config.api_secret || ''}
-                          onChange={(e) => setConfig({...config, api_secret: e.target.value})}
+                          value={config.credentials?.api_secret || ''}
+                          onChange={(e) => setConfig({...config, credentials: {...config.credentials, api_secret: e.target.value}})}
                         />
                       </div>
                       <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg">
@@ -580,8 +619,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
                       platform_name: integration.platform_name,
                       connection_config: {
                         shop_domain: integration.shop_domain,
-                        api_key: integration.api_key ? '***' : '',
-                        access_token: integration.access_token ? '***' : ''
+                        platform_url: integration.platform_url
                       },
                       sync_settings: {
                         frequency: integration.sync_frequency,

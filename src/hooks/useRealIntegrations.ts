@@ -12,11 +12,13 @@ export interface Integration {
   user_id: string
   created_at: string
   updated_at: string
-  api_key?: string
   shop_domain?: string
   seller_id?: string
-  api_secret?: string
   platform_url?: string
+  encrypted_credentials?: Record<string, any>
+  // Legacy fields - no longer used for security
+  api_key?: never
+  api_secret?: never
 }
 
 export const useRealIntegrations = () => {
@@ -32,22 +34,46 @@ export const useRealIntegrations = () => {
         .order('created_at', { ascending: false })
       
       if (error) throw error
-      return data as Integration[]
+      // Filter out legacy credential fields for security
+      return data.map(item => {
+        const { api_key, api_secret, access_token, refresh_token, ...secureItem } = item
+        return secureItem as Integration
+      })
     },
   })
 
   const addIntegration = useMutation({
-    mutationFn: async (newIntegration: Omit<Integration, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+    mutationFn: async (newIntegration: Omit<Integration, 'id' | 'created_at' | 'updated_at' | 'user_id'> & { credentials?: Record<string, string> }) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
+      // Separate credentials from integration data
+      const { credentials, ...integrationData } = newIntegration
+      
       const { data, error } = await supabase
         .from('integrations')
-        .insert([{ ...newIntegration, user_id: user.id }])
+        .insert([{ ...integrationData, user_id: user.id }])
         .select()
         .single()
       
       if (error) throw error
+      
+      // Store credentials securely if provided
+      if (credentials && Object.keys(credentials).length > 0) {
+        const { error: credError } = await supabase.functions.invoke('secure-credentials', {
+          body: {
+            integrationId: data.id,
+            credentials,
+            action: 'store'
+          }
+        })
+        
+        if (credError) {
+          console.error('Failed to store credentials:', credError)
+          throw new Error('Échec de la sauvegarde sécurisée des identifiants')
+        }
+      }
+      
       return data
     },
     onSuccess: () => {

@@ -22,6 +22,7 @@ interface SecureCredentialFormProps {
   onSubmit: (credentials: Record<string, string>) => Promise<void>;
   isLoading?: boolean;
   existingCredentials?: Record<string, string>;
+  integrationId?: string;
 }
 
 export const SecureCredentialForm = ({
@@ -29,7 +30,8 @@ export const SecureCredentialForm = ({
   fields,
   onSubmit,
   isLoading = false,
-  existingCredentials = {}
+  existingCredentials = {},
+  integrationId
 }: SecureCredentialFormProps) => {
   const [credentials, setCredentials] = useState<Record<string, string>>(
     existingCredentials
@@ -114,8 +116,9 @@ export const SecureCredentialForm = ({
         <Alert className="mb-6">
           <InfoIcon className="h-4 w-4" />
           <AlertDescription>
-            Toutes les données sensibles sont chiffrées avant d'être stockées. 
-            Seuls les identifiants masqués sont visibles dans l'interface.
+            🔒 <strong>Sécurité renforcée :</strong> Toutes les données sensibles sont chiffrées avec AES 
+            avant stockage. Les identifiants ne sont jamais visibles en texte clair et sont traités 
+            via des fonctions sécurisées côté serveur uniquement.
           </AlertDescription>
         </Alert>
 

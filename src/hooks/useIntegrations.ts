@@ -8,10 +8,6 @@ type Integration = {
   platform_name: string
   platform_type: string
   platform_url?: string
-  api_key?: string
-  api_secret?: string
-  access_token?: string
-  refresh_token?: string
   shop_domain?: string
   seller_id?: string
   store_config?: any
@@ -21,6 +17,12 @@ type Integration = {
   last_sync_at?: string
   created_at: string
   updated_at: string
+  encrypted_credentials?: Record<string, any>
+  // Legacy fields - no longer used for security
+  api_key?: never
+  api_secret?: never
+  access_token?: never
+  refresh_token?: never
 }
 
 export type { Integration }
@@ -42,22 +44,47 @@ export const useIntegrations = () => {
         .order('created_at', { ascending: false })
       
       if (error) throw error
-      return data as Integration[]
+      // Filter out legacy credential fields for security
+      return data.map(item => {
+        const { api_key, api_secret, access_token, refresh_token, ...secureItem } = item
+        return secureItem as Integration
+      })
     }
   })
 
   const addIntegration = useMutation({
-    mutationFn: async (integration: Omit<Integration, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+    mutationFn: async (integration: Omit<Integration, 'id' | 'created_at' | 'updated_at' | 'user_id'> & { credentials?: Record<string, string> }) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
+      // Separate credentials from integration data
+      const { credentials, ...integrationData } = integration
+      
+      // Create integration without credentials first
       const { data, error } = await supabase
         .from('integrations')
-        .insert([{ ...integration, user_id: user.id }])
+        .insert([{ ...integrationData, user_id: user.id }])
         .select()
         .single()
       
       if (error) throw error
+      
+      // Store credentials securely if provided
+      if (credentials && Object.keys(credentials).length > 0) {
+        const { error: credError } = await supabase.functions.invoke('secure-credentials', {
+          body: {
+            integrationId: data.id,
+            credentials,
+            action: 'store'
+          }
+        })
+        
+        if (credError) {
+          console.error('Failed to store credentials:', credError)
+          throw new Error('Failed to store credentials securely')
+        }
+      }
+      
       return data
     },
     onSuccess: () => {

@@ -78,19 +78,23 @@ export const AddIntegrationDialog = () => {
     if (!platform) return;
 
     try {
-      const integration: Omit<Integration, 'id' | 'user_id' | 'created_at' | 'updated_at'> = {
+      // Separate sensitive credentials from integration metadata
+      const credentials: Record<string, string> = {}
+      if (formData.api_key) credentials.api_key = formData.api_key
+      if (formData.api_secret) credentials.api_secret = formData.api_secret
+      if (formData.access_token) credentials.access_token = formData.access_token
+      
+      const integration: Omit<Integration, 'id' | 'user_id' | 'created_at' | 'updated_at'> & { credentials?: Record<string, string> } = {
         platform_type: selectedCategory,
         platform_name: selectedPlatform,
         platform_url: formData.platform_url || undefined,
         shop_domain: formData.shop_domain || undefined,
-        api_key: formData.api_key || undefined,
-        api_secret: formData.api_secret || undefined,
-        access_token: formData.access_token || undefined,
         seller_id: formData.seller_id || undefined,
         store_config: {},
         connection_status: 'disconnected',
         sync_frequency: formData.sync_frequency,
         is_active: false,
+        credentials: Object.keys(credentials).length > 0 ? credentials : undefined,
       };
 
       await createIntegration(integration);

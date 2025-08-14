@@ -49,14 +49,17 @@ export const CreateIntegrationDialog = ({ open, onOpenChange }: CreateIntegratio
         return;
       }
 
+      const credentials: Record<string, string> = {}
+      if (formData.apiKey) credentials.api_key = formData.apiKey
+      if (formData.apiSecret) credentials.api_secret = formData.apiSecret
+
       addIntegration({
         platform_name: formData.name,
         platform_type: formData.type,
-        api_key: formData.apiKey,
-        api_secret: formData.apiSecret || undefined,
         platform_url: formData.webhookUrl || undefined,
         is_active: formData.enabled,
-        connection_status: 'disconnected'
+        connection_status: 'disconnected',
+        credentials: Object.keys(credentials).length > 0 ? credentials : undefined,
       });
 
       onOpenChange(false);
