@@ -21,16 +21,22 @@ import {
 } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
+import { useRealWinners } from "@/hooks/useRealWinners";
 
 const Winners = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedPlatform, setSelectedPlatform] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  
+  const { winningProducts, stats, isLoading, analyzeWinners, importProduct, isAnalyzing, isImporting } = useRealWinners({
+    category: selectedCategory,
+    platform: selectedPlatform,
+    search: searchQuery
+  });
 
-  const handleAnalyzeProduct = (productId: number, productName: string) => {
+  const handleAnalyzeProduct = (productId: string, productName: string) => {
     toast({
       title: "Analyse en cours",
       description: `Analyse détaillée de "${productName}" en cours...`,
@@ -44,18 +50,8 @@ const Winners = () => {
     }, 2000);
   };
 
-  const handleImportProduct = (productId: number, productName: string) => {
-    toast({
-      title: "Import en cours",
-      description: `Import de "${productName}" vers votre catalogue...`,
-    });
-    
-    setTimeout(() => {
-      toast({
-        title: "Produit importé !",
-        description: `"${productName}" a été ajouté à votre catalogue`,
-      });
-    }, 2000);
+  const handleImportProduct = (productId: string, productName: string) => {
+    importProduct(productId);
   };
 
   const handleExport = () => {
@@ -73,127 +69,8 @@ const Winners = () => {
   };
 
   const handleAnalyzeWinners = () => {
-    setIsAnalyzing(true);
-    
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      toast({
-        title: "Analyse terminée !",
-        description: "47 nouveaux produits gagnants détectés",
-      });
-    }, 3000);
+    analyzeWinners();
   };
-
-  const winningProducts = [
-    {
-      id: 1,
-      title: "Smart Watch Ultra Pro",
-      image: "⌚",
-      price: 89.99,
-      originalPrice: 199.99,
-      discount: 55,
-      rating: 4.8,
-      reviews: 2847,
-      sales: 15420,
-      trend: "hot",
-      category: "Électronique",
-      platform: "AliExpress",
-      margin: 68,
-      competition: "low",
-      saturation: 23,
-      adSpend: 1240
-    },
-    {
-      id: 2,
-      title: "Wireless Bluetooth Earbuds Pro",
-      image: "🎧",
-      price: 39.99,
-      originalPrice: 89.99,
-      discount: 56,
-      rating: 4.7,
-      reviews: 1923,
-      sales: 8950,
-      trend: "rising",
-      category: "Audio",
-      platform: "Amazon",
-      margin: 72,
-      competition: "medium",
-      saturation: 45,
-      adSpend: 890
-    },
-    {
-      id: 3,
-      title: "LED Strip Lights RGB Smart",
-      image: "💡",
-      price: 24.99,
-      originalPrice: 59.99,
-      discount: 58,
-      rating: 4.6,
-      reviews: 3401,
-      sales: 12380,
-      trend: "hot",
-      category: "Maison",
-      platform: "BigBuy",
-      margin: 65,
-      competition: "low",
-      saturation: 18,
-      adSpend: 567
-    },
-    {
-      id: 4,
-      title: "Portable Power Bank 20000mAh",
-      image: "🔋",
-      price: 29.99,
-      originalPrice: 69.99,
-      discount: 57,
-      rating: 4.9,
-      reviews: 1567,
-      sales: 6890,
-      trend: "stable",
-      category: "Électronique",
-      platform: "AliExpress",
-      margin: 70,
-      competition: "high",
-      saturation: 67,
-      adSpend: 1120
-    },
-    {
-      id: 5,
-      title: "Car Phone Mount Magnetic",
-      image: "📱",
-      price: 19.99,
-      originalPrice: 39.99,
-      discount: 50,
-      rating: 4.5,
-      reviews: 987,
-      sales: 4560,
-      trend: "rising",
-      category: "Auto",
-      platform: "Spocket",
-      margin: 75,
-      competition: "medium",
-      saturation: 34,
-      adSpend: 345
-    },
-    {
-      id: 6,
-      title: "Gaming Mouse RGB Wireless",
-      image: "🖱️",
-      price: 34.99,
-      originalPrice: 79.99,
-      discount: 56,
-      rating: 4.8,
-      reviews: 2145,
-      sales: 7890,
-      trend: "hot",
-      category: "Gaming",
-      platform: "Amazon",
-      margin: 69,
-      competition: "low",
-      saturation: 29,
-      adSpend: 678
-    }
-  ];
 
   const categories = [
     { value: "all", label: "Toutes catégories" },
@@ -240,13 +117,13 @@ const Winners = () => {
     }
   };
 
-  const filteredProducts = winningProducts.filter(product => {
-    const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || product.category.toLowerCase().includes(selectedCategory);
-    const matchesPlatform = selectedPlatform === "all" || product.platform.toLowerCase().includes(selectedPlatform);
-    
-    return matchesSearch && matchesCategory && matchesPlatform;
-  });
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background p-6 space-y-6">
+        <div className="text-center">Chargement des produits gagnants...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6 space-y-6">
@@ -288,7 +165,7 @@ const Winners = () => {
             <Target className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,247</div>
+            <div className="text-2xl font-bold">{stats.totalProducts || 1247}</div>
             <p className="text-xs text-muted-foreground">+12% cette semaine</p>
           </CardContent>
         </Card>
@@ -299,7 +176,7 @@ const Winners = () => {
             <DollarSign className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€2,890</div>
+            <div className="text-2xl font-bold">€{stats.avgPotential || 2890}</div>
             <p className="text-xs text-muted-foreground">par produit/mois</p>
           </CardContent>
         </Card>
@@ -310,7 +187,7 @@ const Winners = () => {
             <TrendingUp className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">47</div>
+            <div className="text-2xl font-bold">{stats.hotTrends || 47}</div>
             <p className="text-xs text-muted-foreground">dernières 24h</p>
           </CardContent>
         </Card>
@@ -321,7 +198,7 @@ const Winners = () => {
             <Star className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">94.8%</div>
+            <div className="text-2xl font-bold">{stats.aiAccuracy}%</div>
             <p className="text-xs text-muted-foreground">taux de réussite</p>
           </CardContent>
         </Card>
@@ -393,13 +270,17 @@ const Winners = () => {
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProducts.map((product) => (
+        {winningProducts.map((product) => (
           <Card key={product.id} className="border-border bg-card shadow-card hover:shadow-glow transition-all duration-300 group">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center text-2xl">
-                    {product.image}
+                    {product.imageUrl ? (
+                      <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover rounded-lg" />
+                    ) : (
+                      "📦"
+                    )}
                   </div>
                   <div className="flex-1">
                     <Badge className={getTrendColor(product.trend)}>
@@ -416,9 +297,9 @@ const Winners = () => {
               {/* Price & Discount */}
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-primary">${product.price}</div>
+                  <div className="text-2xl font-bold text-primary">€{product.price}</div>
                   <div className="text-sm text-muted-foreground line-through">
-                    ${product.originalPrice}
+                    €{product.originalPrice}
                   </div>
                 </div>
                 <Badge variant="destructive" className="text-lg">
@@ -479,14 +360,14 @@ const Winners = () => {
 
               {/* Ad Spend Info */}
               <div className="text-xs text-muted-foreground text-center">
-                Dépense pub estimée: ${product.adSpend}/mois
+                Dépense pub estimée: €{product.adSpend}/mois
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {filteredProducts.length === 0 && (
+      {winningProducts.length === 0 && (
         <Card className="border-border bg-card shadow-card">
           <CardContent className="text-center py-12">
             <Search className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
