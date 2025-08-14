@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Users, Package, TrendingUp, Zap, History, Settings, Clock, CheckCircle, AlertTriangle, FileImage, Globe, Database, Cpu, Store, Crown, Download, Plus } from "lucide-react"
 import { toast } from "sonner"
-import { useProducts } from "@/hooks/useProducts"
+import { useRealProducts } from "@/hooks/useRealProducts"
 import { useImport } from "@/hooks/useImport"
 import { useModalHelpers } from "@/hooks/useModalHelpers"
 import { Link } from "react-router-dom"
@@ -27,7 +27,7 @@ const Import = () => {
     { id: 1, name: "AliExpress Weekly", frequency: "weekly", nextRun: "2025-01-15", active: true },
     { id: 2, name: "Amazon Daily", frequency: "daily", nextRun: "2025-01-08", active: false }
   ])
-  const { products, addProduct } = useProducts()
+  const { products, addProduct } = useRealProducts()
   const { importHistory, addImportRecord, updateImportRecord } = useImport()
   const modalHelpers = useModalHelpers()
 

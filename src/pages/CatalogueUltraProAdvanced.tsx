@@ -22,7 +22,7 @@ import {
   ThumbsUp, MessageCircle, Share2, ExternalLink, Copy,
   PlusCircle, MinusCircle, RotateCcw, Maximize, Minimize
 } from "lucide-react"
-import { useProducts } from "@/hooks/useProducts"
+import { useRealProducts } from "@/hooks/useRealProducts"
 import { useCatalogProducts, CatalogProduct } from "@/hooks/useCatalogProducts"
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, ScatterChart, Scatter } from 'recharts'
 import { toast } from "sonner"
@@ -110,7 +110,7 @@ export default function CatalogueUltraProAdvanced() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [realTimeAlerts, setRealTimeAlerts] = useState(iaAnalysesUltraPro.realTimeAlerts)
   
-  const { addProduct } = useProducts()
+  const { addProduct } = useRealProducts()
   
   // Filtres avancés pour les produits
   const filters = {
@@ -178,9 +178,7 @@ export default function CatalogueUltraProAdvanced() {
       status: "active" as const,
       image_url: product.image_url,
       description: product.description || `Import IA Ultra Pro: ${product.name}`,
-      supplier: product.supplier_name,
-      sku: product.sku,
-      tags: [...(product.tags || []), 'AI-Optimized', 'Ultra-Pro']
+      sku: product.sku
     })
     
     addSourcingHistory({ 

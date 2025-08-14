@@ -21,7 +21,6 @@ export const CreateProductDialog = ({ open, onOpenChange }: CreateProductDialogP
     description: "",
     price: "",
     category: "",
-    supplier: "",
     sku: ""
   });
 
@@ -48,25 +47,11 @@ export const CreateProductDialog = ({ open, onOpenChange }: CreateProductDialogP
 
       addProduct({
         name: formData.name,
-        description: formData.description || null,
+        description: formData.description || undefined,
         price: parseFloat(formData.price),
-        category: formData.category || null,
-        supplier: formData.supplier || null,
-        sku: formData.sku || null,
-        status: 'active',
-        user_id: user.id,
-        cost_price: 0,
-        stock_quantity: 0,
-        profit_margin: 0,
-        image_url: null,
-        seo_title: null,
-        seo_description: null,
-        seo_keywords: null,
-        tags: null,
-        weight: null,
-        dimensions: null,
-        supplier_id: null,
-        shopify_id: null
+        category: formData.category || undefined,
+        sku: formData.sku || undefined,
+        status: 'active'
       });
 
       onOpenChange(false);
@@ -75,7 +60,6 @@ export const CreateProductDialog = ({ open, onOpenChange }: CreateProductDialogP
         description: "",
         price: "",
         category: "",
-        supplier: "",
         sku: ""
       });
     } catch (error) {

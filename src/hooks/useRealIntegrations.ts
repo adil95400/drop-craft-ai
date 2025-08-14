@@ -15,6 +15,8 @@ export interface Integration {
   api_key?: string
   shop_domain?: string
   seller_id?: string
+  api_secret?: string
+  platform_url?: string
 }
 
 export const useRealIntegrations = () => {

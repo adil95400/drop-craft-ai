@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 
-import { useCustomers } from '@/hooks/useCustomers'
+import { useRealCustomers } from '@/hooks/useRealCustomers'
 import { Link } from 'react-router-dom'
 
 export default function CRM() {
@@ -28,7 +28,7 @@ export default function CRM() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([])
-  const { customers, customerStats: stats, createCustomer: addCustomer, isLoading } = useCustomers()
+  const { customers, stats, addCustomer, isLoading } = useRealCustomers()
 
   const filteredCustomers = customers.filter(customer => {
     const customerName = customer.name
@@ -271,7 +271,7 @@ export default function CRM() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.avgOrderValue?.toFixed(0) || 0}€</div>
+            <div className="text-2xl font-bold">{stats.averageOrderValue?.toFixed(0) || 0}€</div>
           </CardContent>
         </Card>
       </div>

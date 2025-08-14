@@ -7,8 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Search, Filter, Star, Heart, ShoppingCart, Eye, Package, TrendingUp, Grid3X3, List, Bookmark, BarChart3, Zap, Download, Settings, Crown } from "lucide-react"
-import { useProducts } from "@/hooks/useProducts"
-import { useCatalogProductsDemo as useCatalogProducts } from "@/hooks/useCatalogProductsDemo"
+import { useRealProducts } from "@/hooks/useRealProducts"
+import { useCatalogProducts } from "@/hooks/useCatalogProducts"
 import type { CatalogProduct } from "@/hooks/useCatalogProducts"
 import { CatalogProductGrid } from "@/components/catalog/CatalogProductGrid"
 import { CatalogAnalytics } from "@/components/catalog/CatalogAnalytics"
@@ -26,7 +26,7 @@ export default function Catalogue() {
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null)
   const [activeTab, setActiveTab] = useState("all")
   
-  const { addProduct } = useProducts()
+  const { addProduct } = useRealProducts()
   
   // Filtres pour les produits du catalogue
   const filters = {
@@ -78,9 +78,7 @@ export default function Catalogue() {
       status: "active" as const,
       image_url: product.image_url,
       description: product.description || `Produit importé: ${product.name}`,
-      supplier: product.supplier_name,
-      sku: product.sku,
-      tags: product.tags
+      sku: product.sku
     })
     
     // Ajouter à l'historique de sourcing

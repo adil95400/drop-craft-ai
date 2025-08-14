@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
-import { useOrders } from '@/hooks/useOrders'
+import { useRealOrders } from '@/hooks/useRealOrders'
 import { Link } from 'react-router-dom'
 
 const trackingSteps = [
@@ -42,7 +42,7 @@ const getStatusColor = (status: string): string => {
 export default function Tracking() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const { orders, stats, isLoading } = useOrders()
+  const { orders, stats, isLoading } = useRealOrders()
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, Pie } from 'recharts'
 
-import { useOrders } from '@/hooks/useOrders'
+import { useRealOrders } from '@/hooks/useRealOrders'
 
 // Données simulées pour le tracking avancé
 const trackingEvolution = [
@@ -54,7 +54,7 @@ export default function TrackingUltraPro() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [transporteurFilter, setTransporteurFilter] = useState<string>('all')
   const [dateRange, setDateRange] = useState('7days')
-  const { orders, stats, isLoading } = useOrders()
+  const { orders, stats, isLoading } = useRealOrders()
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||

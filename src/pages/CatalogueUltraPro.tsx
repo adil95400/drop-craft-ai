@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Search, Filter, Star, Heart, ShoppingCart, Eye, Package, TrendingUp, Grid3X3, List, Bookmark, BarChart3, Zap, Download, Settings, Crown, Brain, Target, Globe, Sparkles, Bot, Activity } from "lucide-react"
-import { useProducts } from "@/hooks/useProducts"
+import { useRealProducts } from "@/hooks/useRealProducts"
 import { useCatalogProducts, CatalogProduct } from "@/hooks/useCatalogProducts"
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Cell, ScatterChart, Scatter } from 'recharts'
 import { toast } from "sonner"
@@ -66,7 +66,7 @@ export default function CatalogueUltraPro() {
   const [iaMode, setIaMode] = useState(true)
   const [currentFilters, setCurrentFilters] = useState({})
   
-  const { addProduct } = useProducts()
+  const { addProduct } = useRealProducts()
   const modalHelpers = useModalHelpers()
   
   // Filtres pour les produits du catalogue avec IA
@@ -114,9 +114,7 @@ export default function CatalogueUltraPro() {
       status: "active" as const,
       image_url: product.image_url,
       description: product.description || `Produit importé: ${product.name}`,
-      supplier: product.supplier_name,
-      sku: product.sku,
-      tags: product.tags
+      sku: product.sku
     })
     
     addSourcingHistory({ 

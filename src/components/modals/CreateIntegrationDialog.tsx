@@ -53,11 +53,10 @@ export const CreateIntegrationDialog = ({ open, onOpenChange }: CreateIntegratio
         platform_name: formData.name,
         platform_type: formData.type,
         api_key: formData.apiKey,
-        api_secret: formData.apiSecret || null,
-        platform_url: formData.webhookUrl || null,
+        api_secret: formData.apiSecret || undefined,
+        platform_url: formData.webhookUrl || undefined,
         is_active: formData.enabled,
-        connection_status: 'disconnected',
-        user_id: user.id
+        connection_status: 'disconnected'
       });
 
       onOpenChange(false);
