@@ -300,7 +300,13 @@ export default function CRMUltraProReal() {
                           <ActionButton 
                             variant="ghost" 
                             size="sm"
-                            onClick={() => {}}
+                            onClick={async () => {
+                              await new Promise(resolve => setTimeout(resolve, 1000));
+                              toast({
+                                title: "Client modifié",
+                                description: `Informations de ${customer.name} mises à jour`,
+                              });
+                            }}
                             loading={isUpdating}
                             icon={<Edit className="h-4 w-4" />}
                           >

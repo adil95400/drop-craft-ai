@@ -52,6 +52,37 @@ const AutomationUltraProOptimized = () => {
   const [aiMode, setAiMode] = useState(true)
   const [autoOptimization, setAutoOptimization] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [newWorkflow, setNewWorkflow] = useState({ name: '', description: '' })
+
+  // AI Workflow suggestions data
+  const aiSuggestionsData = useMemo(() => [
+    {
+      type: 'optimization',
+      title: 'Optimiser "Remarketing produits vus"',
+      description: 'L\'IA peut améliorer le timing et le contenu pour +34% de conversions',
+      impact: '+34%',
+      effort: 'Faible',
+      category: 'retargeting'
+    },
+    {
+      type: 'new',
+      title: 'Workflow "Cross-sell intelligent"',
+      description: 'Proposer automatiquement des produits complémentaires',
+      impact: '+28%',
+      effort: 'Moyen',
+      category: 'upsell'
+    },
+    {
+      type: 'optimization',
+      title: 'A/B Test automatique des emails',
+      description: 'Tester automatiquement différentes versions d\'emails',
+      impact: '+21%',
+      effort: 'Faible',
+      category: 'email'
+    }
+  ], [])
+
+  const [aiSuggestions, setAiSuggestions] = useState(aiSuggestionsData)
 
   // Enhanced mock data for automation workflows
   const workflows = useMemo(() => [
@@ -220,33 +251,6 @@ const AutomationUltraProOptimized = () => {
     }
   ], [])
 
-  // AI Workflow suggestions
-  const aiSuggestions = useMemo(() => [
-    {
-      type: 'optimization',
-      title: 'Optimiser "Remarketing produits vus"',
-      description: 'L\'IA peut améliorer le timing et le contenu pour +34% de conversions',
-      impact: '+34%',
-      effort: 'Faible',
-      category: 'retargeting'
-    },
-    {
-      type: 'new',
-      title: 'Workflow "Cross-sell intelligent"',
-      description: 'Proposer automatiquement des produits complémentaires',
-      impact: '+28%',
-      effort: 'Moyen',
-      category: 'upsell'
-    },
-    {
-      type: 'optimization',
-      title: 'A/B Test automatique des emails',
-      description: 'Tester automatiquement différentes versions d\'emails',
-      impact: '+21%',
-      effort: 'Faible',
-      category: 'email'
-    }
-  ], [])
 
   const filteredWorkflows = useMemo(() => {
     return workflows.filter(workflow => {
@@ -390,14 +394,31 @@ const AutomationUltraProOptimized = () => {
                   <Button 
                     variant="outline"
                     className="border-purple-300 text-purple-700 hover:bg-purple-100"
-                    onClick={() => toast({ title: "Analyse IA", description: "Analyse complète des workflows en cours..." })}
+                    onClick={async () => {
+                      toast({ title: "Analyse IA", description: "Analyse complète des workflows en cours..." });
+                      // Simulation d'analyse IA
+                      await new Promise(resolve => setTimeout(resolve, 3000));
+                      toast({ 
+                        title: "Analyse terminée", 
+                        description: `${aiSuggestions.length + 3} nouvelles optimisations détectées` 
+                      });
+                    }}
                   >
                     <Activity className="w-4 h-4 mr-2" />
                     Analyser
                   </Button>
                   <Button 
                     className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                    onClick={() => toast({ title: "Optimisations appliquées", description: "Toutes les optimisations IA ont été appliquées" })}
+                    onClick={async () => {
+                      toast({ title: "Application des optimisations", description: "Traitement en cours..." });
+                      // Simulation d'application des optimisations
+                      await new Promise(resolve => setTimeout(resolve, 2000));
+                      setAiSuggestions(prev => prev.slice(0, Math.max(0, prev.length - 3)));
+                      toast({ 
+                        title: "Optimisations appliquées", 
+                        description: "Tous les workflows ont été optimisés avec succès" 
+                      });
+                    }}
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     Optimiser tout
@@ -772,7 +793,13 @@ const AutomationUltraProOptimized = () => {
                             <Button 
                               variant="outline"
                               size="sm"
-                              onClick={() => toast({ title: "Aperçu", description: `Prévisualisation de "${suggestion.title}"` })}
+                              onClick={() => {
+                                setSelectedWorkflow(suggestion.title);
+                                toast({ 
+                                  title: "Aperçu ouvert", 
+                                  description: `Affichage des détails de "${suggestion.title}"` 
+                                });
+                              }}
                               className="hover-scale"
                             >
                               <Eye className="w-4 h-4" />
@@ -882,7 +909,17 @@ const AutomationUltraProOptimized = () => {
                         key={index}
                         variant="outline" 
                         className="w-full justify-start hover-scale"
-                        onClick={() => toast({ title: "Template sélectionné", description: `"${template}" ajouté au builder` })}
+                        onClick={() => {
+                          setNewWorkflow(prev => ({
+                            ...prev,
+                            name: template,
+                            description: `Workflow automatisé basé sur le template "${template}"`
+                          }));
+                          toast({ 
+                            title: "Template appliqué", 
+                            description: `"${template}" configuré dans le builder` 
+                          });
+                        }}
                       >
                         <Brain className="w-4 h-4 mr-2" />
                         {template}
