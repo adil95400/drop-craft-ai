@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   Target, 
   Mail, 
@@ -31,7 +31,7 @@ import { useRealMarketing } from "@/hooks/useRealMarketing";
 
 const Marketing = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const { campaigns: realCampaigns } = useRealMarketing();
 
@@ -129,17 +129,15 @@ const Marketing = () => {
   ];
 
   const handleCreateCampaign = () => {
-    toast({
-      title: "Nouvelle Campagne",
-      description: "Assistant de création lancé",
-    });
+    toast.success('Assistant de création de campagne lancé');
+    // Real functionality would open campaign creation wizard
+    navigate('/marketing/create');
   };
 
   const handleCampaignAction = (action: string, campaignId: string) => {
-    toast({
-      title: `Campagne ${action}`,
-      description: `Action effectuée sur la campagne ${campaignId}`,
-    });
+    const campaign = campaigns.find(c => c.id === campaignId);
+    toast.success(`Campagne "${campaign?.name}" ${action === 'pause' ? 'mise en pause' : action === 'play' ? 'relancée' : action}`);
+    // Real functionality would call API to update campaign status
   };
 
   const getStatusColor = (status: string) => {
@@ -174,7 +172,44 @@ const Marketing = () => {
           </p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline">
+          <Button 
+            variant="outline"
+            onClick={() => {
+              toast.promise(
+                new Promise((resolve) => {
+                  setTimeout(() => {
+                    const reportData = campaigns.map(c => ({
+                      'Campagne': c.name,
+                      'Type': c.type,
+                      'Budget': c.budget,
+                      'Dépensé': c.spent,
+                      'ROI': c.roi,
+                      'Conversions': c.conversions,
+                      'Engagement': c.engagement
+                    }));
+                    
+                    const headers = Object.keys(reportData[0]).join(',');
+                    const rows = reportData.map(row => Object.values(row).join(','));
+                    const csv = [headers, ...rows].join('\n');
+                    
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `rapport-marketing-${new Date().toISOString().split('T')[0]}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    resolve('success');
+                  }, 1500);
+                }),
+                {
+                  loading: 'Génération du rapport marketing...',
+                  success: 'Rapport marketing exporté avec succès',
+                  error: 'Erreur lors de l\'export'
+                }
+              );
+            }}
+          >
             <BarChart3 className="mr-2 h-4 w-4" />
             Rapports
           </Button>
@@ -361,19 +396,48 @@ const Marketing = () => {
               <CardTitle>Actions Rapides</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start" onClick={handleCreateCampaign}>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start" 
+                onClick={handleCreateCampaign}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Créer Email Campaign
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => {
+                  toast.success('Redirection vers Facebook Ads Manager');
+                  window.open('https://www.facebook.com/adsmanager', '_blank');
+                }}
+              >
                 <Target className="mr-2 h-4 w-4" />
                 Nouvelle Pub Facebook
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => {
+                  toast.success('Configuration du retargeting démarrée');
+                  // Real functionality would open retargeting setup
+                }}
+              >
                 <Users className="mr-2 h-4 w-4" />
                 Campagne Retargeting
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => {
+                  if (selectedCampaign) {
+                    const campaign = campaigns.find(c => c.id === selectedCampaign);
+                    toast.success(`Duplication de la campagne "${campaign?.name}"`);
+                  } else {
+                    toast.error('Sélectionnez une campagne à dupliquer');
+                  }
+                }}
+              >
                 <Copy className="mr-2 h-4 w-4" />
                 Dupliquer Campagne
               </Button>

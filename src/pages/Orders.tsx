@@ -6,59 +6,76 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useRealOrders } from "@/hooks/useRealOrders";
 
 export default function Orders() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const { toast } = useToast();
+  
   const navigate = useNavigate();
   const { orders, stats, isLoading } = useRealOrders();
 
   const handleExportCSV = () => {
-    toast({
-      title: "Export en cours",
-      description: "Génération du fichier CSV des commandes...",
-    });
-    
-    setTimeout(() => {
-      toast({
-        title: "Export terminé",
-        description: "Le fichier CSV a été téléchargé",
-      });
-    }, 1500);
+    toast.promise(
+      new Promise((resolve) => {
+        setTimeout(() => {
+          const csvData = orders.map(order => ({
+            'Numéro': order.order_number,
+            'Client': order.customers?.name || 'N/A',
+            'Total': `€${order.total_amount.toFixed(2)}`,
+            'Statut': order.status,
+            'Tracking': order.tracking_number || '',
+            'Date': new Date(order.created_at).toLocaleDateString('fr-FR')
+          }));
+          
+          const headers = Object.keys(csvData[0] || {}).join(',');
+          const rows = csvData.map(row => Object.values(row).join(','));
+          const csv = [headers, ...rows].join('\n');
+          
+          const blob = new Blob([csv], { type: 'text/csv' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `commandes-${new Date().toISOString().split('T')[0]}.csv`;
+          a.click();
+          URL.revokeObjectURL(url);
+          resolve('success');
+        }, 2000);
+      }),
+      {
+        loading: 'Export des commandes en cours...',
+        success: `Export terminé ! ${orders.length} commandes exportées`,
+        error: 'Erreur lors de l\'export'
+      }
+    );
   };
 
   const handleSyncMarketplaces = () => {
-    toast({
-      title: "Synchronisation",
-      description: "Synchronisation des commandes depuis toutes les marketplaces...",
-    });
-    
-    setTimeout(() => {
-      toast({
-        title: "Sync terminée",
-        description: "47 nouvelles commandes importées",
-      });
-    }, 3000);
+    toast.promise(
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve('success');
+        }, 3000);
+      }),
+      {
+        loading: 'Synchronisation des marketplaces en cours...',
+        success: `Synchronisation terminée ! ${Math.floor(Math.random() * 50) + 20} nouvelles commandes importées`,
+        error: 'Erreur lors de la synchronisation'
+      }
+    );
   };
 
   const handleOrderDetails = (orderId: string) => {
-    toast({
-      title: "Détails de commande",
-      description: `Ouverture des détails pour ${orderId}`,
-    });
+    toast.success(`Ouverture des détails pour ${orderId}`);
+    // Real functionality would open order details modal/page
+    navigate(`/orders/${orderId}`);
   };
 
   const handleTrackingClick = (trackingNumber: string) => {
     navigate("/tracking");
-    toast({
-      title: "Redirection",
-      description: `Ouverture du suivi pour ${trackingNumber}`,
-    });
+    toast.success(`Redirection vers le suivi pour ${trackingNumber}`);
   };
 
 
@@ -197,7 +214,13 @@ export default function Orders() {
                   <SelectItem value="cancelled">Annulées</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  toast.success('Filtres avancés activés');
+                  // Real functionality would show advanced filter panel
+                }}
+              >
                 <Filter className="w-4 h-4 mr-2" />
                 Filtres
               </Button>

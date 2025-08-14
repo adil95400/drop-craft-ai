@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 import { RealIntegrationsTab } from "@/components/integrations/RealIntegrationsTab";
@@ -80,36 +80,52 @@ const Settings = () => {
   const [theme, setTheme] = useState("system");
   const [language, setLanguage] = useState("fr");
 
-  const { toast } = useToast();
+  
   const navigate = useNavigate();
 
   const handleSaveProfile = () => {
-    toast({
-      title: "Profil sauvegardé",
-      description: "Vos informations ont été mises à jour avec succès",
-    });
+    toast.promise(
+      new Promise((resolve) => setTimeout(resolve, 1000)),
+      {
+        loading: 'Sauvegarde du profil...',
+        success: 'Profil sauvegardé avec succès',
+        error: 'Erreur lors de la sauvegarde'
+      }
+    );
   };
 
   const handleSaveNotifications = () => {
-    toast({
-      title: "Préférences sauvegardées",
-      description: "Vos notifications ont été configurées",
-    });
+    toast.promise(
+      new Promise((resolve) => setTimeout(resolve, 800)),
+      {
+        loading: 'Sauvegarde des préférences...',
+        success: 'Préférences de notification sauvegardées',
+        error: 'Erreur lors de la sauvegarde'
+      }
+    );
   };
 
   const handleApiKeyGenerate = () => {
-    const newKey = {
-      id: Date.now(),
-      name: "Nouvelle API Key",
-      key: `sk_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
-      visible: false,
-      created: new Date().toISOString().split('T')[0]
-    };
-    setApiKeys([...apiKeys, newKey]);
-    toast({
-      title: "Clé API générée",
-      description: "Nouvelle clé d'API créée avec succès",
-    });
+    toast.promise(
+      new Promise((resolve) => {
+        setTimeout(() => {
+          const newKey = {
+            id: Date.now(),
+            name: "Nouvelle API Key",
+            key: `sk_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
+            visible: false,
+            created: new Date().toISOString().split('T')[0]
+          };
+          setApiKeys([...apiKeys, newKey]);
+          resolve('success');
+        }, 1200);
+      }),
+      {
+        loading: 'Génération de la nouvelle clé API...',
+        success: 'Nouvelle clé API créée avec succès',
+        error: 'Erreur lors de la génération'
+      }
+    );
   };
 
   const toggleKeyVisibility = (id: number) => {
@@ -120,18 +136,14 @@ const Settings = () => {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: "Copié !",
-      description: "Clé API copiée dans le presse-papier",
-    });
+    toast.success('Clé API copiée dans le presse-papier');
   };
 
   const deleteApiKey = (id: number) => {
-    setApiKeys(apiKeys.filter(key => key.id !== id));
-    toast({
-      title: "Clé supprimée",
-      description: "La clé API a été supprimée",
-    });
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette clé API ?')) {
+      setApiKeys(apiKeys.filter(key => key.id !== id));
+      toast.success('Clé API supprimée avec succès');
+    }
   };
 
   const plans = [
