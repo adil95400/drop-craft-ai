@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 
 export interface AnalyticsData {
@@ -29,72 +30,106 @@ export interface AnalyticsData {
 }
 
 export const useAnalytics = () => {
-  const [data, setData] = useState<AnalyticsData>({
-    revenue: {
-      total: 47293,
-      monthly: [
-        { month: 'Jan', amount: 3500 },
-        { month: 'Fév', amount: 4200 },
-        { month: 'Mar', amount: 3800 },
-        { month: 'Avr', amount: 5100 },
-        { month: 'Mai', amount: 4700 },
-        { month: 'Juin', amount: 6200 }
-      ],
-      growth: 12.5
-    },
-    orders: {
-      total: 1847,
-      monthly: [
-        { month: 'Jan', count: 145 },
-        { month: 'Fév', count: 168 },
-        { month: 'Mar', count: 152 },
-        { month: 'Avr', count: 201 },
-        { month: 'Mai', count: 189 },
-        { month: 'Juin', count: 234 }
-      ],
-      growth: 8.2
-    },
-    customers: {
-      total: 892,
-      active: 634,
-      growth: 23.1
-    },
-    products: {
-      total: 2341,
-      active: 1876,
-      topSelling: [
-        { name: 'Montre Connectée Pro', sales: 234, revenue: 12450 },
-        { name: 'Écouteurs Bluetooth', sales: 189, revenue: 8920 },
-        { name: 'Chargeur Sans Fil', sales: 156, revenue: 6780 },
-        { name: 'Coque iPhone Premium', sales: 143, revenue: 4290 },
-        { name: 'Support Téléphone Auto', sales: 98, revenue: 2940 }
-      ]
-    },
-    traffic: {
-      sources: [
-        { source: 'Google Ads', visitors: 1250, conversions: 45 },
-        { source: 'Facebook Ads', visitors: 890, conversions: 32 },
-        { source: 'Organique', visitors: 650, conversions: 28 },
-        { source: 'Email', visitors: 340, conversions: 15 },
-        { source: 'Direct', visitors: 280, conversions: 12 }
-      ],
-      conversion: 3.2
-    }
-  })
-  const [loading, setLoading] = useState(false)
   const { toast } = useToast()
 
+  const { data, isLoading: loading, refetch } = useQuery({
+    queryKey: ['analytics-data'],
+    queryFn: async () => {
+      const [
+        { count: totalProducts },
+        { count: totalOrders },
+        { count: totalCustomers },
+        { data: ordersData },
+        { data: productsData }
+      ] = await Promise.all([
+        supabase.from('products').select('*', { count: 'exact', head: true }),
+        supabase.from('orders').select('*', { count: 'exact', head: true }),
+        supabase.from('customers').select('*', { count: 'exact', head: true }),
+        supabase.from('orders').select('total_amount, created_at, customer_id').order('created_at', { ascending: false }),
+        supabase.from('products').select('name, cost_price, price').eq('status', 'active')
+      ])
+
+      // Calculate revenue totals and growth
+      const totalRevenue = ordersData?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0
+      const currentMonth = new Date().getMonth()
+      const lastMonthOrders = ordersData?.filter(order => 
+        new Date(order.created_at).getMonth() === currentMonth - 1
+      ) || []
+      const thisMonthOrders = ordersData?.filter(order => 
+        new Date(order.created_at).getMonth() === currentMonth
+      ) || []
+      
+      const lastMonthRevenue = lastMonthOrders.reduce((sum, order) => sum + Number(order.total_amount), 0)
+      const thisMonthRevenue = thisMonthOrders.reduce((sum, order) => sum + Number(order.total_amount), 0)
+      const revenueGrowth = lastMonthRevenue > 0 ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0
+
+      // Generate monthly data for last 6 months
+      const monthlyRevenue = []
+      const monthlyOrders = []
+      const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+      
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date()
+        date.setMonth(date.getMonth() - i)
+        const month = date.getMonth()
+        const monthName = months[month]
+        
+        const monthOrders = ordersData?.filter(order => 
+          new Date(order.created_at).getMonth() === month &&
+          new Date(order.created_at).getFullYear() === date.getFullYear()
+        ) || []
+        
+        const monthRevenue = monthOrders.reduce((sum, order) => sum + Number(order.total_amount), 0)
+        
+        monthlyRevenue.push({ month: monthName, amount: monthRevenue })
+        monthlyOrders.push({ month: monthName, count: monthOrders.length })
+      }
+
+      // Calculate active customers (ordered in last 30 days)
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      const recentOrders = ordersData?.filter(order => 
+        new Date(order.created_at) > thirtyDaysAgo
+      ) || []
+      const activeCustomers = new Set(recentOrders.map(order => order.customer_id)).size
+
+      const customerGrowth = totalCustomers && totalCustomers > 0 ? 
+        ((activeCustomers / totalCustomers) * 100) : 0
+
+      return {
+        revenue: {
+          total: totalRevenue,
+          monthly: monthlyRevenue,
+          growth: revenueGrowth
+        },
+        orders: {
+          total: totalOrders || 0,
+          monthly: monthlyOrders,
+          growth: revenueGrowth // Using same growth calculation for simplicity
+        },
+        customers: {
+          total: totalCustomers || 0,
+          active: activeCustomers,
+          growth: customerGrowth
+        },
+        products: {
+          total: totalProducts || 0,
+          active: productsData?.length || 0,
+          topSelling: [] // Would need order_items table to calculate this properly
+        },
+        traffic: {
+          sources: [], // Would need analytics integration for this
+          conversion: 0
+        }
+      } as AnalyticsData
+    }
+  })
+
   const refreshData = () => {
-    setLoading(true)
-    
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false)
-      toast({
-        title: "Données actualisées",
-        description: "Les analytics ont été mis à jour",
-      })
-    }, 2000)
+    refetch()
+    toast({
+      title: "Données actualisées",
+      description: "Les analytics ont été mis à jour",
+    })
   }
 
   const exportData = (format: 'csv' | 'pdf' | 'excel') => {
@@ -116,12 +151,7 @@ export const useAnalytics = () => {
       title: "Filtres appliqués",
       description: "Données filtrées selon vos critères",
     })
-    
-    // Simulate filtered data loading
-    setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-    }, 1500)
+    refetch()
   }
 
   return {

@@ -310,44 +310,7 @@ export const useImportUltraPro = () => {
   }
 }
 
-// Generate mock products for different import types
+// This function is no longer used - real data comes from Supabase
 function generateMockProducts(type: string, platform: string): any[] {
-  const baseProducts = [
-    {
-      source_platform: platform,
-      name: "Smartphone Gaming Pro Max",
-      description: "Smartphone haute performance pour gaming",
-      original_price: 599.99,
-      import_price: 350.00,
-      suggested_price: 549.99,
-      category: "Électronique",
-      tags: ["gaming", "performance", "android"],
-      image_urls: ["https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400"],
-      ai_score: 8.5
-    },
-    {
-      source_platform: platform,
-      name: "Écouteurs Sans Fil Premium",
-      description: "Écouteurs bluetooth de qualité supérieure",
-      original_price: 149.99,
-      import_price: 80.00,
-      suggested_price: 129.99,
-      category: "Audio",
-      tags: ["bluetooth", "premium", "wireless"],
-      image_urls: ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400"],
-      ai_score: 7.8
-    }
-  ]
-
-  let count = 100
-  if (type === 'complete_catalog') count = 5000
-  else if (type === 'trending_products') count = 1000
-  else if (type === 'winners_detected') count = 150
-
-  return Array.from({ length: count }, (_, i) => ({
-    ...baseProducts[i % baseProducts.length],
-    name: `${baseProducts[i % baseProducts.length].name} - Variant ${i + 1}`,
-    original_product_id: `${platform}_${Date.now()}_${i}`,
-    sku: `SKU-${platform.toUpperCase()}-${i + 1}`
-  }))
+  return [] // Return empty array - no more mock data
 }
