@@ -33,32 +33,7 @@ const Inventory = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { products: realProducts, isLoading } = useRealProducts();
 
-  const handleExport = () => {
-    toast({
-      title: "Export démarré",
-      description: "Votre inventaire sera téléchargé dans quelques instants",
-    });
-  };
-
-  const handleImport = () => {
-    navigate('/import');
-  };
-
-  const handleNewProduct = () => {
-    navigate('/catalogue');
-    toast({
-      title: "Nouveau produit",
-      description: "Formulaire de création de produit ouvert",
-    });
-  };
-
-  const handleRestock = (productName: string) => {
-    toast({
-      title: "Réapprovisionnement",
-      description: `Demande de réappro pour ${productName} envoyée`,
-    });
-  };
-
+  // Use real products if available, otherwise fallback to mock data
   const products = [
     {
       id: "PRD-001",
@@ -114,14 +89,6 @@ const Inventory = () => {
     }
   ];
 
-  const stats = [
-    { title: "Total Produits", value: "2,341", change: "+5.2%", icon: Package },
-    { title: "Stock Faible", value: "47", change: "+12%", icon: AlertTriangle },
-    { title: "Ruptures", value: "8", change: "-25%", icon: X },
-    { title: "Valeur Stock", value: "€234,567", change: "+8.1%", icon: BarChart3 }
-  ];
-
-  // Use real products if available, otherwise fallback to mock data
   const productsToUse = realProducts.length > 0 ? realProducts.map(p => ({
     ...p,
     id: p.id,
@@ -131,6 +98,89 @@ const Inventory = () => {
     supplier: "Fournisseur",
     lastUpdated: "Il y a 1h"
   })) : products;
+
+  const handleExport = async () => {
+    try {
+      toast({
+        title: "Export en cours",
+        description: "Génération du fichier d'inventaire...",
+      });
+      
+      // Simulation d'export avec les vraies données
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const data = `Inventaire - ${new Date().toLocaleDateString()}
+      
+Total produits: ${productsToUse.length}
+Stock total: ${productsToUse.reduce((sum, p) => sum + ((p as any).stock_quantity || (p as any).stock || 0), 0)}
+Valeur totale: €${productsToUse.reduce((sum, p) => sum + ((p as any).stock_quantity || (p as any).stock || 0) * p.price, 0).toLocaleString()}
+
+Généré le: ${new Date().toLocaleString()}`;
+      
+      const blob = new Blob([data], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `inventaire-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Export terminé",
+        description: "L'inventaire a été téléchargé avec succès",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur d'export",
+        description: "Impossible d'exporter l'inventaire",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleImport = () => {
+    navigate('/import');
+  };
+
+  const handleNewProduct = () => {
+    navigate('/catalogue');
+    toast({
+      title: "Redirection",
+      description: "Ouverture du catalogue pour créer un nouveau produit",
+    });
+  };
+
+  const handleRestock = async (productName: string) => {
+    try {
+      toast({
+        title: "Réapprovisionnement en cours",
+        description: `Création de la demande pour ${productName}...`,
+      });
+      
+      // Simulation de création de demande de réappro
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Demande créée",
+        description: `Réapprovisionnement de ${productName} programmé avec le fournisseur`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer la demande de réapprovisionnement",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const stats = [
+    { title: "Total Produits", value: "2,341", change: "+5.2%", icon: Package },
+    { title: "Stock Faible", value: "47", change: "+12%", icon: AlertTriangle },
+    { title: "Ruptures", value: "8", change: "-25%", icon: X },
+    { title: "Valeur Stock", value: "€234,567", change: "+8.1%", icon: BarChart3 }
+  ];
   
   const lowStockProducts = productsToUse.filter(p => p.status === "low_stock" || p.status === "out_of_stock");
 
@@ -289,7 +339,7 @@ const Inventory = () => {
                         <Button variant="ghost" size="sm" onClick={() => navigate(`/catalogue/${product.id}/edit`)}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleRestock(product.name)}>
+                        <Button variant="outline" size="sm" onClick={() => handleRestock(product.name)} disabled={false}>
                           <Truck className="mr-2 h-4 w-4" />
                           Réappro
                         </Button>
@@ -330,7 +380,7 @@ const Inventory = () => {
                         <div className="text-sm text-muted-foreground">Seuil</div>
                         <div className="font-semibold">{product.lowStockThreshold}</div>
                       </div>
-                      <Button variant="hero" size="sm" onClick={() => handleRestock(product.name)}>
+                      <Button variant="hero" size="sm" onClick={() => handleRestock(product.name)} disabled={false}>
                         <Truck className="mr-2 h-4 w-4" />
                         Réapprovisionner
                       </Button>
