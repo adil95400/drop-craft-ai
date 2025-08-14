@@ -52,42 +52,44 @@ export const useRealWinners = (filters?: {
   } = useQuery({
     queryKey: ['real-winners', filters],
     queryFn: async (): Promise<WinningProduct[]> => {
-      // Fetch products from catalog_products table for winning analysis
-      const { data, error } = await supabase
-        .from('catalog_products')
-        .select('*')
-        .eq('is_winner', true)
-        .order('trend_score', { ascending: false })
-        .limit(50)
+      // Use secure marketplace function for public winning products data
+      const { data, error } = await supabase.rpc('get_marketplace_products', {
+        limit_count: 50
+      });
       
-      if (error) throw error
+      if (error) throw error;
+      
+      // Filter for trending and bestseller products from the secure data
+      const winningProducts = data?.filter((product: any) => 
+        product.is_trending || product.is_bestseller
+      ) || [];
 
-      // Transform catalog products to winning products format
-      const transformedProducts: WinningProduct[] = (data || []).map(product => ({
+      // Transform marketplace products to winning products format
+      const transformedProducts: WinningProduct[] = (winningProducts || []).map(product => ({
         id: product.id,
         title: product.name,
         description: product.description || '',
         price: Number(product.price),
-        originalPrice: Number(product.original_price || product.price * 1.8),
-        discount: Math.round(((Number(product.original_price || product.price * 1.8) - Number(product.price)) / Number(product.original_price || product.price * 1.8)) * 100),
+        originalPrice: Number(product.price * 1.8), // Simulate original price 
+        discount: Math.round(((Number(product.price * 1.8) - Number(product.price)) / Number(product.price * 1.8)) * 100),
         rating: Number(product.rating || 4.5),
         reviews: product.reviews_count || Math.floor(Math.random() * 3000) + 500,
-        sales: product.sales_count || Math.floor(Math.random() * 10000) + 1000,
+        sales: Math.floor(Math.random() * 10000) + 1000, // Simulated sales data
         trend: (['hot', 'rising', 'stable'] as const)[Math.floor(Math.random() * 3)],
         category: product.category || 'Électronique',
-        platform: product.supplier_name || 'AliExpress',
-        supplier: product.supplier_name || 'Unknown',
-        margin: Number(product.profit_margin || 65),
-        competition: (['low', 'medium', 'high'] as const)[Math.floor(Number(product.competition_score || 2) / 3)],
-        saturation: Math.round(Number(product.competition_score || 30)),
+        platform: 'Marketplace', // Generic platform name for security
+        supplier: 'Verified Supplier', // Hidden for security
+        margin: 65, // Generic margin for security
+        competition: (['low', 'medium', 'high'] as const)[Math.floor(Math.random() * 3)],
+        saturation: Math.round(Math.random() * 100),
         adSpend: Math.floor(Math.random() * 2000) + 300,
         imageUrl: product.image_url,
         tags: product.tags || [],
-        aiScore: Number(product.trend_score || 85),
-        profitability: Number(product.profit_margin || 65),
+        aiScore: 85 + Math.floor(Math.random() * 15), // Simulated AI score
+        profitability: 65, // Generic profitability for security
         created_at: product.created_at || new Date().toISOString(),
         updated_at: product.updated_at || new Date().toISOString()
-      }))
+      }));
 
       // Apply filters
       let filtered = transformedProducts

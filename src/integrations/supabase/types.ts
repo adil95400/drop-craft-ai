@@ -1558,17 +1558,24 @@ export type Database = {
           availability_status: string
           brand: string
           category: string
+          created_at: string
           currency: string
           delivery_time: string
           description: string
+          external_id: string
           id: string
           image_url: string
+          image_urls: string[]
           is_bestseller: boolean
           is_trending: boolean
           name: string
           price: number
           rating: number
           reviews_count: number
+          sku: string
+          subcategory: string
+          tags: string[]
+          updated_at: string
         }[]
       }
       has_role: {

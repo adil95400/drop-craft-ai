@@ -38,50 +38,95 @@ export const useCatalogProducts = (filters: any = {}) => {
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['catalogProducts', filters],
     queryFn: async () => {
-      let query = supabase.from('catalog_products').select('*').order('created_at', { ascending: false })
+      // Use the secure marketplace function instead of direct table access
+      const { data, error } = await supabase.rpc('get_marketplace_products', {
+        category_filter: filters.category || null,
+        search_term: filters.search || null,
+        limit_count: 100
+      });
       
-      if (filters.search) {
-        query = query.ilike('name', `%${filters.search}%`)
+      if (error) {
+        console.error('Error fetching catalog products:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les produits du catalogue",
+          variant: "destructive",
+        });
+        throw error;
       }
-      if (filters.category) {
-        query = query.eq('category', filters.category)
-      }
+      
+      // Apply additional client-side filters for features not supported by the function
+      let filteredData = data || [];
+      
       if (filters.supplier) {
-        query = query.eq('supplier_id', filters.supplier)
+        // Note: supplier filtering removed for security - admin access required
+        console.warn('Supplier filtering requires admin access');
       }
       if (filters.isTrending) {
-        query = query.eq('is_trending', true)
-      }
-      if (filters.isWinner) {
-        query = query.eq('is_winner', true)
+        filteredData = filteredData.filter((p: any) => p.is_trending);
       }
       if (filters.isBestseller) {
-        query = query.eq('is_bestseller', true)
+        filteredData = filteredData.filter((p: any) => p.is_bestseller);
       }
-
-      const { data, error } = await query.limit(100)
-      if (error) throw error
-      return data as CatalogProduct[]
+      
+      // Map the secure marketplace data to CatalogProduct format
+      return filteredData.map((item: any) => ({
+        id: item.id,
+        external_id: item.external_id,
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        cost_price: 0, // Hidden for security
+        original_price: 0, // Hidden for security
+        currency: item.currency,
+        category: item.category,
+        subcategory: item.subcategory,
+        brand: item.brand,
+        sku: item.sku,
+        image_url: item.image_url,
+        supplier_id: 'hidden', // Hidden for security
+        supplier_name: 'Marketplace Vendor', // Generic name for security
+        rating: item.rating || 0,
+        reviews_count: item.reviews_count || 0,
+        sales_count: 0, // Hidden for security
+        stock_quantity: 0, // Hidden for security
+        tags: item.tags || [],
+        profit_margin: 0, // Hidden for security
+        is_winner: false, // Hidden for security
+        is_trending: item.is_trending || false,
+        is_bestseller: item.is_bestseller || false,
+        created_at: item.created_at,
+        updated_at: item.updated_at
+      })) as CatalogProduct[];
     }
-  })
+  });
 
   const { data: categories = [] } = useQuery({
     queryKey: ['catalogCategories'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('catalog_products').select('category').not('category', 'is', null)
-      if (error) throw error
-      return [...new Set(data.map(item => item.category))].filter(Boolean)
+      // Get categories from the secure marketplace function
+      const { data, error } = await supabase.rpc('get_marketplace_products', {
+        limit_count: 1000
+      });
+      if (error) throw error;
+      const categories = [...new Set(data?.map((item: any) => item.category))]
+        .filter(Boolean)
+        .sort();
+      return categories;
     }
-  })
+  });
 
   const { data: suppliers = [] } = useQuery({
-    queryKey: ['catalogSuppliers'],
+    queryKey: ['catalogSuppliers'], 
     queryFn: async () => {
-      const { data, error } = await supabase.from('catalog_products').select('supplier_id, supplier_name')
-      if (error) throw error
-      return [...new Map(data.map(s => [s.supplier_id, { id: s.supplier_id, name: s.supplier_name }])).values()]
+      // For authenticated users, we can still show supplier names (but not sensitive data)
+      const { data, error } = await supabase.from('catalog_products')
+        .select('supplier_id, supplier_name')
+        .not('supplier_name', 'is', null);
+      if (error) throw error;
+      return [...new Map(data.map(s => [s.supplier_id, { id: s.supplier_id, name: s.supplier_name }])).values()];
     }
-  })
+  });
 
   const { data: userFavorites = [] } = useQuery({
     queryKey: ['userFavorites'],
