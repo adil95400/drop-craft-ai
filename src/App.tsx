@@ -68,6 +68,10 @@ import Pricing from './pages/Pricing';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import BlogPage from './pages/Blog';
+import Testimonials from './pages/Testimonials';
+import Guides from './pages/Guides';
+import Changelog from './pages/Changelog';
+import FAQNew from './pages/FAQNew';
 import Suppliers from './pages/Suppliers';
 import Winners from './pages/Winners';
 import Settings from './pages/Settings';
@@ -115,6 +119,10 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/blog" element={<BlogPage />} />
+            <Route path="/testimonials" element={<Testimonials />} />
+            <Route path="/guides" element={<Guides />} />
+            <Route path="/changelog" element={<Changelog />} />
+            <Route path="/faq-new" element={<FAQNew />} />
             
             {/* Protected routes with layout */}
             <Route path="/dashboard" element={
