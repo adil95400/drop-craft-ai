@@ -806,13 +806,6 @@ export type Database = {
             referencedRelation: "catalog_products"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "price_alerts_catalog_product_id_fkey"
-            columns: ["catalog_product_id"]
-            isOneToOne: false
-            referencedRelation: "safe_marketplace_products"
-            referencedColumns: ["id"]
-          },
         ]
       }
       product_imports: {
@@ -1209,13 +1202,6 @@ export type Database = {
             referencedRelation: "catalog_products"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "sourcing_history_catalog_product_id_fkey"
-            columns: ["catalog_product_id"]
-            isOneToOne: false
-            referencedRelation: "safe_marketplace_products"
-            referencedColumns: ["id"]
-          },
         ]
       }
       subscriptions: {
@@ -1424,13 +1410,6 @@ export type Database = {
             referencedRelation: "catalog_products"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_favorites_catalog_product_id_fkey"
-            columns: ["catalog_product_id"]
-            isOneToOne: false
-            referencedRelation: "safe_marketplace_products"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_roles: {
@@ -1459,78 +1438,7 @@ export type Database = {
       }
     }
     Views: {
-      safe_marketplace_products: {
-        Row: {
-          availability_status: string | null
-          brand: string | null
-          category: string | null
-          created_at: string | null
-          currency: string | null
-          delivery_time: string | null
-          description: string | null
-          external_id: string | null
-          id: string | null
-          image_url: string | null
-          image_urls: string[] | null
-          is_bestseller: boolean | null
-          is_trending: boolean | null
-          name: string | null
-          price: number | null
-          rating: number | null
-          reviews_count: number | null
-          sku: string | null
-          subcategory: string | null
-          tags: string[] | null
-          updated_at: string | null
-        }
-        Insert: {
-          availability_status?: string | null
-          brand?: string | null
-          category?: string | null
-          created_at?: string | null
-          currency?: string | null
-          delivery_time?: string | null
-          description?: string | null
-          external_id?: string | null
-          id?: string | null
-          image_url?: string | null
-          image_urls?: string[] | null
-          is_bestseller?: boolean | null
-          is_trending?: boolean | null
-          name?: string | null
-          price?: number | null
-          rating?: number | null
-          reviews_count?: number | null
-          sku?: string | null
-          subcategory?: string | null
-          tags?: string[] | null
-          updated_at?: string | null
-        }
-        Update: {
-          availability_status?: string | null
-          brand?: string | null
-          category?: string | null
-          created_at?: string | null
-          currency?: string | null
-          delivery_time?: string | null
-          description?: string | null
-          external_id?: string | null
-          id?: string | null
-          image_url?: string | null
-          image_urls?: string[] | null
-          is_bestseller?: boolean | null
-          is_trending?: boolean | null
-          name?: string | null
-          price?: number | null
-          rating?: number | null
-          reviews_count?: number | null
-          sku?: string | null
-          subcategory?: string | null
-          tags?: string[] | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       calculate_profit_margin: {
