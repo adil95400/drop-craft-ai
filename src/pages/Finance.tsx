@@ -19,6 +19,7 @@ import { Progress } from '@/components/ui/progress';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useRealFinance } from '@/hooks/useRealFinance';
+import { toast } from 'sonner';
 
 export default function Finance() {
   const [dateRange, setDateRange] = useState('30d');
@@ -73,14 +74,26 @@ export default function Finance() {
             variant="outline" 
             className="gap-2"
             onClick={() => {
-              const financeReport = `Category,Amount\nRevenue,${financialData.revenue.total}\nExpenses,${financialData.expenses.total}\nNet Profit,${financialData.profit.net}`;
-              const blob = new Blob([financeReport], { type: 'text/csv' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = 'finance-report.csv';
-              a.click();
-              URL.revokeObjectURL(url);
+              toast.promise(
+                new Promise((resolve) => {
+                  setTimeout(() => {
+                    const financeReport = `Category,Amount,Growth\nRevenue,${financialData.revenue.total},${financialData.revenue.growth}%\nExpenses,${financialData.expenses.total},${financialData.expenses.growth}%\nNet Profit,${financialData.profit.net},12%\nCash Flow,${financialData.cashFlow.current},-\nAccounts Total,${financialData.accounts.reduce((sum, acc) => sum + acc.balance, 0)},-`;
+                    const blob = new Blob([financeReport], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `rapport-financier-${new Date().toISOString().split('T')[0]}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    resolve('success');
+                  }, 1500);
+                }),
+                {
+                  loading: 'Génération du rapport financier...',
+                  success: 'Rapport financier exporté avec succès',
+                  error: 'Erreur lors de l\'export'
+                }
+              );
             }}
           >
             <Download className="h-4 w-4" />

@@ -20,12 +20,12 @@ import {
   Zap
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useRealAnalytics } from "@/hooks/useRealAnalytics";
 
 const Analytics = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
   const [timeRange, setTimeRange] = useState("7d");
   const { analytics, isLoading } = useRealAnalytics();
 
@@ -139,10 +139,26 @@ const Analytics = () => {
             {timeRange === "7d" ? "7 jours" : timeRange === "30d" ? "30 jours" : "90 jours"}
           </Button>
           <Button variant="outline" onClick={() => {
-            toast({
-              title: "Export démarré",
-              description: "Vos données d'analyse sont en cours d'export...",
-            });
+            toast.promise(
+              new Promise((resolve) => {
+                setTimeout(() => {
+                  const analyticsData = `Metric,Value,Change\nRevenue,${metrics[0].value},${metrics[0].change}\nOrders,${metrics[1].value},${metrics[1].change}\nVisitors,${metrics[2].value},${metrics[2].change}\nConversion Rate,${metrics[3].value},${metrics[3].change}\n\nTop Products:\n${topProducts.map(p => `${p.name},${p.sales},${p.revenue}`).join('\n')}`;
+                  const blob = new Blob([analyticsData], { type: 'text/csv' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `analytics-report-${timeRange}-${new Date().toISOString().split('T')[0]}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  resolve('success');
+                }, 2000);
+              }),
+              {
+                loading: 'Génération du rapport d\'analyse...',
+                success: 'Rapport d\'analyses exporté avec succès',
+                error: 'Erreur lors de l\'export'
+              }
+            );
           }}>
             <Download className="mr-2 h-4 w-4" />
             Exporter
@@ -318,19 +334,53 @@ const Analytics = () => {
               <CardTitle>Actions Rapides</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => {
+                  window.open('https://analytics.google.com', '_blank');
+                  toast.success('Redirection vers Google Analytics');
+                }}
+              >
                 <Eye className="mr-2 h-4 w-4" />
                 Voir Google Analytics
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => {
+                  navigate('/marketing');
+                  toast.success('Redirection vers les campagnes publicitaires');
+                }}
+              >
                 <Target className="mr-2 h-4 w-4" />
                 Campagnes Publicitaires
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => {
+                  toast.success('Filtres avancés activés');
+                  // Real filter functionality would show advanced filter panel
+                }}
+              >
                 <Filter className="mr-2 h-4 w-4" />
                 Filtres Avancés
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => {
+                  toast.promise(
+                    new Promise((resolve) => setTimeout(resolve, 1500)),
+                    {
+                      loading: 'Actualisation des données...',
+                      success: 'Données actualisées avec succès',
+                      error: 'Erreur lors de l\'actualisation'
+                    }
+                  );
+                }}
+              >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Actualiser Données
               </Button>

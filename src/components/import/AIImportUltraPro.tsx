@@ -85,16 +85,31 @@ export const AIImportUltraPro = () => {
       return
     }
 
-    const inputData = {
-      products: importedProducts.slice(0, 10), // Limit for demo
-      params: optimizationParams,
-      product_ids: importedProducts.slice(0, 10).map(p => p.id)
-    }
+    const selectedType = optimizationTypes.find(t => t.id === selectedOptimization);
+    
+    toast.promise(
+      new Promise((resolve) => {
+        setTimeout(() => {
+          const inputData = {
+            products: importedProducts.slice(0, 10), // Limit for demo
+            params: optimizationParams,
+            product_ids: importedProducts.slice(0, 10).map(p => p.id)
+          }
 
-    startAIOptimization({
-      job_type: selectedOptimization as any,
-      input_data: inputData
-    })
+          startAIOptimization({
+            job_type: selectedOptimization as any,
+            input_data: inputData
+          })
+          
+          resolve('success');
+        }, 1000);
+      }),
+      {
+        loading: `Démarrage de l'optimisation ${selectedType?.title}...`,
+        success: `Optimisation ${selectedType?.title} lancée avec succès`,
+        error: 'Erreur lors du lancement de l\'optimisation'
+      }
+    );
   }
 
   const getJobStatusColor = (status: string) => {

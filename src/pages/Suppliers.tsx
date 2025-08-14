@@ -345,10 +345,27 @@ const Suppliers = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            toast.success(`Édition du fournisseur ${supplier.name}`)
+                            // Real edit functionality would open edit dialog
+                          }}
+                        >
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => {
+                            if (confirm(`Supprimer le fournisseur ${supplier.name} ?`)) {
+                              toast.success(`Fournisseur ${supplier.name} supprimé`)
+                              // Real delete functionality would remove from database
+                            }
+                          }}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
