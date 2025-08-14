@@ -1,7 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
-import { ApiService } from '@/services/api'
 import { supabase } from '@/integrations/supabase/client'
+
+export interface Integration {
+  id: string
+  platform_name: string
+  platform_type: string
+  connection_status: 'connected' | 'disconnected' | 'error'
+  is_active: boolean
+  last_sync_at?: string
+  user_id: string
+  created_at: string
+  updated_at: string
+  api_key?: string
+  shop_domain?: string
+  seller_id?: string
+}
 
 export const useRealIntegrations = () => {
   const { toast } = useToast()
@@ -9,28 +23,70 @@ export const useRealIntegrations = () => {
 
   const { data: integrations = [], isLoading, error } = useQuery({
     queryKey: ['real-integrations'],
-    queryFn: () => ApiService.getIntegrations(),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('integrations')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      return data as Integration[]
+    },
   })
 
   const addIntegration = useMutation({
-    mutationFn: (newIntegration: any) => 
-      ApiService.createIntegration(newIntegration),
+    mutationFn: async (newIntegration: Omit<Integration, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      
+      const { data, error } = await supabase
+        .from('integrations')
+        .insert([{ ...newIntegration, user_id: user.id }])
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-integrations'] })
+      toast({
+        title: "Intégration ajoutée",
+        description: "L'intégration a été créée avec succès",
+      })
     }
   })
 
   const updateIntegration = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: any }) => 
-      ApiService.updateIntegration(id, updates),
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Integration> }) => {
+      const { data, error } = await supabase
+        .from('integrations')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-integrations'] })
+      toast({
+        title: "Intégration mise à jour",
+        description: "L'intégration a été modifiée avec succès",
+      })
     }
   })
 
   const testIntegration = useMutation({
-    mutationFn: (id: string) => 
-      ApiService.callEdgeFunction('test-integration', { integrationId: id }),
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase.functions.invoke('test-integration', {
+        body: { integrationId: id }
+      })
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: () => {
       toast({
         title: "Test réussi",
@@ -40,8 +96,14 @@ export const useRealIntegrations = () => {
   })
 
   const syncIntegration = useMutation({
-    mutationFn: (id: string) => 
-      ApiService.callEdgeFunction('sync-integration', { integrationId: id }),
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase.functions.invoke('sync-integration', {
+        body: { integrationId: id }
+      })
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: () => {
       toast({
         title: "Synchronisation démarrée",
@@ -52,48 +114,72 @@ export const useRealIntegrations = () => {
   })
 
   const connectShopify = useMutation({
-    mutationFn: (credentials: any) => 
-      ApiService.createIntegration({
+    mutationFn: async (credentials: any) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      
+      return addIntegration.mutateAsync({
         platform_type: 'shopify',
         platform_name: 'Shopify',
+        connection_status: 'disconnected',
+        is_active: true,
         ...credentials
-      }),
+      })
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-integrations'] })
     }
   })
 
   const connectAliExpress = useMutation({
-    mutationFn: (credentials: any) => 
-      ApiService.createIntegration({
+    mutationFn: async (credentials: any) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      
+      return addIntegration.mutateAsync({
         platform_type: 'aliexpress',
         platform_name: 'AliExpress',
+        connection_status: 'disconnected',
+        is_active: true,
         ...credentials
-      }),
+      })
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-integrations'] })
     }
   })
 
   const connectBigBuy = useMutation({
-    mutationFn: (credentials: any) => 
-      ApiService.createIntegration({
+    mutationFn: async (credentials: any) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      
+      return addIntegration.mutateAsync({
         platform_type: 'bigbuy',
         platform_name: 'BigBuy',
+        connection_status: 'disconnected',
+        is_active: true,
         ...credentials
-      }),
+      })
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-integrations'] })
     }
   })
 
   const syncProducts = useMutation({
-    mutationFn: (params: { integrationId: string; platform?: string }) => 
-      ApiService.callEdgeFunction('sync-integration', { 
-        integrationId: params.integrationId, 
-        type: 'products',
-        platform: params.platform
-      }),
+    mutationFn: async (params: { integrationId: string; platform?: string }) => {
+      const { data, error } = await supabase.functions.invoke('sync-integration', {
+        body: { 
+          integrationId: params.integrationId, 
+          type: 'products',
+          platform: params.platform
+        }
+      })
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: () => {
       toast({
         title: "Synchronisation des produits démarrée",
@@ -103,12 +189,18 @@ export const useRealIntegrations = () => {
   })
 
   const syncOrders = useMutation({
-    mutationFn: (params: { integrationId: string; platform?: string }) => 
-      ApiService.callEdgeFunction('sync-integration', { 
-        integrationId: params.integrationId, 
-        type: 'orders',
-        platform: params.platform
-      }),
+    mutationFn: async (params: { integrationId: string; platform?: string }) => {
+      const { data, error } = await supabase.functions.invoke('sync-integration', {
+        body: { 
+          integrationId: params.integrationId, 
+          type: 'orders',
+          platform: params.platform
+        }
+      })
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: () => {
       toast({
         title: "Synchronisation des commandes démarrée",

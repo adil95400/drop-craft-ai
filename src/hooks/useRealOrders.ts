@@ -1,7 +1,25 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
-import { ApiService } from '@/services/api'
-import type { Order } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
+
+export interface Order {
+  id: string
+  order_number: string
+  status: string
+  total_amount: number
+  customer_id?: string
+  tracking_number?: string
+  carrier?: string
+  created_at: string
+  updated_at: string
+  customers?: { name: string; email: string }
+  order_items?: Array<{
+    product_name: string
+    qty: number
+    unit_price: number
+    total_price: number
+  }>
+}
 
 export const useRealOrders = (filters?: any) => {
   const { toast } = useToast()
@@ -9,11 +27,35 @@ export const useRealOrders = (filters?: any) => {
 
   const { data: orders = [], isLoading, error } = useQuery({
     queryKey: ['real-orders', filters],
-    queryFn: () => ApiService.getOrders(filters),
+    queryFn: async () => {
+      let query = supabase
+        .from('orders')
+        .select(`
+          *,
+          customers(name, email),
+          order_items(product_name, qty, unit_price, total_price)
+        `)
+      
+      if (filters?.status) {
+        query = query.eq('status', filters.status)
+      }
+      if (filters?.customer_id) {
+        query = query.eq('customer_id', filters.customer_id)
+      }
+      if (filters?.date_range) {
+        query = query.gte('created_at', filters.date_range.start)
+                   .lte('created_at', filters.date_range.end)
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false })
+      
+      if (error) throw error
+      return data as Order[]
+    },
   })
 
   const updateOrderStatus = useMutation({
-    mutationFn: ({ 
+    mutationFn: async ({ 
       id, 
       status, 
       trackingNumber 
@@ -21,9 +63,26 @@ export const useRealOrders = (filters?: any) => {
       id: string; 
       status: string; 
       trackingNumber?: string 
-    }) => ApiService.updateOrderStatus(id, status, trackingNumber),
+    }) => {
+      const updates: any = { status }
+      if (trackingNumber) updates.tracking_number = trackingNumber
+      
+      const { data, error } = await supabase
+        .from('orders')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-orders'] })
+      toast({
+        title: "Commande mise à jour",
+        description: "Le statut de la commande a été modifié",
+      })
     }
   })
 

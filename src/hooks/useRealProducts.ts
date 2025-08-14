@@ -1,8 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { ApiService } from '@/services/api'
-import type { Product } from '@/lib/supabase'
+
+export interface Product {
+  id: string
+  name: string
+  description?: string
+  price: number
+  cost_price?: number
+  status: 'active' | 'inactive'
+  stock_quantity?: number
+  sku?: string
+  category?: string
+  image_url?: string
+  profit_margin?: number
+  user_id: string
+  created_at: string
+  updated_at: string
+}
 
 export const useRealProducts = (filters?: any) => {
   const { toast } = useToast()
@@ -10,29 +25,88 @@ export const useRealProducts = (filters?: any) => {
 
   const { data: products = [], isLoading, error } = useQuery({
     queryKey: ['real-products', filters],
-    queryFn: () => ApiService.getProducts(filters),
+    queryFn: async () => {
+      let query = supabase.from('products').select('*')
+      
+      if (filters?.status) {
+        query = query.eq('status', filters.status)
+      }
+      if (filters?.category) {
+        query = query.eq('category', filters.category)
+      }
+      if (filters?.search) {
+        query = query.or(`name.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`)
+      }
+      if (filters?.low_stock) {
+        query = query.lt('stock_quantity', 10)
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false })
+      
+      if (error) throw error
+      return data as Product[]
+    },
   })
 
   const addProduct = useMutation({
-    mutationFn: (newProduct: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => 
-      ApiService.createProduct(newProduct),
+    mutationFn: async (newProduct: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      
+      const { data, error } = await supabase
+        .from('products')
+        .insert([{ ...newProduct, user_id: user.id }])
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-products'] })
+      toast({
+        title: "Produit ajouté",
+        description: "Le produit a été créé avec succès",
+      })
     }
   })
 
   const updateProduct = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<Product> }) => 
-      ApiService.updateProduct(id, updates),
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Product> }) => {
+      const { data, error } = await supabase
+        .from('products')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-products'] })
+      toast({
+        title: "Produit mis à jour",
+        description: "Le produit a été modifié avec succès",
+      })
     }
   })
 
   const deleteProduct = useMutation({
-    mutationFn: (id: string) => ApiService.deleteProduct(id),
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id)
+      
+      if (error) throw error
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-products'] })
+      toast({
+        title: "Produit supprimé",
+        description: "Le produit a été supprimé avec succès",
+      })
     }
   })
 

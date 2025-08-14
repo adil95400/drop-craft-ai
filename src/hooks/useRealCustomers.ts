@@ -1,7 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
-import { ApiService } from '@/services/api'
-import type { Customer } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
+
+export interface Customer {
+  id: string
+  name: string
+  email: string
+  phone?: string
+  status: 'active' | 'inactive'
+  total_spent: number
+  total_orders: number
+  address?: any
+  user_id: string
+  created_at: string
+  updated_at: string
+}
 
 export const useRealCustomers = (filters?: any) => {
   const { toast } = useToast()
@@ -9,22 +22,64 @@ export const useRealCustomers = (filters?: any) => {
 
   const { data: customers = [], isLoading, error } = useQuery({
     queryKey: ['real-customers', filters],
-    queryFn: () => ApiService.getCustomers(filters),
+    queryFn: async () => {
+      let query = supabase.from('customers').select('*')
+      
+      if (filters?.status) {
+        query = query.eq('status', filters.status)
+      }
+      if (filters?.search) {
+        query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false })
+      
+      if (error) throw error
+      return data as Customer[]
+    },
   })
 
   const addCustomer = useMutation({
-    mutationFn: (newCustomer: Omit<Customer, 'id' | 'created_at' | 'updated_at'>) => 
-      ApiService.createCustomer(newCustomer),
+    mutationFn: async (newCustomer: Omit<Customer, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      
+      const { data, error } = await supabase
+        .from('customers')
+        .insert([{ ...newCustomer, user_id: user.id }])
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-customers'] })
+      toast({
+        title: "Client ajouté",
+        description: "Le client a été créé avec succès",
+      })
     }
   })
 
   const updateCustomer = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<Customer> }) => 
-      ApiService.updateCustomer(id, updates),
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Customer> }) => {
+      const { data, error } = await supabase
+        .from('customers')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-customers'] })
+      toast({
+        title: "Client mis à jour",
+        description: "Les informations du client ont été mises à jour",
+      })
     }
   })
 
