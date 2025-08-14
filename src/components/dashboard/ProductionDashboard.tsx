@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useProductionData } from "@/hooks/useProductionData"
 import { Package, ShoppingCart, Users, TrendingUp, Database } from "lucide-react"
-import { formatCurrency, cn } from "@/lib/utils"
+import { formatCurrency } from "@/lib/utils"
 
 export const ProductionDashboard = () => {
   const { dashboardStats, isLoadingStats, seedDatabase, isSeeding } = useProductionData()

@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useProductionData } from '@/hooks/useProductionData'
 import { Users, User, Euro, ShoppingBag, Search, Eye, Calendar, MapPin } from 'lucide-react'
-import { formatCurrency, cn } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 
 interface Customer {
   id: string
