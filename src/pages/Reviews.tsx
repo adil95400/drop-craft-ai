@@ -8,17 +8,17 @@ import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useReviews } from '@/hooks/useReviews'
+import { useRealReviews } from '@/hooks/useRealReviews'
 
 export default function Reviews() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [ratingFilter, setRatingFilter] = useState<string>('all')
-  const { reviews, stats, isLoading, markHelpful } = useReviews()
+  const { reviews, stats, isLoading, markHelpful } = useRealReviews()
 
   const filteredReviews = reviews.filter(review => {
-    const matchesSearch = review.comment.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         review.product?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = (review.content || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (review.customer_name || '').toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRating = ratingFilter === 'all' || review.rating.toString() === ratingFilter
     return matchesSearch && matchesRating
   })

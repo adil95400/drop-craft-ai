@@ -24,15 +24,15 @@ import {
   Download
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useRealSEO } from "@/hooks/useRealSEO";
 
 const SEO = () => {
   const [url, setUrl] = useState("");
   const [keyword, setKeyword] = useState("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [seoScore, setSeoScore] = useState(0);
   const [generatedContent, setGeneratedContent] = useState<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { seoData, stats, isLoading, analyzeSEO, generateContent, isAnalyzing, isGenerating } = useRealSEO();
 
   const handleAnalyticsRedirect = () => {
     navigate("/analytics");
@@ -110,51 +110,7 @@ const SEO = () => {
       return;
     }
 
-    setIsAnalyzing(true);
-    setSeoScore(0);
-
-    // Simulate SEO analysis
-    const interval = setInterval(() => {
-      setSeoScore(prev => {
-        if (prev >= 85) {
-          clearInterval(interval);
-          setIsAnalyzing(false);
-          
-          // Generate mock SEO content
-          setGeneratedContent({
-            title: "iPhone 15 Pro Max Case - Protection Premium | Livraison Rapide",
-            metaDescription: "Découvrez notre collection de coques iPhone 15 Pro Max. Protection maximale, design élégant, livraison gratuite. ⭐ 4.8/5 - Plus de 1000 avis clients.",
-            h1: "Coque iPhone 15 Pro Max - Protection Premium",
-            keywords: ["coque iphone 15 pro max", "protection iphone", "accessoire iphone", "étui téléphone"],
-            schema: {
-              "@context": "https://schema.org/",
-              "@type": "Product",
-              "name": "Coque iPhone 15 Pro Max Premium",
-              "brand": "ShopName",
-              "offers": {
-                "@type": "Offer",
-                "price": "24.99",
-                "priceCurrency": "EUR"
-              }
-            },
-            suggestions: [
-              "Ajouter des images alt descriptives",
-              "Optimiser la vitesse de chargement",
-              "Améliorer le maillage interne",
-              "Ajouter des avis clients structurés"
-            ]
-          });
-
-          toast({
-            title: "Analyse terminée !",
-            description: "Score SEO: 85/100 - Bon niveau",
-          });
-          
-          return 85;
-        }
-        return prev + 5;
-      });
-    }, 200);
+    analyzeSEO(url);
   };
 
   const handleGenerateContent = async () => {
@@ -167,57 +123,8 @@ const SEO = () => {
       return;
     }
 
-    toast({
-      title: "Génération en cours",
-      description: "L'IA travaille sur votre contenu...",
-    });
-
-    // Simulate AI content generation
-    setTimeout(() => {
-      const mockContent = {
-        title: `${keyword} - Guide Complet 2024 | Meilleurs Prix`,
-        metaDescription: `Tout savoir sur ${keyword}. Comparatif, prix, avis clients. Guide d'achat complet avec livraison gratuite. ⭐ Note 4.8/5`,
-        content: `
-# ${keyword} - Guide Complet 2024
-
-## Qu'est-ce qu'un ${keyword} ?
-
-Le ${keyword} est un produit essentiel qui répond à de nombreux besoins. Dans ce guide complet, nous vous expliquons tout ce que vous devez savoir.
-
-## Pourquoi choisir un ${keyword} ?
-
-### Avantages principaux :
-- **Qualité premium** : Matériaux de haute qualité
-- **Prix compétitif** : Meilleur rapport qualité-prix
-- **Livraison rapide** : Expédition sous 24h
-- **Garantie** : 2 ans de garantie constructeur
-
-## Comment choisir le bon ${keyword} ?
-
-### Critères importants :
-1. **Budget** : Définissez votre fourchette de prix
-2. **Utilisation** : Identifiez vos besoins spécifiques  
-3. **Marque** : Optez pour des marques reconnues
-4. **Avis clients** : Consultez les retours d'expérience
-
-## FAQ ${keyword}
-
-**Q: Quelle est la garantie ?**
-R: Tous nos ${keyword} sont garantis 2 ans.
-
-**Q: Livraison gratuite ?**
-R: Oui, livraison gratuite dès 49€ d'achat.
-        `,
-        keywords: [`${keyword}`, `acheter ${keyword}`, `${keyword} pas cher`, `meilleur ${keyword}`]
-      };
-
-      setGeneratedContent(mockContent);
-      
-      toast({
-        title: "Contenu généré !",
-        description: "Votre contenu SEO est prêt",
-      });
-    }, 3000);
+    const result = await generateContent(keyword);
+    setGeneratedContent(result);
   };
 
   const seoMetrics = [
@@ -334,19 +241,18 @@ R: Oui, livraison gratuite dès 49€ d'achat.
                     <RefreshCw className="h-4 w-4 animate-spin text-primary" />
                     <span className="text-sm">Analyse SEO en cours...</span>
                   </div>
-                  <Progress value={seoScore} className="w-full" />
                   <div className="text-sm text-muted-foreground">
                     Vérification: Performance, Accessibilité, SEO, Bonnes pratiques
                   </div>
                 </div>
               )}
 
-              {seoScore > 0 && !isAnalyzing && (
+              {stats.totalPages > 0 && (
                 <div className="space-y-4">
                   <div className="bg-muted/50 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-semibold">Score SEO Global</h4>
-                      <div className="text-2xl font-bold text-primary">{seoScore}/100</div>
+                      <h4 className="font-semibold">Score SEO Moyen</h4>
+                      <div className="text-2xl font-bold text-primary">{Math.round(stats.averageScore)}/100</div>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4">

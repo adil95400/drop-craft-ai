@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AppLayout } from '@/layouts/AppLayout'
 import { useNavigate } from 'react-router-dom'
+import { useRealSecurity } from '@/hooks/useRealSecurity'
 
 const securityMetrics = {
   securityScore: 85,
@@ -115,6 +116,7 @@ const vulnerabilities = [
 export default function Security() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('dashboard')
+  const { securityEvents, vulnerabilities, metrics, isLoading, runSecurityScan, fixVulnerability, isScanning, isFixing } = useRealSecurity()
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -157,9 +159,13 @@ export default function Security() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button className="bg-primary hover:bg-primary/90">
+          <Button 
+            className="bg-primary hover:bg-primary/90"
+            onClick={() => runSecurityScan()}
+            disabled={isScanning}
+          >
             <Eye className="w-4 h-4 mr-2" />
-            Scan de Sécurité
+            {isScanning ? 'Scan en cours...' : 'Scan de Sécurité'}
           </Button>
           <Button 
             variant="premium" 
@@ -193,16 +199,16 @@ export default function Security() {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-3xl font-bold">{securityMetrics.securityScore}/100</span>
+                  <span className="text-3xl font-bold">{metrics.securityScore}/100</span>
                   <Badge className={`${
-                    securityMetrics.securityScore >= 80 ? 'bg-green-500' :
-                    securityMetrics.securityScore >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                    metrics.securityScore >= 80 ? 'bg-green-500' :
+                    metrics.securityScore >= 60 ? 'bg-yellow-500' : 'bg-red-500'
                   } text-white`}>
-                    {securityMetrics.securityScore >= 80 ? 'Bon' :
-                     securityMetrics.securityScore >= 60 ? 'Moyen' : 'Faible'}
+                    {metrics.securityScore >= 80 ? 'Bon' :
+                     metrics.securityScore >= 60 ? 'Moyen' : 'Faible'}
                   </Badge>
                 </div>
-                <Progress value={securityMetrics.securityScore} className="h-3" />
+                <Progress value={metrics.securityScore} className="h-3" />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <div className={`w-3 h-3 rounded-full ${securityMetrics.ssl ? 'bg-green-500' : 'bg-red-500'}`} />
@@ -297,7 +303,7 @@ export default function Security() {
                         <div className="text-sm text-muted-foreground">{vuln.description}</div>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant="outline" className="text-xs">{vuln.category}</Badge>
-                          <span className="text-xs text-muted-foreground">Découverte: {vuln.discovered}</span>
+                          <span className="text-xs text-muted-foreground">Découverte: {new Date(vuln.discovered_at).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
@@ -334,7 +340,7 @@ export default function Security() {
                     }`} />
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-medium">{event.title}</h3>
+                        <h3 className="font-medium">{event.description}</h3>
                         <div className="flex items-center gap-2">
                           <Badge 
                             className={`${getSeverityColor(event.severity)} text-white`}
@@ -351,7 +357,7 @@ export default function Security() {
                       </div>
                       <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
                       <div className="text-xs text-muted-foreground mt-2">
-                        {event.timestamp}
+                        {new Date(event.created_at).toLocaleString()}
                       </div>
                     </div>
                   </div>

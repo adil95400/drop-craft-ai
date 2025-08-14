@@ -18,51 +18,27 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useRealFinance } from '@/hooks/useRealFinance';
 
 export default function Finance() {
   const [dateRange, setDateRange] = useState('30d');
+  const { financialData, stats, isLoading, error } = useRealFinance();
 
-  // Mock financial data
-  const financialData = {
-    revenue: {
-      total: 145820,
-      growth: 12.5,
-      target: 150000
-    },
-    expenses: {
-      total: 89340,
-      growth: 8.2,
-      categories: [
-        { name: 'Coût des marchandises', amount: 45200, percentage: 50.6 },
-        { name: 'Marketing', amount: 15680, percentage: 17.5 },
-        { name: 'Personnel', amount: 12400, percentage: 13.9 },
-        { name: 'Logistique', amount: 8950, percentage: 10.0 },
-        { name: 'Autres', amount: 7110, percentage: 8.0 },
-      ]
-    },
-    profit: {
-      gross: 56480,
-      net: 42180,
-      margin: 28.9
-    },
-    cashFlow: {
-      current: 123450,
-      incoming: 67890,
-      outgoing: 45230,
-      projection: 189110
-    },
-    accounts: [
-      { name: 'Compte Principal', balance: 89450, type: 'checking', growth: 5.2 },
-      { name: 'Épargne', balance: 25000, type: 'savings', growth: 2.1 },
-      { name: 'Investissements', balance: 15600, type: 'investment', growth: -1.5 },
-    ],
-    invoices: {
-      pending: 23400,
-      overdue: 5670,
-      paid: 116750,
-      draft: 3200
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="container-fluid">
+        <div className="text-center">Chargement des données financières...</div>
+      </div>
+    );
+  }
+
+  if (!financialData) {
+    return (
+      <div className="container-fluid">
+        <div className="text-center">Aucune donnée financière disponible</div>
+      </div>
+    );
+  }
 
   const getGrowthColor = (growth: number) => {
     if (growth > 0) return 'text-success';

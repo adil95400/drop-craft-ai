@@ -7,59 +7,11 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, HelpCircle, MessageSquare, Phone, Mail, Clock, CheckCircle, AlertCircle } from "lucide-react"
+import { useRealSupport } from "@/hooks/useRealSupport"
 
 export default function Support() {
   const [searchQuery, setSearchQuery] = useState("")
-  
-  const tickets = [
-    {
-      id: "#12345",
-      subject: "Problème synchronisation Shopify",
-      status: "open",
-      priority: "high",
-      created: "2024-01-15",
-      updated: "Il y a 2h"
-    },
-    {
-      id: "#12344",
-      subject: "Question sur les limites d'import",
-      status: "pending",
-      priority: "medium",
-      created: "2024-01-14",
-      updated: "Il y a 1j"
-    },
-    {
-      id: "#12343",
-      subject: "Demande de remboursement",
-      status: "resolved",
-      priority: "low",
-      created: "2024-01-12",
-      updated: "Il y a 3j"
-    }
-  ]
-
-  const faqItems = [
-    {
-      question: "Comment importer des produits depuis AliExpress ?",
-      answer: "Vous pouvez importer des produits depuis AliExpress de plusieurs façons...",
-      category: "Import"
-    },
-    {
-      question: "Quelle est la différence entre les plans ?",
-      answer: "Nous proposons plusieurs plans adaptés à vos besoins...",
-      category: "Facturation"
-    },
-    {
-      question: "Comment synchroniser avec Shopify ?",
-      answer: "La synchronisation avec Shopify se fait via notre connecteur...",
-      category: "Intégrations"
-    },
-    {
-      question: "Puis-je annuler mon abonnement ?",
-      answer: "Oui, vous pouvez annuler votre abonnement à tout moment...",
-      category: "Facturation"
-    }
-  ]
+  const { tickets, faqItems, stats, isLoading, createTicket, markFAQHelpful, isCreatingTicket } = useRealSupport()
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -215,12 +167,12 @@ export default function Support() {
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-semibold">{ticket.subject}</h3>
-                            <Badge variant="outline">{ticket.id}</Badge>
+                            <Badge variant="outline">{ticket.ticket_number}</Badge>
                           </div>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>Créé le {ticket.created}</span>
+                            <span>Créé le {new Date(ticket.created_at).toLocaleDateString()}</span>
                             <span>•</span>
-                            <span>Mis à jour {ticket.updated}</span>
+                            <span>Mis à jour {new Date(ticket.updated_at).toLocaleDateString()}</span>
                           </div>
                         </div>
                       </div>
