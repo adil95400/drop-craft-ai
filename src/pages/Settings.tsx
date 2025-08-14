@@ -11,38 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-
 import { RealIntegrationsTab } from "@/components/integrations/RealIntegrationsTab";
-import { 
-  Settings as SettingsIcon, 
-  User, 
-  Bell, 
-  Key, 
-  Palette, 
-  Globe, 
-  Shield,
-  CreditCard,
-  Zap,
-  Save,
-  Upload,
-  Moon,
-  Sun,
-  Monitor,
-  Mail,
-  Smartphone,
-  Database,
-  Copy,
-  Eye,
-  EyeOff,
-  Trash2,
-  Plus,
-  Check,
-  X,
-  Crown,
-  Briefcase,
-  Users
-} from "lucide-react";
-
+import { Settings as SettingsIcon, User, Bell, Key, Palette, Globe, Shield, CreditCard, Zap, Save, Upload, Moon, Sun, Monitor, Mail, Smartphone, Database, Copy, Eye, EyeOff, Trash2, Plus, Check, X, Crown, Briefcase, Users } from "lucide-react";
 const Settings = () => {
   const [profile, setProfile] = useState({
     name: "John Doe",
@@ -51,7 +21,6 @@ const Settings = () => {
     company: "Mon E-commerce",
     website: "https://mon-ecommerce.com"
   });
-
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
@@ -60,7 +29,6 @@ const Settings = () => {
     newFeatures: true,
     orderUpdates: true
   });
-
   const [integrations, setIntegrations] = useState({
     shopify: true,
     woocommerce: false,
@@ -71,108 +39,92 @@ const Settings = () => {
     facebook: true,
     google: false
   });
-
-  const [apiKeys, setApiKeys] = useState([
-    { id: 1, name: "Production API", key: "sk_live_***************************", visible: false, created: "2024-01-15" },
-    { id: 2, name: "Development API", key: "sk_test_***************************", visible: false, created: "2024-01-10" }
-  ]);
-
+  const [apiKeys, setApiKeys] = useState([{
+    id: 1,
+    name: "Production API",
+    key: "sk_live_***************************",
+    visible: false,
+    created: "2024-01-15"
+  }, {
+    id: 2,
+    name: "Development API",
+    key: "sk_test_***************************",
+    visible: false,
+    created: "2024-01-10"
+  }]);
   const [theme, setTheme] = useState("system");
   const [language, setLanguage] = useState("fr");
-
-  
   const navigate = useNavigate();
-
   const handleSaveProfile = () => {
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 1000)),
-      {
-        loading: 'Sauvegarde du profil...',
-        success: 'Profil sauvegardé avec succès',
-        error: 'Erreur lors de la sauvegarde'
-      }
-    );
+    toast.promise(new Promise(resolve => setTimeout(resolve, 1000)), {
+      loading: 'Sauvegarde du profil...',
+      success: 'Profil sauvegardé avec succès',
+      error: 'Erreur lors de la sauvegarde'
+    });
   };
-
   const handleSaveNotifications = () => {
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 800)),
-      {
-        loading: 'Sauvegarde des préférences...',
-        success: 'Préférences de notification sauvegardées',
-        error: 'Erreur lors de la sauvegarde'
-      }
-    );
+    toast.promise(new Promise(resolve => setTimeout(resolve, 800)), {
+      loading: 'Sauvegarde des préférences...',
+      success: 'Préférences de notification sauvegardées',
+      error: 'Erreur lors de la sauvegarde'
+    });
   };
-
   const handleApiKeyGenerate = () => {
-    toast.promise(
-      new Promise((resolve) => {
-        setTimeout(() => {
-          const newKey = {
-            id: Date.now(),
-            name: "Nouvelle API Key",
-            key: `sk_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
-            visible: false,
-            created: new Date().toISOString().split('T')[0]
-          };
-          setApiKeys([...apiKeys, newKey]);
-          resolve('success');
-        }, 1200);
-      }),
-      {
-        loading: 'Génération de la nouvelle clé API...',
-        success: 'Nouvelle clé API créée avec succès',
-        error: 'Erreur lors de la génération'
-      }
-    );
+    toast.promise(new Promise(resolve => {
+      setTimeout(() => {
+        const newKey = {
+          id: Date.now(),
+          name: "Nouvelle API Key",
+          key: `sk_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
+          visible: false,
+          created: new Date().toISOString().split('T')[0]
+        };
+        setApiKeys([...apiKeys, newKey]);
+        resolve('success');
+      }, 1200);
+    }), {
+      loading: 'Génération de la nouvelle clé API...',
+      success: 'Nouvelle clé API créée avec succès',
+      error: 'Erreur lors de la génération'
+    });
   };
-
   const toggleKeyVisibility = (id: number) => {
-    setApiKeys(apiKeys.map(key => 
-      key.id === id ? { ...key, visible: !key.visible } : key
-    ));
+    setApiKeys(apiKeys.map(key => key.id === id ? {
+      ...key,
+      visible: !key.visible
+    } : key));
   };
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Clé API copiée dans le presse-papier');
   };
-
   const deleteApiKey = (id: number) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette clé API ?')) {
       setApiKeys(apiKeys.filter(key => key.id !== id));
       toast.success('Clé API supprimée avec succès');
     }
   };
-
-  const plans = [
-    {
-      name: "Starter",
-      price: 29,
-      current: false,
-      features: ["1000 produits", "Suivi basique", "Support email"]
-    },
-    {
-      name: "Professional", 
-      price: 79,
-      current: true,
-      features: ["Produits illimités", "IA avancée", "Support prioritaire", "API"]
-    },
-    {
-      name: "Enterprise",
-      price: 199,
-      current: false,
-      features: ["Tout inclus", "White-label", "Support dédié", "Multi-utilisateurs"]
-    }
-  ];
-
-  return (
-    <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
+  const plans = [{
+    name: "Starter",
+    price: 29,
+    current: false,
+    features: ["1000 produits", "Suivi basique", "Support email"]
+  }, {
+    name: "Professional",
+    price: 79,
+    current: true,
+    features: ["Produits illimités", "IA avancée", "Support prioritaire", "API"]
+  }, {
+    name: "Enterprise",
+    price: 199,
+    current: false,
+    features: ["Tout inclus", "White-label", "Support dédié", "Multi-utilisateurs"]
+  }];
+  return <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-purple-500">
             Paramètres
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -252,46 +204,40 @@ const Settings = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="name">Nom complet</Label>
-                          <Input
-                            id="name"
-                            value={profile.name}
-                            onChange={(e) => setProfile({...profile, name: e.target.value})}
-                          />
+                          <Input id="name" value={profile.name} onChange={e => setProfile({
+                      ...profile,
+                      name: e.target.value
+                    })} />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="email">Email</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={profile.email}
-                            onChange={(e) => setProfile({...profile, email: e.target.value})}
-                          />
+                          <Input id="email" type="email" value={profile.email} onChange={e => setProfile({
+                      ...profile,
+                      email: e.target.value
+                    })} />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="phone">Téléphone</Label>
-                          <Input
-                            id="phone"
-                            value={profile.phone}
-                            onChange={(e) => setProfile({...profile, phone: e.target.value})}
-                          />
+                          <Input id="phone" value={profile.phone} onChange={e => setProfile({
+                      ...profile,
+                      phone: e.target.value
+                    })} />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="company">Entreprise</Label>
-                          <Input
-                            id="company"
-                            value={profile.company}
-                            onChange={(e) => setProfile({...profile, company: e.target.value})}
-                          />
+                          <Input id="company" value={profile.company} onChange={e => setProfile({
+                      ...profile,
+                      company: e.target.value
+                    })} />
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="website">Site web</Label>
-                        <Input
-                          id="website"
-                          value={profile.website}
-                          onChange={(e) => setProfile({...profile, website: e.target.value})}
-                        />
+                        <Input id="website" value={profile.website} onChange={e => setProfile({
+                    ...profile,
+                    website: e.target.value
+                  })} />
                       </div>
 
                       <Button onClick={handleSaveProfile} variant="hero">
@@ -321,10 +267,10 @@ const Settings = () => {
                               <div className="text-sm text-muted-foreground">Notifications par email</div>
                             </div>
                           </div>
-                          <Switch
-                            checked={notifications.email}
-                            onCheckedChange={(checked) => setNotifications({...notifications, email: checked})}
-                          />
+                          <Switch checked={notifications.email} onCheckedChange={checked => setNotifications({
+                      ...notifications,
+                      email: checked
+                    })} />
                         </div>
 
                         <div className="flex items-center justify-between">
@@ -335,10 +281,10 @@ const Settings = () => {
                               <div className="text-sm text-muted-foreground">Notifications navigateur</div>
                             </div>
                           </div>
-                          <Switch
-                            checked={notifications.push}
-                            onCheckedChange={(checked) => setNotifications({...notifications, push: checked})}
-                          />
+                          <Switch checked={notifications.push} onCheckedChange={checked => setNotifications({
+                      ...notifications,
+                      push: checked
+                    })} />
                         </div>
 
                         <div className="flex items-center justify-between">
@@ -349,10 +295,10 @@ const Settings = () => {
                               <div className="text-sm text-muted-foreground">Notifications par SMS</div>
                             </div>
                           </div>
-                          <Switch
-                            checked={notifications.sms}
-                            onCheckedChange={(checked) => setNotifications({...notifications, sms: checked})}
-                          />
+                          <Switch checked={notifications.sms} onCheckedChange={checked => setNotifications({
+                      ...notifications,
+                      sms: checked
+                    })} />
                         </div>
                       </div>
 
@@ -364,10 +310,10 @@ const Settings = () => {
                             <div className="font-medium">Mises à jour commandes</div>
                             <div className="text-sm text-muted-foreground">Statut des colis et livraisons</div>
                           </div>
-                          <Switch
-                            checked={notifications.orderUpdates}
-                            onCheckedChange={(checked) => setNotifications({...notifications, orderUpdates: checked})}
-                          />
+                          <Switch checked={notifications.orderUpdates} onCheckedChange={checked => setNotifications({
+                      ...notifications,
+                      orderUpdates: checked
+                    })} />
                         </div>
 
                         <div className="flex items-center justify-between">
@@ -375,10 +321,10 @@ const Settings = () => {
                             <div className="font-medium">Nouvelles fonctionnalités</div>
                             <div className="text-sm text-muted-foreground">Annonces produit et mises à jour</div>
                           </div>
-                          <Switch
-                            checked={notifications.newFeatures}
-                            onCheckedChange={(checked) => setNotifications({...notifications, newFeatures: checked})}
-                          />
+                          <Switch checked={notifications.newFeatures} onCheckedChange={checked => setNotifications({
+                      ...notifications,
+                      newFeatures: checked
+                    })} />
                         </div>
 
                         <div className="flex items-center justify-between">
@@ -386,10 +332,10 @@ const Settings = () => {
                             <div className="font-medium">Marketing</div>
                             <div className="text-sm text-muted-foreground">Conseils et recommandations</div>
                           </div>
-                          <Switch
-                            checked={notifications.marketing}
-                            onCheckedChange={(checked) => setNotifications({...notifications, marketing: checked})}
-                          />
+                          <Switch checked={notifications.marketing} onCheckedChange={checked => setNotifications({
+                      ...notifications,
+                      marketing: checked
+                    })} />
                         </div>
                       </div>
 
@@ -482,31 +428,18 @@ const Settings = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          {plans.map((plan, index) => (
-                            <div 
-                              key={index} 
-                              className={`p-4 border rounded-lg ${
-                                plan.current ? 'border-primary ring-2 ring-primary shadow-glow' : 'border-border'
-                              }`}
-                            >
+                          {plans.map((plan, index) => <div key={index} className={`p-4 border rounded-lg ${plan.current ? 'border-primary ring-2 ring-primary shadow-glow' : 'border-border'}`}>
                               <div className="text-center space-y-3">
                                 <h3 className="font-semibold">{plan.name}</h3>
                                 <div className="text-2xl font-bold">€{plan.price}</div>
                                 <ul className="text-sm space-y-1">
-                                  {plan.features.map((feature, i) => (
-                                    <li key={i} className="text-muted-foreground">• {feature}</li>
-                                  ))}
+                                  {plan.features.map((feature, i) => <li key={i} className="text-muted-foreground">• {feature}</li>)}
                                 </ul>
-                                {plan.current ? (
-                                  <Badge variant="default">Plan Actuel</Badge>
-                                ) : (
-                                  <Button variant="outline" className="w-full">
+                                {plan.current ? <Badge variant="default">Plan Actuel</Badge> : <Button variant="outline" className="w-full">
                                     Passer à ce plan
-                                  </Button>
-                                )}
+                                  </Button>}
                               </div>
-                            </div>
-                          ))}
+                            </div>)}
                         </div>
                       </CardContent>
                     </Card>
@@ -542,8 +475,7 @@ const Settings = () => {
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="space-y-4">
-                        {apiKeys.map((apiKey) => (
-                          <div key={apiKey.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                        {apiKeys.map(apiKey => <div key={apiKey.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
                             <div className="flex-1">
                               <div className="font-medium">{apiKey.name}</div>
                               <div className="text-sm text-muted-foreground font-mono">
@@ -554,31 +486,17 @@ const Settings = () => {
                               </div>
                             </div>
                             <div className="flex items-center space-x-2">
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => toggleKeyVisibility(apiKey.id)}
-                              >
+                              <Button variant="ghost" size="sm" onClick={() => toggleKeyVisibility(apiKey.id)}>
                                 {apiKey.visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                               </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => copyToClipboard(apiKey.key)}
-                              >
+                              <Button variant="ghost" size="sm" onClick={() => copyToClipboard(apiKey.key)}>
                                 <Copy className="h-4 w-4" />
                               </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => deleteApiKey(apiKey.id)}
-                                className="text-destructive hover:text-destructive"
-                              >
+                              <Button variant="ghost" size="sm" onClick={() => deleteApiKey(apiKey.id)} className="text-destructive hover:text-destructive">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
-                          </div>
-                        ))}
+                          </div>)}
                       </div>
 
                       <Button onClick={handleApiKeyGenerate} variant="hero">
@@ -613,7 +531,9 @@ const Settings = () => {
                                 <span>2,847 / 10,000</span>
                               </div>
                               <div className="w-full bg-secondary rounded-full h-2">
-                                <div className="bg-primary h-2 rounded-full" style={{ width: '28%' }}></div>
+                                <div className="bg-primary h-2 rounded-full" style={{
+                            width: '28%'
+                          }}></div>
                               </div>
                             </div>
                           </CardContent>
@@ -707,8 +627,6 @@ const Settings = () => {
           </div>
         </div>
       </Tabs>
-    </div>
-  );
+    </div>;
 };
-
 export default Settings;
