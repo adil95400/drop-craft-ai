@@ -29,13 +29,12 @@ import { CatalogHeader } from "@/components/catalog/CatalogHeader";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { ProductDetail } from "@/components/catalog/ProductDetail";
 import { WinnerSuggestions } from "@/components/catalog/WinnerSuggestions";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useRealSuppliers } from "@/hooks/useRealSuppliers";
 import { useRealProducts } from "@/hooks/useRealProducts";
 
 
 const Marketplace = () => {
-  const { toast } = useToast();
   const [selectedSupplier, setSelectedSupplier] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,9 +48,9 @@ const Marketplace = () => {
     {
       id: "1",
       name: "BigBuy",
-      logo: "",
+      logo: "🏪", // En attendant de vraies images
       description: "Plus de 100,000 produits européens en dropshipping",
-      country: "Espagne", 
+      country: "🇪🇸 Espagne", 
       products: 127000,
       rating: 4.8,
       reviews: 2340,
@@ -60,14 +59,16 @@ const Marketplace = () => {
       status: "connected",
       apiStatus: "active",
       commission: "15-25%",
-      features: ["API", "Catalogue XML", "Tracking automatique", "Support multilingue"]
+      features: ["API REST", "Catalogue XML", "Tracking automatique", "Support multilingue", "Intégration Shopify"],
+      website: "https://www.bigbuy.eu",
+      founded: "2010"
     },
     {
       id: "2",
       name: "VidaXL", 
-      logo: "",
-      description: "Mobilier et articles de maison haut de gamme",
-      country: "Pays-Bas",
+      logo: "🏠",
+      description: "Mobilier et articles de maison haut de gamme avec livraison européenne",
+      country: "🇳🇱 Pays-Bas",
       products: 85000,
       rating: 4.6,
       reviews: 1890,
@@ -76,14 +77,16 @@ const Marketplace = () => {
       status: "available",
       apiStatus: "inactive",
       commission: "8-15%",
-      features: ["Catalogue PDF", "Images HD", "Descriptions FR", "Garantie 2 ans"]
+      features: ["Catalogue PDF", "Images HD", "Descriptions FR", "Garantie 2 ans", "Livraison gratuite +€75"],
+      website: "https://www.vidaxl.com",
+      founded: "2006"
     },
     {
       id: "3",
       name: "Printful",
-      logo: "",
-      description: "Impression à la demande et personnalisation",
-      country: "Lettonie",
+      logo: "🎨",
+      description: "Impression à la demande et personnalisation premium",
+      country: "🇱🇻 Lettonie",
       products: 15000,
       rating: 4.9,
       reviews: 5670,
@@ -92,14 +95,16 @@ const Marketplace = () => {
       status: "connected",
       apiStatus: "active",
       commission: "0% (prix fixes)",
-      features: ["Mockup générateur", "Broderie", "Intégration Shopify", "White label"]
+      features: ["Mockup générateur", "Broderie premium", "Intégration Shopify", "White label", "Dropshipping automatique"],
+      website: "https://www.printful.com",
+      founded: "2013"
     },
     {
       id: "4",
       name: "Matterhorn",
-      logo: "",
-      description: "Fournisseur premium pour boutiques haut de gamme",
-      country: "Allemagne",
+      logo: "⛰️",
+      description: "Fournisseur premium pour boutiques haut de gamme et luxe",
+      country: "🇩🇪 Allemagne",
       products: 45000,
       rating: 4.7,
       reviews: 1234,
@@ -108,7 +113,45 @@ const Marketplace = () => {
       status: "pending",
       apiStatus: "inactive", 
       commission: "20-35%",
-      features: ["Produits premium", "Support dédié", "Formation incluse", "Exclusivité"]
+      features: ["Produits premium", "Support dédié", "Formation incluse", "Exclusivité territoriale", "Certification qualité"],
+      website: "https://matterhorn-dropshipping.com",
+      founded: "2018"
+    },
+    {
+      id: "5",
+      name: "Spocket",
+      logo: "📦",
+      description: "Produits européens et américains avec livraison rapide",
+      country: "🇫🇷 France",
+      products: 75000,
+      rating: 4.5,
+      reviews: 3450,
+      deliveryTime: "2-7 jours",
+      category: "Mode & Lifestyle",
+      status: "connected",
+      apiStatus: "active",
+      commission: "10-30%",
+      features: ["Échantillons gratuits", "Branding personnalisé", "Livraison express", "Support 24/7", "App mobile"],
+      website: "https://www.spocket.co",
+      founded: "2017"
+    },
+    {
+      id: "6",
+      name: "Syncee",
+      logo: "🔄",
+      description: "Marketplace B2B avec fournisseurs vérifiés européens",
+      country: "🇭🇺 Hongrie",
+      products: 95000,
+      rating: 4.4,
+      reviews: 2100,
+      deliveryTime: "3-8 jours",
+      category: "Généraliste",
+      status: "available",
+      apiStatus: "active",
+      commission: "5-20%",
+      features: ["Synchronisation auto", "Prix temps réel", "Multi-boutiques", "API avancée", "Support technique"],
+      website: "https://syncee.com",
+      founded: "2016"
     }
   ];
 
@@ -125,8 +168,8 @@ const Marketplace = () => {
     {
       id: "1",
       name: "Casque Gaming RGB Pro Max",
-      supplier: "TechDirect",
-      supplierLogo: "",
+      supplier: "TechDirect Solutions",
+      supplierLogo: "🎧",
       price: 89.99,
       costPrice: 45.99,
       margin: 49,
@@ -141,14 +184,20 @@ const Marketplace = () => {
       isTrending: true,
       isBestSeller: false,
       deliveryTime: "3-5 jours",
-      tags: ["Gaming", "RGB", "Sans fil"],
-      description: "Casque gaming professionnel avec éclairage RGB personnalisable et son surround 7.1."
+      tags: ["Gaming", "RGB", "Sans fil", "7.1 Surround"],
+      description: "Casque gaming professionnel avec éclairage RGB personnalisable, son surround 7.1 et micro anti-bruit.",
+      specifications: {
+        connectivity: "Sans fil 2.4GHz + Bluetooth",
+        battery: "50h autonomie",
+        drivers: "50mm néodyme",
+        weight: "380g"
+      }
     },
     {
       id: "2",
       name: "Montre Connectée Fitness Pro",
-      supplier: "FitTech",
-      supplierLogo: "",
+      supplier: "FitTech Europe",
+      supplierLogo: "⌚",
       price: 149.99,
       costPrice: 89.99,
       margin: 40,
@@ -163,14 +212,20 @@ const Marketplace = () => {
       isTrending: false,
       isBestSeller: true,
       deliveryTime: "2-4 jours",
-      tags: ["Fitness", "Santé", "Connectée"],
-      description: "Montre connectée avec suivi avancé de la santé, GPS intégré et autonomie 7 jours."
+      tags: ["Fitness", "Santé", "GPS", "Étanche"],
+      description: "Montre connectée avec suivi avancé de la santé, GPS intégré, monitoring cardiaque et autonomie 7 jours.",
+      specifications: {
+        display: "1.4\" AMOLED",
+        battery: "7 jours",
+        sensors: "GPS, Cardio, SpO2",
+        waterproof: "5ATM"
+      }
     },
     {
       id: "3",
-      name: "Écouteurs Sans Fil Premium",
-      supplier: "SoundMax",
-      supplierLogo: "",
+      name: "Écouteurs Sans Fil Premium ANC",
+      supplier: "SoundMax Pro",
+      supplierLogo: "🎵",
       price: 79.99,
       costPrice: 35.99,
       margin: 55,
@@ -185,14 +240,20 @@ const Marketplace = () => {
       isTrending: true,
       isBestSeller: true,
       deliveryTime: "1-3 jours",
-      tags: ["Audio", "Premium", "ANC"],
-      description: "Écouteurs sans fil avec réduction de bruit active et charge sans fil."
+      tags: ["Audio", "ANC", "Premium", "Charge sans fil"],
+      description: "Écouteurs sans fil premium avec réduction de bruit active, charge sans fil et qualité audio Hi-Fi.",
+      specifications: {
+        anc: "Réduction 35dB",
+        battery: "8h + 32h boîtier",
+        drivers: "10mm graphène",
+        charging: "USB-C + Wireless"
+      }
     },
     {
       id: "4",
-      name: "Smartphone Gaming Beast",
-      supplier: "MobileMax",
-      supplierLogo: "",
+      name: "Smartphone Gaming Beast 5G",
+      supplier: "MobileMax Europe",
+      supplierLogo: "📱",
       price: 599.99,
       costPrice: 359.99,
       margin: 40,
@@ -207,8 +268,70 @@ const Marketplace = () => {
       isTrending: true,
       isBestSeller: false,
       deliveryTime: "5-7 jours",
-      tags: ["Gaming", "5G", "Performance"],
-      description: "Smartphone gaming avec processeur ultra-puissant et système de refroidissement avancé."
+      tags: ["Gaming", "5G", "120Hz", "Refroidissement"],
+      description: "Smartphone gaming 5G avec processeur ultra-puissant, écran 120Hz et système de refroidissement avancé.",
+      specifications: {
+        processor: "Snapdragon 8 Gen 2",
+        display: "6.8\" AMOLED 120Hz",
+        ram: "12GB LPDDR5",
+        storage: "256GB UFS 4.0"
+      }
+    },
+    {
+      id: "5",
+      name: "Drone Camera 4K Professionnel",
+      supplier: "AeroTech Drones",
+      supplierLogo: "🚁",
+      price: 299.99,
+      costPrice: 180.99,
+      margin: 40,
+      rating: 4.5,
+      reviews: 445,
+      sales: 178,
+      stock: 89,
+      trend: "+67%",
+      category: "Tech",
+      imageUrl: "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400",
+      isWinner: true,
+      isTrending: true,
+      isBestSeller: false,
+      deliveryTime: "3-6 jours",
+      tags: ["Drone", "4K", "GPS", "Professionnel"],
+      description: "Drone professionnel avec caméra 4K, stabilisation 3 axes, GPS et vol autonome jusqu'à 30min.",
+      specifications: {
+        camera: "4K 60fps",
+        range: "7km contrôle",
+        flight: "30min autonomie",
+        gimbal: "3 axes mécaniques"
+      }
+    },
+    {
+      id: "6",
+      name: "Station de Charge Multi-Appareils",
+      supplier: "PowerHub Solutions",
+      supplierLogo: "🔌",
+      price: 49.99,
+      costPrice: 22.99,
+      margin: 54,
+      rating: 4.4,
+      reviews: 678,
+      sales: 892,
+      stock: 445,
+      trend: "+28%",
+      category: "Accessoires",
+      imageUrl: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400",
+      isWinner: false,
+      isTrending: true,
+      isBestSeller: true,
+      deliveryTime: "2-4 jours",
+      tags: ["Charge", "Multi-appareils", "USB-C", "Wireless"],
+      description: "Station de charge universelle avec charge sans fil, 6 ports USB et design premium en aluminium.",
+      specifications: {
+        ports: "4x USB-A, 2x USB-C",
+        wireless: "15W Qi compatible",
+        power: "100W total",
+        material: "Aluminium premium"
+      }
     }
   ];
 
@@ -226,57 +349,48 @@ const Marketplace = () => {
 
   const handleImportProduct = async (product: any) => {
     try {
-      toast({
-        title: "Import en cours",
-        description: `Importation de ${product.name} vers votre catalogue...`,
-      });
-
-      // Simulation d'import réel avec API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // En réalité, on appellerait une API pour importer le produit
-      // await importProductToCatalog(product);
-      
-      toast({
-        title: "Produit importé avec succès",
-        description: `${product.name} est maintenant disponible dans votre catalogue. Marges configurées automatiquement.`,
-      });
+      toast.promise(
+        new Promise((resolve) => {
+          setTimeout(() => {
+            // Simulation d'import réel avec API
+            resolve('success');
+          }, 2000);
+        }),
+        {
+          loading: `Importation de ${product.name} vers votre catalogue...`,
+          success: `${product.name} importé avec succès ! Marges configurées automatiquement (${product.margin}%).`,
+          error: 'Erreur d\'import - Vérifiez votre connexion fournisseur.'
+        }
+      );
     } catch (error) {
-      toast({
-        title: "Erreur d'import",
-        description: "Impossible d'importer le produit. Vérifiez votre connexion fournisseur.",
-        variant: "destructive"
-      });
+      console.error('Import error:', error);
     }
   };
 
   const handleAnalyzeNiche = async (niche: string) => {
     try {
-      toast({
-        title: "Analyse IA en cours",
-        description: `Analyse approfondie de la niche "${niche}" avec IA prédictive...`,
-      });
-
-      // Simulation d'analyse IA avec résultats
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      const insights = {
-        demandScore: Math.floor(Math.random() * 40) + 60,
-        competitionLevel: ["Faible", "Moyenne", "Élevée"][Math.floor(Math.random() * 3)],
-        profitPotential: Math.floor(Math.random() * 30) + 15,
-        trendDirection: Math.random() > 0.5 ? "Croissante" : "Stable"
-      };
-      
-      toast({
-        title: "Analyse terminée",
-        description: `Score de demande: ${insights.demandScore}/100 • Concurrence: ${insights.competitionLevel} • Potentiel: +${insights.profitPotential}%`,
-      });
+      toast.promise(
+        new Promise((resolve) => {
+          setTimeout(() => {
+            const insights = {
+              demandScore: Math.floor(Math.random() * 40) + 60,
+              competitionLevel: ["Faible", "Moyenne", "Élevée"][Math.floor(Math.random() * 3)],
+              profitPotential: Math.floor(Math.random() * 30) + 15,
+              trendDirection: Math.random() > 0.5 ? "Croissante" : "Stable",
+              topKeywords: ["tech", "gaming", "premium"],
+              avgMargin: Math.floor(Math.random() * 20) + 25
+            };
+            resolve(insights);
+          }, 3000);
+        }),
+        {
+          loading: `Analyse IA approfondie de la niche "${niche}" en cours...`,
+          success: (insights: any) => `Analyse terminée ! Score demande: ${insights.demandScore}/100 • Concurrence: ${insights.competitionLevel} • Potentiel: +${insights.profitPotential}% • Marge moyenne: ${insights.avgMargin}%`,
+          error: 'Service IA temporairement indisponible - Réessayez dans quelques minutes.'
+        }
+      );
     } catch (error) {
-      toast({
-        title: "Erreur d'analyse",
-        description: "Impossible d'analyser la niche. Service IA temporairement indisponible.",
-        variant: "destructive"
-      });
+      console.error('Analysis error:', error);
     }
   };
 
@@ -304,12 +418,10 @@ const Marketplace = () => {
         ? prev.filter(id => id !== productId)
         : [...prev, productId];
       
-      toast({
-        title: prev.includes(productId) ? "Retiré des favoris" : "Ajouté aux favoris",
-        description: prev.includes(productId) 
-          ? "Produit retiré de votre liste de favoris"
-          : "Produit ajouté à votre liste de favoris pour suivi",
-      });
+      const product = catalogProducts.find(p => p.id === productId);
+      const action = prev.includes(productId) ? "retiré des" : "ajouté aux";
+      
+      toast.success(`${product?.name} ${action} favoris`);
       
       return newFavorites;
     });
@@ -344,7 +456,14 @@ const Marketplace = () => {
               Connectez-vous aux meilleurs fournisseurs européens
             </p>
           </div>
-          <Button className="bg-gradient-primary hover:opacity-90 transition-opacity">
+          <Button 
+            className="bg-gradient-primary hover:opacity-90 transition-opacity"
+            onClick={() => {
+              toast.success('Formulaire de demande de partenariat ouvert');
+              // Real functionality would open supplier application form
+              window.open('mailto:partnerships@marketplace.com?subject=Demande de partenariat fournisseur', '_blank');
+            }}
+          >
             <Link className="w-4 h-4 mr-2" />
             Ajouter Fournisseur
           </Button>
@@ -478,12 +597,11 @@ const Marketplace = () => {
                     <div className="space-y-4">
                       {/* Header */}
                       <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="w-12 h-12">
-                            <AvatarImage src={supplier.logo} />
-                            <AvatarFallback>{supplier.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-2xl border border-border/20">
+                              {supplier.logo}
+                            </div>
+                            <div>
                             <h3 className="text-lg font-semibold">{supplier.name}</h3>
                             <div className="flex items-center gap-2">
                               <div className="flex">{renderStars(Math.floor(supplier.rating))}</div>
@@ -544,16 +662,50 @@ const Marketplace = () => {
                       <div className="flex gap-2">
                         {supplier.status === 'connected' ? (
                           <>
-                            <Button variant="outline" size="sm" className="flex-1">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="flex-1"
+                              onClick={() => {
+                                toast.success(`Ouverture du catalogue ${supplier.name}`);
+                                // Real functionality would open supplier catalog
+                                setSelectedSupplier(supplier.id);
+                              }}
+                            >
                               <Package className="w-4 h-4 mr-2" />
                               Catalogue
                             </Button>
-                            <Button variant="outline" size="sm" className="flex-1">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="flex-1"
+                              onClick={() => {
+                                toast.success(`Gestion des paramètres ${supplier.name}`);
+                                // Real functionality would open supplier management
+                              }}
+                            >
                               Gérer
                             </Button>
                           </>
                         ) : supplier.status === 'available' ? (
-                          <Button className="w-full bg-gradient-primary hover:opacity-90 transition-opacity" size="sm">
+                          <Button 
+                            className="w-full bg-gradient-primary hover:opacity-90 transition-opacity" 
+                            size="sm"
+                            onClick={() => {
+                              toast.promise(
+                                new Promise((resolve) => {
+                                  setTimeout(() => {
+                                    resolve('success');
+                                  }, 2000);
+                                }),
+                                {
+                                  loading: `Connexion en cours avec ${supplier.name}...`,
+                                  success: `Connexion établie avec ${supplier.name} ! API activée.`,
+                                  error: 'Erreur de connexion - Vérifiez vos identifiants.'
+                                }
+                              );
+                            }}
+                          >
                             <Link className="w-4 h-4 mr-2" />
                             Se Connecter
                           </Button>

@@ -173,10 +173,9 @@ export const ProductGrid = ({
                 <div className={`space-y-2 ${viewMode === 'list' ? 'flex-1' : ''}`}>
                   {/* Supplier */}
                   <div className="flex items-center gap-2">
-                    <Avatar className="w-5 h-5">
-                      <AvatarImage src={product.supplierLogo} />
-                      <AvatarFallback>{product.supplier.charAt(0)}</AvatarFallback>
-                    </Avatar>
+                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-xs border border-border/20">
+                      {product.supplierLogo || product.supplier.charAt(0)}
+                    </div>
                     <span className="text-xs text-muted-foreground">{product.supplier}</span>
                   </div>
 
