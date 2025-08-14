@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Home from "./Home";
+import HomeNew from "./HomeNew";
 import Dashboard from "./Dashboard";
 
 const Index = () => {
@@ -26,7 +26,7 @@ const Index = () => {
     return <Dashboard />;
   }
 
-  return <Home />;
+  return <HomeNew />;
 };
 
 export default Index;

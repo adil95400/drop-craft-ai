@@ -63,6 +63,11 @@ import {
 // Light pages (direct imports)
 import Index from './pages/Index';
 import Auth from './pages/Auth';
+import Features from './pages/Features';
+import Pricing from './pages/Pricing';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import BlogPage from './pages/Blog';
 import Suppliers from './pages/Suppliers';
 import Winners from './pages/Winners';
 import Settings from './pages/Settings';
@@ -105,6 +110,11 @@ const App = () => (
                 <Auth />
               </AuthGuard>
             } />
+            <Route path="/features" element={<Features />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/blog" element={<BlogPage />} />
             
             {/* Protected routes with layout */}
             <Route path="/dashboard" element={
