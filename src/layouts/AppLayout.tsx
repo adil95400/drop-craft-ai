@@ -2,6 +2,8 @@ import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
+import { RealTimeNotifications } from "@/components/notifications/RealTimeNotifications";
+import { IntegratedChatSupport } from "@/components/support/IntegratedChatSupport";
 import { AdminUserDropdown } from "@/components/admin/AdminUserDropdown";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -15,7 +17,7 @@ const AppHeader = ({ showTrigger = false }: { showTrigger?: boolean }) => (
     <div className="flex items-center justify-end px-6 h-full">
       {showTrigger && <SidebarTrigger className="mr-auto" aria-label="Toggle navigation menu" />}
       <div className="flex items-center gap-3">
-        <NotificationDropdown />
+        <RealTimeNotifications />
         <AdminUserDropdown />
       </div>
     </div>
@@ -90,6 +92,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           </SidebarInset>
         </div>
       </div>
+      
+      {/* Integrated Chat Support - Available on all pages */}
+      <IntegratedChatSupport />
     </SidebarProvider>
   );
 }

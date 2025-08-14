@@ -34,19 +34,30 @@ export const RealTimeNotifications = () => {
     // Load initial notifications
     loadNotifications();
 
-    // Set up real-time subscription
+    // Set up real-time subscription for activity_logs as notifications source
     const channel = supabase
-      .channel('notifications')
+      .channel('activity_notifications')
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'notifications',
+          table: 'activity_logs',
           filter: `user_id=eq.${user.id}`
         },
         (payload) => {
-          const newNotification = payload.new as Notification;
+          const activityLog = payload.new as any;
+          // Convert activity log to notification format
+          const newNotification: Notification = {
+            id: activityLog.id,
+            title: activityLog.action,
+            message: activityLog.description,
+            type: activityLog.severity === 'error' ? 'error' : 'info',
+            timestamp: new Date(activityLog.created_at),
+            read: false,
+            user_id: activityLog.user_id
+          };
+          
           setNotifications(prev => [newNotification, ...prev]);
           
           // Show toast for new notification
@@ -72,11 +83,12 @@ export const RealTimeNotifications = () => {
   const loadNotifications = async () => {
     if (!user) return;
 
+    // Load activity logs as notifications
     const { data, error } = await supabase
-      .from('notifications')
+      .from('activity_logs')
       .select('*')
       .eq('user_id', user.id)
-      .order('timestamp', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(20);
 
     if (error) {
@@ -84,82 +96,75 @@ export const RealTimeNotifications = () => {
       return;
     }
 
-    setNotifications(data || []);
+    // Convert activity logs to notification format
+    const notificationData: Notification[] = (data || []).map(log => ({
+      id: log.id,
+      title: log.action,
+      message: log.description,
+      type: log.severity === 'error' ? 'error' : 'info',
+      timestamp: new Date(log.created_at),
+      read: false, // Activity logs don't have read status
+      user_id: log.user_id
+    }));
+
+    setNotifications(notificationData);
   };
 
   const markAsRead = async (notificationId: string) => {
-    const { error } = await supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('id', notificationId);
-
-    if (!error) {
-      setNotifications(prev =>
-        prev.map(notif =>
-          notif.id === notificationId ? { ...notif, read: true } : notif
-        )
-      );
-    }
+    // For now, just update local state since activity_logs don't have read status
+    setNotifications(prev =>
+      prev.map(notif =>
+        notif.id === notificationId ? { ...notif, read: true } : notif
+      )
+    );
   };
 
   const markAllAsRead = async () => {
-    if (!user) return;
-
-    const { error } = await supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('user_id', user.id)
-      .eq('read', false);
-
-    if (!error) {
-      setNotifications(prev =>
-        prev.map(notif => ({ ...notif, read: true }))
-      );
-    }
+    // For now, just update local state
+    setNotifications(prev =>
+      prev.map(notif => ({ ...notif, read: true }))
+    );
   };
 
   const deleteNotification = async (notificationId: string) => {
-    const { error } = await supabase
-      .from('notifications')
-      .delete()
-      .eq('id', notificationId);
-
-    if (!error) {
-      setNotifications(prev =>
-        prev.filter(notif => notif.id !== notificationId)
-      );
-    }
+    // For now, just update local state (we don't want to delete activity logs)
+    setNotifications(prev =>
+      prev.filter(notif => notif.id !== notificationId)
+    );
   };
 
   const addTestNotification = async () => {
     if (!user) return;
 
-    const testNotifications = [
+    const testActivities = [
       {
-        title: 'Nouvelle commande',
-        message: 'Vous avez reçu une nouvelle commande #1234',
-        type: 'success' as const,
-        user_id: user.id
+        user_id: user.id,
+        action: 'Nouvelle commande',
+        description: 'Vous avez reçu une nouvelle commande #1234',
+        entity_type: 'order',
+        severity: 'info'
       },
       {
-        title: 'Stock faible',
-        message: '5 produits ont un stock inférieur à 10 unités',
-        type: 'warning' as const,
-        user_id: user.id
+        user_id: user.id,
+        action: 'Stock faible',
+        description: '5 produits ont un stock inférieur à 10 unités',
+        entity_type: 'product',
+        severity: 'warning'
       },
       {
-        title: 'Synchronisation terminée',
-        message: 'Import de 24 nouveaux produits depuis Shopify',
-        type: 'info' as const,
-        user_id: user.id
+        user_id: user.id,
+        action: 'Synchronisation terminée',
+        description: 'Import de 24 nouveaux produits depuis Shopify',
+        entity_type: 'import',
+        severity: 'info'
       }
     ];
 
-    const randomNotification = testNotifications[Math.floor(Math.random() * testNotifications.length)];
+    const randomActivity = testActivities[Math.floor(Math.random() * testActivities.length)];
 
     const { error } = await supabase
-      .from('notifications')
-      .insert(randomNotification);
+      .from('activity_logs')
+      .insert(randomActivity);
 
     if (error) {
       console.error('Error adding test notification:', error);
