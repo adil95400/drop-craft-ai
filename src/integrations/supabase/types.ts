@@ -1251,14 +1251,17 @@ export type Database = {
       }
       suppliers: {
         Row: {
+          access_count: number | null
           api_endpoint: string | null
           api_key: string | null
           contact_email: string | null
           contact_phone: string | null
           country: string | null
           created_at: string
+          credentials_updated_at: string | null
           encrypted_credentials: Json | null
           id: string
+          last_access_at: string | null
           name: string
           rating: number | null
           status: string | null
@@ -1267,14 +1270,17 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          access_count?: number | null
           api_endpoint?: string | null
           api_key?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           created_at?: string
+          credentials_updated_at?: string | null
           encrypted_credentials?: Json | null
           id?: string
+          last_access_at?: string | null
           name: string
           rating?: number | null
           status?: string | null
@@ -1283,14 +1289,17 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          access_count?: number | null
           api_endpoint?: string | null
           api_key?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           created_at?: string
+          credentials_updated_at?: string | null
           encrypted_credentials?: Json | null
           id?: string
+          last_access_at?: string | null
           name?: string
           rating?: number | null
           status?: string | null
@@ -1494,6 +1503,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_supplier_owner: {
+        Args: { _supplier_id: string; _user_id: string }
         Returns: boolean
       }
     }

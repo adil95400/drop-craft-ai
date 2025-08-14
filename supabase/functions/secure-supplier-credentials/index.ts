@@ -105,12 +105,13 @@ Deno.serve(async (req) => {
       // Encrypt the credentials
       const encryptedData = await encryptCredentials(JSON.stringify(credentials), encryptionKey);
 
-      // Store encrypted credentials in supplier record
+      // Store encrypted credentials in supplier record with additional security
       const { error: updateError } = await supabase
         .from('suppliers')
         .update({ 
           encrypted_credentials: { data: encryptedData },
-          api_key: null // Clear plain text api_key for security
+          api_key: null, // Clear plain text api_key for security
+          credentials_updated_at: new Date().toISOString()
         })
         .eq('id', supplierId)
         .eq('user_id', user.id); // Ensure user can only update their own suppliers
@@ -147,13 +148,16 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Get encrypted credentials from supplier record
-      const { data: supplier, error: fetchError } = await supabase
-        .from('suppliers')
-        .select('encrypted_credentials')
-        .eq('id', supplierId)
-        .eq('user_id', user.id) // Ensure user can only access their own suppliers
-        .single();
+    // Get encrypted credentials from supplier record with ownership validation
+    const { data: supplier, error: fetchError } = await supabase
+      .from('suppliers')
+      .select('encrypted_credentials, access_count')
+      .eq('id', supplierId)
+      .eq('user_id', user.id) // Ensure user can only access their own suppliers
+      .single();
+
+    // Additional security: Log credential access attempt
+    console.log(`Credential access attempt - User: ${user.id}, Supplier: ${supplierId}`);
 
       if (fetchError || !supplier) {
         console.error('Failed to fetch supplier:', fetchError);
@@ -174,13 +178,28 @@ Deno.serve(async (req) => {
       const decryptedData = await decryptCredentials(supplier.encrypted_credentials.data, encryptionKey);
       const credentials = JSON.parse(decryptedData);
 
+      // Update access tracking
+      await supabase
+        .from('suppliers')
+        .update({ 
+          last_access_at: new Date().toISOString(),
+          access_count: (supplier.access_count || 0) + 1
+        })
+        .eq('id', supplierId)
+        .eq('user_id', user.id);
+
       // Log security event for credential access
       await supabase.from('security_events').insert({
         user_id: user.id,
         event_type: 'credentials_accessed',
         severity: 'info',
         description: 'Supplier API credentials decrypted and accessed',
-        metadata: { supplier_id: supplierId, action: 'decrypt' }
+        metadata: { 
+          supplier_id: supplierId, 
+          action: 'decrypt',
+          access_count: (supplier.access_count || 0) + 1,
+          ip_address: req.headers.get('x-forwarded-for') || 'unknown'
+        }
       });
 
       console.log(`Successfully decrypted credentials for supplier ${supplierId}`);

@@ -16,6 +16,10 @@ export interface Supplier {
   user_id: string
   created_at: string
   updated_at: string
+  credentials_updated_at?: string
+  last_access_at?: string
+  access_count?: number
+  encrypted_credentials?: any
 }
 
 export const useRealSuppliers = (filters?: any) => {
