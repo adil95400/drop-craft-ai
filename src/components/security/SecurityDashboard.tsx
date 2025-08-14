@@ -79,7 +79,7 @@ export function SecurityDashboard() {
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalEvents}</div>
+            <div className="text-2xl font-bold">{stats.total_events}</div>
             <p className="text-xs text-muted-foreground">
               Tous les événements enregistrés
             </p>
@@ -92,7 +92,7 @@ export function SecurityDashboard() {
             <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{stats.criticalEvents}</div>
+            <div className="text-2xl font-bold text-destructive">{stats.critical_events}</div>
             <p className="text-xs text-muted-foreground">
               Nécessitent une attention immédiate
             </p>
@@ -105,7 +105,7 @@ export function SecurityDashboard() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.todayEvents}</div>
+            <div className="text-2xl font-bold">{stats.events_today}</div>
             <p className="text-xs text-muted-foreground">
               Événements détectés aujourd'hui
             </p>
@@ -119,21 +119,21 @@ export function SecurityDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats.topThreats[0]?.count || 0}
+              {stats.top_threats.length > 0 ? 1 : 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              {stats.topThreats[0]?.type || 'Aucune menace'}
+              {stats.top_threats[0] || 'Aucune menace'}
             </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Critical Alerts */}
-      {stats.criticalEvents > 0 && (
+      {stats.critical_events > 0 && (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>Attention:</strong> {stats.criticalEvents} événement(s) critique(s) détecté(s). 
+            <strong>Attention:</strong> {stats.critical_events} événement(s) critique(s) détecté(s). 
             Vérifiez immédiatement les journaux de sécurité.
           </AlertDescription>
         </Alert>
@@ -167,12 +167,12 @@ export function SecurityDashboard() {
                     </div>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span>
-                        {format(new Date(event.timestamp), 'dd/MM/yyyy HH:mm', { locale: fr })}
+                        {format(new Date(event.created_at), 'dd/MM/yyyy HH:mm', { locale: fr })}
                       </span>
                       {event.ip_address && (
                         <span>IP: {event.ip_address}</span>
                       )}
-                      <span className="capitalize">{event.type.replace('_', ' ')}</span>
+                      <span className="capitalize">{event.event_type.replace('_', ' ')}</span>
                     </div>
                   </div>
                 </div>
@@ -191,7 +191,7 @@ export function SecurityDashboard() {
       </Card>
 
       {/* Top Threats Analysis */}
-      {stats.topThreats.length > 0 && (
+      {stats.top_threats.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Analyse des Menaces</CardTitle>
@@ -201,18 +201,18 @@ export function SecurityDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {stats.topThreats.map((threat, index) => (
-                <div key={threat.type} className="flex items-center justify-between">
+              {stats.top_threats.map((threat, index) => (
+                <div key={threat} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-medium">
                       {index + 1}
                     </span>
                     <span className="font-medium capitalize">
-                      {threat.type.replace('_', ' ')}
+                      {threat.replace('_', ' ')}
                     </span>
                   </div>
                   <Badge variant="outline">
-                    {threat.count} événement{threat.count > 1 ? 's' : ''}
+                    Menace détectée
                   </Badge>
                 </div>
               ))}

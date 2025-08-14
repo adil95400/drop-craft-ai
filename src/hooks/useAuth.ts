@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useSecurityMonitoring } from '@/hooks/useSecurityMonitoring';
 
 interface AuthState {
   user: User | null;
@@ -18,6 +19,7 @@ export const useAuth = () => {
     profile: null,
   });
   const { toast } = useToast();
+  const { analyzeLoginPattern } = useSecurityMonitoring();
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -154,9 +156,16 @@ export const useAuth = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Log failed login attempt
+        await analyzeLoginPattern(false);
+        throw error;
+      }
 
       if (data.user) {
+        // Log successful login
+        await analyzeLoginPattern(true);
+        
         toast({
           title: "Connexion réussie",
           description: "Bienvenue dans Shopopti Pro",

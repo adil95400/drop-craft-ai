@@ -4,211 +4,202 @@ import { useAuth } from '@/hooks/useAuth';
 
 interface SecurityEvent {
   id: string;
-  type: 'login_attempt' | 'failed_login' | 'suspicious_activity' | 'data_access' | 'password_change';
+  user_id?: string;
+  event_type: string;
+  severity: 'info' | 'warning' | 'error' | 'critical';
   description: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  metadata?: Record<string, any>;
   ip_address?: string;
   user_agent?: string;
-  timestamp: string;
-  metadata?: any;
+  created_at: string;
 }
 
 interface SecurityStats {
-  totalEvents: number;
-  criticalEvents: number;
-  todayEvents: number;
-  topThreats: Array<{ type: string; count: number }>;
+  total_events: number;
+  critical_events: number;
+  events_today: number;
+  top_threats: string[];
 }
 
 export const useSecurityMonitoring = () => {
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [stats, setStats] = useState<SecurityStats>({
-    totalEvents: 0,
-    criticalEvents: 0,
-    todayEvents: 0,
-    topThreats: []
+    total_events: 0,
+    critical_events: 0,
+    events_today: 0,
+    top_threats: []
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  const logSecurityEvent = async (
-    type: SecurityEvent['type'],
-    description: string,
-    severity: SecurityEvent['severity'] = 'low',
-    metadata?: any
-  ) => {
-    if (!user) return;
-
-    try {
-      const ipAddress = await getClientIP();
-      const userAgent = navigator.userAgent;
-
-      const { error } = await supabase.from('activity_logs').insert({
-        user_id: user.id,
-        action: 'security_event',
-        description,
-        entity_type: 'security',
-        metadata: {
-          event_type: type,
-          severity,
-          ip_address: ipAddress,
-          user_agent: userAgent,
-          ...metadata
-        },
-        ip_address: ipAddress,
-        user_agent: userAgent
-      });
-
-      if (error) {
-        console.error('Failed to log security event:', error);
-      } else {
-        // Refresh events after logging
-        fetchSecurityEvents();
-      }
-    } catch (error) {
-      console.error('Error logging security event:', error);
-    }
-  };
-
-  const getClientIP = async (): Promise<string> => {
+  // Get client IP address
+  const getClientIP = async (): Promise<string | null> => {
     try {
       const response = await fetch('https://api.ipify.org?format=json');
       const data = await response.json();
       return data.ip;
     } catch {
-      return 'unknown';
+      return null;
     }
   };
 
+  // Log security event
+  const logSecurityEvent = async (
+    eventType: string,
+    severity: 'info' | 'warning' | 'error' | 'critical',
+    description: string,
+    metadata?: Record<string, any>
+  ) => {
+    try {
+      const clientIP = await getClientIP();
+      const userAgent = navigator.userAgent;
+
+      const { error } = await supabase
+        .from('security_events')
+        .insert([{
+          user_id: user?.id || null,
+          event_type: eventType,
+          severity,
+          description,
+          metadata: metadata || {},
+          ip_address: clientIP,
+          user_agent: userAgent
+        }]);
+
+      if (error) {
+        console.error('Failed to log security event:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Security event logging error:', error);
+      return { success: false, error: 'Failed to log security event' };
+    }
+  };
+
+  // Fetch security events (admin only)
   const fetchSecurityEvents = async () => {
     if (!user) return;
 
+    setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('activity_logs')
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('security_events')
         .select('*')
-        .eq('user_id', user.id)
-        .eq('entity_type', 'security')
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(100);
 
-      if (error) throw error;
+      if (eventsError) throw eventsError;
 
-      const formattedEvents: SecurityEvent[] = data.map(log => {
-        const metadata = log.metadata as any;
-        return {
-          id: log.id,
-          type: metadata?.event_type || 'data_access',
-          description: log.description,
-          severity: metadata?.severity || 'low',
-          ip_address: log.ip_address,
-          user_agent: log.user_agent,
-          timestamp: log.created_at,
-          metadata: log.metadata
-        };
-      });
+      const formattedEvents: SecurityEvent[] = (eventsData || []).map(event => ({
+        id: event.id,
+        user_id: event.user_id,
+        event_type: event.event_type,
+        severity: event.severity as 'info' | 'warning' | 'error' | 'critical',
+        description: event.description,
+        metadata: (event.metadata as Record<string, any>) || {},
+        ip_address: event.ip_address,
+        user_agent: event.user_agent,
+        created_at: event.created_at
+      }));
 
       setEvents(formattedEvents);
 
-      // Calculate stats
-      const today = new Date().toDateString();
-      const todayEvents = formattedEvents.filter(
-        event => new Date(event.timestamp).toDateString() === today
+      // Calculate statistics
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const eventsToday = formattedEvents.filter(event => 
+        new Date(event.created_at) >= today
       ).length;
 
-      const criticalEvents = formattedEvents.filter(
-        event => event.severity === 'critical'
+      const criticalEvents = formattedEvents.filter(event => 
+        event.severity === 'critical'
       ).length;
 
-      const threatCounts = formattedEvents.reduce((acc, event) => {
-        acc[event.type] = (acc[event.type] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      const threatTypes = formattedEvents
+        .filter(event => event.severity === 'error' || event.severity === 'critical')
+        .reduce((acc, event) => {
+          acc[event.event_type] = (acc[event.event_type] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
 
-      const topThreats = Object.entries(threatCounts)
-        .map(([type, count]) => ({ type, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 3);
+      const topThreats = Object.entries(threatTypes)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 3)
+        .map(([threat]) => threat);
 
       setStats({
-        totalEvents: formattedEvents.length,
-        criticalEvents,
-        todayEvents,
-        topThreats
+        total_events: formattedEvents.length,
+        critical_events: criticalEvents,
+        events_today: eventsToday,
+        top_threats: topThreats
       });
 
     } catch (error) {
-      console.error('Error fetching security events:', error);
+      console.error('Failed to fetch security events:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const detectSuspiciousActivity = async (activity: {
-    action: string;
-    frequency?: number;
-    timeWindow?: number;
-  }) => {
-    // Simple suspicious activity detection
-    const { action, frequency = 10, timeWindow = 300000 } = activity; // 5 minutes window
-    
-    const recent = events.filter(
-      event => 
-        event.description.includes(action) && 
-        Date.now() - new Date(event.timestamp).getTime() < timeWindow
+  // Detect suspicious activity
+  const detectSuspiciousActivity = async (eventType: string, threshold: number = 10, windowMs: number = 300000) => {
+    if (!user) return;
+
+    const now = Date.now();
+    const recentEvents = events.filter(event => 
+      event.event_type === eventType &&
+      event.user_id === user.id &&
+      (now - new Date(event.created_at).getTime()) < windowMs
     );
 
-    if (recent.length >= frequency) {
+    if (recentEvents.length >= threshold) {
       await logSecurityEvent(
         'suspicious_activity',
-        `Activité suspecte détectée: ${action} répété ${recent.length} fois`,
-        'high',
-        { action, occurrences: recent.length, timeWindow }
+        'critical',
+        `Suspicious activity detected: ${eventType} repeated ${recentEvents.length} times in ${windowMs/1000} seconds`,
+        { 
+          event_type: eventType, 
+          count: recentEvents.length, 
+          window_ms: windowMs,
+          threshold 
+        }
       );
     }
   };
 
-  const analyzeLoginPattern = async (loginAttempt: { success: boolean; ip?: string }) => {
-    const { success, ip } = loginAttempt;
+  // Analyze login patterns
+  const analyzeLoginPattern = async (success: boolean) => {
+    const eventType = success ? 'login_success' : 'login_failed';
     
-    if (!success) {
-      await logSecurityEvent(
-        'failed_login',
-        'Tentative de connexion échouée',
-        'medium',
-        { ip_address: ip }
-      );
-      
-      // Check for multiple failed attempts
-      await detectSuspiciousActivity({
-        action: 'failed_login',
-        frequency: 5,
-        timeWindow: 600000 // 10 minutes
-      });
-    } else {
-      await logSecurityEvent(
-        'login_attempt',
-        'Connexion réussie',
-        'low',
-        { ip_address: ip }
-      );
-    }
-  };
-
-  const checkDataAccessPattern = async (resourceType: string) => {
     await logSecurityEvent(
-      'data_access',
-      `Accès aux données: ${resourceType}`,
-      'low',
-      { resource_type: resourceType }
+      eventType,
+      success ? 'info' : 'warning',
+      success ? 'User login successful' : 'User login failed'
     );
 
-    // Check for unusual data access patterns
-    await detectSuspiciousActivity({
-      action: resourceType,
-      frequency: 20,
-      timeWindow: 300000 // 5 minutes
-    });
+    if (!success) {
+      await detectSuspiciousActivity('login_failed', 5, 300000); // 5 failed attempts in 5 minutes
+    }
+  };
+
+  // Check data access patterns
+  const checkDataAccessPattern = async (dataType: string, action: string) => {
+    await logSecurityEvent(
+      'data_access',
+      'info',
+      `User accessed ${dataType} - ${action}`,
+      { data_type: dataType, action }
+    );
+
+    await detectSuspiciousActivity('data_access', 50, 300000); // 50 accesses in 5 minutes
+  };
+
+  // Refresh events
+  const refreshEvents = () => {
+    fetchSecurityEvents();
   };
 
   useEffect(() => {
@@ -225,6 +216,6 @@ export const useSecurityMonitoring = () => {
     analyzeLoginPattern,
     checkDataAccessPattern,
     detectSuspiciousActivity,
-    refreshEvents: fetchSecurityEvents
+    refreshEvents
   };
 };

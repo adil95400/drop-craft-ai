@@ -59,7 +59,7 @@ export const validatePasswordStrength = (password: string): {
   };
 };
 
-// Rate limiting helper
+// Enhanced rate limiting helper with security logging
 export class RateLimiter {
   private attempts: Map<string, number[]> = new Map();
 
@@ -71,6 +71,8 @@ export class RateLimiter {
     const recentAttempts = userAttempts.filter(time => now - time < windowMs);
     
     if (recentAttempts.length >= maxAttempts) {
+      // Log rate limit exceeded event
+      this.logRateLimitEvent(key, recentAttempts.length, maxAttempts);
       return false;
     }
     
@@ -78,6 +80,11 @@ export class RateLimiter {
     this.attempts.set(key, recentAttempts);
     
     return true;
+  }
+
+  private logRateLimitEvent(key: string, attempts: number, limit: number) {
+    // This will be called by the security monitoring system
+    console.warn(`Rate limit exceeded for ${key}: ${attempts}/${limit} attempts`);
   }
 }
 
