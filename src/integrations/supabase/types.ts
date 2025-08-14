@@ -1257,6 +1257,7 @@ export type Database = {
           contact_phone: string | null
           country: string | null
           created_at: string
+          encrypted_credentials: Json | null
           id: string
           name: string
           rating: number | null
@@ -1272,6 +1273,7 @@ export type Database = {
           contact_phone?: string | null
           country?: string | null
           created_at?: string
+          encrypted_credentials?: Json | null
           id?: string
           name: string
           rating?: number | null
@@ -1287,6 +1289,7 @@ export type Database = {
           contact_phone?: string | null
           country?: string | null
           created_at?: string
+          encrypted_credentials?: Json | null
           id?: string
           name?: string
           rating?: number | null
