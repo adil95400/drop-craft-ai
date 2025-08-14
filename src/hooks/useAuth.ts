@@ -283,21 +283,13 @@ export const useAuth = () => {
 
   const signInWithGoogle = async () => {
     try {
-      cleanupAuthState();
-      
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (err) {
-        // Continue even if this fails
-      }
-
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent',
+            prompt: 'select_account',
           },
         }
       });
@@ -306,25 +298,14 @@ export const useAuth = () => {
         console.error('Google OAuth error:', error);
         logSecurityEvent('google_login_failed', 'warning', `Google login failed: ${error.message}`);
         
-        // Provide specific error messages based on error type
-        let errorMessage = "Impossible de se connecter avec Google";
-        if (error.message.includes('403')) {
-          errorMessage = "Configuration Google OAuth requise. Veuillez contacter l'administrateur.";
-        } else if (error.message.includes('redirect')) {
-          errorMessage = "Erreur de redirection. Vérifiez la configuration des domaines.";
-        }
-        
         toast({
           title: "Erreur de connexion Google",
-          description: errorMessage,
+          description: "Impossible de se connecter avec Google. Vérifiez votre configuration.",
           variant: "destructive",
         });
         
         throw error;
       }
-
-      // Log successful Google login attempt
-      logSecurityEvent('google_login_success', 'info', 'Google login initiated');
 
       return { data, error: null };
     } catch (error: any) {
