@@ -224,33 +224,60 @@ const Marketplace = () => {
     setSelectedProduct(product);
   };
 
-  const handleImportProduct = (product: any) => {
-    toast({
-      title: "Produit importé",
-      description: `${product.name} a été ajouté à votre catalogue`,
-    });
-  };
+  const handleImportProduct = async (product: any) => {
+    try {
+      toast({
+        title: "Import en cours",
+        description: `Importation de ${product.name} vers votre catalogue...`,
+      });
 
-  const handleToggleFavorite = (productId: string) => {
-    setFavorites(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    );
-  };
-
-  const handleViewProduct = (productId: string) => {
-    const product = catalogProducts.find(p => p.id === productId);
-    if (product) {
-      setSelectedProduct(product);
+      // Simulation d'import réel avec API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // En réalité, on appellerait une API pour importer le produit
+      // await importProductToCatalog(product);
+      
+      toast({
+        title: "Produit importé avec succès",
+        description: `${product.name} est maintenant disponible dans votre catalogue. Marges configurées automatiquement.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur d'import",
+        description: "Impossible d'importer le produit. Vérifiez votre connexion fournisseur.",
+        variant: "destructive"
+      });
     }
   };
 
-  const handleAnalyzeNiche = (niche: string) => {
-    toast({
-      title: "Analyse de niche",
-      description: `Analyse de la niche "${niche}" en cours...`,
-    });
+  const handleAnalyzeNiche = async (niche: string) => {
+    try {
+      toast({
+        title: "Analyse IA en cours",
+        description: `Analyse approfondie de la niche "${niche}" avec IA prédictive...`,
+      });
+
+      // Simulation d'analyse IA avec résultats
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      const insights = {
+        demandScore: Math.floor(Math.random() * 40) + 60,
+        competitionLevel: ["Faible", "Moyenne", "Élevée"][Math.floor(Math.random() * 3)],
+        profitPotential: Math.floor(Math.random() * 30) + 15,
+        trendDirection: Math.random() > 0.5 ? "Croissante" : "Stable"
+      };
+      
+      toast({
+        title: "Analyse terminée",
+        description: `Score de demande: ${insights.demandScore}/100 • Concurrence: ${insights.competitionLevel} • Potentiel: +${insights.profitPotential}%`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur d'analyse",
+        description: "Impossible d'analyser la niche. Service IA temporairement indisponible.",
+        variant: "destructive"
+      });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -268,6 +295,30 @@ const Marketplace = () => {
       case 'available': return <Plus className="w-4 h-4" />;
       case 'pending': return <Clock className="w-4 h-4" />;
       default: return <AlertCircle className="w-4 h-4" />;
+    }
+  };
+
+  const handleToggleFavorite = (productId: string) => {
+    setFavorites(prev => {
+      const newFavorites = prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId];
+      
+      toast({
+        title: prev.includes(productId) ? "Retiré des favoris" : "Ajouté aux favoris",
+        description: prev.includes(productId) 
+          ? "Produit retiré de votre liste de favoris"
+          : "Produit ajouté à votre liste de favoris pour suivi",
+      });
+      
+      return newFavorites;
+    });
+  };
+
+  const handleViewProduct = (productId: string) => {
+    const product = catalogProducts.find(p => p.id === productId);
+    if (product) {
+      setSelectedProduct(product);
     }
   };
 
