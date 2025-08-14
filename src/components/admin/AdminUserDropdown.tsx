@@ -1,34 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { 
-  User, 
-  Settings, 
-  Shield, 
-  CreditCard, 
-  HelpCircle, 
-  LogOut,
-  Crown,
-  Bell,
-  Moon,
-  Sun
-} from "lucide-react";
+import { User, Settings, Shield, CreditCard, HelpCircle, LogOut, Crown, Bell, Moon, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
 export function AdminUserDropdown() {
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
-
   const userInfo = {
     name: "Admin User",
     email: "admin@shopopti.com",
@@ -36,23 +15,18 @@ export function AdminUserDropdown() {
     plan: "Plan Enterprise",
     avatar: "/lovable-uploads/d3b4944e-d4d8-48dc-9869-b28719260acf.png"
   };
-
   const handleProfileClick = () => {
     navigate('/settings');
   };
-
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
     navigate('/auth');
   };
-
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
     document.documentElement.classList.toggle('dark');
   };
-
-  return (
-    <DropdownMenu>
+  return <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="flex items-center gap-2 h-auto">
           <Avatar className="h-8 w-8">
@@ -96,10 +70,7 @@ export function AdminUserDropdown() {
         <DropdownMenuSeparator />
         
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer">
-            <User className="mr-2 h-4 w-4" />
-            <span>Mon Profil</span>
-          </DropdownMenuItem>
+          
           
           <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />
@@ -122,11 +93,7 @@ export function AdminUserDropdown() {
           </DropdownMenuItem>
           
           <DropdownMenuItem onClick={toggleDarkMode} className="cursor-pointer">
-            {darkMode ? (
-              <Sun className="mr-2 h-4 w-4" />
-            ) : (
-              <Moon className="mr-2 h-4 w-4" />
-            )}
+            {darkMode ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
             <span>Mode {darkMode ? 'Clair' : 'Sombre'}</span>
           </DropdownMenuItem>
           
@@ -151,6 +118,5 @@ export function AdminUserDropdown() {
           <span>Déconnexion</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
-    </DropdownMenu>
-  );
+    </DropdownMenu>;
 }
