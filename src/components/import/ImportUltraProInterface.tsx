@@ -402,6 +402,66 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
           )}
         </CardContent>
       </Card>
+
+      {/* Imported Products List */}
+      {importedProducts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="w-5 h-5" />
+              Produits Importés ({importedProducts.length})
+            </CardTitle>
+            <CardDescription>
+              Liste des produits récemment importés
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {importedProducts.slice(0, 10).map((product) => (
+                <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-4">
+                    {product.image_urls && product.image_urls[0] && (
+                      <img 
+                        src={product.image_urls[0]} 
+                        alt={product.name}
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                    )}
+                    <div>
+                      <h4 className="font-medium">{product.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        SKU: {product.sku} • {product.currency} {product.price}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={
+                      product.status === 'published' ? 'default' : 
+                      product.status === 'draft' ? 'secondary' : 'destructive'
+                    }>
+                      {product.status === 'published' ? 'Publié' :
+                       product.status === 'draft' ? 'Brouillon' : 'Erreur'}
+                    </Badge>
+                    {product.ai_score && (
+                      <Badge variant="outline">
+                        IA: {product.ai_score}/10
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+              
+              {importedProducts.length > 10 && (
+                <div className="text-center pt-4">
+                  <Button variant="outline">
+                    Voir tous les {importedProducts.length} produits
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
