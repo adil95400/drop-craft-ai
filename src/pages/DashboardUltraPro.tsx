@@ -175,7 +175,7 @@ export default function DashboardUltraPro() {
   const [dismissedAlerts, setDismissedAlerts] = useState<number[]>([]);
   
   // Hooks pour les fonctionnalités
-  const { analytics, isLoading, generateReport, isGeneratingReport } = useRealAnalytics();
+  const { analytics, isLoading } = useRealAnalytics();
   const { dashboardStats } = useProductionData();
   const { openModal } = useModals();
   const { generateInsights, isGeneratingInsights } = useAI();

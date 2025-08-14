@@ -21,12 +21,49 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useRealAnalytics } from "@/hooks/useRealAnalytics";
 
 const Analytics = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [timeRange, setTimeRange] = useState("7d");
-  const metrics = [
+  const { analytics, isLoading } = useRealAnalytics();
+
+  // Use real data if available, fallback to mock data
+  const metrics = analytics ? [
+    {
+      title: "Chiffre d'Affaires",
+      value: `€${analytics.revenue.toLocaleString()}`,
+      change: "+12.5%",
+      trend: "up",
+      icon: DollarSign,
+      color: "text-green-600"
+    },
+    {
+      title: "Commandes",
+      value: analytics.orders.toString(),
+      change: "+8.2%",
+      trend: "up", 
+      icon: ShoppingCart,
+      color: "text-blue-600"
+    },
+    {
+      title: "Clients",
+      value: analytics.customers.toString(),
+      change: "-2.4%",
+      trend: "down",
+      icon: Users,
+      color: "text-purple-600"
+    },
+    {
+      title: "Taux Conversion",
+      value: `${analytics.conversionRate}%`,
+      change: "+1.2%",
+      trend: "up",
+      icon: Target,
+      color: "text-orange-600"
+    }
+  ] : [
     {
       title: "Chiffre d'Affaires",
       value: "€24,567",
@@ -61,7 +98,7 @@ const Analytics = () => {
     }
   ];
 
-  const topProducts = [
+  const topProducts = analytics?.topProducts || [
     { name: "iPhone 15 Case Premium", sales: 45, revenue: "€1,350", growth: "+15%" },
     { name: "Wireless Charger Pro", sales: 38, revenue: "€1,140", growth: "+8%" },
     { name: "AirPods Case Silicone", sales: 32, revenue: "€960", growth: "+22%" },
