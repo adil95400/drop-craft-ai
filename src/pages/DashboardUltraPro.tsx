@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { useRealAnalytics } from '@/hooks/useRealAnalytics';
+import { useProductionData } from '@/hooks/useProductionData';
 import { useModals } from '@/hooks/useModals';
 import { useAI } from '@/hooks/useAI';
 import { useToast } from '@/hooks/use-toast';
@@ -175,6 +176,7 @@ export default function DashboardUltraPro() {
   
   // Hooks pour les fonctionnalités
   const { analytics, isLoading, generateReport, isGeneratingReport } = useRealAnalytics();
+  const { dashboardStats } = useProductionData();
   const { openModal } = useModals();
   const { generateInsights, isGeneratingInsights } = useAI();
   const { toast } = useToast();
@@ -201,31 +203,31 @@ export default function DashboardUltraPro() {
   };
 
 
-  // KPIs principaux - utilise les vraies données si disponibles
+  // KPIs principaux - utilise les vraies données depuis la production
   const kpis = [{
     title: 'Chiffre d\'affaires',
-    value: analytics?.revenue ? `€ ${analytics.revenue.toLocaleString()}` : '€ 127,543',
+    value: dashboardStats?.revenue7d ? `€ ${dashboardStats.revenue7d.toLocaleString()}` : '€ 127,543',
     change: '+12.5%',
     trend: 'up',
     icon: Euro,
     description: 'vs mois dernier'
   }, {
     title: 'Commandes',
-    value: analytics?.orders?.toString() || '1,247',
+    value: dashboardStats?.totalOrders?.toString() || '1,247',
     change: '+8.3%',
     trend: 'up',
     icon: ShoppingCart,
     description: 'nouvelles commandes'
   }, {
     title: 'Produits vendus',
-    value: analytics?.products?.toString() || '3,892',
+    value: dashboardStats?.totalProducts?.toString() || '3,892',
     change: '+15.7%',
     trend: 'up',
     icon: Package,
     description: 'unités vendues'
   }, {
     title: 'Taux conversion',
-    value: analytics?.conversionRate ? `${analytics.conversionRate.toFixed(1)}%` : '4.2%',
+    value: '4.2%',
     change: '-0.3%',
     trend: 'down',
     icon: Target,

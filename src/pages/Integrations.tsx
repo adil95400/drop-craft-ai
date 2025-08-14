@@ -22,9 +22,11 @@ import {
   Globe,
   Users
 } from "lucide-react"
+import { useRealIntegrations } from "@/hooks/useRealIntegrations"
 
 const Integrations = () => {
   const [searchTerm, setSearchTerm] = useState("")
+  const { integrations: realIntegrations, stats, isLoading } = useRealIntegrations()
 
   const ecommerceIntegrations = [
     {
@@ -274,7 +276,7 @@ const Integrations = () => {
               <Globe className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{getAllIntegrations().length}</div>
+              <div className="text-2xl font-bold">{realIntegrations.length || getAllIntegrations().length}</div>
               <p className="text-xs text-muted-foreground">
                 +5 ce mois-ci
               </p>
@@ -288,7 +290,7 @@ const Integrations = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {getAllIntegrations().filter(i => i.status === 'connected').length}
+                {stats.connected || getAllIntegrations().filter(i => i.status === 'connected').length}
               </div>
               <p className="text-xs text-muted-foreground">
                 Actives maintenant

@@ -9,12 +9,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useRealOrders } from "@/hooks/useRealOrders";
 
 export default function Orders() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { orders, stats, isLoading } = useRealOrders();
 
   const handleExportCSV = () => {
     toast({
@@ -59,38 +61,6 @@ export default function Orders() {
     });
   };
 
-  const orders = [
-    {
-      id: "#ORD-2024-001",
-      customer: "Marie Dubois",
-      products: 3,
-      total: "€89.99",
-      status: "shipped",
-      tracking: "LP123456789FR",
-      date: "2024-01-15",
-      supplier: "BigBuy"
-    },
-    {
-      id: "#ORD-2024-002", 
-      customer: "Jean Martin",
-      products: 1,
-      total: "€34.50",
-      status: "processing",
-      tracking: "-",
-      date: "2024-01-14",
-      supplier: "AliExpress"
-    },
-    {
-      id: "#ORD-2024-003",
-      customer: "Sophie Laurent",
-      products: 2,
-      total: "€156.00",
-      status: "delivered",
-      tracking: "LP987654321FR",
-      date: "2024-01-12",
-      supplier: "Spocket"
-    }
-  ];
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -155,7 +125,7 @@ export default function Orders() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Commandes</p>
-                <p className="text-2xl font-bold">1,247</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
               </div>
               <Package className="w-8 h-8 text-primary" />
             </div>
@@ -167,7 +137,7 @@ export default function Orders() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">En Transit</p>
-                <p className="text-2xl font-bold">89</p>
+                <p className="text-2xl font-bold">{stats.shipped}</p>
               </div>
               <Truck className="w-8 h-8 text-blue-600" />
             </div>
@@ -179,7 +149,7 @@ export default function Orders() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Livrées</p>
-                <p className="text-2xl font-bold">1,158</p>
+                <p className="text-2xl font-bold">{stats.delivered}</p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
@@ -191,7 +161,7 @@ export default function Orders() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Retours</p>
-                <p className="text-2xl font-bold">12</p>
+                <p className="text-2xl font-bold">{stats.cancelled}</p>
               </div>
               <AlertCircle className="w-8 h-8 text-orange-600" />
             </div>
@@ -258,30 +228,30 @@ export default function Orders() {
             <TableBody>
               {orders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id}</TableCell>
-                  <TableCell>{order.customer}</TableCell>
-                  <TableCell>{order.products} produits</TableCell>
-                  <TableCell className="font-semibold">{order.total}</TableCell>
+                  <TableCell className="font-medium">{order.order_number}</TableCell>
+                  <TableCell>{order.customers?.name || 'N/A'}</TableCell>
+                  <TableCell>{order.order_items?.length || 0} produits</TableCell>
+                  <TableCell className="font-semibold">€{order.total_amount.toFixed(2)}</TableCell>
                   <TableCell>{getStatusBadge(order.status)}</TableCell>
                   <TableCell>
-                    {order.tracking !== "-" ? (
+                    {order.tracking_number ? (
                       <Button 
                         variant="link" 
                         className="p-0 h-auto"
-                        onClick={() => handleTrackingClick(order.tracking)}
+                        onClick={() => handleTrackingClick(order.tracking_number!)}
                       >
-                        {order.tracking}
+                        {order.tracking_number}
                       </Button>
                     ) : (
                       <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
-                  <TableCell>{order.supplier}</TableCell>
+                  <TableCell>{order.carrier || 'Auto'}</TableCell>
                   <TableCell>
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => handleOrderDetails(order.id)}
+                      onClick={() => handleOrderDetails(order.order_number)}
                     >
                       Détails
                     </Button>

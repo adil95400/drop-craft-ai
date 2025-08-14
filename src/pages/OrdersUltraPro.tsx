@@ -17,6 +17,7 @@ import { FilterPanel } from "@/components/common/FilterPanel"
 import { ExportButton } from "@/components/common/ExportButton"
 import { ImportButton } from "@/components/common/ImportButton"
 import { useModalHelpers } from "@/hooks/useModalHelpers"
+import { useRealOrders } from "@/hooks/useRealOrders"
 
 // Données des commandes
 const ordersData = [
@@ -150,16 +151,32 @@ export default function OrdersUltraPro() {
   const [currentFilters, setCurrentFilters] = useState({})
   
   const modalHelpers = useModalHelpers()
+  const { orders: realOrders, stats: realStats, isLoading } = useRealOrders()
 
-  // Calcul des métriques
-  const totalOrders = ordersData.length
-  const totalRevenue = ordersData.reduce((sum, order) => sum + order.total, 0)
-  const avgOrderValue = totalRevenue / totalOrders
-  const pendingOrders = ordersData.filter(order => order.status === 'pending').length
-  const processingOrders = ordersData.filter(order => order.status === 'processing').length
+  // Calcul des métriques avec vraies données
+  const totalOrders = realStats.total || ordersData.length
+  const totalRevenue = realStats.revenue || ordersData.reduce((sum, order) => sum + order.total, 0)
+  const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
+  const pendingOrders = realStats.pending || ordersData.filter(order => order.status === 'pending').length
+  const processingOrders = realStats.processing || ordersData.filter(order => order.status === 'processing').length
 
-  // Filtrage des données
-  const filteredOrders = ordersData.filter(order => {
+  // Filtrage des données - utilise les vraies données si disponibles
+  const ordersToFilter = realOrders.length > 0 ? realOrders.map(order => ({
+    ...order,
+    customerName: order.customers?.name || 'N/A',
+    customerEmail: order.customers?.email || 'N/A',
+    id: order.order_number,
+    date: order.created_at,
+    trackingNumber: order.tracking_number,
+    city: 'Paris',
+    country: 'France',
+    paymentStatus: 'paid',
+    total: order.total_amount,
+    items: order.order_items?.length || 0,
+    priority: 'medium'
+  })) : ordersData
+  
+  const filteredOrders = ordersToFilter.filter(order => {
     const matchesSearch = order.id.includes(searchTerm) || 
                          order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase())

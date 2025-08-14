@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useRealProducts } from "@/hooks/useRealProducts";
 
 import { 
   Package, 
@@ -30,6 +31,7 @@ const Stock = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const { products, stats: productStats, isLoading } = useRealProducts();
 
   const handleExport = () => {
     toast({
@@ -147,7 +149,7 @@ const Stock = () => {
 
   const stats = [
     { title: "Mouvements Aujourd'hui", value: "247", change: "+12%", icon: RefreshCw },
-    { title: "Alertes Stock", value: "23", change: "-8%", icon: AlertTriangle },
+    { title: "Alertes Stock", value: productStats.lowStock?.toString() || "23", change: "-8%", icon: AlertTriangle },
     { title: "Réappros en Cours", value: "12", change: "+5%", icon: Truck },
     { title: "Taux de Rotation", value: "4.2x", change: "+15%", icon: TrendingUp }
   ];

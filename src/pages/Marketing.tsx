@@ -27,11 +27,13 @@ import {
   ArrowDown
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useRealMarketing } from "@/hooks/useRealMarketing";
 
 const Marketing = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
+  const { campaigns: realCampaigns } = useRealMarketing();
 
   const campaigns = [
     {
