@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useProductionData } from '@/hooks/useProductionData'
 import { RefreshCw, Package, Truck, CheckCircle, Clock, XCircle, Search } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, cn } from '@/lib/utils'
 
 interface Shipment {
   id: string
