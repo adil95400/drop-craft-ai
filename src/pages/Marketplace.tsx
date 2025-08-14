@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
+import { Slider } from "@/components/ui/slider";
 import { 
   Store, 
   Package, 
@@ -23,7 +24,21 @@ import {
   Link,
   CheckCircle,
   AlertCircle,
-  Plus
+  Plus,
+  Heart,
+  Eye,
+  Download,
+  BarChart3,
+  Shield,
+  Award,
+  Truck,
+  Euro,
+  SlidersHorizontal,
+  Grid3X3,
+  List,
+  ChevronDown,
+  ExternalLink,
+  RefreshCw
 } from "lucide-react";
 import { CatalogHeader } from "@/components/catalog/CatalogHeader";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
@@ -32,6 +47,8 @@ import { WinnerSuggestions } from "@/components/catalog/WinnerSuggestions";
 import { toast } from "sonner";
 import { useRealSuppliers } from "@/hooks/useRealSuppliers";
 import { useRealProducts } from "@/hooks/useRealProducts";
+import { useCatalogProducts } from "@/hooks/useCatalogProducts";
+import { useRealWinners } from "@/hooks/useRealWinners";
 
 
 const Marketplace = () => {

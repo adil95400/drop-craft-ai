@@ -76,7 +76,7 @@ import FAQNew from './pages/FAQNew';
 import Suppliers from './pages/Suppliers';
 import Winners from './pages/Winners';
 import Settings from './pages/Settings';
-import Marketplace from './pages/Marketplace';
+import MarketplaceOptimized from './pages/MarketplaceOptimized';
 import IntegrationsOptimized from './pages/IntegrationsOptimized';
 import FAQ from './pages/FAQ';
 import Notifications from './pages/Notifications';
@@ -202,7 +202,7 @@ const App = () => (
             <Route path="/marketplace" element={
               <AuthGuard>
                 <AppLayout>
-                  <Marketplace />
+                  <MarketplaceOptimized />
                 </AppLayout>
               </AuthGuard>
             } />
