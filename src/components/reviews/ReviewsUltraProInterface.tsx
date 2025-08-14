@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Star, MessageSquare, ThumbsUp, Filter, Eye, Download, Share, TrendingUp } from 'lucide-react'
-import { useReviews } from '@/hooks/useReviews'
+import { useRealReviews } from '@/hooks/useRealReviews'
 
 export function ReviewsUltraProInterface() {
   const [selectedPlatform, setSelectedPlatform] = useState('')
@@ -19,13 +19,12 @@ export function ReviewsUltraProInterface() {
     reviews, 
     stats, 
     isLoading, 
-    addReview, 
+    error,
     markHelpful,
-    isAddingReview,
     isMarkingHelpful 
-  } = useReviews()
+  } = useRealReviews()
 
-  // Mock data for demonstration
+  // Backup mock data for demonstration
   const mockReviews = [
     {
       id: '1',
@@ -137,9 +136,15 @@ export function ReviewsUltraProInterface() {
     )
   }
 
-  const filteredReviews = mockReviews.filter(review => {
-    const matchesSearch = review.comment.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         review.product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // Use real reviews if available, otherwise fallback to mock data
+  const reviewsToUse = reviews.length > 0 ? reviews : mockReviews
+  
+  const filteredReviews = reviewsToUse.filter(review => {
+    const searchText = ((review as any).content || (review as any).comment || '').toLowerCase()
+    const productName = ((review as any).product?.name || '').toLowerCase()
+    
+    const matchesSearch = searchText.includes(searchQuery.toLowerCase()) ||
+                         productName.includes(searchQuery.toLowerCase())
     const matchesPlatform = !selectedPlatform || review.platform === selectedPlatform
     const matchesRating = !filterRating || review.rating.toString() === filterRating
     return matchesSearch && matchesPlatform && matchesRating
@@ -174,7 +179,7 @@ export function ReviewsUltraProInterface() {
               <div>
                 <p className="text-sm font-medium">Note Moyenne</p>
                 <div className="flex items-center gap-1">
-                  <p className="text-2xl font-bold">{mockStats.averageRating}</p>
+                  <p className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</p>
                   <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                 </div>
               </div>
@@ -188,7 +193,7 @@ export function ReviewsUltraProInterface() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Achats Vérifiés</p>
-                <p className="text-2xl font-bold">{mockStats.verified}</p>
+                <p className="text-2xl font-bold">{reviews.filter(r => r.verified_purchase).length}</p>
               </div>
               <ThumbsUp className="w-8 h-8 text-green-500" />
             </div>
@@ -200,7 +205,7 @@ export function ReviewsUltraProInterface() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Avec Photos</p>
-                <p className="text-2xl font-bold">{mockStats.withPhotos}</p>
+                <p className="text-2xl font-bold">{reviews.filter(r => r.photos && r.photos.length > 0).length}</p>
               </div>
               <Eye className="w-8 h-8 text-purple-500" />
             </div>
@@ -274,15 +279,15 @@ export function ReviewsUltraProInterface() {
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <img
-                      src={review.user.avatar_url}
-                      alt={review.user.full_name}
+                      src={(review as any).user?.avatar_url || '/placeholder.svg'}
+                      alt={(review as any).user?.full_name || (review as any).customer_name || 'Client'}
                       className="w-12 h-12 rounded-full object-cover"
                     />
                     
                     <div className="flex-1 space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h4 className="font-semibold">{review.user.full_name}</h4>
+                          <h4 className="font-semibold">{(review as any).user?.full_name || (review as any).customer_name || 'Client'}</h4>
                           <div className="flex items-center gap-2">
                             <div className="flex">{getRatingStars(review.rating)}</div>
                             <span className="text-sm text-muted-foreground">
@@ -308,9 +313,9 @@ export function ReviewsUltraProInterface() {
 
                       <div>
                         <p className="text-sm font-medium text-muted-foreground mb-1">
-                          Sur: {review.product.name}
+                          Sur: {(review as any).product?.name || review.product_id || 'Produit'}
                         </p>
-                        <p className="text-sm">{review.comment}</p>
+                        <p className="text-sm">{(review as any).content || (review as any).comment || ''}</p>
                       </div>
 
                       {review.photos && review.photos.length > 0 && (

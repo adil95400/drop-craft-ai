@@ -30,6 +30,8 @@ import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { ProductDetail } from "@/components/catalog/ProductDetail";
 import { WinnerSuggestions } from "@/components/catalog/WinnerSuggestions";
 import { useToast } from "@/hooks/use-toast";
+import { useRealSuppliers } from "@/hooks/useRealSuppliers";
+import { useRealProducts } from "@/hooks/useRealProducts";
 
 
 const Marketplace = () => {
@@ -39,6 +41,9 @@ const Marketplace = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<any>({});
   const [favorites, setFavorites] = useState<string[]>([]);
+  
+  const { suppliers: realSuppliers } = useRealSuppliers();
+  const { products: realProducts } = useRealProducts();
 
   const suppliers = [
     {
@@ -301,7 +306,7 @@ const Marketplace = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Fournisseurs</p>
-                  <p className="text-2xl font-bold text-primary">12</p>
+                  <p className="text-2xl font-bold text-primary">{realSuppliers.length || 12}</p>
                 </div>
                 <Store className="w-8 h-8 text-primary/60" />
               </div>
@@ -313,7 +318,7 @@ const Marketplace = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Produits Dispo</p>
-                  <p className="text-2xl font-bold text-secondary">275K</p>
+                  <p className="text-2xl font-bold text-secondary">{realProducts.length > 0 ? `${realProducts.length}` : '275K'}</p>
                 </div>
                 <Package className="w-8 h-8 text-secondary/60" />
               </div>
@@ -325,7 +330,7 @@ const Marketplace = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Connectés</p>
-                  <p className="text-2xl font-bold text-accent">8</p>
+                  <p className="text-2xl font-bold text-accent">{realSuppliers.filter(s => s.status === 'active').length || 8}</p>
                 </div>
                 <Zap className="w-8 h-8 text-accent/60" />
               </div>

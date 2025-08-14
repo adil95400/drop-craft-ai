@@ -165,7 +165,7 @@ export default function TrackingUltraPro() {
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
+              <div className="text-2xl font-bold">{stats.total || 0}</div>
               <div className="flex items-center text-xs text-green-500">
                 <TrendingUp className="w-3 h-3 mr-1" />
                 +12% vs hier

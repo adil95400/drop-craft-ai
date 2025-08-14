@@ -32,10 +32,21 @@ import {
   RefreshCw
 } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, AreaChart, Area } from 'recharts'
+import { useRealSEO } from '@/hooks/useRealSEO'
 
 const SEOUltraPro = () => {
   const [selectedKeyword, setSelectedKeyword] = useState<string | null>(null)
   const [auditFilter, setAuditFilter] = useState('all')
+  
+  const { 
+    seoData, 
+    stats: realStats, 
+    isLoading, 
+    analyzeSEO, 
+    generateContent,
+    isAnalyzing,
+    isGenerating 
+  } = useRealSEO()
 
   // Mock data for SEO metrics
   const seoMetrics = [

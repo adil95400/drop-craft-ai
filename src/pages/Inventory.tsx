@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { useRealProducts } from "@/hooks/useRealProducts";
 import { 
   Package, 
   Search, 
@@ -30,6 +31,7 @@ const Inventory = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const { products: realProducts, isLoading } = useRealProducts();
 
   const handleExport = () => {
     toast({
@@ -119,7 +121,18 @@ const Inventory = () => {
     { title: "Valeur Stock", value: "€234,567", change: "+8.1%", icon: BarChart3 }
   ];
 
-  const lowStockProducts = products.filter(p => p.status === "low_stock" || p.status === "out_of_stock");
+  // Use real products if available, otherwise fallback to mock data
+  const productsToUse = realProducts.length > 0 ? realProducts.map(p => ({
+    ...p,
+    id: p.id,
+    lowStockThreshold: 10,
+    status: p.stock_quantity === 0 ? "out_of_stock" : 
+            p.stock_quantity <= 10 ? "low_stock" : "active",
+    supplier: "Fournisseur",
+    lastUpdated: "Il y a 1h"
+  })) : products;
+  
+  const lowStockProducts = productsToUse.filter(p => p.status === "low_stock" || p.status === "out_of_stock");
 
   const getStatusBadge = (status: string, stock: number, threshold: number) => {
     if (stock === 0) {
@@ -224,7 +237,7 @@ const Inventory = () => {
 
           {/* Products List */}
           <div className="grid gap-4">
-            {products.map((product) => (
+            {productsToUse.map((product) => (
               <Card key={product.id} className="border-border bg-card shadow-card hover:shadow-glow transition-all duration-300">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
@@ -235,7 +248,7 @@ const Inventory = () => {
                       <div>
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-semibold text-lg">{product.name}</h3>
-                          {getStatusBadge(product.status, product.stock, product.lowStockThreshold)}
+                          {getStatusBadge(product.status, (product as any).stock_quantity || (product as any).stock, (product as any).lowStockThreshold)}
                         </div>
                         <div className="space-y-1 text-sm text-muted-foreground">
                           <div>SKU: {product.sku} • {product.category}</div>
@@ -249,11 +262,11 @@ const Inventory = () => {
                       <div className="text-center">
                         <div className="text-sm text-muted-foreground">Stock</div>
                         <div className={`text-2xl font-bold ${
-                          product.stock === 0 ? 'text-destructive' : 
-                          product.stock <= product.lowStockThreshold ? 'text-warning' : 
+                          ((product as any).stock_quantity || (product as any).stock) === 0 ? 'text-destructive' : 
+                          ((product as any).stock_quantity || (product as any).stock) <= (product as any).lowStockThreshold ? 'text-warning' : 
                           'text-success'
                         }`}>
-                          {product.stock}
+                          {(product as any).stock_quantity || (product as any).stock}
                         </div>
                       </div>
                       <div className="text-center">
@@ -266,7 +279,7 @@ const Inventory = () => {
                       </div>
                       <div className="text-center">
                         <div className="text-sm text-muted-foreground">Valeur Stock</div>
-                        <div className="font-semibold">€{(product.stock * product.price).toLocaleString()}</div>
+                        <div className="font-semibold">€{(((product as any).stock_quantity || (product as any).stock || 0) * product.price).toLocaleString()}</div>
                       </div>
 
                       <div className="flex items-center space-x-2">
@@ -309,8 +322,8 @@ const Inventory = () => {
                     <div className="flex items-center space-x-4">
                       <div className="text-center">
                         <div className="text-sm text-muted-foreground">Stock actuel</div>
-                        <div className={`font-semibold ${product.stock === 0 ? 'text-destructive' : 'text-warning'}`}>
-                          {product.stock}
+                        <div className={`font-semibold ${((product as any).stock_quantity || (product as any).stock) === 0 ? 'text-destructive' : 'text-warning'}`}>
+                          {(product as any).stock_quantity || (product as any).stock}
                         </div>
                       </div>
                       <div className="text-center">

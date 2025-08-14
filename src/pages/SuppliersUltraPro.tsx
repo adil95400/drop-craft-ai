@@ -185,7 +185,14 @@ export default function SuppliersUltraPro() {
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [selectedSupplier, setSelectedSupplier] = useState(null)
-  const { suppliers: realSuppliers, stats: realStats, isLoading } = useRealSuppliers()
+  const { 
+    suppliers: realSuppliers, 
+    stats: realStats, 
+    isLoading,
+    addSupplier,
+    updateSupplier,
+    deleteSupplier 
+  } = useRealSuppliers()
 
   // Calcul des métriques avec vraies données
   const totalSuppliers = realSuppliers.length || suppliersData.length

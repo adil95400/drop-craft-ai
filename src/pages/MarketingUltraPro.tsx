@@ -12,6 +12,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
 
+import { useRealMarketing } from '@/hooks/useRealMarketing'
+
 interface Campaign {
   id: string
   name: string
@@ -109,15 +111,27 @@ export default function MarketingUltraPro() {
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([])
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  
+  const { 
+    campaigns: realCampaigns, 
+    isLoadingCampaigns,
+    createEmailCampaign,
+    createGoogleAdsCampaign,
+    connectMailchimp,
+    isCreatingEmailCampaign
+  } = useRealMarketing()
 
+  // Use real campaigns if available, otherwise fallback to mock data
+  const campaignsToUse = realCampaigns.length > 0 ? realCampaigns : mockCampaigns
+  
   const totalStats = {
-    totalBudget: mockCampaigns.reduce((sum, c) => sum + c.budget, 0),
-    totalSpent: mockCampaigns.reduce((sum, c) => sum + c.spent, 0),
-    totalImpressions: mockCampaigns.reduce((sum, c) => sum + c.impressions, 0),
-    totalClicks: mockCampaigns.reduce((sum, c) => sum + c.clicks, 0),
-    totalConversions: mockCampaigns.reduce((sum, c) => sum + c.conversions, 0),
-    avgCTR: mockCampaigns.reduce((sum, c) => sum + c.ctr, 0) / mockCampaigns.length,
-    avgROAS: mockCampaigns.reduce((sum, c) => sum + c.roas, 0) / mockCampaigns.length
+    totalBudget: campaignsToUse.reduce((sum, c) => sum + (c.budget || 0), 0),
+    totalSpent: campaignsToUse.reduce((sum, c) => sum + (c.spent || 0), 0),
+    totalImpressions: campaignsToUse.reduce((sum, c) => sum + (c.impressions || 0), 0),
+    totalClicks: campaignsToUse.reduce((sum, c) => sum + (c.clicks || 0), 0),
+    totalConversions: campaignsToUse.reduce((sum, c) => sum + (c.conversions || 0), 0),
+    avgCTR: campaignsToUse.length > 0 ? campaignsToUse.reduce((sum, c) => sum + (c.ctr || 0), 0) / campaignsToUse.length : 0,
+    avgROAS: campaignsToUse.length > 0 ? campaignsToUse.reduce((sum, c) => sum + (c.roas || 0), 0) / campaignsToUse.length : 0
   }
 
   const formatCurrency = (amount: number) => {
