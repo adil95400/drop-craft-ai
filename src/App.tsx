@@ -71,6 +71,7 @@ import BlogPage from './pages/Blog';
 import Testimonials from './pages/Testimonials';
 import Guides from './pages/Guides';
 import Changelog from './pages/Changelog';
+import ApiDocs from './pages/ApiDocs';
 import FAQNew from './pages/FAQNew';
 import Suppliers from './pages/Suppliers';
 import Winners from './pages/Winners';
@@ -122,6 +123,7 @@ const App = () => (
             <Route path="/testimonials" element={<Testimonials />} />
             <Route path="/guides" element={<Guides />} />
             <Route path="/changelog" element={<Changelog />} />
+            <Route path="/api-docs" element={<ApiDocs />} />
             <Route path="/faq-new" element={<FAQNew />} />
             
             {/* Protected routes with layout */}
