@@ -77,7 +77,7 @@ import Suppliers from './pages/Suppliers';
 import Winners from './pages/Winners';
 import Settings from './pages/Settings';
 import Marketplace from './pages/Marketplace';
-import Integrations from './pages/Integrations';
+import IntegrationsOptimized from './pages/IntegrationsOptimized';
 import FAQ from './pages/FAQ';
 import Notifications from './pages/Notifications';
 import NotFound from './pages/NotFound';
@@ -479,7 +479,7 @@ const App = () => (
             <Route path="/integrations" element={
               <AuthGuard>
                 <AppLayout>
-                  <Integrations />
+                  <IntegrationsOptimized />
                 </AppLayout>
               </AuthGuard>
             } />

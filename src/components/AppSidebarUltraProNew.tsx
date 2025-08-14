@@ -45,7 +45,8 @@ import {
   HelpCircle,
   Activity,
   PlusCircle,
-  RefreshCw
+  RefreshCw,
+  Link as LinkIcon
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -177,7 +178,8 @@ const navigationItems = [
     items: [
       { title: "Extension Pro", url: "/extension-ultra-pro", icon: Puzzle },
       { title: "Mobile Pro", url: "/mobile-ultra-pro", icon: Smartphone },
-      { title: "Plugins Pro", url: "/plugins-ultra-pro", icon: Puzzle }
+      { title: "Plugins Pro", url: "/plugins-ultra-pro", icon: Puzzle },
+      { title: "Intégrations", url: "/integrations", icon: LinkIcon, badge: { text: "API", variant: "secondary" as const } }
     ]
   },
   {
