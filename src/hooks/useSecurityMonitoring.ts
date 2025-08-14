@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 
 interface SecurityEvent {
   id: string;
@@ -30,7 +29,17 @@ export const useSecurityMonitoring = () => {
     top_threats: []
   });
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+  
+  // Get user from context instead of useAuth to avoid circular dependency
+  const getCurrentUser = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      return user;
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      return null;
+    }
+  };
 
   // Get client IP address
   const getClientIP = async (): Promise<string | null> => {
@@ -43,7 +52,6 @@ export const useSecurityMonitoring = () => {
     }
   };
 
-  // Log security event
   const logSecurityEvent = async (
     eventType: string,
     severity: 'info' | 'warning' | 'error' | 'critical',
@@ -51,13 +59,14 @@ export const useSecurityMonitoring = () => {
     metadata?: Record<string, any>
   ) => {
     try {
+      const currentUser = await getCurrentUser();
       const clientIP = await getClientIP();
       const userAgent = navigator.userAgent;
 
       const { error } = await supabase
         .from('security_events')
         .insert([{
-          user_id: user?.id || null,
+          user_id: currentUser?.id || null,
           event_type: eventType,
           severity,
           description,
@@ -80,7 +89,8 @@ export const useSecurityMonitoring = () => {
 
   // Fetch security events (admin only)
   const fetchSecurityEvents = async () => {
-    if (!user) return;
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return;
 
     setLoading(true);
     try {
@@ -146,12 +156,13 @@ export const useSecurityMonitoring = () => {
 
   // Detect suspicious activity
   const detectSuspiciousActivity = async (eventType: string, threshold: number = 10, windowMs: number = 300000) => {
-    if (!user) return;
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return;
 
     const now = Date.now();
     const recentEvents = events.filter(event => 
       event.event_type === eventType &&
-      event.user_id === user.id &&
+      event.user_id === currentUser.id &&
       (now - new Date(event.created_at).getTime()) < windowMs
     );
 
@@ -203,10 +214,9 @@ export const useSecurityMonitoring = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchSecurityEvents();
-    }
-  }, [user]);
+    // Auto-fetch events when hook is mounted
+    fetchSecurityEvents();
+  }, []);
 
   return {
     events,

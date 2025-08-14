@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useSecurityMonitoring } from '@/hooks/useSecurityMonitoring';
 
 interface AuthState {
   user: User | null;
@@ -19,7 +18,6 @@ export const useAuth = () => {
     profile: null,
   });
   const { toast } = useToast();
-  const { analyzeLoginPattern } = useSecurityMonitoring();
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -78,6 +76,27 @@ export const useAuth = () => {
       setAuthState(prev => ({ ...prev, profile }));
     } catch (error) {
       console.error('Error fetching profile:', error);
+    }
+  };
+
+  // Direct security logging to avoid circular dependency
+  const logSecurityEvent = async (
+    eventType: string,
+    severity: 'info' | 'warning' | 'error' | 'critical',
+    description: string
+  ) => {
+    try {
+      await supabase.from('security_events').insert([{
+        user_id: authState.user?.id || null,
+        event_type: eventType,
+        severity,
+        description,
+        metadata: {},
+        ip_address: null,
+        user_agent: navigator.userAgent
+      }]);
+    } catch (error) {
+      console.error('Failed to log security event:', error);
     }
   };
 
@@ -157,14 +176,14 @@ export const useAuth = () => {
       });
 
       if (error) {
-        // Log failed login attempt
-        await analyzeLoginPattern(false);
+        // Log failed login attempt directly to avoid circular dependency
+        logSecurityEvent('login_failed', 'warning', 'User login failed');
         throw error;
       }
 
       if (data.user) {
-        // Log successful login
-        await analyzeLoginPattern(true);
+        // Log successful login directly
+        logSecurityEvent('login_success', 'info', 'User login successful');
         
         toast({
           title: "Connexion réussie",
