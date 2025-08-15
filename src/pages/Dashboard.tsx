@@ -42,12 +42,7 @@ export default function Dashboard() {
         
         {/* Composant unifié avec feature flags */}
         {hasFeature('predictive-analytics') ? (
-          <SmartDashboard metrics={{
-            totalUsers: 0,
-            activeUsers: 0,
-            revenue: 0,
-            growth: 0
-          }} />
+          <SmartDashboard metrics={[]} />
         ) : (
           <ProductionDashboard />
         )}

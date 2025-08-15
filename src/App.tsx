@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
@@ -102,8 +102,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <ModalProvider>
-              <BrowserRouter>
-            <Routes>
+              <Routes>
             {/* Public routes */}
             <Route path="/" element={
               <AuthGuard requireAuth={false}>
@@ -639,12 +638,11 @@ const App = () => (
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </ModalProvider>
-    </TooltipProvider>
-  </ModalContextProvider>
-</AuthProvider>
-</QueryClientProvider>
+            </ModalProvider>
+          </TooltipProvider>
+        </ModalContextProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   </ErrorBoundary>
 );
 
