@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { usePlan } from '@/contexts/PlanContext'
 import { ProductionDashboard } from '@/components/dashboard/ProductionDashboard'
 import { SmartDashboard } from '@/components/common/SmartDashboard'
@@ -6,6 +6,7 @@ import { AIInsightsModal } from '@/components/dashboard/AIInsightsModal'
 
 export default function Dashboard() {
   const { isUltraPro, hasFeature } = usePlan()
+  const [aiModalOpen, setAiModalOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/80 to-background">
@@ -21,15 +22,32 @@ export default function Dashboard() {
                 Vue d'ensemble de votre activité
               </p>
             </div>
-            {hasFeature('ai-analysis') && <AIInsightsModal />}
+            {hasFeature('ai-analysis') && (
+              <AIInsightsModal 
+                open={aiModalOpen} 
+                onOpenChange={setAiModalOpen} 
+              />
+            )}
           </div>
         </div>
       </div>
 
       <div className="container mx-auto p-6">
+        {hasFeature('ai_insights') && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-4">Insights IA</h2>
+            <p className="text-muted-foreground">Analyses prédictives avancées disponibles.</p>
+          </div>
+        )}
+        
         {/* Composant unifié avec feature flags */}
         {hasFeature('predictive-analytics') ? (
-          <SmartDashboard />
+          <SmartDashboard metrics={{
+            totalUsers: 0,
+            activeUsers: 0,
+            revenue: 0,
+            growth: 0
+          }} />
         ) : (
           <ProductionDashboard />
         )}

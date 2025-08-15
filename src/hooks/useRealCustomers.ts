@@ -20,12 +20,14 @@ export interface Customer {
 export const useRealCustomers = (filters?: any) => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const { secureCustomerQuery } = useCustomerSecurityMonitoring()
+  const { monitorCustomerAccess } = useCustomerSecurityMonitoring()
 
   const { data: customers = [], isLoading, error } = useQuery({
     queryKey: ['real-customers', filters],
     queryFn: async () => {
-      // Use secure query with monitoring
+      // Log security access
+      await monitorCustomerAccess('view')
+      
       let query = supabase.from('customers').select('*')
       
       if (filters?.status) {
@@ -47,7 +49,9 @@ export const useRealCustomers = (filters?: any) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
-      // Use secure query with monitoring
+      // Log security access
+      await monitorCustomerAccess('create')
+      
       const { data, error } = await supabase
         .from('customers')
         .insert([{ ...newCustomer, user_id: user.id }])
@@ -68,7 +72,9 @@ export const useRealCustomers = (filters?: any) => {
 
   const updateCustomer = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Customer> }) => {
-      // Use secure query with monitoring  
+      // Log security access
+      await monitorCustomerAccess('update', id)
+      
       const { data, error } = await supabase
         .from('customers')
         .update(updates)

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { usePlan } from '@/contexts/PlanContext'
 import { CatalogUltraProInterface } from '@/components/catalog/CatalogUltraProInterface'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function Catalogue() {
   const { isUltraPro, hasFeature } = usePlan()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filters, setFilters] = useState({})
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/80 to-background">
@@ -33,7 +35,10 @@ export default function Catalogue() {
       </div>
 
       <div className="container mx-auto p-6">
-        <CatalogHeader />
+        <CatalogHeader 
+          onSearch={setSearchTerm}
+          onFilterChange={setFilters}
+        />
         
         {hasFeature('advanced-analytics') ? (
           <Tabs defaultValue="products" className="space-y-6">
@@ -44,8 +49,21 @@ export default function Catalogue() {
             </TabsList>
             
             <TabsContent value="products" className="space-y-6">
-              {hasFeature('advanced-filters') && <AdvancedFilters />}
-              <ProductGrid />
+              {hasFeature('advanced-filters') && (
+                <AdvancedFilters 
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  categories={[]}
+                  suppliers={[]}
+                />
+              )}
+              <ProductGrid 
+                products={[]}
+                onProductClick={() => {}}
+                onImportProduct={() => {}}
+                onToggleFavorite={() => {}}
+                favorites={[]}
+              />
             </TabsContent>
             
             <TabsContent value="analytics" className="space-y-6">
@@ -58,13 +76,13 @@ export default function Catalogue() {
           </Tabs>
         ) : (
           <div className="space-y-6">
-          <ProductGrid 
-            products={[]}
-            onProductClick={() => {}}
-            onImportProduct={() => {}}
-            onToggleFavorite={() => {}}
-            favorites={[]}
-          />
+            <ProductGrid 
+              products={[]}
+              onProductClick={() => {}}
+              onImportProduct={() => {}}
+              onToggleFavorite={() => {}}
+              favorites={[]}
+            />
           </div>
         )}
       </div>

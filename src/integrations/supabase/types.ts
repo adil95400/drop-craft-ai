@@ -804,6 +804,13 @@ export type Database = {
             referencedRelation: "customers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers_secure"
+            referencedColumns: ["id"]
+          },
         ]
       }
       price_alerts: {
@@ -1493,6 +1500,48 @@ export type Database = {
       }
     }
     Views: {
+      customers_secure: {
+        Row: {
+          address: Json | null
+          created_at: string | null
+          email: string | null
+          id: string | null
+          name: string | null
+          phone: string | null
+          status: string | null
+          total_orders: number | null
+          total_spent: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: Json | null
+          created_at?: string | null
+          email?: never
+          id?: string | null
+          name?: string | null
+          phone?: never
+          status?: string | null
+          total_orders?: number | null
+          total_spent?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: Json | null
+          created_at?: string | null
+          email?: never
+          id?: string | null
+          name?: string | null
+          phone?: never
+          status?: string | null
+          total_orders?: number | null
+          total_spent?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       integrations_safe: {
         Row: {
           connection_status: string | null
@@ -1644,6 +1693,14 @@ export type Database = {
           user_id_param?: string
         }
         Returns: undefined
+      }
+      mask_customer_email: {
+        Args: { email: string }
+        Returns: string
+      }
+      mask_customer_phone: {
+        Args: { phone: string }
+        Returns: string
       }
     }
     Enums: {
