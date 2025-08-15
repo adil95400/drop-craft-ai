@@ -173,10 +173,11 @@ tests/
 - [x] Architecture pattern établi
 - [x] Documentation
 
-### Sprint 2 (2 semaines) - En cours
-- [ ] Module Commerce
-- [ ] Unification Import standard/pro
-- [ ] Cache global
+### Sprint 2 (2 semaines) - ✅ Commerce Terminé
+- [x] Module Commerce refactorisé
+- [x] Services unifiés (catalog + import)
+- [x] Hooks optimisés avec cache intelligent
+- [ ] Cache global système
 
 ### Sprint 3 (2 semaines)
 - [ ] Module CRM
