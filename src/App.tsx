@@ -74,7 +74,7 @@ import Changelog from './pages/Changelog';
 import ApiDocs from './pages/ApiDocs';
 import FAQNew from './pages/FAQNew';
 import Suppliers from './pages/Suppliers';
-import Winners from './pages/Winners';
+import WinnersPage from './domains/winners/pages/WinnersPage';
 import Settings from './pages/Settings';
 import MarketplaceOptimized from './pages/MarketplaceOptimized';
 import IntegrationsOptimized from './pages/IntegrationsOptimized';
@@ -540,7 +540,7 @@ const App = () => (
             <Route path="/winners" element={
               <AuthGuard>
                 <AppLayout>
-                  <Winners />
+                  <WinnersPage />
                 </AppLayout>
               </AuthGuard>
             } />
