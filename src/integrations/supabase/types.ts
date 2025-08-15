@@ -1694,6 +1694,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      log_sensitive_data_access: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       mask_customer_email: {
         Args: { email: string }
         Returns: string
@@ -1701,6 +1705,10 @@ export type Database = {
       mask_customer_phone: {
         Args: { phone: string }
         Returns: string
+      }
+      user_has_role: {
+        Args: { _role: Database["public"]["Enums"]["app_role"] }
+        Returns: boolean
       }
     }
     Enums: {
