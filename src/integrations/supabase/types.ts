@@ -101,6 +101,33 @@ export type Database = {
         }
         Relationships: []
       }
+      api_cache: {
+        Row: {
+          cache_key: string
+          created_at: string
+          data: Json
+          expires_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          cache_key: string
+          created_at?: string
+          data: Json
+          expires_at: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          cache_key?: string
+          created_at?: string
+          data?: Json
+          expires_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           ai_generated: boolean
@@ -1549,6 +1576,10 @@ export type Database = {
       calculate_profit_margin: {
         Args: { cost_price: number; price: number }
         Returns: number
+      }
+      clean_expired_cache: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       get_business_intelligence: {
         Args: { limit_count?: number }
