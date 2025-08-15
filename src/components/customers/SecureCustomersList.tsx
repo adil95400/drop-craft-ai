@@ -4,10 +4,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Shield, Eye, EyeOff } from "lucide-react";
 import { useRealCustomers } from '@/hooks/useRealCustomers';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const SecureCustomersList = () => {
   const [showSensitiveData, setShowSensitiveData] = useState(false);
   const { customers, isLoading } = useRealCustomers();
+  const { user } = useAuth();
+  
+  // Simple role check without using SECURITY DEFINER functions
+  const isAdmin = user?.email?.includes('admin') || false; // Simple check for demo
 
   const maskEmail = (email: string) => {
     if (!email) return '';
@@ -49,11 +54,11 @@ export const SecureCustomersList = () => {
               <div className="space-y-1">
                 <div className="font-medium">{customer.name}</div>
                 <div className="text-sm text-muted-foreground">
-                  Email: {showSensitiveData ? customer.email : maskEmail(customer.email)}
+                  Email: {(showSensitiveData && isAdmin) ? customer.email : maskEmail(customer.email)}
                 </div>
                 {customer.phone && (
                   <div className="text-sm text-muted-foreground">
-                    Tél: {showSensitiveData ? customer.phone : maskPhone(customer.phone)}
+                    Tél: {(showSensitiveData && isAdmin) ? customer.phone : maskPhone(customer.phone)}
                   </div>
                 )}
               </div>
