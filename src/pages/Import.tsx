@@ -54,7 +54,12 @@ export default function Import() {
             </TabsContent>
           </Tabs>
         ) : (
-          <ImportInterface />
+      <ImportInterface 
+        selectedMethod="url"
+        isImporting={false}
+        importProgress={0}
+        onImport={() => {}}
+      />
         )}
       </div>
     </div>

@@ -58,7 +58,13 @@ export default function Catalogue() {
           </Tabs>
         ) : (
           <div className="space-y-6">
-            <ProductGrid />
+          <ProductGrid 
+            products={[]}
+            onProductClick={() => {}}
+            onImportProduct={() => {}}
+            onToggleFavorite={() => {}}
+            favorites={[]}
+          />
           </div>
         )}
       </div>

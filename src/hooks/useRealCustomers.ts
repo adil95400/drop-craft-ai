@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { useCustomerSecurityMonitoring } from '@/hooks/useCustomerSecurityMonitoring'
 
 export interface Customer {
   id: string
@@ -19,11 +20,13 @@ export interface Customer {
 export const useRealCustomers = (filters?: any) => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const { secureCustomerQuery } = useCustomerSecurityMonitoring()
 
   const { data: customers = [], isLoading, error } = useQuery({
     queryKey: ['real-customers', filters],
     queryFn: async () => {
-      let query = supabase.from('customers').select('*')
+      // Use secure query with monitoring
+      let query = await secureCustomerQuery.select('*')
       
       if (filters?.status) {
         query = query.eq('status', filters.status)
@@ -44,9 +47,8 @@ export const useRealCustomers = (filters?: any) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
-      const { data, error } = await supabase
-        .from('customers')
-        .insert([{ ...newCustomer, user_id: user.id }])
+      // Use secure query with monitoring
+      const { data, error } = await secureCustomerQuery.insert({ ...newCustomer, user_id: user.id })
         .select()
         .single()
       
@@ -64,10 +66,8 @@ export const useRealCustomers = (filters?: any) => {
 
   const updateCustomer = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Customer> }) => {
-      const { data, error } = await supabase
-        .from('customers')
-        .update(updates)
-        .eq('id', id)
+      // Use secure query with monitoring
+      const { data, error } = await secureCustomerQuery.update(updates, id)
         .select()
         .single()
       
