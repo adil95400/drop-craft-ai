@@ -808,7 +808,7 @@ export type Database = {
             foreignKeyName: "orders_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
-            referencedRelation: "customers_secure"
+            referencedRelation: "customers_masked"
             referencedColumns: ["id"]
           },
         ]
@@ -1500,7 +1500,7 @@ export type Database = {
       }
     }
     Views: {
-      customers_secure: {
+      customers_masked: {
         Row: {
           address: Json | null
           created_at: string | null
@@ -1703,6 +1703,14 @@ export type Database = {
         Returns: string
       }
       mask_customer_phone: {
+        Args: { phone: string }
+        Returns: string
+      }
+      simple_mask_email: {
+        Args: { email: string }
+        Returns: string
+      }
+      simple_mask_phone: {
         Args: { phone: string }
         Returns: string
       }
