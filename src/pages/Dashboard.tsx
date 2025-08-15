@@ -42,7 +42,38 @@ export default function Dashboard() {
         
         {/* Composant unifié avec feature flags */}
         {hasFeature('predictive-analytics') ? (
-          <SmartDashboard metrics={[]} />
+          <SmartDashboard 
+            metrics={[
+              {
+                id: 'users',
+                title: 'Utilisateurs Actifs',
+                value: '1,234',
+                change: { value: 12, type: 'increase', period: 'Ce mois' },
+                status: 'success'
+              },
+              {
+                id: 'revenue',
+                title: 'Chiffre d\'Affaires',
+                value: '€45,678',
+                change: { value: 8.5, type: 'increase', period: 'Ce mois' },
+                status: 'success'
+              },
+              {
+                id: 'orders',
+                title: 'Commandes',
+                value: '156',
+                change: { value: 3.2, type: 'increase', period: 'Cette semaine' },
+                status: 'success'
+              },
+              {
+                id: 'conversion',
+                title: 'Taux de Conversion',
+                value: '2.8%',
+                change: { value: 0.5, type: 'decrease', period: 'Ce mois' },
+                status: 'warning'
+              }
+            ]} 
+          />
         ) : (
           <ProductionDashboard />
         )}
