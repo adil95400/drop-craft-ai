@@ -26,7 +26,7 @@ export const useRealCustomers = (filters?: any) => {
     queryKey: ['real-customers', filters],
     queryFn: async () => {
       // Use secure query with monitoring
-      let query = await secureCustomerQuery.select('*')
+      let query = supabase.from('customers').select('*')
       
       if (filters?.status) {
         query = query.eq('status', filters.status)
@@ -48,7 +48,9 @@ export const useRealCustomers = (filters?: any) => {
       if (!user) throw new Error('Non authentifié')
       
       // Use secure query with monitoring
-      const { data, error } = await secureCustomerQuery.insert({ ...newCustomer, user_id: user.id })
+      const { data, error } = await supabase
+        .from('customers')
+        .insert([{ ...newCustomer, user_id: user.id }])
         .select()
         .single()
       
@@ -66,8 +68,11 @@ export const useRealCustomers = (filters?: any) => {
 
   const updateCustomer = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Customer> }) => {
-      // Use secure query with monitoring
-      const { data, error } = await secureCustomerQuery.update(updates, id)
+      // Use secure query with monitoring  
+      const { data, error } = await supabase
+        .from('customers')
+        .update(updates)
+        .eq('id', id)
         .select()
         .single()
       
