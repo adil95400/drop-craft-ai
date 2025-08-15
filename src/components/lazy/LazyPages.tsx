@@ -1,13 +1,16 @@
 import { lazy } from 'react';
 
-// Heavy pages with lazy loading
+// Unified pages with plan-based features
 export const DashboardLazy = lazy(() => import('@/pages/Dashboard'));
-export const DashboardUltraProLazy = lazy(() => import('@/pages/DashboardUltraPro'));
 export const ImportLazy = lazy(() => import('@/pages/Import'));
-export const ImportUltraProLazy = lazy(() => import('@/pages/ImportUltraPro'));
-export const CatalogueRealLazy = lazy(() => import('@/pages/CatalogueReal'));
-export const CatalogueUltraProRealLazy = lazy(() => import('@/pages/CatalogueUltraProReal'));
-export const CatalogueUltraProAdvancedLazy = lazy(() => import('@/pages/CatalogueUltraProAdvanced'));
+export const CatalogueLazy = lazy(() => import('@/pages/Catalogue'));
+
+// Keep existing for compatibility during transition
+export const DashboardUltraProLazy = lazy(() => import('@/pages/Dashboard'));
+export const ImportUltraProLazy = lazy(() => import('@/pages/Import'));
+export const CatalogueRealLazy = lazy(() => import('@/pages/Catalogue'));
+export const CatalogueUltraProRealLazy = lazy(() => import('@/pages/Catalogue'));
+export const CatalogueUltraProAdvancedLazy = lazy(() => import('@/pages/Catalogue'));
 export const OrdersLazy = lazy(() => import('@/pages/Orders'));
 export const OrdersUltraProRealLazy = lazy(() => import('@/pages/OrdersUltraProReal'));
 export const CRMLazy = lazy(() => import('@/pages/CRM'));
