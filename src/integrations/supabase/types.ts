@@ -843,13 +843,6 @@ export type Database = {
             referencedRelation: "customers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "orders_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers_masked"
-            referencedColumns: ["id"]
-          },
         ]
       }
       plans_limits: {
@@ -1508,13 +1501,6 @@ export type Database = {
             referencedRelation: "integrations"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "sync_logs_integration_id_fkey"
-            columns: ["integration_id"]
-            isOneToOne: false
-            referencedRelation: "integrations_safe"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_api_keys: {
@@ -1635,153 +1621,7 @@ export type Database = {
       }
     }
     Views: {
-      customers_masked: {
-        Row: {
-          address: Json | null
-          created_at: string | null
-          email: string | null
-          id: string | null
-          name: string | null
-          phone: string | null
-          status: string | null
-          total_orders: number | null
-          total_spent: number | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          address?: Json | null
-          created_at?: string | null
-          email?: never
-          id?: string | null
-          name?: string | null
-          phone?: never
-          status?: string | null
-          total_orders?: number | null
-          total_spent?: number | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          address?: Json | null
-          created_at?: string | null
-          email?: never
-          id?: string | null
-          name?: string | null
-          phone?: never
-          status?: string | null
-          total_orders?: number | null
-          total_spent?: number | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      integrations_safe: {
-        Row: {
-          connection_status: string | null
-          created_at: string | null
-          has_access_token: boolean | null
-          has_api_key: boolean | null
-          has_api_secret: boolean | null
-          has_encrypted_credentials: boolean | null
-          has_refresh_token: boolean | null
-          id: string | null
-          is_active: boolean | null
-          last_credential_access: string | null
-          last_error: string | null
-          last_sync_at: string | null
-          platform_name: string | null
-          platform_type: string | null
-          platform_url: string | null
-          require_additional_auth: boolean | null
-          seller_id: string | null
-          shop_domain: string | null
-          store_config: Json | null
-          sync_frequency: string | null
-          sync_settings: Json | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          connection_status?: string | null
-          created_at?: string | null
-          has_access_token?: never
-          has_api_key?: never
-          has_api_secret?: never
-          has_encrypted_credentials?: never
-          has_refresh_token?: never
-          id?: string | null
-          is_active?: boolean | null
-          last_credential_access?: string | null
-          last_error?: string | null
-          last_sync_at?: string | null
-          platform_name?: string | null
-          platform_type?: string | null
-          platform_url?: string | null
-          require_additional_auth?: boolean | null
-          seller_id?: string | null
-          shop_domain?: string | null
-          store_config?: Json | null
-          sync_frequency?: string | null
-          sync_settings?: Json | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          connection_status?: string | null
-          created_at?: string | null
-          has_access_token?: never
-          has_api_key?: never
-          has_api_secret?: never
-          has_encrypted_credentials?: never
-          has_refresh_token?: never
-          id?: string | null
-          is_active?: boolean | null
-          last_credential_access?: string | null
-          last_error?: string | null
-          last_sync_at?: string | null
-          platform_name?: string | null
-          platform_type?: string | null
-          platform_url?: string | null
-          require_additional_auth?: boolean | null
-          seller_id?: string | null
-          shop_domain?: string | null
-          store_config?: Json | null
-          sync_frequency?: string | null
-          sync_settings?: Json | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      user_subscription_status: {
-        Row: {
-          id: string | null
-          subscribed: boolean | null
-          subscription_end: string | null
-          subscription_tier: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          id?: string | null
-          subscribed?: boolean | null
-          subscription_end?: string | null
-          subscription_tier?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          id?: string | null
-          subscribed?: boolean | null
-          subscription_end?: string | null
-          subscription_tier?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       calculate_profit_margin: {
@@ -1838,6 +1678,50 @@ export type Database = {
           subcategory: string
           tags: string[]
           updated_at: string
+        }[]
+      }
+      get_masked_customers: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          address: Json
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          status: string
+          total_orders: number
+          total_spent: number
+          updated_at: string
+          user_id: string
+        }[]
+      }
+      get_safe_integrations: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          connection_status: string
+          created_at: string
+          has_access_token: boolean
+          has_api_key: boolean
+          has_api_secret: boolean
+          has_encrypted_credentials: boolean
+          has_refresh_token: boolean
+          id: string
+          is_active: boolean
+          last_credential_access: string
+          last_error: string
+          last_sync_at: string
+          platform_name: string
+          platform_type: string
+          platform_url: string
+          require_additional_auth: boolean
+          seller_id: string
+          shop_domain: string
+          store_config: Json
+          sync_frequency: string
+          sync_settings: Json
+          updated_at: string
+          user_id: string
         }[]
       }
       get_user_plan: {
