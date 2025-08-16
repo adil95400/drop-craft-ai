@@ -1,149 +1,151 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Check, X, Edit, Eye, ShoppingCart } from "lucide-react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
+  CheckCircle, 
+  XCircle, 
+  AlertTriangle, 
+  Eye, 
+  Edit, 
+  Trash2, 
+  Download,
+  Search,
+  Filter,
+  Calendar,
+  Database,
+  ExternalLink
+} from 'lucide-react';
+import { useImportUltraPro } from '@/hooks/useImportUltraPro';
 
-interface ImportResult {
-  id: string
-  name: string
-  price: number
-  status: 'success' | 'warning' | 'error'
-  issues?: string[]
-  image_url?: string
-  category?: string
-  supplier?: string
-}
+export const ImportResults = () => {
+  const { importedProducts } = useImportUltraPro();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
-interface ImportResultsProps {
-  results: ImportResult[]
-  onValidateAll: () => void
-  onEditProduct: (id: string) => void
-}
+  const filteredProducts = importedProducts.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
-export const ImportResults = ({ results, onValidateAll, onEditProduct }: ImportResultsProps) => {
-  if (results.length === 0) return null
+  const getStatusBadge = (status: string) => {
+    if (status === 'published') return <Badge className="bg-green-100 text-green-800">Publié</Badge>;
+    if (status === 'draft') return <Badge variant="secondary">Brouillon</Badge>;
+    return <Badge variant="outline">En attente</Badge>;
+  };
 
-  const successCount = results.filter(r => r.status === 'success').length
-  const warningCount = results.filter(r => r.status === 'warning').length
-  const errorCount = results.filter(r => r.status === 'error').length
+  const stats = {
+    total: importedProducts.length,
+    published: importedProducts.filter(p => p.status === 'published').length,
+    draft: importedProducts.filter(p => p.status === 'draft').length,
+  };
 
   return (
-    <Card className="mt-8">
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Résultats de l'import</CardTitle>
-          <div className="flex gap-2">
-            <Badge variant="outline" className="bg-green-50">
-              <Check className="w-3 h-3 mr-1" />
-              {successCount} Succès
-            </Badge>
-            {warningCount > 0 && (
-              <Badge variant="outline" className="bg-yellow-50">
-                ⚠️ {warningCount} Warnings
-              </Badge>
-            )}
-            {errorCount > 0 && (
-              <Badge variant="outline" className="bg-red-50">
-                <X className="w-3 h-3 mr-1" />
-                {errorCount} Erreurs
-              </Badge>
-            )}
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold">{stats.total}</div>
+                <p className="text-sm text-muted-foreground">Total importé</p>
+              </div>
+              <Database className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-green-600">{stats.published}</div>
+                <p className="text-sm text-muted-foreground">Publié</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-yellow-600">{stats.draft}</div>
+                <p className="text-sm text-muted-foreground">Brouillon</p>
+              </div>
+              <AlertTriangle className="h-8 w-8 text-yellow-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="w-5 h-5" />
+            Résultats d'Import ({filteredProducts.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4 mb-6">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filtrer par statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous</SelectItem>
+                <SelectItem value="published">Publié</SelectItem>
+                <SelectItem value="draft">Brouillon</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">
-              {results.length} produits traités
-            </p>
-            <Button onClick={onValidateAll} className="bg-primary">
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Valider tous les produits
-            </Button>
-          </div>
-          
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Produit</TableHead>
-                  <TableHead>Prix</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Fournisseur</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {results.map((result) => (
-                  <TableRow key={result.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        {result.image_url && (
-                          <img 
-                            src={result.image_url} 
-                            alt={result.name}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                        )}
-                        <div>
-                          <div className="font-medium">{result.name}</div>
-                          {result.category && (
-                            <div className="text-sm text-muted-foreground">
-                              {result.category}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-mono">{result.price}€</div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={
-                          result.status === 'success' ? 'default' :
-                          result.status === 'warning' ? 'secondary' : 'destructive'
-                        }
-                      >
-                        {result.status === 'success' && <Check className="w-3 h-3 mr-1" />}
-                        {result.status === 'warning' && '⚠️'}
-                        {result.status === 'error' && <X className="w-3 h-3 mr-1" />}
-                        {result.status}
-                      </Badge>
-                      {result.issues && result.issues.length > 0 && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {result.issues.join(', ')}
-                        </div>
+
+          <div className="space-y-4">
+            {filteredProducts.slice(0, 10).map((product) => (
+              <Card key={product.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      {product.image_urls?.[0] && (
+                        <img 
+                          src={product.image_urls[0]} 
+                          alt={product.name}
+                          className="w-12 h-12 object-cover rounded"
+                        />
                       )}
-                    </TableCell>
-                    <TableCell>
-                      {result.supplier && (
-                        <Badge variant="outline">{result.supplier}</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => onEditProduct(result.id)}
-                        >
-                          <Edit className="w-3 h-3" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Eye className="w-3 h-3" />
-                        </Button>
+                      <div>
+                        <h3 className="font-medium">{product.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {product.currency} {product.price}
+                        </p>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {getStatusBadge(product.status)}
+                      <Button variant="ghost" size="sm">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
