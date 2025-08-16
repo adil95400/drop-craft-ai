@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/hooks/useAuth'
 import { useNewPlan, PlanType } from '@/hooks/useNewPlan'
-import { usePlanService } from '@/hooks/usePlanService'
+import { useStripeSubscription } from '@/hooks/useStripeSubscription'
 import { useNavigate } from 'react-router-dom'
 
 interface PlanFeature {
@@ -82,18 +82,14 @@ export const PlanSelector = () => {
   const [loading, setLoading] = useState<PlanType | null>(null)
   const { user } = useAuth()
   const { plan: currentPlan, loading: planLoading } = useNewPlan(user)
-  const { upgradePlan } = usePlanService()
+  const { createCheckout } = useStripeSubscription()
   const navigate = useNavigate()
 
   const handleUpgrade = async (newPlan: PlanType) => {
-    if (!user || newPlan === currentPlan) return
+    if (!user || newPlan === currentPlan || newPlan === 'standard') return
 
     setLoading(newPlan)
-    const success = await upgradePlan(newPlan)
-    if (success) {
-      // Refresh the page or navigate to dashboard
-      window.location.reload()
-    }
+    await createCheckout(newPlan as 'pro' | 'ultra_pro')
     setLoading(null)
   }
 
