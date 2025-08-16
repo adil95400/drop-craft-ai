@@ -26,7 +26,7 @@ interface ImportConnector {
   provider: string
   description: string
   icon: any
-  requiredPlan: 'standard' | 'pro' | 'ultra_pro'
+  requiredPlan: 'free' | 'pro' | 'ultra_pro'
   quotaKey?: string
   available: boolean
 }
@@ -40,7 +40,7 @@ const connectors: ImportConnector[] = [
     provider: 'csv',
     description: 'Import depuis fichiers CSV ou Excel',
     icon: FileText,
-    requiredPlan: 'standard',
+    requiredPlan: 'free',
     quotaKey: 'import_feeds_per_day',
     available: true
   },
@@ -51,7 +51,7 @@ const connectors: ImportConnector[] = [
     provider: 'json',
     description: 'Import depuis URL JSON avec JSONPath',
     icon: Globe,
-    requiredPlan: 'standard',
+    requiredPlan: 'free',
     quotaKey: 'import_feeds_per_day',
     available: true
   },
@@ -62,7 +62,7 @@ const connectors: ImportConnector[] = [
     provider: 'xml',
     description: 'Import depuis flux XML avec XPath',
     icon: FileText,
-    requiredPlan: 'standard',
+    requiredPlan: 'free',
     quotaKey: 'import_feeds_per_day',
     available: true
   },
@@ -73,7 +73,7 @@ const connectors: ImportConnector[] = [
     provider: 'google_sheets',
     description: 'Import depuis feuilles Google Sheets',
     icon: Globe,
-    requiredPlan: 'standard',
+    requiredPlan: 'free',
     quotaKey: 'import_feeds_per_day',
     available: true
   },
@@ -86,7 +86,7 @@ const connectors: ImportConnector[] = [
     provider: 'ftp',
     description: 'Import depuis serveurs FTP/SFTP/FTPS',
     icon: Server,
-    requiredPlan: 'standard',
+    requiredPlan: 'free',
     quotaKey: 'import_ftp_per_day',
     available: true
   },
@@ -262,7 +262,7 @@ export const ImportHub = () => {
         <Card>
           <CardContent className="p-4 text-center">
             <Badge className="text-lg px-4 py-2">
-              Plan {plan === 'standard' ? 'Standard' : plan === 'pro' ? 'Pro' : 'Ultra Pro'}
+              Plan {plan === 'free' ? 'Gratuit' : plan === 'pro' ? 'Pro' : 'Ultra Pro'}
             </Badge>
           </CardContent>
         </Card>

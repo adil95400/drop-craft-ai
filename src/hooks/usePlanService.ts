@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 
-export type PlanType = 'standard' | 'pro' | 'ultra_pro'
+export type PlanType = 'free' | 'pro' | 'ultra_pro'
 
 interface PlanServiceHook {
   checkPlanAccess: (requiredPlan: PlanType) => Promise<boolean>

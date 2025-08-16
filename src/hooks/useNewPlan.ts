@@ -3,7 +3,7 @@ import { User } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 
-export type PlanType = 'standard' | 'pro' | 'ultra_pro'
+export type PlanType = 'free' | 'pro' | 'ultra_pro'
 
 interface PlanState {
   plan: PlanType
@@ -13,7 +13,7 @@ interface PlanState {
 
 export const useNewPlan = (user?: User | null) => {
   const [planState, setPlanState] = useState<PlanState>({
-    plan: 'standard',
+    plan: 'free',
     loading: true,
     error: null
   })
@@ -21,7 +21,7 @@ export const useNewPlan = (user?: User | null) => {
 
   useEffect(() => {
     if (!user) {
-      setPlanState({ plan: 'standard', loading: false, error: null })
+      setPlanState({ plan: 'free', loading: false, error: null })
       return
     }
 
@@ -40,12 +40,12 @@ export const useNewPlan = (user?: User | null) => {
 
       if (error) throw error
 
-      const userPlan = (data?.plan as PlanType) || 'standard'
+      const userPlan = (data?.plan as PlanType) || 'free'
       setPlanState({ plan: userPlan, loading: false, error: null })
     } catch (error: any) {
       console.error('Error fetching user plan:', error)
       setPlanState({ 
-        plan: 'standard', 
+        plan: 'free', 
         loading: false, 
         error: error.message || 'Erreur lors de la récupération du plan' 
       })
@@ -82,20 +82,20 @@ export const useNewPlan = (user?: User | null) => {
   }
 
   const hasPlan = (minPlan: PlanType): boolean => {
-    const planHierarchy = { standard: 0, pro: 1, ultra_pro: 2 }
+    const planHierarchy = { free: 0, pro: 1, ultra_pro: 2 }
     return planHierarchy[planState.plan] >= planHierarchy[minPlan]
   }
 
   const isUltraPro = () => planState.plan === 'ultra_pro'
   const isPro = () => planState.plan === 'pro' || planState.plan === 'ultra_pro'
-  const isStandard = () => planState.plan === 'standard'
+  const isFree = () => planState.plan === 'free'
 
   return {
     ...planState,
     hasPlan,
     isUltraPro,
     isPro,
-    isStandard,
+    isFree,
     updatePlan,
     refetch: () => user && fetchUserPlan(user.id)
   }

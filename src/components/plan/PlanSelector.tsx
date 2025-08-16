@@ -27,8 +27,8 @@ interface PlanConfig {
 }
 
 const planConfigs: Record<PlanType, PlanConfig> = {
-  standard: {
-    name: 'Standard',
+  free: {
+    name: 'Gratuit',
     price: 'Gratuit',
     icon: Shield,
     color: 'text-gray-600',
@@ -86,7 +86,7 @@ export const PlanSelector = () => {
   const navigate = useNavigate()
 
   const handleUpgrade = async (newPlan: PlanType) => {
-    if (!user || newPlan === currentPlan || newPlan === 'standard') return
+    if (!user || newPlan === currentPlan || newPlan === 'free') return
 
     setLoading(newPlan)
     await createCheckout(newPlan as 'pro' | 'ultra_pro')
@@ -94,7 +94,7 @@ export const PlanSelector = () => {
   }
 
   const handleGetStarted = (plan: PlanType) => {
-    if (plan === 'standard') {
+    if (plan === 'free') {
       navigate('/auth')
     } else {
       handleUpgrade(plan)
@@ -115,7 +115,7 @@ export const PlanSelector = () => {
         const plan = planKey as PlanType
         const IconComponent = config.icon
         const isCurrentPlan = currentPlan === plan
-        const canUpgrade = currentPlan !== plan && planKey !== 'standard'
+        const canUpgrade = currentPlan !== plan && planKey !== 'free'
         const isLoading = loading === plan
 
         return (
@@ -180,7 +180,7 @@ export const PlanSelector = () => {
                   </div>
                 ) : isCurrentPlan ? (
                   'Plan actuel'
-                ) : plan === 'standard' && !user ? (
+                ) : plan === 'free' && !user ? (
                   'Commencer gratuitement'
                 ) : (
                   `Passer au ${config.name}`

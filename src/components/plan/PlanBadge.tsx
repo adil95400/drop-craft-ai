@@ -37,6 +37,24 @@ const sizeConfig = {
 
 export const PlanBadge = ({ plan, size = 'md', showIcon = true }: PlanBadgeProps) => {
   const config = planConfig[plan]
+  
+  // Protection contre les plans non définis
+  if (!config) {
+    console.warn(`Plan "${plan}" non reconnu, utilisation du plan gratuit par défaut`)
+    const defaultConfig = planConfig.free
+    const IconComponent = defaultConfig.icon
+    
+    return (
+      <Badge 
+        variant={defaultConfig.variant}
+        className={`${defaultConfig.className} ${sizeConfig[size]} font-medium`}
+      >
+        {showIcon && <IconComponent className="h-3 w-3 mr-1" />}
+        {defaultConfig.label}
+      </Badge>
+    )
+  }
+  
   const IconComponent = config.icon
   
   return (

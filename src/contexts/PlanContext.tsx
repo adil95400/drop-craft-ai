@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 
-export type PlanType = 'standard' | 'ultra-pro'
+export type PlanType = 'free' | 'ultra-pro'
 
 interface PlanContextType {
   plan: PlanType
