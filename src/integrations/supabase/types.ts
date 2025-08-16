@@ -849,13 +849,6 @@ export type Database = {
             referencedRelation: "customers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "orders_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers_secure"
-            referencedColumns: ["id"]
-          },
         ]
       }
       plans_limits: {
@@ -1643,48 +1636,7 @@ export type Database = {
       }
     }
     Views: {
-      customers_secure: {
-        Row: {
-          address: Json | null
-          created_at: string | null
-          email: string | null
-          id: string | null
-          name: string | null
-          phone: string | null
-          status: string | null
-          total_orders: number | null
-          total_spent: number | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          address?: never
-          created_at?: string | null
-          email?: never
-          id?: string | null
-          name?: string | null
-          phone?: never
-          status?: string | null
-          total_orders?: number | null
-          total_spent?: number | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          address?: never
-          created_at?: string | null
-          email?: never
-          id?: string | null
-          name?: string | null
-          phone?: never
-          status?: string | null
-          total_orders?: number | null
-          total_spent?: number | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       calculate_profit_margin: {
@@ -1725,6 +1677,22 @@ export type Database = {
           id: string
           name: string
           phone: string
+        }[]
+      }
+      get_customers_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          address: Json
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          status: string
+          total_orders: number
+          total_spent: number
+          updated_at: string
+          user_id: string
         }[]
       }
       get_marketplace_products: {
