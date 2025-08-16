@@ -74,6 +74,13 @@ export const useAuth = () => {
       }
 
       setAuthState(prev => ({ ...prev, profile }));
+      
+      // Update user metadata with plan for mirroring
+      if (profile?.plan) {
+        await supabase.auth.updateUser({
+          data: { plan: profile.plan }
+        });
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
@@ -262,6 +269,13 @@ export const useAuth = () => {
         .single();
 
       if (error) throw error;
+
+      // If plan is being updated, also update user metadata
+      if (updates.plan) {
+        await supabase.auth.updateUser({
+          data: { plan: updates.plan }
+        });
+      }
 
       setAuthState(prev => ({ ...prev, profile: data }));
 

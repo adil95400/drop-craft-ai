@@ -5,11 +5,13 @@ import { ImportUltraProInterface } from '@/components/import/ImportUltraProInter
 import { BulkImportUltraPro } from '@/components/import/BulkImportUltraPro'
 import { ScheduledImportsUltraPro } from '@/components/import/ScheduledImportsUltraPro'
 import { AIImportUltraPro } from '@/components/import/AIImportUltraPro'
+import { RequirePlan } from '@/components/plan/RequirePlan'
 
 const ImportUltraPro = () => {
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <Tabs defaultValue="interface" className="space-y-6">
+    <RequirePlan minPlan="ultra_pro">
+      <div className="container mx-auto p-6 space-y-8">
+        <Tabs defaultValue="interface" className="space-y-6">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="interface">Interface</TabsTrigger>
           <TabsTrigger value="production">Production</TabsTrigger>
@@ -42,8 +44,9 @@ const ImportUltraPro = () => {
         <TabsContent value="ai">
           <AIImportUltraPro />
         </TabsContent>
-      </Tabs>
-    </div>
+        </Tabs>
+      </div>
+    </RequirePlan>
   )
 }
 

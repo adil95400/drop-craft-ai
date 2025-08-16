@@ -1017,6 +1017,7 @@ export type Database = {
           email_notifications: boolean | null
           full_name: string | null
           id: string
+          plan: string | null
           updated_at: string | null
         }
         Insert: {
@@ -1026,6 +1027,7 @@ export type Database = {
           email_notifications?: boolean | null
           full_name?: string | null
           id: string
+          plan?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -1035,6 +1037,7 @@ export type Database = {
           email_notifications?: boolean | null
           full_name?: string | null
           id?: string
+          plan?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -1673,6 +1676,14 @@ export type Database = {
           tags: string[]
           updated_at: string
         }[]
+      }
+      get_user_plan: {
+        Args: { user_id_param: string }
+        Returns: string
+      }
+      has_plan: {
+        Args: { min_plan: string; user_id_param: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
