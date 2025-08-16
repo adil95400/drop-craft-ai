@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { SecureInput } from '@/components/common/SecureInput';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
@@ -164,7 +164,7 @@ export const AuthInterface = () => {
                     <Label htmlFor="signin-email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
+                      <SecureInput
                         id="signin-email"
                         type="email"
                         placeholder="votre@email.com"
@@ -172,6 +172,7 @@ export const AuthInterface = () => {
                         value={signInForm.email}
                         onChange={(e) => setSignInForm({...signInForm, email: e.target.value})}
                         required
+                        maxLength={254}
                       />
                     </div>
                   </div>
@@ -180,7 +181,7 @@ export const AuthInterface = () => {
                     <Label htmlFor="signin-password">Mot de passe</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
+                      <SecureInput
                         id="signin-password"
                         type="password"
                         placeholder="••••••••"
@@ -188,6 +189,7 @@ export const AuthInterface = () => {
                         value={signInForm.password}
                         onChange={(e) => setSignInForm({...signInForm, password: e.target.value})}
                         required
+                        maxLength={128}
                       />
                     </div>
                   </div>
@@ -231,25 +233,27 @@ export const AuthInterface = () => {
                       <Label htmlFor="firstName">Prénom</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
+                        <SecureInput
                           id="firstName"
                           placeholder="Jean"
                           className="pl-10"
                           value={signUpForm.firstName}
                           onChange={(e) => setSignUpForm({...signUpForm, firstName: e.target.value})}
                           required
+                          maxLength={50}
                         />
                       </div>
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Nom</Label>
-                      <Input
+                      <SecureInput
                         id="lastName"
                         placeholder="Dupont"
                         value={signUpForm.lastName}
                         onChange={(e) => setSignUpForm({...signUpForm, lastName: e.target.value})}
                         required
+                        maxLength={50}
                       />
                     </div>
                   </div>
@@ -258,12 +262,13 @@ export const AuthInterface = () => {
                     <Label htmlFor="company">Entreprise</Label>
                     <div className="relative">
                       <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
+                      <SecureInput
                         id="company"
                         placeholder="Nom de votre entreprise"
                         className="pl-10"
                         value={signUpForm.company}
                         onChange={(e) => setSignUpForm({...signUpForm, company: e.target.value})}
+                        maxLength={100}
                       />
                     </div>
                   </div>
@@ -272,7 +277,7 @@ export const AuthInterface = () => {
                     <Label htmlFor="signup-email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
+                      <SecureInput
                         id="signup-email"
                         type="email"
                         placeholder="votre@email.com"
@@ -280,6 +285,7 @@ export const AuthInterface = () => {
                         value={signUpForm.email}
                         onChange={(e) => setSignUpForm({...signUpForm, email: e.target.value})}
                         required
+                        maxLength={254}
                       />
                     </div>
                   </div>
@@ -288,7 +294,7 @@ export const AuthInterface = () => {
                     <Label htmlFor="signup-password">Mot de passe</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
+                      <SecureInput
                         id="signup-password"
                         type="password"
                         placeholder="••••••••"
@@ -296,6 +302,7 @@ export const AuthInterface = () => {
                         value={signUpForm.password}
                         onChange={(e) => setSignUpForm({...signUpForm, password: e.target.value})}
                         required
+                        maxLength={128}
                       />
                     </div>
                   </div>
@@ -304,7 +311,7 @@ export const AuthInterface = () => {
                     <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
+                      <SecureInput
                         id="confirm-password"
                         type="password"
                         placeholder="••••••••"
@@ -312,6 +319,7 @@ export const AuthInterface = () => {
                         value={signUpForm.confirmPassword}
                         onChange={(e) => setSignUpForm({...signUpForm, confirmPassword: e.target.value})}
                         required
+                        maxLength={128}
                       />
                     </div>
                   </div>
