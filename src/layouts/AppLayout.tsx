@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
+import { AppSidebar } from "@/components/AppSidebarPlanGated";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { RealTimeNotifications } from "@/components/notifications/RealTimeNotifications";
 import { IntegratedChatSupport } from "@/components/support/IntegratedChatSupport";

@@ -90,6 +90,7 @@ import TrackingInTransit from './pages/TrackingInTransit';
 import TrackingToday from './pages/TrackingToday';
 import SuiviEnTransitUltraPro from './pages/SuiviEnTransitUltraPro';
 import AvisPositifUltraPro from './pages/AvisPositifUltraPro';
+import PricingPage from './pages/PricingPage';
 
 const queryClient = new QueryClient();
 
@@ -116,6 +117,7 @@ const App = () => (
             } />
             <Route path="/features" element={<Features />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/pricing-plans" element={<PricingPage />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/blog" element={<BlogPage />} />
