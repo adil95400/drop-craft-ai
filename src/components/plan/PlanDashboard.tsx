@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { QuotaIndicator } from './QuotaIndicator'
+import { SubscriptionManager } from './SubscriptionManager'
 import { Crown, Star, Shield, TrendingUp, Database, Zap } from 'lucide-react'
 
 const planIcons = {
@@ -56,6 +57,9 @@ export const PlanDashboard = () => {
 
   return (
     <div className="space-y-6">
+      {/* Subscription Manager */}
+      <SubscriptionManager />
+
       {/* Plan Summary Card */}
       <Card>
         <CardHeader>
