@@ -1647,9 +1647,17 @@ export type Database = {
         Args: { quota_key_param: string; user_id_param: string }
         Returns: boolean
       }
+      check_security_configuration: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       clean_expired_cache: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      configure_auth_security_settings: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       detect_suspicious_activity: {
         Args: Record<PropertyKey, never>
