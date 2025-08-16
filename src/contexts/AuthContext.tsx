@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { useStripeSubscription } from '@/hooks/useStripeSubscription'
 
 interface AuthContextType {
   user: User | null
@@ -52,18 +51,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     subscription_end: string | null
   } | null>(null)
   const { toast } = useToast()
-  const { checkSubscription } = useStripeSubscription()
 
   const refreshSubscription = async () => {
     if (user) {
       try {
-        const subscriptionData = await checkSubscription()
-        if (subscriptionData) {
-          setSubscription(subscriptionData)
+        const { data, error } = await supabase.functions.invoke('check-subscription', {
+          headers: {
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+        })
+        
+        if (error) {
+          console.warn('Failed to refresh subscription:', error)
+          return
+        }
+        
+        if (data) {
+          setSubscription({
+            subscribed: data.subscribed || false,
+            subscription_tier: data.subscription_tier || null,
+            subscription_end: data.subscription_end || null
+          })
         }
       } catch (error) {
         console.warn('Failed to refresh subscription:', error)
-        // Ne pas lancer d'erreur pour éviter de casser l'auth
       }
     }
   }
