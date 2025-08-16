@@ -47,3 +47,4 @@ export const StockUltraProLazy = lazy(() => import('@/pages/StockUltraPro'));
 export const SuppliersLazy = lazy(() => import('@/pages/Suppliers'));
 export const SuppliersUltraProLazy = lazy(() => import('@/pages/SuppliersUltraPro'));
 export const AdminLazy = lazy(() => import('@/pages/Admin'));
+export const PaymentSuccessLazy = lazy(() => import('@/pages/PaymentSuccess'));
