@@ -23,23 +23,16 @@ export const ImportMethodsGrid = () => {
   const [testingMethod, setTestingMethod] = useState<string | null>(null);
 
   const importMethods = [
+    // Files & Feeds
     {
       id: 'csv',
-      title: 'CSV/Excel',
-      description: 'Import depuis fichiers CSV ou Excel',
+      title: 'CSV',
+      description: 'Import depuis fichiers CSV',
       icon: <FileText className="w-6 h-6" />,
       category: 'files',
       isActive: true,
-      isConnected: true
-    },
-    {
-      id: 'json',
-      title: 'JSON (URL)',
-      description: 'Import depuis URL JSON avec JSONPath',
-      icon: <Globe className="w-6 h-6" />,
-      category: 'files',
-      isActive: true,
-      isConnected: true
+      isConnected: true,
+      logo: '📊'
     },
     {
       id: 'xml',
@@ -48,7 +41,28 @@ export const ImportMethodsGrid = () => {
       icon: <FileText className="w-6 h-6" />,
       category: 'files',
       isActive: true,
-      isConnected: true
+      isConnected: true,
+      logo: '🗂️'
+    },
+    {
+      id: 'json',
+      title: 'JSON',
+      description: 'Import depuis URL JSON avec JSONPath',
+      icon: <Globe className="w-6 h-6" />,
+      category: 'files',
+      isActive: true,
+      isConnected: true,
+      logo: '📋'
+    },
+    {
+      id: 'text',
+      title: 'Text',
+      description: 'Import depuis fichiers texte',
+      icon: <FileText className="w-6 h-6" />,
+      category: 'files',
+      isActive: true,
+      isConnected: true,
+      logo: '📄'
     },
     {
       id: 'google_sheets',
@@ -57,7 +71,8 @@ export const ImportMethodsGrid = () => {
       icon: <Database className="w-6 h-6" />,
       category: 'files',
       isActive: true,
-      isConnected: true
+      isConnected: true,
+      logo: '📈'
     },
     {
       id: 'ftp',
@@ -66,43 +81,194 @@ export const ImportMethodsGrid = () => {
       icon: <Database className="w-6 h-6" />,
       category: 'ftp',
       isActive: true,
-      isConnected: true
+      isConnected: true,
+      logo: '📡'
+    },
+
+    // E-commerce Platforms
+    {
+      id: 'afosto',
+      title: 'Afosto',
+      description: 'Synchronisation avec Afosto',
+      icon: <ShoppingCart className="w-6 h-6" />,
+      category: 'ecommerce',
+      isActive: true,
+      isConnected: false,
+      logo: '🟦'
     },
     {
-      id: 'akeneo',
-      title: 'Akeneo',
-      description: 'Connexion avec Akeneo PIM',
-      icon: <Settings className="w-6 h-6" />,
-      category: 'integrations',
+      id: 'bigcommerce',
+      title: 'BigCommerce',
+      description: 'Synchronisation avec BigCommerce',
+      icon: <ShoppingCart className="w-6 h-6" />,
+      category: 'ecommerce',
       isActive: true,
-      isConnected: false
+      isConnected: false,
+      logo: '⚫'
+    },
+    {
+      id: 'ccv_shop',
+      title: 'CCV Shop',
+      description: 'Synchronisation avec CCV Shop',
+      icon: <ShoppingCart className="w-6 h-6" />,
+      category: 'ecommerce',
+      isActive: true,
+      isConnected: false,
+      logo: '🔵'
     },
     {
       id: 'woocommerce',
       title: 'WooCommerce',
       description: 'Connexion avec WooCommerce',
       icon: <ShoppingCart className="w-6 h-6" />,
-      category: 'integrations',
+      category: 'ecommerce',
       isActive: true,
-      isConnected: false
+      isConnected: false,
+      logo: '🟣'
     },
     {
       id: 'shopify',
       title: 'Shopify',
       description: 'Synchronisation avec Shopify',
       icon: <Cloud className="w-6 h-6" />,
-      category: 'integrations',
+      category: 'ecommerce',
       isActive: true,
-      isConnected: false
+      isConnected: false,
+      logo: '🟢'
     },
     {
       id: 'prestashop',
       title: 'PrestaShop',
       description: 'Import depuis PrestaShop',
       icon: <Webhook className="w-6 h-6" />,
-      category: 'integrations',
+      category: 'ecommerce',
       isActive: true,
-      isConnected: false
+      isConnected: false,
+      logo: '🔴'
+    },
+    {
+      id: 'magento',
+      title: 'Magento',
+      description: 'Synchronisation avec Magento',
+      icon: <ShoppingCart className="w-6 h-6" />,
+      category: 'ecommerce',
+      isActive: true,
+      isConnected: false,
+      logo: '🟠'
+    },
+    {
+      id: 'shopware_5',
+      title: 'Shopware 5',
+      description: 'Synchronisation avec Shopware 5',
+      icon: <ShoppingCart className="w-6 h-6" />,
+      category: 'ecommerce',
+      isActive: true,
+      isConnected: false,
+      logo: '🔷'
+    },
+    {
+      id: 'shopware_6',
+      title: 'Shopware 6',
+      description: 'Synchronisation avec Shopware 6',
+      icon: <ShoppingCart className="w-6 h-6" />,
+      category: 'ecommerce',
+      isActive: true,
+      isConnected: false,
+      logo: '🔶'
+    },
+
+    // Specialty Platforms
+    {
+      id: 'lightspeed',
+      title: 'Lightspeed',
+      description: 'Synchronisation avec Lightspeed',
+      icon: <Settings className="w-6 h-6" />,
+      category: 'specialty',
+      isActive: true,
+      isConnected: false,
+      logo: '⚡'
+    },
+    {
+      id: 'ecwid',
+      title: 'Ecwid by Lightspeed',
+      description: 'Synchronisation avec Ecwid',
+      icon: <ShoppingCart className="w-6 h-6" />,
+      category: 'specialty',
+      isActive: true,
+      isConnected: false,
+      logo: '🛒'
+    },
+    {
+      id: 'squarespace',
+      title: 'Squarespace',
+      description: 'Synchronisation avec Squarespace',
+      icon: <Cloud className="w-6 h-6" />,
+      category: 'specialty',
+      isActive: true,
+      isConnected: false,
+      logo: '⬛'
+    },
+    {
+      id: 'akeneo',
+      title: 'Akeneo',
+      description: 'Connexion avec Akeneo PIM',
+      icon: <Settings className="w-6 h-6" />,
+      category: 'specialty',
+      isActive: true,
+      isConnected: false,
+      logo: '🟣'
+    },
+
+    // Regional/Specialized
+    {
+      id: 'mijnwebwinkel',
+      title: 'Mijnwebwinkel',
+      description: 'Synchronisation avec Mijnwebwinkel',
+      icon: <ShoppingCart className="w-6 h-6" />,
+      category: 'regional',
+      isActive: true,
+      isConnected: false,
+      logo: '🟢'
+    },
+    {
+      id: 'crawler',
+      title: 'Crawler',
+      description: 'Extraction automatique de données',
+      icon: <Settings className="w-6 h-6" />,
+      category: 'regional',
+      isActive: true,
+      isConnected: false,
+      logo: '🌸'
+    },
+    {
+      id: 'itsperfect',
+      title: 'ItsPerfect',
+      description: 'Synchronisation avec ItsPerfect',
+      icon: <ShoppingCart className="w-6 h-6" />,
+      category: 'regional',
+      isActive: true,
+      isConnected: false,
+      logo: '📊'
+    },
+    {
+      id: 'oxid',
+      title: 'Oxid eSales',
+      description: 'Synchronisation avec Oxid eSales',
+      icon: <ShoppingCart className="w-6 h-6" />,
+      category: 'regional',
+      isActive: true,
+      isConnected: false,
+      logo: '🔺'
+    },
+    {
+      id: 'shoptrader',
+      title: 'Shoptrader',
+      description: 'Synchronisation avec Shoptrader',
+      icon: <ShoppingCart className="w-6 h-6" />,
+      category: 'regional',
+      isActive: true,
+      isConnected: false,
+      logo: '🔵'
     }
   ];
 
@@ -150,14 +316,22 @@ export const ImportMethodsGrid = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="files" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="files" className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />
                 Feeds & Fichiers
               </TabsTrigger>
-              <TabsTrigger value="integrations" className="flex items-center gap-2">
+              <TabsTrigger value="ecommerce" className="flex items-center gap-2">
                 <ShoppingCart className="w-4 h-4" />
                 E-commerce
+              </TabsTrigger>
+              <TabsTrigger value="specialty" className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                Spécialisés
+              </TabsTrigger>
+              <TabsTrigger value="regional" className="flex items-center gap-2">
+                <Globe className="w-4 h-4" />
+                Régionaux
               </TabsTrigger>
               <TabsTrigger value="ftp" className="flex items-center gap-2">
                 <Database className="w-4 h-4" />
@@ -174,6 +348,7 @@ export const ImportMethodsGrid = () => {
                     title={method.title}
                     description={method.description}
                     icon={method.icon}
+                    logo={method.logo}
                     isActive={method.isActive}
                     isConnected={method.isConnected}
                     onTest={() => handleTest(method.id)}
@@ -184,15 +359,56 @@ export const ImportMethodsGrid = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="integrations" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {getMethodsByCategory('integrations').map((method) => (
+            <TabsContent value="ecommerce" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {getMethodsByCategory('ecommerce').map((method) => (
                   <ImportMethodCard
                     key={method.id}
                     id={method.id}
                     title={method.title}
                     description={method.description}
                     icon={method.icon}
+                    logo={method.logo}
+                    isActive={method.isActive}
+                    isConnected={method.isConnected}
+                    onTest={() => handleTest(method.id)}
+                    onConfigure={() => handleConfigure(method.id)}
+                    testLoading={testingMethod === method.id}
+                  />
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="specialty" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {getMethodsByCategory('specialty').map((method) => (
+                  <ImportMethodCard
+                    key={method.id}
+                    id={method.id}
+                    title={method.title}
+                    description={method.description}
+                    icon={method.icon}
+                    logo={method.logo}
+                    isActive={method.isActive}
+                    isConnected={method.isConnected}
+                    onTest={() => handleTest(method.id)}
+                    onConfigure={() => handleConfigure(method.id)}
+                    testLoading={testingMethod === method.id}
+                  />
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="regional" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {getMethodsByCategory('regional').map((method) => (
+                  <ImportMethodCard
+                    key={method.id}
+                    id={method.id}
+                    title={method.title}
+                    description={method.description}
+                    icon={method.icon}
+                    logo={method.logo}
                     isActive={method.isActive}
                     isConnected={method.isConnected}
                     onTest={() => handleTest(method.id)}
@@ -212,6 +428,7 @@ export const ImportMethodsGrid = () => {
                     title={method.title}
                     description={method.description}
                     icon={method.icon}
+                    logo={method.logo}
                     isActive={method.isActive}
                     isConnected={method.isConnected}
                     onTest={() => handleTest(method.id)}

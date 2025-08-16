@@ -10,6 +10,7 @@ interface ImportMethodCardProps {
   title: string;
   description: string;
   icon: React.ReactNode;
+  logo?: string;
   isActive?: boolean;
   isConnected?: boolean;
   onTest: () => void;
@@ -22,6 +23,7 @@ export const ImportMethodCard = ({
   title, 
   description, 
   icon, 
+  logo,
   isActive = true, 
   isConnected = false, 
   onTest, 
@@ -54,8 +56,8 @@ export const ImportMethodCard = ({
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="text-blue-400 text-xl">
-              {icon}
+            <div className="text-blue-400 text-2xl">
+              {logo || icon}
             </div>
             <div>
               <h3 className="text-xl font-semibold text-white">{title}</h3>

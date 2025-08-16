@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Globe, Database, Settings, HelpCircle } from 'lucide-react';
+import { FileText, Globe, Database, Settings, HelpCircle, Cloud, Webhook, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ImportConfigurationDialogProps {
@@ -18,10 +18,11 @@ interface ImportConfigurationDialogProps {
 
 const getMethodConfig = (method: string) => {
   const configs = {
+    // Files & Technical Formats
     csv: {
-      title: 'CSV/Excel',
+      title: 'CSV',
       icon: <FileText className="w-5 h-5 text-green-600" />,
-      description: 'Import depuis fichiers CSV ou Excel',
+      description: 'Import depuis fichiers CSV',
       fields: [
         { name: 'name', label: 'Nom', placeholder: 'ex : exemple site e-commerce', required: true },
         { name: 'file_url', label: 'URL fichier CSV', placeholder: 'ex : https://www.exemple.fr/flux', required: true },
@@ -29,17 +30,6 @@ const getMethodConfig = (method: string) => {
         { name: 'encoding', label: 'Codage', type: 'select', options: ['Détecter automatiquement'], required: true },
         { name: 'quote', label: 'Apostrophe', type: 'select', options: ['Détecter automatiquement'], required: true },
         { name: 'separator', label: 'Séparateur', type: 'select', options: ['Détecter automatiquement'], required: true }
-      ]
-    },
-    json: {
-      title: 'JSON (URL)',
-      icon: <Globe className="w-5 h-5 text-blue-600" />,
-      description: 'Import depuis URL JSON avec JSONPath',
-      fields: [
-        { name: 'name', label: 'Nom', placeholder: 'ex : exemple site e-commerce', required: true },
-        { name: 'json_url', label: 'URL du fichier JSON', placeholder: 'ex : https://www.exemple.fr/flux', required: true },
-        { name: 'authentication', label: 'Authentification', type: 'select', options: ['Pas d\'authentification'], required: true },
-        { name: 'json_format', label: 'Format JSON', type: 'select', options: ['Un objet JSON dans le fichier'], required: true }
       ]
     },
     xml: {
@@ -50,7 +40,33 @@ const getMethodConfig = (method: string) => {
         { name: 'name', label: 'Nom', placeholder: 'ex : exemple site e-commerce', required: true },
         { name: 'xml_url', label: 'URL fichier XML', placeholder: 'ex : https://www.exemple.fr/flux', required: true },
         { name: 'authentication', label: 'Authentification', type: 'select', options: ['Pas d\'authentification'], required: true },
-        { name: 'encoding', label: 'Codage', type: 'select', options: ['Détecter automatiquement'], required: true }
+        { name: 'encoding', label: 'Codage', type: 'select', options: ['Détecter automatiquement'], required: true },
+        { name: 'xpath', label: 'XPath Produits', placeholder: '//product', required: false }
+      ]
+    },
+    json: {
+      title: 'JSON',
+      icon: <Globe className="w-5 h-5 text-blue-600" />,
+      description: 'Import depuis URL JSON avec JSONPath',
+      fields: [
+        { name: 'name', label: 'Nom', placeholder: 'ex : exemple site e-commerce', required: true },
+        { name: 'json_url', label: 'URL du fichier JSON', placeholder: 'ex : https://www.exemple.fr/flux', required: true },
+        { name: 'authentication', label: 'Authentification', type: 'select', options: ['Pas d\'authentification'], required: true },
+        { name: 'json_format', label: 'Format JSON', type: 'select', options: ['Un objet JSON dans le fichier'], required: true },
+        { name: 'json_path', label: 'JSONPath', placeholder: '$.products[*]', required: false }
+      ]
+    },
+    text: {
+      title: 'Text',
+      icon: <FileText className="w-5 h-5 text-red-600" />,
+      description: 'Import depuis fichiers texte',
+      fields: [
+        { name: 'name', label: 'Nom', placeholder: 'ex : exemple site e-commerce', required: true },
+        { name: 'file_url', label: 'URL fichier TXT', placeholder: 'ex : https://www.exemple.fr/flux', required: true },
+        { name: 'authentication', label: 'Authentification', type: 'select', options: ['Pas d\'authentification'], required: true },
+        { name: 'encoding', label: 'Codage', type: 'select', options: ['Détecter automatiquement'], required: true },
+        { name: 'quote', label: 'Apostrophe', type: 'select', options: ['Détecter automatiquement'], required: true },
+        { name: 'separator', label: 'Séparateur', type: 'select', options: ['Détecter automatiquement'], required: true }
       ]
     },
     google_sheets: {
@@ -59,7 +75,9 @@ const getMethodConfig = (method: string) => {
       description: 'Import depuis feuilles Google Sheets',
       fields: [
         { name: 'name', label: 'Nom', placeholder: 'Google sheets', required: true },
-        { name: 'sheet_url', label: 'URL feuille de calcul Google', placeholder: 'ex : https://www.exemple.fr/flux', required: true }
+        { name: 'sheet_url', label: 'URL feuille de calcul Google', placeholder: 'ex : https://docs.google.com/spreadsheets/...', required: true },
+        { name: 'sheet_name', label: 'Nom de la feuille', placeholder: 'Feuille1', required: false },
+        { name: 'range', label: 'Plage de cellules', placeholder: 'A1:Z1000', required: false }
       ]
     },
     ftp: {
@@ -76,6 +94,70 @@ const getMethodConfig = (method: string) => {
         { name: 'path', label: 'Chemin fichier', placeholder: '/data/products.csv', required: true }
       ]
     },
+
+    // E-commerce Platforms
+    shopify: {
+      title: 'Shopify',
+      icon: <Cloud className="w-5 h-5 text-green-600" />,
+      description: 'Synchronisation avec Shopify',
+      fields: [
+        { name: 'name', label: 'Nom', placeholder: 'Shopify Store', required: true },
+        { name: 'shop_domain', label: 'Domaine boutique', placeholder: 'monboutique.myshopify.com', required: true },
+        { name: 'api_key', label: 'Clé API', placeholder: 'votre-cle-api', required: true },
+        { name: 'api_secret', label: 'Secret API', type: 'password', required: true },
+        { name: 'access_token', label: 'Token d\'accès', placeholder: 'shpat_...', required: true }
+      ]
+    },
+    woocommerce: {
+      title: 'WooCommerce',
+      icon: <Globe className="w-5 h-5 text-blue-600" />,
+      description: 'Connexion avec WooCommerce',
+      fields: [
+        { name: 'name', label: 'Nom', placeholder: 'WooCommerce', required: true },
+        { name: 'woo_url', label: 'WooCommerce URL', placeholder: 'ex : https://www.exempleboutique.fr', required: true },
+        { name: 'consumer_key', label: 'Consumer Key', placeholder: 'ck_23dja3k23dfasd3emq345fursehgny', required: true },
+        { name: 'consumer_secret', label: 'Consumer Secret', placeholder: 'cs_3kae83kft950dmekqckhuec482kxie', required: true },
+        { name: 'version', label: 'Version', type: 'select', options: ['WooCommerce 3.5+'], required: true }
+      ]
+    },
+    prestashop: {
+      title: 'PrestaShop',
+      icon: <Webhook className="w-5 h-5 text-red-600" />,
+      description: 'Synchronisation avec PrestaShop',
+      fields: [
+        { name: 'name', label: 'Nom', placeholder: 'PrestaShop', required: true },
+        { name: 'prestashop_url', label: 'URL PrestaShop', placeholder: 'https://monboutique.com', required: true },
+        { name: 'api_key', label: 'Clé API', placeholder: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', required: true },
+        { name: 'language_id', label: 'ID Langue', placeholder: '1', type: 'number', required: true },
+        { name: 'shop_id', label: 'ID Boutique', placeholder: '1', type: 'number', required: false }
+      ]
+    },
+    magento: {
+      title: 'Magento',
+      icon: <ShoppingCart className="w-5 h-5 text-orange-600" />,
+      description: 'Synchronisation avec Magento',
+      fields: [
+        { name: 'name', label: 'Nom', placeholder: 'Magento Store', required: true },
+        { name: 'magento_url', label: 'URL Magento', placeholder: 'https://monboutique.com', required: true },
+        { name: 'api_token', label: 'Token API', placeholder: 'xxxxxxxxxx', required: true },
+        { name: 'store_code', label: 'Code boutique', placeholder: 'default', required: false },
+        { name: 'website_id', label: 'ID Website', placeholder: '1', type: 'number', required: false }
+      ]
+    },
+    bigcommerce: {
+      title: 'BigCommerce',
+      icon: <ShoppingCart className="w-5 h-5 text-gray-800" />,
+      description: 'Synchronisation avec BigCommerce',
+      fields: [
+        { name: 'name', label: 'Nom', placeholder: 'BigCommerce Store', required: true },
+        { name: 'store_hash', label: 'Store Hash', placeholder: 'abc123def', required: true },
+        { name: 'client_id', label: 'Client ID', placeholder: 'xxxxxxxxxx', required: true },
+        { name: 'access_token', label: 'Access Token', type: 'password', required: true },
+        { name: 'api_version', label: 'Version API', type: 'select', options: ['v3', 'v2'], required: true }
+      ]
+    },
+
+    // Specialty Platforms
     akeneo: {
       title: 'Akeneo',
       icon: <Settings className="w-5 h-5 text-purple-600" />,
@@ -90,16 +172,27 @@ const getMethodConfig = (method: string) => {
         { name: 'domain', label: 'Domaine TwicPics', placeholder: 'par exemple un-nom-de-domaine.twic.pics', required: false }
       ]
     },
-    woocommerce: {
-      title: 'WooCommerce',
-      icon: <Globe className="w-5 h-5 text-blue-600" />,
-      description: 'Connexion avec WooCommerce',
+    lightspeed: {
+      title: 'Lightspeed',
+      icon: <Settings className="w-5 h-5 text-red-600" />,
+      description: 'Synchronisation avec Lightspeed',
       fields: [
-        { name: 'name', label: 'Nom', placeholder: 'WooCommerce', required: true },
-        { name: 'woo_url', label: 'WooCommerce URL', placeholder: 'ex : https://www.exempleboutique.fr', required: true },
-        { name: 'consumer_key', label: 'Consumer Key', placeholder: 'ck_23dja3k23dfasd3emq345fursehgny', required: true },
-        { name: 'consumer_secret', label: 'Consumer Secret', placeholder: 'cs_3kae83kft950dmekqckhuec482kxie', required: true },
-        { name: 'version', label: 'Version', type: 'select', options: ['WooCommerce 3.5+'], required: true }
+        { name: 'name', label: 'Nom', placeholder: 'Lightspeed', required: true },
+        { name: 'api_key', label: 'Clé API', placeholder: 'votre-cle-api', required: true },
+        { name: 'api_secret', label: 'Secret API', type: 'password', required: true },
+        { name: 'account_id', label: 'ID Compte', placeholder: '123456', required: true },
+        { name: 'cluster', label: 'Cluster', type: 'select', options: ['eu1', 'us1'], required: true }
+      ]
+    },
+    squarespace: {
+      title: 'Squarespace',
+      icon: <Cloud className="w-5 h-5 text-gray-800" />,
+      description: 'Synchronisation avec Squarespace',
+      fields: [
+        { name: 'name', label: 'Nom', placeholder: 'Squarespace', required: true },
+        { name: 'site_id', label: 'Site ID', placeholder: 'xxxxxxxxxx', required: true },
+        { name: 'api_key', label: 'Clé API', placeholder: 'votre-cle-api', required: true },
+        { name: 'api_version', label: 'Version API', type: 'select', options: ['1.0'], required: true }
       ]
     }
   };
