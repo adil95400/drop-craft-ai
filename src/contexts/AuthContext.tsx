@@ -54,9 +54,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshSubscription = async () => {
     if (user) {
-      const subscriptionData = await checkSubscription()
-      if (subscriptionData) {
-        setSubscription(subscriptionData)
+      try {
+        const subscriptionData = await checkSubscription()
+        if (subscriptionData) {
+          setSubscription(subscriptionData)
+        }
+      } catch (error) {
+        console.warn('Failed to refresh subscription:', error)
+        // Ne pas lancer d'erreur pour éviter de casser l'auth
       }
     }
   }
@@ -68,11 +73,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null)
       setLoading(false)
       
-      // If user is logged in, check subscription after a delay
+      // If user is logged in, check subscription after a delay (seulement une fois)
       if (session?.user) {
         setTimeout(() => {
           refreshSubscription()
-        }, 0)
+        }, 1000)
       }
     })
 
@@ -87,10 +92,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false)
 
       if (event === 'SIGNED_IN' && session?.user) {
-        // Defer subscription check to prevent deadlocks
+        // Defer subscription check to prevent deadlocks (avec délai plus long)
         setTimeout(() => {
           refreshSubscription()
-        }, 0)
+        }, 2000)
       } else if (event === 'SIGNED_OUT') {
         setSubscription(null)
       }

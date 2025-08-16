@@ -7,9 +7,13 @@ export const SubscriptionSyncService = () => {
   const { checkSubscription } = useStripeSubscription()
 
   useEffect(() => {
-    // Sync subscription on app load if user is authenticated
+    // Sync subscription on app load si utilisateur authentifié (avec délai pour éviter conflicts)
     if (user) {
-      checkSubscription()
+      const timer = setTimeout(() => {
+        checkSubscription()
+      }, 5000) // Délai de 5 secondes pour laisser l'auth se stabiliser
+      
+      return () => clearTimeout(timer)
     }
   }, [user, checkSubscription])
 

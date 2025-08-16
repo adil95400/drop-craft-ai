@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -14,39 +14,87 @@ export const useStripeSubscription = () => {
   const [subscription, setSubscription] = useState<StripeSubscription | null>(null)
   const { user } = useAuth()
   const { toast } = useToast()
+  
+  // Cache pour éviter les appels répétés
+  const lastCheckRef = useRef<number>(0)
+  const cacheRef = useRef<StripeSubscription | null>(null)
+  const isCheckingRef = useRef(false)
 
-  const checkSubscription = async () => {
+  const checkSubscription = useCallback(async (): Promise<StripeSubscription | null> => {
     if (!user) return null
+    
+    // Éviter les appels multiples simultanés
+    if (isCheckingRef.current) {
+      console.log('Check subscription already in progress, skipping...')
+      return cacheRef.current
+    }
+    
+    // Cache pendant 30 secondes
+    const now = Date.now()
+    if (cacheRef.current && (now - lastCheckRef.current) < 30000) {
+      console.log('Using cached subscription data')
+      setSubscription(cacheRef.current)
+      return cacheRef.current
+    }
 
     try {
       setLoading(true)
+      isCheckingRef.current = true
+      
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-        }
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
       })
 
-      if (error) throw error
-
-      const subscriptionData = {
-        subscribed: data.subscribed,
-        subscription_tier: data.subscription_tier,
-        subscription_end: data.subscription_end
+      if (error) {
+        // Gestion spéciale des rate limits
+        if (error.message?.includes('rate limit')) {
+          console.warn('Stripe rate limit reached, using cached data')
+          if (cacheRef.current) {
+            setSubscription(cacheRef.current)
+            return cacheRef.current
+          }
+        }
+        throw error
       }
+
+      const subscriptionData: StripeSubscription = {
+        subscribed: data.subscribed || false,
+        subscription_tier: data.subscription_tier || null,
+        subscription_end: data.subscription_end || null
+      }
+
+      // Mise à jour du cache
+      cacheRef.current = subscriptionData
+      lastCheckRef.current = now
       setSubscription(subscriptionData)
+      
       return subscriptionData
     } catch (error: any) {
       console.error('Error checking subscription:', error)
-      toast({
-        title: "Erreur",
-        description: "Impossible de vérifier l'abonnement",
-        variant: "destructive"
-      })
+      
+      // En cas d'erreur, utiliser le cache si disponible
+      if (cacheRef.current) {
+        setSubscription(cacheRef.current)
+        return cacheRef.current
+      }
+      
+      // Seulement afficher le toast si ce n'est pas un rate limit
+      if (!error.message?.includes('rate limit')) {
+        toast({
+          title: "Erreur de vérification",
+          description: "Impossible de vérifier l'abonnement. Veuillez réessayer plus tard.",
+          variant: "destructive"
+        })
+      }
+      
       return null
     } finally {
       setLoading(false)
+      isCheckingRef.current = false
     }
-  }
+  }, [user, toast])
 
   const createCheckout = async (plan: 'pro' | 'ultra_pro') => {
     if (!user) return null
