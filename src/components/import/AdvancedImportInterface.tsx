@@ -38,6 +38,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { toast } from 'sonner'
+import { useToast } from '@/hooks/use-toast'
 import { useImport } from '@/domains/commerce/hooks/useImport'
 import { ImportMethodCard } from './ImportMethodCard'
 
@@ -196,6 +197,7 @@ export const AdvancedImportInterface = () => {
   }, [selectedProducts])
 
   const handleTestMethod = useCallback(async (methodId: string) => {
+    console.log('Testing method:', methodId)
     setTestingMethod(methodId)
     
     try {
@@ -232,6 +234,7 @@ export const AdvancedImportInterface = () => {
   }, [])
 
   const handleConfigureMethod = useCallback((methodId: string) => {
+    console.log('Configuring method:', methodId)
     // Ouvre la configuration selon la méthode
     switch (methodId) {
       case 'shopify':
@@ -290,7 +293,7 @@ export const AdvancedImportInterface = () => {
 
   const ImportMethods = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {/* Feeds & Fichiers */}
+      {/* CSV/Excel */}
       <Card className="cursor-pointer hover:shadow-lg transition-shadow">
         <CardHeader>
           <div className="flex items-center gap-3">
@@ -309,11 +312,21 @@ export const AdvancedImportInterface = () => {
             <Badge variant="outline" className="bg-green-50">Actif</Badge>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleTestMethod('csv')}
+              disabled={testingMethod === 'csv'}
+            >
               <Eye className="w-4 h-4 mr-1" />
               Tester
             </Button>
-            <Button size="sm" className="flex-1">
+            <Button 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleConfigureMethod('csv')}
+            >
               <Settings className="w-4 h-4 mr-1" />
               Configurer
             </Button>
@@ -321,6 +334,7 @@ export const AdvancedImportInterface = () => {
         </CardContent>
       </Card>
 
+      {/* JSON URL */}
       <Card className="cursor-pointer hover:shadow-lg transition-shadow">
         <CardHeader>
           <div className="flex items-center gap-3">
@@ -339,11 +353,21 @@ export const AdvancedImportInterface = () => {
             <Badge variant="outline" className="bg-green-50">Actif</Badge>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleTestMethod('url')}
+              disabled={testingMethod === 'url'}
+            >
               <Eye className="w-4 h-4 mr-1" />
               Tester
             </Button>
-            <Button size="sm" className="flex-1">
+            <Button 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleConfigureMethod('url')}
+            >
               <Settings className="w-4 h-4 mr-1" />
               Configurer
             </Button>
@@ -351,6 +375,7 @@ export const AdvancedImportInterface = () => {
         </CardContent>
       </Card>
 
+      {/* Shopify */}
       <Card className="cursor-pointer hover:shadow-lg transition-shadow">
         <CardHeader>
           <div className="flex items-center gap-3">
@@ -369,11 +394,21 @@ export const AdvancedImportInterface = () => {
             <Badge variant="outline" className="bg-yellow-50">Non configuré</Badge>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleTestMethod('shopify')}
+              disabled={testingMethod === 'shopify'}
+            >
               <Eye className="w-4 h-4 mr-1" />
               Tester
             </Button>
-            <Button size="sm" className="flex-1">
+            <Button 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleConfigureMethod('shopify')}
+            >
               <Settings className="w-4 h-4 mr-1" />
               Configurer
             </Button>
@@ -381,6 +416,7 @@ export const AdvancedImportInterface = () => {
         </CardContent>
       </Card>
 
+      {/* WooCommerce */}
       <Card className="cursor-pointer hover:shadow-lg transition-shadow">
         <CardHeader>
           <div className="flex items-center gap-3">
@@ -399,11 +435,21 @@ export const AdvancedImportInterface = () => {
             <Badge variant="outline" className="bg-yellow-50">Non configuré</Badge>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleTestMethod('woocommerce')}
+              disabled={testingMethod === 'woocommerce'}
+            >
               <Eye className="w-4 h-4 mr-1" />
               Tester
             </Button>
-            <Button size="sm" className="flex-1">
+            <Button 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleConfigureMethod('woocommerce')}
+            >
               <Settings className="w-4 h-4 mr-1" />
               Configurer
             </Button>
@@ -411,45 +457,16 @@ export const AdvancedImportInterface = () => {
         </CardContent>
       </Card>
 
+      {/* XML */}
       <Card className="cursor-pointer hover:shadow-lg transition-shadow">
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-red-100 rounded-lg">
-              <ShoppingCart className="w-6 h-6 text-red-600" />
+              <FileText className="w-6 h-6 text-red-600" />
             </div>
             <div>
-              <CardTitle className="text-lg">PrestaShop</CardTitle>
-              <CardDescription>Import via plugin PrestaShop dédié</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="w-4 h-4 text-yellow-500" />
-            <Badge variant="outline" className="bg-yellow-50">Non configuré</Badge>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1">
-              <Eye className="w-4 h-4 mr-1" />
-              Tester
-            </Button>
-            <Button size="sm" className="flex-1">
-              <Settings className="w-4 h-4 mr-1" />
-              Configurer
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gray-100 rounded-lg">
-              <Database className="w-6 h-6 text-gray-600" />
-            </div>
-            <div>
-              <CardTitle className="text-lg">FTP/SFTP/FTPS</CardTitle>
-              <CardDescription>Import depuis serveurs FTP/SFTP/FTPS</CardDescription>
+              <CardTitle className="text-lg">XML</CardTitle>
+              <CardDescription>Import depuis flux XML avec XPath</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -459,11 +476,62 @@ export const AdvancedImportInterface = () => {
             <Badge variant="outline" className="bg-green-50">Actif</Badge>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleTestMethod('xml')}
+              disabled={testingMethod === 'xml'}
+            >
               <Eye className="w-4 h-4 mr-1" />
               Tester
             </Button>
-            <Button size="sm" className="flex-1">
+            <Button 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleConfigureMethod('xml')}
+            >
+              <Settings className="w-4 h-4 mr-1" />
+              Configurer
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Google Sheets */}
+      <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gray-100 rounded-lg">
+              <FileSpreadsheet className="w-6 h-6 text-gray-600" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Google Sheets</CardTitle>
+              <CardDescription>Import depuis feuilles Google Sheets</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle className="w-4 h-4 text-green-500" />
+            <Badge variant="outline" className="bg-green-50">Actif</Badge>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleTestMethod('googlesheets')}
+              disabled={testingMethod === 'googlesheets'}
+            >
+              <Eye className="w-4 h-4 mr-1" />
+              Tester
+            </Button>
+            <Button 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleConfigureMethod('googlesheets')}
+            >
               <Settings className="w-4 h-4 mr-1" />
               Configurer
             </Button>
