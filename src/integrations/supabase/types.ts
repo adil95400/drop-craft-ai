@@ -675,20 +675,26 @@ export type Database = {
       newsletters: {
         Row: {
           created_at: string | null
+          created_ip: unknown | null
           email: string
           id: string
+          rate_limit_key: string | null
           source: string | null
         }
         Insert: {
           created_at?: string | null
+          created_ip?: unknown | null
           email: string
           id?: string
+          rate_limit_key?: string | null
           source?: string | null
         }
         Update: {
           created_at?: string | null
+          created_ip?: unknown | null
           email?: string
           id?: string
+          rate_limit_key?: string | null
           source?: string | null
         }
         Relationships: []
@@ -841,6 +847,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers_secure"
             referencedColumns: ["id"]
           },
         ]
@@ -1506,32 +1519,41 @@ export type Database = {
       user_api_keys: {
         Row: {
           created_at: string
+          created_ip: unknown | null
           encrypted_value: string
           id: string
           is_active: boolean
           key_name: string
+          last_used_at: string | null
           platform: string
           updated_at: string
+          usage_count: number | null
           user_id: string
         }
         Insert: {
           created_at?: string
+          created_ip?: unknown | null
           encrypted_value: string
           id?: string
           is_active?: boolean
           key_name: string
+          last_used_at?: string | null
           platform: string
           updated_at?: string
+          usage_count?: number | null
           user_id: string
         }
         Update: {
           created_at?: string
+          created_ip?: unknown | null
           encrypted_value?: string
           id?: string
           is_active?: boolean
           key_name?: string
+          last_used_at?: string | null
           platform?: string
           updated_at?: string
+          usage_count?: number | null
           user_id?: string
         }
         Relationships: []
@@ -1621,7 +1643,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      customers_secure: {
+        Row: {
+          address: Json | null
+          created_at: string | null
+          email: string | null
+          id: string | null
+          name: string | null
+          phone: string | null
+          status: string | null
+          total_orders: number | null
+          total_spent: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: never
+          created_at?: string | null
+          email?: never
+          id?: string | null
+          name?: string | null
+          phone?: never
+          status?: string | null
+          total_orders?: number | null
+          total_spent?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: never
+          created_at?: string | null
+          email?: never
+          id?: string | null
+          name?: string | null
+          phone?: never
+          status?: string | null
+          total_orders?: number | null
+          total_spent?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_profit_margin: {
@@ -1636,6 +1699,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      detect_suspicious_activity: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_business_intelligence: {
         Args: { limit_count?: number }
         Returns: {
@@ -1648,6 +1715,16 @@ export type Database = {
           supplier_name: string
           supplier_url: string
           trend_score: number
+        }[]
+      }
+      get_customer_sensitive_info: {
+        Args: { customer_id: string }
+        Returns: {
+          address: Json
+          email: string
+          id: string
+          name: string
+          phone: string
         }[]
       }
       get_marketplace_products: {
@@ -1746,6 +1823,15 @@ export type Database = {
           website: string
         }[]
       }
+      get_subscription_status_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          expires_at: string
+          has_subscription: boolean
+          is_active: boolean
+          tier_level: string
+        }[]
+      }
       get_supplier_sensitive_data: {
         Args: { supplier_id: string }
         Returns: {
@@ -1803,6 +1889,18 @@ export type Database = {
       mask_customer_phone: {
         Args: { phone: string }
         Returns: string
+      }
+      public_newsletter_signup: {
+        Args: { email_param: string }
+        Returns: Json
+      }
+      rotate_api_key: {
+        Args: { key_id: string }
+        Returns: Json
+      }
+      secure_newsletter_signup: {
+        Args: { email_param: string; source_param?: string; user_ip?: unknown }
+        Returns: Json
       }
       simple_mask_email: {
         Args: { email: string }
