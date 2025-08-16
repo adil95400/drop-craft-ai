@@ -385,6 +385,45 @@ export type Database = {
         }
         Relationships: []
       }
+      import_connectors: {
+        Row: {
+          config: Json
+          created_at: string | null
+          credentials: Json
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          name: string
+          provider: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string | null
+          credentials?: Json
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          name: string
+          provider: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string | null
+          credentials?: Json
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          name?: string
+          provider?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       import_jobs: {
         Row: {
           created_at: string
@@ -813,6 +852,33 @@ export type Database = {
           },
         ]
       }
+      plans_limits: {
+        Row: {
+          created_at: string | null
+          id: string
+          limit_key: string
+          limit_value: number
+          plan: Database["public"]["Enums"]["plan_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          limit_key: string
+          limit_value: number
+          plan: Database["public"]["Enums"]["plan_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          limit_key?: string
+          limit_value?: number
+          plan?: Database["public"]["Enums"]["plan_type"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       price_alerts: {
         Row: {
           catalog_product_id: string
@@ -1017,7 +1083,7 @@ export type Database = {
           email_notifications: boolean | null
           full_name: string | null
           id: string
-          plan: string | null
+          plan: Database["public"]["Enums"]["plan_type"] | null
           updated_at: string | null
         }
         Insert: {
@@ -1027,7 +1093,7 @@ export type Database = {
           email_notifications?: boolean | null
           full_name?: string | null
           id: string
-          plan?: string | null
+          plan?: Database["public"]["Enums"]["plan_type"] | null
           updated_at?: string | null
         }
         Update: {
@@ -1037,7 +1103,7 @@ export type Database = {
           email_notifications?: boolean | null
           full_name?: string | null
           id?: string
-          plan?: string | null
+          plan?: Database["public"]["Enums"]["plan_type"] | null
           updated_at?: string | null
         }
         Relationships: []
@@ -1477,6 +1543,36 @@ export type Database = {
           },
         ]
       }
+      user_quotas: {
+        Row: {
+          created_at: string | null
+          current_count: number | null
+          id: string
+          quota_key: string
+          reset_date: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_count?: number | null
+          id?: string
+          quota_key: string
+          reset_date?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_count?: number | null
+          id?: string
+          quota_key?: string
+          reset_date?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1629,6 +1725,10 @@ export type Database = {
         Args: { cost_price: number; price: number }
         Returns: number
       }
+      check_quota: {
+        Args: { quota_key_param: string; user_id_param: string }
+        Returns: boolean
+      }
       clean_expired_cache: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1692,6 +1792,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_quota: {
+        Args: {
+          increment_by?: number
+          quota_key_param: string
+          user_id_param: string
+        }
+        Returns: boolean
+      }
       is_supplier_owner: {
         Args: { _supplier_id: string; _user_id: string }
         Returns: boolean
@@ -1732,6 +1840,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user" | "staff"
+      plan_type: "standard" | "pro" | "ultra_pro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1860,6 +1969,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user", "staff"],
+      plan_type: ["standard", "pro", "ultra_pro"],
     },
   },
 } as const

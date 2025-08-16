@@ -1,5 +1,6 @@
 import React from 'react'
-import { usePlan } from '@/contexts/PlanContext'
+import { usePlan } from '@/hooks/usePlan'
+import { ImportHub } from '@/components/import/ImportHub'
 import { ImportUltraProInterface } from '@/components/import/ImportUltraProInterface'
 import { ImportInterface } from '@/components/import/ImportInterface'
 import { AIImportUltraPro } from '@/components/import/AIImportUltraPro'
@@ -8,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function Import() {
-  const { isUltraPro, hasFeature } = usePlan()
+  const { isUltraPro, hasPlan } = usePlan()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/80 to-background">
@@ -33,34 +34,7 @@ export default function Import() {
       </div>
 
       <div className="container mx-auto p-6">
-        {hasFeature('ai-import') ? (
-          <Tabs defaultValue="interface" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="interface">Interface Standard</TabsTrigger>
-              <TabsTrigger value="ai">IA Ultra Pro</TabsTrigger>
-              <TabsTrigger value="advanced">Import Avancé</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="interface" className="space-y-6">
-              <ImportUltraProInterface />
-            </TabsContent>
-            
-            <TabsContent value="ai" className="space-y-6">
-              <AIImportUltraPro />
-            </TabsContent>
-            
-            <TabsContent value="advanced" className="space-y-6">
-              <ImportUltraProInterface />
-            </TabsContent>
-          </Tabs>
-        ) : (
-      <ImportInterface 
-        selectedMethod="url"
-        isImporting={false}
-        importProgress={0}
-        onImport={() => {}}
-      />
-        )}
+        <ImportHub />
       </div>
     </div>
   )

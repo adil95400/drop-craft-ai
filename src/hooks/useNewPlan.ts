@@ -11,7 +11,7 @@ interface PlanState {
   error: string | null
 }
 
-export const usePlan = (user?: User | null) => {
+export const useNewPlan = (user?: User | null) => {
   const [planState, setPlanState] = useState<PlanState>({
     plan: 'standard',
     loading: true,
@@ -88,12 +88,14 @@ export const usePlan = (user?: User | null) => {
 
   const isUltraPro = () => planState.plan === 'ultra_pro'
   const isPro = () => planState.plan === 'pro' || planState.plan === 'ultra_pro'
+  const isStandard = () => planState.plan === 'standard'
 
   return {
     ...planState,
     hasPlan,
     isUltraPro,
     isPro,
+    isStandard,
     updatePlan,
     refetch: () => user && fetchUserPlan(user.id)
   }
