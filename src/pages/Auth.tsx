@@ -7,13 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Zap, ArrowLeft, Mail, Lock, User, Building, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user, loading, signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const { user, loading, signIn, signUp, resetPassword } = useAuth();
 
   const [loginForm, setLoginForm] = useState({
     email: "",
@@ -120,14 +120,10 @@ const Auth = () => {
   };
 
   const handleGoogleAuth = async () => {
-    setIsLoading(true);
-    try {
-      await signInWithGoogle();
-    } catch (error) {
-      console.error('Google auth error:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    toast({
+      title: "Fonctionnalité à venir",
+      description: "La connexion Google sera bientôt disponible",
+    });
   };
 
   if (loading) {

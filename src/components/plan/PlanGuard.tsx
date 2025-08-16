@@ -2,7 +2,7 @@ import { ReactNode } from 'react'
 import { Lock, Crown, Star, ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { usePlan, PlanType } from '@/hooks/usePlan'
 import { PlanGatedButton } from './PlanGatedButton'
 

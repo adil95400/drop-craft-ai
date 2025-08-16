@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { Crown, Star, Shield } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { useNewPlan, PlanType } from '@/hooks/useNewPlan'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'

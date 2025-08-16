@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { useNewPlan, PlanType } from '@/hooks/useNewPlan'
 import { useStripeSubscription } from '@/hooks/useStripeSubscription'
 import { useNavigate } from 'react-router-dom'

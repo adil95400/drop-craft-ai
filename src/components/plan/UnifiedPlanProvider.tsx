@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode } from 'react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { usePlan as useSupabasePlan, PlanType } from '@/hooks/usePlan'
 
 interface UnifiedPlanContextType {

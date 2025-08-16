@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { usePlan, PlanType } from '@/hooks/usePlan'
 import { UpgradeDialog } from './UpgradeDialog'
 

@@ -3,7 +3,7 @@ import { Lock, Crown, Star } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button, ButtonProps } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { usePlan, PlanType } from '@/hooks/usePlan'
 import { UpgradeDialog } from './UpgradeDialog'
 

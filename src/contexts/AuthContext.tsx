@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
+  profile: any | null
   subscription: {
     subscribed: boolean
     subscription_tier: string | null
@@ -44,6 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState<any | null>(null)
   const [subscription, setSubscription] = useState<{
     subscribed: boolean
     subscription_tier: string | null
@@ -241,6 +243,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     session,
     loading,
+    profile,
     subscription,
     signUp,
     signIn,

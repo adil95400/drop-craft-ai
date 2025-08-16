@@ -1,4 +1,4 @@
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { usePlan, PlanType } from '@/hooks/usePlan'
 
 export const usePlanGuard = () => {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { useNewPlan } from '@/hooks/useNewPlan'
 import { useQuotas } from '@/hooks/useQuotas'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'

@@ -1,4 +1,4 @@
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { useNewPlan } from '@/hooks/useNewPlan'
 import { useQuotas } from '@/hooks/useQuotas'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

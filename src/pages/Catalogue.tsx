@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { usePlan } from '@/hooks/usePlan'
 import { CatalogUltraProInterface } from '@/components/catalog/CatalogUltraProInterface'
 import { Badge } from '@/components/ui/badge'

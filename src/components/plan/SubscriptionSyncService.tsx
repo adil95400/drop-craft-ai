@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { useStripeSubscription } from '@/hooks/useStripeSubscription'
 
 export const SubscriptionSyncService = () => {
