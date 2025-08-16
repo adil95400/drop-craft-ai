@@ -44,7 +44,7 @@ export function SupplierSecurityDashboard() {
     fetchSecurityEvents();
   }, []);
 
-  const suppliersWithCredentials = suppliers.filter(s => s.encrypted_credentials);
+  const suppliersWithCredentials = suppliers.filter(s => s.has_encrypted_credentials);
   const recentAccessEvents = securityEvents.filter(e => e.event_type === 'credentials_accessed');
   const totalAccessCount = suppliers.reduce((sum, s) => sum + (s.access_count || 0), 0);
 
@@ -189,12 +189,22 @@ export function SupplierSecurityDashboard() {
                   <div className="text-sm text-muted-foreground">
                     Status: {supplier.status} • Country: {supplier.country || 'Unknown'}
                   </div>
+                  {supplier.contact_email_masked && (
+                    <div className="text-xs text-muted-foreground">
+                      Contact: {supplier.contact_email_masked}
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
-                  {supplier.encrypted_credentials ? (
+                  {supplier.has_encrypted_credentials ? (
                     <Badge variant="default" className="bg-green-100 text-green-800">
                       <Lock className="h-3 w-3 mr-1" />
                       Encrypted
+                    </Badge>
+                  ) : supplier.has_api_key ? (
+                    <Badge variant="default" className="bg-blue-100 text-blue-800">
+                      <Lock className="h-3 w-3 mr-1" />
+                      API Key
                     </Badge>
                   ) : (
                     <Badge variant="secondary">

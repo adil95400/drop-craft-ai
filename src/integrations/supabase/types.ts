@@ -1724,6 +1724,38 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_secure_suppliers: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          access_count: number
+          api_endpoint: string
+          contact_email_masked: string
+          contact_phone_masked: string
+          country: string
+          created_at: string
+          credentials_updated_at: string
+          has_api_key: boolean
+          has_encrypted_credentials: boolean
+          id: string
+          last_access_at: string
+          name: string
+          rating: number
+          status: string
+          updated_at: string
+          user_id: string
+          website: string
+        }[]
+      }
+      get_supplier_sensitive_data: {
+        Args: { supplier_id: string }
+        Returns: {
+          contact_email: string
+          contact_phone: string
+          credentials_last_updated: string
+          has_api_key: boolean
+          id: string
+        }[]
+      }
       get_user_plan: {
         Args: { user_id_param: string }
         Returns: string
@@ -1782,6 +1814,10 @@ export type Database = {
       }
       user_has_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
+        Returns: boolean
+      }
+      verify_supplier_ownership: {
+        Args: { supplier_id: string; user_id: string }
         Returns: boolean
       }
     }

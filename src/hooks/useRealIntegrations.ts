@@ -30,11 +30,8 @@ export const useRealIntegrations = () => {
   const { data: integrations = [], isLoading, error } = useQuery({
     queryKey: ['real-integrations'],
     queryFn: async () => {
-      // Use the safe view that doesn't expose credentials
-      const { data, error } = await supabase
-        .from('integrations_safe')
-        .select('*')
-        .order('created_at', { ascending: false })
+      // Use the secure function that doesn't expose credentials
+      const { data, error } = await supabase.rpc('get_safe_integrations')
       
       if (error) throw error
       return data as Integration[]

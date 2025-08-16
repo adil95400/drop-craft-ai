@@ -5,13 +5,10 @@ import { supabase } from '@/integrations/supabase/client'
 export interface Supplier {
   id: string
   name: string
-  contact_email?: string
-  contact_phone?: string
   website?: string
   country?: string
   status: 'active' | 'inactive'
   rating?: number
-  api_key?: string
   api_endpoint?: string
   user_id: string
   created_at: string
@@ -19,7 +16,11 @@ export interface Supplier {
   credentials_updated_at?: string
   last_access_at?: string
   access_count?: number
-  encrypted_credentials?: any
+  // Security: Sensitive fields are masked/excluded for regular access
+  has_api_key?: boolean
+  has_encrypted_credentials?: boolean
+  contact_email_masked?: string
+  contact_phone_masked?: string
 }
 
 export const useRealSuppliers = (filters?: any) => {
@@ -29,33 +30,51 @@ export const useRealSuppliers = (filters?: any) => {
   const { data: suppliers = [], isLoading, error } = useQuery({
     queryKey: ['real-suppliers', filters],
     queryFn: async () => {
-      let query = supabase.from('suppliers').select('*')
-      
-      if (filters?.status) {
-        query = query.eq('status', filters.status)
-      }
-      if (filters?.country) {
-        query = query.eq('country', filters.country)
-      }
-      if (filters?.search) {
-        query = query.or(`name.ilike.%${filters.search}%,contact_email.ilike.%${filters.search}%`)
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false })
+      // Security: Use secure function instead of direct table access
+      const { data, error } = await supabase.rpc('get_secure_suppliers')
       
       if (error) throw error
-      return data as Supplier[]
+      
+      let filteredData = data || []
+      
+      // Apply client-side filtering since we can't do complex filtering in the secure function
+      if (filters?.status) {
+        filteredData = filteredData.filter(s => s.status === filters.status)
+      }
+      if (filters?.country) {
+        filteredData = filteredData.filter(s => s.country === filters.country)
+      }
+      if (filters?.search) {
+        const searchLower = filters.search.toLowerCase()
+        filteredData = filteredData.filter(s => 
+          s.name?.toLowerCase().includes(searchLower) ||
+          s.contact_email_masked?.toLowerCase().includes(searchLower)
+        )
+      }
+      
+      return filteredData as Supplier[]
     },
   })
 
   const addSupplier = useMutation({
-    mutationFn: async (newSupplier: Omit<Supplier, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+    mutationFn: async (newSupplier: Omit<Supplier, 'id' | 'created_at' | 'updated_at' | 'user_id' | 'has_api_key' | 'has_encrypted_credentials' | 'contact_email_masked' | 'contact_phone_masked'>) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
+      // Security: Only allow basic supplier data insertion
+      const basicSupplierData = {
+        name: newSupplier.name,
+        website: newSupplier.website,
+        country: newSupplier.country,
+        status: newSupplier.status,
+        rating: newSupplier.rating,
+        api_endpoint: newSupplier.api_endpoint,
+        user_id: user.id
+      }
+      
       const { data, error } = await supabase
         .from('suppliers')
-        .insert([{ ...newSupplier, user_id: user.id }])
+        .insert([basicSupplierData])
         .select()
         .single()
       
@@ -73,9 +92,19 @@ export const useRealSuppliers = (filters?: any) => {
 
   const updateSupplier = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Supplier> }) => {
+      // Security: Only allow updates to non-sensitive fields
+      const allowedUpdates = {
+        name: updates.name,
+        website: updates.website,
+        country: updates.country,
+        status: updates.status,
+        rating: updates.rating,
+        api_endpoint: updates.api_endpoint
+      }
+      
       const { data, error } = await supabase
         .from('suppliers')
-        .update(updates)
+        .update(allowedUpdates)
         .eq('id', id)
         .select()
         .single()

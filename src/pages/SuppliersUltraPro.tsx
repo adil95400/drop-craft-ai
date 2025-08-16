@@ -203,7 +203,7 @@ export default function SuppliersUltraPro() {
   // Filtrage des données - utilise les vraies données si disponibles
   const suppliersToFilter = realSuppliers.length > 0 ? realSuppliers.map(supplier => ({
     ...supplier,
-    email: supplier.contact_email,
+    email: supplier.contact_email_masked || 'contact@hidden.com',
     category: 'Distribution',
     totalSpent: 45000,
     orders: 89,
@@ -218,7 +218,7 @@ export default function SuppliersUltraPro() {
     products: 45,
     country: supplier.country || 'France',
     city: 'Paris',
-    phone: supplier.contact_phone || '+33-1-23456789',
+    phone: supplier.contact_phone_masked || '+33****789',
     website: supplier.website || 'https://example.com'
   })) : suppliersData
   

@@ -72,8 +72,6 @@ const Suppliers = () => {
   const handleAddSupplier = () => {
     addSupplier({
       name: newSupplier.name,
-      contact_email: newSupplier.email,
-      contact_phone: newSupplier.phone,
       website: newSupplier.website,
       status: newSupplier.status as 'active' | 'inactive'
     })
