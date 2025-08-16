@@ -9,19 +9,19 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 const planIcons = {
-  standard: Shield,
+  free: Shield,
   pro: Star,
   ultra_pro: Crown
 }
 
 const planNames = {
-  standard: 'Standard',
+  free: 'Gratuit',
   pro: 'Pro',
   ultra_pro: 'Ultra Pro'
 }
 
 const planColors = {
-  standard: 'text-gray-600 bg-gray-100',
+  free: 'text-gray-600 bg-gray-100',
   pro: 'text-blue-600 bg-blue-100',
   ultra_pro: 'text-purple-600 bg-purple-100'
 }
@@ -59,7 +59,7 @@ export const SubscriptionManager = () => {
 
   const currentPlan = subscription.subscribed && subscription.subscription_tier 
     ? subscription.subscription_tier 
-    : 'standard'
+    : 'free'
   
   const PlanIcon = planIcons[currentPlan as keyof typeof planIcons]
   const planName = planNames[currentPlan as keyof typeof planNames]
