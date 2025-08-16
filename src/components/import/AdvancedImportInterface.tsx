@@ -28,7 +28,6 @@ import {
   Twitter,
   Filter,
   Search,
-  Select as SelectIcon,
   MoreHorizontal,
   Zap,
   Target,
