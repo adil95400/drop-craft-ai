@@ -1107,6 +1107,125 @@ export type Database = {
         }
         Relationships: []
       }
+      realtime_chat_messages: {
+        Row: {
+          audio_data: string | null
+          content: string | null
+          created_at: string
+          function_arguments: Json | null
+          function_name: string | null
+          function_result: Json | null
+          id: string
+          message_type: string
+          metadata: Json | null
+          role: string
+          session_id: string
+          transcript: string | null
+        }
+        Insert: {
+          audio_data?: string | null
+          content?: string | null
+          created_at?: string
+          function_arguments?: Json | null
+          function_name?: string | null
+          function_result?: Json | null
+          id?: string
+          message_type?: string
+          metadata?: Json | null
+          role: string
+          session_id: string
+          transcript?: string | null
+        }
+        Update: {
+          audio_data?: string | null
+          content?: string | null
+          created_at?: string
+          function_arguments?: Json | null
+          function_name?: string | null
+          function_result?: Json | null
+          id?: string
+          message_type?: string
+          metadata?: Json | null
+          role?: string
+          session_id?: string
+          transcript?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "realtime_chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "realtime_chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      realtime_chat_sessions: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          language: string
+          session_name: string
+          status: string
+          updated_at: string
+          user_id: string
+          voice_preference: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          language?: string
+          session_name?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          voice_preference?: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          language?: string
+          session_name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          voice_preference?: string
+        }
+        Relationships: []
+      }
+      realtime_presence: {
+        Row: {
+          channel_name: string
+          created_at: string
+          id: string
+          is_active: boolean
+          last_seen: string
+          presence_data: Json
+          user_id: string
+        }
+        Insert: {
+          channel_name: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_seen?: string
+          presence_data?: Json
+          user_id: string
+        }
+        Update: {
+          channel_name?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_seen?: string
+          presence_data?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           content: string | null
