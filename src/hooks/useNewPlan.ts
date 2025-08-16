@@ -63,7 +63,7 @@ export const useNewPlan = (user?: User | null) => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ plan: newPlan })
+        .update({ plan: newPlan as any })
         .eq('id', user.id)
 
       if (error) throw error
