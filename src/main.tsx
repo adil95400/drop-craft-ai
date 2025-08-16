@@ -4,8 +4,9 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from '@/components/ui/toaster'
-import { AuthProvider } from '@/contexts/AuthContext'
+import { EnhancedAuthProvider } from '@/contexts/EnhancedAuthContext'
 import { PlanProvider } from '@/contexts/PlanContext'
+import SubscriptionSyncService from '@/components/plan/SubscriptionSyncService'
 import App from './App'
 import './index.css'
 
@@ -24,12 +25,13 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
+        <EnhancedAuthProvider>
           <PlanProvider>
+            <SubscriptionSyncService />
             <App />
             <Toaster />
           </PlanProvider>
-        </AuthProvider>
+        </EnhancedAuthProvider>
       </BrowserRouter>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

@@ -40,7 +40,7 @@ interface AuthProviderProps {
   children: ReactNode
 }
 
-export const AuthProvider = ({ children }: AuthProviderProps) => {
+export const EnhancedAuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)

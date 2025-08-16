@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthGuard } from '@/components/auth/AuthGuard';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { EnhancedAuthProvider } from '@/contexts/EnhancedAuthContext';
 import { AppLayout } from '@/layouts/AppLayout';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { OptimizedSkeleton } from '@/components/common/OptimizedSkeleton';
@@ -58,6 +58,7 @@ import {
   SuppliersLazy,
   SuppliersUltraProLazy,
   AdminLazy,
+  PaymentSuccessLazy,
 } from '@/components/lazy/LazyPages';
 
 // Light pages (direct imports)
@@ -97,7 +98,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+      <EnhancedAuthProvider>
         <ModalContextProvider>
           <TooltipProvider>
             <Toaster />
@@ -636,6 +637,15 @@ const App = () => (
                 </AppLayout>
               </AuthGuard>
             } />
+            <Route path="/payment/success" element={
+              <AuthGuard>
+                <AppLayout>
+                  <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
+                    <PaymentSuccessLazy />
+                  </Suspense>
+                </AppLayout>
+              </AuthGuard>
+            } />
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
@@ -643,7 +653,7 @@ const App = () => (
             </ModalProvider>
           </TooltipProvider>
         </ModalContextProvider>
-      </AuthProvider>
+      </EnhancedAuthProvider>
     </QueryClientProvider>
   </ErrorBoundary>
 );
