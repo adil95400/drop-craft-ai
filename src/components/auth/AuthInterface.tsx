@@ -103,12 +103,11 @@ export const AuthInterface = () => {
     }
   };
 
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleResetPassword = async (email: string) => {
     setIsLoading(true);
     
     try {
-      const { error } = await resetPassword(resetEmail);
+      const { error } = await resetPassword(email);
       if (error) {
         toast({
           title: "Erreur",
@@ -216,8 +215,7 @@ export const AuthInterface = () => {
                     onClick={() => {
                       const email = prompt('Entrez votre email pour réinitialiser le mot de passe:');
                       if (email) {
-                        setResetEmail(email);
-                        handleResetPassword(new Event('submit') as any);
+                        handleResetPassword(email);
                       }
                     }}
                   >

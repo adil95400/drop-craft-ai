@@ -130,13 +130,10 @@ export const useAuth = () => {
     try {
       cleanupAuthState();
       
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (err) {
-        // Continue even if this fails
-      }
+      // Wait a bit for cleanup
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}/dashboard`;
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -151,18 +148,22 @@ export const useAuth = () => {
 
       if (data.user && !data.session) {
         toast({
-          title: "Vérifiez votre email",
+          title: "Inscription réussie",
           description: "Un lien de confirmation a été envoyé à votre adresse email.",
         });
+      } else if (data.user && data.session) {
+        toast({
+          title: "Inscription réussie",
+          description: "Bienvenue dans ShopOpti Pro!",
+        });
+        // Force page reload for clean state
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000);
       }
 
       return { data, error: null };
     } catch (error: any) {
-      toast({
-        title: "Erreur d'inscription",
-        description: error.message,
-        variant: "destructive",
-      });
       return { data: null, error };
     }
   };
@@ -171,11 +172,8 @@ export const useAuth = () => {
     try {
       cleanupAuthState();
       
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (err) {
-        // Continue even if this fails
-      }
+      // Wait a bit for cleanup
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -183,30 +181,22 @@ export const useAuth = () => {
       });
 
       if (error) {
-        // Log failed login attempt directly to avoid circular dependency
-        logSecurityEvent('login_failed', 'warning', 'User login failed');
         throw error;
       }
 
       if (data.user) {
-        // Log successful login directly
-        logSecurityEvent('login_success', 'info', 'User login successful');
-        
         toast({
           title: "Connexion réussie",
-          description: "Bienvenue dans Shopopti Pro",
+          description: "Bienvenue dans ShopOpti Pro",
         });
         // Force page reload for clean state
-        window.location.href = '/dashboard';
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000);
       }
 
       return { data, error: null };
     } catch (error: any) {
-      toast({
-        title: "Erreur de connexion",
-        description: error.message,
-        variant: "destructive",
-      });
       return { data: null, error };
     }
   };
