@@ -1,18 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Shield, Eye, EyeOff } from "lucide-react";
 import { useRealCustomers } from '@/hooks/useRealCustomers';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSecureAdmin } from '@/hooks/useSecureAdmin';
 
 export const SecureCustomersList = () => {
   const [showSensitiveData, setShowSensitiveData] = useState(false);
   const { customers, isLoading } = useRealCustomers();
-  const { user } = useAuth();
-  
-  // Simple role check without using SECURITY DEFINER functions
-  const isAdmin = user?.email?.includes('admin') || false; // Simple check for demo
+  const { isAdmin, logAdminAccess } = useSecureAdmin();
+
+  const handleToggleSensitiveData = async () => {
+    if (!showSensitiveData) {
+      // Log admin access when showing sensitive data
+      await logAdminAccess('customers', 'view_sensitive_data');
+    }
+    setShowSensitiveData(!showSensitiveData);
+  };
 
   const maskEmail = (email: string) => {
     if (!email) return '';
@@ -40,8 +45,9 @@ export const SecureCustomersList = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setShowSensitiveData(!showSensitiveData)}
+          onClick={handleToggleSensitiveData}
           className="flex items-center gap-2"
+          disabled={!isAdmin}
         >
           {showSensitiveData ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           {showSensitiveData ? 'Masquer' : 'Afficher'} les données
