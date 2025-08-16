@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { AsyncButton } from '@/components/ui/async-button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Upload, 
   Link, 
@@ -17,11 +18,13 @@ import {
   XCircle,
   Loader2,
   Database,
-  Zap
+  Zap,
+  Settings
 } from 'lucide-react'
 import { useImportUltraPro } from '@/hooks/useImportUltraPro'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { ImportMethodsGrid } from './ImportMethodsGrid'
 
 interface ImportUltraProInterfaceProps {
   onImportComplete?: (result: any) => void
@@ -223,185 +226,204 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
         </Card>
       </div>
 
-      {/* Import Methods */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Méthodes d'Import</CardTitle>
-          <CardDescription>
-            Choisissez votre méthode d'import préférée pour vos produits
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {importMethods.map((method) => {
-              const IconComponent = method.icon
-              const isSelected = selectedMethod === method.id
-              
-              return (
-                <Card 
-                  key={method.id}
-                  className={`cursor-pointer transition-all hover:shadow-lg ${
-                    isSelected ? 'ring-2 ring-primary shadow-lg' : 'hover:shadow-md'
-                  }`}
-                  onClick={() => setSelectedMethod(method.id)}
-                >
-                  <CardContent className="p-4 text-center">
-                    <div className={`mx-auto mb-3 p-3 w-12 h-12 rounded-lg bg-gradient-to-r ${method.color} flex items-center justify-center`}>
-                      <IconComponent className="w-6 h-6 text-white" />
+      {/* Import Interface Tabs */}
+      <Tabs defaultValue="methods" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="methods" className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Méthodes d'Import
+          </TabsTrigger>
+          <TabsTrigger value="manual" className="flex items-center gap-2">
+            <Upload className="w-4 h-4" />
+            Import Manuel
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="methods">
+          <ImportMethodsGrid />
+        </TabsContent>
+
+        <TabsContent value="manual">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold">Import Manuel</CardTitle>
+              <CardDescription>
+                Choisissez votre méthode d'import préférée pour vos produits
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                {importMethods.map((method) => {
+                  const IconComponent = method.icon
+                  const isSelected = selectedMethod === method.id
+                  
+                  return (
+                    <Card 
+                      key={method.id}
+                      className={`cursor-pointer transition-all hover:shadow-lg ${
+                        isSelected ? 'ring-2 ring-primary shadow-lg' : 'hover:shadow-md'
+                      }`}
+                      onClick={() => setSelectedMethod(method.id)}
+                    >
+                      <CardContent className="p-4 text-center">
+                        <div className={`mx-auto mb-3 p-3 w-12 h-12 rounded-lg bg-gradient-to-r ${method.color} flex items-center justify-center`}>
+                          <IconComponent className="w-6 h-6 text-white" />
+                        </div>
+                        <h3 className="font-semibold text-sm mb-1">{method.title}</h3>
+                        <p className="text-xs text-muted-foreground">{method.description}</p>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+
+              {/* Method-specific interfaces */}
+              {selectedMethod === 'url' && (
+                <Card className="border-blue-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Link className="w-5 h-5" />
+                      Import par URL
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="import-url">URL du produit ou catalogue</Label>
+                      <Input
+                        id="import-url"
+                        type="url"
+                        placeholder="https://exemple.com/produit-ou-catalogue"
+                        value={importUrl}
+                        onChange={(e) => setImportUrl(e.target.value)}
+                        disabled={isProcessing}
+                      />
                     </div>
-                    <h3 className="font-semibold text-sm mb-1">{method.title}</h3>
-                    <p className="text-xs text-muted-foreground">{method.description}</p>
+                    
+                    {isProcessing && (
+                      <div className="space-y-2">
+                        <Progress value={importProgress} />
+                        <p className="text-sm text-center text-muted-foreground">
+                          Analyse de l'URL en cours... {importProgress}%
+                        </p>
+                      </div>
+                    )}
+                    
+                    <AsyncButton
+                      onClick={handleUrlImport}
+                      disabled={!importUrl.trim() || isProcessing}
+                      className="w-full"
+                    >
+                      <Link className="w-4 h-4 mr-2" />
+                      Importer depuis l'URL
+                    </AsyncButton>
                   </CardContent>
                 </Card>
-              )
-            })}
-          </div>
+              )}
 
-          {/* Method-specific interfaces */}
-          {selectedMethod === 'url' && (
-            <Card className="border-blue-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Link className="w-5 h-5" />
-                  Import par URL
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="import-url">URL du produit ou catalogue</Label>
-                  <Input
-                    id="import-url"
-                    type="url"
-                    placeholder="https://exemple.com/produit-ou-catalogue"
-                    value={importUrl}
-                    onChange={(e) => setImportUrl(e.target.value)}
-                    disabled={isProcessing}
-                  />
-                </div>
-                
-                {isProcessing && (
-                  <div className="space-y-2">
-                    <Progress value={importProgress} />
-                    <p className="text-sm text-center text-muted-foreground">
-                      Analyse de l'URL en cours... {importProgress}%
-                    </p>
-                  </div>
-                )}
-                
-                <AsyncButton
-                  onClick={handleUrlImport}
-                  disabled={!importUrl.trim() || isProcessing}
-                  className="w-full"
-                >
-                  <Link className="w-4 h-4 mr-2" />
-                  Importer depuis l'URL
-                </AsyncButton>
-              </CardContent>
-            </Card>
-          )}
-
-          {selectedMethod === 'csv' && (
-            <Card className="border-green-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Import CSV/Excel
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="import-file">Fichier CSV ou Excel</Label>
-                  <div className="mt-2">
-                    <input
-                      id="import-file"
-                      type="file"
-                      accept=".csv,.xlsx,.xls"
-                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                      disabled={isProcessing}
-                      className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                    />
-                  </div>
-                  {selectedFile && (
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Fichier sélectionné: {selectedFile.name}
-                    </p>
-                  )}
-                </div>
-
-                {isProcessing && (
-                  <div className="space-y-2">
-                    <Progress value={importProgress} />
-                    <p className="text-sm text-center text-muted-foreground">
-                      Traitement du fichier... {importProgress}%
-                    </p>
-                  </div>
-                )}
-
-                <AsyncButton
-                  onClick={handleFileImport}
-                  disabled={!selectedFile || isProcessing}
-                  className="w-full"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Importer le fichier
-                </AsyncButton>
-              </CardContent>
-            </Card>
-          )}
-
-          {selectedMethod === 'bulk' && (
-            <Card className="border-orange-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="w-5 h-5" />
-                  Import en Masse
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <AsyncButton
-                    onClick={() => handleBulkImport('trending_products')}
-                    disabled={isBulkImporting}
-                    variant="outline"
-                    className="h-auto p-4 flex-col items-start"
-                  >
-                    <Zap className="w-5 h-5 mb-2" />
-                    <div className="text-left">
-                      <div className="font-medium">Produits Tendance</div>
-                      <div className="text-sm text-muted-foreground">~500 produits populaires</div>
+              {selectedMethod === 'csv' && (
+                <Card className="border-green-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="w-5 h-5" />
+                      Import CSV/Excel
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="import-file">Fichier CSV ou Excel</Label>
+                      <div className="mt-2">
+                        <input
+                          id="import-file"
+                          type="file"
+                          accept=".csv,.xlsx,.xls"
+                          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                          disabled={isProcessing}
+                          className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                        />
+                      </div>
+                      {selectedFile && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Fichier sélectionné: {selectedFile.name}
+                        </p>
+                      )}
                     </div>
-                  </AsyncButton>
 
-                  <AsyncButton
-                    onClick={() => handleBulkImport('winners_detected')}
-                    disabled={isBulkImporting}
-                    variant="outline"
-                    className="h-auto p-4 flex-col items-start"
-                  >
-                    <CheckCircle className="w-5 h-5 mb-2" />
-                    <div className="text-left">
-                      <div className="font-medium">Winners Détectés</div>
-                      <div className="text-sm text-muted-foreground">~150 produits sélectionnés par IA</div>
-                    </div>
-                  </AsyncButton>
-                </div>
+                    {isProcessing && (
+                      <div className="space-y-2">
+                        <Progress value={importProgress} />
+                        <p className="text-sm text-center text-muted-foreground">
+                          Traitement du fichier... {importProgress}%
+                        </p>
+                      </div>
+                    )}
 
-                {isBulkImporting && (
-                  <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span className="font-medium">Import en cours...</span>
+                    <AsyncButton
+                      onClick={handleFileImport}
+                      disabled={!selectedFile || isProcessing}
+                      className="w-full"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Importer le fichier
+                    </AsyncButton>
+                  </CardContent>
+                </Card>
+              )}
+
+              {selectedMethod === 'bulk' && (
+                <Card className="border-orange-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Database className="w-5 h-5" />
+                      Import en Masse
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <AsyncButton
+                        onClick={() => handleBulkImport('trending_products')}
+                        disabled={isBulkImporting}
+                        variant="outline"
+                        className="h-auto p-4 flex-col items-start"
+                      >
+                        <Zap className="w-5 h-5 mb-2" />
+                        <div className="text-left">
+                          <div className="font-medium">Produits Tendance</div>
+                          <div className="text-sm text-muted-foreground">~500 produits populaires</div>
+                        </div>
+                      </AsyncButton>
+
+                      <AsyncButton
+                        onClick={() => handleBulkImport('winners_detected')}
+                        disabled={isBulkImporting}
+                        variant="outline"
+                        className="h-auto p-4 flex-col items-start"
+                      >
+                        <CheckCircle className="w-5 h-5 mb-2" />
+                        <div className="text-left">
+                          <div className="font-medium">Winners Détectés</div>
+                          <div className="text-sm text-muted-foreground">~150 produits sélectionnés par IA</div>
+                        </div>
+                      </AsyncButton>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      L'import en masse peut prendre quelques minutes
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </CardContent>
-      </Card>
+
+                    {isBulkImporting && (
+                      <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                        <div className="flex items-center gap-3 mb-2">
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <span className="font-medium">Import en cours...</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          L'import en masse peut prendre quelques minutes
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Imported Products List */}
       {importedProducts.length > 0 && (
