@@ -45,7 +45,7 @@ export function SecurityDashboardComplete() {
         .rpc('detect_suspicious_activity');
 
       if (suspiciousError) throw suspiciousError;
-      setSuspiciousActivity(suspicious || []);
+      setSuspiciousActivity(Array.isArray(suspicious) ? suspicious : []);
 
     } catch (error) {
       console.error('Error fetching security data:', error);

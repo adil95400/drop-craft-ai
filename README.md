@@ -218,6 +218,24 @@ VITE_SUPABASE_ANON_KEY=votre_cle_anon_prod
 - **CDN** Vercel Edge Network
 - **Cache** des ressources statiques
 
+## 🐛 Debug React Query
+
+### Configuration environnement
+Contrôlez la visibilité des React Query Devtools avec les variables d'environnement :
+
+- **Développement**: `VITE_ENABLE_RQ_DEVTOOLS=true` (par défaut)
+- **Production**: `VITE_ENABLE_RQ_DEVTOOLS=false` (par défaut)
+- **Staging**: `VITE_ENABLE_RQ_DEVTOOLS=false` (par défaut)
+
+### Mode admin uniquement
+Les devtools sont configurés pour s'afficher uniquement aux utilisateurs admin en développement. Les utilisateurs non-admin ne verront jamais le panneau même avec le flag activé.
+
+### Raccourci clavier
+Appuyez sur `Alt + D` pour basculer la visibilité du panneau devtools quand activé.
+
+### Optimisation bundle
+En production, React Query Devtools sont automatiquement exclus du bundle grâce au lazy loading et au tree-shaking.
+
 ## 🧪 Tests
 
 ### Tests unitaires
