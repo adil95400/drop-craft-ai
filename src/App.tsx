@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthGuard } from '@/components/auth/AuthGuard';
-import { EnhancedAuthProvider } from '@/contexts/EnhancedAuthContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { AppLayout } from '@/layouts/AppLayout';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { OptimizedSkeleton } from '@/components/common/OptimizedSkeleton';
@@ -98,7 +98,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
-      <EnhancedAuthProvider>
+      <AuthProvider>
         <ModalContextProvider>
           <TooltipProvider>
             <Toaster />
@@ -653,7 +653,7 @@ const App = () => (
             </ModalProvider>
           </TooltipProvider>
         </ModalContextProvider>
-      </EnhancedAuthProvider>
+      </AuthProvider>
     </QueryClientProvider>
   </ErrorBoundary>
 );
