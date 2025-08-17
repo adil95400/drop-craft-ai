@@ -19,7 +19,7 @@ const UnifiedPlanContext = createContext<UnifiedPlanContextType | undefined>(und
 
 // Configuration centralisée des fonctionnalités par plan
 const PLAN_FEATURES = {
-  free: [
+  standard: [
     'basic-import',
     'basic-catalog',
     'email-support'
@@ -76,7 +76,7 @@ export function UnifiedPlanProvider({ children }: { children: ReactNode }) {
     return PLAN_FEATURES[plan].includes(feature as any)
   }
 
-  const isFree = plan === 'free'
+  const isFree = plan === 'standard'
 
   const value: UnifiedPlanContextType = {
     plan,

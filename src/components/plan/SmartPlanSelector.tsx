@@ -34,7 +34,7 @@ interface SmartPlanConfig {
 }
 
 const smartPlanConfigs: Record<PlanType, SmartPlanConfig> = {
-  free: {
+  standard: {
     name: 'Gratuit',
     price: '0€',
     icon: Heart,
@@ -108,7 +108,7 @@ export const SmartPlanSelector = () => {
   const navigate = useNavigate()
 
   const handleUpgrade = async (newPlan: PlanType) => {
-    if (!user || newPlan === currentPlan || newPlan === 'free') return
+    if (!user || newPlan === currentPlan || newPlan === 'standard') return
 
     setLoading(newPlan)
     try {
@@ -121,7 +121,7 @@ export const SmartPlanSelector = () => {
   }
 
   const handleGetStarted = (plan: PlanType) => {
-    if (plan === 'free') {
+    if (plan === 'standard') {
       navigate('/auth')
     } else {
       handleUpgrade(plan)
@@ -213,7 +213,7 @@ export const SmartPlanSelector = () => {
                 <div className="space-y-2">
                   <div className="flex items-baseline justify-center gap-2">
                     <span className="text-4xl font-bold">{displayPrice}</span>
-                    {plan !== 'free' && (
+                    {plan !== 'standard' && (
                       <span className="text-muted-foreground">
                         /{billingCycle === 'monthly' ? 'mois' : 'mois'}
                       </span>
@@ -231,7 +231,7 @@ export const SmartPlanSelector = () => {
                     </div>
                   )}
                   
-                  {billingCycle === 'yearly' && plan !== 'free' && (
+                  {billingCycle === 'yearly' && plan !== 'standard' && (
                     <Badge variant="secondary" className="text-green-600">
                       <Sparkles className="h-3 w-3 mr-1" />
                       2 mois offerts
@@ -285,7 +285,7 @@ export const SmartPlanSelector = () => {
                     </div>
                   ) : isCurrentPlan ? (
                     'Plan actuel'
-                  ) : plan === 'free' && !user ? (
+                  ) : plan === 'standard' && !user ? (
                     'Commencer gratuitement'
                   ) : (
                     `Passer au ${config.name}`

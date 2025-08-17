@@ -1076,6 +1076,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin_mode: string | null
           avatar_url: string | null
           company: string | null
           created_at: string | null
@@ -1083,9 +1084,11 @@ export type Database = {
           full_name: string | null
           id: string
           plan: Database["public"]["Enums"]["plan_type"] | null
+          role: string
           updated_at: string | null
         }
         Insert: {
+          admin_mode?: string | null
           avatar_url?: string | null
           company?: string | null
           created_at?: string | null
@@ -1093,9 +1096,11 @@ export type Database = {
           full_name?: string | null
           id: string
           plan?: Database["public"]["Enums"]["plan_type"] | null
+          role?: string
           updated_at?: string | null
         }
         Update: {
+          admin_mode?: string | null
           avatar_url?: string | null
           company?: string | null
           created_at?: string | null
@@ -1103,6 +1108,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           plan?: Database["public"]["Enums"]["plan_type"] | null
+          role?: string
           updated_at?: string | null
         }
         Relationships: []
@@ -1821,6 +1827,14 @@ export type Database = {
           updated_at: string
           user_id: string
         }[]
+      }
+      get_effective_plan: {
+        Args: {
+          user_admin_mode?: string
+          user_plan: Database["public"]["Enums"]["plan_type"]
+          user_role: string
+        }
+        Returns: Database["public"]["Enums"]["plan_type"]
       }
       get_marketplace_products: {
         Args: {

@@ -58,7 +58,7 @@ export const usePlanGuard = () => {
     plan,
     isUltraPro: plan === 'ultra_pro',
     isPro: plan === 'pro' || plan === 'ultra_pro',
-    isFree: plan === 'free',
+    isFree: plan === 'standard',
     loading,
     error
   })

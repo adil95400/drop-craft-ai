@@ -5,6 +5,7 @@ import { NotificationDropdown } from "@/components/notifications/NotificationDro
 import { RealTimeNotifications } from "@/components/notifications/RealTimeNotifications";
 import { IntegratedChatSupport } from "@/components/support/IntegratedChatSupport";
 import { AdminUserDropdown } from "@/components/admin/AdminUserDropdown";
+import { AdminPlanSwitcher } from "@/components/admin/AdminPlanSwitcher";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AppLayoutProps {
@@ -41,6 +42,11 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="flex flex-col min-w-0">
             <AppHeader />
 
+            {/* Admin Plan Switcher */}
+            <div className="p-4 border-b">
+              <AdminPlanSwitcher />
+            </div>
+
             {/* Main Content */}
             <main className="flex-1 overflow-auto min-w-0 p-4 lg:p-6 bg-background">
               {children}
@@ -70,6 +76,11 @@ export function AppLayout({ children }: AppLayoutProps) {
           
           <SidebarInset className="flex flex-col min-h-screen">
             <AppHeader showTrigger />
+
+            {/* Mobile Admin Plan Switcher */}
+            <div className="p-4 border-b">
+              <AdminPlanSwitcher />
+            </div>
 
             {/* Mobile Content */}
             <main className="flex-1 overflow-auto min-w-0 p-4 bg-background">

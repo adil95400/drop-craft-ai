@@ -2,18 +2,25 @@ import { useState, useEffect } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { getEffectivePlan, type UserProfile, type UserRole, type AdminMode } from '@/utils/adminUtils'
 
-export type PlanType = 'free' | 'pro' | 'ultra_pro'
+export type PlanType = 'standard' | 'pro' | 'ultra_pro'
 
 interface PlanState {
   plan: PlanType
+  role: UserRole
+  admin_mode: AdminMode
+  effectivePlan: PlanType
   loading: boolean
   error: string | null
 }
 
 export const usePlan = (user?: User | null) => {
   const [planState, setPlanState] = useState<PlanState>({
-    plan: 'free',
+    plan: 'standard',
+    role: 'user',
+    admin_mode: null,
+    effectivePlan: 'standard',
     loading: true,
     error: null
   })
@@ -21,7 +28,14 @@ export const usePlan = (user?: User | null) => {
 
   useEffect(() => {
     if (!user) {
-      setPlanState({ plan: 'free', loading: false, error: null })
+      setPlanState({ 
+        plan: 'standard', 
+        role: 'user',
+        admin_mode: null,
+        effectivePlan: 'standard',
+        loading: false, 
+        error: null 
+      })
       return
     }
 
@@ -34,18 +48,35 @@ export const usePlan = (user?: User | null) => {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('plan')
+        .select('plan, role, admin_mode')
         .eq('id', userId)
         .maybeSingle()
 
       if (error) throw error
 
-      const userPlan = (data?.plan as PlanType) || 'free'
-      setPlanState({ plan: userPlan, loading: false, error: null })
+      const profile: UserProfile = {
+        plan: (data?.plan as PlanType) || 'standard',
+        role: (data?.role as UserRole) || 'user',
+        admin_mode: (data?.admin_mode as AdminMode) || null,
+      }
+
+      const effectivePlan = getEffectivePlan(profile)
+
+      setPlanState({ 
+        plan: profile.plan,
+        role: profile.role,
+        admin_mode: profile.admin_mode,
+        effectivePlan,
+        loading: false, 
+        error: null 
+      })
     } catch (error: any) {
       console.error('Error fetching user plan:', error)
       setPlanState({ 
-        plan: 'free', 
+        plan: 'standard',
+        role: 'user',
+        admin_mode: null,
+        effectivePlan: 'standard',
         loading: false, 
         error: error.message || 'Erreur lors de la récupération du plan' 
       })
@@ -82,12 +113,12 @@ export const usePlan = (user?: User | null) => {
   }
 
   const hasPlan = (minPlan: PlanType): boolean => {
-    const planHierarchy = { free: 0, pro: 1, ultra_pro: 2 }
-    return planHierarchy[planState.plan] >= planHierarchy[minPlan]
+    const planHierarchy = { standard: 0, pro: 1, ultra_pro: 2 }
+    return planHierarchy[planState.effectivePlan] >= planHierarchy[minPlan]
   }
 
-  const isUltraPro = () => planState.plan === 'ultra_pro'
-  const isPro = () => planState.plan === 'pro' || planState.plan === 'ultra_pro'
+  const isUltraPro = () => planState.effectivePlan === 'ultra_pro'
+  const isPro = () => planState.effectivePlan === 'pro' || planState.effectivePlan === 'ultra_pro'
 
   return {
     ...planState,

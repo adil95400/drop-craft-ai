@@ -19,6 +19,7 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<{ error: any }>
   updateProfile: (updates: any) => Promise<{ error: any }>
   refreshSubscription: () => Promise<void>
+  refetchProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -79,6 +80,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const fetchProfile = async () => {
+    if (!user) return
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      if (error) throw error
+      setProfile(data)
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    }
+  }
+
+  const refetchProfile = fetchProfile
+
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -90,6 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (session?.user) {
         setTimeout(() => {
           refreshSubscription()
+          fetchProfile()
         }, 1000)
       }
     })
@@ -108,9 +129,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Defer subscription check to prevent deadlocks (avec délai plus long)
         setTimeout(() => {
           refreshSubscription()
+          fetchProfile()
         }, 2000)
       } else if (event === 'SIGNED_OUT') {
         setSubscription(null)
+        setProfile(null)
       }
     })
 
@@ -295,7 +318,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signOut,
     resetPassword,
     updateProfile,
-    refreshSubscription
+    refreshSubscription,
+    refetchProfile
   }
 
   return (
