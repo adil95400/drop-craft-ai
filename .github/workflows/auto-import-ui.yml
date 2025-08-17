@@ -1,0 +1,409 @@
+name: Auto Import UI & Module
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Generate files
+        run: |
+          set -e
+          mkdir -p src/pages src/lib/import/adapters src/lib/import supabase/functions/import-fetch public/data/samples
+
+          # ---------- 1) ImportSources.tsx (UI style Channable + logos SimpleIcons) ----------
+          cat > src/pages/ImportSources.tsx <<'TSX'
+          import React, { useMemo, useState } from "react";
+          import { motion } from "framer-motion";
+          import { useNavigate } from "react-router-dom";
+          import { Plug, Database, Link as LinkIcon, Store, FileSpreadsheet, FileJson, FileText, Globe } from "lucide-react";
+          import { Button } from "@/components/ui/button";
+          import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+          import { Badge } from "@/components/ui/badge";
+          import {
+            Dialog, DialogContent, DialogDescription, DialogFooter,
+            DialogHeader, DialogTitle
+          } from "@/components/ui/dialog";
+          import { Input } from "@/components/ui/input";
+          import { Label } from "@/components/ui/label";
+
+          type Provider = { name: string; slug: string; si?: string; note?: string; };
+          const P: Provider[] = [
+            { name:"AFOSTO", slug:"afosto" },
+            { name:"BigCommerce", slug:"bigcommerce", si:"bigcommerce" },
+            { name:"CCV Shop", slug:"ccv" },
+            { name:"Crawler", slug:"crawler" },
+            { name:"ItsPerfect", slug:"itsperfect" },
+            { name:"Lightspeed", slug:"lightspeed", si:"lightspeed" },
+            { name:"Ecwid", slug:"ecwid", si:"ecwid" },
+            { name:"Magento", slug:"magento", si:"magento" },
+            { name:"Mijnwebwinkel", slug:"mijnwebwinkel" },
+            { name:"Oxid eSales", slug:"oxid", si:"oxid" },
+            { name:"Prestashop Plugin", slug:"prestashop", si:"prestashop" },
+            { name:"Shopify", slug:"shopify", si:"shopify" },
+            { name:"Shoptrader", slug:"shoptrader" },
+            { name:"Shopware 5 Plugin", slug:"shopware5", si:"shopware" },
+            { name:"Shopware 6", slug:"shopware6", si:"shopware" },
+            { name:"Squarespace", slug:"squarespace", si:"squarespace" },
+            { name:"WooCommerce", slug:"woocommerce", si:"woocommerce" },
+            { name:"Akeneo", slug:"akeneo", si:"akeneo" },
+          ];
+
+          function ProviderLogo({ slug, si, alt }:{slug:string; si?:string; alt:string}) {
+            const color: Record<string,string> = {
+              shopify:"12B886", woocommerce:"96588A", prestashop:"DF0067",
+              bigcommerce:"000000", magento:"F26322", squarespace:"121212",
+              akeneo:"4D007D", lightspeed:"CC0000", ecwid:"6C6FF5", oxid:"E74A1E", shopware:"189EFF"
+            };
+            const s = si || slug;
+            const url = s ? `https://cdn.simpleicons.org/${s}/${color[s]||"3b82f6"}` : "";
+            return url
+              ? <img src={url} alt={alt} className="w-8 h-8" onError={(e)=>{(e.currentTarget as HTMLImageElement).style.display="none"}}/>
+              : <div className="w-8 h-8 rounded bg-muted grid place-items-center text-xs">{alt[0]}</div>;
+          }
+
+          type ConnectForm = { name:string; username?:string; password?:string; token?:string; domain?:string; };
+          export default function ImportSources(){
+            const navigate = useNavigate();
+            const [open, setOpen] = useState(false);
+            const [pv, setPv] = useState<Provider | null>(null);
+            const [loading, setLoading] = useState(false);
+            const [f, setF] = useState<ConnectForm>({ name:"" });
+
+            function openConnect(p:Provider){
+              setPv(p); setF({ name:p.name, username:"", password:"", token:"", domain:"" }); setOpen(true);
+            }
+            async function submitConnect(){
+              if(!pv) return;
+              setLoading(true);
+              try{
+                await fetch(`/api/connect/${pv.slug}`, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(f) });
+                navigate(`/import/ultra?provider=${pv.slug}`);
+              }catch{ alert("Connexion échouée. Vérifie les identifiants."); }
+              finally{ setLoading(false); setOpen(false); }
+            }
+
+            const TECH = useMemo(()=>[
+              { name:"XML", icon:<FileText className="w-5 h-5"/>, q:"xml" },
+              { name:"CSV", icon:<FileSpreadsheet className="w-5 h-5"/>, q:"csv" },
+              { name:"TXT", icon:<FileText className="w-5 h-5"/>, q:"txt" },
+              { name:"JSON", icon:<FileJson className="w-5 h-5"/>, q:"json" },
+              { name:"Google Sheets", icon:<Globe className="w-5 h-5"/>, q:"sheets" },
+            ],[]);
+
+            return (
+              <div className="p-6 md:p-8 max-w-7xl mx-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-semibold">Installe ton import</h1>
+                    <p className="text-muted-foreground">Choisis un plugin e-commerce ou une source technique.</p>
+                  </div>
+                  <Badge variant="outline" className="rounded-2xl">Import Hub</Badge>
+                </div>
+
+                <Card className="mb-6">
+                  <CardHeader><CardTitle className="flex items-center gap-2"><Plug className="w-5 h-5"/> Configure via plugins</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {P.map(p=>(
+                        <motion.button key={p.slug} whileHover={{scale:1.02}} whileTap={{scale:0.99}}
+                          onClick={()=>openConnect(p)}
+                          className="group border rounded-2xl p-4 text-left bg-white hover:shadow-md transition">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-zinc-50 to-zinc-100 grid place-items-center">
+                              <ProviderLogo slug={p.slug} si={p.si} alt={p.name}/>
+                            </div>
+                            <div className="font-medium">{p.name}</div>
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                            <Store className="w-3 h-3"/> Plugin
+                          </div>
+                        </motion.button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader><CardTitle className="flex items-center gap-2"><Database className="w-5 h-5"/> Sources techniques</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                      {TECH.map(s=>(
+                        <motion.button key={s.q} whileHover={{scale:1.02}} whileTap={{scale:0.99}}
+                          onClick={()=>location.assign(`/import/ultra?source=${s.q}`)}
+                          className="border rounded-2xl p-4 bg-white hover:shadow-md text-left">
+                          <div className="w-12 h-12 rounded-xl bg-muted grid place-items-center mb-3">{s.icon}</div>
+                          <div className="font-medium">{s.name}</div>
+                          <div className="text-xs text-muted-foreground mt-1">XML / CSV / TXT / JSON / Sheets</div>
+                        </motion.button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Dialog open={open} onOpenChange={setOpen}>
+                  <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2"><LinkIcon className="w-5 h-5"/> Connecter avec {pv?.name}</DialogTitle>
+                      <DialogDescription>Renseigne les identifiants requis pour créer la connexion.</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4">
+                      <div className="grid gap-2"><Label>Nom</Label><Input value={f.name} onChange={e=>setF(x=>({...x,name:e.target.value}))}/></div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-2"><Label>Nom d’utilisateur</Label><Input value={f.username||""} onChange={e=>setF(x=>({...x,username:e.target.value}))}/></div>
+                        <div className="grid gap-2"><Label>Mot de passe</Label><Input type="password" value={f.password||""} onChange={e=>setF(x=>({...x,password:e.target.value}))}/></div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-2"><Label>Token</Label><Input value={f.token||""} onChange={e=>setF(x=>({...x,token:e.target.value}))}/></div>
+                        <div className="grid gap-2"><Label>Domaine</Label><Input placeholder="https://www.exempleboutique.fr" value={f.domain||""} onChange={e=>setF(x=>({...x,domain:e.target.value}))}/></div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={()=>setOpen(false)}>Fermer</Button>
+                      <Button onClick={submitConnect} disabled={loading}>{loading?"Connexion...":`Se connecter`}</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            );
+          }
+          TSX
+
+          # ---------- 2) ImportUltraPro.tsx (page principale d’import améliorée) ----------
+          cat > src/pages/ImportUltraPro.tsx <<'TSX'
+          /* Version courte (dépend des adapters/ai/dedupe ci-dessous) */
+          import React, { useMemo, useRef, useState } from "react";
+          import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+          import { Button } from "@/components/ui/button";
+          import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+          import { Input } from "@/components/ui/input";
+          import { Badge } from "@/components/ui/badge";
+          import { parseCSVFile } from "@/lib/import/adapters/csv";
+          import { parseXMLFromUrl } from "@/lib/import/adapters/xml";
+          import { parseProductFromUrl } from "@/lib/import/adapters/url";
+          import { parseJSONFromUrl } from "@/lib/import/adapters/json";
+          import { parseSheetCSV } from "@/lib/import/adapters/sheets";
+          import { aiEnhanceBatch } from "@/lib/import/ai";
+          import { dedupeAndFingerprint } from "@/lib/import/dedupe";
+
+          type Variant = { sku:string; price:number; stock:number; options?:Record<string,string> };
+          export type NProduct = { source:string; sourceRef?:string; title:string; description?:string; brand?:string; category?:string; ean?:string; images:string[]; variants:Variant[] };
+
+          export default function ImportUltraPro(){
+            const [active, setActive] = useState<"csv"|"xml"|"url"|"json"|"sheets">("csv");
+            const [raw, setRaw] = useState<any[]>([]);
+            const [cols, setCols] = useState<string[]>([]);
+            const [products, setProducts] = useState<NProduct[]>([]);
+            const [lang, setLang] = useState("fr");
+            const [log, setLog] = useState<string[]>([]);
+            const [loading, setLoading] = useState(false);
+            const fileRef = useRef<HTMLInputElement>(null);
+            const push = (m:string)=>setLog(l=>[`• ${new Date().toLocaleTimeString()} ${m}`, ...l]);
+
+            async function onCSV(e:React.ChangeEvent<HTMLInputElement>){
+              if(!e.target.files?.length) return;
+              setLoading(true); push("CSV: parsing…");
+              const { rows, columns } = await parseCSVFile(e.target.files[0]);
+              setRaw(rows); setCols(columns);
+              setLoading(false); push(`CSV ok: ${rows.length} lignes`);
+            }
+
+            const [xmlUrl, setXmlUrl] = useState(""); async function goXML(){
+              setLoading(true); push("XML: fetch…");
+              const { rows, columns } = await parseXMLFromUrl(xmlUrl);
+              setRaw(rows); setCols(columns);
+              setLoading(false); push(`XML ok: ${rows.length} items`);
+            }
+
+            const [url, setUrl] = useState(""); async function goURL(){
+              setLoading(true); push("URL: extraction…");
+              const p = await parseProductFromUrl(url);
+              setProducts([p]); setRaw([]); setCols([]);
+              setLoading(false); push(`URL ok: ${p.title}`);
+            }
+
+            const [jsonUrl, setJsonUrl] = useState(""); async function goJSON(){
+              setLoading(true); push("JSON: fetch…");
+              const { rows, columns } = await parseJSONFromUrl(jsonUrl);
+              setRaw(rows); setCols(columns);
+              setLoading(false); push(`JSON ok: ${rows.length} items`);
+            }
+
+            const [sheetUrl, setSheetUrl] = useState(""); async function goSheets(){
+              setLoading(true); push("Sheets: export CSV…");
+              const { rows, columns } = await parseSheetCSV(sheetUrl);
+              setRaw(rows); setCols(columns);
+              setLoading(false); push(`Sheets ok: ${rows.length} rows`);
+            }
+
+            const preview = useMemo(()=>raw.slice(0,20),[raw]);
+
+            function normalize(){
+              const list:NProduct[] = raw.map((r:any)=>({
+                source: active, title: r.title||r.name||"Produit",
+                description: r.description||"", brand:r.brand||"", category:r.category||"", ean:r.ean||"",
+                images: r.image?[r.image]: (r.images||[]),
+                variants:[{ sku: r.sku||crypto.randomUUID(), price: Number(r.price||0), stock: Number(r.stock||0) }]
+              }));
+              setProducts(list); push(`Normalisés: ${list.length}`);
+            }
+
+            const { cleaned, duplicates } = useMemo(()=>dedupeAndFingerprint(products),[products]);
+
+            async function enhance(){
+              setLoading(true); push("IA: amélioration + traduction…");
+              const e = await aiEnhanceBatch(cleaned,{lang});
+              setProducts(e); setLoading(false); push("IA ok");
+            }
+
+            async function save(){
+              setLoading(true); push("Save drafts…");
+              await fetch("/api/import/save-drafts", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ products }) });
+              setLoading(false); push("Drafts enregistrés");
+            }
+
+            return (
+              <div className="p-6 space-y-6">
+                <div className="flex items-center gap-2"><h1 className="text-2xl font-semibold">Import Ultra Pro</h1><Badge variant="outline">v1</Badge></div>
+                <Card><CardHeader><CardTitle>Sources</CardTitle></CardHeader><CardContent>
+                  <Tabs value={active} onValueChange={(v:any)=>setActive(v)}>
+                    <TabsList className="flex flex-wrap gap-2">
+                      <TabsTrigger value="csv">CSV</TabsTrigger>
+                      <TabsTrigger value="xml">XML</TabsTrigger>
+                      <TabsTrigger value="url">URL produit</TabsTrigger>
+                      <TabsTrigger value="json">JSON</TabsTrigger>
+                      <TabsTrigger value="sheets">Google Sheets</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="csv" className="mt-3">
+                      <Input type="file" accept=".csv" ref={fileRef} onChange={onCSV}/>
+                    </TabsContent>
+                    <TabsContent value="xml" className="mt-3">
+                      <div className="flex gap-2"><Input placeholder="https://exemple.com/feed.xml" value={xmlUrl} onChange={e=>setXmlUrl(e.target.value)}/><Button onClick={goXML}>Charger</Button></div>
+                    </TabsContent>
+                    <TabsContent value="url" className="mt-3">
+                      <div className="flex gap-2"><Input placeholder="https://exemple.com/produit" value={url} onChange={e=>setUrl(e.target.value)}/><Button onClick={goURL}>Récupérer</Button></div>
+                    </TabsContent>
+                    <TabsContent value="json" className="mt-3">
+                      <div className="flex gap-2"><Input placeholder="https://exemple.com/products.json" value={jsonUrl} onChange={e=>setJsonUrl(e.target.value)}/><Button onClick={goJSON}>Charger</Button></div>
+                    </TabsContent>
+                    <TabsContent value="sheets" className="mt-3">
+                      <div className="flex gap-2"><Input placeholder="https://docs.google.com/spreadsheets/d/..../edit" value={sheetUrl} onChange={e=>setSheetUrl(e.target.value)}/><Button onClick={goSheets}>Charger</Button></div>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent></Card>
+
+                {!!raw.length && (
+                  <Card><CardHeader><CardTitle>Prévisualisation ({preview.length})</CardTitle></CardHeader>
+                  <CardContent>
+                    <div className="overflow-auto max-h-80 border rounded">
+                      <table className="min-w-full text-sm">
+                        <thead><tr className="bg-muted">{cols.map(c=><th key={c} className="p-2 text-left">{c}</th>)}</tr></thead>
+                        <tbody>{preview.map((r,i)=>(<tr key={i} className="border-t">
+                          {cols.map(c=><td key={c} className="p-2">{String(r[c]??"")}</td>)}
+                        </tr>))}</tbody>
+                      </table>
+                    </div>
+                    <div className="mt-3"><Button onClick={normalize}>Préparer les produits</Button></div>
+                  </CardContent></Card>
+                )}
+
+                {!!products.length && (
+                  <Card><CardHeader><CardTitle>Nettoyage & IA</CardTitle></CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="text-sm">{duplicates.length>0? `${duplicates.length} doublons détectés` : `Aucun doublon`}</div>
+                    <div className="flex items-center gap-2">
+                      <select className="border rounded px-2 py-1" value={lang} onChange={e=>setLang(e.target.value)}>
+                        <option value="fr">fr</option><option value="en">en</option><option value="es">es</option><option value="de">de</option>
+                      </select>
+                      <Button onClick={enhance}>Améliorer avec IA</Button>
+                      <Button variant="secondary" onClick={save}>Importer en brouillons</Button>
+                    </div>
+                  </CardContent></Card>
+                )}
+
+                <Card><CardHeader><CardTitle>Journal</CardTitle></CardHeader>
+                  <CardContent><div className="text-xs whitespace-pre-wrap leading-5 max-h-56 overflow-auto">{log.join("\n")}</div></CardContent>
+                </Card>
+              </div>
+            );
+          }
+          TSX
+
+          # ---------- 3) Adapters & helpers ----------
+          cat > src/lib/import/adapters/csv.ts <<'TS'
+          import Papa from "papaparse";
+          export async function parseCSVFile(file: File){ return new Promise<{rows:any[];columns:string[]}>((ok,err)=>{
+            Papa.parse(file,{header:true,skipEmptyLines:true,complete:(r:any)=>{const rows=r.data||[]; ok({rows,columns:rows.length?Object.keys(rows[0]):[]});},error:err});
+          });}
+          TS
+
+          cat > src/lib/import/adapters/xml.ts <<'TS'
+          import { XMLParser } from "fast-xml-parser";
+          export async function parseXMLFromUrl(url:string){
+            const res = await fetch("/functions/import-fetch?url="+encodeURIComponent(url));
+            if(!res.ok) throw new Error("XML fetch failed");
+            const xml = await res.text();
+            const p = new XMLParser({ ignoreAttributes:false });
+            const obj = p.parse(xml);
+            const list = findItemsArray(obj);
+            const rows:any[] = Array.isArray(list)? list : [];
+            return { rows, columns: rows.length? Object.keys(rows[0]): [] };
+          }
+          function findItemsArray(o:any):any[]{ if(!o||typeof o!=="object") return []; for(const k of Object.keys(o)){ const v=o[k];
+            if(Array.isArray(v)&&v.length&&typeof v[0]==="object") return v; if(typeof v==="object"){ const r=findItemsArray(v); if(r.length) return r; } }
+            return []; }
+          TS
+
+          cat > src/lib/import/adapters/url.ts <<'TS'
+          import type { NProduct } from "@/pages/ImportUltraPro";
+          export async function parseProductFromUrl(url:string):Promise<NProduct>{
+            const res = await fetch("/functions/import-fetch?url="+encodeURIComponent(url));
+            if(!res.ok) throw new Error("fetch failed");
+            const html = await res.text();
+            const ld = extractJSONLD(html);
+            const prod = ld?.["@type"]==="Product" ? ld : null;
+            const title = prod?.name || extractTag(html,"title") || "Produit";
+            const description = prod?.description || "";
+            const images = Array.isArray(prod?.image)? prod!.image : (prod?.image?[prod.image]:[]);
+            const offer = Array.isArray(prod?.offers)? prod!.offers[0] : prod?.offers;
+            const price = Number(offer?.price||0);
+            return { source:"url", sourceRef:url, title, description, brand:prod?.brand?.name||"", category:prod?.category||"", ean:prod?.gtin13||prod?.gtin||"", images, variants:[{ sku: crypto.randomUUID(), price, stock: 0 }] };
+          }
+          function extractJSONLD(html:string){ const m=/<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/i.exec(html); if(!m) return null; try{ return JSON.parse(m[1]); }catch{ return null; } }
+          function extractTag(html:string,tag:string){ const m=new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`,"i").exec(html); return m? m[1].trim(): null; }
+          TS
+
+          cat > src/lib/import/adapters/json.ts <<'TS'
+          export async function parseJSONFromUrl(url:string){
+            const r = await fetch(url,{redirect:"follow"}); if(!r.ok) throw new Error("JSON fetch failed");
+            const data = await r.json();
+            const rows = Array.isArray(data)? data : (Array.isArray(data?.products)? data.products : []);
+            return { rows, columns: rows.length? Object.keys(rows[0]): [] };
+          }
+          TS
+
+          cat > src/lib/import/adapters/sheets.ts <<'TS'
+          import { parseCSVFile } from "./csv";
+          export async function parseSheetCSV(sheetUrl:string){
+            // Convert Google Sheets edit URL -> CSV export
+            let url = sheetUrl;
+            if(sheetUrl.includes("/edit")){
+              url = sheetUrl.replace(/\/edit.*/,"/export?format=csv");
+            }
+            const res = await fetch(url); if(!res.ok) throw new Error("Sheets fetch failed");
+            const blob = await res.blob();
+            const file = new File([blob],"sheet.csv",{type:"text/csv"});
+            return await parseCSVFile(file);
+          }
+          TS
+
+          cat > src/lib/import/ai.ts <<'TS'
+          import typ
