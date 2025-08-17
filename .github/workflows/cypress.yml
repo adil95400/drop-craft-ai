@@ -1,62 +1,72 @@
-name: Cypress E2E Tests
+name: Tests Cypress E2E
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main]          # évite de spammer sur toutes les branches
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+concurrency:
+  group: cypress-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   cypress-run:
-    runs-on: ubuntu-22.04
-    
-    strategy:
-      matrix:
-        containers: [1, 2] # Run tests in parallel
-        
+    runs-on: ubuntu-latest
+    # ne pas faire tourner sur ta branche d'UI (retire cette ligne quand tu veux activer)
+    if: ${{ github.ref_name != 'auto/import-ui' }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: 18
+          cache: npm
 
-      - name: Install dependencies
+      - name: Install deps
         run: npm ci
 
-      - name: Build application
-        run: npm run build
+      # Si tes tests utilisent Playwright comme navigateur (optionnel)
+      - name: Cache Playwright binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
 
-      - name: Start server
-        run: npm run preview &
-        
-      - name: Wait for server
-        run: npx wait-on http://localhost:4173
+      - name: Install Playwright (optionnel)
+        run: npx playwright install --with-deps
 
-      - name: Run Cypress tests
+      - name: Run Cypress (dev server)
         uses: cypress-io/github-action@v6
         with:
-          record: true
-          parallel: true
-          group: 'Button Functionality Tests'
-          spec: cypress/e2e/buttons-functionality.cy.ts
+          start: npm run dev
+          wait-on: 'http://localhost:5173'
+          wait-on-timeout: 180        # ↑ augmente si Vite met plus de temps
+          browser: chrome             # ou 'electron' si tu n'as pas besoin de chrome
+          record: false               # passe à true si tu utilises Cypress Cloud
+          config-file: cypress.config.ts
         env:
-          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          NODE_OPTIONS: --max-old-space-size=4096
 
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v4
+      - name: Upload screenshots on fail
         if: failure()
+        uses: actions/upload-artifact@v4
         with:
           name: cypress-screenshots
-          path: cypress/screenshots
+          path: cypress/screenshots/**
+          retention-days: 14
 
-      - name: Upload videos
+      - name: Upload videos on fail
+        if: failure()
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: cypress-videos
-          path: cypress/videos
+          path: cypress/videos/**
+          retention-days: 14
