@@ -6,12 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
-# Évite les exécutions en double sur la même branche
+# Évite les runs en double sur la même branche
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-# Permissions minimales; nécessaires pour upload SARIF & Codecov
+# Permissions minimales; nécessaires pour l'upload SARIF & Codecov
 permissions:
   contents: read
   actions: read
@@ -20,6 +20,7 @@ permissions:
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
@@ -51,7 +52,8 @@ jobs:
   e2e-tests:
     runs-on: ubuntu-latest
     needs: lint-and-test
-    # Ignore les E2E sur la branche auto/import-ui (évite de bloquer la PR UI)
+    timeout-minutes: 30
+    # ignore les E2E sur la branche auto/import-ui pendant la PR UI
     if: ${{ github.ref_name != 'auto/import-ui' }}
 
     steps:
@@ -67,7 +69,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Cache des binaires Playwright (grosse économie de temps)
       - name: Cache Playwright binaries
         uses: actions/cache@v4
         with:
@@ -88,9 +89,9 @@ jobs:
       - name: Run E2E tests
         run: npm run test:e2e
 
-      - name: Upload E2E test results (report)
-        uses: actions/upload-artifact@v4
+      - name: Upload E2E test results (on failure)
         if: failure()
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
@@ -99,8 +100,8 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     needs: lint-and-test
-    # On produit le rapport mais on ne bloque pas le pipeline (toggle si tu veux strict)
-    continue-on-error: true
+    continue-on-error: true    # ne bloque pas la CI si des vulns sont trouvées
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -123,6 +124,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint-and-test, e2e-tests, security-scan]
     if: github.ref == 'refs/heads/main'
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
@@ -163,9 +165,10 @@ jobs:
   notify-slack:
     runs-on: ubuntu-latest
     needs: build-and-deploy
-    # Notifier seulement si succès ET le secret est présent
-    if: ${{ needs.build-and-deploy.result == 'success' && secrets.SLACK_WEBHOOK_URL != '' }}
-
+    # on mappe le secret vers env, puis on teste env.* dans l'if
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    if: ${{ needs.build-and-deploy.result == 'success' && env.SLACK_WEBHOOK_URL != '' }}
     steps:
       - name: Slack Notification
         uses: 8398a7/action-slack@v3
@@ -173,4 +176,4 @@ jobs:
           status: ${{ job.status }}
           fields: repo,ref,author,workflow,job,commit
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
