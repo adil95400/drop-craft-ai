@@ -151,26 +151,60 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      // Clean up existing state first
+      cleanupAuthState()
+      
+      // Attempt global sign out first to ensure clean state
+      try {
+        await supabase.auth.signOut({ scope: 'global' })
+      } catch (err) {
+        // Continue even if this fails
+      }
+      
+      // Wait a bit for cleanup
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (error) {
+        let errorMessage = error.message
+        
+        // Provide more user-friendly error messages
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = "Email ou mot de passe incorrect. Vérifiez vos identifiants."
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = "Veuillez confirmer votre email avant de vous connecter."
+        } else if (error.message.includes('Too many requests')) {
+          errorMessage = "Trop de tentatives. Veuillez réessayer dans quelques minutes."
+        }
+        
         toast({
           title: "Erreur de connexion",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
         })
-      } else {
+      } else if (data.user) {
         toast({
           title: "Connexion réussie",
           description: "Bienvenue sur Shopopti Pro!",
         })
+        
+        // Force page refresh for clean state
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 500)
       }
 
       return { error }
     } catch (error: any) {
+      toast({
+        title: "Erreur de connexion",
+        description: "Une erreur inattendue s'est produite. Veuillez réessayer.",
+        variant: "destructive",
+      })
       return { error }
     }
   }
