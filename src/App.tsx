@@ -70,6 +70,8 @@ import Contact from './pages/Contact';
 import BlogPage from './pages/Blog';
 import BlogNew from './pages/BlogNew';
 import PricingPlansFull from './pages/PricingPlansFull';
+import FAQComplete from './pages/FAQComplete';
+import CompanyPage from './pages/CompanyPage';
 import Testimonials from './pages/Testimonials';
 import Guides from './pages/Guides';
 import Changelog from './pages/Changelog';
@@ -131,6 +133,8 @@ const App = () => (
             <Route path="/legal" element={<Legal />} />
             <Route path="/pricing-plans-full" element={<PricingPlansFull />} />
             <Route path="/blog-new" element={<BlogNew />} />
+            <Route path="/faq-complete" element={<FAQComplete />} />
+            <Route path="/company" element={<CompanyPage />} />
             
             {/* Protected routes with layout */}
             <Route path="/dashboard" element={
