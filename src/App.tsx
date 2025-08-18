@@ -68,6 +68,8 @@ import Pricing from './pages/Pricing';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import BlogPage from './pages/Blog';
+import BlogNew from './pages/BlogNew';
+import PricingPlansFull from './pages/PricingPlansFull';
 import Testimonials from './pages/Testimonials';
 import Guides from './pages/Guides';
 import Changelog from './pages/Changelog';
@@ -117,13 +119,7 @@ const App = () => (
             } />
             <Route path="/features" element={<Features />} />
             <Route path="/pricing" element={<Pricing />} />
-            <Route path="/pricing-plans" element={
-              <AuthGuard requireAuth={false}>
-                <AppLayout>
-                  <PricingPage />
-                </AppLayout>
-              </AuthGuard>
-            } />
+            <Route path="/pricing-plans" element={<PricingPage />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/blog" element={<BlogPage />} />
@@ -133,6 +129,8 @@ const App = () => (
             <Route path="/api-docs" element={<ApiDocs />} />
             <Route path="/faq-new" element={<FAQNew />} />
             <Route path="/legal" element={<Legal />} />
+            <Route path="/pricing-plans-full" element={<PricingPlansFull />} />
+            <Route path="/blog-new" element={<BlogNew />} />
             
             {/* Protected routes with layout */}
             <Route path="/dashboard" element={
