@@ -73,7 +73,9 @@ import PricingPlansFull from './pages/PricingPlansFull';
 import FAQComplete from './pages/FAQComplete';
 import CompanyPage from './pages/CompanyPage';
 import Testimonials from './pages/Testimonials';
+import TestimonialsNew from './pages/TestimonialsNew';
 import Guides from './pages/Guides';
+import GuidesNew from './pages/GuidesNew';
 import Changelog from './pages/Changelog';
 import ApiDocs from './pages/ApiDocs';
 import FAQNew from './pages/FAQNew';
@@ -126,7 +128,9 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/testimonials" element={<Testimonials />} />
+            <Route path="/testimonials-new" element={<TestimonialsNew />} />
             <Route path="/guides" element={<Guides />} />
+            <Route path="/guides-new" element={<GuidesNew />} />
             <Route path="/changelog" element={<Changelog />} />
             <Route path="/api-docs" element={<ApiDocs />} />
             <Route path="/faq-new" element={<FAQNew />} />
