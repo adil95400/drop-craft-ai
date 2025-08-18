@@ -3,176 +3,145 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowRight, 
-  TrendingUp, 
-  ShoppingCart, 
-  BarChart3, 
-  Zap, 
-  Shield, 
-  Globe,
-  Star,
-  CheckCircle,
-  Play,
-  Users,
-  Target,
-  Rocket,
-  Crown,
-  Sparkles,
-  Bot,
-  LineChart,
-  Package,
-  Truck,
-  MessageSquare,
-  Settings,
-  CreditCard,
-  Search
-} from "lucide-react";
+import { ArrowRight, TrendingUp, ShoppingCart, BarChart3, Zap, Shield, Globe, Star, CheckCircle, Play, Users, Target, Rocket, Crown, Sparkles, Bot, LineChart, Package, Truck, MessageSquare, Settings, CreditCard, Search } from "lucide-react";
 import heroImage from "/lovable-uploads/aa11c615-9c0c-4dbf-b691-586cf4f9c53a.png";
-
 const HomeNew = () => {
-  const features = [
-    {
-      icon: <Bot className="w-8 h-8" />,
-      title: "IA Avancée",
-      description: "Intelligence artificielle pour optimiser vos produits gagnants automatiquement",
-      badge: "NOUVEAU",
-      color: "bg-gradient-primary"
-    },
-    {
-      icon: <TrendingUp className="w-8 h-8" />,
-      title: "Produits Gagnants",
-      description: "Découvrez les produits tendances avec notre algorithme exclusif",
-      badge: "POPULAIRE",
-      color: "bg-gradient-accent"
-    },
-    {
-      icon: <Zap className="w-8 h-8" />,
-      title: "Import Ultra-Rapide",
-      description: "Importez vos produits en 1 clic depuis 50+ fournisseurs",
-      badge: "ULTRA PRO",
-      color: "bg-gradient-success"
-    },
-    {
-      icon: <BarChart3 className="w-8 h-8" />,
-      title: "Analytics Temps Réel",
-      description: "Tableaux de bord avancés pour maximiser vos profits",
-      badge: "PRO",
-      color: "bg-gradient-hero"
-    },
-    {
-      icon: <Shield className="w-8 h-8" />,
-      title: "Sécurité Renforcée",
-      description: "Protection avancée de vos données et transactions",
-      badge: "SÉCURISÉ",
-      color: "bg-gradient-soft"
-    },
-    {
-      icon: <Globe className="w-8 h-8" />,
-      title: "Multi-Marketplace",
-      description: "Synchronisation avec Shopify, WooCommerce, Ebay et plus",
-      badge: "INTÉGRÉ",
-      color: "bg-gradient-primary"
-    }
-  ];
-
-  const stats = [
-    { icon: <Users className="w-6 h-6" />, value: "50,000+", label: "Utilisateurs Actifs" },
-    { icon: <Package className="w-6 h-6" />, value: "2M+", label: "Produits Analysés" },
-    { icon: <TrendingUp className="w-6 h-6" />, value: "95%", label: "Taux de Réussite" },
-    { icon: <Target className="w-6 h-6" />, value: "24/7", label: "Support Premium" }
-  ];
-
-  const testimonials = [
-    {
-      name: "Marie Dubois",
-      role: "E-commercante",
-      rating: 5,
-      comment: "ShopOpti a révolutionné mon business ! J'ai augmenté mes ventes de 300% en 3 mois.",
-      avatar: "MD"
-    },
-    {
-      name: "Alex Martin",
-      role: "Dropshipper Pro",
-      rating: 5,
-      comment: "L'IA de ShopOpti trouve les produits gagnants que mes concurrents ratent. Incroyable !",
-      avatar: "AM"
-    },
-    {
-      name: "Sophie Leroy",
-      role: "Entrepreneur",
-      rating: 5,
-      comment: "Interface intuitive, outils puissants. Exactement ce dont j'avais besoin !",
-      avatar: "SL"
-    }
-  ];
-
-  const plans = [
-    {
-      name: "Starter",
-      price: "29€",
-      period: "/mois",
-      description: "Parfait pour débuter",
-      features: [
-        "100 produits analysés/mois",
-        "Support par email",
-        "Intégrations de base",
-        "Analytics basiques"
-      ],
-      badge: "POPULAIRE",
-      buttonText: "Commencer",
-      buttonVariant: "outline" as const
-    },
-    {
-      name: "Pro",
-      price: "79€",
-      period: "/mois",
-      description: "Pour les e-commerçants sérieux",
-      features: [
-        "Produits illimités",
-        "IA avancée",
-        "Support prioritaire",
-        "Analytics Pro",
-        "Toutes les intégrations",
-        "Formation incluse"
-      ],
-      badge: "RECOMMANDÉ",
-      buttonText: "Choisir Pro",
-      buttonVariant: "default" as const,
-      featured: true
-    },
-    {
-      name: "Ultra Pro",
-      price: "199€",
-      period: "/mois",
-      description: "Solution enterprise complète",
-      features: [
-        "Tout du plan Pro",
-        "IA personnalisée",
-        "Account manager dédié",
-        "API complète",
-        "White label",
-        "Formations VIP"
-      ],
-      badge: "PREMIUM",
-      buttonText: "Contactez-nous",
-      buttonVariant: "outline" as const
-    }
-  ];
-
-  const tools = [
-    { icon: <Search className="w-5 h-5" />, name: "Recherche Produits", path: "/catalogue" },
-    { icon: <Package className="w-5 h-5" />, name: "Import Produits", path: "/import" },
-    { icon: <ShoppingCart className="w-5 h-5" />, name: "Gestion Commandes", path: "/orders" },
-    { icon: <BarChart3 className="w-5 h-5" />, name: "Analytics", path: "/analytics" },
-    { icon: <Truck className="w-5 h-5" />, name: "Suivi Livraisons", path: "/tracking" },
-    { icon: <MessageSquare className="w-5 h-5" />, name: "Avis Clients", path: "/reviews" },
-    { icon: <Settings className="w-5 h-5" />, name: "Automatisation", path: "/automation" },
-    { icon: <CreditCard className="w-5 h-5" />, name: "Paiements", path: "/payments" }
-  ];
-
-  return (
-    <div className="min-h-screen bg-background">
+  const features = [{
+    icon: <Bot className="w-8 h-8" />,
+    title: "IA Avancée",
+    description: "Intelligence artificielle pour optimiser vos produits gagnants automatiquement",
+    badge: "NOUVEAU",
+    color: "bg-gradient-primary"
+  }, {
+    icon: <TrendingUp className="w-8 h-8" />,
+    title: "Produits Gagnants",
+    description: "Découvrez les produits tendances avec notre algorithme exclusif",
+    badge: "POPULAIRE",
+    color: "bg-gradient-accent"
+  }, {
+    icon: <Zap className="w-8 h-8" />,
+    title: "Import Ultra-Rapide",
+    description: "Importez vos produits en 1 clic depuis 50+ fournisseurs",
+    badge: "ULTRA PRO",
+    color: "bg-gradient-success"
+  }, {
+    icon: <BarChart3 className="w-8 h-8" />,
+    title: "Analytics Temps Réel",
+    description: "Tableaux de bord avancés pour maximiser vos profits",
+    badge: "PRO",
+    color: "bg-gradient-hero"
+  }, {
+    icon: <Shield className="w-8 h-8" />,
+    title: "Sécurité Renforcée",
+    description: "Protection avancée de vos données et transactions",
+    badge: "SÉCURISÉ",
+    color: "bg-gradient-soft"
+  }, {
+    icon: <Globe className="w-8 h-8" />,
+    title: "Multi-Marketplace",
+    description: "Synchronisation avec Shopify, WooCommerce, Ebay et plus",
+    badge: "INTÉGRÉ",
+    color: "bg-gradient-primary"
+  }];
+  const stats = [{
+    icon: <Users className="w-6 h-6" />,
+    value: "50,000+",
+    label: "Utilisateurs Actifs"
+  }, {
+    icon: <Package className="w-6 h-6" />,
+    value: "2M+",
+    label: "Produits Analysés"
+  }, {
+    icon: <TrendingUp className="w-6 h-6" />,
+    value: "95%",
+    label: "Taux de Réussite"
+  }, {
+    icon: <Target className="w-6 h-6" />,
+    value: "24/7",
+    label: "Support Premium"
+  }];
+  const testimonials = [{
+    name: "Marie Dubois",
+    role: "E-commercante",
+    rating: 5,
+    comment: "ShopOpti a révolutionné mon business ! J'ai augmenté mes ventes de 300% en 3 mois.",
+    avatar: "MD"
+  }, {
+    name: "Alex Martin",
+    role: "Dropshipper Pro",
+    rating: 5,
+    comment: "L'IA de ShopOpti trouve les produits gagnants que mes concurrents ratent. Incroyable !",
+    avatar: "AM"
+  }, {
+    name: "Sophie Leroy",
+    role: "Entrepreneur",
+    rating: 5,
+    comment: "Interface intuitive, outils puissants. Exactement ce dont j'avais besoin !",
+    avatar: "SL"
+  }];
+  const plans = [{
+    name: "Starter",
+    price: "29€",
+    period: "/mois",
+    description: "Parfait pour débuter",
+    features: ["100 produits analysés/mois", "Support par email", "Intégrations de base", "Analytics basiques"],
+    badge: "POPULAIRE",
+    buttonText: "Commencer",
+    buttonVariant: "outline" as const
+  }, {
+    name: "Pro",
+    price: "79€",
+    period: "/mois",
+    description: "Pour les e-commerçants sérieux",
+    features: ["Produits illimités", "IA avancée", "Support prioritaire", "Analytics Pro", "Toutes les intégrations", "Formation incluse"],
+    badge: "RECOMMANDÉ",
+    buttonText: "Choisir Pro",
+    buttonVariant: "default" as const,
+    featured: true
+  }, {
+    name: "Ultra Pro",
+    price: "199€",
+    period: "/mois",
+    description: "Solution enterprise complète",
+    features: ["Tout du plan Pro", "IA personnalisée", "Account manager dédié", "API complète", "White label", "Formations VIP"],
+    badge: "PREMIUM",
+    buttonText: "Contactez-nous",
+    buttonVariant: "outline" as const
+  }];
+  const tools = [{
+    icon: <Search className="w-5 h-5" />,
+    name: "Recherche Produits",
+    path: "/catalogue"
+  }, {
+    icon: <Package className="w-5 h-5" />,
+    name: "Import Produits",
+    path: "/import"
+  }, {
+    icon: <ShoppingCart className="w-5 h-5" />,
+    name: "Gestion Commandes",
+    path: "/orders"
+  }, {
+    icon: <BarChart3 className="w-5 h-5" />,
+    name: "Analytics",
+    path: "/analytics"
+  }, {
+    icon: <Truck className="w-5 h-5" />,
+    name: "Suivi Livraisons",
+    path: "/tracking"
+  }, {
+    icon: <MessageSquare className="w-5 h-5" />,
+    name: "Avis Clients",
+    path: "/reviews"
+  }, {
+    icon: <Settings className="w-5 h-5" />,
+    name: "Automatisation",
+    path: "/automation"
+  }, {
+    icon: <CreditCard className="w-5 h-5" />,
+    name: "Paiements",
+    path: "/payments"
+  }];
+  return <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
@@ -181,7 +150,7 @@ const HomeNew = () => {
               <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-primary-foreground" />
               </div>
-              <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-slate-50">
                 ShopOpti
               </span>
             </div>
@@ -255,11 +224,7 @@ const HomeNew = () => {
             {/* Hero Image */}
             <div className="relative max-w-5xl mx-auto">
               <div className="absolute inset-0 bg-gradient-primary opacity-20 blur-3xl rounded-3xl" />
-              <img 
-                src={heroImage} 
-                alt="Dashboard ShopOpti"
-                className="relative z-10 w-full rounded-3xl shadow-floating border border-border/50"
-              />
+              <img src={heroImage} alt="Dashboard ShopOpti" className="relative z-10 w-full rounded-3xl shadow-floating border border-border/50" />
             </div>
           </div>
         </div>
@@ -269,15 +234,13 @@ const HomeNew = () => {
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
+            {stats.map((stat, index) => <div key={index} className="text-center">
                 <div className="flex justify-center mb-4 text-primary">
                   {stat.icon}
                 </div>
                 <div className="text-3xl md:text-4xl font-bold mb-2">{stat.value}</div>
                 <div className="text-muted-foreground">{stat.label}</div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -300,8 +263,7 @@ const HomeNew = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="group hover:shadow-glow transition-all duration-300 border-border/50 hover:border-primary/20">
+            {features.map((feature, index) => <Card key={index} className="group hover:shadow-glow transition-all duration-300 border-border/50 hover:border-primary/20">
                 <CardHeader>
                   <div className="flex items-start justify-between mb-4">
                     <div className={`w-16 h-16 rounded-xl ${feature.color} flex items-center justify-center text-white`}>
@@ -316,8 +278,7 @@ const HomeNew = () => {
                     {feature.description}
                   </CardDescription>
                 </CardHeader>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -331,8 +292,7 @@ const HomeNew = () => {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            {tools.map((tool, index) => (
-              <Link key={index} to={tool.path}>
+            {tools.map((tool, index) => <Link key={index} to={tool.path}>
                 <Card className="hover:shadow-card transition-all duration-200 cursor-pointer group">
                   <CardContent className="p-6 text-center">
                     <div className="text-primary mb-3 group-hover:scale-110 transition-transform">
@@ -341,8 +301,7 @@ const HomeNew = () => {
                     <p className="text-sm font-medium">{tool.name}</p>
                   </CardContent>
                 </Card>
-              </Link>
-            ))}
+              </Link>)}
           </div>
         </div>
       </section>
@@ -365,8 +324,7 @@ const HomeNew = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="relative overflow-hidden group hover:shadow-glow transition-all duration-300">
+            {testimonials.map((testimonial, index) => <Card key={index} className="relative overflow-hidden group hover:shadow-glow transition-all duration-300">
                 <CardHeader>
                   <div className="flex items-center space-x-4 mb-4">
                     <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold">
@@ -378,16 +336,13 @@ const HomeNew = () => {
                     </div>
                   </div>
                   <div className="flex mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    ))}
+                    {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground italic">"{testimonial.comment}"</p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -410,15 +365,12 @@ const HomeNew = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {plans.map((plan, index) => (
-              <Card key={index} className={`relative ${plan.featured ? 'border-primary shadow-glow scale-105' : 'border-border'} hover:shadow-intense transition-all duration-300`}>
-                {plan.featured && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+            {plans.map((plan, index) => <Card key={index} className={`relative ${plan.featured ? 'border-primary shadow-glow scale-105' : 'border-border'} hover:shadow-intense transition-all duration-300`}>
+                {plan.featured && <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <Badge className="bg-primary text-primary-foreground">
                       {plan.badge}
                     </Badge>
-                  </div>
-                )}
+                  </div>}
                 
                 <CardHeader className="text-center">
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
@@ -430,23 +382,16 @@ const HomeNew = () => {
                 </CardHeader>
                 
                 <CardContent className="space-y-4">
-                  {plan.features.map((feature, featureIndex) => (
-                    <div key={featureIndex} className="flex items-center space-x-3">
+                  {plan.features.map((feature, featureIndex) => <div key={featureIndex} className="flex items-center space-x-3">
                       <CheckCircle className="w-5 h-5 text-success" />
                       <span className="text-sm">{feature}</span>
-                    </div>
-                  ))}
+                    </div>)}
                   
-                  <Button 
-                    variant={plan.buttonVariant} 
-                    className={`w-full mt-8 ${plan.featured ? 'bg-gradient-primary hover:bg-primary-hover' : ''}`}
-                    size="lg"
-                  >
+                  <Button variant={plan.buttonVariant} className={`w-full mt-8 ${plan.featured ? 'bg-gradient-primary hover:bg-primary-hover' : ''}`} size="lg">
                     {plan.buttonText}
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -545,8 +490,6 @@ const HomeNew = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default HomeNew;
