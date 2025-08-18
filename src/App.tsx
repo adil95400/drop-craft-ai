@@ -73,6 +73,7 @@ import Guides from './pages/Guides';
 import Changelog from './pages/Changelog';
 import ApiDocs from './pages/ApiDocs';
 import FAQNew from './pages/FAQNew';
+import Legal from './pages/Legal';
 import Suppliers from './pages/Suppliers';
 import WinnersPage from './domains/winners/pages/WinnersPage';
 import Settings from './pages/Settings';
@@ -131,6 +132,7 @@ const App = () => (
             <Route path="/changelog" element={<Changelog />} />
             <Route path="/api-docs" element={<ApiDocs />} />
             <Route path="/faq-new" element={<FAQNew />} />
+            <Route path="/legal" element={<Legal />} />
             
             {/* Protected routes with layout */}
             <Route path="/dashboard" element={
