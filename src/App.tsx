@@ -99,6 +99,17 @@ import SuiviEnTransitUltraPro from './pages/SuiviEnTransitUltraPro';
 import AvisPositifUltraPro from './pages/AvisPositifUltraPro';
 import PricingPage from './pages/PricingPage';
 
+// Ultra Pro Optimized pages (direct imports)
+import ImportUltraProOptimized from './pages/ImportUltraProOptimized';
+import CatalogueUltraProOptimized from './pages/CatalogueUltraProOptimized';
+import OrdersUltraProOptimized from './pages/OrdersUltraProOptimized';
+import CRMUltraProOptimized from './pages/CRMUltraProOptimized';
+import AnalyticsUltraProOptimized from './pages/AnalyticsUltraProOptimized';
+import AutomationUltraProOptimized from './pages/AutomationUltraProOptimized';
+import SEOUltraProOptimized from './pages/SEOUltraProOptimized';
+import MarketingUltraProOptimized from './pages/MarketingUltraProOptimized';
+import ReviewsUltraProOptimized from './pages/ReviewsUltraProOptimized';
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -655,6 +666,71 @@ const App = () => (
                   <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <PaymentSuccessLazy />
                   </Suspense>
+                </AppLayout>
+              </AuthGuard>
+            } />
+            
+            {/* Ultra Pro Optimized routes */}
+            <Route path="/import-ultra-pro-optimized" element={
+              <AuthGuard>
+                <AppLayout>
+                  <ImportUltraProOptimized />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/catalogue-ultra-pro-optimized" element={
+              <AuthGuard>
+                <AppLayout>
+                  <CatalogueUltraProOptimized />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/orders-ultra-pro-optimized" element={
+              <AuthGuard>
+                <AppLayout>
+                  <OrdersUltraProOptimized />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/crm-ultra-pro-optimized" element={
+              <AuthGuard>
+                <AppLayout>
+                  <CRMUltraProOptimized />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/analytics-ultra-pro-optimized" element={
+              <AuthGuard>
+                <AppLayout>
+                  <AnalyticsUltraProOptimized />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/automation-ultra-pro-optimized" element={
+              <AuthGuard>
+                <AppLayout>
+                  <AutomationUltraProOptimized />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/seo-ultra-pro-optimized" element={
+              <AuthGuard>
+                <AppLayout>
+                  <SEOUltraProOptimized />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/marketing-ultra-pro-optimized" element={
+              <AuthGuard>
+                <AppLayout>
+                  <MarketingUltraProOptimized />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/reviews-ultra-pro-optimized" element={
+              <AuthGuard>
+                <AppLayout>
+                  <ReviewsUltraProOptimized />
                 </AppLayout>
               </AuthGuard>
             } />
