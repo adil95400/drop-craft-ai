@@ -69,24 +69,10 @@ const navigationGroups = [
         badge: "Import"
       },
       {
-        title: "Import Ultra Pro",
-        url: "/import-ultra-pro", 
-        icon: Bot,
-        badge: "IA+",
-        premium: true
-      },
-      {
         title: "Catalogue",
         url: "/catalogue",
         icon: Package,
         badge: "Standard"
-      },
-      {
-        title: "Catalogue Ultra Pro",
-        url: "/catalogue-ultra-pro",
-        icon: Sparkles,
-        badge: "Ultra Pro",
-        premium: true
       },
       {
         title: "Marketplace",
@@ -107,24 +93,10 @@ const navigationGroups = [
         badge: "Standard"
       },
       {
-        title: "Commandes Ultra Pro",
-        url: "/orders-ultra-pro",
-        icon: Zap,
-        badge: "Ultra Pro",
-        premium: true
-      },
-      {
         title: "CRM Clients",
         url: "/crm",
         icon: Users,
         badge: "CRM"
-      },
-      {
-        title: "CRM Ultra Pro",
-        url: "/crm-ultra-pro",
-        icon: Bot,
-        badge: "IA+",
-        premium: true
       }
     ]
   },
@@ -139,24 +111,10 @@ const navigationGroups = [
         badge: "Tracking"
       },
       {
-        title: "Suivi Ultra Pro",
-        url: "/tracking-ultra-pro",
-        icon: Sparkles,
-        badge: "Ultra Pro",
-        premium: true
-      },
-      {
         title: "Inventaire",
         url: "/inventory",
         icon: Package,
         badge: "Stock"
-      },
-      {
-        title: "Inventaire Ultra Pro",
-        url: "/inventory-ultra-pro",
-        icon: Bot,
-        badge: "IA+",
-        premium: true
       },
       {
         title: "Fournisseurs",
@@ -177,31 +135,16 @@ const navigationGroups = [
         badge: "SEO"
       },
       {
-        title: "SEO Ultra Pro",
-        url: "/seo-ultra-pro",
-        icon: Bot,
-        badge: "IA+",
-        premium: true
-      },
-      {
         title: "Marketing",
         url: "/marketing",
         icon: BarChart3,
         badge: "Marketing"
       },
       {
-        title: "Marketing Ultra Pro",
-        url: "/marketing-ultra-pro",
-        icon: Sparkles,
-        badge: "Ultra Pro",
-        premium: true
-      },
-      {
-        title: "Blog IA",
+        title: "Blog",
         url: "/blog",
         icon: Bot,
-        badge: "IA",
-        premium: true
+        badge: "Blog"
       },
       {
         title: "Reviews",
@@ -220,13 +163,6 @@ const navigationGroups = [
         url: "/automation",
         icon: Bot,
         badge: "Auto"
-      },
-      {
-        title: "Automation Ultra Pro",
-        url: "/automation-ultra-pro",
-        icon: Zap,
-        badge: "Ultra Pro",
-        premium: true
       },
       {
         title: "Plugins",
@@ -251,13 +187,6 @@ const navigationGroups = [
         url: "/analytics",
         icon: BarChart3,
         badge: "Analytics"
-      },
-      {
-        title: "Analytics Ultra Pro",
-        url: "/analytics-ultra-pro",
-        icon: Sparkles,
-        badge: "Ultra Pro",
-        premium: true
       },
       {
         title: "Winners",
