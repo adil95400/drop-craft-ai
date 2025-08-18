@@ -132,7 +132,11 @@ All colors MUST be HSL.
   }
 
   h1 {
-    @apply bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent;
+    background: linear-gradient(to right, hsl(var(--primary)), hsl(270 95% 75%)) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
   }
 }
 
