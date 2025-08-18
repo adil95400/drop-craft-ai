@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, ArrowLeft, Mail, Lock, User, Building, Loader2 } from "lucide-react";
+import { Zap, ArrowLeft, Mail, Lock, User, Building, Loader2, KeyRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -26,6 +26,12 @@ const Auth = () => {
     password: "",
     company: ""
   });
+
+  const [resetForm, setResetForm] = useState({
+    email: ""
+  });
+
+  const [activeTab, setActiveTab] = useState("login");
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -102,8 +108,9 @@ const Auth = () => {
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!loginForm.email) {
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetForm.email) {
       toast({
         title: "Email requis",
         description: "Veuillez saisir votre email pour réinitialiser votre mot de passe",
@@ -112,10 +119,32 @@ const Auth = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
-      await resetPassword(loginForm.email);
+      const { error } = await resetPassword(resetForm.email);
+      if (error) {
+        toast({
+          title: "Erreur",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Email envoyé !",
+          description: "Vérifiez votre boîte mail pour réinitialiser votre mot de passe",
+          variant: "default",
+        });
+        setActiveTab("login");
+      }
     } catch (error) {
       console.error('Password reset error:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi de l'email",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -166,10 +195,11 @@ const Auth = () => {
         </div>
 
         {/* Auth Tabs */}
-        <Tabs defaultValue="login" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="login">Connexion</TabsTrigger>
             <TabsTrigger value="signup">Inscription</TabsTrigger>
+            <TabsTrigger value="reset">Mot de passe</TabsTrigger>
           </TabsList>
 
           {/* Login Tab */}
@@ -228,7 +258,7 @@ const Auth = () => {
                     <Button 
                       variant="link" 
                       className="text-sm"
-                      onClick={handleForgotPassword}
+                      onClick={() => setActiveTab("reset")}
                       type="button"
                     >
                       Mot de passe oublié ?
@@ -384,6 +414,85 @@ const Auth = () => {
                     </svg>
                     {isLoading ? "Connexion..." : "Google"}
                   </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Reset Password Tab */}
+          <TabsContent value="reset">
+            <Card className="border-border bg-card shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <KeyRound className="w-5 h-5" />
+                  <span>Mot de passe oublié</span>
+                </CardTitle>
+                <CardDescription>
+                  Saisissez votre email pour recevoir un lien de réinitialisation
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        placeholder="votre@email.com"
+                        value={resetForm.email}
+                        onChange={(e) => setResetForm({...resetForm, email: e.target.value})}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    variant="hero" 
+                    className="w-full" 
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Envoi en cours...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="mr-2 h-4 w-4" />
+                        Envoyer le lien de réinitialisation
+                      </>
+                    )}
+                  </Button>
+
+                  <div className="text-center space-y-2">
+                    <Button 
+                      variant="link" 
+                      className="text-sm"
+                      onClick={() => setActiveTab("login")}
+                      type="button"
+                    >
+                      Retour à la connexion
+                    </Button>
+                  </div>
+                </form>
+
+                <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+                  <div className="text-sm text-muted-foreground space-y-2">
+                    <p className="font-medium">📧 Instructions :</p>
+                    <ul className="list-disc list-inside space-y-1 text-xs">
+                      <li>Vérifiez votre boîte de réception</li>
+                      <li>Cliquez sur le lien dans l'email reçu</li>
+                      <li>Créez votre nouveau mot de passe</li>
+                      <li>Revenez vous connecter ici</li>
+                    </ul>
+                    <p className="text-xs text-muted-foreground mt-3">
+                      💡 N'oubliez pas de vérifier vos spams si vous ne voyez pas l'email
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
