@@ -119,12 +119,26 @@ export const useCatalogProducts = (filters: any = {}) => {
   const { data: suppliers = [] } = useQuery({
     queryKey: ['catalogSuppliers'], 
     queryFn: async () => {
-      // For authenticated users, we can still show supplier names (but not sensitive data)
-      const { data, error } = await supabase.from('catalog_products')
-        .select('supplier_id, supplier_name')
-        .not('supplier_name', 'is', null);
+      // Use secure function to get supplier data
+      const { data, error } = await supabase.rpc('get_secure_catalog_products', {
+        category_filter: null,
+        search_term: null,
+        limit_count: 1000
+      });
       if (error) throw error;
-      return [...new Map(data.map(s => [s.supplier_id, { id: s.supplier_id, name: s.supplier_name }])).values()];
+      
+      // Extract unique suppliers from the secure data
+      const uniqueSuppliers = new Map()
+      data?.forEach(product => {
+        if (product.supplier_name && product.external_id) {
+          uniqueSuppliers.set(product.external_id, {
+            id: product.external_id,
+            name: product.supplier_name
+          })
+        }
+      })
+      
+      return Array.from(uniqueSuppliers.values());
     }
   });
 

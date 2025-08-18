@@ -22,42 +22,52 @@ export class CatalogService {
     }
 
     try {
-      let query = supabase
-        .from('catalog_products')
-        .select('*', { count: 'exact' })
-
-      // Apply filters
-      if (filters?.category) {
-        query = query.eq('category', filters.category)
-      }
-      if (filters?.supplier) {
-        query = query.eq('supplier_name', filters.supplier)
-      }
-      if (filters?.search) {
-        query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
-      }
-      if (filters?.priceRange) {
-        query = query.gte('price', filters.priceRange[0]).lte('price', filters.priceRange[1])
-      }
-
-      // Apply sorting
-      if (filters?.sortBy) {
-        query = query.order(filters.sortBy, { ascending: filters.sortOrder === 'asc' })
-      } else {
-        query = query.order('created_at', { ascending: false })
-      }
-
-      const { data, error, count } = await query.limit(50)
+      // Use the secure catalog products function instead of direct table access
+      const { data, error } = await supabase.rpc('get_secure_catalog_products', {
+        category_filter: filters?.category || null,
+        search_term: filters?.search || null,
+        limit_count: 50
+      })
 
       if (error) throw error
 
+      // Apply client-side filters that aren't handled by the function
+      let filteredData = data || []
+      
+      if (filters?.supplier) {
+        filteredData = filteredData.filter(product => 
+          product.supplier_name?.toLowerCase().includes(filters.supplier.toLowerCase())
+        )
+      }
+      
+      if (filters?.priceRange) {
+        filteredData = filteredData.filter(product =>
+          product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]
+        )
+      }
+
+      // Apply client-side sorting
+      if (filters?.sortBy) {
+        filteredData.sort((a, b) => {
+          const aVal = a[filters.sortBy as keyof typeof a]
+          const bVal = b[filters.sortBy as keyof typeof b]
+          if (filters.sortOrder === 'asc') {
+            return aVal > bVal ? 1 : -1
+          } else {
+            return aVal < bVal ? 1 : -1
+          }
+        })
+      }
+
+      const count = filteredData.length
+
       const result = {
-        products: (data || []).map(product => ({
+        products: filteredData.map(product => ({
           ...product,
-          supplier_id: product.supplier_id || 'unknown',
+          supplier_id: product.external_id || 'unknown',
           supplier_name: product.supplier_name || 'Unknown Supplier'
         })) as CatalogProduct[],
-        total: count || 0
+        total: count
       }
 
       this.cache.set(cacheKey, { data: result, timestamp: Date.now() })
@@ -77,16 +87,29 @@ export class CatalogService {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('catalog_products')
-        .select('*')
-        .eq('id', id)
-        .single()
+      // Use the secure function for single product access
+      const { data, error } = await supabase.rpc('get_secure_catalog_products', {
+        category_filter: null,
+        search_term: null,
+        limit_count: 1000 // Get more to find specific product
+      })
 
       if (error) throw error
+      
+      const product = data?.find(p => p.id === id)
+      if (!product) {
+        throw new Error('Product not found')
+      }
 
-      this.cache.set(cacheKey, { data, timestamp: Date.now() })
-      return data
+      // Map to ensure all required fields are present
+      const mappedProduct = {
+        ...product,
+        supplier_id: product.external_id || 'unknown',
+        supplier_name: product.supplier_name || 'Unknown Supplier'
+      } as CatalogProduct
+      
+      this.cache.set(cacheKey, { data: mappedProduct, timestamp: Date.now() })
+      return mappedProduct
     } catch (error) {
       console.error('Catalog product fetch failed:', error)
       throw error
