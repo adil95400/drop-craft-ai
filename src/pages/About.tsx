@@ -3,132 +3,101 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft,
-  Sparkles,
-  Target,
-  Users,
-  Rocket,
-  Heart,
-  Award,
-  TrendingUp,
-  Globe,
-  Shield,
-  Zap,
-  Brain,
-  Star,
-  ArrowRight,
-  MapPin,
-  Mail,
-  Phone,
-  Linkedin,
-  Twitter
-} from "lucide-react";
-
+import { ArrowLeft, Sparkles, Target, Users, Rocket, Heart, Award, TrendingUp, Globe, Shield, Zap, Brain, Star, ArrowRight, MapPin, Mail, Phone, Linkedin, Twitter } from "lucide-react";
 const About = () => {
-  const values = [
-    {
-      icon: <Brain className="w-8 h-8" />,
-      title: "Innovation",
-      description: "Nous repoussons constamment les limites de l'IA pour offrir les meilleures solutions e-commerce"
-    },
-    {
-      icon: <Heart className="w-8 h-8" />,
-      title: "Passion",
-      description: "Notre équipe est passionnée par le succès de nos clients et leur croissance"
-    },
-    {
-      icon: <Shield className="w-8 h-8" />,
-      title: "Transparence",
-      description: "Nous croyons en la transparence totale dans nos prix, notre technologie et nos résultats"
-    },
-    {
-      icon: <Rocket className="w-8 h-8" />,
-      title: "Performance",
-      description: "Chaque fonctionnalité est conçue pour maximiser vos résultats et votre ROI"
+  const values = [{
+    icon: <Brain className="w-8 h-8" />,
+    title: "Innovation",
+    description: "Nous repoussons constamment les limites de l'IA pour offrir les meilleures solutions e-commerce"
+  }, {
+    icon: <Heart className="w-8 h-8" />,
+    title: "Passion",
+    description: "Notre équipe est passionnée par le succès de nos clients et leur croissance"
+  }, {
+    icon: <Shield className="w-8 h-8" />,
+    title: "Transparence",
+    description: "Nous croyons en la transparence totale dans nos prix, notre technologie et nos résultats"
+  }, {
+    icon: <Rocket className="w-8 h-8" />,
+    title: "Performance",
+    description: "Chaque fonctionnalité est conçue pour maximiser vos résultats et votre ROI"
+  }];
+  const team = [{
+    name: "Alexandre Dubois",
+    role: "CEO & Fondateur",
+    description: "Ex-Amazon, expert en e-commerce depuis 12 ans",
+    avatar: "AD",
+    social: {
+      linkedin: "#",
+      twitter: "#"
     }
-  ];
-
-  const team = [
-    {
-      name: "Alexandre Dubois",
-      role: "CEO & Fondateur",
-      description: "Ex-Amazon, expert en e-commerce depuis 12 ans",
-      avatar: "AD",
-      social: {
-        linkedin: "#",
-        twitter: "#"
-      }
-    },
-    {
-      name: "Marie Laurent",
-      role: "CTO",
-      description: "Experte IA et machine learning, ex-Google",
-      avatar: "ML",
-      social: {
-        linkedin: "#",
-        twitter: "#"
-      }
-    },
-    {
-      name: "Thomas Martin",
-      role: "VP Product",
-      description: "Designer UX/UI passionné par l'expérience utilisateur",
-      avatar: "TM",
-      social: {
-        linkedin: "#",
-        twitter: "#"
-      }
-    },
-    {
-      name: "Sophie Chen",
-      role: "Head of AI",
-      description: "PhD en Intelligence Artificielle, ex-Meta",
-      avatar: "SC",
-      social: {
-        linkedin: "#",
-        twitter: "#"
-      }
+  }, {
+    name: "Marie Laurent",
+    role: "CTO",
+    description: "Experte IA et machine learning, ex-Google",
+    avatar: "ML",
+    social: {
+      linkedin: "#",
+      twitter: "#"
     }
-  ];
-
-  const milestones = [
-    {
-      year: "2020",
-      title: "Création de ShopOpti",
-      description: "Lancement de la première version avec 3 fournisseurs connectés"
-    },
-    {
-      year: "2021",
-      title: "Première IA intégrée",
-      description: "Développement de notre algorithme de détection de produits gagnants"
-    },
-    {
-      year: "2022",
-      title: "10,000 utilisateurs",
-      description: "Franchissement du cap des 10,000 utilisateurs actifs"
-    },
-    {
-      year: "2023",
-      title: "Levée de fonds Série A",
-      description: "5M€ pour accélérer le développement de l'IA et l'expansion internationale"
-    },
-    {
-      year: "2024",
-      title: "50,000+ utilisateurs",
-      description: "Leader du marché français avec 50+ intégrations et IA avancée"
+  }, {
+    name: "Thomas Martin",
+    role: "VP Product",
+    description: "Designer UX/UI passionné par l'expérience utilisateur",
+    avatar: "TM",
+    social: {
+      linkedin: "#",
+      twitter: "#"
     }
-  ];
-
-  const stats = [
-    { value: "50,000+", label: "Utilisateurs actifs", icon: <Users className="w-6 h-6" /> },
-    { value: "2M+", label: "Produits analysés", icon: <TrendingUp className="w-6 h-6" /> },
-    { value: "50+", label: "Pays couverts", icon: <Globe className="w-6 h-6" /> },
-    { value: "99.9%", label: "Uptime garanti", icon: <Shield className="w-6 h-6" /> }
-  ];
-
-  return (
-    <div className="min-h-screen bg-background">
+  }, {
+    name: "Sophie Chen",
+    role: "Head of AI",
+    description: "PhD en Intelligence Artificielle, ex-Meta",
+    avatar: "SC",
+    social: {
+      linkedin: "#",
+      twitter: "#"
+    }
+  }];
+  const milestones = [{
+    year: "2020",
+    title: "Création de ShopOpti",
+    description: "Lancement de la première version avec 3 fournisseurs connectés"
+  }, {
+    year: "2021",
+    title: "Première IA intégrée",
+    description: "Développement de notre algorithme de détection de produits gagnants"
+  }, {
+    year: "2022",
+    title: "10,000 utilisateurs",
+    description: "Franchissement du cap des 10,000 utilisateurs actifs"
+  }, {
+    year: "2023",
+    title: "Levée de fonds Série A",
+    description: "5M€ pour accélérer le développement de l'IA et l'expansion internationale"
+  }, {
+    year: "2024",
+    title: "50,000+ utilisateurs",
+    description: "Leader du marché français avec 50+ intégrations et IA avancée"
+  }];
+  const stats = [{
+    value: "50,000+",
+    label: "Utilisateurs actifs",
+    icon: <Users className="w-6 h-6" />
+  }, {
+    value: "2M+",
+    label: "Produits analysés",
+    icon: <TrendingUp className="w-6 h-6" />
+  }, {
+    value: "50+",
+    label: "Pays couverts",
+    icon: <Globe className="w-6 h-6" />
+  }, {
+    value: "99.9%",
+    label: "Uptime garanti",
+    icon: <Shield className="w-6 h-6" />
+  }];
+  return <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
@@ -185,15 +154,13 @@ const About = () => {
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
+            {stats.map((stat, index) => <div key={index} className="text-center">
                 <div className="flex justify-center mb-4 text-primary">
                   {stat.icon}
                 </div>
                 <div className="text-3xl md:text-4xl font-bold mb-2">{stat.value}</div>
                 <div className="text-muted-foreground">{stat.label}</div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -255,8 +222,7 @@ const About = () => {
 
           <div className="max-w-4xl mx-auto">
             <div className="space-y-8">
-              {milestones.map((milestone, index) => (
-                <div key={index} className="flex items-start space-x-6">
+              {milestones.map((milestone, index) => <div key={index} className="flex items-start space-x-6">
                   <div className="flex-shrink-0 w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold">
                     {milestone.year}
                   </div>
@@ -264,8 +230,7 @@ const About = () => {
                     <h3 className="text-xl font-semibold mb-2">{milestone.title}</h3>
                     <p className="text-muted-foreground">{milestone.description}</p>
                   </div>
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
         </div>
@@ -287,8 +252,7 @@ const About = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {values.map((value, index) => (
-              <Card key={index} className="text-center hover:shadow-glow transition-all duration-300">
+            {values.map((value, index) => <Card key={index} className="text-center hover:shadow-glow transition-all duration-300">
                 <CardHeader>
                   <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center text-white mx-auto mb-4">
                     {value.icon}
@@ -300,8 +264,7 @@ const About = () => {
                     {value.description}
                   </CardDescription>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -322,8 +285,7 @@ const About = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-            {team.map((member, index) => (
-              <Card key={index} className="text-center hover:shadow-glow transition-all duration-300">
+            {team.map((member, index) => <Card key={index} className="text-center hover:shadow-glow transition-all duration-300">
                 <CardHeader>
                   <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center text-white text-xl font-bold mx-auto mb-4">
                     {member.avatar}
@@ -346,8 +308,7 @@ const About = () => {
                     </Button>
                   </div>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -422,7 +383,7 @@ const About = () => {
           <div className="max-w-4xl mx-auto">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Rejoignez l'
-              <span className="bg-gradient-hero bg-clip-text text-transparent">
+              <span className="bg-gradient-hero bg-clip-text text-slate-50">
                 aventure
               </span>
             </h2>
@@ -449,8 +410,6 @@ const About = () => {
           </div>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default About;
