@@ -9,13 +9,13 @@ import { SubscriptionManager } from './SubscriptionManager'
 import { Crown, Star, Shield, TrendingUp, Database, Zap } from 'lucide-react'
 
 const planIcons = {
-  standard: Shield,
+  free: Shield,
   pro: Star,
   ultra_pro: Crown
 }
 
 const planNames = {
-  standard: 'Standard',
+  free: 'Gratuit',
   pro: 'Pro',
   ultra_pro: 'Ultra Pro'
 }
