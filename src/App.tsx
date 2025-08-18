@@ -116,7 +116,13 @@ const App = () => (
             } />
             <Route path="/features" element={<Features />} />
             <Route path="/pricing" element={<Pricing />} />
-            <Route path="/pricing-plans" element={<PricingPage />} />
+            <Route path="/pricing-plans" element={
+              <AuthGuard requireAuth={false}>
+                <AppLayout>
+                  <PricingPage />
+                </AppLayout>
+              </AuthGuard>
+            } />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/blog" element={<BlogPage />} />
