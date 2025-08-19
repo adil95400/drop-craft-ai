@@ -3,7 +3,7 @@ import { User } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 
-export type PlanType = 'free' | 'pro' | 'ultra_pro'
+export type PlanType = 'free' | 'pro' | 'ultra_pro' | 'standard'
 
 interface PlanState {
   plan: PlanType

@@ -43,6 +43,22 @@ const planConfigs: Record<PlanType, PlanConfig> = {
       { name: 'Intégrations avancées', included: false }
     ]
   },
+  standard: {
+    name: 'Standard',
+    price: 'Gratuit',
+    icon: Shield,
+    color: 'text-gray-600',
+    bgColor: 'bg-gray-50',
+    description: 'Plan de base (obsolète)',
+    features: [
+      { name: 'Import basique', included: true, limit: '10/jour' },
+      { name: 'Catalogue produits', included: true, limit: '100 produits' },
+      { name: 'Support email', included: true },
+      { name: 'AI Analytics', included: false },
+      { name: 'Import automatisé', included: false },
+      { name: 'Intégrations avancées', included: false }
+    ]
+  },
   pro: {
     name: 'Pro',
     price: '29€/mois',
