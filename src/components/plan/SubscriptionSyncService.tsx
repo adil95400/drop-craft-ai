@@ -5,15 +5,15 @@ export const SubscriptionSyncService = () => {
   const { user, refreshSubscription } = useAuth()
 
   useEffect(() => {
-    // Sync subscription on app load si utilisateur authentifié (avec délai pour éviter conflicts)
+    // Sync subscription only once when user becomes available
     if (user) {
       const timer = setTimeout(() => {
         refreshSubscription()
-      }, 5000) // Délai de 5 secondes pour laisser l'auth se stabiliser
+      }, 2000) // Reduced delay
       
       return () => clearTimeout(timer)
     }
-  }, [user, refreshSubscription])
+  }, [user]) // Remove refreshSubscription from dependencies to prevent infinite loop
 
   // This component doesn't render anything, it's just for syncing
   return null
