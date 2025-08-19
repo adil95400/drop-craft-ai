@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
 import { PlanDashboard } from "@/components/plan/PlanDashboard"
+import { SmartDashboard } from "@/components/dashboard/SmartDashboard"
+import { RealTimeMetrics } from "@/components/dashboard/RealTimeMetrics"
 import { useStripeSubscription } from "@/hooks/useStripeSubscription"
 import { 
   BarChart3, 
@@ -137,6 +139,12 @@ const Dashboard = () => {
 
       {/* Plan Dashboard - Système de plans et abonnements */}
       <PlanDashboard />
+
+      {/* Smart Dashboard avec IA */}
+      <SmartDashboard />
+
+      {/* Métriques temps réel */}
+      <RealTimeMetrics />
 
       {/* Métriques principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
