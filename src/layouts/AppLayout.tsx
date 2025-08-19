@@ -6,6 +6,8 @@ import { RealTimeNotifications } from "@/components/notifications/RealTimeNotifi
 import { IntegratedChatSupport } from "@/components/support/IntegratedChatSupport";
 import { AdminUserDropdown } from "@/components/admin/AdminUserDropdown";
 import { AdminPlanSwitcher } from "@/components/admin/AdminPlanSwitcher";
+import { RoleBadge } from "@/components/ui/role-badge";
+import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AppLayoutProps {
@@ -13,17 +15,22 @@ interface AppLayoutProps {
 }
 
 // Composant Header unifié
-const AppHeader = ({ showTrigger = false }: { showTrigger?: boolean }) => (
-  <header className="sticky top-0 z-30 h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-    <div className="flex items-center justify-end px-6 h-full">
-      {showTrigger && <SidebarTrigger className="mr-auto" aria-label="Toggle navigation menu" />}
-      <div className="flex items-center gap-3">
-        <RealTimeNotifications />
-        <AdminUserDropdown />
+const AppHeader = ({ showTrigger = false }: { showTrigger?: boolean }) => {
+  const { profile } = useAuth();
+  
+  return (
+    <header className="sticky top-0 z-30 h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex items-center justify-between px-6 h-full">
+        {showTrigger && <SidebarTrigger className="mr-auto" aria-label="Toggle navigation menu" />}
+        <div className="flex items-center gap-3 ml-auto">
+          {profile && <RoleBadge role={profile.role} />}
+          <RealTimeNotifications />
+          <AdminUserDropdown />
+        </div>
       </div>
-    </div>
-  </header>
-);
+    </header>
+  );
+};
 
 export function AppLayout({ children }: AppLayoutProps) {
   const isMobile = useIsMobile();

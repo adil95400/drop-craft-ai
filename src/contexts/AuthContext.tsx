@@ -210,14 +210,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           variant: "destructive",
         })
       } else if (data.user) {
+        // Fetch user profile to get role
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single()
+
+        const userRole = profileData?.role || 'user'
+        
         toast({
           title: "Connexion réussie",
           description: "Bienvenue sur Shopopti Pro!",
         })
         
-        // Force page refresh for clean state
+        // Redirect based on role
         setTimeout(() => {
-          window.location.href = '/dashboard'
+          if (userRole === 'admin') {
+            window.location.href = '/admin'
+          } else {
+            window.location.href = '/dashboard'
+          }
         }, 500)
       }
 

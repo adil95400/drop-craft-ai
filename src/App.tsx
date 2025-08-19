@@ -132,6 +132,15 @@ const App = () => (
                 <Auth />
               </AuthGuard>
             } />
+            <Route path="/admin" element={
+              <AuthGuard requireRole="admin">
+                <AppLayout>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
+                    <AdminLazy />
+                  </Suspense>
+                </AppLayout>
+              </AuthGuard>
+            } />
             <Route path="/features" element={<Features />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/pricing-plans" element={<PricingPage />} />
@@ -153,7 +162,7 @@ const App = () => (
             
             {/* Protected routes with layout */}
             <Route path="/dashboard" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <DashboardLazy />
@@ -171,7 +180,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/import" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <ImportLazy />
@@ -180,7 +189,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/import-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <ImportUltraProLazy />
@@ -189,7 +198,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/catalogue" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="grid" />}>
                     <CatalogueRealLazy />
@@ -198,7 +207,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/catalogue-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="grid" />}>
                     <CatalogueUltraProRealLazy />
@@ -207,7 +216,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/catalogue-ultra-pro-real" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="grid" />}>
                     <CatalogueUltraProRealLazy />
@@ -216,7 +225,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/catalogue-ultra-pro-advanced" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="grid" />}>
                     <CatalogueUltraProAdvancedLazy />
@@ -225,14 +234,14 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/marketplace" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <MarketplaceOptimized />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/orders" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <OrdersLazy />
@@ -241,7 +250,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/orders-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <OrdersUltraProRealLazy />
@@ -250,7 +259,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/crm" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <CRMLazy />
@@ -259,7 +268,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/crm-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <CRMUltraProRealLazy />
@@ -268,42 +277,42 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/crm/leads" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <CRMLeads />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/crm/activity" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <CRMActivity />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/crm/calendar" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <CRMCalendar />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/crm/emails" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <CRMEmails />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/crm/calls" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <CRMCalls />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/crm/prospects-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <CRMProspectsUltraProLazy />
@@ -312,7 +321,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/tracking" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <TrackingRealLazy />
@@ -321,7 +330,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/tracking-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <TrackingUltraProLazy />
@@ -330,28 +339,28 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/tracking/in-transit" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <TrackingInTransit />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/tracking/today" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <TrackingToday />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/suivi/en-transit-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <SuiviEnTransitUltraPro />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/reviews" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <ReviewsLazy />
@@ -360,7 +369,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/reviews-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <ReviewsUltraProLazy />
@@ -369,14 +378,14 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/avis/positif-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <AvisPositifUltraPro />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/seo" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <SEOLazy />
@@ -385,7 +394,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/seo-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <SEOUltraProLazy />
@@ -394,7 +403,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/marketing" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <MarketingLazy />
@@ -403,7 +412,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/marketing-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <MarketingUltraProLazy />
@@ -412,7 +421,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/inventory" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <InventoryLazy />
@@ -421,7 +430,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/inventory-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <InventoryUltraProRealLazy />
@@ -430,7 +439,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/automation" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <AutomationLazy />
@@ -439,7 +448,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/automation-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <AutomationUltraProLazy />
@@ -448,7 +457,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/plugins" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="grid" />}>
                     <PluginsLazy />
@@ -457,7 +466,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/plugins-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="grid" />}>
                     <PluginsUltraProLazy />
@@ -466,7 +475,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/extension" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <ExtensionLazy />
@@ -475,7 +484,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/extension-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <ExtensionUltraProLazy />
@@ -484,7 +493,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/mobile" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <MobileLazy />
@@ -493,7 +502,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/mobile-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <MobileUltraProLazy />
@@ -502,14 +511,14 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/integrations" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <IntegrationsOptimized />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/support" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <SupportLazy />
@@ -518,7 +527,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/support-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <SupportUltraProLazy />
@@ -527,7 +536,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/analytics" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <AnalyticsLazy />
@@ -536,7 +545,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/analytics-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <AnalyticsUltraProLazy />
@@ -545,7 +554,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/stock" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <StockLazy />
@@ -554,7 +563,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/stock-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <StockUltraProLazy />
@@ -563,14 +572,14 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/winners" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <WinnersPage />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/blog" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <BlogLazy />
@@ -579,7 +588,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/blog-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <BlogUltraProLazy />
@@ -588,30 +597,21 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/settings" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Settings />
                 </AppLayout>
               </AuthGuard>
             } />
-            <Route path="/admin" element={
-              <AuthGuard>
-                <AppLayout>
-                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
-                    <AdminLazy />
-                  </Suspense>
-                </AppLayout>
-              </AuthGuard>
-            } />
             <Route path="/faq" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <FAQ />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/security" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <SecurityLazy />
@@ -620,7 +620,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/security-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <SecurityUltraProLazy />
@@ -629,21 +629,21 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/notifications" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Notifications />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/suppliers" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suppliers />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/suppliers-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <SuppliersUltraProLazy />
@@ -652,7 +652,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/dashboard-ultra-pro" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <DashboardUltraProLazy />
@@ -661,7 +661,7 @@ const App = () => (
               </AuthGuard>
             } />
             <Route path="/payment/success" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <PaymentSuccessLazy />
@@ -672,63 +672,63 @@ const App = () => (
             
             {/* Ultra Pro Optimized routes */}
             <Route path="/import-ultra-pro-optimized" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <ImportUltraProOptimized />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/catalogue-ultra-pro-optimized" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <CatalogueUltraProOptimized />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/orders-ultra-pro-optimized" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <OrdersUltraProOptimized />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/crm-ultra-pro-optimized" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <CRMUltraProOptimized />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/analytics-ultra-pro-optimized" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <AnalyticsUltraProOptimized />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/automation-ultra-pro-optimized" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <AutomationUltraProOptimized />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/seo-ultra-pro-optimized" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <SEOUltraProOptimized />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/marketing-ultra-pro-optimized" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <MarketingUltraProOptimized />
                 </AppLayout>
               </AuthGuard>
             } />
             <Route path="/reviews-ultra-pro-optimized" element={
-              <AuthGuard>
+              <AuthGuard requireRole="user">
                 <AppLayout>
                   <ReviewsUltraProOptimized />
                 </AppLayout>
