@@ -8,6 +8,10 @@ import { useToast } from '@/hooks/use-toast'
 import { usePlan } from '@/hooks/usePlan'
 import { EnhancedImportInterface } from './EnhancedImportInterface'
 import { AIWinnersDiscovery } from './AIWinnersDiscovery'
+import { XMLJSONImportInterface } from './XMLJSONImportInterface'
+import { VariantsManager } from './VariantsManager'
+import { BulkEditor } from './BulkEditor'
+import { AutomationRules } from './AutomationRules'
 import { 
   Package, 
   Zap, 
@@ -25,6 +29,63 @@ export const ImportHub = () => {
   const [isImporting, setIsImporting] = useState(false)
   const [importProgress, setImportProgress] = useState(0)
   const [activeTab, setActiveTab] = useState("methods")
+  const [demoProducts, setDemoProducts] = useState([
+    {
+      id: '1',
+      name: 'Casque Bluetooth Premium',
+      sku: 'BT-HEAD-001',
+      price: 89.99,
+      costPrice: 45.00,
+      category: 'Électronique',
+      status: 'active',
+      stock: 50,
+      tags: ['bluetooth', 'audio', 'premium'],
+      supplier: 'TechSupplier',
+      margin: 100
+    },
+    {
+      id: '2', 
+      name: 'Montre Connectée Sport',
+      sku: 'WATCH-SP-002',
+      price: 199.99,
+      costPrice: 120.00,
+      category: 'Accessoires',
+      status: 'active',
+      stock: 25,
+      tags: ['sport', 'montre', 'fitness'],
+      supplier: 'SportTech',
+      margin: 67
+    }
+  ])
+  
+  const [demoVariants, setDemoVariants] = useState([
+    {
+      id: 'var_1',
+      sku: 'BT-HEAD-001-BLK',
+      name: 'Casque Bluetooth - Noir',
+      color: 'black',
+      size: 'One Size',
+      material: 'Plastique',
+      price: 89.99,
+      costPrice: 45.00,
+      stock: 30,
+      imageUrl: '',
+      isActive: true
+    },
+    {
+      id: 'var_2',
+      sku: 'BT-HEAD-001-WHT', 
+      name: 'Casque Bluetooth - Blanc',
+      color: 'white',
+      size: 'One Size',
+      material: 'Plastique',
+      price: 89.99,
+      costPrice: 45.00,
+      stock: 20,
+      imageUrl: '',
+      isActive: true
+    }
+  ])
   const { toast } = useToast()
   const { isPro, isUltraPro } = usePlan()
 
@@ -78,19 +139,31 @@ export const ImportHub = () => {
 
       {/* Interface principale avec onglets */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="methods" className="flex items-center gap-2">
             <Package className="h-4 w-4" />
-            Méthodes d'Import
+            Import
+          </TabsTrigger>
+          <TabsTrigger value="xmljson" className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            Flux Temps Réel
+          </TabsTrigger>
+          <TabsTrigger value="variants" className="flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            Variantes
+          </TabsTrigger>
+          <TabsTrigger value="bulk" className="flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            Édition Masse
+          </TabsTrigger>
+          <TabsTrigger value="automation" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            Automatisation
           </TabsTrigger>
           <TabsTrigger value="winners" className="flex items-center gap-2">
             <Bot className="h-4 w-4" />
             Winners IA
             {!isPro() && <Badge variant="outline" className="ml-1 text-xs">Pro</Badge>}
-          </TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            Historique
           </TabsTrigger>
         </TabsList>
 
@@ -101,6 +174,29 @@ export const ImportHub = () => {
             importProgress={importProgress}
             onImport={handleImport}
           />
+        </TabsContent>
+
+        <TabsContent value="xmljson" className="mt-6">
+          <XMLJSONImportInterface onImport={handleImport} />
+        </TabsContent>
+
+        <TabsContent value="variants" className="mt-6">
+          <VariantsManager 
+            productId="demo-product-1"
+            variants={demoVariants}
+            onVariantsUpdate={setDemoVariants}
+          />
+        </TabsContent>
+
+        <TabsContent value="bulk" className="mt-6">
+          <BulkEditor 
+            products={demoProducts}
+            onProductsUpdate={setDemoProducts}
+          />
+        </TabsContent>
+
+        <TabsContent value="automation" className="mt-6">
+          <AutomationRules />
         </TabsContent>
 
         <TabsContent value="winners" className="mt-6">
@@ -118,40 +214,6 @@ export const ImportHub = () => {
               </CardContent>
             </Card>
           )}
-        </TabsContent>
-
-        <TabsContent value="history" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Historique d'Import
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[
-                  { type: "URL", source: "Amazon", status: "Succès", date: "Il y a 2h", products: 1 },
-                  { type: "CSV", source: "AliExpress", status: "Succès", date: "Il y a 4h", products: 25 },
-                  { type: "Winners IA", source: "IA Discovery", status: "Succès", date: "Il y a 1j", products: 8 }
-                ].map((import_, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg animate-fade-in">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <div>
-                        <p className="font-medium text-sm">{import_.type} - {import_.source}</p>
-                        <p className="text-xs text-muted-foreground">{import_.products} produit(s) importé(s)</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant="outline" className="text-green-600">{import_.status}</Badge>
-                      <p className="text-xs text-muted-foreground mt-1">{import_.date}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
     </div>
