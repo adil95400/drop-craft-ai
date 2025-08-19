@@ -325,7 +325,6 @@ const Contact = () => {
                 </div>
 
                 <ActionButton 
-                  type="submit" 
                   size="lg" 
                   className="w-full bg-gradient-primary hover:bg-primary-hover shadow-glow"
                   onClick={async () => {

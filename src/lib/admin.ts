@@ -35,15 +35,6 @@ export const adminActions = {
       })
 
       return { success: true, data: null }
-
-      if (error) throw error
-
-      toast({
-        title: "Utilisateur créé",
-        description: `${userData.name} a été créé avec succès`,
-      })
-
-      return { success: true, data }
     } catch (error) {
       console.error('Error creating user:', error)
       toast({

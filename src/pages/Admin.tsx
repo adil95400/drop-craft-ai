@@ -307,7 +307,15 @@ export default function Admin() {
                             <ActionButton 
                               variant="outline" 
                               size="sm"
-                              onClick={() => adminActions.updateUser(user.id.toString(), user)}
+                            onClick={async () => {
+                              await adminActions.updateUser(user.id.toString(), {
+                                id: user.id.toString(),
+                                name: user.name,
+                                email: user.email,
+                                role: user.role,
+                                plan: user.plan
+                              });
+                            }}
                               aria-label={`Modifier ${user.name}`}
                             >
                               <Settings className="w-4 h-4" />

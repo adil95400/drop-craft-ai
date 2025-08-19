@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 interface ActionButtonProps {
   children: ReactNode;
-  onClick: () => void | Promise<void>;
+  onClick: () => void | Promise<void> | Promise<any>;
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
   size?: "default" | "sm" | "lg" | "icon";
   loading?: boolean;
