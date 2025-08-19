@@ -183,7 +183,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       // Wait a bit for cleanup
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 500))
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -213,8 +213,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           description: "Bienvenue sur Shopopti Pro!",
         })
         
-        // Let AuthGuard handle the redirection based on profile
-        // No immediate redirect here to avoid conflicts
+        // Force a page reload to ensure clean state
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 1000)
       }
 
       return { error }
