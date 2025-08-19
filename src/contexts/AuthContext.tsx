@@ -106,29 +106,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null)
       setLoading(false)
       
-      // If user is logged in, check subscription after a delay (seulement une fois)
+      // If user is logged in, fetch data but don't redirect
       if (session?.user) {
         setTimeout(async () => {
           await refreshSubscription()
           await fetchProfile()
-          
-          // Redirect based on role after profile is loaded
-          try {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', session.user.id)
-              .single()
-            
-            if (profileData?.role === 'admin') {
-              window.location.href = '/admin'
-            } else {
-              window.location.href = '/dashboard'
-            }
-          } catch (error) {
-            console.error('Error checking role for redirect:', error)
-            window.location.href = '/dashboard'
-          }
         }, 1000)
       }
     })
@@ -144,29 +126,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false)
 
       if (event === 'SIGNED_IN' && session?.user) {
-        // Defer subscription check to prevent deadlocks (avec délai plus long)
+        // Defer data fetching to prevent deadlocks
         setTimeout(async () => {
           await refreshSubscription()
           await fetchProfile()
-          
-          // Redirect based on role after profile is loaded
-          try {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('role')
-              .eq('id', session.user.id)
-              .single()
-            
-            if (profileData?.role === 'admin') {
-              window.location.href = '/admin'
-            } else {
-              window.location.href = '/dashboard'
-            }
-          } catch (error) {
-            console.error('Error checking role for redirect:', error)
-            window.location.href = '/dashboard'
-          }
-        }, 2000)
+        }, 1000)
       } else if (event === 'SIGNED_OUT') {
         setSubscription(null)
         setProfile(null)
@@ -246,28 +210,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           variant: "destructive",
         })
       } else if (data.user) {
-        // Fetch user profile to get role
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', data.user.id)
-          .single()
-
-        const userRole = profileData?.role || 'user'
-        
         toast({
           title: "Connexion réussie",
           description: "Bienvenue sur Shopopti Pro!",
         })
         
-        // Redirect based on role
-        setTimeout(() => {
-          if (userRole === 'admin') {
-            window.location.href = '/admin'
-          } else {
-            window.location.href = '/dashboard'
-          }
-        }, 500)
+        // Let AuthGuard handle the redirection based on profile
+        // No immediate redirect here to avoid conflicts
       }
 
       return { error }

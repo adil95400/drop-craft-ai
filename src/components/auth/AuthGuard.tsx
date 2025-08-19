@@ -18,6 +18,11 @@ export const AuthGuard = ({
   const { user, profile, loading } = useAuth();
 
   useEffect(() => {
+    if (!loading && !profile && user && requireAuth) {
+      // Still loading profile, wait
+      return;
+    }
+    
     if (!loading) {
       // Not authenticated and auth required
       if (requireAuth && !user) {
@@ -26,9 +31,9 @@ export const AuthGuard = ({
       }
       
       // Authenticated but auth not required (e.g., public pages)
-      if (!requireAuth && user) {
-        // Redirect based on role
-        if (profile?.role === 'admin') {
+      if (!requireAuth && user && profile) {
+        // Only redirect if we have complete data
+        if (profile.role === 'admin') {
           window.location.href = '/admin';
         } else {
           window.location.href = '/dashboard';
