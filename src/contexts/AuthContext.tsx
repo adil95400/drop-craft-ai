@@ -106,10 +106,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null)
       setLoading(false)
       
-      // If user is logged in, fetch data but don't redirect
+      // If user is logged in, fetch profile data but skip subscription for now
       if (session?.user) {
         setTimeout(async () => {
-          await refreshSubscription()
           await fetchProfile()
         }, 1000)
       }
@@ -126,9 +125,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false)
 
       if (event === 'SIGNED_IN' && session?.user) {
-        // Defer data fetching to prevent deadlocks
+        // Defer data fetching to prevent deadlocks  
         setTimeout(async () => {
-          await refreshSubscription()
           await fetchProfile()
         }, 1000)
       } else if (event === 'SIGNED_OUT') {
