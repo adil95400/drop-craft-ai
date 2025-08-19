@@ -128,11 +128,7 @@ const App = () => (
                 <Index />
               </AuthGuard>
             } />
-            <Route path="/auth" element={
-              <AuthGuard requireAuth={false}>
-                <Auth />
-              </AuthGuard>
-            } />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={
               <AdminRoute>
                 <AppLayout>
