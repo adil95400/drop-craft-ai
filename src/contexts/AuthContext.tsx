@@ -57,33 +57,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [refreshingSubscription, setRefreshingSubscription] = useState(false)
 
   const refreshSubscription = async () => {
-    if (!user || refreshingSubscription) return
-    
-    try {
-      setRefreshingSubscription(true)
-      const { data, error } = await supabase.functions.invoke('check-subscription', {
-        headers: {
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-      })
-      
-      if (error) {
-        console.warn('Failed to refresh subscription:', error)
-        return
-      }
-      
-      if (data) {
-        setSubscription({
-          subscribed: data.subscribed || false,
-          subscription_tier: data.subscription_tier || null,
-          subscription_end: data.subscription_end || null
-        })
-      }
-    } catch (error) {
-      console.warn('Failed to refresh subscription:', error)
-    } finally {
-      setRefreshingSubscription(false)
-    }
+    // Désactivé temporairement pour éviter les boucles infinies
+    return
   }
 
   const fetchProfile = async () => {

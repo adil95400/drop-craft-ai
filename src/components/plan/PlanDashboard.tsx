@@ -1,5 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext'
-import { useNewPlan } from '@/hooks/useNewPlan'
+import { usePlan } from '@/hooks/usePlan'
 import { useQuotas } from '@/hooks/useQuotas'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -9,13 +9,13 @@ import { SubscriptionManager } from './SubscriptionManager'
 import { Crown, Star, Shield, TrendingUp, Database, Zap } from 'lucide-react'
 
 const planIcons = {
-  free: Shield,
+  standard: Shield,
   pro: Star,
   ultra_pro: Crown
 }
 
 const planNames = {
-  free: 'Gratuit',
+  standard: 'Gratuit',
   pro: 'Pro',
   ultra_pro: 'Ultra Pro'
 }
@@ -29,7 +29,7 @@ const quotaLabels = {
 
 export const PlanDashboard = () => {
   const { user } = useAuth()
-  const { plan, loading: planLoading } = useNewPlan(user)
+  const { plan, loading: planLoading } = usePlan(user)
   const { quotas, loading: quotasLoading } = useQuotas(user)
 
   if (planLoading || quotasLoading) {
@@ -134,7 +134,7 @@ export const PlanDashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {plan === 'free' && (
+            {plan === 'standard' && (
               <>
                 <div className="flex items-center gap-2 text-sm">
                   <div className="h-2 w-2 bg-green-500 rounded-full"></div>
