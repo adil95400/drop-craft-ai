@@ -10,6 +10,8 @@ import { Switch } from "@/components/ui/switch"
 import { Progress } from "@/components/ui/progress"
 import { AnimatedCounter } from "@/components/ui/animated-counter"
 import { Search, Shield, Users, BarChart3, Settings, Ban, UserCheck, Download, Eye, AlertTriangle, TrendingUp, Activity, Clock, Globe, Server, Database, Zap } from "lucide-react"
+import { adminActions, orgActions } from "@/lib/admin"
+import { ActionButton } from "@/components/common/ActionButton"
 
 export default function Admin() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -140,36 +142,28 @@ export default function Admin() {
           </div>
           
           <div className="flex gap-2">
-            <Button 
+            <ActionButton 
               variant="outline" 
               size="sm"
-              onClick={() => {
-                // Export logs functionality
-                const logs = 'timestamp,level,message\n2024-01-08T10:00:00Z,INFO,System operational\n2024-01-08T09:55:00Z,WARN,High API usage detected\n';
-                const blob = new Blob([logs], { type: 'text/csv' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'system-logs.csv';
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
+              onClick={adminActions.exportLogs}
+              loadingText="Export en cours..."
             >
               <Download className="w-4 h-4 mr-2" />
               Export Logs
-            </Button>
-            <Button 
+            </ActionButton>
+            <ActionButton 
               variant="destructive" 
               size="sm"
-              onClick={() => {
+              onClick={async () => {
                 if (confirm('Êtes-vous sûr de vouloir activer le mode maintenance ?')) {
-                  alert('Mode maintenance activé. Tous les utilisateurs seront déconnectés.');
+                  await adminActions.enableMaintenanceMode();
                 }
               }}
+              loadingText="Activation..."
             >
               <AlertTriangle className="w-4 h-4 mr-2" />
               Mode Maintenance
-            </Button>
+            </ActionButton>
           </div>
         </div>
 
@@ -245,10 +239,17 @@ export default function Admin() {
                       Gérez les comptes utilisateurs, rôles et permissions
                     </CardDescription>
                   </div>
-                  <Button onClick={() => alert('Créer un nouvel utilisateur')}>
+                  <ActionButton onClick={async () => {
+                    await adminActions.createUser({
+                      name: 'Nouvel Utilisateur',
+                      email: 'nouveau@email.com',
+                      role: 'user',
+                      plan: 'standard'
+                    });
+                  }}>
                     <UserCheck className="w-4 h-4 mr-2" />
                     Nouvel Utilisateur
-                  </Button>
+                  </ActionButton>
                 </div>
               </CardHeader>
               <CardContent>
@@ -295,34 +296,35 @@ export default function Admin() {
                           </div>
                           
                           <div className="flex items-center gap-2">
-                            <Button 
+                            <ActionButton 
                               variant="outline" 
                               size="sm"
-                              onClick={() => alert(`Voir les détails de ${user.name}`)}
+                              onClick={() => adminActions.viewUserDetails(user.id.toString())}
                               aria-label={`Voir les détails de ${user.name}`}
                             >
                               <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button 
+                            </ActionButton>
+                            <ActionButton 
                               variant="outline" 
                               size="sm"
-                              onClick={() => alert(`Modifier ${user.name}`)}
+                              onClick={() => adminActions.updateUser(user.id.toString(), user)}
                               aria-label={`Modifier ${user.name}`}
                             >
                               <Settings className="w-4 h-4" />
-                            </Button>
-                            <Button 
+                            </ActionButton>
+                            <ActionButton 
                               variant="destructive" 
                               size="sm"
-                              onClick={() => {
+                              onClick={async () => {
                                 if (confirm(`Suspendre ${user.name} ?`)) {
-                                  alert(`${user.name} suspendu`);
+                                  await adminActions.suspendUser(user.id.toString(), user.name);
                                 }
                               }}
                               aria-label={`Suspendre ${user.name}`}
+                              loadingText="Suspension..."
                             >
                               <Ban className="w-4 h-4" />
-                            </Button>
+                            </ActionButton>
                           </div>
                         </div>
                       </CardContent>
@@ -367,20 +369,20 @@ export default function Admin() {
                         </Badge>
                         
                         <div className="flex gap-2">
-                          <Button 
+                          <ActionButton 
                             variant="outline" 
                             size="sm"
-                            onClick={() => alert(`Voir détails de ${org.name}`)}
+                            onClick={() => orgActions.viewOrgDetails(org.id.toString())}
                           >
                             Voir Détails
-                          </Button>
-                          <Button 
+                          </ActionButton>
+                          <ActionButton 
                             variant="outline" 
                             size="sm"
-                            onClick={() => alert(`Gérer ${org.name}`)}
+                            onClick={() => orgActions.manageOrg(org.id.toString())}
                           >
                             Gérer
-                          </Button>
+                          </ActionButton>
                         </div>
                       </div>
                     </div>

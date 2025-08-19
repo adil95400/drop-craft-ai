@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress'
 import { useRealOrders } from '@/hooks/useRealOrders'
 import { Link } from 'react-router-dom'
+import { trackingActions } from '@/lib/tracking'
+import { ActionButton } from '@/components/common/ActionButton'
 
 const trackingSteps = [
   { id: 'pending', label: 'En attente', icon: Clock },
@@ -74,25 +76,23 @@ export default function Tracking() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button 
+          <ActionButton 
             variant="outline" 
             size="sm"
-            onClick={() => {
-              const currentFilter = statusFilter === 'all' ? 'Aucun filtre' : statusFilter;
-              alert(`Filtres actuels: ${currentFilter}`);
-            }}
+            onClick={() => trackingActions.applyFilters({ status: statusFilter, search: searchTerm })}
           >
             <Filter className="w-4 h-4 mr-2" />
             Filtres
-          </Button>
-          <Button 
+          </ActionButton>
+          <ActionButton 
             variant="outline" 
             size="sm"
-            onClick={() => alert('Mode temps réel activé - mise à jour toutes les 30 secondes')}
+            onClick={trackingActions.enableRealTimeMode}
+            loadingText="Activation..."
           >
             <Eye className="w-4 h-4 mr-2" />
             Vue Temps Réel
-          </Button>
+          </ActionButton>
           <Link to="/tracking-ultra-pro">
             <Button 
               className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
@@ -274,23 +274,24 @@ export default function Tracking() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-2 pt-2">
-                  <Button 
+                  <ActionButton 
                     variant="outline" 
                     size="sm"
-                    onClick={() => alert(`Détails de la commande ${order.order_number}`)}
+                    onClick={() => trackingActions.viewOrderDetails(order.order_number, order.id)}
+                    loadingText="Chargement..."
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     Voir Détails
-                  </Button>
+                  </ActionButton>
                   {order.tracking_number && (
-                    <Button 
+                    <ActionButton 
                       variant="outline" 
                       size="sm"
-                      onClick={() => window.open(`https://www.laposte.fr/outils/suivre-vos-envois?code=${order.tracking_number}`, '_blank')}
+                      onClick={() => trackingActions.trackPackage(order.tracking_number || '')}
                     >
                       <Truck className="h-4 w-4 mr-2" />
                       Suivre le Colis
-                    </Button>
+                    </ActionButton>
                   )}
                 </div>
               </div>

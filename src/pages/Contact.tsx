@@ -23,6 +23,8 @@ import {
   Video,
   Star
 } from "lucide-react";
+import { contactActions } from "@/lib/contact";
+import { ActionButton } from "@/components/common/ActionButton";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -35,10 +37,21 @@ const Contact = () => {
     timeline: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Form submitted:", formData);
+    const result = await contactActions.submitContactForm(formData);
+    if (result.success) {
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        company: "",
+        subject: "",
+        message: "",
+        budget: "",
+        timeline: ""
+      });
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -191,9 +204,19 @@ const Contact = () => {
                     <Clock className="w-4 h-4 inline mr-1" />
                     {method.availability}
                   </div>
-                  <Button variant="outline" className="w-full">
+                  <ActionButton 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={async () => {
+                      if (method.title === "Chat en Direct") {
+                        await contactActions.startLiveChat();
+                      } else if (method.title === "Démo Personnalisée") {
+                        await contactActions.scheduleDemo();
+                      }
+                    }}
+                  >
                     {method.action}
-                  </Button>
+                  </ActionButton>
                 </CardContent>
               </Card>
             ))}
@@ -301,14 +324,27 @@ const Contact = () => {
                   />
                 </div>
 
-                <Button 
+                <ActionButton 
                   type="submit" 
                   size="lg" 
                   className="w-full bg-gradient-primary hover:bg-primary-hover shadow-glow"
+                  onClick={async () => {
+                    await contactActions.submitContactForm(formData);
+                    setFormData({
+                      name: "",
+                      email: "",
+                      company: "",
+                      subject: "",
+                      message: "",
+                      budget: "",
+                      timeline: ""
+                    });
+                  }}
+                  loadingText="Envoi en cours..."
                 >
                   <Send className="w-5 h-5 mr-2" />
                   Envoyer le Message
-                </Button>
+                </ActionButton>
 
                 <p className="text-xs text-muted-foreground">
                   En envoyant ce formulaire, vous acceptez que nous utilisions vos données 
