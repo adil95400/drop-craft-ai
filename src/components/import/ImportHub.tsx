@@ -12,6 +12,10 @@ import { XMLJSONImportInterface } from './XMLJSONImportInterface'
 import { VariantsManager } from './VariantsManager'
 import { BulkEditor } from './BulkEditor'
 import { AutomationRules } from './AutomationRules'
+import { ImageImportInterface } from './ImageImportInterface'
+import { DuplicateDetection } from './DuplicateDetection'
+import { CategoryMapping } from './CategoryMapping'
+import { SyncManager } from './SyncManager'
 import { 
   Package, 
   Zap, 
@@ -139,30 +143,46 @@ export const ImportHub = () => {
 
       {/* Interface principale avec onglets */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="methods" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
+          <TabsTrigger value="methods" className="flex items-center gap-1">
             <Package className="h-4 w-4" />
             Import
           </TabsTrigger>
-          <TabsTrigger value="xmljson" className="flex items-center gap-2">
+          <TabsTrigger value="xmljson" className="flex items-center gap-1">
             <Globe className="h-4 w-4" />
-            Flux Temps Réel
+            Flux
           </TabsTrigger>
-          <TabsTrigger value="variants" className="flex items-center gap-2">
+          <TabsTrigger value="variants" className="flex items-center gap-1">
             <Package className="h-4 w-4" />
             Variantes
           </TabsTrigger>
-          <TabsTrigger value="bulk" className="flex items-center gap-2">
+          <TabsTrigger value="bulk" className="flex items-center gap-1">
             <Package className="h-4 w-4" />
-            Édition Masse
+            Masse
           </TabsTrigger>
-          <TabsTrigger value="automation" className="flex items-center gap-2">
+          <TabsTrigger value="automation" className="flex items-center gap-1">
             <Zap className="h-4 w-4" />
-            Automatisation
+            Auto
           </TabsTrigger>
-          <TabsTrigger value="winners" className="flex items-center gap-2">
+          <TabsTrigger value="image" className="flex items-center gap-1">
+            <Image className="h-4 w-4" />
+            Image
+          </TabsTrigger>
+          <TabsTrigger value="duplicates" className="flex items-center gap-1">
+            <CheckCircle className="h-4 w-4" />
+            Doublons
+          </TabsTrigger>
+          <TabsTrigger value="categories" className="flex items-center gap-1">
+            <FileSpreadsheet className="h-4 w-4" />
+            Catégories
+          </TabsTrigger>
+          <TabsTrigger value="sync" className="flex items-center gap-1">
+            <Activity className="h-4 w-4" />
+            Sync
+          </TabsTrigger>
+          <TabsTrigger value="winners" className="flex items-center gap-1">
             <Bot className="h-4 w-4" />
-            Winners IA
+            Winners
             {!isPro() && <Badge variant="outline" className="ml-1 text-xs">Pro</Badge>}
           </TabsTrigger>
         </TabsList>
@@ -197,6 +217,47 @@ export const ImportHub = () => {
 
         <TabsContent value="automation" className="mt-6">
           <AutomationRules />
+        </TabsContent>
+
+        <TabsContent value="image" className="mt-6">
+          <ImageImportInterface
+            onProductsFound={(products) => {
+              toast({
+                title: "Produits détectés",
+                description: `${products.length} produits trouvés via reconnaissance d'image`
+              })
+            }}
+          />
+        </TabsContent>
+
+        <TabsContent value="duplicates" className="mt-6">
+          <DuplicateDetection
+            onDuplicatesResolved={(count) => {
+              toast({
+                title: "Doublons résolus",
+                description: `${count} groupe(s) de doublons traité(s)`
+              })
+            }}
+          />
+        </TabsContent>
+
+        <TabsContent value="categories" className="mt-6">
+          <CategoryMapping
+            onRulesUpdated={(rules) => {
+              console.log('Category rules updated:', rules)
+            }}
+          />
+        </TabsContent>
+
+        <TabsContent value="sync" className="mt-6">
+          <SyncManager
+            onSyncCompleted={(jobId, results) => {
+              toast({
+                title: "Synchronisation terminée",
+                description: `Job ${jobId} complété avec succès`
+              })
+            }}
+          />
         </TabsContent>
 
         <TabsContent value="winners" className="mt-6">

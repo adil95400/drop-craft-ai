@@ -343,6 +343,42 @@ export type Database = {
           },
         ]
       }
+      category_mapping_rules: {
+        Row: {
+          confidence: number
+          created_at: string
+          id: string
+          is_ai: boolean
+          keywords: string[] | null
+          supplier_category: string
+          target_category: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          id?: string
+          is_ai?: boolean
+          keywords?: string[] | null
+          supplier_category: string
+          target_category: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          id?: string
+          is_ai?: boolean
+          keywords?: string[] | null
+          supplier_category?: string
+          target_category?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           address: Json | null
@@ -1581,6 +1617,57 @@ export type Database = {
           updated_at?: string
           user_id?: string
           website?: string | null
+        }
+        Relationships: []
+      }
+      sync_jobs: {
+        Row: {
+          config: Json | null
+          created_at: string
+          error_count: number
+          frequency: string
+          id: string
+          last_sync: string | null
+          name: string
+          next_sync: string | null
+          products_count: number
+          status: string
+          supplier: string
+          updated_at: string
+          updated_count: number
+          user_id: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          error_count?: number
+          frequency?: string
+          id?: string
+          last_sync?: string | null
+          name: string
+          next_sync?: string | null
+          products_count?: number
+          status?: string
+          supplier: string
+          updated_at?: string
+          updated_count?: number
+          user_id: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          error_count?: number
+          frequency?: string
+          id?: string
+          last_sync?: string | null
+          name?: string
+          next_sync?: string | null
+          products_count?: number
+          status?: string
+          supplier?: string
+          updated_at?: string
+          updated_count?: number
+          user_id?: string
         }
         Relationships: []
       }

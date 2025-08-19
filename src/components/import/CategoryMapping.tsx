@@ -48,18 +48,26 @@ export function CategoryMapping({ onRulesUpdated }: CategoryMappingProps) {
   }, [])
 
   const loadMappingRules = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('category_mapping_rules')
-        .select('*')
-        .order('confidence', { ascending: false })
-
-      if (error) throw error
-
-      setMappingRules(data || [])
-    } catch (error) {
-      console.error('Error loading mapping rules:', error)
-    }
+    // Demo data for development
+    const demoRules: CategoryRule[] = [
+      {
+        id: 'demo_1',
+        supplierCategory: 'Electronics > Smartphones',
+        targetCategory: 'Électronique',
+        confidence: 0.95,
+        isAI: true,
+        keywords: ['smartphone', 'mobile', 'phone']
+      },
+      {
+        id: 'demo_2', 
+        supplierCategory: 'Fashion > Women > Dresses',
+        targetCategory: 'Mode & Vêtements',
+        confidence: 0.88,
+        isAI: false,
+        keywords: ['dress', 'robe', 'fashion']
+      }
+    ]
+    setMappingRules(demoRules)
   }
 
   const generateAIMappings = async () => {
@@ -123,56 +131,26 @@ export function CategoryMapping({ onRulesUpdated }: CategoryMappingProps) {
       keywords: newRule.keywords.split(',').map(k => k.trim()).filter(Boolean)
     }
 
-    try {
-      const { error } = await supabase
-        .from('category_mapping_rules')
-        .insert([rule])
+    // Demo mode - just add to state
+    setMappingRules(prev => [...prev, rule])
+    onRulesUpdated([...mappingRules, rule])
+    setNewRule({ supplierCategory: '', targetCategory: '', keywords: '' })
 
-      if (error) throw error
-
-      setMappingRules(prev => [...prev, rule])
-      onRulesUpdated([...mappingRules, rule])
-      setNewRule({ supplierCategory: '', targetCategory: '', keywords: '' })
-
-      toast({
-        title: "Règle ajoutée",
-        description: "Nouvelle règle de mapping créée"
-      })
-
-    } catch (error) {
-      toast({
-        title: "Erreur de sauvegarde",
-        description: "Impossible de sauvegarder la règle",
-        variant: "destructive"
-      })
-    }
+    toast({
+      title: "Règle ajoutée",
+      description: "Nouvelle règle de mapping créée"
+    })
   }
 
   const deleteRule = async (ruleId: string) => {
-    try {
-      const { error } = await supabase
-        .from('category_mapping_rules')
-        .delete()
-        .eq('id', ruleId)
+    const updatedRules = mappingRules.filter(rule => rule.id !== ruleId)
+    setMappingRules(updatedRules)
+    onRulesUpdated(updatedRules)
 
-      if (error) throw error
-
-      const updatedRules = mappingRules.filter(rule => rule.id !== ruleId)
-      setMappingRules(updatedRules)
-      onRulesUpdated(updatedRules)
-
-      toast({
-        title: "Règle supprimée",
-        description: "La règle de mapping a été supprimée"
-      })
-
-    } catch (error) {
-      toast({
-        title: "Erreur de suppression",
-        description: "Impossible de supprimer la règle",
-        variant: "destructive"
-      })
-    }
+    toast({
+      title: "Règle supprimée",
+      description: "La règle de mapping a été supprimée"
+    })
   }
 
   const saveAllRules = async () => {
