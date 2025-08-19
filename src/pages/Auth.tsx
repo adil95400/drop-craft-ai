@@ -56,14 +56,39 @@ const Auth = () => {
     try {
       const { error } = await signIn(loginForm.email, loginForm.password);
       if (error) {
+        console.error('Detailed login error:', error);
+        
+        let errorMessage = error.message;
+        
+        // Provide more specific error messages in French
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = "Email ou mot de passe incorrect. Vérifiez vos identifiants.";
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = "Veuillez confirmer votre email avant de vous connecter.";
+        } else if (error.message.includes('Too many requests')) {
+          errorMessage = "Trop de tentatives. Veuillez patienter quelques minutes.";
+        }
+        
         toast({
           title: "Erreur de connexion",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
+        });
+      } else {
+        // Success message
+        toast({
+          title: "Connexion réussie !",
+          description: "Redirection vers votre tableau de bord...",
+          variant: "default",
         });
       }
     } catch (error) {
       console.error('Login error:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
