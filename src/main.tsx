@@ -9,6 +9,7 @@ import SubscriptionSyncService from '@/components/plan/SubscriptionSyncService'
 import { RQDevtools } from '@/components/RQDevtools'
 import App from './App'
 import './index.css'
+import './styles/import-animations.css'
 
 const queryClient = new QueryClient({
   defaultOptions: {
