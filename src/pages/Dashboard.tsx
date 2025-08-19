@@ -149,14 +149,15 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Plan Dashboard - Système de plans et abonnements */}
-      <PlanDashboard />
-
-      {/* Smart Dashboard avec IA */}
-      <SmartDashboard />
-
-      {/* Métriques temps réel */}
-      <RealTimeMetrics />
+      {/* Plan Dashboard - Temporairement simplifié */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Informations Plan</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Plan dashboard temporairement simplifié pour éviter les boucles infinies</p>
+        </CardContent>
+      </Card>
 
       {/* Métriques principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

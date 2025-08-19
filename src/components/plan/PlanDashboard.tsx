@@ -1,6 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext'
-import { usePlan } from '@/hooks/usePlan'
-import { useQuotas } from '@/hooks/useQuotas'
+import { useSimplePlan } from '@/hooks/useSimplePlan'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
@@ -29,10 +28,9 @@ const quotaLabels = {
 
 export const PlanDashboard = () => {
   const { user } = useAuth()
-  const { plan, loading: planLoading } = usePlan(user)
-  const { quotas, loading: quotasLoading } = useQuotas(user)
+  const { plan, loading } = useSimplePlan(user)
 
-  if (planLoading || quotasLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -43,17 +41,8 @@ export const PlanDashboard = () => {
   const PlanIcon = planIcons[plan]
   const planName = planNames[plan]
 
-  // Get main quotas for display
-  const mainQuotas = [
-    'daily_imports',
-    'monthly_products', 
-    'ai_requests',
-    'automation_tasks'
-  ].map(key => ({
-    key,
-    data: quotas[key],
-    label: quotaLabels[key as keyof typeof quotaLabels] || key
-  })).filter(q => q.data)
+  // Quotas temporairement désactivés
+  const mainQuotas: any[] = []
 
   return (
     <div className="space-y-6">
@@ -101,29 +90,15 @@ export const PlanDashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Quotas Overview */}
+      {/* Quotas Overview - Désactivé temporairement */}
       <Card>
         <CardHeader>
           <CardTitle>Utilisation des Quotas</CardTitle>
         </CardHeader>
         <CardContent>
-          {mainQuotas.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {mainQuotas.map(({ key, data, label }) => (
-                <QuotaIndicator
-                  key={key}
-                  quotaKey={key}
-                  current={data.currentCount}
-                  limit={data.limit}
-                  label={label}
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-center py-8">
-              Aucun quota configuré pour votre plan
-            </p>
-          )}
+          <p className="text-muted-foreground text-center py-8">
+            Quotas temporairement désactivés pour éviter les boucles infinies
+          </p>
         </CardContent>
       </Card>
 
