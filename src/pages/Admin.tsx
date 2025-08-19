@@ -11,10 +11,40 @@ import { Progress } from "@/components/ui/progress"
 import { AnimatedCounter } from "@/components/ui/animated-counter"
 import { Search, Shield, Users, BarChart3, Settings, Ban, UserCheck, Download, Eye, AlertTriangle, TrendingUp, Activity, Clock, Globe, Server, Database, Zap } from "lucide-react"
 import { adminActions, orgActions } from "@/lib/admin"
+import { roleService } from "@/lib/roleService"
+import { useUserRole } from "@/hooks/useUserRole"
+import { useToast } from "@/hooks/use-toast"
 import { ActionButton } from "@/components/common/ActionButton"
 
 export default function Admin() {
   const [searchQuery, setSearchQuery] = useState("")
+  const { isAdmin } = useUserRole()
+  const { toast } = useToast()
+
+  const handleRoleChange = async (userId: string, newRole: 'admin' | 'user') => {
+    try {
+      const result = await roleService.setUserRole(userId, newRole)
+      
+      if (result.success) {
+        toast({
+          title: "Rôle mis à jour",
+          description: result.message,
+        })
+      } else {
+        toast({
+          title: "Erreur",
+          description: result.error,
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le rôle",
+        variant: "destructive",
+      })
+    }
+  }
 
   const users = [
     {
@@ -304,6 +334,20 @@ export default function Admin() {
                             >
                               <Eye className="w-4 h-4" />
                             </ActionButton>
+                            <Select
+                              value={user.role}
+                              onValueChange={(newRole: 'admin' | 'user') => 
+                                handleRoleChange(user.id.toString(), newRole)
+                              }
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="user">Utilisateur</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
                             <ActionButton 
                               variant="outline" 
                               size="sm"

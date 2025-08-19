@@ -1764,6 +1764,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_set_role: {
+        Args: { new_role: string; target_user_id: string }
+        Returns: Json
+      }
       calculate_profit_margin: {
         Args: { cost_price: number; price: number }
         Returns: number
