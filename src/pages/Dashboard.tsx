@@ -23,10 +23,11 @@ import {
 } from 'lucide-react'
 
 const Dashboard = () => {
-  const { user, loading } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [searchParams] = useSearchParams()
   const { toast } = useToast()
   const { checkSubscription } = useStripeSubscription()
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false)
 
   // Handle checkout success/cancel notifications
   useEffect(() => {
@@ -58,6 +59,17 @@ const Dashboard = () => {
       window.history.replaceState({}, '', '/dashboard')
     }
   }, [searchParams, toast, checkSubscription])
+
+  // Set initial load complete when auth loading is done
+  useEffect(() => {
+    if (!authLoading) {
+      const timer = setTimeout(() => {
+        setInitialLoadComplete(true)
+      }, 100) // Small delay to prevent flash
+      
+      return () => clearTimeout(timer)
+    }
+  }, [authLoading])
 
   // Sample metrics data
   const metrics = [
@@ -91,7 +103,7 @@ const Dashboard = () => {
     }
   ]
 
-  if (loading) {
+  if (authLoading || !initialLoadComplete) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

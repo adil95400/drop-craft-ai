@@ -53,30 +53,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   } | null>(null)
   const { toast } = useToast()
 
+  // Prevent multiple subscription refreshes
+  const [refreshingSubscription, setRefreshingSubscription] = useState(false)
+
   const refreshSubscription = async () => {
-    if (user) {
-      try {
-        const { data, error } = await supabase.functions.invoke('check-subscription', {
-          headers: {
-            Authorization: `Bearer ${session?.access_token}`,
-          },
-        })
-        
-        if (error) {
-          console.warn('Failed to refresh subscription:', error)
-          return
-        }
-        
-        if (data) {
-          setSubscription({
-            subscribed: data.subscribed || false,
-            subscription_tier: data.subscription_tier || null,
-            subscription_end: data.subscription_end || null
-          })
-        }
-      } catch (error) {
+    if (!user || refreshingSubscription) return
+    
+    try {
+      setRefreshingSubscription(true)
+      const { data, error } = await supabase.functions.invoke('check-subscription', {
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      })
+      
+      if (error) {
         console.warn('Failed to refresh subscription:', error)
+        return
       }
+      
+      if (data) {
+        setSubscription({
+          subscribed: data.subscribed || false,
+          subscription_tier: data.subscription_tier || null,
+          subscription_end: data.subscription_end || null
+        })
+      }
+    } catch (error) {
+      console.warn('Failed to refresh subscription:', error)
+    } finally {
+      setRefreshingSubscription(false)
     }
   }
 
@@ -100,17 +106,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refetchProfile = fetchProfile
 
   useEffect(() => {
+    let mounted = true
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return
+      
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
       
       // If user is logged in, fetch profile data 
       if (session?.user) {
-        setTimeout(async () => {
-          await fetchProfile()
-        }, 1000)
+        fetchProfile()
       }
     })
 
@@ -118,6 +126,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return
+      
       console.log('Auth state change:', event, session?.user?.email)
       
       setSession(session)
@@ -125,17 +135,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false)
 
       if (event === 'SIGNED_IN' && session?.user) {
-        // Defer data fetching to prevent deadlocks  
-        setTimeout(async () => {
-          await fetchProfile()
-        }, 1000)
+        await fetchProfile()
       } else if (event === 'SIGNED_OUT') {
         setSubscription(null)
         setProfile(null)
       }
     })
 
-    return () => subscription?.unsubscribe()
+    return () => {
+      mounted = false
+      subscription?.unsubscribe()
+    }
   }, [])
 
   const signUp = async (email: string, password: string, userData?: any) => {
@@ -172,17 +182,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      // Clean up existing state first
       cleanupAuthState()
       
-      // Attempt global sign out first to ensure clean state
       try {
         await supabase.auth.signOut({ scope: 'global' })
       } catch (err) {
         // Continue even if this fails
       }
       
-      // Wait a bit for cleanup
       await new Promise(resolve => setTimeout(resolve, 500))
       
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -193,7 +200,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) {
         let errorMessage = error.message
         
-        // Provide more user-friendly error messages
         if (error.message.includes('Invalid login credentials')) {
           errorMessage = "Email ou mot de passe incorrect. Vérifiez vos identifiants."
         } else if (error.message.includes('Email not confirmed')) {
@@ -213,7 +219,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           description: "Bienvenue sur Shopopti Pro!",
         })
         
-        // Force a page reload to ensure clean state
         setTimeout(() => {
           window.location.href = '/dashboard'
         }, 1000)
@@ -232,20 +237,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Clean up auth state first
       cleanupAuthState()
       
-      // Attempt global sign out
       try {
         await supabase.auth.signOut({ scope: 'global' })
       } catch (err) {
         console.warn('Global sign out failed:', err)
       }
       
-      // Clear subscription state
       setSubscription(null)
       
-      // Force page reload for clean state
       window.location.href = '/auth'
     } catch (error: any) {
       console.error('Error signing out:', error)

@@ -1,21 +1,14 @@
+
 import { useEffect } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
 
 export const SubscriptionSyncService = () => {
-  const { user, refreshSubscription } = useAuth()
-
+  // Component disabled to prevent infinite loops
+  // Subscription sync is now handled directly in AuthContext
+  
   useEffect(() => {
-    // Sync subscription only once when user becomes available
-    if (user) {
-      const timer = setTimeout(() => {
-        refreshSubscription()
-      }, 2000) // Reduced delay
-      
-      return () => clearTimeout(timer)
-    }
-  }, [user]) // Remove refreshSubscription from dependencies to prevent infinite loop
+    console.log('SubscriptionSyncService: Component loaded but disabled')
+  }, [])
 
-  // This component doesn't render anything, it's just for syncing
   return null
 }
 
