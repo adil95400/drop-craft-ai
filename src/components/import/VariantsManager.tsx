@@ -23,13 +23,13 @@ interface Variant {
   id: string
   sku: string
   name: string
-  color?: string
-  size?: string
-  material?: string
+  color: string
+  size: string
+  material: string
   price: number
   costPrice: number
   stock: number
-  imageUrl?: string
+  imageUrl: string
   isActive: boolean
 }
 
@@ -86,13 +86,13 @@ export const VariantsManager = ({ productId, variants, onVariantsUpdate }: Varia
       id: `var_${Date.now()}`,
       sku: newVariant.sku || '',
       name: newVariant.name || '',
-      color: newVariant.color,
-      size: newVariant.size,
-      material: newVariant.material,
+      color: newVariant.color || '',
+      size: newVariant.size || '',
+      material: newVariant.material || '',
       price: newVariant.price || 0,
       costPrice: newVariant.costPrice || 0,
       stock: newVariant.stock || 0,
-      imageUrl: newVariant.imageUrl,
+      imageUrl: newVariant.imageUrl || '',
       isActive: true
     }
 
@@ -154,9 +154,11 @@ export const VariantsManager = ({ productId, variants, onVariantsUpdate }: Varia
         name: 'Rouge - Taille M',
         color: 'red',
         size: 'M',
+        material: 'Coton',
         price: 29.99,
         costPrice: 15.99,
         stock: 50,
+        imageUrl: '',
         isActive: true
       },
       {
@@ -164,10 +166,12 @@ export const VariantsManager = ({ productId, variants, onVariantsUpdate }: Varia
         sku: `${productId}_BLUE_L`,
         name: 'Bleu - Taille L',
         color: 'blue',
-        size: 'L', 
+        size: 'L',
+        material: 'Coton',
         price: 29.99,
         costPrice: 15.99,
         stock: 30,
+        imageUrl: '',
         isActive: true
       },
       {
@@ -176,9 +180,11 @@ export const VariantsManager = ({ productId, variants, onVariantsUpdate }: Varia
         name: 'Noir - Taille S',
         color: 'black',
         size: 'S',
+        material: 'Coton',
         price: 29.99,
         costPrice: 15.99,
         stock: 25,
+        imageUrl: '',
         isActive: true
       }
     ]
