@@ -1,31 +1,24 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import HomeNew from "./HomeNew";
-import Dashboard from "./Dashboard";
+import { Loader2 } from "lucide-react";
 
 const Index = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
-  // Simulate authentication check
-  useEffect(() => {
-    // For demo purposes, show home page by default
-    // In real app, this would check auth status
-    const authStatus = localStorage.getItem("isAuthenticated");
-    setIsAuthenticated(authStatus === "true");
-  }, []);
-
-  // For demo, redirect to dashboard if user is "authenticated"
-  const handleLogin = () => {
-    localStorage.setItem("isAuthenticated", "true");
-    setIsAuthenticated(true);
-  };
-
-  // Show dashboard if authenticated, otherwise show home
-  if (isAuthenticated) {
-    return <Dashboard />;
+  // Show loading while auth is being determined
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
   }
 
+  // If user is authenticated, AuthGuard will handle redirection
+  // Just show the home page for non-authenticated users
   return <HomeNew />;
 };
 
