@@ -36,9 +36,10 @@ const Auth = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (!loading && user) {
-      navigate("/dashboard");
+      // Use window.location.href for immediate redirect
+      window.location.href = "/dashboard";
     }
-  }, [user, loading, navigate]);
+  }, [user, loading]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
