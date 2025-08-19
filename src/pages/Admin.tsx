@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,21 +15,22 @@ import { roleService } from "@/lib/roleService"
 import { useUserRole } from "@/hooks/useUserRole"
 import { useToast } from "@/hooks/use-toast"
 import { ActionButton } from "@/components/common/ActionButton"
+import { RoleChangeDialog } from "@/components/admin/RoleChangeDialog"
 
 export default function Admin() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [users, setUsers] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [roleDialogOpen, setRoleDialogOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<any>(null)
   const { isAdmin } = useUserRole()
   const { toast } = useToast()
 
-  const handleRoleChange = async (userId: string, newRole: 'admin' | 'user') => {
+  const fetchUsers = async () => {
     try {
-      const result = await roleService.setUserRole(userId, newRole)
-      
+      const result = await roleService.getAllUsers()
       if (result.success) {
-        toast({
-          title: "Rôle mis à jour",
-          description: result.message,
-        })
+        setUsers(result.data)
       } else {
         toast({
           title: "Erreur",
@@ -40,50 +41,31 @@ export default function Admin() {
     } catch (error) {
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour le rôle",
+        description: "Impossible de charger les utilisateurs",
         variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const users = [
-    {
-      id: 1,
-      name: "Jean Dupont",
-      email: "jean.dupont@email.com",
-      role: "user",
-      plan: "Pro",
-      status: "active",
-      lastLogin: "Il y a 2h",
-      products: 156,
-      revenue: "€2,450",
-      avatar: "/lovable-uploads/aa11c615-9c0c-4dbf-b691-586cf4f9c53a.png"
-    },
-    {
-      id: 2,
-      name: "Marie Martin",
-      email: "marie.martin@email.com",
-      role: "admin",
-      plan: "Enterprise",
-      status: "active",
-      lastLogin: "Il y a 1j",
-      products: 89,
-      revenue: "€1,230",
-      avatar: "/lovable-uploads/aa11c615-9c0c-4dbf-b691-586cf4f9c53a.png"
-    },
-    {
-      id: 3,
-      name: "Pierre Durand",
-      email: "pierre.durand@email.com",
-      role: "user",
-      plan: "Basic",
-      status: "suspended",
-      lastLogin: "Il y a 5j",
-      products: 23,
-      revenue: "€340",
-      avatar: "/lovable-uploads/aa11c615-9c0c-4dbf-b691-586cf4f9c53a.png"
+  useEffect(() => {
+    if (isAdmin) {
+      fetchUsers()
     }
-  ]
+  }, [isAdmin])
+
+  const handleRoleChange = (user: any) => {
+    setSelectedUser(user)
+    setRoleDialogOpen(true)
+  }
+
+  const handleRoleChangeConfirm = () => {
+    fetchUsers() // Refresh users list
+    setRoleDialogOpen(false)
+    setSelectedUser(null)
+  }
+
 
   const organizations = [
     {
@@ -334,20 +316,13 @@ export default function Admin() {
                             >
                               <Eye className="w-4 h-4" />
                             </ActionButton>
-                            <Select
-                              value={user.role}
-                              onValueChange={(newRole: 'admin' | 'user') => 
-                                handleRoleChange(user.id.toString(), newRole)
-                              }
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleRoleChange(user)}
                             >
-                              <SelectTrigger className="w-32">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="user">Utilisateur</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
-                              </SelectContent>
-                            </Select>
+                              Changer rôle
+                            </Button>
                             <ActionButton 
                               variant="outline" 
                               size="sm"
@@ -610,6 +585,21 @@ export default function Admin() {
             </div>
           </TabsContent>
         </Tabs>
+        
+        {/* Role Change Dialog */}
+        {selectedUser && (
+          <RoleChangeDialog
+            isOpen={roleDialogOpen}
+            onClose={() => {
+              setRoleDialogOpen(false)
+              setSelectedUser(null)
+            }}
+            userId={selectedUser.id}
+            userName={selectedUser.full_name || selectedUser.name || 'Utilisateur'}
+            currentRole={selectedUser.role}
+            onRoleChanged={handleRoleChangeConfirm}
+          />
+        )}
     </div>
   )
 }

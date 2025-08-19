@@ -108,9 +108,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // If user is logged in, check subscription after a delay (seulement une fois)
       if (session?.user) {
-        setTimeout(() => {
-          refreshSubscription()
-          fetchProfile()
+        setTimeout(async () => {
+          await refreshSubscription()
+          await fetchProfile()
+          
+          // Redirect based on role after profile is loaded
+          try {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', session.user.id)
+              .single()
+            
+            if (profileData?.role === 'admin') {
+              window.location.href = '/admin'
+            } else {
+              window.location.href = '/dashboard'
+            }
+          } catch (error) {
+            console.error('Error checking role for redirect:', error)
+            window.location.href = '/dashboard'
+          }
         }, 1000)
       }
     })
@@ -127,9 +145,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (event === 'SIGNED_IN' && session?.user) {
         // Defer subscription check to prevent deadlocks (avec délai plus long)
-        setTimeout(() => {
-          refreshSubscription()
-          fetchProfile()
+        setTimeout(async () => {
+          await refreshSubscription()
+          await fetchProfile()
+          
+          // Redirect based on role after profile is loaded
+          try {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', session.user.id)
+              .single()
+            
+            if (profileData?.role === 'admin') {
+              window.location.href = '/admin'
+            } else {
+              window.location.href = '/dashboard'
+            }
+          } catch (error) {
+            console.error('Error checking role for redirect:', error)
+            window.location.href = '/dashboard'
+          }
         }, 2000)
       } else if (event === 'SIGNED_OUT') {
         setSubscription(null)
