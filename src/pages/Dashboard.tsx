@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
 import { useRealAnalytics } from "@/hooks/useRealAnalytics"
+import { useRealIntegrations } from "@/hooks/useRealIntegrations"
+import { useRealSuppliers } from "@/hooks/useRealSuppliers"
 import { useStripeSubscription } from "@/hooks/useStripeSubscription"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { 
@@ -20,7 +22,10 @@ import {
   Calendar,
   Star,
   RefreshCw,
-  Plus
+  Plus,
+  Store,
+  Link,
+  Truck
 } from 'lucide-react'
 
 const Dashboard = () => {
@@ -29,6 +34,8 @@ const Dashboard = () => {
   const { toast } = useToast()
   const { checkSubscription } = useStripeSubscription()
   const { analytics, isLoading } = useRealAnalytics()
+  const { integrations, stats: integrationStats, isLoading: integrationsLoading } = useRealIntegrations()
+  const { suppliers, stats: supplierStats, isLoading: suppliersLoading } = useRealSuppliers()
   const [initialLoadComplete, setInitialLoadComplete] = useState(false)
 
   // Handle checkout success/cancel notifications
@@ -307,6 +314,204 @@ const Dashboard = () => {
           </CardHeader>
         </Card>
       </div>
+
+      {/* Magasins et Intégrations */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Magasins connectés */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Store className="h-5 w-5" />
+              Magasins connectés
+            </CardTitle>
+            <CardDescription>
+              {integrationStats?.total || 0} intégration{(integrationStats?.total || 0) > 1 ? 's' : ''} configurée{(integrationStats?.total || 0) > 1 ? 's' : ''}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {integrationsLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              </div>
+            ) : integrations && integrations.length > 0 ? (
+              <div className="space-y-3">
+                {integrations.slice(0, 3).map((integration) => (
+                  <div key={integration.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className={`h-2 w-2 rounded-full ${
+                        integration.connection_status === 'connected' ? 'bg-green-500' : 
+                        integration.connection_status === 'error' ? 'bg-red-500' : 'bg-yellow-500'
+                      }`}></div>
+                      <div>
+                        <p className="font-medium">{integration.platform_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {integration.shop_domain || integration.platform_url}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant={integration.connection_status === 'connected' ? 'default' : 'secondary'}>
+                      {integration.connection_status === 'connected' ? 'Connecté' : 
+                       integration.connection_status === 'error' ? 'Erreur' : 'En attente'}
+                    </Badge>
+                  </div>
+                ))}
+                {integrations.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Aucun magasin connecté</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => window.location.href = '/integrations'}
+                    >
+                      Connecter un magasin
+                    </Button>
+                  </div>
+                )}
+                {integrations.length > 3 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => window.location.href = '/integrations'}
+                  >
+                    Voir tous les magasins ({integrations.length})
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Aucun magasin connecté</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={() => window.location.href = '/integrations'}
+                >
+                  Connecter un magasin
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Fournisseurs connectés */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Truck className="h-5 w-5" />
+              Fournisseurs connectés
+            </CardTitle>
+            <CardDescription>
+              {supplierStats?.total || 0} fournisseur{(supplierStats?.total || 0) > 1 ? 's' : ''} configuré{(supplierStats?.total || 0) > 1 ? 's' : ''}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {suppliersLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              </div>
+            ) : suppliers && suppliers.length > 0 ? (
+              <div className="space-y-3">
+                {suppliers.slice(0, 3).map((supplier) => (
+                  <div key={supplier.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className={`h-2 w-2 rounded-full ${
+                        supplier.status === 'active' ? 'bg-green-500' : 'bg-gray-500'
+                      }`}></div>
+                      <div>
+                        <p className="font-medium">{supplier.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {supplier.country && `📍 ${supplier.country}`}
+                          {supplier.rating && ` • ⭐ ${supplier.rating}/5`}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant={supplier.status === 'active' ? 'default' : 'secondary'}>
+                      {supplier.status === 'active' ? 'Actif' : 'Inactif'}
+                    </Badge>
+                  </div>
+                ))}
+                {suppliers.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Aucun fournisseur connecté</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => window.location.href = '/suppliers'}
+                    >
+                      Ajouter un fournisseur
+                    </Button>
+                  </div>
+                )}
+                {suppliers.length > 3 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => window.location.href = '/suppliers'}
+                  >
+                    Voir tous les fournisseurs ({suppliers.length})
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Aucun fournisseur connecté</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={() => window.location.href = '/suppliers'}
+                >
+                  Ajouter un fournisseur
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Statistiques détaillées des connexions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Link className="h-5 w-5" />
+            Aperçu des connexions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground">Magasins actifs</p>
+              <p className="font-semibold text-lg">{integrationStats?.connected || 0}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Fournisseurs actifs</p>
+              <p className="font-semibold text-lg">{supplierStats?.active || 0}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Dernière synchro</p>
+              <p className="font-semibold text-lg">
+                {integrations && integrations.length > 0 && integrations[0].last_sync_at ? 
+                  new Date(integrations[0].last_sync_at).toLocaleDateString() : 
+                  'Jamais'}
+              </p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Statut général</p>
+              <Badge variant={
+                (integrationStats?.connected || 0) > 0 && (supplierStats?.active || 0) > 0 ? 
+                'default' : 'secondary'
+              }>
+                {(integrationStats?.connected || 0) > 0 && (supplierStats?.active || 0) > 0 ? 
+                'Opérationnel' : 'Configuration requise'}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Commandes récentes */}
       <Card>
