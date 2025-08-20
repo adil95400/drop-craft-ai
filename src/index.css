@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import optimized styles */
+@import './styles/optimized.css';
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
@@ -249,6 +252,3 @@ All colors MUST be HSL.
 .transition-bounce {
   transition: var(--transition-bounce);
 }
-
-/* Import optimized styles */
-@import './styles/optimized.css';
