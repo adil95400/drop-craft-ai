@@ -1,197 +1,161 @@
-import { useState } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Progress } from "@/components/ui/progress"
-import { Upload, Link, Image, Globe, FileText, Zap } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import React, { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
+import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/integrations/supabase/client'
+import {
+  Upload,
+  Link,
+  Package,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  FileSpreadsheet,
+  Globe,
+  ShoppingCart
+} from 'lucide-react'
 
-interface ImportInterfaceProps {
-  selectedMethod: string
-  isImporting: boolean
-  importProgress: number
-  onImport: (data: any) => void
+export interface ImportInterfaceProps {
+  onImportComplete?: () => void
 }
 
-export const ImportInterface = ({ selectedMethod, isImporting, importProgress, onImport }: ImportInterfaceProps) => {
-  const [url, setUrl] = useState("")
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [imageFile, setImageFile] = useState<File | null>(null)
+export const ImportInterface: React.FC<ImportInterfaceProps> = ({ onImportComplete }) => {
+  const { toast } = useToast()
+  const [isImporting, setIsImporting] = useState(false)
+  
+  // URL Import states
+  const [importUrl, setImportUrl] = useState('')
+  
+  // CSV Import states
+  const [csvFile, setCsvFile] = useState<File | null>(null)
+  const [csvData, setCsvData] = useState<any[]>([])
+  const [mapping, setMapping] = useState<Record<string, string>>({})
+  
+  // Supplier Import states
+  const [selectedSupplier, setSelectedSupplier] = useState('')
+  
+  const suppliers = [
+    { id: 'aliexpress', name: 'AliExpress', status: 'connected' },
+    { id: 'bigbuy', name: 'BigBuy', status: 'connected' },
+    { id: 'dropshipping_copilot', name: 'Dropshipping Copilot', status: 'available' },
+    { id: 'spocket', name: 'Spocket', status: 'available' }
+  ]
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      setSelectedFile(file)
+  const handleUrlImport = async () => {
+    if (!importUrl.trim()) {
+      toast({
+        title: "URL requise",
+        description: "Veuillez saisir une URL valide",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setIsImporting(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('import-products', {
+        body: {
+          source: 'url',
+          data: {
+            url: importUrl,
+            config: { extract_images: true, analyze_content: true }
+          }
+        }
+      })
+
+      if (error) throw error
+
+      toast({
+        title: "Import réussi !",
+        description: `${data.products_imported} produits importés depuis l'URL`
+      })
+
+      setImportUrl('')
+      onImportComplete?.()
+
+    } catch (error: any) {
+      toast({
+        title: "Erreur d'import",
+        description: error.message,
+        variant: "destructive"
+      })
+    } finally {
+      setIsImporting(false)
     }
   }
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      setImageFile(file)
-    }
-  }
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold mb-2">Importer des Produits</h2>
+        <p className="text-muted-foreground">
+          Importez vos produits depuis différentes sources pour enrichir votre catalogue
+        </p>
+      </div>
 
-  const handleImport = () => {
-    if (selectedMethod === "url" && url) {
-      onImport({ type: "url", data: url })
-    } else if (selectedMethod === "csv" && selectedFile) {
-      onImport({ type: "csv", data: selectedFile })
-    } else if (selectedMethod === "image" && imageFile) {
-      onImport({ type: "image", data: imageFile })
-    }
-  }
+      <Tabs defaultValue="url" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="url" className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            URL/Site Web
+          </TabsTrigger>
+          <TabsTrigger value="csv" className="flex items-center gap-2">
+            <FileSpreadsheet className="h-4 w-4" />
+            Fichier CSV
+          </TabsTrigger>
+          <TabsTrigger value="supplier" className="flex items-center gap-2">
+            <ShoppingCart className="h-4 w-4" />
+            Fournisseurs
+          </TabsTrigger>
+        </TabsList>
 
-  if (isImporting) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-primary animate-pulse" />
-            Import en cours...
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Progress value={importProgress} className="w-full" />
-            <div className="text-sm text-muted-foreground">
-              {importProgress < 30 && "Analyse des données..."}
-              {importProgress >= 30 && importProgress < 60 && "Traitement IA..."}
-              {importProgress >= 60 && importProgress < 90 && "Validation et nettoyage..."}
-              {importProgress >= 90 && "Finalisation..."}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const renderInterface = () => {
-    switch (selectedMethod) {
-      case "url":
-        return (
+        <TabsContent value="url" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Link className="w-5 h-5" />
-                Import via URL
+                <Link className="h-5 w-5" />
+                Import depuis URL
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="product-url">URL du produit</Label>
+                <label className="text-sm font-medium mb-2 block">
+                  URL du produit ou de la page
+                </label>
                 <Input
-                  id="product-url"
+                  type="url"
                   placeholder="https://example.com/product-page"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+                  value={importUrl}
+                  onChange={(e) => setImportUrl(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Supports: Amazon, AliExpress, Shopify, WooCommerce, et plus
-                </p>
               </div>
-              <div className="flex gap-2">
-                <Badge variant="outline">Extraction IA</Badge>
-                <Badge variant="outline">Images HD</Badge>
-                <Badge variant="outline">SEO Auto</Badge>
-              </div>
-              <Button onClick={handleImport} disabled={!url} className="w-full">
-                <Zap className="w-4 h-4 mr-2" />
-                Extraire les données
-              </Button>
-            </CardContent>
-          </Card>
-        )
-
-      case "csv":
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="w-5 h-5" />
-                Import CSV/Excel
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="csv-file">Fichier CSV/Excel</Label>
-                <Input
-                  id="csv-file"
-                  type="file"
-                  accept=".csv,.xlsx,.xls"
-                  onChange={handleFileUpload}
-                />
-                {selectedFile && (
-                  <p className="text-sm text-green-600 mt-1">
-                    ✓ {selectedFile.name} sélectionné
-                  </p>
+              
+              <Button 
+                onClick={handleUrlImport}
+                disabled={isImporting || !importUrl.trim()}
+                className="w-full"
+              >
+                {isImporting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Import en cours...
+                  </>
+                ) : (
+                  <>
+                    <Link className="h-4 w-4 mr-2" />
+                    Importer depuis l'URL
+                  </>
                 )}
-              </div>
-              <div className="flex gap-2">
-                <Badge variant="outline">Mapping Auto</Badge>
-                <Badge variant="outline">Validation IA</Badge>
-                <Badge variant="outline">Doublons Détectés</Badge>
-              </div>
-              <Button onClick={handleImport} disabled={!selectedFile} className="w-full">
-                <Upload className="w-4 h-4 mr-2" />
-                Analyser et importer
               </Button>
             </CardContent>
           </Card>
-        )
-
-      case "image":
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Image className="w-5 h-5" />
-                Import via Image
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="image-file">Image du produit</Label>
-                <Input
-                  id="image-file"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
-                {imageFile && (
-                  <p className="text-sm text-green-600 mt-1">
-                    ✓ {imageFile.name} sélectionné
-                  </p>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Badge variant="outline">Reverse Search</Badge>
-                <Badge variant="outline">OCR Text</Badge>
-                <Badge variant="outline">Prix Détecté</Badge>
-              </div>
-              <Button onClick={handleImport} disabled={!imageFile} className="w-full">
-                <Image className="w-4 h-4 mr-2" />
-                Analyser l'image
-              </Button>
-            </CardContent>
-          </Card>
-        )
-
-      default:
-        return (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <div className="text-muted-foreground">
-                Sélectionnez une méthode d'import ci-dessus
-              </div>
-            </CardContent>
-          </Card>
-        )
-    }
-  }
-
-  return renderInterface()
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
 }

@@ -27,7 +27,8 @@ import {
   Download,
   ExternalLink
 } from 'lucide-react'
-import { useCatalog } from '@/domains/commerce/hooks/useCatalog'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 
 export default function CatalogueReal() {
@@ -49,34 +50,89 @@ export default function CatalogueReal() {
   const isUltraPro = hasPlan('ultra_pro')
   const isPro = hasPlan('pro')
 
-  // Use real catalog data
-  const {
-    products,
-    total,
-    marketplaceProducts,
-    marketplaceTotal,
-    isLoading,
-    isMarketplaceLoading,
-    isImporting,
-    importProduct,
-    loadMarketplace,
-    error
-  } = useCatalog({
-    search: searchQuery,
-    category: selectedCategory,
-    supplier: selectedSupplier,
-    sortBy: sortBy
+  // Fetch user's own products instead of marketplace data
+  const { data: userProducts = [], isLoading, error } = useQuery({
+    queryKey: ['user-products', { search: searchQuery, category: selectedCategory, sortBy }],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order(sortBy === 'name' ? 'name' : sortBy === 'price' ? 'price' : 'created_at', 
+               { ascending: sortBy === 'name' })
+      
+      if (error) throw error
+      return data || []
+    }
   })
+
+  // Fetch marketplace products (catalog_products)
+  const { data: marketplaceProducts = [], isLoading: isMarketplaceLoading } = useQuery({
+    queryKey: ['marketplace-products', { search: searchQuery, category: selectedCategory }],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('catalog_products')
+        .select('*')
+        .limit(50)
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      return data || []
+    }
+  })
+
+  // Filter products based on search and category
+  const products = userProducts.filter(product => {
+    const matchesSearch = !searchQuery || 
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    
+    const matchesCategory = !selectedCategory || product.category === selectedCategory
+    
+    return matchesSearch && matchesCategory
+  })
+
+  const total = products.length
+  const marketplaceTotal = marketplaceProducts.length
 
   const handleImportProduct = async (productId: string) => {
     try {
-      await importProduct(productId)
+      // Get the marketplace product
+      const product = marketplaceProducts.find(p => p.id === productId)
+      if (!product) return
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      // Add to user's products
+      const { error } = await supabase
+        .from('products')
+        .insert({
+          user_id: user.id,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          cost_price: product.cost_price,
+          sku: product.sku,
+          category: product.category,
+          image_url: product.image_url,
+          status: 'active',
+          supplier: product.supplier_name
+        })
+
+      if (error) throw error
+
       toast({
         title: "Produit importé !",
         description: "Le produit a été ajouté à votre catalogue"
       })
     } catch (error) {
       console.error('Error importing product:', error)
+      toast({
+        title: "Erreur d'import",
+        description: "Impossible d'importer le produit",
+        variant: "destructive"
+      })
     }
   }
 
@@ -177,10 +233,10 @@ export default function CatalogueReal() {
               size="sm" 
               className="flex-1" 
               onClick={() => handleImportProduct(product.id)}
-              disabled={isImporting}
+              disabled={false}
             >
               <Plus className="w-4 h-4 mr-1" />
-              {isImporting ? 'Import...' : 'Importer'}
+              Importer
             </Button>
           ) : (
             <Button size="sm" className="flex-1">
@@ -404,8 +460,8 @@ export default function CatalogueReal() {
                   <p className="text-muted-foreground mb-4">
                     Commencez par importer des produits depuis la marketplace
                   </p>
-                  <Button onClick={() => loadMarketplace()}>
-                    Parcourir la Marketplace
+                  <Button onClick={() => window.location.reload()}>
+                    Actualiser
                   </Button>
                 </div>
               ) : (
@@ -432,7 +488,7 @@ export default function CatalogueReal() {
                 </p>
               </div>
               <Button 
-                onClick={() => loadMarketplace()}
+                onClick={() => window.location.reload()}
                 disabled={isMarketplaceLoading}
               >
                 {isMarketplaceLoading ? 'Chargement...' : 'Actualiser'}
@@ -479,7 +535,7 @@ export default function CatalogueReal() {
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">Winners</p>
                         <p className="text-3xl font-bold">
-                          {products.filter(p => p.is_winner).length}
+                          {products.filter(p => p.status === 'active').length}
                         </p>
                       </div>
                       <Star className="w-8 h-8 text-yellow-500" />
@@ -493,7 +549,7 @@ export default function CatalogueReal() {
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">Trending</p>
                         <p className="text-3xl font-bold">
-                          {products.filter(p => p.is_trending).length}
+                          {products.filter(p => p.category).length}
                         </p>
                       </div>
                       <TrendingUp className="w-8 h-8 text-green-500" />
