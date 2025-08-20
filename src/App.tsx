@@ -98,6 +98,9 @@ import Reports from './pages/Reports';
 import NotificationCenter from './pages/NotificationCenter';
 import StockAlerts from './pages/StockAlerts';
 import SupportCenter from './pages/SupportCenter';
+import SubscriptionManagement from './pages/SubscriptionManagement';
+import TeamManagement from './pages/TeamManagement';
+import APIManagement from './pages/APIManagement';
 import CRMLeads from './pages/CRMLeads';
 import CRMActivity from './pages/CRMActivity';
 import CRMCalendar from './pages/CRMCalendar';
@@ -666,7 +669,7 @@ const App = () => (
                 </AppLayout>
               </AuthGuard>
             } />
-            <Route path="/profile" element={
+            <Route path="/user-profile" element={
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <UserProfile />
@@ -698,6 +701,27 @@ const App = () => (
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <SupportCenter />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/subscription" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <SubscriptionManagement />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/team" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <TeamManagement />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/api" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <APIManagement />
                 </AppLayout>
               </AuthGuard>
             } />

@@ -185,7 +185,7 @@ const SubscriptionManagement = () => {
       const { error } = await supabase
         .from('profiles')
         .update({
-          plan: planId,
+          plan: planId as 'standard' | 'pro' | 'ultra_pro',
           updated_at: new Date().toISOString()
         })
         .eq('id', user?.id)
