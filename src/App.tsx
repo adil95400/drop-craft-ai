@@ -101,6 +101,9 @@ import SupportCenter from './pages/SupportCenter';
 import SubscriptionManagement from './pages/SubscriptionManagement';
 import TeamManagement from './pages/TeamManagement';
 import APIManagement from './pages/APIManagement';
+import AdvancedAnalytics from './pages/AdvancedAnalytics';
+import WorkflowBuilder from './pages/WorkflowBuilder';
+import BusinessIntelligence from './pages/BusinessIntelligence';
 import CRMLeads from './pages/CRMLeads';
 import CRMActivity from './pages/CRMActivity';
 import CRMCalendar from './pages/CRMCalendar';
@@ -722,6 +725,27 @@ const App = () => (
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <APIManagement />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/advanced-analytics" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <AdvancedAnalytics />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/workflow-builder" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <WorkflowBuilder />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/business-intelligence" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <BusinessIntelligence />
                 </AppLayout>
               </AuthGuard>
             } />
