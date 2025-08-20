@@ -25,14 +25,16 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useRealSEO } from "@/hooks/useRealSEO";
+import { AddKeywordModal } from "@/components/seo/AddKeywordModal";
 
 const SEO = () => {
   const [url, setUrl] = useState("");
   const [keyword, setKeyword] = useState("");
   const [generatedContent, setGeneratedContent] = useState<any>(null);
+  const [showAddKeywordModal, setShowAddKeywordModal] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { seoData, stats, isLoading, analyzeSEO, generateContent, isAnalyzing, isGenerating } = useRealSEO();
+  const { analyses, keywords, stats, isLoading, analyzeUrl, generateContent, isAnalyzing, isGenerating } = useRealSEO();
 
   const handleAnalyticsRedirect = () => {
     navigate("/analytics");
@@ -203,7 +205,7 @@ Generated on: ${new Date().toLocaleString()}` : "Aucun contenu généré à expo
       return;
     }
 
-    analyzeSEO(url);
+    analyzeUrl(url);
   };
 
   const handleGenerateContent = async () => {
@@ -340,7 +342,7 @@ Generated on: ${new Date().toLocaleString()}` : "Aucun contenu généré à expo
                 </div>
               )}
 
-              {stats.totalPages > 0 && (
+              {stats.totalAnalyses > 0 && (
                 <div className="space-y-4">
                   <div className="bg-muted/50 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
@@ -520,52 +522,79 @@ Generated on: ${new Date().toLocaleString()}` : "Aucun contenu généré à expo
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm">Pages indexées</span>
-                <span className="font-semibold">1,247</span>
+                <span className="text-sm">Pages analysées</span>
+                <span className="font-semibold">{stats.totalAnalyses}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Mots-clés trackés</span>
-                <span className="font-semibold text-blue-600">89</span>
+                <span className="font-semibold text-blue-600">{stats.totalKeywords}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">Top 3 positions</span>
-                <span className="font-semibold text-green-600">34</span>
+                <span className="text-sm">Keywords actifs</span>
+                <span className="font-semibold text-green-600">{stats.trackingKeywords}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">Trafic organique</span>
-                <span className="font-semibold text-primary">+23%</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Score moyen</span>
-                <span className="font-semibold">87/100</span>
+                <span className="text-sm">Score SEO moyen</span>
+                <span className="font-semibold text-primary">{Math.round(stats.averageScore)}/100</span>
               </div>
             </CardContent>
           </Card>
 
           {/* Top Keywords */}
           <Card className="border-border bg-card shadow-card">
-            <CardHeader>
-              <CardTitle>Top Mots-clés</CardTitle>
-              <CardDescription>Vos meilleurs positionnements</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Mots-clés suivis</CardTitle>
+                <CardDescription>Vos mots-clés en suivi</CardDescription>
+              </div>
+              <Button 
+                size="sm" 
+                onClick={() => setShowAddKeywordModal(true)}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Target className="w-4 h-4 mr-2" />
+                Ajouter
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {[
-                  { keyword: "coque iphone 15", position: 2, searches: "12K/mois" },
-                  { keyword: "accessoire telephone", position: 5, searches: "8.1K/mois" },
-                  { keyword: "protection ecran", position: 8, searches: "6.5K/mois" },
-                  { keyword: "chargeur sans fil", position: 12, searches: "4.2K/mois" }
-                ].map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                    <div>
-                      <div className="font-medium text-sm">{item.keyword}</div>
-                      <div className="text-xs text-muted-foreground">{item.searches}</div>
-                    </div>
-                    <Badge variant={item.position <= 3 ? "default" : "secondary"}>
-                      #{item.position}
-                    </Badge>
+                {keywords.length === 0 ? (
+                  <div className="text-center py-4">
+                    <Target className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Aucun mot-clé suivi</p>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="mt-2"
+                      onClick={() => setShowAddKeywordModal(true)}
+                    >
+                      Ajouter votre premier mot-clé
+                    </Button>
                   </div>
-                ))}
+                ) : (
+                  keywords.slice(0, 4).map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 border border-border rounded-lg">
+                      <div>
+                        <div className="font-medium text-sm">{item.keyword}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {item.search_volume ? `${item.search_volume.toLocaleString()}/mois` : 'Volume inconnu'}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {item.current_position && (
+                          <Badge variant={item.current_position <= 3 ? "default" : "secondary"}>
+                            #{item.current_position}
+                          </Badge>
+                        )}
+                        {item.tracking_active && (
+                          <Badge variant="outline" className="text-green-600 border-green-600">
+                            Actif
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -612,6 +641,12 @@ Generated on: ${new Date().toLocaleString()}` : "Aucun contenu généré à expo
           </Card>
         </div>
       </div>
+
+      {/* Add Keyword Modal */}
+      <AddKeywordModal
+        open={showAddKeywordModal}
+        onOpenChange={setShowAddKeywordModal}
+      />
     </div>
   );
 };
