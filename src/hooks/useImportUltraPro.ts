@@ -310,7 +310,20 @@ export const useImportUltraPro = () => {
   }
 }
 
-// This function is no longer used - real data comes from Supabase
-function generateMockProducts(type: string, platform: string): any[] {
-  return [] // Return empty array - no more mock data
+// Configuration for feature flags
+const isFeatureEnabled = (feature: string): boolean => {
+  return import.meta.env[`VITE_${feature}_ENABLED`] === 'true'
+}
+
+// Real-time sync utilities
+export const syncRealTimeData = async () => {
+  if (!isFeatureEnabled('REAL_TIME_SYNC')) return
+  
+  // Trigger sync for all enabled integrations
+  const enabledPlatforms = []
+  if (isFeatureEnabled('ALIEXPRESS')) enabledPlatforms.push('aliexpress')
+  if (isFeatureEnabled('BIGBUY')) enabledPlatforms.push('bigbuy')
+  if (isFeatureEnabled('SHOPIFY')) enabledPlatforms.push('shopify')
+  
+  return enabledPlatforms
 }

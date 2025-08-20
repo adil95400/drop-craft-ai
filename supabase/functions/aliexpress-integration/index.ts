@@ -45,14 +45,18 @@ serve(async (req) => {
     
     let products: AliExpressProduct[]
     
+    const isEnabled = Deno.env.get('VITE_ALIEXPRESS_ENABLED') === 'true'
+    
+    if (!isEnabled) {
+      throw new Error('AliExpress integration is disabled. Enable it in environment variables.')
+    }
+    
     if (aliexpressApiKey && aliexpressApiKey !== 'your_api_key_here') {
       // Real AliExpress API integration
       products = await fetchFromAliExpressAPI(aliexpressApiKey, importType, filters)
       console.log(`Fetched ${products.length} products from AliExpress API`)
     } else {
-      // Enhanced mock data for development
-      products = generateEnhancedMockData(importType, filters)
-      console.log(`Generated ${products.length} mock products`)
+      throw new Error('AliExpress API key not configured. Please add ALIEXPRESS_API_KEY to your edge function secrets.')
     }
 
     // Save products to database with import tracking
