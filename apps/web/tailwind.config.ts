@@ -18,16 +18,18 @@ const config: Config = {
       },
     },
     extend: {
-      colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
+        colors: {
+          border: "hsl(var(--border))",
+          input: "hsl(var(--input))",
+          ring: "hsl(var(--ring))",
+          background: "hsl(var(--background))",
+          foreground: "hsl(var(--foreground))",
+          primary: {
+            DEFAULT: "hsl(var(--primary))",
+            foreground: "hsl(var(--primary-foreground))",
+            hover: "hsl(var(--primary) / 0.9)",
+            glow: "hsl(var(--primary) / 0.5)",
+          },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
@@ -67,6 +69,18 @@ const config: Config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        "gradient-primary": "var(--gradient-hero)",
+        "gradient-accent": "var(--gradient-premium)",
+      },
+      boxShadow: {
+        card: "var(--shadow-card)",
+        premium: "var(--shadow-premium)",
+        glow: "0 0 20px hsl(var(--primary) / 0.3)",
+        soft: "0 8px 30px -12px hsl(var(--primary) / 0.25)",
       },
       keyframes: {
         "accordion-down": {
