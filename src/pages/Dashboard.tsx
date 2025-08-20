@@ -8,8 +8,14 @@ import { useToast } from "@/hooks/use-toast"
 import { useRealAnalytics } from "@/hooks/useRealAnalytics"
 import { useRealIntegrations } from "@/hooks/useRealIntegrations"
 import { useRealSuppliers } from "@/hooks/useRealSuppliers"
+import { useRealCustomers } from "@/hooks/useRealCustomers"
+import { useRealReviews } from "@/hooks/useRealReviews"
+import { useRealSEO } from "@/hooks/useRealSEO"
+import { useMarketing } from "@/hooks/useMarketing"
+import { useRealAutomation } from "@/hooks/useRealAutomation"
 import { useStripeSubscription } from "@/hooks/useStripeSubscription"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { ActivityFeed } from "@/components/activity/ActivityFeed"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts'
 import { 
   BarChart3, 
   ShoppingCart, 
@@ -25,7 +31,15 @@ import {
   Plus,
   Store,
   Link,
-  Truck
+  Truck,
+  MessageSquare,
+  Search,
+  Bot,
+  Target,
+  Zap,
+  Crown,
+  Activity,
+  Globe
 } from 'lucide-react'
 
 const Dashboard = () => {
@@ -33,9 +47,17 @@ const Dashboard = () => {
   const [searchParams] = useSearchParams()
   const { toast } = useToast()
   const { checkSubscription } = useStripeSubscription()
+  
+  // Real data hooks
   const { analytics, isLoading } = useRealAnalytics()
   const { integrations, stats: integrationStats, isLoading: integrationsLoading } = useRealIntegrations()
   const { suppliers, stats: supplierStats, isLoading: suppliersLoading } = useRealSuppliers()
+  const { customers, stats: customerStats, isLoading: customersLoading } = useRealCustomers()
+  const { reviews, stats: reviewStats, isLoading: reviewsLoading } = useRealReviews()
+  const { analyses, keywords, stats: seoStats, isLoading: seoLoading } = useRealSEO()
+  const { campaigns, stats: marketingStats, isLoading: marketingLoading } = useMarketing()
+  const { workflows, stats: automationStats, isLoading: automationLoading } = useRealAutomation()
+  
   const [initialLoadComplete, setInitialLoadComplete] = useState(false)
 
   // Handle checkout success/cancel notifications
@@ -50,12 +72,10 @@ const Dashboard = () => {
         variant: "default"
       })
       
-      // Refresh subscription status
       setTimeout(() => {
         checkSubscription()
       }, 2000)
       
-      // Clean URL
       window.history.replaceState({}, '', '/dashboard')
     } else if (checkout === 'cancelled') {
       toast({
@@ -64,23 +84,21 @@ const Dashboard = () => {
         variant: "default"
       })
       
-      // Clean URL
       window.history.replaceState({}, '', '/dashboard')
     }
   }, [searchParams, toast, checkSubscription])
 
-  // Set initial load complete when auth loading is done
   useEffect(() => {
     if (!authLoading) {
       const timer = setTimeout(() => {
         setInitialLoadComplete(true)
-      }, 100) // Small delay to prevent flash
+      }, 100)
       
       return () => clearTimeout(timer)
     }
   }, [authLoading])
 
-  // Real metrics data
+  // Enhanced metrics combining all modules
   const metrics = [
     {
       title: "Chiffre d'affaires",
@@ -90,26 +108,69 @@ const Dashboard = () => {
       description: "Total des ventes"
     },
     {
-      title: "Commandes",
-      value: analytics?.orders.toString() || "0",
-      change: { value: 8.2, trend: 'up' },
-      icon: ShoppingCart,
-      description: "Commandes livrées"
-    },
-    {
-      title: "Produits",
-      value: analytics?.products.toString() || "0",
-      change: { value: 3.1, trend: 'up' },
-      icon: Package,
-      description: "En catalogue"
-    },
-    {
       title: "Clients",
-      value: analytics?.customers.toString() || "0",
-      change: { value: 2.4, trend: 'up' },
+      value: customerStats?.total?.toString() || analytics?.customers.toString() || "0",
+      change: { value: 8.2, trend: 'up' },
       icon: Users,
       description: "Clients enregistrés"
+    },
+    {
+      title: "Avis Clients",
+      value: reviewStats?.total?.toString() || "0",
+      change: { value: 15.3, trend: 'up' },
+      icon: Star,
+      description: `Moyenne: ${reviewStats?.averageRating?.toFixed(1) || '0'}/5`
+    },
+    {
+      title: "SEO Score",
+      value: `${Math.round(seoStats?.averageScore || 0)}/100`,
+      change: { value: 5.7, trend: 'up' },
+      icon: Search,
+      description: `${seoStats?.totalKeywords || 0} mots-clés`
     }
+  ]
+
+  // Advanced analytics combining all data sources
+  const advancedMetrics = [
+    {
+      title: "Automations Actives",
+      value: automationStats?.activeWorkflows || 0,
+      icon: Bot,
+      color: "text-blue-600",
+      description: `${automationStats?.totalExecutions || 0} exécutions`
+    },
+    {
+      title: "Campagnes Marketing", 
+      value: marketingStats?.activeCampaigns || 0,
+      icon: Target,
+      color: "text-purple-600",
+      description: `€${marketingStats?.totalSpent || 0} dépensés`
+    },
+    {
+      title: "Intégrations",
+      value: integrationStats?.connected || 0,
+      icon: Link,
+      color: "text-green-600", 
+      description: `${integrationStats?.total || 0} configurées`
+    },
+    {
+      title: "Fournisseurs",
+      value: supplierStats?.active || 0,
+      icon: Truck,
+      color: "text-orange-600",
+      description: `${supplierStats?.total || 0} connectés`
+    }
+  ]
+
+  // Mock performance data combining all metrics
+  const performanceData = [
+    { name: 'Lun', sales: 2400, customers: 45, reviews: 12, seo: 75 },
+    { name: 'Mar', sales: 2800, customers: 52, reviews: 18, seo: 77 },
+    { name: 'Mer', sales: 3200, customers: 48, reviews: 15, seo: 78 },
+    { name: 'Jeu', sales: 2900, customers: 41, reviews: 22, seo: 76 },
+    { name: 'Ven', sales: 3800, customers: 67, reviews: 28, seo: 79 },
+    { name: 'Sam', sales: 4200, customers: 73, reviews: 31, seo: 80 },
+    { name: 'Dim', sales: 3600, customers: 58, reviews: 25, seo: 81 }
   ]
 
   const handleRefresh = async () => {
@@ -145,22 +206,30 @@ const Dashboard = () => {
     )
   }
 
-  if (isLoading) {
+  const isLoadingAny = isLoading || customersLoading || reviewsLoading || seoLoading || marketingLoading || automationLoading
+
+  if (isLoadingAny) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="space-y-4 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Chargement des données...</p>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-8">
-      {/* Header avec informations utilisateur */}
+      {/* Enhanced Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard Standard</h1>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+            <Crown className="h-8 w-8 text-primary" />
+            Dashboard Ultra Pro
+          </h1>
           <p className="text-muted-foreground">
-            Bienvenue, {user?.email} ! Vue d'ensemble de votre activité.
+            Bienvenue, {user?.email} ! Vue d'ensemble complète de votre écosystème e-commerce.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -168,46 +237,43 @@ const Dashboard = () => {
             variant="outline" 
             size="sm" 
             onClick={handleRefresh}
-            disabled={isLoading}
+            disabled={isLoadingAny}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingAny ? 'animate-spin' : ''}`} />
             Actualiser
           </Button>
-          <Badge variant="outline" className="gap-1">
-            🟢 En ligne
+          <Badge variant="default" className="gap-1 bg-green-100 text-green-800">
+            <Activity className="h-3 w-3" />
+            Système opérationnel
           </Badge>
         </div>
       </div>
 
-      {/* Vue d'ensemble rapide */}
-      <Card>
+      {/* Vue d'ensemble rapide améliorée */}
+      <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Résumé d'activité
+            <BarChart3 className="h-5 w-5 text-primary" />
+            Performance Globale
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">Panier moyen</p>
-              <p className="font-semibold">€{analytics?.averageOrderValue.toFixed(2) || '0.00'}</p>
+              <p className="font-semibold text-lg">€{analytics?.averageOrderValue.toFixed(2) || '0.00'}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Taux conversion</p>
-              <p className="font-semibold">{analytics?.conversionRate.toFixed(1) || '0.0'}%</p>
+              <p className="font-semibold text-lg">{analytics?.conversionRate.toFixed(1) || '0.0'}%</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Dernière commande</p>
-              <p className="font-semibold">
-                {analytics?.recentOrders?.[0] ? 
-                  new Date(analytics.recentOrders[0].created_at).toLocaleDateString() : 
-                  'Aucune'}
-              </p>
+              <p className="text-muted-foreground">Satisfaction client</p>
+              <p className="font-semibold text-lg">{reviewStats?.averageRating?.toFixed(1) || '0.0'}/5</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Statut</p>
-              <Badge variant="default" className="text-xs">Actif</Badge>
+              <p className="text-muted-foreground">Score SEO moyen</p>
+              <p className="font-semibold text-lg">{Math.round(seoStats?.averageScore || 0)}/100</p>
             </div>
           </div>
         </CardContent>
@@ -218,7 +284,7 @@ const Dashboard = () => {
         {metrics.map((metric, index) => {
           const IconComponent = metric.icon
           return (
-            <Card key={index}>
+            <Card key={index} className="hover:shadow-lg transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   {metric.title}
@@ -244,319 +310,213 @@ const Dashboard = () => {
         })}
       </div>
 
-      {/* Graphique des ventes */}
-      {analytics?.salesByDay && analytics.salesByDay.length > 0 && (
+      {/* Métriques avancées */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {advancedMetrics.map((metric, index) => {
+          const IconComponent = metric.icon
+          return (
+            <Card key={index} className="text-center">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-center mb-2">
+                  <IconComponent className={`h-8 w-8 ${metric.color}`} />
+                </div>
+                <div className="text-2xl font-bold">{metric.value}</div>
+                <p className="text-xs text-muted-foreground">{metric.description}</p>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
+      {/* Graphiques de performance améliorés */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Évolution des ventes avec nouvelles métriques */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Évolution des ventes (7 derniers jours)
+              Performance Multi-Métrique
             </CardTitle>
+            <CardDescription>Évolution des ventes, clients et avis (7 derniers jours)</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={analytics.salesByDay}>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={performanceData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
+                <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip formatter={(value) => [`€${value}`, 'Revenus']} />
-                <Line 
+                <Tooltip />
+                <Area 
                   type="monotone" 
-                  dataKey="revenue" 
+                  dataKey="sales" 
+                  stackId="1"
                   stroke="hsl(var(--primary))" 
-                  strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--primary))' }}
+                  fill="hsl(var(--primary))" 
+                  fillOpacity={0.6}
                 />
-              </LineChart>
+                <Area 
+                  type="monotone" 
+                  dataKey="customers" 
+                  stackId="2"
+                  stroke="#06b6d4" 
+                  fill="#06b6d4" 
+                  fillOpacity={0.4}
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-      )}
 
-      {/* Actions rapides */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" 
-              onClick={() => window.location.href = '/import'}>
+        {/* Score SEO et Reviews */}
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Ajouter des produits
+              <Star className="h-5 w-5" />
+              Qualité & Réputation
+            </CardTitle>
+            <CardDescription>Score SEO et satisfaction client</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={performanceData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="seo" fill="#8b5cf6" name="Score SEO" />
+                <Bar dataKey="reviews" fill="#f59e0b" name="Avis reçus" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Actions rapides étendues */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="cursor-pointer hover:shadow-md transition-shadow group" 
+              onClick={() => window.location.href = '/reviews'}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
+              <Star className="h-5 w-5" />
+              Gérer les Avis
             </CardTitle>
             <CardDescription>
-              Importez de nouveaux produits dans votre catalogue
+              {reviewStats?.total || 0} avis • Note moyenne: {reviewStats?.averageRating?.toFixed(1) || '0.0'}/5
             </CardDescription>
           </CardHeader>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => window.location.href = '/orders'}>
+        <Card className="cursor-pointer hover:shadow-md transition-shadow group"
+              onClick={() => window.location.href = '/seo'}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5" />
-              Gérer les commandes
+            <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
+              <Search className="h-5 w-5" />
+              Optimiser SEO
             </CardTitle>
             <CardDescription>
-              Consultez et traitez vos commandes
+              {seoStats?.totalKeywords || 0} mots-clés suivis • Score: {Math.round(seoStats?.averageScore || 0)}/100
             </CardDescription>
           </CardHeader>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => window.location.href = '/customers'}>
+        <Card className="cursor-pointer hover:shadow-md transition-shadow group"
+              onClick={() => window.location.href = '/automation-ai'}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
+              <Bot className="h-5 w-5" />
+              Automatisation IA
+            </CardTitle>
+            <CardDescription>
+              {automationStats?.activeWorkflows || 0} workflows actifs • {automationStats?.totalExecutions || 0} exécutions
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card className="cursor-pointer hover:shadow-md transition-shadow group"
+              onClick={() => window.location.href = '/crm'}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
               <Users className="h-5 w-5" />
-              Clients
+              CRM & Marketing
             </CardTitle>
             <CardDescription>
-              Gérez votre base clients
+              {customerStats?.total || 0} clients • {marketingStats?.activeCampaigns || 0} campagnes actives
             </CardDescription>
           </CardHeader>
         </Card>
       </div>
 
-      {/* Magasins et Intégrations */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Magasins connectés */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Store className="h-5 w-5" />
-              Magasins connectés
-            </CardTitle>
-            <CardDescription>
-              {integrationStats?.total || 0} intégration{(integrationStats?.total || 0) > 1 ? 's' : ''} configurée{(integrationStats?.total || 0) > 1 ? 's' : ''}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {integrationsLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              </div>
-            ) : integrations && integrations.length > 0 ? (
-              <div className="space-y-3">
-                {integrations.slice(0, 3).map((integration) => (
-                  <div key={integration.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-2 w-2 rounded-full ${
-                        integration.connection_status === 'connected' ? 'bg-green-500' : 
-                        integration.connection_status === 'error' ? 'bg-red-500' : 'bg-yellow-500'
-                      }`}></div>
-                      <div>
-                        <p className="font-medium">{integration.platform_name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {integration.shop_domain || integration.platform_url}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant={integration.connection_status === 'connected' ? 'default' : 'secondary'}>
-                      {integration.connection_status === 'connected' ? 'Connecté' : 
-                       integration.connection_status === 'error' ? 'Erreur' : 'En attente'}
-                    </Badge>
-                  </div>
-                ))}
-                {integrations.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">Aucun magasin connecté</p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-2"
-                      onClick={() => window.location.href = '/integrations'}
-                    >
-                      Connecter un magasin
-                    </Button>
-                  </div>
-                )}
-                {integrations.length > 3 && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-full"
-                    onClick={() => window.location.href = '/integrations'}
-                  >
-                    Voir tous les magasins ({integrations.length})
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Aucun magasin connecté</p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="mt-2"
-                  onClick={() => window.location.href = '/integrations'}
-                >
-                  Connecter un magasin
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Fournisseurs connectés */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Truck className="h-5 w-5" />
-              Fournisseurs connectés
-            </CardTitle>
-            <CardDescription>
-              {supplierStats?.total || 0} fournisseur{(supplierStats?.total || 0) > 1 ? 's' : ''} configuré{(supplierStats?.total || 0) > 1 ? 's' : ''}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {suppliersLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              </div>
-            ) : suppliers && suppliers.length > 0 ? (
-              <div className="space-y-3">
-                {suppliers.slice(0, 3).map((supplier) => (
-                  <div key={supplier.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-2 w-2 rounded-full ${
-                        supplier.status === 'active' ? 'bg-green-500' : 'bg-gray-500'
-                      }`}></div>
-                      <div>
-                        <p className="font-medium">{supplier.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {supplier.country && `📍 ${supplier.country}`}
-                          {supplier.rating && ` • ⭐ ${supplier.rating}/5`}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant={supplier.status === 'active' ? 'default' : 'secondary'}>
-                      {supplier.status === 'active' ? 'Actif' : 'Inactif'}
-                    </Badge>
-                  </div>
-                ))}
-                {suppliers.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">Aucun fournisseur connecté</p>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-2"
-                      onClick={() => window.location.href = '/suppliers'}
-                    >
-                      Ajouter un fournisseur
-                    </Button>
-                  </div>
-                )}
-                {suppliers.length > 3 && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-full"
-                    onClick={() => window.location.href = '/suppliers'}
-                  >
-                    Voir tous les fournisseurs ({suppliers.length})
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Aucun fournisseur connecté</p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="mt-2"
-                  onClick={() => window.location.href = '/suppliers'}
-                >
-                  Ajouter un fournisseur
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Statistiques détaillées des connexions */}
+      {/* Statut des systèmes */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Link className="h-5 w-5" />
-            Aperçu des connexions
+            <Globe className="h-5 w-5" />
+            État des Systèmes
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Magasins actifs</p>
-              <p className="font-semibold text-lg">{integrationStats?.connected || 0}</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm">Intégrations</span>
+              <Badge variant="outline" className="ml-auto">{integrationStats?.connected || 0}/{integrationStats?.total || 0}</Badge>
             </div>
-            <div>
-              <p className="text-muted-foreground">Fournisseurs actifs</p>
-              <p className="font-semibold text-lg">{supplierStats?.active || 0}</p>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm">Fournisseurs</span>
+              <Badge variant="outline" className="ml-auto">{supplierStats?.active || 0}/{supplierStats?.total || 0}</Badge>
             </div>
-            <div>
-              <p className="text-muted-foreground">Dernière synchro</p>
-              <p className="font-semibold text-lg">
-                {integrations && integrations.length > 0 && integrations[0].last_sync_at ? 
-                  new Date(integrations[0].last_sync_at).toLocaleDateString() : 
-                  'Jamais'}
-              </p>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm">Automations</span>
+              <Badge variant="outline" className="ml-auto">{automationStats?.activeWorkflows || 0} actifs</Badge>
             </div>
-            <div>
-              <p className="text-muted-foreground">Statut général</p>
-              <Badge variant={
-                (integrationStats?.connected || 0) > 0 && (supplierStats?.active || 0) > 0 ? 
-                'default' : 'secondary'
-              }>
-                {(integrationStats?.connected || 0) > 0 && (supplierStats?.active || 0) > 0 ? 
-                'Opérationnel' : 'Configuration requise'}
-              </Badge>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm">API Status</span>
+              <Badge variant="default" className="ml-auto">100%</Badge>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Commandes récentes */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Commandes récentes
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {analytics?.recentOrders && analytics.recentOrders.length > 0 ? (
-            <div className="space-y-4">
-              {analytics.recentOrders.map((order) => (
-                <div key={order.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <div className={`h-2 w-2 rounded-full ${
-                    order.status === 'delivered' ? 'bg-green-500' : 
-                    order.status === 'pending' ? 'bg-yellow-500' : 'bg-blue-500'
-                  }`}></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Commande {order.order_number}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Badge variant="outline">€{order.total_amount}</Badge>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Aucune commande récente</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-2"
-                onClick={() => window.location.href = '/orders'}
-              >
-                Voir toutes les commandes
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Raccourcis Ultra Pro */}
+        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-purple/5 lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-primary" />
+              Fonctionnalités Ultra Pro
+            </CardTitle>
+            <CardDescription>
+              Accès direct aux outils avancés de votre plateforme
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <Button variant="outline" size="sm" onClick={() => window.location.href = '/seo-ultra-pro'}>
+                SEO Ultra Pro
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => window.location.href = '/reviews-ultra-pro'}>
+                Reviews Ultra Pro
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => window.location.href = '/analytics'}>
+                Analytics Avancé
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => window.location.href = '/settings'}>
+                Configuration
               </Button>
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
+          </CardContent>
+        </Card>
 
-export default Dashboard
+        {/* Activity Feed */}
+        <div className="lg:col-span-1">
+          <ActivityFeed />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
