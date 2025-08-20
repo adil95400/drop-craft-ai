@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Switch } from "@/components/ui/switch"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 import { 
   Search,
   Plus,
@@ -20,13 +21,30 @@ import {
   Truck,
   CreditCard,
   Globe,
-  Users
+  Users,
+  ExternalLink,
+  RotateCw
 } from "lucide-react"
 import { useRealIntegrations } from "@/hooks/useRealIntegrations"
+import { useToast } from "@/hooks/use-toast"
+import { IntegrationModal } from "@/components/integrations/IntegrationModal"
 
 const Integrations = () => {
   const [searchTerm, setSearchTerm] = useState("")
-  const { integrations: realIntegrations, stats, isLoading } = useRealIntegrations()
+  const [selectedIntegration, setSelectedIntegration] = useState<any>(null)
+  const { 
+    integrations: realIntegrations, 
+    stats, 
+    isLoading,
+    connectShopify,
+    connectAliExpress,
+    connectBigBuy,
+    testConnection,
+    syncProducts,
+    syncOrders,
+    deleteIntegration
+  } = useRealIntegrations()
+  const { toast } = useToast()
 
   const ecommerceIntegrations = [
     {
@@ -242,6 +260,65 @@ const Integrations = () => {
     }
   }
 
+  const handleConnect = async (integration: any, credentials?: any) => {
+    try {
+      switch (integration.name) {
+        case 'Shopify':
+          await connectShopify(credentials)
+          break
+        case 'AliExpress':
+          await connectAliExpress(credentials)
+          break
+        case 'BigBuy':
+          await connectBigBuy(credentials)
+          break
+        default:
+          toast({
+            title: "Intégration en cours de développement",
+            description: `L'intégration ${integration.name} sera bientôt disponible.`
+          })
+      }
+    } catch (error) {
+      toast({
+        title: "Erreur de connexion",
+        description: "Impossible de connecter l'intégration.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleSync = async (integration: any) => {
+    try {
+      await syncProducts({ integrationId: integration.id, platform: 'products' })
+      toast({
+        title: "Synchronisation lancée",
+        description: `Synchronisation des données ${integration.name} en cours.`
+      })
+    } catch (error) {
+      toast({
+        title: "Erreur de synchronisation",
+        description: "Impossible de lancer la synchronisation.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleTest = async (integration: any) => {
+    try {
+      await testConnection(integration.id)
+      toast({
+        title: "Test réussi",
+        description: `La connexion à ${integration.name} fonctionne correctement.`
+      })
+    } catch (error) {
+      toast({
+        title: "Test échoué",
+        description: "La connexion ne fonctionne pas correctement.",
+        variant: "destructive"
+      })
+    }
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-8">
         <div className="flex justify-between items-center">
@@ -376,22 +453,51 @@ const Integrations = () => {
                         ))}
                       </div>
                       
-                      <Button 
-                        className="w-full" 
-                        variant={integration.status === 'connected' ? 'outline' : 'default'}
-                      >
-                        {integration.status === 'connected' ? (
-                          <>
-                            <Settings className="w-4 h-4 mr-2" />
-                            Configurer
-                          </>
-                        ) : (
-                          <>
-                            <Zap className="w-4 h-4 mr-2" />
-                            Connecter
-                          </>
+                      <div className="flex gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button 
+                              className="flex-1" 
+                              variant={integration.status === 'connected' ? 'outline' : 'default'}
+                              onClick={() => setSelectedIntegration(integration)}
+                            >
+                              {integration.status === 'connected' ? (
+                                <>
+                                  <Settings className="w-4 h-4 mr-2" />
+                                  Configurer
+                                </>
+                              ) : (
+                                <>
+                                  <Zap className="w-4 h-4 mr-2" />
+                                  Connecter
+                                </>
+                              )}
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>
+                                {integration.status === 'connected' ? 'Configurer' : 'Connecter'} {integration.name}
+                              </DialogTitle>
+                            </DialogHeader>
+                            <IntegrationModal 
+                              integration={integration} 
+                              onConnect={handleConnect}
+                              onSync={handleSync}
+                              onTest={handleTest}
+                            />
+                          </DialogContent>
+                        </Dialog>
+                        {integration.status === 'connected' && (
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => handleSync(integration)}
+                          >
+                            <RotateCw className="w-4 h-4" />
+                          </Button>
                         )}
-                      </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

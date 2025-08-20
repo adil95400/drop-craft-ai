@@ -13,6 +13,9 @@ import { OptimizedSkeleton } from '@/components/common/OptimizedSkeleton';
 import { ModalContextProvider } from '@/hooks/useModalHelpers';
 import { ModalProvider } from '@/components/ModalProvider';
 
+import IntegrationsOptimized from './pages/IntegrationsOptimized';
+import IntegrationsUltraPro from './pages/IntegrationsUltraPro';
+
 // Lazy loaded heavy pages
 import {
   DashboardLazy,
@@ -59,6 +62,7 @@ import {
   SuppliersUltraProLazy,
   AdminLazy,
   PaymentSuccessLazy,
+  IntegrationsUltraProLazy,
 } from '@/components/lazy/LazyPages';
 
 // Light pages (direct imports)
@@ -85,7 +89,6 @@ import Suppliers from './pages/Suppliers';
 import WinnersPage from './domains/winners/pages/WinnersPage';
 import Settings from './pages/Settings';
 import MarketplaceOptimized from './pages/MarketplaceOptimized';
-import IntegrationsOptimized from './pages/IntegrationsOptimized';
 import FAQ from './pages/FAQ';
 import Notifications from './pages/Notifications';
 import NotFound from './pages/NotFound';
@@ -226,6 +229,22 @@ const App = () => (
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="grid" />}>
                     <CatalogueUltraProAdvancedLazy />
+                  </Suspense>
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/integrations" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <IntegrationsOptimized />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/integrations-ultra-pro" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
+                    <IntegrationsUltraProLazy />
                   </Suspense>
                 </AppLayout>
               </AuthGuard>
