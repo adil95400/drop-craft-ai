@@ -9,16 +9,22 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { useRealCustomers } from '@/hooks/useRealCustomers'
+import { useRealCustomers, Customer } from '@/hooks/useRealCustomers'
 import { LoadingState } from '@/components/common/LoadingState'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ActionButton } from '@/components/common/ActionButton'
 import { useToast } from '@/hooks/use-toast'
+import { AddCustomerModal } from '@/components/crm/AddCustomerModal'
+import { CustomerDetailsModal } from '@/components/crm/CustomerDetailsModal'
 
 export default function CRMUltraProReal() {
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
 
   const { 
     customers, 
@@ -89,10 +95,28 @@ export default function CRMUltraProReal() {
   }
 
   const handleAddCustomer = () => {
-    toast({
-      title: "Nouveau client",
-      description: "Fonctionnalité d'ajout de client à implémenter",
-    })
+    setSelectedCustomer(null)
+    setIsEditing(false)
+    setIsAddModalOpen(true)
+  }
+
+  const handleEditCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer)
+    setIsEditing(true)
+    setIsAddModalOpen(true)
+  }
+
+  const handleViewCustomer = (customer: Customer) => {
+    setSelectedCustomer(customer)
+    setIsDetailsModalOpen(true)
+  }
+
+  const handleSubmitCustomer = (data: Omit<Customer, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
+    if (isEditing && selectedCustomer) {
+      updateCustomer({ id: selectedCustomer.id, updates: data })
+    } else {
+      addCustomer(data)
+    }
   }
 
   const handleStatusUpdate = (customerId: string, newStatus: string) => {
@@ -286,41 +310,63 @@ export default function CRMUltraProReal() {
                       </TableCell>
                       <TableCell>{formatCurrency(customer.total_spent)}</TableCell>
                       <TableCell>{getStatusBadge(customer.status)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Mail className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Phone className="h-4 w-4" />
-                          </Button>
-                          <ActionButton 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={async () => {
-                              await new Promise(resolve => setTimeout(resolve, 1000));
-                              toast({
-                                title: "Client modifié",
-                                description: `Informations de ${customer.name} mises à jour`,
-                              });
-                            }}
-                            loading={isUpdating}
-                            icon={<Edit className="h-4 w-4" />}
-                          >
-                            Modifier
-                          </ActionButton>
-                        </div>
-                      </TableCell>
+                       <TableCell className="text-right">
+                         <div className="flex items-center justify-end gap-2">
+                           <Button 
+                             variant="ghost" 
+                             size="sm"
+                             onClick={() => handleViewCustomer(customer)}
+                           >
+                             <Eye className="h-4 w-4" />
+                           </Button>
+                           <Button 
+                             variant="ghost" 
+                             size="sm"
+                             onClick={() => window.open(`mailto:${customer.email}`, '_blank')}
+                           >
+                             <Mail className="h-4 w-4" />
+                           </Button>
+                           {customer.phone && (
+                             <Button 
+                               variant="ghost" 
+                               size="sm"
+                               onClick={() => window.open(`tel:${customer.phone}`, '_blank')}
+                             >
+                               <Phone className="h-4 w-4" />
+                             </Button>
+                           )}
+                           <Button
+                             variant="ghost" 
+                             size="sm"
+                             onClick={() => handleEditCustomer(customer)}
+                           >
+                             <Edit className="h-4 w-4" />
+                           </Button>
+                         </div>
+                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
-          </CardContent>
-        </Card>
-    </div>
-  )
-}
+           </CardContent>
+         </Card>
+
+         {/* Modals */}
+         <AddCustomerModal
+           isOpen={isAddModalOpen}
+           onClose={() => setIsAddModalOpen(false)}
+           onSubmit={handleSubmitCustomer}
+           isLoading={isAdding || isUpdating}
+           customer={isEditing ? selectedCustomer : undefined}
+         />
+
+         <CustomerDetailsModal
+           isOpen={isDetailsModalOpen}
+           onClose={() => setIsDetailsModalOpen(false)}
+           customer={selectedCustomer}
+           onEdit={handleEditCustomer}
+         />
+     </div>
+   )
+ }
