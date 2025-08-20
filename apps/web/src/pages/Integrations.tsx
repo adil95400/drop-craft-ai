@@ -1,12 +1,24 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useIntegrations } from '@/hooks/useIntegrations';
+import { useCanva } from '@/hooks/useCanva';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingBag, Package, Truck, Zap } from 'lucide-react';
+import { ShoppingBag, Package, Truck, Zap, Palette } from 'lucide-react';
 import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
 
 export default function Integrations() {
   const { integrations, connectIntegration, disconnectIntegration } = useIntegrations();
+  const { connectCanva, disconnectCanva, checkConnectionStatus } = useCanva();
+  const [canvaStatus, setCanvaStatus] = useState<string>('disconnected');
+
+  useEffect(() => {
+    const checkCanvaStatus = async () => {
+      const isConnected = await checkConnectionStatus();
+      setCanvaStatus(isConnected ? 'connected' : 'disconnected');
+    };
+    checkCanvaStatus();
+  }, [checkConnectionStatus]);
 
   const availableIntegrations = [
     {
@@ -47,30 +59,50 @@ export default function Integrations() {
       description: 'Create and manage designs directly from your SaaS',
       icon: Palette,
       category: 'Design',
-      status: 'disconnected' // Will be updated via useCanva hook
+      status: canvaStatus
     }
   ];
 
   const handleConnect = async (integrationId: string) => {
-    toast.promise(
-      connectIntegration(integrationId),
-      {
-        loading: `Connecting to ${integrationId}...`,
-        success: `Successfully connected to ${integrationId}!`,
-        error: `Failed to connect to ${integrationId}`
+    if (integrationId === 'canva') {
+      const success = await connectCanva();
+      if (success) {
+        setCanvaStatus('connected');
+        toast.success('Successfully connected to Canva!');
+      } else {
+        toast.error('Failed to connect to Canva');
       }
-    );
+    } else {
+      toast.promise(
+        connectIntegration(integrationId),
+        {
+          loading: `Connecting to ${integrationId}...`,
+          success: `Successfully connected to ${integrationId}!`,
+          error: `Failed to connect to ${integrationId}`
+        }
+      );
+    }
   };
 
   const handleDisconnect = async (integrationId: string) => {
-    toast.promise(
-      disconnectIntegration(integrationId),
-      {
-        loading: `Disconnecting from ${integrationId}...`,
-        success: `Successfully disconnected from ${integrationId}`,
-        error: `Failed to disconnect from ${integrationId}`
+    if (integrationId === 'canva') {
+      const success = await disconnectCanva();
+      if (success) {
+        setCanvaStatus('disconnected');
+        toast.success('Successfully disconnected from Canva');
+      } else {
+        toast.error('Failed to disconnect from Canva');
       }
-    );
+    } else {
+      toast.promise(
+        disconnectIntegration(integrationId),
+        {
+          loading: `Disconnecting from ${integrationId}...`,
+          success: `Successfully disconnected from ${integrationId}`,
+          error: `Failed to disconnect from ${integrationId}`
+        }
+      );
+    }
   };
 
   return (

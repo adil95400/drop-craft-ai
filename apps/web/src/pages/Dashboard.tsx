@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useProducts } from '@/hooks/useProducts';
 import { useOrders } from '@/hooks/useOrders';
-import { Package, ShoppingCart, TrendingUp, Users } from 'lucide-react';
+import { Package, ShoppingCart, TrendingUp, Users, Palette } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -108,6 +108,23 @@ export default function Dashboard() {
           <CardContent>
             <Button asChild variant="outline" className="w-full">
               <Link to="/integrations">Manage Integrations</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="h-5 w-5" />
+              Canva Designs
+            </CardTitle>
+            <CardDescription>
+              Create and manage your marketing designs
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/canva-designs">View Designs</Link>
             </Button>
           </CardContent>
         </Card>
