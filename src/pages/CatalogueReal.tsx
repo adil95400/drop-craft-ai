@@ -1,328 +1,569 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Package, TrendingUp, AlertTriangle, CheckCircle2, Clock, Search, Filter, Download, RefreshCw, Plus, Eye, Edit, MoreHorizontal, AlertCircle, FileText, Settings, BarChart3 } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import React, { useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { usePlan } from '@/hooks/usePlan'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-
-import { useRealProducts } from '@/hooks/useRealProducts'
-import { LoadingState } from '@/components/common/LoadingState'
-import { EmptyState } from '@/components/common/EmptyState'
-import { ActionButton } from '@/components/common/ActionButton'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Slider } from '@/components/ui/slider'
+import { Checkbox } from '@/components/ui/checkbox'
+import { 
+  Crown, 
+  Zap, 
+  BarChart3, 
+  Package, 
+  Search, 
+  Filter, 
+  Grid, 
+  List, 
+  Star, 
+  TrendingUp, 
+  Heart,
+  ShoppingCart,
+  Eye,
+  Plus,
+  Download,
+  ExternalLink
+} from 'lucide-react'
+import { useCatalog } from '@/domains/commerce/hooks/useCatalog'
 import { useToast } from '@/hooks/use-toast'
 
 export default function CatalogueReal() {
-  const navigate = useNavigate()
+  const { user } = useAuth()
+  const { hasPlan, plan } = usePlan(user)
   const { toast } = useToast()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
+  
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [selectedSupplier, setSelectedSupplier] = useState('')
+  const [priceRange, setPriceRange] = useState([0, 1000])
+  const [sortBy, setSortBy] = useState('created_at')
+  const [showFilters, setShowFilters] = useState(false)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [onlyWinners, setOnlyWinners] = useState(false)
+  const [onlyTrending, setOnlyTrending] = useState(false)
+  const [onlyBestsellers, setOnlyBestsellers] = useState(false)
+  
+  const isUltraPro = hasPlan('ultra_pro')
+  const isPro = hasPlan('pro')
 
-  const { 
-    products, 
-    stats, 
-    isLoading, 
-    error,
-    addProduct,
-    updateProduct,
-    deleteProduct,
-    isAdding,
-    isUpdating,
-    isDeleting
-  } = useRealProducts({ 
-    search: searchTerm,
-    category: categoryFilter === 'all' ? undefined : categoryFilter,
-    status: statusFilter === 'all' ? undefined : statusFilter
+  // Use real catalog data
+  const {
+    products,
+    total,
+    marketplaceProducts,
+    marketplaceTotal,
+    isLoading,
+    isMarketplaceLoading,
+    isImporting,
+    importProduct,
+    loadMarketplace,
+    error
+  } = useCatalog({
+    search: searchQuery,
+    category: selectedCategory,
+    supplier: selectedSupplier,
+    sort_by: sortBy,
+    trending: onlyTrending,
+    winner: onlyWinners,
+    bestseller: onlyBestsellers
   })
 
-  if (isLoading) return <LoadingState />
-  if (error) return <div>Erreur lors du chargement des produits</div>
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge variant="default" className="bg-emerald-100 text-emerald-800">Actif</Badge>
-      case 'inactive':
-        return <Badge variant="secondary" className="bg-red-100 text-red-800">Inactif</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
+  const handleImportProduct = async (productId: string) => {
+    try {
+      await importProduct(productId)
+      toast({
+        title: "Produit importé !",
+        description: "Le produit a été ajouté à votre catalogue"
+      })
+    } catch (error) {
+      console.error('Error importing product:', error)
     }
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-      case 'inactive':
-        return <AlertCircle className="h-4 w-4 text-red-500" />
-      default:
-        return <Package className="h-4 w-4" />
-    }
-  }
+  const ProductCard = ({ product, isMarketplace = false }: { product: any, isMarketplace?: boolean }) => (
+    <Card className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
+      <CardHeader className="p-4">
+        <div className="relative">
+          <img
+            src={product.image_url || '/placeholder.svg'}
+            alt={product.name}
+            className="w-full h-48 object-cover rounded-lg"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/placeholder.svg'
+            }}
+          />
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <Heart className="w-4 h-4" />
+          </Button>
+          
+          {/* Badges */}
+          <div className="absolute top-2 left-2 space-y-1">
+            {product.is_winner && (
+              <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800">
+                <Star className="w-3 h-3 mr-1" />
+                Winner
+              </Badge>
+            )}
+            {product.is_trending && (
+              <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                <TrendingUp className="w-3 h-3 mr-1" />
+                Trending
+              </Badge>
+            )}
+            {product.is_bestseller && (
+              <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-800">
+                <Zap className="w-3 h-3 mr-1" />
+                Bestseller
+              </Badge>
+            )}
+          </div>
 
-  const handleExport = () => {
-    toast({
-      title: "Export",
-      description: "Export des données en cours...",
-    })
-  }
+          {/* Profit Margin for owned products */}
+          {!isMarketplace && product.cost_price && (
+            <Badge className="absolute bottom-2 right-2 bg-green-500">
+              +{Math.round(((product.price - product.cost_price) / product.cost_price) * 100)}%
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+      
+      <CardContent className="p-4 pt-0 space-y-3">
+        <div>
+          <h3 className="font-semibold text-sm line-clamp-2">{product.name}</h3>
+          <p className="text-xs text-muted-foreground">{product.supplier_name || product.brand}</p>
+          {product.category && (
+            <p className="text-xs text-blue-600">{product.category}</p>
+          )}
+        </div>
 
-  const handleImport = () => {
-    toast({
-      title: "Import",
-      description: "Fonctionnalité d'import à implémenter",
-    })
-  }
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-lg font-bold">{product.price}€</span>
+            {product.original_price && product.original_price > product.price && (
+              <span className="text-sm text-muted-foreground line-through ml-2">
+                {product.original_price}€
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+            <span className="text-xs">{product.rating || 0}</span>
+            <span className="text-xs text-muted-foreground">
+              ({product.reviews_count || 0})
+            </span>
+          </div>
+        </div>
 
-  const handleAddProduct = () => {
-    toast({
-      title: "Nouveau produit",
-      description: "Fonctionnalité d'ajout de produit à implémenter",
-    })
-  }
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>SKU: {product.sku || 'N/A'}</span>
+          {product.availability_status && (
+            <Badge 
+              variant={product.availability_status === 'in_stock' ? 'default' : 'secondary'}
+              className="text-xs"
+            >
+              {product.availability_status === 'in_stock' ? 'En stock' : 'Rupture'}
+            </Badge>
+          )}
+        </div>
 
-  const handleUltraPro = () => {
-    navigate('/catalogue-ultra-pro')
-  }
-
-  if (products.length === 0) {
-    return (
-      <EmptyState 
-        title="Aucun produit dans le catalogue"
-        description="Commencez par ajouter des produits à votre catalogue"
-        action={{
-          label: "Ajouter un produit",
-          onClick: handleAddProduct
-        }}
-      />
-    )
-  }
+        <div className="flex gap-2">
+          {isMarketplace ? (
+            <Button 
+              size="sm" 
+              className="flex-1" 
+              onClick={() => handleImportProduct(product.id)}
+              disabled={isImporting}
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              {isImporting ? 'Import...' : 'Importer'}
+            </Button>
+          ) : (
+            <Button size="sm" className="flex-1">
+              <ShoppingCart className="w-4 h-4 mr-1" />
+              Gérer
+            </Button>
+          )}
+          <Button variant="outline" size="sm">
+            <Eye className="w-4 h-4" />
+          </Button>
+          <Button variant="outline" size="sm">
+            <ExternalLink className="w-4 h-4" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
 
   return (
-    <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Catalogue Produits</h1>
-            <p className="text-muted-foreground">Gestion des produits avec données réelles</p>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <ActionButton 
-              variant="outline" 
-              size="sm"
-              onClick={handleExport}
-              icon={<Download className="h-4 w-4" />}
-            >
-              Exporter
-            </ActionButton>
-            
-            <ActionButton 
-              variant="outline" 
-              size="sm"
-              onClick={handleImport}
-              icon={<FileText className="h-4 w-4" />}
-            >
-              Importer
-            </ActionButton>
-            
-            <ActionButton 
-              size="sm"
-              onClick={handleUltraPro}
-              icon={<BarChart3 className="h-4 w-4" />}
-            >
-              Catalogue Ultra Pro
-            </ActionButton>
-
-            <ActionButton 
-              size="sm"
-              onClick={handleAddProduct}
-              icon={<Plus className="h-4 w-4" />}
-              loading={isAdding}
-            >
-              Nouveau produit
-            </ActionButton>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/80 to-background">
+      {/* Header */}
+      <div className="bg-card/50 backdrop-blur-sm border-b border-border/50">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+                Catalogue Réel
+                <Badge variant="default" className="bg-green-500">LIVE</Badge>
+                {isUltraPro && <Badge variant="secondary">Ultra Pro</Badge>}
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Catalogue avec données réelles et intégrations live
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Exporter
+              </Button>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter Produit
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <Package className="h-5 w-5 text-muted-foreground" />
-                <Badge variant="outline">{stats.total}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">{stats.total}</p>
-                <p className="text-xs text-muted-foreground">Total produits</p>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="container mx-auto px-6 py-6">
+        <Tabs defaultValue="my-products" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="my-products">Mes Produits</TabsTrigger>
+            <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
+            <TabsTrigger value="analytics" disabled={!isPro}>
+              Analytics {!isPro && "🔒"}
+            </TabsTrigger>
+            <TabsTrigger value="ai-tools" disabled={!isUltraPro}>
+              Outils IA {!isUltraPro && "🔒"}
+            </TabsTrigger>
+          </TabsList>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                <Badge variant="default">{stats.active}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">{stats.active}</p>
-                <p className="text-xs text-muted-foreground">Produits actifs</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <AlertCircle className="h-5 w-5 text-red-500" />
-                <Badge variant="outline">{stats.inactive}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">{stats.inactive}</p>
-                <p className="text-xs text-muted-foreground">Produits inactifs</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <TrendingUp className="h-5 w-5 text-blue-500" />
-                <Badge variant="outline">{formatCurrency(stats.totalValue)}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">{formatCurrency(stats.totalValue)}</p>
-                <p className="text-xs text-muted-foreground">Valeur totale</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Liste des produits */}
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          {/* My Products Tab */}
+          <TabsContent value="my-products" className="space-y-6">
+            <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Produits ({products.length})</CardTitle>
-                <CardDescription>Gestion du catalogue produits</CardDescription>
+                <h2 className="text-2xl font-bold">Mon Catalogue</h2>
+                <p className="text-muted-foreground">
+                  {total} produits dans votre catalogue
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Search and Filters */}
+            <div className="flex items-center gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  placeholder="Rechercher dans mon catalogue..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
               </div>
               
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    placeholder="Rechercher un produit..." 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64"
-                  />
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Filtres
+              </Button>
+            </div>
+
+            {/* Advanced Filters */}
+            {showFilters && (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Catégorie</label>
+                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Toutes les catégories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Toutes les catégories</SelectItem>
+                          <SelectItem value="electronics">Électronique</SelectItem>
+                          <SelectItem value="clothing">Vêtements</SelectItem>
+                          <SelectItem value="home">Maison</SelectItem>
+                          <SelectItem value="sports">Sport</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Fournisseur</label>
+                      <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Tous les fournisseurs" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Tous les fournisseurs</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Prix: {priceRange[0]}€ - {priceRange[1]}€
+                      </label>
+                      <Slider
+                        value={priceRange}
+                        onValueChange={setPriceRange}
+                        max={1000}
+                        step={10}
+                        className="mt-2"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Trier par</label>
+                      <Select value={sortBy} onValueChange={setSortBy}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="created_at">Plus récents</SelectItem>
+                          <SelectItem value="price_asc">Prix croissant</SelectItem>
+                          <SelectItem value="price_desc">Prix décroissant</SelectItem>
+                          <SelectItem value="name">Nom A-Z</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-6 mt-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="winners"
+                        checked={onlyWinners}
+                        onCheckedChange={(checked) => setOnlyWinners(checked === true)}
+                      />
+                      <label htmlFor="winners" className="text-sm font-medium">
+                        Seulement les Winners
+                      </label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="trending"
+                        checked={onlyTrending}
+                        onCheckedChange={(checked) => setOnlyTrending(checked === true)}
+                      />
+                      <label htmlFor="trending" className="text-sm font-medium">
+                        Seulement les Trending
+                      </label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="bestsellers"
+                        checked={onlyBestsellers}
+                        onCheckedChange={(checked) => setOnlyBestsellers(checked === true)}
+                      />
+                      <label htmlFor="bestsellers" className="text-sm font-medium">
+                        Seulement les Bestsellers
+                      </label>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Products Grid */}
+            <div className="space-y-4">
+              {isLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>  
+                  <p>Chargement des produits...</p>
                 </div>
-                
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Statut" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tous</SelectItem>
-                    <SelectItem value="active">Actif</SelectItem>
-                    <SelectItem value="inactive">Inactif</SelectItem>
-                  </SelectContent>
-                </Select>
+              ) : products.length === 0 ? (
+                <div className="text-center py-12">
+                  <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Aucun produit trouvé</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Commencez par importer des produits depuis la marketplace
+                  </p>
+                  <Button onClick={() => loadMarketplace()}>
+                    Parcourir la Marketplace
+                  </Button>
+                </div>
+              ) : (
+                <div className={`grid gap-6 ${
+                  viewMode === 'grid' 
+                    ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                    : 'grid-cols-1'
+                }`}>
+                  {products.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Marketplace Tab */}
+          <TabsContent value="marketplace" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">Marketplace</h2>
+                <p className="text-muted-foreground">
+                  Découvrez et importez de nouveaux produits
+                </p>
+              </div>
+              <Button 
+                onClick={() => loadMarketplace()}
+                disabled={isMarketplaceLoading}
+              >
+                {isMarketplaceLoading ? 'Chargement...' : 'Actualiser'}
+              </Button>
+            </div>
+
+            {/* Marketplace Products */}
+            <div className="space-y-4">
+              {isMarketplaceLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>  
+                  <p>Chargement de la marketplace...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {marketplaceProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} isMarketplace={true} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics">
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold">Analytics du Catalogue</h2>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Total Produits</p>
+                        <p className="text-3xl font-bold">{total}</p>
+                      </div>
+                      <Package className="w-8 h-8 text-blue-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Winners</p>
+                        <p className="text-3xl font-bold">
+                          {products.filter(p => p.is_winner).length}
+                        </p>
+                      </div>
+                      <Star className="w-8 h-8 text-yellow-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Trending</p>
+                        <p className="text-3xl font-bold">
+                          {products.filter(p => p.is_trending).length}
+                        </p>
+                      </div>
+                      <TrendingUp className="w-8 h-8 text-green-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Valeur Totale</p>
+                        <p className="text-3xl font-bold">
+                          {products.reduce((sum, p) => sum + p.price, 0).toFixed(0)}€
+                        </p>
+                      </div>
+                      <BarChart3 className="w-8 h-8 text-purple-500" />
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Produit</TableHead>
-                    <TableHead>SKU</TableHead>
-                    <TableHead>Catégorie</TableHead>
-                    <TableHead>Prix</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead>Date création</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {products.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-3">
-                          {getStatusIcon(product.status)}
-                          <div>
-                            <p className="font-medium">{product.name}</p>
-                            <p className="text-sm text-muted-foreground truncate max-w-[200px]">
-                              {product.description || 'Aucune description'}
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{product.sku || 'N/A'}</TableCell>
-                      <TableCell>{product.category || 'Non catégorisé'}</TableCell>
-                      <TableCell>{formatCurrency(product.price)}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{product.stock_quantity || 0}</Badge>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(product.status)}</TableCell>
-                      <TableCell>{formatDate(product.created_at)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <ActionButton 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => deleteProduct(product.id)}
-                            loading={isDeleting}
-                            icon={<MoreHorizontal className="h-4 w-4" />}
-                          >
-                            Actions
-                          </ActionButton>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+          </TabsContent>
+
+          {/* AI Tools Tab */}
+          <TabsContent value="ai-tools">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <Zap className="h-6 w-6 text-purple-600" />
+                <h2 className="text-2xl font-bold">Outils IA pour le Catalogue</h2>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Optimisation Automatique</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">
+                      Optimisez automatiquement les titres, descriptions et prix avec l'IA
+                    </p>
+                    <Button className="w-full">
+                      <Zap className="w-4 h-4 mr-2" />
+                      Optimiser le Catalogue
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Analyse de Tendances</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">
+                      Analysez les tendances du marché et identifiez les opportunités
+                    </p>
+                    <Button className="w-full" variant="outline">
+                      <TrendingUp className="w-4 h-4 mr-2" />
+                      Analyser Tendances
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   )
 }

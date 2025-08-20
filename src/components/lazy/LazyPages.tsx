@@ -6,10 +6,10 @@ export const ImportLazy = lazy(() => import('@/pages/Import'));
 export const ImportUltraProLazy = lazy(() => import('@/pages/ImportUltraPro'));
 export const ImportedProductsLazy = lazy(() => import('@/pages/ImportedProducts'));
 export const CatalogueLazy = lazy(() => import('@/pages/Catalogue'));
+export const CatalogueRealLazy = lazy(() => import('@/pages/CatalogueReal'));
 
 // Keep existing for compatibility during transition
 export const DashboardUltraProLazy = lazy(() => import('@/pages/Dashboard'));
-export const CatalogueRealLazy = lazy(() => import('@/pages/Catalogue'));
 export const CatalogueUltraProRealLazy = lazy(() => import('@/pages/Catalogue'));
 export const CatalogueUltraProAdvancedLazy = lazy(() => import('@/pages/Catalogue'));
 export const OrdersLazy = lazy(() => import('@/pages/Orders'));
