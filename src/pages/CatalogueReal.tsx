@@ -39,7 +39,7 @@ export default function CatalogueReal() {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedSupplier, setSelectedSupplier] = useState('')
   const [priceRange, setPriceRange] = useState([0, 1000])
-  const [sortBy, setSortBy] = useState('created_at')
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'profit_margin' | 'created_at'>('created_at')
   const [showFilters, setShowFilters] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [onlyWinners, setOnlyWinners] = useState(false)
@@ -65,10 +65,7 @@ export default function CatalogueReal() {
     search: searchQuery,
     category: selectedCategory,
     supplier: selectedSupplier,
-    sort_by: sortBy,
-    trending: onlyTrending,
-    winner: onlyWinners,
-    bestseller: onlyBestsellers
+    sortBy: sortBy
   })
 
   const handleImportProduct = async (productId: string) => {
@@ -341,15 +338,15 @@ export default function CatalogueReal() {
 
                     <div>
                       <label className="text-sm font-medium mb-2 block">Trier par</label>
-                      <Select value={sortBy} onValueChange={setSortBy}>
+                      <Select value={sortBy} onValueChange={(value) => setSortBy(value as typeof sortBy)}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="created_at">Plus récents</SelectItem>
-                          <SelectItem value="price_asc">Prix croissant</SelectItem>
-                          <SelectItem value="price_desc">Prix décroissant</SelectItem>
+                          <SelectItem value="price">Prix</SelectItem>
                           <SelectItem value="name">Nom A-Z</SelectItem>
+                          <SelectItem value="profit_margin">Marge</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
