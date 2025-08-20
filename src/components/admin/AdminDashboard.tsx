@@ -21,12 +21,16 @@ import {
   Database,
   Mail,
   Globe,
-  Calendar
+  Calendar,
+  LogOut,
+  Ban
 } from 'lucide-react';
+import { useForceDisconnect } from '@/hooks/useForceDisconnect';
 
 const AdminDashboard = () => {
   const { adminLogs, isLoadingAdminLogs } = useActivityLogs();
   const { members, isLoadingMembers } = useOrganizations();
+  const { disconnectUser, disconnectAllUsers, isDisconnecting } = useForceDisconnect();
   
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [newUserRole, setNewUserRole] = useState<string>('user');
@@ -169,6 +173,14 @@ const AdminDashboard = () => {
                   </SelectContent>
                 </Select>
                 <Button variant="hero">Inviter Utilisateur</Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={() => disconnectAllUsers('admin_mass_disconnect')}
+                  disabled={isDisconnecting}
+                >
+                  <Ban className="h-4 w-4 mr-2" />
+                  {isDisconnecting ? 'Déconnexion...' : 'Forcer déconnexion utilisateurs'}
+                </Button>
               </div>
 
               {/* Users List */}
@@ -201,6 +213,15 @@ const AdminDashboard = () => {
                         />
                         <Button variant="outline" size="sm">
                           Modifier
+                        </Button>
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => disconnectUser(member.id, 'admin_disconnect')}
+                          disabled={isDisconnecting}
+                        >
+                          <LogOut className="h-4 w-4 mr-1" />
+                          Déconnecter
                         </Button>
                       </div>
                     </div>

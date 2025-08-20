@@ -142,6 +142,35 @@ export const adminActions = {
     }
   },
 
+  // Force disconnect user
+  async forceDisconnectUser(userId: string, userName: string, reason: string = 'admin_action') {
+    try {
+      const { data, error } = await supabase.functions.invoke('force-disconnect-user', {
+        body: {
+          targetUserId: userId,
+          reason: reason
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Utilisateur déconnecté",
+        description: `${userName} a été déconnecté avec succès`,
+      });
+
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error force disconnecting user:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de déconnecter l'utilisateur",
+        variant: "destructive"
+      });
+      return { success: false, error };
+    }
+  },
+
   // Enable maintenance mode
   async enableMaintenanceMode() {
     try {

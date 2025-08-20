@@ -88,6 +88,9 @@ verify_jwt = true
 [functions.secure-supplier-credentials]
 verify_jwt = true
 
+[functions.force-disconnect-user]
+verify_jwt = true
+
 [edge-runtime]
 enabled = true
 ip_version = "ipv4"

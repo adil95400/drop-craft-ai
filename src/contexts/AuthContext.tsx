@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { DisconnectNotification } from '@/components/auth/DisconnectNotification'
 
 interface AuthContextType {
   user: User | null
@@ -299,6 +300,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={value}>
       {children}
+      <DisconnectNotification />
     </AuthContext.Provider>
   )
 }

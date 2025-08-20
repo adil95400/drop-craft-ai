@@ -1322,6 +1322,36 @@ export type Database = {
         }
         Relationships: []
       }
+      revoked_tokens: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          reason: string | null
+          revoked_at: string | null
+          revoked_by: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          reason?: string | null
+          revoked_at?: string | null
+          revoked_by: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       scheduled_imports: {
         Row: {
           created_at: string | null
@@ -1871,6 +1901,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_revoked_tokens: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       configure_auth_security_settings: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -2109,6 +2143,10 @@ export type Database = {
         Args: { _supplier_id: string; _user_id: string }
         Returns: boolean
       }
+      is_token_revoked: {
+        Args: { check_user_id: string }
+        Returns: boolean
+      }
       log_credential_access: {
         Args: {
           access_type: string
@@ -2132,6 +2170,14 @@ export type Database = {
       }
       public_newsletter_signup: {
         Args: { email_param: string }
+        Returns: Json
+      }
+      revoke_user_token: {
+        Args: {
+          admin_user_id: string
+          revoke_reason?: string
+          target_user_id: string
+        }
         Returns: Json
       }
       rotate_api_key: {
