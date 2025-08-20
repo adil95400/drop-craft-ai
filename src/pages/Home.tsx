@@ -17,10 +17,13 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserAccountDropdown } from "@/components/common/UserAccountDropdown";
 
 const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleGetStarted = () => {
     navigate("/auth");
@@ -94,6 +97,23 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header Navigation - Only for authenticated users */}
+      {user && (
+        <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                Shopopti Pro
+              </h1>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <UserAccountDropdown />
+            </div>
+          </div>
+        </header>
+      )}
+
       {/* Hero Section */}
       <section className="relative py-20 px-6 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-accent/10" />
