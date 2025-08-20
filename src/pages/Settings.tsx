@@ -45,6 +45,7 @@ import {
   ExternalLink,
   FileText
 } from "lucide-react";
+import AvatarUpload from '@/components/common/AvatarUpload';
 
 const Settings = () => {
   const { user, profile, updateProfile, signOut } = useAuth();
@@ -177,27 +178,7 @@ const Settings = () => {
     }
   };
 
-  const handlePhotoUpload = () => {
-    // Créer un input file dynamiquement
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        // Simuler l'upload pour le moment
-        toast.promise(
-          new Promise(resolve => setTimeout(resolve, 2000)),
-          {
-            loading: 'Upload de la photo en cours...',
-            success: 'Photo de profil mise à jour avec succès',
-            error: 'Erreur lors de l\'upload de la photo'
-          }
-        );
-      }
-    };
-    input.click();
-  };
+  // Remove this function as we'll use AvatarUpload component
 
   const goToApiDocumentation = () => {
     // Ouvrir la documentation API dans un nouvel onglet
@@ -300,18 +281,12 @@ const Settings = () => {
                   <CardDescription>Gérez vos informations de profil</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="flex items-center space-x-4">
-                    <Avatar className="h-20 w-20">
-                      <AvatarImage src={profile?.avatar_url} />
-                      <AvatarFallback className="bg-gradient-primary text-primary-foreground text-lg">
-                        {profileData.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <Button variant="outline" onClick={handlePhotoUpload}>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Changer la photo
-                    </Button>
-                  </div>
+                  <AvatarUpload 
+                    currentAvatarUrl={profile?.avatar_url}
+                    userName={profileData.name}
+                    size="lg"
+                    showUploadButton={true}
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">

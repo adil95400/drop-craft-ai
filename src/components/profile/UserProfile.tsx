@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useActivityLogs } from '@/hooks/useActivityLogs';
+import AvatarUpload from '@/components/common/AvatarUpload';
 import { 
   User, 
   Mail, 
@@ -75,12 +76,14 @@ const UserProfile = () => {
         {/* Profile Card */}
         <Card className="border-border bg-card shadow-card">
           <CardHeader className="text-center">
-            <Avatar className="h-24 w-24 mx-auto mb-4">
-              <AvatarImage src={profile?.avatar_url} />
-              <AvatarFallback className="bg-gradient-primary text-primary-foreground text-xl">
-                {profile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
-              </AvatarFallback>
-            </Avatar>
+            <div className="flex justify-center mb-4">
+              <AvatarUpload 
+                currentAvatarUrl={profile?.avatar_url}
+                userName={profile?.full_name || user?.email || 'User'}
+                size="lg"
+                showUploadButton={false}
+              />
+            </div>
             <CardTitle>{profile?.full_name || 'Nom non défini'}</CardTitle>
             <CardDescription>{user?.email}</CardDescription>
             <Badge variant="secondary" className="w-fit mx-auto">
@@ -88,10 +91,6 @@ const UserProfile = () => {
             </Badge>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button variant="outline" className="w-full">
-              <Upload className="mr-2 h-4 w-4" />
-              Changer la photo
-            </Button>
             
             <div className="space-y-3 text-sm">
               <div className="flex items-center space-x-2">
