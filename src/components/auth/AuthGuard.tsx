@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
@@ -16,27 +16,35 @@ export const AuthGuard = ({
   redirectTo = '/auth' 
 }: AuthGuardProps) => {
   const { user, profile, loading } = useAuth();
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+
+  // Timeout pour éviter le chargement infini
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadingTimeout(true);
+    }, 5000); // 5 secondes maximum
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && !loadingTimeout) {
       // Not authenticated and auth required
       if (requireAuth && !user) {
         window.location.href = redirectTo;
         return;
       }
       
-      // Role-based access control
-      if (requireAuth && user && requireRole && profile) {
-        if (requireRole === 'admin' && profile.role !== 'admin') {
-          window.location.href = '/dashboard'; // Non-admin users go to dashboard
-          return;
-        }
+      // Role-based access control - simplifiée
+      if (requireAuth && user && requireRole === 'admin' && profile && profile.role !== 'admin') {
+        window.location.href = '/dashboard';
+        return;
       }
     }
-  }, [user, profile, loading, requireAuth, requireRole, redirectTo]);
+  }, [user, profile, loading, requireAuth, requireRole, redirectTo, loadingTimeout]);
 
-  // Show loading spinner while checking auth
-  if (loading || (requireAuth && user && !profile)) {
+  // Show loading spinner while checking auth (avec timeout)
+  if ((loading || (requireAuth && user && !profile)) && !loadingTimeout) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -52,7 +60,7 @@ export const AuthGuard = ({
     return null; // Will redirect
   }
 
-  if (requireAuth && user && requireRole === 'admin' && profile?.role !== 'admin') {
+  if (requireAuth && user && requireRole === 'admin' && profile && profile.role !== 'admin') {
     return null; // Will redirect
   }
 

@@ -72,10 +72,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq('id', user.id)
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Profile fetch error:', error)
+        // Set empty profile to avoid infinite loading
+        setProfile({ id: user.id, role: 'user' })
+        return
+      }
+      
       setProfile(data)
     } catch (error) {
       console.error('Error fetching profile:', error)
+      // Set empty profile to avoid infinite loading
+      setProfile({ id: user.id, role: 'user' })
     }
   }
 

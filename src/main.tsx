@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { PlanProvider } from '@/contexts/PlanContext'
-import SubscriptionSyncService from '@/components/plan/SubscriptionSyncService'
 import { RQDevtools } from '@/components/RQDevtools'
 import App from './App'
 import './index.css'
@@ -28,7 +27,6 @@ createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <AuthProvider>
           <PlanProvider>
-            <SubscriptionSyncService />
             <App />
             <Toaster />
             <RQDevtools adminOnly />
