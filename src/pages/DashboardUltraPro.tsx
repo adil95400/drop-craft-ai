@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { TrendingUp, TrendingDown, ShoppingCart, Package, Users, Euro, Eye, BarChart3, Calendar, Target, Zap, Bot, Globe, Award, Shield, Star, ArrowUpRight, ArrowDownRight, RefreshCw, Download, Filter, Search, Bell, Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { TrendingUp, TrendingDown, ShoppingCart, Package, Users, Euro, Eye, BarChart3, Calendar, Target, Zap, Bot, Globe, Award, Shield, Star, ArrowUpRight, ArrowDownRight, RefreshCw, Download, Filter, Search, Bell, Settings, Brain, Sparkles, Activity } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -173,6 +173,7 @@ export default function DashboardUltraPro() {
   const [selectedMetric, setSelectedMetric] = useState('revenue');
   const [showAIModal, setShowAIModal] = useState(false);
   const [dismissedAlerts, setDismissedAlerts] = useState<number[]>([]);
+  const [aiInsights, setAiInsights] = useState<string[]>([]);
   
   // Hooks pour les fonctionnalités
   const { analytics, isLoading } = useRealAnalytics();
@@ -180,6 +181,19 @@ export default function DashboardUltraPro() {
   const { openModal } = useModals();
   const { generateInsights, isGeneratingInsights } = useAI();
   const { toast } = useToast();
+
+  // Générer des insights IA au chargement
+  useEffect(() => {
+    if (analytics && !isLoading) {
+      const insights = [
+        `Votre taux de conversion de ${analytics.conversionRate.toFixed(1)}% est ${analytics.conversionRate > 3 ? 'excellent' : 'à améliorer'}`,
+        `Avec ${analytics.orders} commandes et un panier moyen de €${analytics.averageOrderValue.toFixed(2)}, vous générez €${analytics.revenue.toLocaleString()}`,
+        `${analytics.products} produits en catalogue - Optimisez vos top performers pour maximiser les ventes`,
+        analytics.revenue > 10000 ? 'Croissance prometteuse ! Considérez l\'expansion vers de nouveaux marchés' : 'Continuez vos efforts marketing pour augmenter le chiffre d\'affaires'
+      ];
+      setAiInsights(insights);
+    }
+  }, [analytics, isLoading]);
 
   // Handlers pour les boutons
   const handleRefresh = async () => {
@@ -316,8 +330,10 @@ Generated on: ${new Date().toLocaleString()}`;
       {/* Header avec contrôles */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-indigo-500">Dashboard Ultra Pro</h1>
-          <p className="text-muted-foreground">Vue d'ensemble complète de votre business</p>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            Dashboard Ultra Pro
+          </h1>
+          <p className="text-muted-foreground">Intelligence artificielle et analytics avancés</p>
         </div>
           
           <div className="flex items-center gap-3">
@@ -377,35 +393,33 @@ Generated on: ${new Date().toLocaleString()}`;
           </div>
         </div>
 
-        {/* Alertes importantes */}
-        <Card className="border-l-4 border-l-primary animate-fade-in">
+        {/* Insights IA */}
+        <Card className="border-l-4 border-l-purple-500 animate-fade-in bg-gradient-to-r from-purple-50/50 to-blue-50/50">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Alertes importantes
+                <Brain className="h-5 w-5 text-purple-600" />
+                Insights IA
               </CardTitle>
-              <Badge variant="secondary">{alerts.length}</Badge>
+              <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                <Sparkles className="h-3 w-3 mr-1" />
+                Intelligence
+              </Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {alerts
-                .filter((_, index) => !dismissedAlerts.includes(index))
-                .map((alert, index) => (
-                  <DashboardNotificationToast
-                    key={index}
-                    message={alert.message}
-                    type={alert.type as any}
-                    severity={alert.severity as any}
-                    onDismiss={() => handleDismissAlert(index)}
-                  />
-                ))
-              }
-              {alerts.filter((_, index) => !dismissedAlerts.includes(index)).length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Aucune alerte active
-                </p>
+            <div className="space-y-3">
+              {aiInsights.map((insight, index) => (
+                <div key={index} className="flex items-start gap-3 p-3 bg-white/50 rounded-lg border">
+                  <div className="h-2 w-2 bg-purple-500 rounded-full mt-2"></div>
+                  <p className="text-sm text-gray-700 flex-1">{insight}</p>
+                </div>
+              ))}
+              {aiInsights.length === 0 && (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mx-auto mb-2"></div>
+                  <p className="text-sm text-muted-foreground">Analyse IA en cours...</p>
+                </div>
               )}
             </div>
           </CardContent>

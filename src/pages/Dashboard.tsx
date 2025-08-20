@@ -5,10 +5,9 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
-import { PlanDashboard } from "@/components/plan/PlanDashboard"
-import { SmartDashboard } from "@/components/dashboard/SmartDashboard"
-import { RealTimeMetrics } from "@/components/dashboard/RealTimeMetrics"
+import { useRealAnalytics } from "@/hooks/useRealAnalytics"
 import { useStripeSubscription } from "@/hooks/useStripeSubscription"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { 
   BarChart3, 
   ShoppingCart, 
@@ -19,7 +18,9 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Calendar,
-  Star
+  Star,
+  RefreshCw,
+  Plus
 } from 'lucide-react'
 
 const Dashboard = () => {
@@ -27,6 +28,7 @@ const Dashboard = () => {
   const [searchParams] = useSearchParams()
   const { toast } = useToast()
   const { checkSubscription } = useStripeSubscription()
+  const { analytics, isLoading } = useRealAnalytics()
   const [initialLoadComplete, setInitialLoadComplete] = useState(false)
 
   // Handle checkout success/cancel notifications
@@ -71,37 +73,44 @@ const Dashboard = () => {
     }
   }, [authLoading])
 
-  // Sample metrics data
+  // Real metrics data
   const metrics = [
     {
-      title: "Ventes du mois",
-      value: "€12,345",
+      title: "Chiffre d'affaires",
+      value: analytics ? `€${analytics.revenue.toLocaleString()}` : "€0",
       change: { value: 12.5, trend: 'up' },
       icon: DollarSign,
-      description: "Chiffre d'affaires"
+      description: "Total des ventes"
     },
     {
       title: "Commandes",
-      value: "156",
+      value: analytics?.orders.toString() || "0",
       change: { value: 8.2, trend: 'up' },
       icon: ShoppingCart,
-      description: "Nouvelles commandes"
+      description: "Commandes livrées"
     },
     {
       title: "Produits",
-      value: "1,234",
+      value: analytics?.products.toString() || "0",
       change: { value: 3.1, trend: 'up' },
       icon: Package,
       description: "En catalogue"
     },
     {
-      title: "Clients actifs",
-      value: "89",
-      change: { value: 2.4, trend: 'down' },
+      title: "Clients",
+      value: analytics?.customers.toString() || "0",
+      change: { value: 2.4, trend: 'up' },
       icon: Users,
-      description: "Ce mois-ci"
+      description: "Clients enregistrés"
     }
   ]
+
+  const handleRefresh = async () => {
+    toast({
+      title: "Actualisation",
+      description: "Mise à jour des données en cours...",
+    })
+  }
 
   if (authLoading || !initialLoadComplete) {
     return (
@@ -129,33 +138,71 @@ const Dashboard = () => {
     )
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
       {/* Header avec informations utilisateur */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard Standard</h1>
           <p className="text-muted-foreground">
-            Bienvenue, {user?.email} ! Gérez votre boutique e-commerce.
+            Bienvenue, {user?.email} ! Vue d'ensemble de votre activité.
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            Actualiser
+          </Button>
           <Badge variant="outline" className="gap-1">
             🟢 En ligne
-          </Badge>
-          <Badge variant="secondary">
-            Connecté
           </Badge>
         </div>
       </div>
 
-      {/* Plan Dashboard - Temporairement simplifié */}
+      {/* Vue d'ensemble rapide */}
       <Card>
         <CardHeader>
-          <CardTitle>Informations Plan</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Résumé d'activité
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Plan dashboard temporairement simplifié pour éviter les boucles infinies</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground">Panier moyen</p>
+              <p className="font-semibold">€{analytics?.averageOrderValue.toFixed(2) || '0.00'}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Taux conversion</p>
+              <p className="font-semibold">{analytics?.conversionRate.toFixed(1) || '0.0'}%</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Dernière commande</p>
+              <p className="font-semibold">
+                {analytics?.recentOrders?.[0] ? 
+                  new Date(analytics.recentOrders[0].created_at).toLocaleDateString() : 
+                  'Aucune'}
+              </p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Statut</p>
+              <Badge variant="default" className="text-xs">Actif</Badge>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -190,85 +237,117 @@ const Dashboard = () => {
         })}
       </div>
 
+      {/* Graphique des ventes */}
+      {analytics?.salesByDay && analytics.salesByDay.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Évolution des ventes (7 derniers jours)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={analytics.salesByDay}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip formatter={(value) => [`€${value}`, 'Revenus']} />
+                <Line 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={2}
+                  dot={{ fill: 'hsl(var(--primary))' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Actions rapides */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="cursor-pointer hover:shadow-md transition-shadow" 
               onClick={() => window.location.href = '/import'}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              Import de produits
+              <Plus className="h-5 w-5" />
+              Ajouter des produits
             </CardTitle>
             <CardDescription>
-              Ajoutez de nouveaux produits à votre catalogue
+              Importez de nouveaux produits dans votre catalogue
             </CardDescription>
           </CardHeader>
         </Card>
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => window.location.href = '/catalogue'}>
+              onClick={() => window.location.href = '/orders'}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Gérer le catalogue
+              <ShoppingCart className="h-5 w-5" />
+              Gérer les commandes
             </CardTitle>
             <CardDescription>
-              Consultez et modifiez vos produits
+              Consultez et traitez vos commandes
             </CardDescription>
           </CardHeader>
         </Card>
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => window.location.href = '/analytics'}>
+              onClick={() => window.location.href = '/customers'}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Analytics
+              <Users className="h-5 w-5" />
+              Clients
             </CardTitle>
             <CardDescription>
-              Analysez vos performances de vente
+              Gérez votre base clients
             </CardDescription>
           </CardHeader>
         </Card>
       </div>
 
-      {/* Activité récente */}
+      {/* Commandes récentes */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Activité récente
+            Commandes récentes
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Nouvelle commande reçue</p>
-                <p className="text-xs text-muted-foreground">Il y a 2 heures</p>
-              </div>
-              <Badge variant="outline">€45.99</Badge>
+          {analytics?.recentOrders && analytics.recentOrders.length > 0 ? (
+            <div className="space-y-4">
+              {analytics.recentOrders.map((order) => (
+                <div key={order.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                  <div className={`h-2 w-2 rounded-full ${
+                    order.status === 'delivered' ? 'bg-green-500' : 
+                    order.status === 'pending' ? 'bg-yellow-500' : 'bg-blue-500'
+                  }`}></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Commande {order.order_number}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(order.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Badge variant="outline">€{order.total_amount}</Badge>
+                </div>
+              ))}
             </div>
-            
-            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-              <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">5 nouveaux produits importés</p>
-                <p className="text-xs text-muted-foreground">Il y a 4 heures</p>
-              </div>
-              <Badge variant="outline">Import</Badge>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Aucune commande récente</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2"
+                onClick={() => window.location.href = '/orders'}
+              >
+                Voir toutes les commandes
+              </Button>
             </div>
-            
-            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-              <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Stock faible détecté</p>
-                <p className="text-xs text-muted-foreground">Il y a 6 heures</p>
-              </div>
-              <Badge variant="outline">Alerte</Badge>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
