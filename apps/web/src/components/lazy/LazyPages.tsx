@@ -3,6 +3,7 @@ import { Suspense, lazy } from "react";
 import { AuthGuard } from "../auth/AuthGuard";
 import { AdminRoute } from "../auth/AdminRoute";
 import { LoadingState } from "../common/LoadingState";
+import { MainLayout } from "../layout/MainLayout";
 
 // Lazy load all pages
 const Auth = lazy(() => import("../../pages/Auth"));
@@ -15,6 +16,8 @@ const Integrations = lazy(() => import("../../pages/Integrations"));
 const Settings = lazy(() => import("../../pages/Settings"));
 const Admin = lazy(() => import("../../pages/Admin"));
 const NotFound = lazy(() => import("../../pages/NotFound"));
+const CanvaDesigns = lazy(() => import("../../pages/CanvaDesigns"));
+const CanvaCallback = lazy(() => import("../../pages/CanvaCallback"));
 
 const LazyPages = () => {
   return (
@@ -26,7 +29,9 @@ const LazyPages = () => {
           path="/dashboard"
           element={
             <AuthGuard>
-              <Dashboard />
+              <MainLayout>
+                <Dashboard />
+              </MainLayout>
             </AuthGuard>
           }
         />
@@ -34,7 +39,9 @@ const LazyPages = () => {
           path="/import"
           element={
             <AuthGuard>
-              <Import />
+              <MainLayout>
+                <Import />
+              </MainLayout>
             </AuthGuard>
           }
         />
@@ -42,7 +49,9 @@ const LazyPages = () => {
           path="/catalogue"
           element={
             <AuthGuard>
-              <Catalogue />
+              <MainLayout>
+                <Catalogue />
+              </MainLayout>
             </AuthGuard>
           }
         />
@@ -50,7 +59,9 @@ const LazyPages = () => {
           path="/orders"
           element={
             <AuthGuard>
-              <Orders />
+              <MainLayout>
+                <Orders />
+              </MainLayout>
             </AuthGuard>
           }
         />
@@ -58,7 +69,9 @@ const LazyPages = () => {
           path="/integrations"
           element={
             <AuthGuard>
-              <Integrations />
+              <MainLayout>
+                <Integrations />
+              </MainLayout>
             </AuthGuard>
           }
         />
@@ -66,7 +79,27 @@ const LazyPages = () => {
           path="/settings"
           element={
             <AuthGuard>
-              <Settings />
+              <MainLayout>
+                <Settings />
+              </MainLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/canva-designs"
+          element={
+            <AuthGuard>
+              <MainLayout>
+                <CanvaDesigns />
+              </MainLayout>
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/canva-callback"
+          element={
+            <AuthGuard>
+              <CanvaCallback />
             </AuthGuard>
           }
         />
@@ -74,7 +107,9 @@ const LazyPages = () => {
           path="/admin"
           element={
             <AdminRoute>
-              <Admin />
+              <MainLayout>
+                <Admin />
+              </MainLayout>
             </AdminRoute>
           }
         />
