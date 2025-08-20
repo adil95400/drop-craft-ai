@@ -32,125 +32,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
-
-interface ImportedProduct {
-  id: string
-  name: string
-  description?: string
-  price: number
-  cost_price?: number
-  currency: string
-  sku?: string
-  category?: string
-  image_urls?: string[]
-  tags?: string[]
-  status: 'draft' | 'published' | 'rejected'
-  supplier_name?: string
-  supplier_url?: string
-  created_at: string
-  ai_optimized?: boolean
-  profit_margin?: number
-  review_status?: 'pending' | 'reviewed' | 'rejected'
-}
-
-// Mock data with more realistic product information
-const mockProducts: ImportedProduct[] = [
-  {
-    id: '1',
-    name: 'iPhone 15 Pro Max 256GB Titanium Blue',
-    description: 'Le dernier iPhone avec processeur A17 Pro, système de caméra avancé et châssis en titanium premium.',
-    price: 1199.99,
-    cost_price: 899.00,
-    currency: 'EUR',
-    sku: 'IPH-15-PM-256-TB',
-    category: 'Smartphones',
-    image_urls: ['https://images.unsplash.com/photo-1591337676887-a217a6970a8a?w=400'],
-    tags: ['smartphone', 'apple', 'premium', 'titanium', '5g'],
-    status: 'draft',
-    supplier_name: 'TechDistributor Pro',
-    supplier_url: 'https://techdistributor.com',
-    created_at: '2024-01-15T10:30:00Z',
-    ai_optimized: false,
-    profit_margin: 33.4,
-    review_status: 'pending'
-  },
-  {
-    id: '2',
-    name: 'Samsung Galaxy S24 Ultra 512GB Phantom Black',
-    description: 'Smartphone Android flagship avec S Pen intégré, appareil photo 200MP et écran Dynamic AMOLED 2X.',
-    price: 1299.99,
-    cost_price: 950.00,
-    currency: 'EUR',
-    sku: 'SAM-S24-U-512-PB',
-    category: 'Smartphones',
-    image_urls: ['https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400'],
-    tags: ['smartphone', 'samsung', 'android', 's-pen', 'premium'],
-    status: 'published',
-    supplier_name: 'Samsung Direct',
-    supplier_url: 'https://samsung.com',
-    created_at: '2024-01-14T15:45:00Z',
-    ai_optimized: true,
-    profit_margin: 36.8,
-    review_status: 'reviewed'
-  },
-  {
-    id: '3',
-    name: 'AirPods Pro 2ème génération avec étui MagSafe',
-    description: 'Écouteurs sans fil avec réduction de bruit active adaptative, audio spatial personnalisé et jusqu\'à 6h d\'autonomie.',
-    price: 279.99,
-    cost_price: 199.00,
-    currency: 'EUR',
-    sku: 'APP-GEN2-MAGSAFE',
-    category: 'Audio',
-    image_urls: ['https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=400'],
-    tags: ['audio', 'apple', 'wireless', 'noise-cancelling', 'magsafe'],
-    status: 'draft',
-    supplier_name: 'AudioMax Solutions',
-    supplier_url: 'https://audiomax.com',
-    created_at: '2024-01-13T09:20:00Z',
-    ai_optimized: true,
-    profit_margin: 40.7,
-    review_status: 'pending'
-  },
-  {
-    id: '4',
-    name: 'MacBook Air M3 15" 512GB Midnight',
-    description: 'Ordinateur portable ultra-fin avec puce Apple M3, écran Liquid Retina 15.3" et jusqu\'à 18h d\'autonomie.',
-    price: 1699.99,
-    cost_price: 1299.00,
-    currency: 'EUR',
-    sku: 'MBA-M3-15-512-MID',
-    category: 'Ordinateurs',
-    image_urls: ['https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400'],
-    tags: ['laptop', 'apple', 'm3', 'portable', 'midnight'],
-    status: 'published',
-    supplier_name: 'Apple Authorized Reseller',
-    supplier_url: 'https://applereseller.com',
-    created_at: '2024-01-12T14:10:00Z',
-    ai_optimized: true,
-    profit_margin: 30.9,
-    review_status: 'reviewed'
-  },
-  {
-    id: '5',
-    name: 'Sony WH-1000XM5 Casque Bluetooth Noir',
-    description: 'Casque sans fil premium avec réduction de bruit leader du marché, qualité audio Hi-Res et 30h d\'autonomie.',
-    price: 399.99,
-    cost_price: 280.00,
-    currency: 'EUR',
-    sku: 'SONY-WH1000XM5-BLK',
-    category: 'Audio',
-    image_urls: ['https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400'],
-    tags: ['headphones', 'sony', 'bluetooth', 'noise-cancelling', 'premium'],
-    status: 'draft',
-    supplier_name: 'Sony Entertainment',
-    supplier_url: 'https://sony.com',
-    created_at: '2024-01-11T11:30:00Z',
-    ai_optimized: false,
-    profit_margin: 42.9,
-    review_status: 'pending'
-  }
-]
+import { useImportUltraPro, type ImportedProduct } from '@/hooks/useImportUltraPro'
 
 export const EnhancedImportResults = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -160,12 +42,15 @@ export const EnhancedImportResults = () => {
   const [editingProduct, setEditingProduct] = useState<ImportedProduct | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const filteredProducts = mockProducts.filter(product => {
+  // Use real data from useImportUltraPro hook
+  const { importedProducts } = useImportUltraPro()
+  
+  const filteredProducts = importedProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.sku?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || product.status === statusFilter
-    const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter
+    const matchesCategory = categoryFilter === 'all' || (product.category && product.category === categoryFilter)
     return matchesSearch && matchesStatus && matchesCategory
   })
 
@@ -236,15 +121,17 @@ export const EnhancedImportResults = () => {
         return <Badge className="bg-green-100 text-green-800 border-green-200">Publié</Badge>
       case 'draft':
         return <Badge variant="secondary">Brouillon</Badge>
-      case 'rejected':
-        return <Badge variant="destructive">Rejeté</Badge>
+      case 'archived':
+        return <Badge variant="destructive">Archivé</Badge>
       default:
         return <Badge variant="outline">En attente</Badge>
     }
   }
 
-  const getProfitMarginBadge = (margin?: number) => {
-    if (!margin) return null
+  const getProfitMarginBadge = (product: ImportedProduct) => {
+    if (!product.cost_price || !product.price) return null
+    
+    const margin = ((product.price - product.cost_price) / product.cost_price * 100)
     
     if (margin >= 40) {
       return <Badge className="bg-green-100 text-green-800">+{margin.toFixed(1)}%</Badge>
@@ -256,14 +143,14 @@ export const EnhancedImportResults = () => {
   }
 
   const stats = {
-    total: mockProducts.length,
-    published: mockProducts.filter(p => p.status === 'published').length,
-    draft: mockProducts.filter(p => p.status === 'draft').length,
-    rejected: mockProducts.filter(p => p.status === 'rejected').length,
-    optimized: mockProducts.filter(p => p.ai_optimized).length
+    total: importedProducts.length,
+    published: importedProducts.filter(p => p.status === 'published').length,
+    draft: importedProducts.filter(p => p.status === 'draft').length,
+    rejected: importedProducts.filter(p => p.review_status === 'rejected').length,
+    optimized: importedProducts.filter(p => p.ai_optimized).length
   }
 
-  const categories = [...new Set(mockProducts.map(p => p.category).filter(Boolean))]
+  const categories = [...new Set(importedProducts.map(p => p.category).filter(Boolean))]
 
   return (
     <div className="space-y-6">
@@ -353,7 +240,7 @@ export const EnhancedImportResults = () => {
                   <SelectItem value="all">Tous les statuts</SelectItem>
                   <SelectItem value="draft">Brouillon</SelectItem>
                   <SelectItem value="published">Publié</SelectItem>
-                  <SelectItem value="rejected">Rejeté</SelectItem>
+                  <SelectItem value="archived">Archivé</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -470,7 +357,7 @@ export const EnhancedImportResults = () => {
                         Coût: {product.currency} {product.cost_price.toFixed(2)}
                       </div>
                     )}
-                    {getProfitMarginBadge(product.profit_margin)}
+                    {getProfitMarginBadge(product)}
                   </div>
                   
                   <div className="flex items-center gap-2 mb-3">
@@ -559,9 +446,9 @@ export const EnhancedImportResults = () => {
                         </DialogContent>
                       </Dialog>
                       
-                      <Dialog>
+                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="ghost" size="sm" onClick={() => setEditingProduct(product)}>
+                          <Button variant="ghost" size="sm">
                             <Edit className="w-4 h-4" />
                           </Button>
                         </DialogTrigger>

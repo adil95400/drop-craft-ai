@@ -3,6 +3,12 @@ import { AdvancedImportInterface } from '@/components/import/AdvancedImportInter
 import { EnhancedImportResults } from '@/components/import/EnhancedImportResults'
 import { ImportHistory } from '@/components/import/ImportHistory'
 import { ImportTemplates } from '@/components/import/ImportTemplates'
+import { AIImportUltraPro } from '@/components/import/AIImportUltraPro'
+import { BulkImportUltraPro } from '@/components/import/BulkImportUltraPro'
+import { RealTimeMonitoring } from '@/components/import/RealTimeMonitoring'
+import { AdvancedMapping } from '@/components/import/AdvancedMapping'
+import { ImportAnalytics } from '@/components/import/ImportAnalytics'
+import { AutomationRules } from '@/components/import/AutomationRules'
 import { RequirePlan } from '@/components/plan/RequirePlan'
 
 const ImportUltraPro = () => {
@@ -17,11 +23,15 @@ const ImportUltraPro = () => {
         </div>
 
         <Tabs defaultValue="import" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
             <TabsTrigger value="import">Import Avancé</TabsTrigger>
-            <TabsTrigger value="results">Produits Importés</TabsTrigger>
-            <TabsTrigger value="history">Historique</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
+            <TabsTrigger value="results">Produits</TabsTrigger>
+            <TabsTrigger value="ai">IA Optimization</TabsTrigger>
+            <TabsTrigger value="bulk">Bulk Operations</TabsTrigger>
+            <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
+            <TabsTrigger value="mapping">Mapping</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="automation">Automation</TabsTrigger>
           </TabsList>
 
           <TabsContent value="import">
@@ -32,12 +42,28 @@ const ImportUltraPro = () => {
             <EnhancedImportResults />
           </TabsContent>
 
-          <TabsContent value="history">
-            <ImportHistory />
+          <TabsContent value="ai">
+            <AIImportUltraPro />
           </TabsContent>
 
-          <TabsContent value="templates">
-            <ImportTemplates />
+          <TabsContent value="bulk">
+            <BulkImportUltraPro />
+          </TabsContent>
+
+          <TabsContent value="monitoring">
+            <RealTimeMonitoring />
+          </TabsContent>
+
+          <TabsContent value="mapping">
+            <AdvancedMapping />
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <ImportAnalytics />
+          </TabsContent>
+
+          <TabsContent value="automation">
+            <AutomationRules />
           </TabsContent>
         </Tabs>
       </div>
