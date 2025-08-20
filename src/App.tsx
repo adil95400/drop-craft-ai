@@ -22,6 +22,7 @@ import {
   DashboardUltraProLazy,
   ImportLazy,
   ImportUltraProLazy,
+  ImportedProductsLazy,
   CatalogueRealLazy,
   CatalogueUltraProRealLazy,
   CatalogueUltraProAdvancedLazy,
@@ -193,6 +194,15 @@ const App = () => (
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
                     <ImportUltraProLazy />
+                  </Suspense>
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/imported-products" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <Suspense fallback={<OptimizedSkeleton variant="list" />}>
+                    <ImportedProductsLazy />
                   </Suspense>
                 </AppLayout>
               </AuthGuard>

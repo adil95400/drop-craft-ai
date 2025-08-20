@@ -1,7 +1,6 @@
 import React from 'react'
 import { usePlan } from '@/hooks/usePlan'
-import { ImportHub } from '@/components/import/ImportHub'
-import { EnhancedImportInterface } from '@/components/import/EnhancedImportInterface'
+import { ProductionImportInterface } from '@/components/import/ProductionImportInterface'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, Zap, TrendingUp } from 'lucide-react'
@@ -53,7 +52,7 @@ export default function Import() {
       </div>
 
       <div className="container mx-auto p-6">
-        <ImportHub />
+        <ProductionImportInterface />
       </div>
     </div>
   )

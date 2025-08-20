@@ -2,12 +2,13 @@ import { lazy } from 'react';
 
 // Unified pages with plan-based features
 export const DashboardLazy = lazy(() => import('@/pages/Dashboard'));
-export const ImportLazy = lazy(() => import('@/pages/Import'));
+export const ImportLazy = lazy(() => import('@/pages/Import'))
+export const ImportUltraProLazy = lazy(() => import('@/pages/ImportUltraPro'))
+export const ImportedProductsLazy = lazy(() => import('@/pages/ImportedProducts'))
 export const CatalogueLazy = lazy(() => import('@/pages/Catalogue'));
 
 // Keep existing for compatibility during transition
 export const DashboardUltraProLazy = lazy(() => import('@/pages/Dashboard'));
-export const ImportUltraProLazy = lazy(() => import('@/pages/Import'));
 export const CatalogueRealLazy = lazy(() => import('@/pages/Catalogue'));
 export const CatalogueUltraProRealLazy = lazy(() => import('@/pages/Catalogue'));
 export const CatalogueUltraProAdvancedLazy = lazy(() => import('@/pages/Catalogue'));
