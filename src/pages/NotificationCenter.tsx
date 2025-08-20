@@ -232,10 +232,10 @@ export default function NotificationCenter() {
                             >
                               <Trash2 className="w-3 h-3" />
                             </Button>
-                            {notification.action_url && (
+                            {notification.action && (
                               <Button size="sm" variant="outline" asChild>
-                                <a href={notification.action_url}>
-                                  {notification.action_label || 'Voir'}
+                                <a href={notification.action.url}>
+                                  {notification.action.label || 'Voir'}
                                 </a>
                               </Button>
                             )}

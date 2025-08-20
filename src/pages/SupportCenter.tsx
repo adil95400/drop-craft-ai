@@ -13,7 +13,7 @@ import {
   HelpCircle, MessageSquare, FileText, Search, Plus, Phone, Mail,
   Clock, CheckCircle, AlertCircle, BookOpen, Video, Download
 } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -135,7 +135,7 @@ export default function SupportCenter() {
     }
   ]
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityColor = (priority: string): any => {
     switch (priority) {
       case 'urgent': return 'destructive'
       case 'high': return 'secondary'
@@ -144,7 +144,7 @@ export default function SupportCenter() {
     }
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): any => {
     switch (status) {
       case 'resolved': return 'default'
       case 'in_progress': return 'secondary'
@@ -543,7 +543,7 @@ export default function SupportCenter() {
                   <span>Moyenne</span>
                   <Badge variant="outline">&lt; 24h</Badge>
                 </div>
-                <div className="flesh justify-between items-center">
+                <div className="flex justify-between items-center">
                   <span>Faible</span>
                   <Badge variant="outline">&lt; 72h</Badge>
                 </div>

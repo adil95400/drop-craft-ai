@@ -16,6 +16,7 @@ type Notification = {
 
 export const useNotifications = () => {
   const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([
     {
       id: '1',
@@ -100,6 +101,7 @@ export const useNotifications = () => {
     notifications,
     recentNotifications,
     unreadCount,
+    isLoading,
     markAsRead,
     markAllAsRead,
     deleteNotification,

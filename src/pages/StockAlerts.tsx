@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -65,10 +65,10 @@ export default function StockAlerts() {
     product_name: product.name,
     current_stock: product.stock_quantity,
     threshold: 10,
-    alert_type: product.stock_quantity === 0 ? 'out_of_stock' : 
-                product.stock_quantity < 5 ? 'low_stock' : 'overstock',
-    status: product.stock_quantity === 0 ? 'active' : 
-            product.stock_quantity < 10 ? 'active' : 'resolved',
+    alert_type: (product.stock_quantity === 0 ? 'out_of_stock' : 
+                product.stock_quantity < 5 ? 'low_stock' : 'overstock') as StockAlert['alert_type'],
+    status: (product.stock_quantity === 0 ? 'active' : 
+            product.stock_quantity < 10 ? 'active' : 'resolved') as StockAlert['status'],
     created_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date().toISOString()
   })).filter(alert => alert.status === 'active' || filterStatus === 'all') || []
@@ -91,7 +91,7 @@ export default function StockAlerts() {
     outOfStock: stockAlerts.filter(a => a.alert_type === 'out_of_stock').length
   }
 
-  const getAlertColor = (type: string) => {
+  const getAlertColor = (type: string): any => {
     switch (type) {
       case 'out_of_stock': return 'destructive'
       case 'low_stock': return 'secondary'

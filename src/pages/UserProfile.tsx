@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
 import { User, Mail, Phone, MapPin, Settings, Shield, Bell, CreditCard, Activity, Download } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -86,7 +86,7 @@ export default function UserProfile() {
     full_name: profile?.full_name || '',
     company: profile?.company || '',
     avatar_url: profile?.avatar_url || '',
-    email_notifications: profile?.email_notifications || true
+    email_notifications: profile?.email_notifications ?? true
   })
 
   const handleSave = () => {
