@@ -185,6 +185,140 @@ export type Database = {
         }
         Relationships: []
       }
+      canva_designs: {
+        Row: {
+          canva_design_id: string
+          canva_integration_id: string
+          created_at: string
+          design_type: string | null
+          design_url: string | null
+          export_urls: Json | null
+          id: string
+          last_modified_at: string | null
+          metadata: Json | null
+          status: string
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          canva_design_id: string
+          canva_integration_id: string
+          created_at?: string
+          design_type?: string | null
+          design_url?: string | null
+          export_urls?: Json | null
+          id?: string
+          last_modified_at?: string | null
+          metadata?: Json | null
+          status?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          canva_design_id?: string
+          canva_integration_id?: string
+          created_at?: string
+          design_type?: string | null
+          design_url?: string | null
+          export_urls?: Json | null
+          id?: string
+          last_modified_at?: string | null
+          metadata?: Json | null
+          status?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_canva_designs_integration"
+            columns: ["canva_integration_id"]
+            isOneToOne: false
+            referencedRelation: "canva_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canva_integrations: {
+        Row: {
+          access_token: string
+          canva_brand_id: string | null
+          canva_team_id: string | null
+          canva_user_id: string
+          created_at: string
+          id: string
+          refresh_token: string | null
+          status: string
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          canva_brand_id?: string | null
+          canva_team_id?: string | null
+          canva_user_id: string
+          created_at?: string
+          id?: string
+          refresh_token?: string | null
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          canva_brand_id?: string | null
+          canva_team_id?: string | null
+          canva_user_id?: string
+          created_at?: string
+          id?: string
+          refresh_token?: string | null
+          status?: string
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      canva_webhook_events: {
+        Row: {
+          canva_design_id: string | null
+          created_at: string
+          event_data: Json
+          event_type: string
+          id: string
+          processed: boolean
+          user_id: string | null
+        }
+        Insert: {
+          canva_design_id?: string | null
+          created_at?: string
+          event_data: Json
+          event_type: string
+          id?: string
+          processed?: boolean
+          user_id?: string | null
+        }
+        Update: {
+          canva_design_id?: string | null
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          id?: string
+          processed?: boolean
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       catalog_products: {
         Row: {
           attributes: Json | null
