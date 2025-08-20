@@ -93,6 +93,11 @@ import MarketplaceOptimized from './pages/MarketplaceOptimized';
 import FAQ from './pages/FAQ';
 import Notifications from './pages/Notifications';
 import NotFound from './pages/NotFound';
+import UserProfile from './pages/UserProfile';
+import Reports from './pages/Reports';
+import NotificationCenter from './pages/NotificationCenter';
+import StockAlerts from './pages/StockAlerts';
+import SupportCenter from './pages/SupportCenter';
 import CRMLeads from './pages/CRMLeads';
 import CRMActivity from './pages/CRMActivity';
 import CRMCalendar from './pages/CRMCalendar';
@@ -658,6 +663,41 @@ const App = () => (
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <Notifications />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/profile" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <UserProfile />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/reports" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <Reports />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/notification-center" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <NotificationCenter />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/stock-alerts" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <StockAlerts />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/support-center" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <SupportCenter />
                 </AppLayout>
               </AuthGuard>
             } />
