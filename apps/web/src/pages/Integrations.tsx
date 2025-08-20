@@ -40,6 +40,14 @@ export default function Integrations() {
       icon: Truck,
       category: 'Logistics',
       status: integrations.find(i => i.platform === '17track')?.status || 'disconnected'
+    },
+    {
+      id: 'canva',
+      name: 'Canva',
+      description: 'Create and manage designs directly from your SaaS',
+      icon: Palette,
+      category: 'Design',
+      status: 'disconnected' // Will be updated via useCanva hook
     }
   ];
 
