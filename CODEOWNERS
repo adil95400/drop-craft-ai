@@ -1,0 +1,41 @@
+# Code Owners for Drop Craft AI
+# 
+# This file defines who should be requested for review
+# when someone opens a pull request.
+#
+# Learn about CODEOWNERS:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global owner - all files
+* @adil95400
+
+# Core application files
+/src/ @adil95400
+/public/ @adil95400
+
+# Configuration files
+/.github/ @adil95400
+/supabase/ @adil95400
+*.config.* @adil95400
+tsconfig*.json @adil95400
+package.json @adil95400
+
+# Security and CI/CD
+/.github/workflows/ @adil95400
+/SECURITY.md @adil95400
+/.env.example @adil95400
+
+# Documentation
+/README.md @adil95400
+/CONTRIBUTING.md @adil95400
+/docs/ @adil95400
+
+# Specific components that require careful review
+/src/components/security/ @adil95400
+/src/components/admin/ @adil95400
+/src/integrations/supabase/ @adil95400
+/supabase/functions/ @adil95400
+
+# Database and migrations
+/supabase/migrations/ @adil95400
+/src/types/database.ts @adil95400

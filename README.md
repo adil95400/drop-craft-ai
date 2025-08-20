@@ -1,320 +1,339 @@
 # Drop Craft AI - SaaS E-commerce Ultra Pro
 
-## 🚀 Vue d'ensemble
+<div align="center">
 
-Drop Craft AI est une plateforme SaaS complète pour automatiser et optimiser votre business e-commerce avec l'intelligence artificielle. Elle offre des intégrations réelles avec tous les principaux fournisseurs, marketplaces et outils de marketing.
+![Drop Craft AI Logo](https://your-logo-url.com/logo.png)
 
-## ✨ Fonctionnalités principales
+[![Build Status](https://github.com/adil95400/drop-craft-ai/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/adil95400/drop-craft-ai/actions)
+[![Security Rating](https://img.shields.io/badge/security-A-green)](https://github.com/adil95400/drop-craft-ai/security)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-blue.svg)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-### 🛒 Intégrations E-commerce
-- **Shopify, WooCommerce, BigCommerce** - Synchronisation complète
-- **AliExpress, Amazon, eBay** - Import automatique de produits
-- **BigBuy, Cdiscount Pro** - Fournisseurs dropshipping européens
+**Automatisez votre e-commerce avec l'intelligence artificielle** 🤖✨
 
-### 📊 Modules métiers
-- **Catalogue intelligent** - Gestion avancée avec IA
-- **Import multi-format** - CSV, XML, API, URL, images
-- **CRM Ultra Pro** - Gestion clients et prospects 
-- **Analytics Ultra Pro** - Tableaux de bord temps réel
-- **Marketing automation** - Campagnes email et publicités
-- **Tracking Ultra Pro** - Suivi de colis avec 17track
-- **Reviews Ultra Pro** - Gestion d'avis avec Loox/Judge.me
+[🚀 Demo Live](https://drop-craft-ai.vercel.app) • [📖 Documentation](https://github.com/adil95400/drop-craft-ai/wiki) • [🐛 Report Bug](https://github.com/adil95400/drop-craft-ai/issues) • [✨ Request Feature](https://github.com/adil95400/drop-craft-ai/issues)
 
-### 🔒 Sécurité & Performance
-- **Security Ultra Pro** - Monitoring avancé des menaces
-- **SEO Ultra Pro** - Optimisation référencement complet
-- **Support Ultra Pro** - Centre d'assistance IA
+</div>
 
-## 🛠 Installation et développement
+---
+
+## 🎯 À propos
+
+Drop Craft AI est une plateforme SaaS complète qui révolutionne la gestion e-commerce grâce à l'intelligence artificielle. Intégrations natives avec tous les principaux fournisseurs, marketplaces et outils marketing, automatisation poussée et analytics en temps réel.
+
+### 🏆 Points forts
+
+- ⚡ **Performance optimisée** - React 18 + Vite + TypeScript strict
+- 🔐 **Sécurité entreprise** - RLS Supabase + chiffrement bout en bout  
+- 🤖 **IA native** - OpenAI + automatisation intelligente
+- 🔄 **Intégrations réelles** - API officielles Shopify, AliExpress, Amazon
+- 📊 **Analytics Ultra Pro** - Métriques temps réel + prédictions IA
+- 🚀 **SaaS ready** - Multi-tenant + plans d'abonnement Stripe
+
+## 🛠️ Stack Technique
+
+### Frontend
+- **Framework**: React 18 + TypeScript 5.5+
+- **Build Tool**: Vite avec optimisations avancées
+- **Styling**: Tailwind CSS + shadcn/ui components
+- **État global**: TanStack Query + Context API
+- **Animations**: Framer Motion + CSS animations
+
+### Backend & Infrastructure  
+- **Backend**: Supabase (PostgreSQL + Edge Functions)
+- **Authentification**: Supabase Auth + RLS policies
+- **Stockage**: Supabase Storage + CDN
+- **CI/CD**: GitHub Actions + tests automatisés
+- **Déploiement**: Vercel avec optimisations
+
+### Intégrations E-commerce
+- **Shopify**: OAuth + GraphQL Admin API + Webhooks
+- **AliExpress**: API officielle + import automatique
+- **Amazon**: Products API + Advertising API  
+- **BigBuy**: Fournisseur européen + catalogue sync
+- **eBay**: Trading API + gestion listings
+
+## 🚀 Installation & Configuration
 
 ### Prérequis
-- Node.js 18+ 
-- npm ou bun
-- Compte Supabase
-- Clés API des services à intégrer
 
-### Installation
+- **Node.js** 18+ (recommandé: 20+)
+- **npm** 9+ ou **pnpm** 8+
+- **Git** configuré
+- Compte **Supabase** (gratuit)
+
+### Installation rapide
 
 ```bash
 # Cloner le repository
-git clone https://github.com/votre-username/drop-craft-ai.git
+git clone https://github.com/adil95400/drop-craft-ai.git
 cd drop-craft-ai
 
-# Installer les dépendances
-npm install
-# ou
-bun install
+# Installation des dépendances (avec pnpm - recommandé)
+pnpm install --frozen-lockfile
 
-# Copier la configuration d'environnement
+# Ou avec npm
+npm ci
+
+# Configuration de l'environnement
 cp .env.example .env
-
-# Configurer vos clés API dans .env
-# Voir la section "Configuration" ci-dessous
+# Éditez .env avec vos clés API (voir section Configuration)
 ```
 
 ### Configuration Supabase
 
-1. **Créer un projet Supabase** sur [supabase.com](https://supabase.com)
+1. **Créer un projet** sur [supabase.com](https://supabase.com)
 
-2. **Récupérer les clés**:
-   - URL du projet
-   - Clé publique (anon key)
-   - Clé de service (service role key)
+2. **Récupérer les informations de connexion**:
+   ```bash
+   # Dans votre dashboard Supabase > Settings > API
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key
+   ```
 
-3. **Lancer les migrations**:
-```bash
-# Installer Supabase CLI
-npm install -g supabase
-
-# Se connecter à votre projet
-supabase link --project-ref VOTRE_PROJECT_ID
-
-# Appliquer les migrations
-supabase db push
-```
-
-### Configuration des API keys
-
-Éditez le fichier `.env` avec vos vraies clés API:
-
-```env
-# Supabase
-VITE_SUPABASE_URL=https://votre-projet.supabase.co
-VITE_SUPABASE_ANON_KEY=votre_cle_anon
-
-# E-commerce
-SHOPIFY_API_KEY=votre_cle_shopify
-ALIEXPRESS_API_KEY=votre_cle_aliexpress
-BIGBUY_API_KEY=votre_cle_bigbuy
-
-# Marketing
-MAILCHIMP_API_KEY=votre_cle_mailchimp
-GOOGLE_ADS_CLIENT_ID=votre_client_google_ads
-FACEBOOK_ACCESS_TOKEN=votre_token_facebook
-
-# Tracking
-TRACK17_API_KEY=votre_cle_17track
-
-# Reviews
-LOOX_API_KEY=votre_cle_loox
-JUDGE_ME_API_TOKEN=votre_token_judge_me
-
-# IA
-OPENAI_API_KEY=votre_cle_openai
-
-# Paiement
-STRIPE_SECRET_KEY=votre_cle_stripe
-```
+3. **Appliquer les migrations**:
+   ```bash
+   # Installer Supabase CLI
+   npm install -g supabase
+   
+   # Se connecter à votre projet  
+   supabase link --project-ref YOUR_PROJECT_ID
+   
+   # Appliquer toutes les migrations
+   supabase db push
+   ```
 
 ### Lancement en développement
 
 ```bash
 # Serveur de développement
-npm run dev
-# ou 
-bun dev
-
+pnpm dev
 # Ouverture automatique sur http://localhost:5173
+
+# Avec debug React Query DevTools
+VITE_ENABLE_RQ_DEVTOOLS=true pnpm dev
 ```
 
-## 🏗 Architecture technique
+## ⚙️ Scripts de développement
 
-### Stack technologique
-- **Frontend**: React 18 + TypeScript + Vite
-- **Styling**: Tailwind CSS + shadcn/ui
-- **État**: TanStack Query + Context API
-- **Backend**: Supabase (PostgreSQL + Edge Functions)
-- **Authentification**: Supabase Auth
-- **Stockage**: Supabase Storage
-- **Déploiement**: Vercel
+| Script | Description |
+|--------|-------------|
+| `pnpm dev` | Serveur de développement |
+| `pnpm build` | Build de production |
+| `pnpm lint` | Vérification ESLint |
+| `pnpm lint:fix` | Correction automatique |
+| `pnpm format` | Formatage Prettier |
+| `pnpm typecheck` | Vérification TypeScript |
+| `pnpm test` | Tests unitaires |
+| `pnpm preview` | Aperçu du build |
 
-### Structure du projet
+## 🏗️ Architecture du Projet
 
 ```
 src/
-├── components/          # Composants réutilisables
-│   ├── ui/             # Composants shadcn/ui
-│   ├── admin/          # Interface d'administration
-│   ├── catalog/        # Gestion du catalogue
-│   ├── import/         # Modules d'import
-│   └── integrations/   # Connecteurs API
-├── hooks/              # Hooks personnalisés
-├── pages/              # Pages de l'application
-├── layouts/            # Layouts réutilisables  
-├── contexts/           # Contextes React
-├── utils/              # Utilitaires
-└── lib/                # Configuration des librairies
+├── 📁 components/          # Composants réutilisables
+│   ├── 🎨 ui/             # shadcn/ui components  
+│   ├── 👑 admin/          # Interface d'administration
+│   ├── 📦 catalog/        # Gestion catalogue produits
+│   ├── 📥 import/         # Modules d'import avancés
+│   ├── 🔗 integrations/   # Connecteurs API tiers
+│   └── 🔒 auth/           # Authentification & sécurité
+├── 🪝 hooks/              # Hooks personnalisés
+├── 📄 pages/              # Pages de l'application  
+├── 🎨 layouts/            # Layouts réutilisables
+├── 🧠 contexts/           # Contextes React
+├── 🛠️ utils/              # Fonctions utilitaires
+└── 📚 lib/                # Configuration librairies
 
 supabase/
-├── functions/          # Edge Functions (API)
-├── migrations/         # Migrations base de données
-└── config.toml         # Configuration Supabase
+├── ⚡ functions/          # Edge Functions (API)
+├── 🗃️ migrations/         # Migrations BDD
+└── ⚙️ config.toml         # Configuration Supabase
 ```
 
-## 🔌 Intégrations disponibles
+## 🔌 Intégrations Disponibles
 
-### E-commerce & Marketplaces
-- **Shopify** - Synchronisation produits/commandes/stock
-- **WooCommerce** - Intégration WordPress complète
-- **BigCommerce** - API GraphQL enterprise
-- **AliExpress** - Import automatique avec API officielle
-- **Amazon** - Products API + Advertising API
-- **eBay** - Trading API + Finding API
-- **Cdiscount Pro** - Marketplace française
+### 🛒 E-commerce & Marketplaces
+| Service | Statut | Fonctionnalités |
+|---------|--------|-----------------|
+| **Shopify** | ✅ Production | Sync produits/commandes/stock + webhooks |
+| **AliExpress** | ✅ Production | Import automatique + suivi commandes |
+| **Amazon** | 🚧 Bêta | Products API + gestion FBA |
+| **eBay** | 🚧 Bêta | Trading API + gestion listings |
+| **WooCommerce** | ✅ Production | API REST + synchronisation |
+| **BigCommerce** | 📋 Planifié | GraphQL API enterprise |
 
-### Fournisseurs Dropshipping
-- **BigBuy** - Fournisseur européen premium
-- **Syncee** - Réseau global de fournisseurs
-- **VidaXL** - Mobilier et décoration
-- **Modalyst** - Fournisseurs premium US/EU
+### 📊 Marketing & Analytics
+| Service | Statut | Fonctionnalités |
+|---------|--------|-----------------|
+| **Google Ads** | ✅ Production | Création campagnes + optimisation |
+| **Facebook Ads** | ✅ Production | Publicités FB/IG + audiences |
+| **Mailchimp** | ✅ Production | Email automation + segmentation |
+| **Klaviyo** | 🚧 Bêta | CDP e-commerce avancé |
+| **Google Analytics** | ✅ Production | Suivi GA4 + conversion |
 
-### Marketing & Analytics
-- **Google Ads** - Création et gestion campagnes
-- **Facebook Ads** - Publicités Facebook/Instagram
-- **Mailchimp** - Email marketing automation
-- **Klaviyo** - CDP e-commerce avancé
-- **Google Analytics** - Suivi avancé GA4
-- **Hotjar** - Heatmaps et session recordings
-
-### Reviews & Customer Service
-- **Loox** - Avis produits avec photos
-- **Judge.me** - Plateforme d'avis complète
-- **Okendo** - Reviews et Q&A
-- **Trustpilot** - Avis entreprise
-- **Zendesk** - Support client professionnel
-
-### Paiement & Logistique
-- **Stripe** - Processeur de paiement moderne
-- **PayPal** - Solution globale trusted
-- **Klarna** - Paiement en plusieurs fois
-- **17track** - Suivi de colis international
-- **AfterShip** - Notification de livraison
+### 🎯 Reviews & Support
+| Service | Statut | Fonctionnalités |
+|---------|--------|-----------------|
+| **Loox** | ✅ Production | Avis photo + UGC |
+| **Judge.me** | ✅ Production | Plateforme d'avis complète |
+| **Zendesk** | 🚧 Bêta | Support client pro |
+| **Trustpilot** | 📋 Planifié | Réputation entreprise |
 
 ## 🚀 Déploiement
 
-### Déploiement sur Vercel
+### Déploiement Vercel (Recommandé)
 
-1. **Connecter GitHub à Vercel**
-2. **Importer le projet** 
-3. **Configurer les variables d'environnement**:
-   - Copier toutes les variables de `.env`
-   - Ajouter les clés de production
-4. **Déployer**
+1. **Fork le repository** sur votre compte GitHub
 
-### Variables d'environnement de production
+2. **Connecter à Vercel**:
+   - Aller sur [vercel.com](https://vercel.com)
+   - Import Git Repository
+   - Sélectionner votre fork
 
-```env
-NODE_ENV=production
-VITE_SUPABASE_URL=https://votre-projet-prod.supabase.co
-VITE_SUPABASE_ANON_KEY=votre_cle_anon_prod
-# + toutes les autres clés API en version production
-```
+3. **Configuration des variables d'environnement**:
+   ```bash
+   # Variables de production à configurer dans Vercel
+   NODE_ENV=production
+   VITE_SUPABASE_URL=https://your-prod-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-prod-anon-key
+   # + toutes vos clés API de production
+   ```
 
-### Optimisations de performance
+4. **Déployer** 🚀
 
-- **Lazy loading** des composants
-- **Code splitting** automatique
-- **Compression Gzip** activée
-- **CDN** Vercel Edge Network
-- **Cache** des ressources statiques
+### Optimisations de Performance
 
-## 🐛 Debug React Query
+- ⚡ **Lazy loading** automatique des composants
+- 📦 **Code splitting** intelligent par route
+- 🗜️ **Compression Gzip/Brotli** activée
+- 🌐 **CDN** Vercel Edge Network mondial
+- 💾 **Cache** agressif des ressources statiques
+- 🖼️ **Images optimisées** avec Next/Image
 
-### Configuration environnement
-Contrôlez la visibilité des React Query Devtools avec les variables d'environnement :
+## 🧪 Tests & Qualité
 
-- **Développement**: `VITE_ENABLE_RQ_DEVTOOLS=true` (par défaut)
-- **Production**: `VITE_ENABLE_RQ_DEVTOOLS=false` (par défaut)
-- **Staging**: `VITE_ENABLE_RQ_DEVTOOLS=false` (par défaut)
-
-### Mode admin uniquement
-Les devtools sont configurés pour s'afficher uniquement aux utilisateurs admin en développement. Les utilisateurs non-admin ne verront jamais le panneau même avec le flag activé.
-
-### Raccourci clavier
-Appuyez sur `Alt + D` pour basculer la visibilité du panneau devtools quand activé.
-
-### Optimisation bundle
-En production, React Query Devtools sont automatiquement exclus du bundle grâce au lazy loading et au tree-shaking.
-
-## 🧪 Tests
-
-### Tests unitaires
+### Tests automatisés
 ```bash
-# Lancer les tests
-npm run test
+# Tests unitaires
+pnpm test
 
 # Tests avec coverage
-npm run test:coverage
+pnpm test:coverage
+
+# Tests E2E Cypress  
+pnpm test:e2e
 ```
 
-### Tests E2E
-```bash
-# Tests Playwright
-npm run test:e2e
-
-# Tests en mode UI
-npm run test:e2e:ui
-```
-
-## 📈 Monitoring et analytics
-
-### Monitoring des erreurs
-- **Sentry** pour le tracking des erreurs
-- **Supabase Analytics** pour les métriques API
-- **Vercel Analytics** pour les performances
-
-### Métriques business
-- Dashboard admin avec KPIs temps réel
-- Suivi des conversions par canal
-- Analytics avancés par module
+### Qualité de code
+- ✅ **ESLint** configuré en mode strict
+- ✅ **Prettier** formatage automatique
+- ✅ **TypeScript** strict mode + no implicit any
+- ✅ **Husky** hooks pre-commit
+- ✅ **lint-staged** vérifications automatiques
 
 ## 🔐 Sécurité
 
-### Authentification
-- **Supabase Auth** avec RLS activé
-- **JWT tokens** sécurisés
-- **2FA** disponible pour les admins
-- **Gestion des rôles** (admin, user, staff)
+### Mesures de sécurité implémentées
+- 🔒 **Row Level Security (RLS)** sur toutes les tables
+- 🔑 **JWT** avec rotation automatique
+- 🛡️ **CSRF** protection + CORS configuré
+- 🔐 **Chiffrement** des clés API utilisateur
+- 📝 **Audit logs** pour toutes les actions sensibles
+- 🚨 **Rate limiting** sur les endpoints critiques
 
-### Protection des données
-- **Chiffrement** des clés API utilisateur
-- **HTTPS** obligatoire
-- **Conformité GDPR**
-- **Audits de sécurité** réguliers
+### Signalement de vulnérabilités
+Voir [SECURITY.md](SECURITY.md) pour les procédures de signalement sécurisé.
+
+## 📈 Monitoring & Analytics
+
+### Métriques surveillées
+- 📊 **Performance** - Web Vitals + load times
+- 🐛 **Erreurs** - Sentry integration + stack traces  
+- 💼 **Business** - KPIs temps réel + conversions
+- 🔄 **API** - Latence + taux d'erreur + quotas
+
+### Dashboards disponibles
+- 👑 **Admin Dashboard** - Métriques globales + utilisateurs
+- 📊 **Analytics Dashboard** - Business intelligence
+- 🔧 **Technical Dashboard** - Performance + monitoring
+
+## 🛣️ Roadmap
+
+### 🎯 Version 1.1 (Q2 2024)
+- [ ] **Amazon FBA** - Integration complète
+- [ ] **eBay Motors** - Support véhicules/pièces  
+- [ ] **TikTok Shop** - Nouveau marketplace
+- [ ] **AI Content Generator** - Descriptions produits
+- [ ] **Multi-language** - Support 5+ langues
+
+### 🎯 Version 1.2 (Q3 2024)  
+- [ ] **Mobile App** - React Native
+- [ ] **Advanced Analytics** - Prédictions ML
+- [ ] **White Label** - Solution partenaires
+- [ ] **API publique** - Webhooks + REST API
+- [ ] **Marketplace interne** - Templates + addons
+
+### 🎯 Version 2.0 (Q4 2024)
+- [ ] **Multi-tenant SaaS** - Isolation complète
+- [ ] **Enterprise features** - SSO + audit avancé
+- [ ] **AI Assistant** - Chatbot intelligent  
+- [ ] **Advanced automations** - Workflows visuels
+- [ ] **Real-time collaboration** - Teams + permissions
 
 ## 🤝 Contribution
 
-### Développement
+### Pour contribuer
 
 1. **Fork** le repository
-2. **Créer** une branch feature (`git checkout -b feature/nouvelle-fonctionnalite`)
-3. **Commiter** les changements (`git commit -m 'Ajout nouvelle fonctionnalité'`)
-4. **Push** vers la branch (`git push origin feature/nouvelle-fonctionnalite`)
-5. **Créer** une Pull Request
+2. **Créer** une branche feature (`git checkout -b feature/amazing-feature`)
+3. **Commit** vos changements (`git commit -m 'feat: add amazing feature'`)
+4. **Push** vers la branche (`git push origin feature/amazing-feature`)
+5. **Ouvrir** une Pull Request
 
-### Standards de code
+### Standards de contribution
+- 📝 **Convention de commits** - [Conventional Commits](https://www.conventionalcommits.org/)
+- ✅ **Tests** obligatoires pour les nouvelles features
+- 📖 **Documentation** mise à jour
+- 🎨 **Code review** obligatoire
 
-- **ESLint** + **Prettier** configurés
-- **TypeScript** strict mode
-- **Tests** obligatoires pour nouvelles features
-- **Documentation** des composants
+Voir [CONTRIBUTING.md](CONTRIBUTING.md) pour les détails complets.
 
-## 📝 Licence
+## 📞 Support & Community
 
-Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
+### 💬 Obtenir de l'aide
+- 📧 **Email**: support@dropcraft.ai
+- 💬 **Discord**: [Rejoindre la communauté](https://discord.gg/dropcraft-ai)
+- 🐛 **Issues**: [Signaler un bug](https://github.com/adil95400/drop-craft-ai/issues)
+- 💡 **Features**: [Demander une fonctionnalité](https://github.com/adil95400/drop-craft-ai/issues)
 
-## 📞 Support
+### 📚 Documentation
+- 📖 **Guide utilisateur**: [docs/user-guide](docs/user-guide/)
+- 🔧 **API Reference**: [docs/api](docs/api/)
+- 🎥 **Tutoriels vidéo**: [YouTube Channel](https://youtube.com/@dropcraft-ai)
+- 💼 **Cas d'usage**: [docs/examples](docs/examples/)
 
-### Documentation
-- **Guides utilisateur** : `/docs/user-guides/`
-- **API Reference** : `/docs/api/`
-- **Exemples** : `/docs/examples/`
+## 📄 Licence
 
-### Contact
-- **Email** : support@dropcraft.ai
-- **Discord** : [Communauté Drop Craft AI](https://discord.gg/dropcraft)
-- **Issues GitHub** : [Signaler un bug](https://github.com/votre-username/drop-craft-ai/issues)
+Ce projet est sous licence **MIT**. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
+
+## 🙏 Remerciements
+
+- 💙 **Supabase** - Backend-as-a-Service incroyable
+- ⚡ **Vercel** - Déploiement et hébergement
+- 🎨 **shadcn/ui** - Composants UI magnifiques  
+- 🚀 **Vite** - Build tool ultra-rapide
+- 💪 **React Team** - Framework fantastique
 
 ---
 
-**Drop Craft AI** - Automatisez votre e-commerce avec l'intelligence artificielle 🤖✨
+<div align="center">
+
+**Fait avec ❤️ par [Adil Oubala](https://github.com/adil95400)**
+
+[![GitHub followers](https://img.shields.io/github/followers/adil95400?style=social)](https://github.com/adil95400)
+[![Twitter Follow](https://img.shields.io/twitter/follow/adil95400?style=social)](https://twitter.com/adil95400)
+
+**Drop Craft AI** - Automatisez votre e-commerce avec l'intelligence artificielle 🚀
+
+</div>
