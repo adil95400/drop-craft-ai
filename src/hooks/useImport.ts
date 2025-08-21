@@ -16,18 +16,82 @@ const parseCSV = (text: string): { headers: string[], rows: string[][] } => {
   return { headers, rows }
 }
 
-// Auto-mapping for common CSV columns
+// Enhanced auto-mapping for comprehensive CSV columns
 const generateColumnMapping = (headers: string[]): Record<string, string> => {
   const mapping: Record<string, string> = {}
   const mappings: Record<string, string[]> = {
+    // Basic product info
     name: ['name', 'title', 'product_name', 'nom', 'titre', 'product'],
     description: ['description', 'desc', 'details', 'content'],
-    price: ['price', 'prix', 'cost', 'amount', 'tarif'],
-    sku: ['sku', 'reference', 'ref', 'code', 'id'],
+    sku: ['sku', 'reference', 'ref', 'code', 'product_id'],
     category: ['category', 'categorie', 'type', 'cat'],
-    image_url: ['image', 'photo', 'url', 'picture', 'img'],
-    supplier_name: ['supplier', 'fournisseur', 'brand', 'marque']
+    sub_category: ['sub_category', 'subcategory', 'sous_categorie'],
+    brand: ['brand', 'marque', 'vendor'],
+    
+    // Pricing
+    price: ['price', 'prix', 'selling_price', 'amount'],
+    cost_price: ['cost', 'cost_price', 'cout', 'purchase_price'],
+    compare_at_price: ['compare_at_price', 'original_price', 'prix_barre'],
+    suggested_price: ['suggested_price', 'prix_suggere', 'recommended_price'],
+    currency: ['currency', 'devise', 'curr'],
+    
+    // Inventory
+    stock_quantity: ['stock', 'quantity', 'qty', 'quantite', 'inventory'],
+    min_order: ['min_order', 'minimum_order', 'commande_min'],
+    max_order: ['max_order', 'maximum_order', 'commande_max'],
+    
+    // Physical attributes
+    weight: ['weight', 'poids', 'wt'],
+    weight_unit: ['weight_unit', 'unite_poids'],
+    length: ['length', 'longueur', 'l'],
+    width: ['width', 'largeur', 'w'],
+    height: ['height', 'hauteur', 'h'],
+    dimension_unit: ['dimension_unit', 'unite_dimension'],
+    
+    // Product attributes
+    condition: ['condition', 'etat', 'state'],
+    color: ['color', 'couleur', 'colour'],
+    size: ['size', 'taille', 'sz'],
+    material: ['material', 'materiau', 'matiere'],
+    style: ['style', 'design'],
+    
+    // Images and media
+    image_url: ['image', 'photo', 'picture', 'img', 'main_image_url'],
+    image_urls: ['images', 'image_urls', 'additional_image_urls', 'photos'],
+    video_url: ['video_url', 'video', 'vid'],
+    
+    // SEO and marketing
+    seo_title: ['seo_title', 'titre_seo', 'meta_title'],
+    seo_description: ['seo_description', 'meta_description', 'desc_seo'],
+    seo_keywords: ['seo_keywords', 'keywords', 'mots_cles', 'tags'],
+    meta_tags: ['meta_tags', 'tags_meta'],
+    
+    // Variants
+    variant_group: ['variant_group', 'groupe_variante'],
+    variant_name: ['variant_name', 'nom_variante'],
+    variant_sku: ['variant_sku', 'sku_variante'],
+    
+    // Supplier info
+    supplier_name: ['supplier', 'fournisseur', 'vendor'],
+    supplier_sku: ['supplier_sku', 'sku_fournisseur'],
+    supplier_price: ['supplier_price', 'prix_fournisseur'],
+    supplier_url: ['supplier_link', 'supplier_url', 'lien_fournisseur'],
+    
+    // Shipping
+    shipping_time: ['shipping_time', 'delai_livraison', 'delivery_time'],
+    shipping_cost: ['shipping_cost', 'cout_livraison', 'frais_port'],
+    
+    // Codes
+    barcode: ['barcode', 'code_barre'],
+    ean: ['ean', 'ean13'],
+    upc: ['upc', 'upc_code'],
+    gtin: ['gtin', 'gtin14'],
+    
+    // Localization
+    country_of_origin: ['country_of_origin', 'pays_origine'],
+    language: ['language', 'langue', 'lang']
   }
+  
   
   headers.forEach(header => {
     const lowerHeader = header.toLowerCase()
@@ -139,17 +203,41 @@ export const useImport = () => {
             review_status: 'pending'
           }
 
-          // Map each header to product field
+          // Map each header to product field with enhanced mapping
           headers.forEach((header, headerIndex) => {
             const field = mapping[header]
             const value = row[headerIndex]?.trim()
             
             if (field && value) {
-              if (field === 'price' || field === 'cost_price') {
+              // Handle numeric fields
+              if (['price', 'cost_price', 'compare_at_price', 'suggested_price', 'weight', 'length', 'width', 'height'].includes(field)) {
                 product[field] = parseFloat(value) || 0
-              } else if (field === 'image_url') {
-                product.image_urls = [value]
-              } else {
+              }
+              // Handle integer fields
+              else if (['stock_quantity', 'min_order', 'max_order'].includes(field)) {
+                product[field] = parseInt(value) || 0
+              }
+              // Handle array fields (split by semicolon)
+              else if (['image_urls', 'video_urls', 'seo_keywords', 'tags'].includes(field)) {
+                product[field] = value.split(';').map(item => item.trim()).filter(Boolean)
+              }
+              // Handle special image mapping
+              else if (field === 'image_url' || field === 'main_image_url') {
+                if (!product.image_urls) product.image_urls = []
+                product.image_urls.unshift(value) // Put main image first
+              }
+              // Handle additional images
+              else if (field === 'additional_image_urls') {
+                const additionalImages = value.split(';').map(item => item.trim()).filter(Boolean)
+                if (!product.image_urls) product.image_urls = []
+                product.image_urls.push(...additionalImages)
+              }
+              // Handle boolean fields
+              else if (['ai_optimized'].includes(field)) {
+                product[field] = value.toLowerCase() === 'true' || value === '1'
+              }
+              // Handle text fields
+              else {
                 product[field] = value
               }
             }

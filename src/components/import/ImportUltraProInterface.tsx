@@ -132,18 +132,192 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
     setImportProgress(0)
 
     try {
-      const formData = new FormData()
-      formData.append('file', selectedFile)
+      // Get authenticated user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Utilisateur non authentifié')
 
-      // Simulate file processing
-      const progressSteps = [15, 35, 55, 75, 90, 100]
-      for (const step of progressSteps) {
-        setImportProgress(step)
-        await new Promise(resolve => setTimeout(resolve, 800))
+      // Read and parse CSV file
+      const text = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (e) => resolve(e.target?.result as string)
+        reader.onerror = reject
+        reader.readAsText(selectedFile)
+      })
+
+      const parseCSV = (text: string): { headers: string[], rows: string[][] } => {
+        const lines = text.split('\n').filter(line => line.trim())
+        if (lines.length === 0) throw new Error('Fichier CSV vide')
+        
+        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
+        const rows = lines.slice(1).map(line => 
+          line.split(',').map(cell => cell.trim().replace(/"/g, ''))
+        )
+        
+        return { headers, rows }
       }
 
-      // Process file import (this would call your edge function)
-      toast.success(`Fichier ${selectedFile.name} importé avec succès`)
+      setImportProgress(20)
+      const { headers, rows } = parseCSV(text)
+      
+      // Enhanced column mapping
+      const generateColumnMapping = (headers: string[]): Record<string, string> => {
+        const mapping: Record<string, string> = {}
+        const mappings: Record<string, string[]> = {
+          name: ['name', 'title', 'product_name', 'nom', 'titre', 'product'],
+          description: ['description', 'desc', 'details', 'content'],
+          sku: ['sku', 'reference', 'ref', 'code', 'product_id'],
+          category: ['category', 'categorie', 'type', 'cat'],
+          sub_category: ['sub_category', 'subcategory', 'sous_categorie'],
+          brand: ['brand', 'marque', 'vendor'],
+          price: ['price', 'prix', 'selling_price', 'amount'],
+          cost_price: ['cost', 'cost_price', 'cout', 'purchase_price'],
+          currency: ['currency', 'devise', 'curr'],
+          stock_quantity: ['stock', 'quantity', 'qty', 'quantite', 'inventory'],
+          image_url: ['image', 'photo', 'picture', 'img', 'main_image_url'],
+          image_urls: ['images', 'image_urls', 'additional_image_urls', 'photos'],
+          video_url: ['video_url', 'video', 'vid'],
+          supplier_name: ['supplier', 'fournisseur', 'vendor'],
+          seo_keywords: ['seo_keywords', 'keywords', 'mots_cles', 'tags'],
+          tags: ['tags', 'mots_cles']
+        }
+        
+        headers.forEach(header => {
+          const lowerHeader = header.toLowerCase()
+          for (const [field, patterns] of Object.entries(mappings)) {
+            if (patterns.some(pattern => lowerHeader.includes(pattern))) {
+              mapping[header] = field
+              break
+            }
+          }
+        })
+        
+        return mapping
+      }
+
+      const mapping = generateColumnMapping(headers)
+      setImportProgress(40)
+
+      // Create import job
+      const { data: importJob, error: jobError } = await supabase
+        .from('import_jobs')
+        .insert({
+          user_id: user.id,
+          source_type: 'csv',
+          status: 'processing',
+          total_rows: rows.length,
+          processed_rows: 0,
+          success_rows: 0,
+          error_rows: 0,
+          mapping_config: mapping
+        })
+        .select()
+        .single()
+
+      if (jobError) throw new Error(`Erreur création job: ${jobError.message}`)
+      setImportProgress(60)
+
+      // Process each row
+      let successCount = 0
+      let errorCount = 0
+      const errors: string[] = []
+      const productsToInsert: any[] = []
+
+      rows.forEach((row, index) => {
+        try {
+          const product: any = {
+            user_id: user.id,
+            import_id: importJob.id,
+            status: 'draft',
+            review_status: 'pending'
+          }
+
+          // Map each header to product field
+          headers.forEach((header, headerIndex) => {
+            const field = mapping[header]
+            const value = row[headerIndex]?.trim()
+            
+            if (field && value) {
+              // Handle numeric fields
+              if (['price', 'cost_price'].includes(field)) {
+                product[field] = parseFloat(value) || 0
+              }
+              // Handle integer fields
+              else if (['stock_quantity'].includes(field)) {
+                product[field] = parseInt(value) || 0
+              }
+              // Handle array fields (split by semicolon)
+              else if (['image_urls', 'video_urls', 'seo_keywords', 'tags'].includes(field)) {
+                product[field] = value.split(';').map(item => item.trim()).filter(Boolean)
+              }
+              // Handle special image mapping
+              else if (field === 'image_url') {
+                product.image_urls = [value]
+              }
+              // Handle text fields
+              else {
+                product[field] = value
+              }
+            }
+          })
+
+          // Validate required fields
+          if (!product.name) {
+            throw new Error(`Ligne ${index + 1}: Nom du produit requis`)
+          }
+          if (!product.price || product.price <= 0) {
+            throw new Error(`Ligne ${index + 1}: Prix valide requis`)
+          }
+
+          productsToInsert.push(product)
+          successCount++
+        } catch (error) {
+          errorCount++
+          errors.push((error as Error).message)
+        }
+      })
+
+      setImportProgress(80)
+
+      // Insert all valid products
+      if (productsToInsert.length > 0) {
+        const { error: insertError } = await supabase
+          .from('imported_products')
+          .insert(productsToInsert)
+
+        if (insertError) {
+          throw new Error(`Erreur insertion produits: ${insertError.message}`)
+        }
+      }
+
+      setImportProgress(90)
+
+      // Update import job with final results
+      await supabase
+        .from('import_jobs')
+        .update({
+          status: 'completed',
+          processed_rows: rows.length,
+          success_rows: successCount,
+          error_rows: errorCount,
+          errors: errors,
+          result_data: {
+            total: rows.length,
+            success: successCount,
+            errors: errorCount,
+            completion_time: new Date().toISOString()
+          }
+        })
+        .eq('id', importJob.id)
+
+      setImportProgress(100)
+
+      toast.success(`Import réussi ! ${successCount} produits importés sur ${rows.length} lignes traitées.`)
+      onImportComplete?.({
+        products_imported: successCount,
+        total_processed: rows.length,
+        errors: errorCount,
+        import_job_id: importJob.id
+      })
       setSelectedFile(null)
       
     } catch (error: any) {
@@ -329,6 +503,34 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {/* Template Download Section */}
+                    <div className="p-4 bg-muted/50 rounded-lg border border-dashed">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium mb-1">Template CSV recommandé</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Téléchargez notre template optimisé avec toutes les colonnes supportées
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const link = document.createElement('a')
+                            link.href = '/files/template-import.csv'
+                            link.download = 'template-import.csv'
+                            document.body.appendChild(link)
+                            link.click()
+                            document.body.removeChild(link)
+                            toast.success('Template CSV téléchargé')
+                          }}
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Télécharger Template
+                        </Button>
+                      </div>
+                    </div>
+                    
                     <div>
                       <Label htmlFor="import-file">Fichier CSV ou Excel</Label>
                       <div className="mt-2">
