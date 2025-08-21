@@ -917,99 +917,204 @@ export type Database = {
           ai_optimized: boolean | null
           ai_recommendations: Json | null
           ai_score: number | null
+          barcode: string | null
+          brand: string | null
           category: string | null
+          color: string | null
+          compare_at_price: number | null
+          condition: string | null
           cost_price: number | null
+          country_of_origin: string | null
           created_at: string | null
           currency: string | null
           data_completeness_score: number | null
           description: string | null
+          dimension_unit: string | null
+          ean: string | null
+          gtin: string | null
+          height: number | null
           id: string
           image_urls: string[] | null
           import_id: string | null
           import_quality_score: number | null
           keywords: string[] | null
+          language: string | null
+          length: number | null
+          material: string | null
+          max_order: number | null
           meta_description: string | null
+          meta_tags: string[] | null
           meta_title: string | null
+          min_order: number | null
           name: string
           price: number
           published_at: string | null
           review_status: string | null
           reviewed_at: string | null
+          seo_description: string | null
+          seo_keywords: string[] | null
+          seo_title: string | null
+          shipping_cost: number | null
+          shipping_time: string | null
+          size: string | null
           sku: string | null
           status: string | null
+          stock_quantity: number | null
+          style: string | null
+          sub_category: string | null
+          suggested_price: number | null
           supplier_name: string | null
+          supplier_price: number | null
           supplier_product_id: string | null
+          supplier_sku: string | null
           supplier_url: string | null
           tags: string[] | null
+          upc: string | null
           updated_at: string | null
           user_id: string
+          variant_group: string | null
+          variant_name: string | null
+          variant_sku: string | null
           video_urls: string[] | null
+          weight: number | null
+          weight_unit: string | null
+          width: number | null
         }
         Insert: {
           ai_optimization_data?: Json | null
           ai_optimized?: boolean | null
           ai_recommendations?: Json | null
           ai_score?: number | null
+          barcode?: string | null
+          brand?: string | null
           category?: string | null
+          color?: string | null
+          compare_at_price?: number | null
+          condition?: string | null
           cost_price?: number | null
+          country_of_origin?: string | null
           created_at?: string | null
           currency?: string | null
           data_completeness_score?: number | null
           description?: string | null
+          dimension_unit?: string | null
+          ean?: string | null
+          gtin?: string | null
+          height?: number | null
           id?: string
           image_urls?: string[] | null
           import_id?: string | null
           import_quality_score?: number | null
           keywords?: string[] | null
+          language?: string | null
+          length?: number | null
+          material?: string | null
+          max_order?: number | null
           meta_description?: string | null
+          meta_tags?: string[] | null
           meta_title?: string | null
+          min_order?: number | null
           name: string
           price: number
           published_at?: string | null
           review_status?: string | null
           reviewed_at?: string | null
+          seo_description?: string | null
+          seo_keywords?: string[] | null
+          seo_title?: string | null
+          shipping_cost?: number | null
+          shipping_time?: string | null
+          size?: string | null
           sku?: string | null
           status?: string | null
+          stock_quantity?: number | null
+          style?: string | null
+          sub_category?: string | null
+          suggested_price?: number | null
           supplier_name?: string | null
+          supplier_price?: number | null
           supplier_product_id?: string | null
+          supplier_sku?: string | null
           supplier_url?: string | null
           tags?: string[] | null
+          upc?: string | null
           updated_at?: string | null
           user_id: string
+          variant_group?: string | null
+          variant_name?: string | null
+          variant_sku?: string | null
           video_urls?: string[] | null
+          weight?: number | null
+          weight_unit?: string | null
+          width?: number | null
         }
         Update: {
           ai_optimization_data?: Json | null
           ai_optimized?: boolean | null
           ai_recommendations?: Json | null
           ai_score?: number | null
+          barcode?: string | null
+          brand?: string | null
           category?: string | null
+          color?: string | null
+          compare_at_price?: number | null
+          condition?: string | null
           cost_price?: number | null
+          country_of_origin?: string | null
           created_at?: string | null
           currency?: string | null
           data_completeness_score?: number | null
           description?: string | null
+          dimension_unit?: string | null
+          ean?: string | null
+          gtin?: string | null
+          height?: number | null
           id?: string
           image_urls?: string[] | null
           import_id?: string | null
           import_quality_score?: number | null
           keywords?: string[] | null
+          language?: string | null
+          length?: number | null
+          material?: string | null
+          max_order?: number | null
           meta_description?: string | null
+          meta_tags?: string[] | null
           meta_title?: string | null
+          min_order?: number | null
           name?: string
           price?: number
           published_at?: string | null
           review_status?: string | null
           reviewed_at?: string | null
+          seo_description?: string | null
+          seo_keywords?: string[] | null
+          seo_title?: string | null
+          shipping_cost?: number | null
+          shipping_time?: string | null
+          size?: string | null
           sku?: string | null
           status?: string | null
+          stock_quantity?: number | null
+          style?: string | null
+          sub_category?: string | null
+          suggested_price?: number | null
           supplier_name?: string | null
+          supplier_price?: number | null
           supplier_product_id?: string | null
+          supplier_sku?: string | null
           supplier_url?: string | null
           tags?: string[] | null
+          upc?: string | null
           updated_at?: string | null
           user_id?: string
+          variant_group?: string | null
+          variant_name?: string | null
+          variant_sku?: string | null
           video_urls?: string[] | null
+          weight?: number | null
+          weight_unit?: string | null
+          width?: number | null
         }
         Relationships: [
           {
