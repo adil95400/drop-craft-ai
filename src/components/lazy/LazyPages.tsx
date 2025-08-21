@@ -5,6 +5,7 @@ export const DashboardLazy = lazy(() => import('@/pages/Dashboard'));
 export const ImportLazy = lazy(() => import('@/pages/Import'));
 export const ImportUltraProLazy = lazy(() => import('@/pages/ImportUltraPro'));
 export const ImportedProductsLazy = lazy(() => import('@/pages/ImportedProducts'));
+export const ImportManagementLazy = lazy(() => import('@/pages/ImportManagement'));
 export const CatalogueLazy = lazy(() => import('@/pages/Catalogue'));
 export const CatalogueRealLazy = lazy(() => import('@/pages/CatalogueReal'));
 

@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { 
   ChevronDown, Search, Bot, Sparkles, ShoppingCart, Package, BarChart3, 
-  Users, ShieldCheck, Zap, Settings, HelpCircle, Lock, Crown, Star 
+  Users, ShieldCheck, Zap, Settings, HelpCircle, Lock, Crown, Star, 
+  Database 
 } from "lucide-react";
 import {
   Sidebar,
@@ -79,6 +80,13 @@ const navigationGroups = [
         title: "Import Ultra Pro",
         url: "/import-ultra-pro",
         icon: Crown,
+        badge: "Ultra Pro",
+        requiredPlan: "ultra_pro" as const
+      },
+      {
+        title: "Gestion des Imports",
+        url: "/import-management",
+        icon: Database,
         badge: "Ultra Pro",
         requiredPlan: "ultra_pro" as const
       },
