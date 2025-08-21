@@ -15,6 +15,7 @@ import { ModalProvider } from '@/components/ModalProvider';
 
 import IntegrationsOptimized from './pages/IntegrationsOptimized';
 import IntegrationsUltraPro from './pages/IntegrationsUltraPro';
+import Integrations from './pages/Integrations';
 
 // Lazy loaded heavy pages
 import {
@@ -261,7 +262,7 @@ const App = () => (
             <Route path="/integrations" element={
               <AuthGuard requireRole="user">
                 <AppLayout>
-                  <IntegrationsOptimized />
+                  <Integrations />
                 </AppLayout>
               </AuthGuard>
             } />
@@ -548,13 +549,6 @@ const App = () => (
                   <Suspense fallback={<OptimizedSkeleton variant="detail" />}>
                     <MobileUltraProLazy />
                   </Suspense>
-                </AppLayout>
-              </AuthGuard>
-            } />
-            <Route path="/integrations" element={
-              <AuthGuard requireRole="user">
-                <AppLayout>
-                  <IntegrationsOptimized />
                 </AppLayout>
               </AuthGuard>
             } />

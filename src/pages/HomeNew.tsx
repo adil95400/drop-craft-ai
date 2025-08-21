@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, TrendingUp, ShoppingCart, BarChart3, Zap, Shield, Globe, Star, CheckCircle, Play, Users, Target, Rocket, Crown, Sparkles, Bot, LineChart, Package, Truck, MessageSquare, Settings, CreditCard, Search } from "lucide-react";
 import heroImage from "/lovable-uploads/aa11c615-9c0c-4dbf-b691-586cf4f9c53a.png";
+import LogoCloud from "@/components/brand/LogoCloud";
 const HomeNew = () => {
   const features = [{
     icon: <Bot className="w-8 h-8" />,
@@ -242,6 +243,28 @@ const HomeNew = () => {
                 <div className="text-muted-foreground">{stat.label}</div>
               </div>)}
           </div>
+        </div>
+      </section>
+
+      {/* Logo Cloud - Trusted Partners */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h3 className="text-2xl font-semibold mb-4 text-muted-foreground">
+              Ils nous font confiance
+            </h3>
+            <p className="text-muted-foreground">
+              Connecté aux plus grandes plateformes e-commerce et outils marketing
+            </p>
+          </div>
+          <LogoCloud
+            title="Partenaires et intégrations"
+            items={[
+              "shopify", "woocommerce", "bigbuy", "aliexpress", "amazon",
+              "canva", "paypal", "stripe", "tiktok-shop", "ebay", "cdiscount", 
+              "zapier", "meta-ads", "google-ads", "klaviyo"
+            ]}
+          />
         </div>
       </section>
 
