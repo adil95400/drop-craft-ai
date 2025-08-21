@@ -1,466 +1,263 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
-import { useToast } from '@/hooks/use-toast'
-import { useRealTimeMarketing } from '@/hooks/useRealTimeMarketing'
+import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import { 
-  Activity, 
-  TrendingUp, 
+  Zap, 
+  Activity,
+  TrendingUp,
   TrendingDown,
-  AlertTriangle, 
-  CheckCircle2,
-  Target,
-  Users,
-  Mail,
-  BarChart3,
-  Zap,
+  Eye,
+  MousePointer,
+  ShoppingCart,
+  DollarSign,
+  RefreshCw,
   Bell,
-  Settings,
-  Pause,
-  Play,
-  RefreshCw
+  BarChart3,
+  Target
 } from 'lucide-react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
-
-interface PerformanceAlert {
-  id: string
-  type: 'performance' | 'budget' | 'audience' | 'technical'
-  severity: 'critical' | 'warning' | 'info'
-  title: string
-  message: string
-  campaign?: string
-  metric: string
-  currentValue: number
-  threshold: number
-  trend: 'up' | 'down' | 'stable'
-  timestamp: Date
-  acknowledged: boolean
-  actionable: boolean
-}
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
+import { useRealTimeMarketing } from '@/hooks/useRealTimeMarketing'
 
 interface RealTimeMetric {
+  id: string
   name: string
   value: number
   change: number
-  trend: 'up' | 'down' | 'stable'
-  status: 'good' | 'warning' | 'critical' | 'info'
-  target?: number
+  changeType: 'increase' | 'decrease' | 'neutral'
   unit: string
-  icon: any
+  target?: number
+  status: 'good' | 'warning' | 'critical'
 }
 
-export const RealTimePerformanceTracker = () => {
-  const { toast } = useToast()
-  const { campaigns, stats, refreshData } = useRealTimeMarketing()
-  const [isMonitoring, setIsMonitoring] = useState(true)
-  const [alerts, setAlerts] = useState<PerformanceAlert[]>([])
-  const [liveMetrics, setLiveMetrics] = useState<RealTimeMetric[]>([])
-  const [performanceHistory, setPerformanceHistory] = useState<any[]>([])
+const mockRealTimeData = [
+  { time: '14:50', impressions: 1250, clicks: 67, conversions: 4, revenue: 280 },
+  { time: '14:55', impressions: 1340, clicks: 73, conversions: 5, revenue: 350 },
+  { time: '15:00', impressions: 1420, clicks: 78, conversions: 6, revenue: 420 },
+  { time: '15:05', impressions: 1380, clicks: 71, conversions: 4, revenue: 280 },
+  { time: '15:10', impressions: 1460, clicks: 82, conversions: 7, revenue: 490 }
+]
 
-  // Simulate real-time metrics
+const mockMetrics: RealTimeMetric[] = [
+  {
+    id: 'impressions',
+    name: 'Impressions',
+    value: 1680,
+    change: 12.5,
+    changeType: 'increase',
+    unit: '/h',
+    target: 2000,
+    status: 'good'
+  },
+  {
+    id: 'clicks',
+    name: 'Clics',
+    value: 101,
+    change: -3.2,
+    changeType: 'decrease',
+    unit: '/h',
+    target: 120,
+    status: 'warning'
+  },
+  {
+    id: 'conversions',
+    name: 'Conversions',
+    value: 11,
+    change: 22.2,
+    changeType: 'increase',
+    unit: '/h',
+    target: 15,
+    status: 'good'
+  }
+]
+
+export function RealTimePerformanceTracker() {
+  const { stats } = useRealTimeMarketing()
+  const [isLiveMode, setIsLiveMode] = useState(true)
+  const [alertsEnabled, setAlertsEnabled] = useState(true)
+  const [currentTime, setCurrentTime] = useState(new Date())
+
   useEffect(() => {
-    const updateMetrics = () => {
-      const newMetrics: RealTimeMetric[] = [
-        {
-          name: 'ROAS Temps Réel',
-          value: 3.2 + (Math.random() - 0.5) * 0.8,
-          change: (Math.random() - 0.5) * 20,
-          trend: Math.random() > 0.5 ? 'up' : 'down',
-          status: 'good',
-          target: 3.0,
-          unit: 'x',
-          icon: TrendingUp
-        },
-        {
-          name: 'CTR Live',
-          value: 2.1 + (Math.random() - 0.5) * 0.6,
-          change: (Math.random() - 0.5) * 15,
-          trend: Math.random() > 0.5 ? 'up' : 'down',
-          status: 'good',
-          target: 2.0,
-          unit: '%',
-          icon: Target
-        },
-        {
-          name: 'CPA Actuel',
-          value: 15.5 + (Math.random() - 0.5) * 8,
-          change: (Math.random() - 0.5) * 25,
-          trend: Math.random() > 0.5 ? 'down' : 'up',
-          status: 'warning',
-          target: 12.0,
-          unit: '€',
-          icon: BarChart3
-        },
-        {
-          name: 'Conversions/h',
-          value: Math.floor(8 + Math.random() * 12),
-          change: (Math.random() - 0.5) * 30,
-          trend: Math.random() > 0.5 ? 'up' : 'down',
-          status: 'good',
-          target: 10,
-          unit: '',
-          icon: CheckCircle2
-        },
-        {
-          name: 'Budget Remaining',
-          value: 67 + (Math.random() - 0.5) * 20,
-          change: -2.5,
-          trend: 'down',
-          status: 'info',
-          target: 50,
-          unit: '%',
-          icon: Zap
-        },
-        {
-          name: 'Audience Active',
-          value: Math.floor(1200 + Math.random() * 400),
-          change: (Math.random() - 0.5) * 40,
-          trend: Math.random() > 0.5 ? 'up' : 'down',
-          status: 'good',
-          target: 1000,
-          unit: '',
-          icon: Users
-        }
-      ]
-      setLiveMetrics(newMetrics)
-
-      // Update performance history
-      const now = new Date()
-      const newHistoryPoint = {
-        time: now.toLocaleTimeString(),
-        roas: newMetrics[0].value,
-        ctr: newMetrics[1].value,
-        cpa: newMetrics[2].value,
-        conversions: newMetrics[3].value,
-        timestamp: now.getTime()
-      }
-
-      setPerformanceHistory(prev => {
-        const updated = [...prev, newHistoryPoint]
-        // Keep only last 20 points
-        return updated.slice(-20)
-      })
-
-      // Generate alerts based on metrics
-      newMetrics.forEach(metric => {
-        if (metric.target && Math.abs(metric.value - metric.target) / metric.target > 0.2) {
-          const alert: PerformanceAlert = {
-            id: `alert-${Date.now()}-${Math.random()}`,
-            type: 'performance',
-            severity: Math.abs(metric.value - metric.target) / metric.target > 0.4 ? 'critical' : 'warning',
-            title: `${metric.name} hors cible`,
-            message: `${metric.name} est à ${metric.value.toFixed(2)}${metric.unit}, objectif: ${metric.target}${metric.unit}`,
-            metric: metric.name,
-            currentValue: metric.value,
-            threshold: metric.target,
-            trend: metric.trend,
-            timestamp: now,
-            acknowledged: false,
-            actionable: true
-          }
-
-          setAlerts(prev => {
-            // Avoid duplicate alerts
-            const exists = prev.some(a => a.metric === metric.name && !a.acknowledged)
-            if (!exists) {
-              return [alert, ...prev].slice(0, 10) // Keep only 10 most recent
-            }
-            return prev
-          })
-        }
-      })
-    }
-
-    if (isMonitoring) {
-      const interval = setInterval(updateMetrics, 3000) // Update every 3 seconds
-      updateMetrics() // Initial update
+    if (isLiveMode) {
+      const interval = setInterval(() => {
+        setCurrentTime(new Date())
+      }, 1000)
       return () => clearInterval(interval)
     }
-  }, [isMonitoring])
+  }, [isLiveMode])
 
-  const acknowledgeAlert = (alertId: string) => {
-    setAlerts(prev => prev.map(alert => 
-      alert.id === alertId ? { ...alert, acknowledged: true } : alert
-    ))
-    toast({
-      title: "Alerte acquittée",
-      description: "L'alerte a été marquée comme vue",
-    })
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(amount)
   }
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'critical': return 'destructive'
-      case 'warning': return 'default'
-      case 'info': return 'secondary'
-      default: return 'outline'
+  const getMetricIcon = (metricId: string) => {
+    switch (metricId) {
+      case 'impressions': return <Eye className="h-4 w-4" />
+      case 'clicks': return <MousePointer className="h-4 w-4" />
+      case 'conversions': return <ShoppingCart className="h-4 w-4" />
+      case 'revenue': return <DollarSign className="h-4 w-4" />
+      default: return <Activity className="h-4 w-4" />
     }
   }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'good': return 'text-green-600'
-      case 'warning': return 'text-yellow-600'
-      case 'critical': return 'text-red-600'
-      case 'info': return 'text-blue-600'
-      default: return 'text-muted-foreground'
-    }
-  }
-
-  const unacknowledgedAlerts = alerts.filter(a => !a.acknowledged)
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header with monitoring controls */}
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Tracker Performance Temps Réel
-          </h1>
-          <div className="flex items-center gap-2 mt-2">
-            <div className={`w-2 h-2 rounded-full ${isMonitoring ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
-            <span className="text-sm text-muted-foreground">
-              {isMonitoring ? 'Monitoring actif' : 'Monitoring en pause'}
-            </span>
-            {unacknowledgedAlerts.length > 0 && (
-              <>
-                <span>•</span>
-                <Bell className="h-4 w-4 text-red-500" />
-                <span className="text-sm text-red-600">{unacknowledgedAlerts.length} alertes</span>
-              </>
-            )}
-          </div>
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <Zap className="h-6 w-6 text-primary" />
+            Performance Temps Réel
+          </h2>
+          <p className="text-muted-foreground">
+            Suivi live de vos campagnes marketing • {currentTime.toLocaleTimeString()}
+          </p>
         </div>
-        <div className="flex gap-3">
-          <Button 
-            variant="outline" 
-            onClick={() => setIsMonitoring(!isMonitoring)}
-            className="gap-2"
-          >
-            {isMonitoring ? (
-              <>
-                <Pause className="h-4 w-4" />
-                Pause
-              </>
-            ) : (
-              <>
-                <Play className="h-4 w-4" />
-                Reprendre
-              </>
-            )}
-          </Button>
-          <Button variant="outline" className="gap-2">
-            <Settings className="h-4 w-4" />
-            Config Alertes
-          </Button>
-          <Button onClick={refreshData} className="gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Sync Données
+        
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Switch 
+              checked={isLiveMode} 
+              onCheckedChange={setIsLiveMode}
+              id="live-mode"
+            />
+            <label htmlFor="live-mode" className="text-sm font-medium">
+              Mode Live
+            </label>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Switch 
+              checked={alertsEnabled} 
+              onCheckedChange={setAlertsEnabled}
+              id="alerts"
+            />
+            <label htmlFor="alerts" className="text-sm font-medium">
+              <Bell className="h-4 w-4 inline mr-1" />
+              Alertes
+            </label>
+          </div>
+
+          <Button variant="outline" size="sm" className="gap-2">
+            <RefreshCw className={`h-4 w-4 ${isLiveMode ? 'animate-spin' : ''}`} />
+            Actualiser
           </Button>
         </div>
       </div>
 
-      {/* Critical Alerts Banner */}
-      {unacknowledgedAlerts.length > 0 && (
-        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-red-700 dark:text-red-400 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                Alertes Actives ({unacknowledgedAlerts.length})
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {mockMetrics.map((metric) => (
+          <Card key={metric.id} className="relative overflow-hidden">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {getMetricIcon(metric.id)}
+                  {metric.name}
+                </div>
+                {isLiveMode && <Activity className="h-3 w-3 text-green-500 animate-pulse" />}
               </CardTitle>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={() => unacknowledgedAlerts.forEach(a => acknowledgeAlert(a.id))}
-              >
-                Acquitter tout
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {unacknowledgedAlerts.slice(0, 3).map((alert) => (
-              <div key={alert.id} className="flex items-center justify-between p-3 bg-white/50 dark:bg-gray-900/50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Badge variant={getSeverityColor(alert.severity)}>
-                    {alert.severity}
-                  </Badge>
-                  <div>
-                    <p className="font-medium text-sm">{alert.title}</p>
-                    <p className="text-xs text-muted-foreground">{alert.message}</p>
-                  </div>
-                </div>
-                <Button size="sm" variant="ghost" onClick={() => acknowledgeAlert(alert.id)}>
-                  OK
-                </Button>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Real-time metrics grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {liveMetrics.map((metric, index) => {
-          const IconComponent = metric.icon
-          return (
-            <Card key={index} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <IconComponent className={`h-4 w-4 ${getStatusColor(metric.status)}`} />
-                    {metric.name}
-                  </CardTitle>
-                  {isMonitoring && (
-                    <Activity className="h-3 w-3 text-green-500 animate-pulse" />
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2">
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
                 <div className="flex items-baseline justify-between">
-                  <span className={`text-2xl font-bold ${getStatusColor(metric.status)}`}>
-                    {metric.unit === '€' && metric.unit}
-                    {metric.value.toFixed(metric.name.includes('Conversions') ? 0 : 1)}
-                    {metric.unit !== '€' && metric.unit}
-                  </span>
-                  <div className="flex items-center gap-1 text-sm">
-                    {metric.trend === 'up' ? (
-                      <TrendingUp className="h-3 w-3 text-green-600" />
-                    ) : metric.trend === 'down' ? (
-                      <TrendingDown className="h-3 w-3 text-red-600" />
-                    ) : null}
-                    <span className={metric.change > 0 ? 'text-green-600' : 'text-red-600'}>
-                      {metric.change > 0 ? '+' : ''}{metric.change.toFixed(1)}%
-                    </span>
+                  <span className="text-2xl font-bold">{metric.value}{metric.unit}</span>
+                  <div className={`flex items-center gap-1 text-sm ${
+                    metric.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {metric.changeType === 'increase' ? (
+                      <TrendingUp className="h-3 w-3" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3" />
+                    )}
+                    {Math.abs(metric.change)}%
                   </div>
                 </div>
                 
                 {metric.target && (
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span>Objectif: {metric.target}{metric.unit}</span>
-                      <span>{((metric.value / metric.target) * 100).toFixed(0)}%</span>
-                    </div>
-                    <Progress 
-                      value={Math.min((metric.value / metric.target) * 100, 100)} 
-                      className="h-1"
-                    />
+                  <div className="text-xs text-muted-foreground">
+                    Objectif: {metric.target}{metric.unit} • {((metric.value / metric.target) * 100).toFixed(0)}%
                   </div>
                 )}
-                
-                <p className="text-xs text-muted-foreground">
-                  Dernière mise à jour: {new Date().toLocaleTimeString()}
-                </p>
-              </CardContent>
-            </Card>
-          )
-        })}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Performance History Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Historique Performance Temps Réel
-          </CardTitle>
-          <CardDescription>
-            Evolution des métriques clés sur les dernières {performanceHistory.length * 3} secondes
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={performanceHistory}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" />
-              <YAxis />
-              <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="roas" 
-                stroke="hsl(var(--primary))" 
-                strokeWidth={2}
-                dot={false}
-                name="ROAS"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="ctr" 
-                stroke="#22c55e" 
-                strokeWidth={2}
-                dot={false}
-                name="CTR %"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="conversions" 
-                stroke="#8b5cf6" 
-                strokeWidth={2}
-                dot={false}
-                name="Conversions/h"
-              />
-              {liveMetrics[0]?.target && (
-                <ReferenceLine 
-                  y={liveMetrics[0].target} 
-                  stroke="#ef4444" 
-                  strokeDasharray="5 5"
-                  label="Objectif ROAS"
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Performance Live
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={mockRealTimeData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" />
+                <YAxis />
+                <Tooltip />
+                <Area 
+                  type="monotone" 
+                  dataKey="conversions" 
+                  stackId="1" 
+                  stroke="hsl(var(--primary))" 
+                  fill="hsl(var(--primary)/0.3)" 
                 />
-              )}
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
-      {/* Alert History */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Historique des Alertes
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {alerts.slice(0, 8).map((alert) => (
-              <div 
-                key={alert.id} 
-                className={`flex items-center justify-between p-3 rounded-lg border ${
-                  alert.acknowledged ? 'bg-muted/50 opacity-60' : 'bg-background'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Badge variant={getSeverityColor(alert.severity)}>
-                    {alert.severity}
-                  </Badge>
-                  <div>
-                    <p className="font-medium text-sm">{alert.title}</p>
-                    <p className="text-xs text-muted-foreground">{alert.message}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {alert.timestamp.toLocaleTimeString()}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {alert.acknowledged ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={() => acknowledgeAlert(alert.id)}
-                    >
-                      Acquitter
-                    </Button>
-                  )}
-                </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Revenus Temps Réel
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={mockRealTimeData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" />
+                <YAxis />
+                <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                <Line 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={3}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {alertsEnabled && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-yellow-800">
+              <Bell className="h-5 w-5" />
+              Alertes Actives
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm text-yellow-800">
+                <TrendingDown className="h-4 w-4" />
+                <span>CTR en baisse de 5% sur la campagne Google Ads depuis 1h</span>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

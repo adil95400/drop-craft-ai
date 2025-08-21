@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
 
 import { useRealMarketing } from '@/hooks/useRealMarketing'
-import { RealDataMarketingDashboard } from '@/components/marketing/RealDataMarketingDashboard'
+import { UnifiedMarketingHub } from '@/components/marketing/UnifiedMarketingHub'
 import { AIMarketingOptimizer } from '@/components/marketing/AIMarketingOptimizer'
 import { RealTimePerformanceTracker } from '@/components/marketing/RealTimePerformanceTracker'
 
@@ -178,7 +178,7 @@ export default function MarketingUltraPro() {
           </div>
         </div>
         
-        {activeView === 'dashboard' && <RealDataMarketingDashboard />}
+        {activeView === 'dashboard' && <UnifiedMarketingHub />}
         {activeView === 'optimizer' && <AIMarketingOptimizer />}
         {activeView === 'tracker' && <RealTimePerformanceTracker />}
       </div>
