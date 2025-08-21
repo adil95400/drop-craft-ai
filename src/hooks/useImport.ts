@@ -206,16 +206,31 @@ export const useImport = () => {
           // Map each header to product field with enhanced mapping
           headers.forEach((header, headerIndex) => {
             const field = mapping[header]
-            const value = row[headerIndex]?.trim()
+            let value = row[headerIndex]?.trim()
             
             if (field && value) {
-              // Handle numeric fields
-              if (['price', 'cost_price', 'compare_at_price', 'suggested_price', 'weight', 'length', 'width', 'height'].includes(field)) {
-                product[field] = parseFloat(value) || 0
+              // Handle numeric fields with validation and overflow protection
+              if (['price', 'cost_price', 'compare_at_price', 'suggested_price', 'weight', 'length', 'width', 'height', 'supplier_price', 'shipping_cost'].includes(field)) {
+                // Clean numeric value - replace comma with dot for European format
+                const cleanValue = value.replace(',', '.').replace(/[^\d.-]/g, '')
+                let numValue = parseFloat(cleanValue) || 0
+                
+                // Limit to reasonable ranges to prevent overflow (max 999999.99)
+                if (numValue > 999999.99) numValue = 999999.99
+                if (numValue < 0) numValue = 0
+                
+                product[field] = Math.round(numValue * 100) / 100 // Round to 2 decimals
               }
-              // Handle integer fields
+              // Handle integer fields with validation
               else if (['stock_quantity', 'min_order', 'max_order'].includes(field)) {
-                product[field] = parseInt(value) || 0
+                const cleanValue = value.replace(/[^\d]/g, '')
+                let intValue = parseInt(cleanValue) || 0
+                
+                // Limit to reasonable ranges (max 999999)
+                if (intValue > 999999) intValue = 999999
+                if (intValue < 0) intValue = 0
+                
+                product[field] = intValue
               }
               // Handle array fields (split by semicolon)
               else if (['image_urls', 'video_urls', 'seo_keywords', 'tags'].includes(field)) {
