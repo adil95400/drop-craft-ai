@@ -49,7 +49,7 @@ interface AnalyticsData {
 const AdvancedAnalytics = () => {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
     from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
     to: new Date()
   })
@@ -215,7 +215,7 @@ const AdvancedAnalytics = () => {
           
           <DatePickerWithRange
             date={dateRange}
-            onDateChange={setDateRange}
+            setDate={setDateRange}
           />
         </div>
       </div>
