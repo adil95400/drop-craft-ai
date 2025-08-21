@@ -45,7 +45,7 @@ serve(async (req) => {
       .from('product_imports')
       .insert({
         user_id: userId,
-        import_type: 'url_import',
+        import_type: 'url',
         source_name: 'URL Import',
         source_url: url,
         status: 'processing',
