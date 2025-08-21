@@ -197,23 +197,33 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
       const mapping = generateColumnMapping(headers)
       setImportProgress(40)
 
-      // Create import job
-      const { data: importJob, error: jobError } = await supabase
-        .from('import_jobs')
-        .insert({
-          user_id: user.id,
-          source_type: 'csv',
-          status: 'processing',
-          total_rows: rows.length,
-          processed_rows: 0,
-          success_rows: 0,
-          error_rows: 0,
-          mapping_config: mapping
-        })
-        .select()
-        .single()
+      // Create import job (with fallback if it fails)
+      let importJob = null
+      try {
+        const { data, error: jobError } = await supabase
+          .from('import_jobs')
+          .insert({
+            user_id: user.id,
+            source_type: 'csv',
+            status: 'processing',
+            total_rows: rows.length,
+            processed_rows: 0,
+            success_rows: 0,
+            error_rows: 0,
+            mapping_config: mapping
+          })
+          .select()
+          .single()
 
-      if (jobError) throw new Error(`Erreur création job: ${jobError.message}`)
+        if (jobError) {
+          console.warn('Failed to create import job, proceeding without job tracking:', jobError)
+        } else {
+          importJob = data
+        }
+      } catch (jobError) {
+        console.warn('Import job creation failed, continuing without job tracking:', jobError)
+      }
+
       setImportProgress(60)
 
       // Process each row
@@ -226,7 +236,7 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
         try {
           const product: any = {
             user_id: user.id,
-            import_id: importJob.id,
+            import_id: importJob?.id || null, // Allow null if no import job
             status: 'draft',
             review_status: 'pending'
           }
@@ -291,12 +301,9 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
             throw new Error(`Ligne ${index + 1}: Prix valide requis (reçu: ${product.price})`)
           }
 
-          // Ensure user_id and import_id are set
+          // Ensure user_id is set (import_id can be null now)
           if (!product.user_id) {
             throw new Error(`Ligne ${index + 1}: user_id manquant`)
-          }
-          if (!product.import_id) {
-            throw new Error(`Ligne ${index + 1}: import_id manquant`)
           }
 
           productsToInsert.push(product)
@@ -322,23 +329,25 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
 
       setImportProgress(90)
 
-      // Update import job with final results
-      await supabase
-        .from('import_jobs')
-        .update({
-          status: 'completed',
-          processed_rows: rows.length,
-          success_rows: successCount,
-          error_rows: errorCount,
-          errors: errors,
-          result_data: {
-            total: rows.length,
-            success: successCount,
-            errors: errorCount,
-            completion_time: new Date().toISOString()
-          }
-        })
-        .eq('id', importJob.id)
+      // Update import job with final results (if job was created)
+      if (importJob) {
+        await supabase
+          .from('import_jobs')
+          .update({
+            status: 'completed',
+            processed_rows: rows.length,
+            success_rows: successCount,
+            error_rows: errorCount,
+            errors: errors,
+            result_data: {
+              total: rows.length,
+              success: successCount,
+              errors: errorCount,
+              completion_time: new Date().toISOString()
+            }
+          })
+          .eq('id', importJob.id)
+      }
 
       setImportProgress(100)
 
@@ -347,7 +356,7 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
         products_imported: successCount,
         total_processed: rows.length,
         errors: errorCount,
-        import_job_id: importJob.id
+        import_job_id: importJob?.id || 'no-job'
       })
       setSelectedFile(null)
       

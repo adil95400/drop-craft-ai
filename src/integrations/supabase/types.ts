@@ -1121,7 +1121,7 @@ export type Database = {
             foreignKeyName: "imported_products_import_id_fkey"
             columns: ["import_id"]
             isOneToOne: false
-            referencedRelation: "product_imports"
+            referencedRelation: "import_jobs"
             referencedColumns: ["id"]
           },
         ]
