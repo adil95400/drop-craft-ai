@@ -14,6 +14,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 import { useRealMarketing } from '@/hooks/useRealMarketing'
 import { RealDataMarketingDashboard } from '@/components/marketing/RealDataMarketingDashboard'
+import { AIMarketingOptimizer } from '@/components/marketing/AIMarketingOptimizer'
+import { RealTimePerformanceTracker } from '@/components/marketing/RealTimePerformanceTracker'
 
 interface Campaign {
   id: string
@@ -110,6 +112,7 @@ const audienceSegments = [
 
 export default function MarketingUltraPro() {
   const [showRealDashboard, setShowRealDashboard] = useState(true)
+  const [activeView, setActiveView] = useState<'dashboard' | 'optimizer' | 'tracker'>('dashboard')
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([])
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -136,19 +139,48 @@ export default function MarketingUltraPro() {
               Marketing Ultra Pro
             </h1>
             <p className="text-muted-foreground mt-2">
-              Tableau de bord marketing en temps réel avec données Supabase
+              Suite marketing IA complète avec optimisation temps réel
             </p>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={() => setShowRealDashboard(false)}
-            className="gap-2"
-          >
-            <Bot className="h-4 w-4" />
-            Version Complète
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              variant={activeView === 'dashboard' ? 'default' : 'outline'}
+              onClick={() => setActiveView('dashboard')}
+              className="gap-2"
+            >
+              <BarChart3 className="h-4 w-4" />
+              Dashboard
+            </Button>
+            <Button 
+              variant={activeView === 'optimizer' ? 'default' : 'outline'}
+              onClick={() => setActiveView('optimizer')}
+              className="gap-2"
+            >
+              <Bot className="h-4 w-4" />
+              IA Optimizer
+            </Button>
+            <Button 
+              variant={activeView === 'tracker' ? 'default' : 'outline'}
+              onClick={() => setActiveView('tracker')}
+              className="gap-2"
+            >
+              <Zap className="h-4 w-4" />
+              Live Tracker
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowRealDashboard(false)}
+              className="gap-2"
+            >
+              <Target className="h-4 w-4" />
+              Version Classique
+            </Button>
+          </div>
         </div>
-        <RealDataMarketingDashboard />
+        
+        {activeView === 'dashboard' && <RealDataMarketingDashboard />}
+        {activeView === 'optimizer' && <AIMarketingOptimizer />}
+        {activeView === 'tracker' && <RealTimePerformanceTracker />}
       </div>
     )
   }
