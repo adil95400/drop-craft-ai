@@ -41,6 +41,8 @@ import { ConnectionManager } from "@/components/integrations/ConnectionManager"
 import { TemplateMarketplace } from "@/components/integrations/TemplateMarketplace"
 import { WorkflowBuilder } from "@/components/integrations/WorkflowBuilder"
 import { AdvancedFiltering } from "@/components/integrations/AdvancedFiltering"
+import { CompleteMarketplace } from "@/components/integrations/CompleteMarketplace"
+import { QuickSetup } from "@/components/integrations/QuickSetup"
 
 const Integrations = () => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -458,8 +460,12 @@ const Integrations = () => {
               <span className="text-xs font-medium">Connexions</span>
             </TabsTrigger>
             <TabsTrigger value="marketplace" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <ShoppingCart className="h-3 w-3" />
-              <span className="text-xs font-medium">Marketplace</span>
+              <Globe className="h-3 w-3" />
+              <span className="text-xs font-medium">Complet</span>
+            </TabsTrigger>
+            <TabsTrigger value="quick" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <Zap className="h-3 w-3" />
+              <span className="text-xs font-medium">Setup</span>
             </TabsTrigger>
           </TabsList>
 
@@ -504,97 +510,11 @@ const Integrations = () => {
           </TabsContent>
 
           <TabsContent value="marketplace" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <TemplateMarketplace />
-              <div className="space-y-6">
-                <WorkflowBuilder />
-                <AdvancedFiltering onFiltersChange={(filters) => console.log('Filters:', filters)} />
-              </div>
-            </div>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredIntegrations.map((integration, index) => (
-                <Card key={index} className="hover:shadow-lg transition-all duration-300 border-border/50">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={integration.logo} 
-                          alt={integration.name}
-                          className="w-10 h-10 object-contain"
-                        />
-                        <div>
-                          <CardTitle className="text-lg">{integration.name}</CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            {getCategoryIcon(integration.category)}
-                            <span className="text-xs text-muted-foreground">{integration.category}</span>
-                          </div>
-                        </div>
-                      </div>
-                      {getStatusBadge(integration.status)}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm mb-4">{integration.description}</p>
-                    
-                    <div className="space-y-3">
-                      <div>
-                        <Badge variant="outline" className="text-xs">
-                          {integration.popularity}
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-1">
-                        {integration.features.slice(0, 3).map((feature, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {feature}
-                          </Badge>
-                        ))}
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button 
-                              className="flex-1" 
-                              variant={integration.status === 'connected' ? 'outline' : 'default'}
-                              onClick={() => setSelectedIntegration(integration)}
-                            >
-                              {integration.status === 'connected' ? (
-                                <>
-                                  <Settings className="w-4 h-4 mr-2" />
-                                  Gérer
-                                </>
-                              ) : (
-                                <>
-                                  <Zap className="w-4 h-4 mr-2" />
-                                  Connecter
-                                </>
-                              )}
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                            <DialogHeader>
-                              <DialogTitle>
-                                {integration.status === 'connected' ? 'Gérer' : 'Connecter'} {integration.name}
-                              </DialogTitle>
-                            </DialogHeader>
-                            {selectedIntegration && (
-                              <IntegrationModal 
-                                integration={selectedIntegration}
-                                onConnect={handleConnect}
-                                onSync={handleSync}
-                                onTest={handleTest}
-                              />
-                            )}
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <CompleteMarketplace />
+          </TabsContent>
+
+          <TabsContent value="quick">
+            <QuickSetup />
           </TabsContent>
         </Tabs>
     </div>
