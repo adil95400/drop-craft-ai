@@ -114,7 +114,7 @@ export const ImportResults = () => {
           </div>
 
           <div className="space-y-4">
-            {filteredProducts.slice(0, 10).map((product) => (
+            {filteredProducts.map((product) => (
               <Card key={product.id}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
