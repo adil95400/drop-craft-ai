@@ -40,6 +40,10 @@ import {
   MarketingLazy,
   MarketingCreateLazy,
   MarketingUltraProLazy,
+  MarketingAnalyticsLazy,
+  MarketingAutomationLazy,
+  MarketingCalendarPageLazy,
+  ABTestingPageLazy,
   InventoryLazy,
   InventoryUltraProRealLazy,
   AutomationLazy,
@@ -473,6 +477,15 @@ const App = () => (
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <MarketingCreateLazy />
+                  </Suspense>
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/marketing-ultra-pro" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
+                    <MarketingUltraProLazy />
                   </Suspense>
                 </AppLayout>
               </AuthGuard>
