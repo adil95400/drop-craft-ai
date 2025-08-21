@@ -9,7 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useRealAutomation } from "@/hooks/useRealAutomation";
 import { AutomationConfigDialog } from "@/components/automation/AutomationConfigDialog";
 import { AutomationOptionsMenu } from "@/components/automation/AutomationOptionsMenu";
-import { NewAutomationDialog } from "@/components/automation/NewAutomationDialog";
+import { SmartDataProcessor } from "@/components/automation/SmartDataProcessor";
+import { IntelligentWorkflows } from "@/components/automation/IntelligentWorkflows";
+import { AIOptimizationEngine } from "@/components/automation/AIOptimizationEngine";
+import { RealtimeActivityFeed } from "@/components/automation/RealtimeActivityFeed";
 
 import { 
   Zap, 
@@ -188,9 +191,11 @@ const Automation = () => {
 
       {/* Main Content */}
       <Tabs defaultValue="automations" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="automations">Automations</TabsTrigger>
           <TabsTrigger value="workflows">Workflows</TabsTrigger>
+          <TabsTrigger value="ai-engine">IA Engine</TabsTrigger>
+          <TabsTrigger value="data-processor">Traitement</TabsTrigger>
           <TabsTrigger value="triggers">Déclencheurs</TabsTrigger>
         </TabsList>
 
@@ -266,139 +271,97 @@ const Automation = () => {
         </TabsContent>
 
         <TabsContent value="workflows" className="space-y-6">
-          <div className="grid gap-6">
-            {workflows.map((workflow, index) => (
-              <Card key={index} className="border-border bg-card shadow-card">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="p-2 rounded-lg bg-accent/10">
-                        <Workflow className="h-5 w-5 text-accent" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{workflow.name}</CardTitle>
-                        <CardDescription>
-                          {workflow.steps.length} étapes configurées
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Badge variant={workflow.active ? "default" : "secondary"}>
-                        {workflow.active ? "Actif" : "Inactif"}
-                      </Badge>
-                      <Switch checked={workflow.active} />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {workflow.steps.map((step, stepIndex) => (
-                      <Badge key={stepIndex} variant="outline">
-                        {stepIndex + 1}. {step}
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex justify-end space-x-2 mt-4">
-                    <Button variant="outline" size="sm" onClick={() => {
-                      toast({
-                        title: "Modification du workflow",
-                        description: "Ouverture de l'éditeur de workflow",
-                      });
-                    }}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Modifier
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => {
-                      toast({
-                        title: "Test en cours",
-                        description: "Le workflow est en cours de test...",
-                      });
-                    }}>
-                      Tester
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <IntelligentWorkflows />
+        </TabsContent>
+
+        <TabsContent value="ai-engine" className="space-y-6">
+          <AIOptimizationEngine />
+        </TabsContent>
+
+        <TabsContent value="data-processor" className="space-y-6">
+          <SmartDataProcessor />
         </TabsContent>
 
         <TabsContent value="triggers" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="border-border bg-card shadow-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  Déclencheurs Temporels
-                </CardTitle>
-                <CardDescription>Automations basées sur le temps</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-                  <div>
-                    <div className="font-medium">Quotidien</div>
-                    <div className="text-sm text-muted-foreground">5 automations</div>
-                  </div>
-                  <Switch checked />
-                </div>
-                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-                  <div>
-                    <div className="font-medium">Horaire</div>
-                    <div className="text-sm text-muted-foreground">3 automations</div>
-                  </div>
-                  <Switch checked />
-                </div>
-                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-                  <div>
-                    <div className="font-medium">Hebdomadaire</div>
-                    <div className="text-sm text-muted-foreground">2 automations</div>
-                  </div>
-                  <Switch />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border bg-card shadow-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-accent" />
-                  Déclencheurs d'Événements
-                </CardTitle>
-                <CardDescription>Automations basées sur les actions</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="border-border bg-card shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-primary" />
+                    Déclencheurs Temporels
+                  </CardTitle>
+                  <CardDescription>Automations basées sur le temps</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-3 border border-border rounded-lg">
                     <div>
-                      <div className="font-medium">Nouvelle commande</div>
-                      <div className="text-sm text-muted-foreground">4 automations</div>
+                      <div className="font-medium">Quotidien</div>
+                      <div className="text-sm text-muted-foreground">5 automations</div>
                     </div>
+                    <Switch checked />
                   </div>
-                  <Switch checked />
-                </div>
-                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center justify-between p-3 border border-border rounded-lg">
                     <div>
-                      <div className="font-medium">Abandon panier</div>
+                      <div className="font-medium">Horaire</div>
+                      <div className="text-sm text-muted-foreground">3 automations</div>
+                    </div>
+                    <Switch checked />
+                  </div>
+                  <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                    <div>
+                      <div className="font-medium">Hebdomadaire</div>
                       <div className="text-sm text-muted-foreground">2 automations</div>
                     </div>
+                    <Switch />
                   </div>
-                  <Switch checked />
-                </div>
-                <div className="flex items-center justify-between p-3 border border-border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <div className="font-medium">Produit populaire</div>
-                      <div className="text-sm text-muted-foreground">1 automation</div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border bg-card shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-accent" />
+                    Déclencheurs d'Événements
+                  </CardTitle>
+                  <CardDescription>Automations basées sur les actions</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <div className="font-medium">Nouvelle commande</div>
+                        <div className="text-sm text-muted-foreground">4 automations</div>
+                      </div>
                     </div>
+                    <Switch checked />
                   </div>
-                  <Switch />
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <div className="font-medium">Abandon panier</div>
+                        <div className="text-sm text-muted-foreground">2 automations</div>
+                      </div>
+                    </div>
+                    <Switch checked />
+                  </div>
+                  <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <div className="font-medium">Produit populaire</div>
+                        <div className="text-sm text-muted-foreground">1 automation</div>
+                      </div>
+                    </div>
+                    <Switch />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <RealtimeActivityFeed />
           </div>
         </TabsContent>
       </Tabs>
@@ -411,12 +374,6 @@ const Automation = () => {
           automation={selectedAutomation}
         />
       )}
-
-      {/* New Automation Dialog */}
-      <NewAutomationDialog
-        open={newAutomationDialogOpen}
-        onOpenChange={setNewAutomationDialogOpen}
-      />
     </div>
   );
 };
