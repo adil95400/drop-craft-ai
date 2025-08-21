@@ -41,7 +41,7 @@ export default function Import() {
 
     setLoading(true);
     try {
-      await importFromCsv(file);
+      await importFromCsv(file); // Updated: now expects just the file
       toast.success(`Successfully imported products from ${file.name}`);
     } catch (error) {
       toast.error('Failed to import CSV file');
