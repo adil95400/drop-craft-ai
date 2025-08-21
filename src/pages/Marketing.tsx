@@ -28,6 +28,11 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useRealMarketing } from "@/hooks/useRealMarketing";
+import { IntelligentCampaignBuilder } from "@/components/marketing/IntelligentCampaignBuilder";
+import { AutomatedMarketingSync } from "@/components/marketing/AutomatedMarketingSync";
+import { AdvancedAnalyticsDashboard } from "@/components/marketing/AdvancedAnalyticsDashboard";
+import { RealTimeMarketingHub } from "@/components/marketing/RealTimeMarketingHub";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Marketing = () => {
   const navigate = useNavigate();
@@ -161,6 +166,17 @@ const Marketing = () => {
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
+      {/* Navigation Tabs */}
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+          <TabsTrigger value="builder">Créateur IA</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="realtime">Temps Réel</TabsTrigger>
+          <TabsTrigger value="automation">Automation</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6 mt-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -532,6 +548,24 @@ const Marketing = () => {
           </Card>
         </div>
       </div>
+        </TabsContent>
+
+        <TabsContent value="builder" className="mt-6">
+          <IntelligentCampaignBuilder />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-6">
+          <AdvancedAnalyticsDashboard />
+        </TabsContent>
+
+        <TabsContent value="realtime" className="mt-6">
+          <RealTimeMarketingHub />
+        </TabsContent>
+
+        <TabsContent value="automation" className="mt-6">
+          <AutomatedMarketingSync />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
