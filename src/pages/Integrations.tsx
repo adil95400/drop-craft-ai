@@ -43,6 +43,8 @@ import { WorkflowBuilder } from "@/components/integrations/WorkflowBuilder"
 import { AdvancedFiltering } from "@/components/integrations/AdvancedFiltering"
 import { CompleteMarketplace } from "@/components/integrations/CompleteMarketplace"
 import { QuickSetup } from "@/components/integrations/QuickSetup"
+import { AdvancedMonitoring } from "@/components/integrations/AdvancedMonitoring"
+import { SecurityAudit } from "@/components/integrations/SecurityAudit"
 
 const Integrations = () => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -463,9 +465,17 @@ const Integrations = () => {
               <Globe className="h-3 w-3" />
               <span className="text-xs font-medium">Complet</span>
             </TabsTrigger>
-            <TabsTrigger value="quick" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <Zap className="h-3 w-3" />
+            <TabsTrigger value="setup" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <Plus className="h-3 w-3" />
               <span className="text-xs font-medium">Setup</span>
+            </TabsTrigger>
+            <TabsTrigger value="monitoring" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <Activity className="h-3 w-3" />
+              <span className="text-xs font-medium">Monitor+</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <Settings className="h-3 w-3" />
+              <span className="text-xs font-medium">Sécurité</span>
             </TabsTrigger>
           </TabsList>
 
@@ -513,8 +523,16 @@ const Integrations = () => {
             <CompleteMarketplace />
           </TabsContent>
 
-          <TabsContent value="quick">
+          <TabsContent value="setup">
             <QuickSetup />
+          </TabsContent>
+
+          <TabsContent value="monitoring">
+            <AdvancedMonitoring />
+          </TabsContent>
+
+          <TabsContent value="security">
+            <SecurityAudit />
           </TabsContent>
         </Tabs>
     </div>
