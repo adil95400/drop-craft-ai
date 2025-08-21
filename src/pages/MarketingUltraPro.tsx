@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
 
 import { useRealMarketing } from '@/hooks/useRealMarketing'
+import { RealDataMarketingDashboard } from '@/components/marketing/RealDataMarketingDashboard'
 
 interface Campaign {
   id: string
@@ -108,6 +109,7 @@ const audienceSegments = [
 ]
 
 export default function MarketingUltraPro() {
+  const [showRealDashboard, setShowRealDashboard] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([])
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -123,6 +125,33 @@ export default function MarketingUltraPro() {
 
   // Use real campaigns if available, otherwise fallback to mock data
   const campaignsToUse = realCampaigns.length > 0 ? realCampaigns : mockCampaigns
+  
+  // Show real dashboard if we have real data
+  if (showRealDashboard) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center p-6">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              Marketing Ultra Pro
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Tableau de bord marketing en temps réel avec données Supabase
+            </p>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowRealDashboard(false)}
+            className="gap-2"
+          >
+            <Bot className="h-4 w-4" />
+            Version Complète
+          </Button>
+        </div>
+        <RealDataMarketingDashboard />
+      </div>
+    )
+  }
   
   const totalStats = {
     totalBudget: campaignsToUse.reduce((sum, c) => sum + (c.budget || 0), 0),
