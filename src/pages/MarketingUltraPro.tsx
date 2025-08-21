@@ -6,6 +6,8 @@ import { AutomationWorkflows } from '@/components/marketing/AutomationWorkflows'
 import { MarketingCalendar } from '@/components/marketing/MarketingCalendar'
 import { ABTestManager } from '@/components/marketing/ABTestManager'
 import { CampaignsTable } from '@/components/marketing/CampaignsTable'
+import { MarketingPerformanceTracker } from '@/components/marketing/MarketingPerformanceTracker'
+import { LiveCampaignMonitor } from '@/components/marketing/LiveCampaignMonitor'
 import { 
   BarChart3, Zap, Calendar, Target, 
   TrendingUp, Users, MessageSquare, Mail
@@ -37,10 +39,18 @@ export default function MarketingUltraPro() {
         </div>
 
         <Tabs defaultValue="hub" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="hub" className="gap-2">
               <Target className="h-4 w-4" />
               Hub
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Performance
+            </TabsTrigger>
+            <TabsTrigger value="monitor" className="gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Live Monitor
             </TabsTrigger>
             <TabsTrigger value="analytics" className="gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -66,6 +76,14 @@ export default function MarketingUltraPro() {
 
           <TabsContent value="hub">
             <UnifiedMarketingHub />
+          </TabsContent>
+
+          <TabsContent value="performance">
+            <MarketingPerformanceTracker />
+          </TabsContent>
+
+          <TabsContent value="monitor">
+            <LiveCampaignMonitor />
           </TabsContent>
 
           <TabsContent value="analytics">
