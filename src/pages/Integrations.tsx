@@ -31,6 +31,9 @@ import { IntegrationsTable } from "@/components/integrations/IntegrationsTable"
 import { SyncLogsTable } from "@/components/integrations/SyncLogsTable"
 import { CreateIntegrationForm } from "@/components/integrations/CreateIntegrationForm"
 import { RealIntegrationsManager } from "@/components/integrations/RealIntegrationsManager"
+import { WebhookManager } from "@/components/integrations/WebhookManager"
+import { RealTimeMonitor } from "@/components/integrations/RealTimeMonitor"
+import { APIKeysManager } from "@/components/integrations/APIKeysManager"
 
 const Integrations = () => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -406,11 +409,14 @@ const Integrations = () => {
         </div>
 
         <Tabs defaultValue="real" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="real">Intégrations Réelles</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-8">
+            <TabsTrigger value="real">Réelles</TabsTrigger>
             <TabsTrigger value="manage">Gestion</TabsTrigger>
             <TabsTrigger value="create">Créer</TabsTrigger>
             <TabsTrigger value="logs">Logs</TabsTrigger>
+            <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
+            <TabsTrigger value="monitor">Monitoring</TabsTrigger>
+            <TabsTrigger value="api-keys">API Keys</TabsTrigger>
             <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
           </TabsList>
 
@@ -428,6 +434,18 @@ const Integrations = () => {
 
           <TabsContent value="logs" className="space-y-6">
             <SyncLogsTable />
+          </TabsContent>
+
+          <TabsContent value="webhooks" className="space-y-6">
+            <WebhookManager />
+          </TabsContent>
+
+          <TabsContent value="monitor" className="space-y-6">
+            <RealTimeMonitor />
+          </TabsContent>
+
+          <TabsContent value="api-keys" className="space-y-6">
+            <APIKeysManager />
           </TabsContent>
 
           <TabsContent value="marketplace" className="space-y-6">
