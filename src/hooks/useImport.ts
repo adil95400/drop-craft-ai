@@ -258,12 +258,22 @@ export const useImport = () => {
             }
           })
 
-          // Validate required fields
-          if (!product.name) {
-            throw new Error(`Ligne ${index + 1}: Nom du produit requis`)
+          // Validate required fields with better error handling
+          if (!product.name || product.name.length === 0) {
+            console.log(`Produit ligne ${index + 1}:`, { name: product.name, price: product.price, row })
+            throw new Error(`Ligne ${index + 1}: Nom du produit requis (reçu: "${product.name}")`)
           }
           if (!product.price || product.price <= 0) {
-            throw new Error(`Ligne ${index + 1}: Prix valide requis`)
+            console.log(`Prix invalide ligne ${index + 1}:`, { price: product.price, rawPrice: row[headers.indexOf('price')] })
+            throw new Error(`Ligne ${index + 1}: Prix valide requis (reçu: ${product.price})`)
+          }
+
+          // Ensure user_id and import_id are set
+          if (!product.user_id) {
+            throw new Error(`Ligne ${index + 1}: user_id manquant`)
+          }
+          if (!product.import_id) {
+            throw new Error(`Ligne ${index + 1}: import_id manquant`)
           }
 
           productsToInsert.push(product)
