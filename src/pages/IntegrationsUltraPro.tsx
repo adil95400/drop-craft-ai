@@ -612,7 +612,7 @@ const IntegrationsUltraPro = () => {
                               onTest={(int) => toast({ title: "Test IA", description: "Connexion testée avec succès" })}
                             />
                             {integration.status === 'connected' && (
-                              <IntegrationAnalytics integration={integration} />
+                              <IntegrationAnalytics />
                             )}
                           </div>
                         </DialogContent>

@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
@@ -145,9 +146,10 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <ModalContextProvider>
-        <TooltipProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <ModalContextProvider>
+          <TooltipProvider>
             <Toaster />
             <Sonner />
             <ModalProvider>
@@ -938,7 +940,8 @@ const App = () => (
           </TooltipProvider>
         </ModalContextProvider>
       </QueryClientProvider>
-    </ErrorBoundary>
+    </HelmetProvider>
+  </ErrorBoundary>
   )
 
 export default App;

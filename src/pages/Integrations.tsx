@@ -34,6 +34,9 @@ import { RealIntegrationsManager } from "@/components/integrations/RealIntegrati
 import { WebhookManager } from "@/components/integrations/WebhookManager"
 import { RealTimeMonitor } from "@/components/integrations/RealTimeMonitor"
 import { APIKeysManager } from "@/components/integrations/APIKeysManager"
+import { IntegrationHealthMonitor } from "@/components/integrations/IntegrationHealthMonitor"
+import { IntegrationAnalytics } from "@/components/integrations/IntegrationAnalytics"
+import { ConnectionManager } from "@/components/integrations/ConnectionManager"
 
 const Integrations = () => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -409,7 +412,7 @@ const Integrations = () => {
         </div>
 
         <Tabs defaultValue="real" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
             <TabsTrigger value="real">Réelles</TabsTrigger>
             <TabsTrigger value="manage">Gestion</TabsTrigger>
             <TabsTrigger value="create">Créer</TabsTrigger>
@@ -417,7 +420,9 @@ const Integrations = () => {
             <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
             <TabsTrigger value="monitor">Monitoring</TabsTrigger>
             <TabsTrigger value="api-keys">API Keys</TabsTrigger>
-            <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
+            <TabsTrigger value="health">Santé</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="connections">Connexions</TabsTrigger>
           </TabsList>
 
           <TabsContent value="real" className="space-y-6">
@@ -446,6 +451,18 @@ const Integrations = () => {
 
           <TabsContent value="api-keys" className="space-y-6">
             <APIKeysManager />
+          </TabsContent>
+
+          <TabsContent value="health" className="space-y-6">
+            <IntegrationHealthMonitor />
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <IntegrationAnalytics />
+          </TabsContent>
+
+          <TabsContent value="connections" className="space-y-6">
+            <ConnectionManager />
           </TabsContent>
 
           <TabsContent value="marketplace" className="space-y-6">
