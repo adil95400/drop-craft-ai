@@ -24,7 +24,7 @@ export const ImportURLInterface = () => {
   const [url, setUrl] = useState("");
   const { urlImport, isUrlImporting, importData } = useImport();
 
-  const handleImport = () => {
+  const handleImport = async () => {
     if (!url.trim()) {
       toast.error("Veuillez saisir une URL valide");
       return;
@@ -35,7 +35,12 @@ export const ImportURLInterface = () => {
       return;
     }
 
-    urlImport(url);
+    try {
+      await urlImport(url);
+    } catch (error: any) {
+      console.error('Import error:', error);
+      toast.error(`Erreur d'import: ${error.message || 'Une erreur est survenue'}`);
+    }
   };
 
   const handleAddToStore = (product: any) => {

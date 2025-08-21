@@ -26,18 +26,46 @@ serve(async (req) => {
   try {
     const { url, userId, options = {} }: URLImportRequest = await req.json();
     
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    // Validate inputs
+    if (!url || !userId) {
+      return new Response(JSON.stringify({ 
+        error: 'URL et ID utilisateur requis',
+        success: false 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
     
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase configuration')
+      return new Response(JSON.stringify({ 
+        error: 'Configuration serveur manquante',
+        success: false 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey)
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
     
     console.log(`Processing URL import: ${url} for user ${userId}`)
     
     // Validate URL
     if (!isValidURL(url)) {
-      throw new Error('URL invalide fournie')
+      return new Response(JSON.stringify({ 
+        error: 'URL invalide fournie',
+        success: false 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // Create import record
@@ -55,7 +83,14 @@ serve(async (req) => {
       .single()
 
     if (importError) {
-      throw new Error(`Failed to create import record: ${importError.message}`)
+      console.error('Import record creation error:', importError)
+      return new Response(JSON.stringify({ 
+        error: `Erreur lors de la création de l'import: ${importError.message}`,
+        success: false 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
     // Fetch and analyze URL content
