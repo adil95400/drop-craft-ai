@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AdvancedImportInterface } from '@/components/import/AdvancedImportInterface'
-import { EnhancedImportResults } from '@/components/import/EnhancedImportResults'
+import { ImportUltraProInterface } from '@/components/import/ImportUltraProInterface'
+import { AdvancedImportResults } from '@/components/import/AdvancedImportResults'
 import { ImportHistory } from '@/components/import/ImportHistory'
 import { ImportTemplates } from '@/components/import/ImportTemplates'
 import { AIImportUltraPro } from '@/components/import/AIImportUltraPro'
@@ -35,11 +35,11 @@ const ImportUltraPro = () => {
           </TabsList>
 
           <TabsContent value="import">
-            <AdvancedImportInterface />
+            <ImportUltraProInterface />
           </TabsContent>
 
           <TabsContent value="results">
-            <EnhancedImportResults />
+            <AdvancedImportResults />
           </TabsContent>
 
           <TabsContent value="ai">
