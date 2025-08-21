@@ -15,6 +15,12 @@ const planConfig = {
     variant: 'secondary' as const,
     className: 'text-gray-600 bg-gray-100'
   },
+  standard: {
+    label: 'Standard',
+    icon: Star,
+    variant: 'default' as const,
+    className: 'text-green-600 bg-green-100'
+  },
   pro: {
     label: 'Pro',
     icon: Star,

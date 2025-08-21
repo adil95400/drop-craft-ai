@@ -31,15 +31,17 @@ import {
   XCircle,
   AlertTriangle,
   ArrowUpDown,
-  MoreHorizontal
+  MoreHorizontal,
+  RefreshCw
 } from 'lucide-react';
 import { useImportUltraPro, type ImportedProduct } from '@/hooks/useImportUltraPro';
 import { BulkActionsPanel } from './BulkActionsPanel';
 import { ProductQuickEdit } from './ProductQuickEdit';
+import { ProductActions } from './ProductActions';
 import { ImportFilters } from './ImportFilters';
 
 export const AdvancedImportResults = () => {
-  const { importedProducts } = useImportUltraPro();
+  const { importedProducts, isLoadingProducts } = useImportUltraPro();
   
   // State for pagination, filtering, and selection
   const [currentPage, setCurrentPage] = useState(1);
@@ -268,8 +270,20 @@ export const AdvancedImportResults = () => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Produits Importés ({filteredAndSortedProducts.length})</span>
-            <div className="text-sm text-muted-foreground">
-              Page {currentPage} sur {totalPages}
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+                disabled={isLoadingProducts}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoadingProducts ? 'animate-spin' : ''}`} />
+                Actualiser
+              </Button>
+              <div className="text-sm text-muted-foreground">
+                Page {currentPage} sur {totalPages}
+              </div>
             </div>
           </CardTitle>
         </CardHeader>
@@ -310,7 +324,31 @@ export const AdvancedImportResults = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedProducts.map((product) => (
+              {isLoadingProducts ? (
+                <TableRow>
+                  <TableCell colSpan={11} className="text-center py-8">
+                    <div className="flex items-center justify-center gap-2">
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      Chargement des produits...
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : paginatedProducts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={11} className="text-center py-8">
+                    <div className="flex flex-col items-center gap-2">
+                      <AlertTriangle className="w-8 h-8 text-muted-foreground" />
+                      <p className="text-muted-foreground">
+                        {searchTerm || statusFilter !== 'all' || categoryFilter !== 'all' 
+                          ? 'Aucun produit ne correspond à vos critères de recherche'
+                          : 'Aucun produit importé trouvé'
+                        }
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedProducts.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell>
                     <Checkbox
@@ -354,19 +392,17 @@ export const AdvancedImportResults = () => {
                   <TableCell className="text-sm">
                     {product.created_at && new Date(product.created_at).toLocaleDateString('fr-FR')}
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => setEditingProduct(product)}>
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+                   <TableCell>
+                     <ProductActions
+                       product={product}
+                       onEdit={setEditingProduct}
+                       onRefresh={() => window.location.reload()}
+                     />
+                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
+               ))
+               )}
+             </TableBody>
           </Table>
 
           {/* Pagination */}

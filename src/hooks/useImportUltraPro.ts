@@ -77,9 +77,13 @@ export const useImportUltraPro = () => {
   const { data: importedProducts = [], isLoading: isLoadingProducts } = useQuery({
     queryKey: ['imported-products'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+      
       const { data, error } = await supabase
         .from('imported_products')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       
       if (error) throw error
@@ -91,9 +95,13 @@ export const useImportUltraPro = () => {
   const { data: scheduledImports = [], isLoading: isLoadingSchedules } = useQuery({
     queryKey: ['scheduled-imports'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+      
       const { data, error } = await supabase
         .from('scheduled_imports')
         .select('*')
+        .eq('user_id', user.id)
         .order('next_execution', { ascending: true })
       
       if (error) throw error
@@ -105,9 +113,13 @@ export const useImportUltraPro = () => {
   const { data: aiJobs = [], isLoading: isLoadingAI } = useQuery({
     queryKey: ['ai-optimization-jobs'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+      
       const { data, error } = await supabase
         .from('ai_optimization_jobs')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10)
       
