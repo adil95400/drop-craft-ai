@@ -1,3 +1,5 @@
+import { useAutoSync } from '@/hooks/useAutoSync'
+import { SyncStatusIndicator } from '@/components/sync/SyncStatusIndicator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ImportUltraProInterface } from '@/components/import/ImportUltraProInterface'
 import { AdvancedImportResults } from '@/components/import/AdvancedImportResults'
@@ -5,22 +7,34 @@ import { ImportHistory } from '@/components/import/ImportHistory'
 import { ImportTemplates } from '@/components/import/ImportTemplates'
 import { AIImportUltraPro } from '@/components/import/AIImportUltraPro'
 import { BulkImportUltraPro } from '@/components/import/BulkImportUltraPro'
-import { RealTimeMonitoring } from '@/components/import/RealTimeMonitoring'
+import { RealTimeImportMonitor } from '@/components/import/RealTimeImportMonitor'
 import { AdvancedMapping } from '@/components/import/AdvancedMapping'
 import { ImportAnalytics } from '@/components/import/ImportAnalytics'
 import { AutomationRules } from '@/components/import/AutomationRules'
 import { RequirePlan } from '@/components/plan/RequirePlan'
 
 const ImportUltraPro = () => {
+  const { enableAutoSync, isSyncing } = useAutoSync()
+  
   return (
     <RequirePlan minPlan="ultra_pro">
       <div className="container mx-auto p-6 space-y-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Import Ultra Pro</h1>
-          <p className="text-muted-foreground">
-            Plateforme d'import avancée avec mapping intelligent, optimisation IA et exportation multi-canaux
-          </p>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">Import Ultra Pro</h1>
+            <p className="text-muted-foreground mt-2">
+              Plateforme d'import avancée avec mapping intelligent, optimisation IA et synchronisation automatique
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <SyncStatusIndicator compact />
+            <div className="text-sm text-gray-500">
+              Sync auto {enableAutoSync ? 'activée' : 'désactivée'}
+            </div>
+          </div>
         </div>
+
+        <SyncStatusIndicator />
 
         <Tabs defaultValue="import" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
@@ -51,7 +65,7 @@ const ImportUltraPro = () => {
           </TabsContent>
 
           <TabsContent value="monitoring">
-            <RealTimeMonitoring />
+            <RealTimeImportMonitor />
           </TabsContent>
 
           <TabsContent value="mapping">

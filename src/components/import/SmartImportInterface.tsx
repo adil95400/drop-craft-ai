@@ -18,7 +18,7 @@ import {
   TrendingUp,
   Globe
 } from 'lucide-react'
-import { useImport } from '@/hooks/useImport'
+import { useImport } from '@/domains/commerce/hooks/useImport'
 import { ImportStatusCard } from './ImportStatusCard'
 import { ImportResultsPro } from './ImportResultsPro'
 import { toast } from 'sonner'
@@ -33,8 +33,9 @@ export const SmartImportInterface = () => {
     priceOptimization: true
   })
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [importResult, setImportResult] = useState(null)
   
-  const { urlImport, isUrlImporting, importData } = useImport()
+  const { importFromUrl, isImportingUrl, jobs } = useImport()
 
   const handleSmartImport = useCallback(async () => {
     if (!url.trim()) {
@@ -48,13 +49,14 @@ export const SmartImportInterface = () => {
     }
 
     try {
-      await urlImport(url)
+      const result = await importFromUrl({ url, config: { options: aiOptions } })
+      setImportResult(result)
       toast.success("Import intelligent lancé avec succès !")
     } catch (error: any) {
       console.error('Smart import error:', error)
       toast.error(`Erreur d'import: ${error.message || 'Une erreur est survenue'}`)
     }
-  }, [url, urlImport])
+  }, [url, importFromUrl, aiOptions])
 
   const handleAiOptionChange = (option: string, value: boolean) => {
     setAiOptions(prev => ({
@@ -63,21 +65,21 @@ export const SmartImportInterface = () => {
     }))
   }
 
-  if (importData && importData.success) {
+  if (importResult && importResult.success) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold">Résultats de l'Import</h2>
           <Button 
             variant="outline" 
-            onClick={() => window.location.reload()}
+            onClick={() => setImportResult(null)}
             size="sm"
           >
             ← Nouvel Import
           </Button>
         </div>
         <ImportResultsPro
-          result={importData}
+          result={importResult}
           onAddToStore={(product) => toast.success(`${product.name} ajouté !`)}
           onOptimizeProduct={(product) => toast.success(`Optimisation IA pour ${product.name}`)}
           onViewDetails={(product) => toast.info(`Détails: ${product.name}`)}
@@ -155,7 +157,7 @@ export const SmartImportInterface = () => {
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     className="pl-10 text-lg py-4 border-2 focus:border-purple-300"
-                    disabled={isUrlImporting}
+                  disabled={isImportingUrl}
                   />
                 </div>
                 <div className="text-sm text-gray-500 flex items-center gap-2">
@@ -166,7 +168,7 @@ export const SmartImportInterface = () => {
 
               <Button 
                 onClick={handleSmartImport} 
-                disabled={isUrlImporting || !url.trim()}
+                disabled={isImportingUrl || !url.trim()}
                 className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 py-4 text-lg font-semibold shadow-lg"
                 size="lg"
               >
@@ -184,7 +186,7 @@ export const SmartImportInterface = () => {
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   className="text-lg py-3"
-                  disabled={isUrlImporting}
+                  disabled={isImportingUrl}
                 />
               </div>
 
@@ -259,7 +261,7 @@ export const SmartImportInterface = () => {
 
               <Button 
                 onClick={handleSmartImport} 
-                disabled={isUrlImporting || !url.trim()}
+                disabled={isImportingUrl || !url.trim()}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 py-4 text-lg font-semibold"
                 size="lg"
               >
@@ -272,7 +274,7 @@ export const SmartImportInterface = () => {
       </Card>
 
       {/* Status d'import */}
-      {isUrlImporting && (
+      {isImportingUrl && (
         <ImportStatusCard
           status="processing"
           progress={75}

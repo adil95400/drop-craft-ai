@@ -24,12 +24,48 @@ serve(async (req) => {
   }
 
   try {
-    const { url, userId, options = {} }: URLImportRequest = await req.json();
+    const requestBody = await req.json();
+    const { url, userId = requestBody.user_id, options = {} } = requestBody;
     
+    // Get user from auth header if userId not provided
+    if (!userId) {
+      const authHeader = req.headers.get('authorization');
+      if (!authHeader) {
+        return new Response(JSON.stringify({ 
+          error: 'Authorization header required',
+          success: false 
+        }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      const supabaseAuth = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_ANON_KEY')!
+      );
+      
+      const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(
+        authHeader.replace('Bearer ', '')
+      );
+      
+      if (authError || !user) {
+        return new Response(JSON.stringify({ 
+          error: 'Invalid or expired token',
+          success: false 
+        }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      requestBody.userId = user.id;
+    }
+
     // Validate inputs
-    if (!url || !userId) {
+    if (!url || !requestBody.userId) {
       return new Response(JSON.stringify({ 
-        error: 'URL et ID utilisateur requis',
+        error: 'URL et authentification requis',
         success: false 
       }), {
         status: 400,
@@ -72,7 +108,7 @@ serve(async (req) => {
     const { data: importRecord, error: importError } = await supabase
       .from('product_imports')
       .insert({
-        user_id: userId,
+        user_id: requestBody.userId,
         import_type: 'url',
         source_name: 'URL Import',
         source_url: url,
@@ -112,7 +148,7 @@ serve(async (req) => {
       // Save extracted products
       if (products.length > 0) {
         const importedProducts = products.map(product => ({
-          user_id: userId,
+          user_id: requestBody.userId,
           import_id: importRecord.id,
           name: product.title || 'Produit importé depuis URL',
           description: product.description || `Produit importé depuis ${url}`,
@@ -157,7 +193,7 @@ serve(async (req) => {
       await supabase
         .from('activity_logs')
         .insert({
-          user_id: userId,
+          user_id: requestBody.userId,
           action: 'url_import',
           description: `Imported ${products.length} products from URL`,
           entity_type: 'import',

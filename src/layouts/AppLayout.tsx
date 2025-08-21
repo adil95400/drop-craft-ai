@@ -9,6 +9,8 @@ import { AdminPlanSwitcher } from "@/components/admin/AdminPlanSwitcher";
 import { RoleBadge } from "@/components/ui/role-badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { GlobalSyncProvider } from "@/components/layout/GlobalSyncProvider";
+import { SyncStatusIndicator } from "@/components/sync/SyncStatusIndicator";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -24,6 +26,7 @@ const AppHeader = ({ showTrigger = false }: { showTrigger?: boolean }) => {
         {showTrigger && <SidebarTrigger className="mr-auto" aria-label="Toggle navigation menu" />}
         <div className="flex items-center gap-3 ml-auto">
           {profile && <RoleBadge role={profile.role} />}
+          <SyncStatusIndicator compact />
           <RealTimeNotifications />
           <AdminUserDropdown />
         </div>
@@ -36,7 +39,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isMobile = useIsMobile();
 
   return (
-    <SidebarProvider defaultOpen={!isMobile}>
+    <GlobalSyncProvider>
+      <SidebarProvider defaultOpen={!isMobile}>
       <div className="min-h-screen w-full bg-background">
         {/* Desktop Grid Layout */}
         <div className="hidden md:grid md:grid-cols-[280px_1fr] min-h-screen">
@@ -114,5 +118,6 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Integrated Chat Support - Available on all pages */}
       <IntegratedChatSupport />
     </SidebarProvider>
+    </GlobalSyncProvider>
   );
 }
