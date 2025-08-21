@@ -23,6 +23,7 @@ export const TrackingUltraProLazy = lazy(() => import('@/pages/TrackingUltraPro'
 export const SEOLazy = lazy(() => import('@/pages/SEO'));
 export const SEOUltraProLazy = lazy(() => import('@/pages/SEOUltraPro'));
 export const MarketingLazy = lazy(() => import('@/pages/Marketing'));
+export const MarketingCreateLazy = lazy(() => import('@/pages/MarketingCreate'));
 export const MarketingUltraProLazy = lazy(() => import('@/pages/MarketingUltraPro'));
 export const InventoryLazy = lazy(() => import('@/pages/Inventory'));
 export const InventoryUltraProRealLazy = lazy(() => import('@/pages/InventoryUltraProReal'));

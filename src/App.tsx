@@ -38,6 +38,7 @@ import {
   SEOLazy,
   SEOUltraProLazy,
   MarketingLazy,
+  MarketingCreateLazy,
   MarketingUltraProLazy,
   InventoryLazy,
   InventoryUltraProRealLazy,
@@ -459,6 +460,15 @@ const App = () => (
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <MarketingLazy />
+                  </Suspense>
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/marketing/create" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
+                    <MarketingCreateLazy />
                   </Suspense>
                 </AppLayout>
               </AuthGuard>
