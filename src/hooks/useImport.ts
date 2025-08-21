@@ -58,7 +58,7 @@ const generateColumnMapping = (headers: string[]): Record<string, string> => {
     // Images and media
     image_url: ['image', 'photo', 'picture', 'img', 'main_image_url'],
     image_urls: ['images', 'image_urls', 'additional_image_urls', 'photos'],
-    video_url: ['video_url', 'video', 'vid'],
+    video_urls: ['video_url', 'video_urls', 'video', 'vid'],
     
     // SEO and marketing
     seo_title: ['seo_title', 'titre_seo', 'meta_title'],
@@ -246,6 +246,11 @@ export const useImport = () => {
                 const additionalImages = value.split(';').map(item => item.trim()).filter(Boolean)
                 if (!product.image_urls) product.image_urls = []
                 product.image_urls.push(...additionalImages)
+              }
+              // Handle video URL mapping (singular to plural)
+              else if (header.toLowerCase().includes('video_url') && !header.toLowerCase().includes('video_urls')) {
+                if (!product.video_urls) product.video_urls = []
+                product.video_urls.push(value)
               }
               // Handle boolean fields
               else if (['ai_optimized'].includes(field)) {
