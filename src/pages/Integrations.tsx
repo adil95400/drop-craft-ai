@@ -38,6 +38,9 @@ import { APIKeysManager } from "@/components/integrations/APIKeysManager"
 import { IntegrationHealthMonitor } from "@/components/integrations/IntegrationHealthMonitor"
 import { IntegrationAnalytics } from "@/components/integrations/IntegrationAnalytics"
 import { ConnectionManager } from "@/components/integrations/ConnectionManager"
+import { TemplateMarketplace } from "@/components/integrations/TemplateMarketplace"
+import { WorkflowBuilder } from "@/components/integrations/WorkflowBuilder"
+import { AdvancedFiltering } from "@/components/integrations/AdvancedFiltering"
 
 const Integrations = () => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -454,6 +457,10 @@ const Integrations = () => {
               <Globe className="h-3 w-3" />
               <span className="text-xs font-medium">Connexions</span>
             </TabsTrigger>
+            <TabsTrigger value="marketplace" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <ShoppingCart className="h-3 w-3" />
+              <span className="text-xs font-medium">Marketplace</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="real" className="space-y-6">
@@ -497,6 +504,14 @@ const Integrations = () => {
           </TabsContent>
 
           <TabsContent value="marketplace" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <TemplateMarketplace />
+              <div className="space-y-6">
+                <WorkflowBuilder />
+                <AdvancedFiltering onFiltersChange={(filters) => console.log('Filters:', filters)} />
+              </div>
+            </div>
+            
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredIntegrations.map((integration, index) => (
                 <Card key={index} className="hover:shadow-lg transition-all duration-300 border-border/50">
@@ -586,4 +601,4 @@ const Integrations = () => {
   )
 }
 
-export default Integrations;
+export default Integrations
