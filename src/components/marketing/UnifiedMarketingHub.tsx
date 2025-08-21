@@ -20,6 +20,10 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { useRealTimeMarketing } from '@/hooks/useRealTimeMarketing'
 import { MarketingDataSync } from './MarketingDataSync'
+import { CreateCampaignModal } from './CreateCampaignModal'
+import { CreateSegmentModal } from './CreateSegmentModal'
+import { CreateContactModal } from './CreateContactModal'
+import { CampaignsTable } from './CampaignsTable'
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))']
 
@@ -36,6 +40,9 @@ export function UnifiedMarketingHub() {
   } = useRealTimeMarketing()
 
   const [selectedTab, setSelectedTab] = useState('overview')
+  const [showCreateCampaign, setShowCreateCampaign] = useState(false)
+  const [showCreateSegment, setShowCreateSegment] = useState(false)
+  const [showCreateContact, setShowCreateContact] = useState(false)
 
   // Generate performance data from real campaigns
   const performanceData = campaigns.slice(0, 6).map((campaign, index) => {
@@ -115,6 +122,10 @@ export function UnifiedMarketingHub() {
           <Button onClick={refreshData} variant="outline" size="sm" className="gap-2">
             <RefreshCw className="h-4 w-4" />
             Actualiser
+          </Button>
+          <Button onClick={() => setShowCreateCampaign(true)} size="sm" className="gap-2">
+            <Target className="h-4 w-4" />
+            Nouvelle Campagne
           </Button>
         </div>
       </div>
@@ -281,46 +292,32 @@ export function UnifiedMarketingHub() {
         <TabsContent value="campaigns" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Campagnes en Cours
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Campagnes Marketing
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={() => setShowCreateSegment(true)} variant="outline" size="sm" className="gap-2">
+                    <Users className="h-4 w-4" />
+                    Nouveau Segment
+                  </Button>
+                  <Button onClick={() => setShowCreateContact(true)} variant="outline" size="sm" className="gap-2">
+                    <Users className="h-4 w-4" />
+                    Nouveau Contact
+                  </Button>
+                  <Button onClick={() => setShowCreateCampaign(true)} size="sm" className="gap-2">
+                    <Target className="h-4 w-4" />
+                    Nouvelle Campagne
+                  </Button>
+                </div>
               </CardTitle>
               <CardDescription>
-                Gestion et suivi de vos campagnes marketing
+                Gestion complète de vos campagnes marketing avec données temps réel
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {campaigns.map((campaign) => (
-                  <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <h4 className="font-medium">{campaign.name}</h4>
-                        <Badge className={getStatusColor(campaign.status)}>
-                          {campaign.status}
-                        </Badge>
-                        <Badge variant="outline">{campaign.type}</Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {campaign.description}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium">
-                        {formatCurrency(campaign.budget_spent || 0)} / {formatCurrency(campaign.budget_total || 0)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Démarré: {new Date(campaign.started_at || campaign.created_at).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {campaigns.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    Aucune campagne trouvée
-                  </div>
-                )}
-              </div>
+              <CampaignsTable />
             </CardContent>
           </Card>
         </TabsContent>
@@ -430,6 +427,20 @@ export function UnifiedMarketingHub() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Modales */}
+      <CreateCampaignModal 
+        isOpen={showCreateCampaign} 
+        onClose={() => setShowCreateCampaign(false)} 
+      />
+      <CreateSegmentModal 
+        isOpen={showCreateSegment} 
+        onClose={() => setShowCreateSegment(false)} 
+      />
+      <CreateContactModal 
+        isOpen={showCreateContact} 
+        onClose={() => setShowCreateContact(false)} 
+      />
     </div>
   )
 }
