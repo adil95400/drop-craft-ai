@@ -132,6 +132,10 @@ import AutomationUltraProOptimized from './pages/AutomationUltraProOptimized';
 import SEOUltraProOptimized from './pages/SEOUltraProOptimized';
 import MarketingUltraProOptimized from './pages/MarketingUltraProOptimized';
 import ReviewsUltraProOptimized from './pages/ReviewsUltraProOptimized';
+import MarketingAnalytics from './pages/MarketingAnalytics';
+import MarketingAutomation from './pages/MarketingAutomation';
+import MarketingCalendarPage from './pages/MarketingCalendarPage';
+import ABTestingPage from './pages/ABTestingPage';
 
 const queryClient = new QueryClient();
 
@@ -446,7 +450,7 @@ const App = () => (
                 </AppLayout>
               </AuthGuard>
             } />
-            <Route path="/seo-ultra-pro" element={
+            <Route path="/seo/ultra-pro" element={
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
@@ -473,12 +477,31 @@ const App = () => (
                 </AppLayout>
               </AuthGuard>
             } />
-            <Route path="/marketing-ultra-pro" element={
+            <Route path="/marketing/analytics" element={
               <AuthGuard requireRole="user">
                 <AppLayout>
-                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
-                    <MarketingUltraProLazy />
-                  </Suspense>
+                  <MarketingAnalytics />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/marketing/automation" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <MarketingAutomation />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/marketing/calendar" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <MarketingCalendarPage />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/marketing/ab-testing" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <ABTestingPage />
                 </AppLayout>
               </AuthGuard>
             } />
