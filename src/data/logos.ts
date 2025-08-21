@@ -1,7 +1,7 @@
 export type LogoKey =
   | "shopify" | "woocommerce" | "bigbuy" | "aliexpress" | "amazon" | "canva"
   | "paypal" | "stripe" | "tiktok-shop" | "ebay" | "cdiscount" | "meta-ads"
-  | "google-ads" | "klaviyo" | "zapier";
+  | "google-ads" | "klaviyo" | "zapier" | "prestashop" | "tiktok" | "facebook" | "instagram";
 
 export const LOGOS: Record<LogoKey, { src: string; alt: string; cdn?: string }> = {
   shopify: { src: "/logos/shopify.svg", alt: "Shopify", cdn: "https://cdn.simpleicons.org/shopify" },
@@ -19,4 +19,8 @@ export const LOGOS: Record<LogoKey, { src: string; alt: string; cdn?: string }> 
   "google-ads": { src: "/logos/google-ads.svg", alt: "Google Ads", cdn: "https://cdn.simpleicons.org/googleads" },
   klaviyo: { src: "/logos/klaviyo.svg", alt: "Klaviyo", cdn: "https://cdn.simpleicons.org/klaviyo" },
   zapier: { src: "/logos/zapier.svg", alt: "Zapier", cdn: "https://cdn.simpleicons.org/zapier" },
+  prestashop: { src: "/logos/prestashop.svg", alt: "PrestaShop", cdn: "https://cdn.simpleicons.org/prestashop" },
+  tiktok: { src: "/logos/tiktok.svg", alt: "TikTok", cdn: "https://cdn.simpleicons.org/tiktok" },
+  facebook: { src: "/logos/facebook.svg", alt: "Facebook", cdn: "https://cdn.simpleicons.org/facebook" },
+  instagram: { src: "/logos/instagram.svg", alt: "Instagram", cdn: "https://cdn.simpleicons.org/instagram" },
 };

@@ -260,9 +260,9 @@ const HomeNew = () => {
           <LogoCloud
             title="Partenaires et intégrations"
             items={[
-              "shopify", "woocommerce", "bigbuy", "aliexpress", "amazon",
-              "canva", "paypal", "stripe", "tiktok-shop", "ebay", "cdiscount", 
-              "zapier", "meta-ads", "google-ads", "klaviyo"
+              "shopify", "woocommerce", "prestashop", "aliexpress", "amazon",
+              "stripe", "paypal", "ebay", "cdiscount", 
+              "zapier", "meta-ads", "google-ads", "klaviyo", "tiktok", "facebook", "instagram"
             ]}
           />
         </div>
