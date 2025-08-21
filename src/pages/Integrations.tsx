@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
 import { 
   Search,
   Plus,
@@ -28,6 +27,10 @@ import {
 import { useRealIntegrations } from "@/hooks/useRealIntegrations"
 import { useToast } from "@/hooks/use-toast"
 import { IntegrationModal } from "@/components/integrations/IntegrationModal"
+import { IntegrationsTable } from "@/components/integrations/IntegrationsTable"
+import { SyncLogsTable } from "@/components/integrations/SyncLogsTable"
+import { CreateIntegrationForm } from "@/components/integrations/CreateIntegrationForm"
+import { RealIntegrationsManager } from "@/components/integrations/RealIntegrationsManager"
 
 const Integrations = () => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -402,17 +405,32 @@ const Integrations = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="all" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="all">Toutes ({getAllIntegrations().length})</TabsTrigger>
-            <TabsTrigger value="ecommerce">E-commerce ({ecommerceIntegrations.length})</TabsTrigger>
-            <TabsTrigger value="suppliers">Fournisseurs ({supplierIntegrations.length})</TabsTrigger>
-            <TabsTrigger value="marketing">Marketing ({marketingIntegrations.length})</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics ({analyticsIntegrations.length})</TabsTrigger>
-            <TabsTrigger value="payments">Paiements ({paymentIntegrations.length})</TabsTrigger>
+        <Tabs defaultValue="real" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="real">Intégrations Réelles</TabsTrigger>
+            <TabsTrigger value="manage">Gestion</TabsTrigger>
+            <TabsTrigger value="create">Créer</TabsTrigger>
+            <TabsTrigger value="logs">Logs</TabsTrigger>
+            <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="all" className="space-y-6">
+          <TabsContent value="real" className="space-y-6">
+            <RealIntegrationsManager />
+          </TabsContent>
+
+          <TabsContent value="manage" className="space-y-6">
+            <IntegrationsTable />
+          </TabsContent>
+
+          <TabsContent value="create" className="space-y-6">
+            <CreateIntegrationForm />
+          </TabsContent>
+
+          <TabsContent value="logs" className="space-y-6">
+            <SyncLogsTable />
+          </TabsContent>
+
+          <TabsContent value="marketplace" className="space-y-6">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredIntegrations.map((integration, index) => (
                 <Card key={index} className="hover:shadow-lg transition-all duration-300 border-border/50">
@@ -464,7 +482,7 @@ const Integrations = () => {
                               {integration.status === 'connected' ? (
                                 <>
                                   <Settings className="w-4 h-4 mr-2" />
-                                  Configurer
+                                  Gérer
                                 </>
                               ) : (
                                 <>
@@ -474,275 +492,23 @@ const Integrations = () => {
                               )}
                             </Button>
                           </DialogTrigger>
-                          <DialogContent>
+                          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle>
-                                {integration.status === 'connected' ? 'Configurer' : 'Connecter'} {integration.name}
+                                {integration.status === 'connected' ? 'Gérer' : 'Connecter'} {integration.name}
                               </DialogTitle>
                             </DialogHeader>
-                            <IntegrationModal 
-                              integration={integration} 
-                              onConnect={handleConnect}
-                              onSync={handleSync}
-                              onTest={handleTest}
-                            />
+                            {selectedIntegration && (
+                              <IntegrationModal 
+                                integration={selectedIntegration}
+                                onConnect={handleConnect}
+                                onSync={handleSync}
+                                onTest={handleTest}
+                              />
+                            )}
                           </DialogContent>
                         </Dialog>
-                        {integration.status === 'connected' && (
-                          <Button 
-                            variant="outline" 
-                            size="icon"
-                            onClick={() => handleSync(integration)}
-                          >
-                            <RotateCw className="w-4 h-4" />
-                          </Button>
-                        )}
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="ecommerce">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {ecommerceIntegrations.map((integration, index) => (
-                <Card key={index} className="hover:shadow-lg transition-all duration-300 border-border/50">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={integration.logo} 
-                          alt={integration.name}
-                          className="w-10 h-10 object-contain"
-                        />
-                        <div>
-                          <CardTitle className="text-lg">{integration.name}</CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            <ShoppingCart className="w-3 h-3" />
-                            <span className="text-xs text-muted-foreground">E-commerce</span>
-                          </div>
-                        </div>
-                      </div>
-                      {getStatusBadge(integration.status)}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm mb-4">{integration.description}</p>
-                    <div className="space-y-3">
-                      <Badge variant="outline" className="text-xs">
-                        {integration.popularity}
-                      </Badge>
-                      <div className="flex flex-wrap gap-1">
-                        {integration.features.map((feature, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {feature}
-                          </Badge>
-                        ))}
-                      </div>
-                      <Button 
-                        className="w-full" 
-                        variant={integration.status === 'connected' ? 'outline' : 'default'}
-                      >
-                        {integration.status === 'connected' ? 'Gérer' : 'Connecter'}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="suppliers">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {supplierIntegrations.map((integration, index) => (
-                <Card key={index} className="hover:shadow-lg transition-all duration-300 border-border/50">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={integration.logo} 
-                          alt={integration.name}
-                          className="w-10 h-10 object-contain"
-                        />
-                        <div>
-                          <CardTitle className="text-lg">{integration.name}</CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Truck className="w-3 h-3" />
-                            <span className="text-xs text-muted-foreground">Fournisseur</span>
-                          </div>
-                        </div>
-                      </div>
-                      {getStatusBadge(integration.status)}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm mb-4">{integration.description}</p>
-                    <div className="space-y-3">
-                      <Badge variant="outline" className="text-xs">
-                        {integration.popularity}
-                      </Badge>
-                      <div className="flex flex-wrap gap-1">
-                        {integration.features.map((feature, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {feature}
-                          </Badge>
-                        ))}
-                      </div>
-                      <Button 
-                        className="w-full" 
-                        variant={integration.status === 'connected' ? 'outline' : 'default'}
-                      >
-                        {integration.status === 'connected' ? 'Gérer' : 'Connecter'}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="marketing">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {marketingIntegrations.map((integration, index) => (
-                <Card key={index} className="hover:shadow-lg transition-all duration-300 border-border/50">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={integration.logo} 
-                          alt={integration.name}
-                          className="w-10 h-10 object-contain"
-                        />
-                        <div>
-                          <CardTitle className="text-lg">{integration.name}</CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            <BarChart3 className="w-3 h-3" />
-                            <span className="text-xs text-muted-foreground">Marketing</span>
-                          </div>
-                        </div>
-                      </div>
-                      {getStatusBadge(integration.status)}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm mb-4">{integration.description}</p>
-                    <div className="space-y-3">
-                      <Badge variant="outline" className="text-xs">
-                        {integration.popularity}
-                      </Badge>
-                      <div className="flex flex-wrap gap-1">
-                        {integration.features.map((feature, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {feature}
-                          </Badge>
-                        ))}
-                      </div>
-                      <Button 
-                        className="w-full" 
-                        variant={integration.status === 'connected' ? 'outline' : 'default'}
-                      >
-                        {integration.status === 'connected' ? 'Gérer' : 'Connecter'}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {analyticsIntegrations.map((integration, index) => (
-                <Card key={index} className="hover:shadow-lg transition-all duration-300 border-border/50">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={integration.logo} 
-                          alt={integration.name}
-                          className="w-10 h-10 object-contain"
-                        />
-                        <div>
-                          <CardTitle className="text-lg">{integration.name}</CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            <BarChart3 className="w-3 h-3" />
-                            <span className="text-xs text-muted-foreground">Analytics</span>
-                          </div>
-                        </div>
-                      </div>
-                      {getStatusBadge(integration.status)}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm mb-4">{integration.description}</p>
-                    <div className="space-y-3">
-                      <Badge variant="outline" className="text-xs">
-                        {integration.popularity}
-                      </Badge>
-                      <div className="flex flex-wrap gap-1">
-                        {integration.features.map((feature, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {feature}
-                          </Badge>
-                        ))}
-                      </div>
-                      <Button 
-                        className="w-full" 
-                        variant={integration.status === 'connected' ? 'outline' : 'default'}
-                      >
-                        {integration.status === 'connected' ? 'Gérer' : 'Connecter'}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="payments">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {paymentIntegrations.map((integration, index) => (
-                <Card key={index} className="hover:shadow-lg transition-all duration-300 border-border/50">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={integration.logo} 
-                          alt={integration.name}
-                          className="w-10 h-10 object-contain"
-                        />
-                        <div>
-                          <CardTitle className="text-lg">{integration.name}</CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            <CreditCard className="w-3 h-3" />
-                            <span className="text-xs text-muted-foreground">Paiement</span>
-                          </div>
-                        </div>
-                      </div>
-                      {getStatusBadge(integration.status)}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm mb-4">{integration.description}</p>
-                    <div className="space-y-3">
-                      <Badge variant="outline" className="text-xs">
-                        {integration.popularity}
-                      </Badge>
-                      <div className="flex flex-wrap gap-1">
-                        {integration.features.map((feature, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {feature}
-                          </Badge>
-                        ))}
-                      </div>
-                      <Button 
-                        className="w-full" 
-                        variant={integration.status === 'connected' ? 'outline' : 'default'}
-                      >
-                        {integration.status === 'connected' ? 'Gérer' : 'Connecter'}
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
