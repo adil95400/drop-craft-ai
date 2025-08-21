@@ -175,7 +175,7 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
           stock_quantity: ['stock', 'quantity', 'qty', 'quantite', 'inventory'],
           image_url: ['image', 'photo', 'picture', 'img', 'main_image_url'],
           image_urls: ['images', 'image_urls', 'additional_image_urls', 'photos'],
-          video_url: ['video_url', 'video', 'vid'],
+          video_urls: ['video_url', 'video_urls', 'video', 'vid'],
           supplier_name: ['supplier', 'fournisseur', 'vendor'],
           seo_keywords: ['seo_keywords', 'keywords', 'mots_cles', 'tags'],
           tags: ['tags', 'mots_cles']
@@ -237,21 +237,42 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
             const value = row[headerIndex]?.trim()
             
             if (field && value) {
-              // Handle numeric fields
-              if (['price', 'cost_price'].includes(field)) {
-                product[field] = parseFloat(value) || 0
+              // Handle numeric fields with validation and overflow protection
+              if (['price', 'cost_price', 'compare_at_price', 'weight', 'supplier_price', 'shipping_cost'].includes(field)) {
+                // Clean numeric value - replace comma with dot for European format
+                const cleanValue = value.replace(',', '.').replace(/[^\d.-]/g, '')
+                let numValue = parseFloat(cleanValue) || 0
+                
+                // Limit to reasonable ranges to prevent overflow (max 999999.99)
+                if (numValue > 999999.99) numValue = 999999.99
+                if (numValue < 0) numValue = 0
+                
+                product[field] = Math.round(numValue * 100) / 100 // Round to 2 decimals
               }
-              // Handle integer fields
-              else if (['stock_quantity'].includes(field)) {
-                product[field] = parseInt(value) || 0
+              // Handle integer fields with validation
+              else if (['stock_quantity', 'min_order', 'max_order'].includes(field)) {
+                const cleanValue = value.replace(/[^\d]/g, '')
+                let intValue = parseInt(cleanValue) || 0
+                
+                // Limit to reasonable ranges (max 999999)
+                if (intValue > 999999) intValue = 999999
+                if (intValue < 0) intValue = 0
+                
+                product[field] = intValue
               }
               // Handle array fields (split by semicolon)
               else if (['image_urls', 'video_urls', 'seo_keywords', 'tags'].includes(field)) {
                 product[field] = value.split(';').map(item => item.trim()).filter(Boolean)
               }
               // Handle special image mapping
-              else if (field === 'image_url') {
-                product.image_urls = [value]
+              else if (field === 'image_url' || field === 'main_image_url') {
+                if (!product.image_urls) product.image_urls = []
+                product.image_urls.unshift(value) // Put main image first
+              }
+              // Handle video URL mapping (singular to plural)
+              else if (header.toLowerCase().includes('video_url') && !header.toLowerCase().includes('video_urls')) {
+                if (!product.video_urls) product.video_urls = []
+                product.video_urls.push(value)
               }
               // Handle text fields
               else {
@@ -260,12 +281,22 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
             }
           })
 
-          // Validate required fields
-          if (!product.name) {
-            throw new Error(`Ligne ${index + 1}: Nom du produit requis`)
+          // Validate required fields with better error handling
+          if (!product.name || product.name.length === 0) {
+            console.log(`Produit ligne ${index + 1}:`, { name: product.name, price: product.price, row })
+            throw new Error(`Ligne ${index + 1}: Nom du produit requis (reçu: "${product.name}")`)
           }
           if (!product.price || product.price <= 0) {
-            throw new Error(`Ligne ${index + 1}: Prix valide requis`)
+            console.log(`Prix invalide ligne ${index + 1}:`, { price: product.price, rawPrice: row[headers.indexOf('price')] })
+            throw new Error(`Ligne ${index + 1}: Prix valide requis (reçu: ${product.price})`)
+          }
+
+          // Ensure user_id and import_id are set
+          if (!product.user_id) {
+            throw new Error(`Ligne ${index + 1}: user_id manquant`)
+          }
+          if (!product.import_id) {
+            throw new Error(`Ligne ${index + 1}: import_id manquant`)
           }
 
           productsToInsert.push(product)
