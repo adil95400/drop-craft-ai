@@ -22,7 +22,8 @@ import {
   Globe,
   Users,
   ExternalLink,
-  RotateCw
+  RotateCw,
+  Activity
 } from "lucide-react"
 import { useRealIntegrations } from "@/hooks/useRealIntegrations"
 import { useToast } from "@/hooks/use-toast"
@@ -412,17 +413,47 @@ const Integrations = () => {
         </div>
 
         <Tabs defaultValue="real" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
-            <TabsTrigger value="real">Réelles</TabsTrigger>
-            <TabsTrigger value="manage">Gestion</TabsTrigger>
-            <TabsTrigger value="create">Créer</TabsTrigger>
-            <TabsTrigger value="logs">Logs</TabsTrigger>
-            <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
-            <TabsTrigger value="monitor">Monitoring</TabsTrigger>
-            <TabsTrigger value="api-keys">API Keys</TabsTrigger>
-            <TabsTrigger value="health">Santé</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="connections">Connexions</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-1 p-1 bg-muted/30 rounded-lg h-auto">
+            <TabsTrigger value="real" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <CheckCircle className="h-3 w-3" />
+              <span className="text-xs font-medium">Réelles</span>
+            </TabsTrigger>
+            <TabsTrigger value="manage" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <Settings className="h-3 w-3" />
+              <span className="text-xs font-medium">Gestion</span>
+            </TabsTrigger>
+            <TabsTrigger value="create" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <Plus className="h-3 w-3" />
+              <span className="text-xs font-medium">Créer</span>
+            </TabsTrigger>
+            <TabsTrigger value="logs" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <BarChart3 className="h-3 w-3" />
+              <span className="text-xs font-medium">Logs</span>
+            </TabsTrigger>
+            <TabsTrigger value="webhooks" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <Zap className="h-3 w-3" />
+              <span className="text-xs font-medium">Webhooks</span>
+            </TabsTrigger>
+            <TabsTrigger value="monitor" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <Activity className="h-3 w-3" />
+              <span className="text-xs font-medium">Monitor</span>
+            </TabsTrigger>
+            <TabsTrigger value="api-keys" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <ExternalLink className="h-3 w-3" />
+              <span className="text-xs font-medium">API Keys</span>
+            </TabsTrigger>
+            <TabsTrigger value="health" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <Users className="h-3 w-3" />
+              <span className="text-xs font-medium">Santé</span>
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <BarChart3 className="h-3 w-3" />
+              <span className="text-xs font-medium">Analytics</span>
+            </TabsTrigger>
+            <TabsTrigger value="connections" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
+              <Globe className="h-3 w-3" />
+              <span className="text-xs font-medium">Connexions</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="real" className="space-y-6">
