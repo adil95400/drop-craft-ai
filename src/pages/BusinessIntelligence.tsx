@@ -341,7 +341,7 @@ const BusinessIntelligence = () => {
                 </p>
                 <p className="text-xs text-blue-600 flex items-center gap-1">
                   <Target className="w-3 h-3" />
-                  Ratio optimal: {'>'}3x
+                  Ratio optimal: &gt;3x
                 </p>
               </div>
               <Users className="w-8 h-8 text-blue-600 opacity-60" />
