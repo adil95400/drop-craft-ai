@@ -126,6 +126,10 @@ import TrackingToday from './pages/TrackingToday';
 import SuiviEnTransitUltraPro from './pages/SuiviEnTransitUltraPro';
 import AvisPositifUltraPro from './pages/AvisPositifUltraPro';
 import PricingPage from './pages/PricingPage';
+import Documentation from './pages/Documentation';
+import Support from './pages/Support';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 
 // Ultra Pro Optimized pages (direct imports)
 import ImportUltraProOptimized from './pages/ImportUltraProOptimized';
@@ -188,6 +192,10 @@ const App = () => (
             <Route path="/blog-new" element={<BlogNew />} />
             <Route path="/faq-complete" element={<FAQComplete />} />
             <Route path="/company" element={<CompanyPage />} />
+            <Route path="/documentation" element={<Documentation />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
             
             {/* Protected routes with layout */}
             <Route path="/dashboard" element={
