@@ -2899,6 +2899,10 @@ export type Database = {
         Args: { key_id: string }
         Returns: Json
       }
+      secure_admin_set_role: {
+        Args: { new_role: string; target_user_id: string }
+        Returns: Json
+      }
       secure_newsletter_signup: {
         Args: { email_param: string; source_param?: string; user_ip?: unknown }
         Returns: Json

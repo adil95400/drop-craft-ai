@@ -130,7 +130,7 @@ serve(async (req) => {
           .from('integrations')
           .update({
             ...encryptedData,
-            credential_encryption_version: 2,
+            credential_encryption_version: 3, // Updated version for enhanced encryption
             updated_at: new Date().toISOString()
           })
           .eq('id', integrationId)
@@ -243,46 +243,112 @@ serve(async (req) => {
   }
 });
 
-// Encryption/Decryption utilities
+// Enhanced AES-GCM encryption with PBKDF2 key derivation and versioning
 async function encryptString(text: string, key: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(text);
   
-  // Use AES-GCM for encryption
-  const cryptoKey = await crypto.subtle.importKey(
+  // Use PBKDF2 to derive a secure key from the provided key
+  const keyMaterial = await crypto.subtle.importKey(
     'raw',
-    encoder.encode(key.slice(0, 32).padEnd(32, '0')),
-    { name: 'AES-GCM' },
+    encoder.encode(key),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveKey']
+  );
+  
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const cryptoKey = await crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt,
+      iterations: 100000,
+      hash: 'SHA-256'
+    },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
     false,
     ['encrypt']
   );
-
+  
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encrypted = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv },
     cryptoKey,
     data
   );
-
-  // Combine IV and encrypted data
-  const combined = new Uint8Array(iv.length + encrypted.byteLength);
-  combined.set(iv);
-  combined.set(new Uint8Array(encrypted), iv.length);
-
-  // Return base64 encoded
-  return btoa(String.fromCharCode(...combined));
+  
+  // Combine version, salt, iv, and encrypted data
+  const result = new Uint8Array(1 + salt.length + iv.length + encrypted.byteLength);
+  result.set([2], 0); // Version 2 (enhanced)
+  result.set(salt, 1);
+  result.set(iv, 1 + salt.length);
+  result.set(new Uint8Array(encrypted), 1 + salt.length + iv.length);
+  
+  return btoa(String.fromCharCode(...result));
 }
 
 async function decryptString(encryptedData: string, key: string): Promise<string> {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   
-  // Decode from base64
+  const data = new Uint8Array(
+    atob(encryptedData)
+      .split('')
+      .map(char => char.charCodeAt(0))
+  );
+  
+  const version = data[0];
+  
+  // Handle legacy version (version 1 or unversioned)
+  if (version !== 2) {
+    return decryptStringLegacy(encryptedData, key);
+  }
+  
+  const salt = data.slice(1, 17);
+  const iv = data.slice(17, 29);
+  const encrypted = data.slice(29);
+  
+  // Derive the same key using PBKDF2
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(key),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveKey']
+  );
+  
+  const cryptoKey = await crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt,
+      iterations: 100000,
+      hash: 'SHA-256'
+    },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+  
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv },
+    cryptoKey,
+    encrypted
+  );
+  
+  return decoder.decode(decrypted);
+}
+
+// Legacy decryption for backward compatibility
+async function decryptStringLegacy(encryptedData: string, key: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+  
   const combined = new Uint8Array(
     atob(encryptedData).split('').map(char => char.charCodeAt(0))
   );
 
-  // Extract IV and encrypted data
   const iv = combined.slice(0, 12);
   const encrypted = combined.slice(12);
 
