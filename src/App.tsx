@@ -101,6 +101,7 @@ import MarketplaceOptimized from './pages/MarketplaceOptimized';
 import FAQ from './pages/FAQ';
 import Notifications from './pages/Notifications';
 import NotFound from './pages/NotFound';
+import ErrorPage from './pages/ErrorPage';
 import UserProfile from './pages/UserProfile';
 import Reports from './pages/Reports';
 import NotificationCenter from './pages/NotificationCenter';
@@ -940,6 +941,10 @@ const App = () => (
                 </AppLayout>
               </AuthGuard>
             } />
+            
+            {/* Error pages */}
+            <Route path="/error" element={<ErrorPage />} />
+            <Route path="/error/:code" element={<ErrorPage />} />
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
