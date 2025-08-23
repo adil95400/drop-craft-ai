@@ -131,6 +131,10 @@ import Documentation from './pages/Documentation';
 import Support from './pages/Support';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import KeywordResearch from './pages/KeywordResearch';
+import CompetitorAnalysis from './pages/CompetitorAnalysis';
+import SchemaGenerator from './pages/SchemaGenerator';
+import RankTracker from './pages/RankTracker';
 
 // Ultra Pro Optimized pages (direct imports)
 import ImportUltraProOptimized from './pages/ImportUltraProOptimized';
@@ -462,6 +466,34 @@ const App = () => (
                   <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
                     <SEOLazy />
                   </Suspense>
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/seo/keyword-research" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <KeywordResearch />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/seo/competitor-analysis" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <CompetitorAnalysis />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/seo/schema-generator" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <SchemaGenerator />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/seo/rank-tracker" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <RankTracker />
                 </AppLayout>
               </AuthGuard>
             } />
