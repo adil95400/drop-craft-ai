@@ -135,6 +135,7 @@ import KeywordResearch from './pages/KeywordResearch';
 import CompetitorAnalysis from './pages/CompetitorAnalysis';
 import SchemaGenerator from './pages/SchemaGenerator';
 import RankTracker from './pages/RankTracker';
+import SEOAnalytics from './pages/SEOAnalytics';
 
 // Ultra Pro Optimized pages (direct imports)
 import ImportUltraProOptimized from './pages/ImportUltraProOptimized';
@@ -494,6 +495,13 @@ const App = () => (
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <RankTracker />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/seo/analytics" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <SEOAnalytics />
                 </AppLayout>
               </AuthGuard>
             } />
