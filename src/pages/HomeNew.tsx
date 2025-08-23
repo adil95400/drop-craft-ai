@@ -151,7 +151,7 @@ const HomeNew = () => {
               <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-primary-foreground" />
               </div>
-              <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-slate-50">
+              <span className="font-bold text-lg bg-gradient-to-r from-blue-800 to-purple-800 bg-clip-text text-transparent">
                 ShopOpti
               </span>
             </div>
@@ -257,14 +257,7 @@ const HomeNew = () => {
               Connecté aux plus grandes plateformes e-commerce et outils marketing
             </p>
           </div>
-          <LogoCloud
-            title="Partenaires et intégrations"
-            items={[
-              "shopify", "woocommerce", "prestashop", "aliexpress", "amazon",
-              "stripe", "paypal", "ebay", "cdiscount", 
-              "zapier", "meta-ads", "google-ads", "klaviyo", "tiktok", "facebook", "instagram"
-            ]}
-          />
+          <LogoCloud title="Partenaires et intégrations" items={["shopify", "woocommerce", "prestashop", "aliexpress", "amazon", "stripe", "paypal", "ebay", "cdiscount", "zapier", "meta-ads", "google-ads", "klaviyo", "tiktok", "facebook", "instagram"]} />
         </div>
       </section>
 
