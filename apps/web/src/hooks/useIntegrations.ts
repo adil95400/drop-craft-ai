@@ -195,6 +195,33 @@ export const useIntegrations = () => {
     errors: integrations.filter(i => i.connection_status === 'error').length
   }
 
+  // Generic connect/disconnect methods for compatibility
+  const connectIntegration = async (platform: string) => {
+    if (platform === 'shopify') {
+      // This would typically open a modal for shop domain input
+      toast({
+        title: "Configuration requise",
+        description: "Veuillez configurer vos paramètres Shopify.",
+      })
+      return Promise.resolve()
+    }
+    
+    toast({
+      title: "Intégration non disponible",
+      description: `L'intégration ${platform} n'est pas encore disponible.`,
+      variant: "destructive",
+    })
+    return Promise.reject(new Error('Integration not available'))
+  }
+
+  const disconnectIntegration = async (platform: string) => {
+    const integration = integrations.find(i => i.platform_name === platform || i.platform_type === platform)
+    if (integration) {
+      return deleteIntegration.mutateAsync(integration.id)
+    }
+    return Promise.reject(new Error('Integration not found'))
+  }
+
   return {
     integrations,
     stats,
@@ -205,6 +232,8 @@ export const useIntegrations = () => {
     testConnection: testConnection.mutate,
     updateIntegration: updateIntegration.mutate,
     deleteIntegration: deleteIntegration.mutate,
+    connectIntegration,
+    disconnectIntegration,
     isConnecting: connectShopify.isPending,
     isSyncing: syncToShopify.isPending,
     isTesting: testConnection.isPending,

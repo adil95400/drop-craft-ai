@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useIntegrations } from '@/hooks/useIntegrations';
-import { useCanva } from '@/hooks/useCanva';
+import { useIntegrations } from '../hooks/useIntegrations';
+import { useCanva } from '../hooks/useCanva';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingBag, Package, Truck, Zap, Palette } from 'lucide-react';
 import { toast } from 'sonner';
@@ -27,7 +27,7 @@ export default function Integrations() {
       description: 'Connect your Shopify store to sync products and orders',
       icon: ShoppingBag,
       category: 'E-commerce Platform',
-      status: integrations.find(i => i.platform === 'shopify')?.status || 'disconnected'
+      status: integrations.find(i => i.platform_name === 'shopify')?.connection_status || 'disconnected'
     },
     {
       id: 'bigbuy',
@@ -35,7 +35,7 @@ export default function Integrations() {
       description: 'Import products from BigBuy wholesale marketplace',
       icon: Package,
       category: 'Supplier',
-      status: integrations.find(i => i.platform === 'bigbuy')?.status || 'disconnected'
+      status: integrations.find(i => i.platform_name === 'bigbuy')?.connection_status || 'disconnected'
     },
     {
       id: 'aliexpress',
@@ -51,7 +51,7 @@ export default function Integrations() {
       description: 'Track packages and update order status automatically',
       icon: Truck,
       category: 'Logistics',
-      status: integrations.find(i => i.platform === '17track')?.status || 'disconnected'
+      status: integrations.find(i => i.platform_name === '17track')?.connection_status || 'disconnected'
     },
     {
       id: 'canva',
@@ -119,8 +119,8 @@ export default function Integrations() {
 
       {/* Connected Integrations */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Connected ({integrations.filter(i => i.status === 'connected').length})</h2>
-        {integrations.filter(i => i.status === 'connected').length === 0 ? (
+        <h2 className="text-xl font-semibold mb-4">Connected ({integrations.filter(i => i.connection_status === 'connected').length})</h2>
+        {integrations.filter(i => i.connection_status === 'connected').length === 0 ? (
           <Card>
             <CardContent className="flex items-center justify-center py-8">
               <p className="text-muted-foreground">No integrations connected yet</p>
@@ -128,12 +128,12 @@ export default function Integrations() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {integrations.filter(i => i.status === 'connected').map((integration) => (
+            {integrations.filter(i => i.connection_status === 'connected').map((integration) => (
               <Card key={integration.id} className="border-green-200 bg-green-50">
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg capitalize">{integration.platform}</CardTitle>
+                      <CardTitle className="text-lg capitalize">{integration.platform_name}</CardTitle>
                       <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
                         Connected
                       </Badge>
@@ -142,12 +142,12 @@ export default function Integrations() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Last sync: {new Date(integration.last_sync || Date.now()).toLocaleDateString()}
+                    Last sync: {new Date(integration.last_sync_at || Date.now()).toLocaleDateString()}
                   </p>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => handleDisconnect(integration.platform)}
+                    onClick={() => handleDisconnect(integration.platform_name)}
                     className="w-full"
                   >
                     Disconnect
