@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: dropcraft-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-dropcraft123}
+    volumes:
+      - redis_data:/data
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-dropcraft123}
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - dropcraft-network
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: dropcraft-redis-ui
+    hostname: redis-commander
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:${REDIS_PASSWORD:-dropcraft123}
+      - HTTP_USER=${REDIS_UI_USER:-admin}
+      - HTTP_PASSWORD=${REDIS_UI_PASSWORD:-admin123}
+    depends_on:
+      - redis
+    networks:
+      - dropcraft-network
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  dropcraft-network:
+    driver: bridge

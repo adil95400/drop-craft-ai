@@ -2,9 +2,13 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
     branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality:
@@ -32,6 +36,9 @@ jobs:
         
       - name: Run tests
         run: npm run test --if-present
+        
+      - name: Run Vitest tests
+        run: npm run test:unit --if-present
         
       - name: Build application
         run: npm run build
