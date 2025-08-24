@@ -1,0 +1,49 @@
+# Node / deps
+node_modules/
+apps/*/node_modules/
+packages/*/node_modules/
+
+# Builds
+dist/
+apps/*/dist/
+packages/*/dist/
+.next/
+out/
+.vercel/
+
+# Caches & tests
+.cache/
+.tmp/
+.vite/
+.turbo/
+coverage/
+cypress/videos/
+cypress/screenshots/
+playwright-report/
+test-results/
+
+# Supabase (fichiers générés)
+supabase/.temp/
+supabase/.branches/
+supabase/.cache/
+supabase/generated/
+
+# Env (on garde uniquement .env.example)
+.env
+.env.development
+.env.staging
+.env.production
+.env.local
+!.env.example
+
+# Fichiers lourds
+*.zip
+*.tar
+*.tgz
+*.7z
+*.mp4
+*.mov
+*.psd
+*.ai
+*.sketch
+*.ico
