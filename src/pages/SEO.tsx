@@ -30,6 +30,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SEO as SEOComponent } from "@/components/SEO";
 
 const SEO = () => {
   const [url, setUrl] = useState("");
@@ -218,11 +219,12 @@ Contactez nos experts pour une consultation gratuite.
 
   return (
     <>
-      <Helmet>
-        <title>SEO Optimizer - Optimisation pour Moteurs de Recherche</title>
-        <meta name="description" content="Outils SEO professionnels pour optimiser votre référencement. Analyse, génération de contenu, suivi de positions et plus encore." />
-        <meta name="keywords" content="SEO, référencement, mots-clés, optimisation, Google, moteurs de recherche" />
-      </Helmet>
+      <SEOComponent
+        title="SEO Optimizer - Optimisation pour Moteurs de Recherche | Shopopti+"
+        description="Outils SEO professionnels pour optimiser votre référencement. Analyse, génération de contenu, suivi de positions et plus encore."
+        path="/seo"
+        keywords="SEO, référencement, mots-clés, optimisation, Google, moteurs de recherche"
+      />
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 p-6">
         <div className="max-w-7xl mx-auto space-y-8">

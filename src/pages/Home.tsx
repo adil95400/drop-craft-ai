@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserAccountDropdown } from "@/components/common/UserAccountDropdown";
+import { SEO } from "@/components/SEO";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -96,7 +97,26 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO
+        title="Shopopti+ | SaaS de Dropshipping Intelligent"
+        description="Automatisez votre business e-commerce avec Shopopti+. Intégrations Shopify, AliExpress, BigBuy et IA pour gérer vos produits et commandes."
+        path="/"
+        keywords="Shopopti, dropshipping, Shopify, AliExpress, BigBuy, IA, import produits"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Shopopti+",
+          "url": "https://www.shopopti.io",
+          "logo": "https://www.shopopti.io/og-image.png",
+          "sameAs": [
+            "https://github.com/adil95400",
+            "https://www.linkedin.com/"
+          ]
+        }}
+      />
+      
+      <div className="min-h-screen bg-background">
       {/* Header Navigation - Only for authenticated users */}
       {user && (
         <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -289,6 +309,7 @@ const Home = () => {
         </div>
       </section>
     </div>
+    </>
   );
 };
 

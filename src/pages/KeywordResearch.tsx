@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { SEO } from "@/components/SEO";
 
 const KeywordResearch = () => {
   const [keyword, setKeyword] = useState("");
@@ -125,10 +126,12 @@ const KeywordResearch = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Recherche de Mots-clés - SEO Tools</title>
-        <meta name="description" content="Trouvez les meilleurs mots-clés pour votre stratégie SEO. Volume de recherche, difficulté et opportunités." />
-      </Helmet>
+      <SEO
+        title="Recherche de Mots-clés - SEO Tools | Shopopti+"
+        description="Trouvez les meilleurs mots-clés pour votre stratégie SEO. Analyse de volume de recherche, difficulté et opportunités de positionnement."
+        path="/seo/keyword-research"
+        keywords="recherche mots-clés, volume recherche, difficulté SEO, positionnement Google, analyse concurrentielle"
+      />
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 p-6">
         <div className="max-w-7xl mx-auto space-y-8">

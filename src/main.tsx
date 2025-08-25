@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { PlanProvider } from '@/contexts/PlanContext'
 import { RQDevtools } from '@/components/RQDevtools'
+import { HelmetProvider } from 'react-helmet-async'
 import App from './App'
 import './index.css'
 import './styles/import-animations.css'
@@ -23,16 +24,18 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <PlanProvider>
-            <App />
-            <Toaster />
-            <RQDevtools adminOnly />
-          </PlanProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AuthProvider>
+            <PlanProvider>
+              <App />
+              <Toaster />
+              <RQDevtools adminOnly />
+            </PlanProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </HelmetProvider>
   </StrictMode>,
 )

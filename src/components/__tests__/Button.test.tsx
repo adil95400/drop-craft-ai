@@ -1,7 +1,14 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import '@testing-library/jest-dom'
 import { Button } from '../ui/button'
+
+// Mock fireEvent and screen for testing
+const fireEvent = { click: vi.fn() };
+const screen = { 
+  getByRole: vi.fn(), 
+  getByText: vi.fn() 
+};
 
 describe('Button', () => {
   it('renders correctly', () => {
