@@ -1,30 +1,98 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { features, stats, tools, testimonials, plans } from '@/data/homeData';
 import FeatureCard from '@/components/home/FeatureCard';
 import StatCard from '@/components/home/StatCard';
 import TestimonialCard from '@/components/home/TestimonialCard';
 import PricingCard from '@/components/home/PricingCard';
 import FAQSection from '@/components/home/FAQSection';
-import Head from '@/components/seo/Head';
+import Header from '@/components/layout/Header';
+import FooterNavigation from '@/components/navigation/FooterNavigation';
+import { SEO } from '@/components/SEO';
 import heroImage from '/src/assets/hero-ecommerce.jpg';
 import trustRibbon from '/images/trust-ribbon.jpg';
+import { ArrowRight, Play, Star, Users, Zap, Shield } from 'lucide-react';
 
 export default function Home() {
   return (
     <>
-      <Head />
+      <SEO
+        title="ShopOpti+ | SaaS de Dropshipping Intelligent"
+        description="Automatisez votre business e-commerce avec ShopOpti+. Intégrations Shopify, AliExpress, BigBuy et IA pour gérer vos produits et commandes."
+        path="/"
+        keywords="ShopOpti, dropshipping, Shopify, AliExpress, BigBuy, IA, import produits"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "ShopOpti+",
+          "url": "https://www.shopopti.io",
+          "logo": "https://www.shopopti.io/og-image.png",
+          "sameAs": [
+            "https://github.com/adil95400",
+            "https://www.linkedin.com/"
+          ]
+        }}
+      />
+      <Header />
       <div className="min-h-screen bg-background">
         {/* Hero Section */}
-        <section className="py-20 px-4 text-center" aria-labelledby="hero-heading">
-          <div className="container mx-auto max-w-4xl">
-            <h1 id="hero-heading" className="text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-6">
-              ShopOpti
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              La plateforme e-commerce tout-en-un. Importez des produits, gérez vos commandes, 
-              et développez votre business avec l'automatisation et l'IA.
-            </p>
+        <section className="relative py-20 px-4 overflow-hidden" aria-labelledby="hero-heading">
+          {/* Background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
+          <div className="absolute top-10 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-10 right-10 w-72 h-72 bg-secondary/10 rounded-full blur-3xl" />
+          
+          <div className="relative container mx-auto max-w-6xl">
+            <div className="text-center mb-12">
+              <Badge variant="secondary" className="mb-6 px-4 py-1.5">
+                <Zap className="h-3 w-3 mr-1" />
+                Nouveau : IA avancée pour l'optimisation
+              </Badge>
+              
+              <h1 id="hero-heading" className="text-5xl md:text-7xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-6 leading-tight">
+                ShopOpti+
+                <br />
+                <span className="text-3xl md:text-5xl text-muted-foreground font-medium">
+                  Le futur du dropshipping
+                </span>
+              </h1>
+              
+              <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
+                La plateforme e-commerce tout-en-un propulsée par l'IA. Importez des produits, 
+                gérez vos commandes, et développez votre business avec l'automatisation intelligente.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                <Button size="lg" className="px-8 py-3 text-lg" asChild>
+                  <Link to="/auth" aria-label="Commencer votre essai gratuit">
+                    Commencer gratuitement
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button variant="outline" size="lg" className="px-8 py-3 text-lg" asChild>
+                  <Link to="/dashboard" aria-label="Voir une démo du tableau de bord">
+                    <Play className="mr-2 h-5 w-5" />
+                    Voir la démo
+                  </Link>
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  <span>+10,000 utilisateurs</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Star className="h-4 w-4 text-yellow-500" />
+                  <span>4.9/5 étoiles</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Shield className="h-4 w-4" />
+                  <span>Sécurisé & certifié</span>
+                </div>
+              </div>
+            </div>
             
             {/* Hero Image */}
             <div className="mb-8">
@@ -39,18 +107,6 @@ export default function Home() {
               />
             </div>
             
-            <div className="flex gap-4 justify-center flex-wrap">
-              <Button size="lg" asChild>
-                <Link to="/auth" aria-label="Commencer votre essai gratuit">
-                  Commencer
-                </Link>
-              </Button>
-              <Button variant="outline" size="lg" asChild>
-                <Link to="/dashboard" aria-label="Voir une démo du tableau de bord">
-                  Voir la démo
-                </Link>
-              </Button>
-            </div>
           </div>
         </section>
 
@@ -177,6 +233,7 @@ export default function Home() {
           </div>
         </section>
       </div>
+      <FooterNavigation />
     </>
   );
 }

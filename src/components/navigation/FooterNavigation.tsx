@@ -72,14 +72,14 @@ const FooterNavigation = () => {
           {/* Company Info */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">L</span>
+              <div className="w-8 h-8 bg-gradient-hero rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">S</span>
               </div>
-              <span className="text-xl font-bold">Notre Plateforme</span>
+              <span className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">ShopOpti+</span>
             </div>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
-              La solution complète pour optimiser votre e-commerce avec l'intelligence artificielle. 
-              Importez, optimisez et gérez vos produits en toute simplicité.
+              La plateforme e-commerce intelligente qui révolutionne le dropshipping. 
+              Automatisez vos processus et développez votre business avec l'IA.
             </p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -88,11 +88,11 @@ const FooterNavigation = () => {
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                <span>contact@exemple.fr</span>
+                <span>contact@shopopti.io</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4" />
-                <span>+33 1 23 45 67 89</span>
+                <span>+33 1 85 08 99 47</span>
               </div>
             </div>
           </div>
@@ -141,7 +141,7 @@ const FooterNavigation = () => {
         <div className="mt-12 pt-8 border-t flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           {/* Copyright */}
           <div className="text-sm text-muted-foreground">
-            © {currentYear} Notre Plateforme. Tous droits réservés.
+            © {currentYear} ShopOpti+. Tous droits réservés.
           </div>
 
           {/* Social Links */}

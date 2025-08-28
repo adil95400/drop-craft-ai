@@ -136,6 +136,10 @@ import CompetitorAnalysis from './pages/CompetitorAnalysis';
 import SchemaGenerator from './pages/SchemaGenerator';
 import RankTracker from './pages/RankTracker';
 import SEOAnalytics from './pages/SEOAnalytics';
+import Community from './pages/Community';
+import Webinars from './pages/Webinars';
+import Careers from './pages/Careers';
+import Partners from './pages/Partners';
 
 // Ultra Pro Optimized pages (direct imports)
 import ImportUltraProOptimized from './pages/ImportUltraProOptimized';
@@ -202,6 +206,10 @@ const App = () => (
             <Route path="/support" element={<Support />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/webinars" element={<Webinars />} />
+            <Route path="/careers" element={<Careers />} />
+            <Route path="/partners" element={<Partners />} />
             
             {/* Protected routes with layout */}
             <Route path="/dashboard" element={
