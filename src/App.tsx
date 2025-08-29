@@ -156,6 +156,10 @@ import MarketingAnalytics from './pages/MarketingAnalytics';
 import MarketingAutomation from './pages/MarketingAutomation';
 import MarketingCalendarPage from './pages/MarketingCalendarPage';
 import ABTestingPage from './pages/ABTestingPage';
+import ImportUltraPro from './pages/ImportUltraPro';
+import AnalyticsPage from './pages/AnalyticsPage';
+import CustomerManagementPage from './pages/CustomerManagementPage';
+import AdvancedToolsPage from './pages/AdvancedToolsPage';
 
 const queryClient = new QueryClient();
 
@@ -988,6 +992,38 @@ const App = () => (
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <ReviewsUltraProOptimized />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            
+            <Route path="/supplier-hub" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <div className="container mx-auto py-6">
+                    <h1 className="text-2xl font-bold">Supplier Hub</h1>
+                    <p>Coming soon...</p>
+                  </div>
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/analytics" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <AnalyticsPage />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/customers" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <CustomerManagementPage />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/tools" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <AdvancedToolsPage />
                 </AppLayout>
               </AuthGuard>
             } />
