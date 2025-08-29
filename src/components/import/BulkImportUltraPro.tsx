@@ -17,7 +17,7 @@ export const BulkImportUltraPro = () => {
   const { 
     bulkImport, 
     isBulkImporting, 
-    bulkProgress,
+    bulkImportProgress,
     importedProducts 
   } = useImportUltraPro()
 
@@ -31,10 +31,9 @@ export const BulkImportUltraPro = () => {
 
     try {
       await bulkImport({
-        type: 'platform_bulk' as any,
+        type: 'complete_catalog',
         platform: selectedPlatform,
-        filters: {},
-        settings: {}
+        filters: {}
       })
       toast.success('Import massif lancé!')
     } catch (error: any) {
@@ -58,9 +57,9 @@ export const BulkImportUltraPro = () => {
               <div className="flex items-center gap-3">
                 <Database className="w-5 h-5 text-orange-600 animate-pulse" />
                 <p className="font-medium">Import massif en cours...</p>
-                <Badge>{Math.round(bulkProgress)}%</Badge>
+                <Badge>{Math.round(bulkImportProgress)}%</Badge>
               </div>
-              <Progress value={bulkProgress} className="h-2" />
+              <Progress value={bulkImportProgress} className="h-2" />
             </div>
           </CardContent>
         </Card>
