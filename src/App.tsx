@@ -209,7 +209,8 @@ const App = () => (
             <Route path="/community" element={<Community />} />
             <Route path="/webinars" element={<Webinars />} />
             <Route path="/careers" element={<Careers />} />
-            <Route path="/partners" element={<Partners />} />
+        <Route path="/partners" element={<Partners />} />
+        <Route path="/sync" element={<AdvancedSync />} />
             
             {/* Protected routes with layout */}
             <Route path="/dashboard" element={

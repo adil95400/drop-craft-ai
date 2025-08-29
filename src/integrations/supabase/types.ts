@@ -1210,6 +1210,66 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_levels: {
+        Row: {
+          available_quantity: number
+          created_at: string | null
+          id: string
+          last_synced_at: string | null
+          location_id: string | null
+          location_name: string
+          platform: string
+          product_id: string | null
+          reserved_quantity: number | null
+          updated_at: string | null
+          user_id: string
+          variant_id: string | null
+        }
+        Insert: {
+          available_quantity?: number
+          created_at?: string | null
+          id?: string
+          last_synced_at?: string | null
+          location_id?: string | null
+          location_name?: string
+          platform: string
+          product_id?: string | null
+          reserved_quantity?: number | null
+          updated_at?: string | null
+          user_id: string
+          variant_id?: string | null
+        }
+        Update: {
+          available_quantity?: number
+          created_at?: string | null
+          id?: string
+          last_synced_at?: string | null
+          location_id?: string | null
+          location_name?: string
+          platform?: string
+          product_id?: string | null
+          reserved_quantity?: number | null
+          updated_at?: string | null
+          user_id?: string
+          variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_levels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_levels_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketing_campaigns: {
         Row: {
           budget_spent: number | null
@@ -1621,6 +1681,71 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      product_variants: {
+        Row: {
+          cost_price: number | null
+          created_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          options: Json | null
+          parent_sku: string | null
+          price: number
+          product_id: string | null
+          shopify_variant_id: string | null
+          stock_quantity: number | null
+          updated_at: string | null
+          user_id: string
+          variant_sku: string | null
+          woocommerce_variant_id: string | null
+        }
+        Insert: {
+          cost_price?: number | null
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          options?: Json | null
+          parent_sku?: string | null
+          price?: number
+          product_id?: string | null
+          shopify_variant_id?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+          user_id: string
+          variant_sku?: string | null
+          woocommerce_variant_id?: string | null
+        }
+        Update: {
+          cost_price?: number | null
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          options?: Json | null
+          parent_sku?: string | null
+          price?: number
+          product_id?: string | null
+          shopify_variant_id?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+          user_id?: string
+          variant_sku?: string | null
+          woocommerce_variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -2466,6 +2591,53 @@ export type Database = {
           },
         ]
       }
+      sync_schedules: {
+        Row: {
+          created_at: string | null
+          frequency_minutes: number
+          id: string
+          integration_id: string | null
+          is_active: boolean | null
+          last_run_at: string | null
+          next_run_at: string | null
+          sync_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          frequency_minutes?: number
+          id?: string
+          integration_id?: string | null
+          is_active?: boolean | null
+          last_run_at?: string | null
+          next_run_at?: string | null
+          sync_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          frequency_minutes?: number
+          id?: string
+          integration_id?: string | null
+          is_active?: boolean | null
+          last_run_at?: string | null
+          next_run_at?: string | null
+          sync_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_schedules_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_api_keys: {
         Row: {
           created_at: string
@@ -2590,6 +2762,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      webhook_events: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          event_type: string
+          id: string
+          integration_id: string | null
+          platform: string
+          processed: boolean | null
+          processed_at: string | null
+          webhook_data: Json
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          event_type: string
+          id?: string
+          integration_id?: string | null
+          platform: string
+          processed?: boolean | null
+          processed_at?: string | null
+          webhook_data?: Json
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          integration_id?: string | null
+          platform?: string
+          processed?: boolean | null
+          processed_at?: string | null
+          webhook_data?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_events_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -2917,6 +3133,10 @@ export type Database = {
       }
       user_has_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
+        Returns: boolean
+      }
+      validate_customer_access: {
+        Args: { customer_id: string }
         Returns: boolean
       }
       verify_supplier_ownership: {
