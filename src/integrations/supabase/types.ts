@@ -1572,6 +1572,51 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_integrations: {
+        Row: {
+          created_at: string | null
+          credentials: Json | null
+          error_message: string | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          platform_config: Json | null
+          platform_name: string
+          platform_type: string
+          sync_status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          credentials?: Json | null
+          error_message?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          platform_config?: Json | null
+          platform_name: string
+          platform_type: string
+          sync_status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          credentials?: Json | null
+          error_message?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          platform_config?: Json | null
+          platform_name?: string
+          platform_type?: string
+          sync_status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       price_alerts: {
         Row: {
           catalog_product_id: string
@@ -2349,6 +2394,36 @@ export type Database = {
           },
         ]
       }
+      stripe_webhooks: {
+        Row: {
+          created_at: string | null
+          data: Json
+          event_type: string
+          id: string
+          processed: boolean | null
+          processed_at: string | null
+          stripe_event_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data: Json
+          event_type: string
+          id?: string
+          processed?: boolean | null
+          processed_at?: string | null
+          stripe_event_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json
+          event_type?: string
+          id?: string
+          processed?: boolean | null
+          processed_at?: string | null
+          stripe_event_id?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string
@@ -2443,9 +2518,14 @@ export type Database = {
           encrypted_credentials: Json | null
           id: string
           last_access_at: string | null
+          last_sync_at: string | null
           name: string
+          next_sync_at: string | null
           rating: number | null
           status: string | null
+          sync_enabled: boolean | null
+          sync_frequency: string | null
+          total_products: number | null
           updated_at: string
           user_id: string
           website: string | null
@@ -2462,9 +2542,14 @@ export type Database = {
           encrypted_credentials?: Json | null
           id?: string
           last_access_at?: string | null
+          last_sync_at?: string | null
           name: string
+          next_sync_at?: string | null
           rating?: number | null
           status?: string | null
+          sync_enabled?: boolean | null
+          sync_frequency?: string | null
+          total_products?: number | null
           updated_at?: string
           user_id: string
           website?: string | null
@@ -2481,9 +2566,14 @@ export type Database = {
           encrypted_credentials?: Json | null
           id?: string
           last_access_at?: string | null
+          last_sync_at?: string | null
           name?: string
+          next_sync_at?: string | null
           rating?: number | null
           status?: string | null
+          sync_enabled?: boolean | null
+          sync_frequency?: string | null
+          total_products?: number | null
           updated_at?: string
           user_id?: string
           website?: string | null

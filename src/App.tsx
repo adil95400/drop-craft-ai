@@ -160,6 +160,9 @@ import ImportUltraPro from './pages/ImportUltraPro';
 import AnalyticsPage from './pages/AnalyticsPage';
 import CustomerManagementPage from './pages/CustomerManagementPage';
 import AdvancedToolsPage from './pages/AdvancedToolsPage';
+import MarketplaceConnectorPage from './pages/MarketplaceConnectorPage';
+import MonitoringPage from './pages/MonitoringPage';
+import QuotaManagerPage from './pages/QuotaManagerPage';
 
 const queryClient = new QueryClient();
 
@@ -1024,6 +1027,27 @@ const App = () => (
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <AdvancedToolsPage />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/marketplace-connector" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <MarketplaceConnectorPage />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/monitoring" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <MonitoringPage />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/quotas" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <QuotaManagerPage />
                 </AppLayout>
               </AuthGuard>
             } />
