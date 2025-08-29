@@ -47,6 +47,11 @@ const PLATFORMS = [
   { id: 'youtube', name: 'YouTube', type: 'social', icon: '📺', color: 'bg-red-600' }
 ];
 
+interface PlatformConfig {
+  region?: string;
+  autoSync?: boolean;
+}
+
 export function MarketplaceConnector() {
   const { toast } = useToast();
   const [integrations, setIntegrations] = useState([]);
@@ -348,7 +353,7 @@ function PlatformCard({ platform, status, onConnect, onSync, syncProgress, loadi
 
 function ConnectionForm({ platform, onConnect, loading }) {
   const [credentials, setCredentials] = useState({});
-  const [config, setConfig] = useState({});
+  const [config, setConfig] = useState<PlatformConfig>({});
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -413,7 +418,7 @@ function ConnectionForm({ platform, onConnect, loading }) {
           <Label>Région</Label>
           <Select 
             value={config.region} 
-            onValueChange={(value) => setConfig((prev: any) => ({ ...prev, region: value }))}
+            onValueChange={(value) => setConfig((prev) => ({ ...prev, region: value }))}
           >
             <SelectTrigger>
               <SelectValue placeholder="Sélectionner une région" />
@@ -431,7 +436,7 @@ function ConnectionForm({ platform, onConnect, loading }) {
         <Switch 
           id="auto-sync"
           checked={config.autoSync || false}
-          onCheckedChange={(checked) => setConfig((prev: any) => ({ ...prev, autoSync: checked }))}
+          onCheckedChange={(checked) => setConfig((prev) => ({ ...prev, autoSync: checked }))}
         />
         <Label htmlFor="auto-sync">Synchronisation automatique</Label>
       </div>

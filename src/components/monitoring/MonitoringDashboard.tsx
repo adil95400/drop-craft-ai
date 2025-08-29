@@ -13,6 +13,12 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
+interface SystemStats {
+  total: number;
+  successful: number;
+  failed: number;
+}
+
 export function MonitoringDashboard() {
   const { toast } = useToast();
   const [metrics, setMetrics] = useState(null);
@@ -292,11 +298,11 @@ export function MonitoringDashboard() {
                       <div key={platform} className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center space-x-3">
                           <div className="capitalize font-medium">{platform}</div>
-                          <Badge variant="outline">{stats.total} syncs</Badge>
+                          <Badge variant="outline">{(stats as SystemStats)?.total || 0} syncs</Badge>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-green-600 text-sm">{stats.successful} ✓</span>
-                          <span className="text-red-600 text-sm">{stats.failed} ✗</span>
+                          <span className="text-green-600 text-sm">{(stats as SystemStats)?.successful || 0} ✓</span>
+                          <span className="text-red-600 text-sm">{(stats as SystemStats)?.failed || 0} ✗</span>
                         </div>
                       </div>
                     ))}
