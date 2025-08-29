@@ -140,6 +140,7 @@ import Community from './pages/Community';
 import Webinars from './pages/Webinars';
 import Careers from './pages/Careers';
 import Partners from './pages/Partners';
+import AdvancedSync from './pages/AdvancedSync';
 
 // Ultra Pro Optimized pages (direct imports)
 import ImportUltraProOptimized from './pages/ImportUltraProOptimized';
