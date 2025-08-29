@@ -31,8 +31,8 @@ export function useAnalytics() {
       try {
         setLoading(true);
         
-        // Fetch basic metrics
-        const [ordersResult, productsResult, customersResult] = await Promise.all([
+        // Fetch basic metrics with error handling
+        const [ordersResult, productsResult, customersResult] = await Promise.allSettled([
           supabase
             .from('orders')
             .select('total_amount')
@@ -42,19 +42,28 @@ export function useAnalytics() {
             .select('id')
             .eq('user_id', user.id),
           supabase
-            .from('customers')
-            .select('id')
-            .eq('user_id', user.id)
+            .rpc('get_masked_customers')
         ]);
 
-        if (ordersResult.error) throw ordersResult.error;
-        if (productsResult.error) throw productsResult.error;
-        if (customersResult.error) throw customersResult.error;
+        // Handle orders result
+        const orders = ordersResult.status === 'fulfilled' && !ordersResult.value.error 
+          ? ordersResult.value.data || [] 
+          : [];
+        
+        // Handle products result
+        const products = productsResult.status === 'fulfilled' && !productsResult.value.error 
+          ? productsResult.value.data || [] 
+          : [];
+        
+        // Handle customers result
+        const customers = customersResult.status === 'fulfilled' && !customersResult.value.error 
+          ? customersResult.value.data || [] 
+          : [];
 
-        const totalRevenue = ordersResult.data?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
-        const totalOrders = ordersResult.data?.length || 0;
-        const totalProducts = productsResult.data?.length || 0;
-        const totalCustomers = customersResult.data?.length || 0;
+        const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
+        const totalOrders = orders.length;
+        const totalProducts = products.length;
+        const totalCustomers = customers.length;
 
         setMetrics({
           totalRevenue,

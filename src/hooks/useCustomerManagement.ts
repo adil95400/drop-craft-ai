@@ -40,12 +40,9 @@ export function useCustomerManagement() {
       try {
         setLoading(true);
         
-        // Fetch customers
+        // Fetch customers using the secure view function
         const { data: customersData, error: customersError } = await supabase
-          .from('customers')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+          .rpc('get_masked_customers');
 
         if (customersError) throw customersError;
 
@@ -56,18 +53,25 @@ export function useCustomerManagement() {
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
-        if (segmentsError) throw segmentsError;
+        // If marketing segments table doesn't exist, just set empty array
+        const segments = segmentsError ? [] : (segmentsData || []);
 
         setCustomers(customersData || []);
-        setSegments(segmentsData || []);
+        setSegments(segments);
       } catch (err) {
         console.error('Error fetching customer data:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
-        toast({
-          title: "Error",
-          description: "Failed to load customer data",
-          variant: "destructive"
-        });
+        // Don't show toast for expected table missing errors
+        if (!err?.message?.includes('does not exist')) {
+          toast({
+            title: "Error",
+            description: "Failed to load customer data",
+            variant: "destructive"
+          });
+        }
+        // Set empty arrays to prevent UI issues
+        setCustomers([]);
+        setSegments([]);
       } finally {
         setLoading(false);
       }
