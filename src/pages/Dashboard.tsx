@@ -40,7 +40,8 @@ import {
   Zap,
   Crown,
   Activity,
-  Globe
+  Globe,
+  Shield
 } from 'lucide-react'
 
 const Dashboard = () => {
@@ -436,18 +437,18 @@ const Dashboard = () => {
           </CardHeader>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-md transition-shadow group"
-              onClick={() => window.location.href = '/crm'}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
-              <Users className="h-5 w-5" />
-              CRM & Marketing
-            </CardTitle>
-            <CardDescription>
-              {customerStats?.total || 0} clients • {marketingStats?.activeCampaigns || 0} campagnes actives
-            </CardDescription>
-          </CardHeader>
-        </Card>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow group"
+                onClick={() => window.location.href = '/security'}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
+                <Shield className="h-5 w-5" />
+                Sécurité & Auth
+              </CardTitle>
+              <CardDescription>
+                Gérer les sessions, rôles et paramètres de sécurité
+              </CardDescription>
+            </CardHeader>
+          </Card>
       </div>
 
       {/* Statut des systèmes */}

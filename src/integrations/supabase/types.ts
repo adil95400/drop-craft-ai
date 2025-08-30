@@ -1946,8 +1946,11 @@ export type Database = {
           email_notifications: boolean | null
           full_name: string | null
           id: string
+          last_login_at: string | null
+          login_count: number | null
           plan: Database["public"]["Enums"]["plan_type"] | null
           role: string
+          role_updated_at: string | null
           updated_at: string | null
         }
         Insert: {
@@ -1958,8 +1961,11 @@ export type Database = {
           email_notifications?: boolean | null
           full_name?: string | null
           id: string
+          last_login_at?: string | null
+          login_count?: number | null
           plan?: Database["public"]["Enums"]["plan_type"] | null
           role?: string
+          role_updated_at?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -1970,8 +1976,11 @@ export type Database = {
           email_notifications?: boolean | null
           full_name?: string | null
           id?: string
+          last_login_at?: string | null
+          login_count?: number | null
           plan?: Database["public"]["Enums"]["plan_type"] | null
           role?: string
+          role_updated_at?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -2176,6 +2185,36 @@ export type Database = {
           revoked_at?: string | null
           revoked_by?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          actions: string[] | null
+          conditions: Json | null
+          created_at: string | null
+          id: string
+          permission_name: string
+          resource_type: string | null
+          role_name: string
+        }
+        Insert: {
+          actions?: string[] | null
+          conditions?: Json | null
+          created_at?: string | null
+          id?: string
+          permission_name: string
+          resource_type?: string | null
+          role_name: string
+        }
+        Update: {
+          actions?: string[] | null
+          conditions?: Json | null
+          created_at?: string | null
+          id?: string
+          permission_name?: string
+          resource_type?: string | null
+          role_name?: string
         }
         Relationships: []
       }
@@ -3128,6 +3167,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_sessions: {
+        Row: {
+          created_at: string | null
+          device_info: Json | null
+          expires_at: string
+          id: string
+          ip_address: unknown | null
+          is_active: boolean | null
+          last_activity_at: string | null
+          location: Json | null
+          session_token: string
+          updated_at: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_info?: Json | null
+          expires_at: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_activity_at?: string | null
+          location?: Json | null
+          session_token: string
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_info?: Json | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown | null
+          is_active?: boolean | null
+          last_activity_at?: string | null
+          location?: Json | null
+          session_token?: string
+          updated_at?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       webhook_events: {
         Row: {
           created_at: string | null
@@ -3420,6 +3504,18 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: string
       }
+      get_user_role: {
+        Args: { user_id_param?: string }
+        Returns: string
+      }
+      has_permission: {
+        Args: {
+          action_param?: string
+          permission_name_param: string
+          resource_type_param?: string
+        }
+        Returns: boolean
+      }
       has_plan: {
         Args: { min_plan: string; user_id_param: string }
         Returns: boolean
@@ -3470,6 +3566,10 @@ export type Database = {
       }
       public_newsletter_signup: {
         Args: { email_param: string }
+        Returns: Json
+      }
+      revoke_user_sessions: {
+        Args: { session_ids?: string[]; target_user_id: string }
         Returns: Json
       }
       revoke_user_token: {
@@ -3539,6 +3639,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user" | "staff"
+      enhanced_app_role: "admin" | "manager" | "user"
       plan_type: "standard" | "pro" | "ultra_pro" | "free"
     }
     CompositeTypes: {
@@ -3668,6 +3769,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user", "staff"],
+      enhanced_app_role: ["admin", "manager", "user"],
       plan_type: ["standard", "pro", "ultra_pro", "free"],
     },
   },

@@ -99,6 +99,7 @@ import { SupplierDashboard } from './pages/SupplierDashboard';
 import { SupplierMarketplace } from './pages/SupplierMarketplace';
 import SupplierConnectors from './pages/SupplierConnectors';
 import SubscriptionDashboard from './pages/SubscriptionDashboard';
+import SecuritySettings from './pages/SecuritySettings';
 import WinnersPage from './domains/winners/pages/WinnersPage';
 import Settings from './pages/Settings';
 import MarketplaceOptimized from './pages/MarketplaceOptimized';
@@ -783,9 +784,7 @@ const App = () => (
             <Route path="/security" element={
               <AuthGuard requireRole="user">
                 <AppLayout>
-                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
-                    <SecurityLazy />
-                  </Suspense>
+                  <SecuritySettings />
                 </AppLayout>
               </AuthGuard>
             } />

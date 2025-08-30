@@ -16,11 +16,15 @@ interface AuthContextType {
   } | null
   signUp: (email: string, password: string, userData?: any) => Promise<{ error: any }>
   signIn: (email: string, password: string) => Promise<{ error: any }>
+  signInWithGoogle: () => Promise<{ error: any }>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<{ error: any }>
   updateProfile: (updates: any) => Promise<{ error: any }>
   refreshSubscription: () => Promise<void>
   refetchProfile: () => Promise<void>
+  revokeUserSessions: (targetUserId?: string, sessionIds?: string[]) => Promise<{ error: any }>
+  getUserSessions: () => Promise<{ data: any[], error: any }>
+  hasPermission: (permission: string, resource?: string, action?: string) => Promise<boolean>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -198,6 +202,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           variant: "destructive",
         })
       } else if (data.user) {
+        // Track login activity
+        await trackLoginActivity()
+        
         toast({
           title: "Connexion réussie",
           description: "Bienvenue sur Shopopti Pro!",
@@ -216,6 +223,61 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         variant: "destructive",
       })
       return { error }
+    }
+  }
+
+  const signInWithGoogle = async () => {
+    try {
+      cleanupAuthState()
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      })
+
+      if (error) {
+        toast({
+          title: "Erreur OAuth Google",
+          description: error.message,
+          variant: "destructive",
+        })
+      }
+
+      return { error }
+    } catch (error: any) {
+      toast({
+        title: "Erreur OAuth Google",
+        description: "Une erreur inattendue s'est produite.",
+        variant: "destructive",
+      })
+      return { error }
+    }
+  }
+
+  const trackLoginActivity = async () => {
+    try {
+      const deviceInfo = {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language,
+        viewport: `${window.innerWidth}x${window.innerHeight}`,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      }
+
+      // Insert session record manually since the RPC doesn't exist yet
+      await supabase
+        .from('user_sessions')
+        .insert({
+          user_id: user?.id,
+          session_token: crypto.getRandomValues(new Uint8Array(16)).join(''),
+          device_info: deviceInfo,
+          user_agent: navigator.userAgent,
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
+        })
+    } catch (error) {
+      console.warn('Failed to track login activity:', error)
     }
   }
 
@@ -290,6 +352,66 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const revokeUserSessions = async (targetUserId?: string, sessionIds?: string[]) => {
+    try {
+      const userId = targetUserId || user?.id
+      if (!userId) {
+        return { error: new Error('No user ID provided') }
+      }
+
+      const { data, error } = await supabase.rpc('revoke_user_sessions', {
+        target_user_id: userId,
+        session_ids: sessionIds || null
+      })
+
+      if (error) {
+        toast({
+          title: "Erreur",
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Sessions révoquées",
+          description: `${(data as any)?.revoked_count || 0} sessions ont été révoquées.`,
+        })
+      }
+
+      return { error }
+    } catch (error: any) {
+      return { error }
+    }
+  }
+
+  const getUserSessions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_sessions')
+        .select('*')
+        .eq('user_id', user?.id)
+        .eq('is_active', true)
+        .order('last_activity_at', { ascending: false })
+
+      return { data: data || [], error }
+    } catch (error: any) {
+      return { data: [], error }
+    }
+  }
+
+  const hasPermission = async (permission: string, resource?: string, action = 'read') => {
+    try {
+      const { data, error } = await supabase.rpc('has_permission', {
+        permission_name_param: permission,
+        resource_type_param: resource,
+        action_param: action
+      })
+
+      return !error && data === true
+    } catch (error) {
+      return false
+    }
+  }
+
   const value = {
     user,
     session,
@@ -298,11 +420,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     subscription,
     signUp,
     signIn,
+    signInWithGoogle,
     signOut,
     resetPassword,
     updateProfile,
     refreshSubscription,
-    refetchProfile
+    refetchProfile,
+    revokeUserSessions,
+    getUserSessions,
+    hasPermission
   }
 
   return (
