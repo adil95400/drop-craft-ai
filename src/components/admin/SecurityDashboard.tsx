@@ -21,11 +21,11 @@ interface SecurityEvent {
 
 interface WebhookEvent {
   id: string;
-  source: string;
+  platform: string;
   event_type: string;
   processed: boolean;
   error_message?: string;
-  retry_count: number;
+  integration_id: string;
   created_at: string;
 }
 
@@ -64,11 +64,11 @@ export function SecurityDashboard() {
       }
       return (data || []).map(event => ({
         id: event.id,
-        source: event.source || 'unknown',
+        platform: event.platform || 'unknown',
         event_type: event.event_type,
         processed: event.processed || false,
         error_message: event.error_message,
-        retry_count: event.retry_count || 0,
+        integration_id: event.integration_id,
         created_at: event.created_at
       })) as WebhookEvent[];
     }
@@ -108,7 +108,7 @@ export function SecurityDashboard() {
   };
 
   const criticalEvents = securityEvents?.filter(e => e.severity === 'critical').length || 0;
-  const failedWebhooks = webhookEvents?.filter(w => !w.processed && w.retry_count > 0).length || 0;
+  const failedWebhooks = webhookEvents?.filter(w => !w.processed).length || 0;
 
   return (
     <div className="space-y-6">
@@ -263,7 +263,7 @@ export function SecurityDashboard() {
                     <div key={webhook.id} className="flex items-start justify-between p-4 border rounded-lg">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline">{webhook.source}</Badge>
+                          <Badge variant="outline">{webhook.platform}</Badge>
                           <span className="font-medium">{webhook.event_type}</span>
                           {webhook.processed ? (
                             <Badge variant="default">Traité</Badge>
@@ -274,10 +274,9 @@ export function SecurityDashboard() {
                         {webhook.error_message && (
                           <p className="text-sm text-destructive">{webhook.error_message}</p>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(webhook.created_at).toLocaleString('fr-FR')}
-                          {webhook.retry_count > 0 && ` • ${webhook.retry_count} tentatives`}
-                        </p>
+                         <p className="text-xs text-muted-foreground">
+                           {new Date(webhook.created_at).toLocaleString('fr-FR')}
+                         </p>
                       </div>
                     </div>
                   ))}
