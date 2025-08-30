@@ -1,6 +1,7 @@
 import { useAutoSync } from '@/hooks/useAutoSync'
 import { SyncStatusIndicator } from '@/components/sync/SyncStatusIndicator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
 import { ImportUltraProInterface } from '@/components/import/ImportUltraProInterface'
 import { AdvancedImportResults } from '@/components/import/AdvancedImportResults'
 import { ImportHistory } from '@/components/import/ImportHistory'
@@ -27,6 +28,12 @@ const ImportUltraPro = () => {
             </p>
           </div>
           <div className="flex items-center gap-4">
+            <Button variant="outline" asChild>
+              <a href="/suppliers/dashboard">Gérer les Fournisseurs</a>
+            </Button>
+            <Button variant="outline" asChild>
+              <a href="/suppliers/marketplace">Ajouter des Fournisseurs</a>
+            </Button>
             <SyncStatusIndicator compact />
             <div className="text-sm text-gray-500">
               Sync auto {enableAutoSync ? 'activée' : 'désactivée'}

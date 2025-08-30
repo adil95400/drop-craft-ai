@@ -22,6 +22,7 @@ import {
   Settings
 } from 'lucide-react'
 import { useImportUltraPro } from '@/hooks/useImportUltraPro'
+import { useSupplierManagement } from '@/hooks/useSupplierManagement'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 import { ImportMethodsGrid } from './ImportMethodsGrid'
@@ -37,12 +38,19 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [importProgress, setImportProgress] = useState(0)
+  const [selectedSupplierFeed, setSelectedSupplierFeed] = useState<string>('')
   
   const { 
     bulkImport, 
     isBulkImporting,
     importedProducts 
   } = useImportUltraPro()
+
+  const { 
+    suppliers, 
+    supplierFeeds, 
+    loading: isLoadingSuppliers 
+  } = useSupplierManagement()
 
   const importMethods = [
     {
@@ -66,13 +74,20 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
       icon: ImageIcon,
       color: 'from-purple-500 to-pink-500'
     },
-    {
-      id: 'bulk',
-      title: 'Import en Masse',
-      description: 'Importez massivement depuis des fournisseurs connectés',
-      icon: Database,
-      color: 'from-orange-500 to-red-500'
-    }
+        {
+          id: 'bulk',
+          title: 'Import en Masse',
+          description: 'Importez massivement depuis des fournisseurs connectés',
+          icon: Database,
+          color: 'from-orange-500 to-red-500'
+        },
+        {
+          id: 'supplier-feed',
+          title: 'Import Flux Fournisseur',
+          description: 'Importez depuis vos flux fournisseurs configurés',
+          icon: Zap,
+          color: 'from-indigo-500 to-blue-500'
+        }
   ]
 
   const handleUrlImport = async () => {
@@ -371,13 +386,69 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
 
   const handleBulkImport = async (type: string) => {
     try {
-      await bulkImport({
-        type: type as any,
-        platform: 'aliexpress',
-        filters: {}
-      })
+      if (selectedSupplierFeed) {
+        // Use selected supplier feed for import
+        const feed = supplierFeeds.find(f => f.id === selectedSupplierFeed)
+        if (feed) {
+          await bulkImport({
+            type: type as any,
+            platform: feed.feed_type,
+            filters: {},
+            supplierFeedId: feed.id
+          })
+        }
+      } else {
+        await bulkImport({
+          type: type as any,
+          platform: 'aliexpress',
+          filters: {}
+        })
+      }
     } catch (error: any) {
       toast.error(`Erreur d'import: ${error.message}`)
+    }
+  }
+
+  const handleSupplierFeedImport = async () => {
+    if (!selectedSupplierFeed) {
+      toast.error('Veuillez sélectionner un flux fournisseur')
+      return
+    }
+
+    const feed = supplierFeeds.find(f => f.id === selectedSupplierFeed)
+    if (!feed) {
+      toast.error('Flux fournisseur introuvable')
+      return
+    }
+
+    setIsProcessing(true)
+    setImportProgress(0)
+
+    try {
+      // Trigger supplier feed import
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      const { data, error } = await supabase.functions.invoke('supplier-ingestion', {
+        body: {
+          feedId: selectedSupplierFeed,
+          userId: user.id,
+          action: 'process_feed'
+        }
+      })
+
+      if (error) throw new Error(error.message)
+      if (!data.success) throw new Error(data.error || 'Import failed')
+
+      toast.success(`Import du flux réussi ! ${data?.products_processed || 0} produit(s) traité(s)`)
+      onImportComplete?.(data)
+      setSelectedSupplierFeed('')
+      
+    } catch (error: any) {
+      toast.error(`Erreur d'import du flux: ${error.message}`)
+    } finally {
+      setIsProcessing(false)
+      setImportProgress(0)
     }
   }
 
@@ -462,6 +533,70 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
           <SmartImportInterface />
         </TabsContent>
       </Tabs>
+
+      {/* Supplier Feed Import Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="w-5 h-5" />
+            Import depuis Flux Fournisseur
+          </CardTitle>
+          <CardDescription>
+            Importez des produits depuis vos flux fournisseurs configurés
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Select value={selectedSupplierFeed} onValueChange={setSelectedSupplierFeed}>
+                <SelectTrigger className="w-64">
+                  <SelectValue placeholder="Sélectionner un flux fournisseur" />
+                </SelectTrigger>
+                <SelectContent>
+                  {supplierFeeds.map((feed) => (
+                    <SelectItem key={feed.id} value={feed.id!}>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{feed.feed_type}</Badge>
+                        <span>{feed.feed_url ? new URL(feed.feed_url).hostname : `Flux ${feed.feed_type}`}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={handleSupplierFeedImport}
+                disabled={!selectedSupplierFeed || isProcessing}
+                className="bg-indigo-500 hover:bg-indigo-600"
+              >
+                <Zap className="w-4 h-4 mr-2" />
+                Importer le Flux
+              </Button>
+            </div>
+            <Button variant="outline" asChild>
+              <a href="/suppliers/dashboard">Gérer les Flux</a>
+            </Button>
+          </div>
+
+          {supplierFeeds.length === 0 && !isLoadingSuppliers && (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Aucun flux fournisseur configuré.</p>
+              <Button variant="outline" className="mt-2" asChild>
+                <a href="/suppliers/marketplace">Ajouter des Fournisseurs</a>
+              </Button>
+            </div>
+          )}
+
+          {isProcessing && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span>Import en cours...</span>
+                <span>{importProgress}%</span>
+              </div>
+              <Progress value={importProgress} className="w-full" />
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Imported Products List */}
       {importedProducts.length > 0 && (

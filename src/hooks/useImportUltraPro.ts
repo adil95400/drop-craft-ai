@@ -65,6 +65,7 @@ export interface BulkImportOptions {
   type: 'complete_catalog' | 'trending_products' | 'winners_detected' | 'global_bestsellers'
   platform: string
   filters?: any
+  supplierFeedId?: string
 }
 
 export const useImportUltraPro = () => {
