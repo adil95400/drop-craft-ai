@@ -16,6 +16,10 @@ export interface ModalState {
   supportTicket: boolean;
   newAutomation: boolean;
   configAutomation: boolean;
+  notification: boolean;
+  generateReport: boolean;
+  createSupplier: boolean;
+  supplierFeed: boolean;
 }
 
 export interface ModalData {
@@ -45,6 +49,10 @@ export const useModals = () => {
     supportTicket: false,
     newAutomation: false,
     configAutomation: false,
+    notification: false,
+    generateReport: false,
+    createSupplier: false,
+    supplierFeed: false,
   });
 
   const [modalData, setModalData] = useState<ModalData>({});
@@ -78,6 +86,10 @@ export const useModals = () => {
       supportTicket: false,
       newAutomation: false,
       configAutomation: false,
+      notification: false,
+      generateReport: false,
+      createSupplier: false,
+      supplierFeed: false,
     });
     setModalData({});
   };
