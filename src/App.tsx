@@ -95,6 +95,8 @@ import ApiDocs from './pages/ApiDocs';
 import FAQNew from './pages/FAQNew';
 import Legal from './pages/Legal';
 import Suppliers from './pages/Suppliers';
+import { SupplierDashboard } from './pages/SupplierDashboard';
+import { SupplierMarketplace } from './pages/SupplierMarketplace';
 import WinnersPage from './domains/winners/pages/WinnersPage';
 import Settings from './pages/Settings';
 import MarketplaceOptimized from './pages/MarketplaceOptimized';
@@ -903,6 +905,20 @@ const App = () => (
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suppliers />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/suppliers/dashboard" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <SupplierDashboard />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/suppliers/marketplace" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <SupplierMarketplace />
                 </AppLayout>
               </AuthGuard>
             } />
