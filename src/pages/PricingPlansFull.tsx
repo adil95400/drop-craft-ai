@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PricingCardEnhanced } from "@/components/pricing/PricingCardEnhanced";
 import { 
   ArrowLeft,
   Sparkles,
@@ -270,13 +271,15 @@ const PricingPlansFull = () => {
                     </div>
                   )}
                   
-                  <Button 
-                    variant={plan.buttonVariant} 
-                    className="w-full"
-                    size="lg"
-                  >
-                    {plan.price === "Gratuit" ? "Commencer Gratuitement" : "Choisir ce Plan"}
-                  </Button>
+                  <PricingCardEnhanced 
+                    planId={plan.name.toLowerCase().replace(' ', '_') as 'standard' | 'pro' | 'ultra_pro'}
+                    title={plan.name}
+                    price={plan.price}
+                    description={plan.description}
+                    features={plan.features}
+                    popular={plan.popular}
+                    variant={plan.buttonVariant}
+                  />
                 </CardContent>
               </Card>
             ))}

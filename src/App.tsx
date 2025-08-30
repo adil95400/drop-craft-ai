@@ -97,6 +97,7 @@ import Legal from './pages/Legal';
 import Suppliers from './pages/Suppliers';
 import { SupplierDashboard } from './pages/SupplierDashboard';
 import { SupplierMarketplace } from './pages/SupplierMarketplace';
+import SubscriptionDashboard from './pages/SubscriptionDashboard';
 import WinnersPage from './domains/winners/pages/WinnersPage';
 import Settings from './pages/Settings';
 import MarketplaceOptimized from './pages/MarketplaceOptimized';
@@ -919,6 +920,13 @@ const App = () => (
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <SupplierMarketplace />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/subscription/dashboard" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <SubscriptionDashboard />
                 </AppLayout>
               </AuthGuard>
             } />

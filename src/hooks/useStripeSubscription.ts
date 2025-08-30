@@ -101,7 +101,7 @@ export const useStripeSubscription = () => {
 
     try {
       setLoading(true)
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
+      const { data, error } = await supabase.functions.invoke('stripe-checkout', {
         body: { plan },
         headers: {
           Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
@@ -111,7 +111,9 @@ export const useStripeSubscription = () => {
       if (error) throw error
 
       // Open Stripe checkout in new tab
-      window.open(data.url, '_blank')
+      if (data.url) {
+        window.open(data.url, '_blank')
+      }
       return data.url
     } catch (error: any) {
       console.error('Error creating checkout:', error)
