@@ -31,7 +31,7 @@ export const MarketingCalendarPageLazy = lazy(() => import('@/pages/MarketingCal
 export const ABTestingPageLazy = lazy(() => import('@/pages/ABTestingPage'));
 export const InventoryLazy = lazy(() => import('@/pages/Inventory'));
 export const InventoryUltraProRealLazy = lazy(() => import('@/pages/InventoryUltraProReal'));
-export const AutomationLazy = lazy(() => import('@/pages/Automation'));
+export const AutomationLazy = lazy(() => import('@/pages/AutomationPage'));
 export const AutomationUltraProLazy = lazy(() => import('@/pages/AutomationUltraPro'));
 export const AnalyticsLazy = lazy(() => import('@/pages/Analytics'));
 export const AnalyticsUltraProLazy = lazy(() => import('@/pages/AnalyticsUltraPro'));
