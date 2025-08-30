@@ -97,7 +97,7 @@ export const SupplierDashboard: React.FC = () => {
     },
     {
       key: 'supplier_type',
-      label: 'Type',
+      header: 'Type',
       render: (supplier) => (
         <div className="flex items-center gap-2">
           {getTypeIcon(supplier.supplier_type)}
@@ -107,7 +107,7 @@ export const SupplierDashboard: React.FC = () => {
     },
     {
       key: 'connection_status',
-      label: 'Statut',
+      header: 'Statut',
       render: (supplier) => (
         <Badge className={getStatusColor(supplier.connection_status)}>
           {supplier.connection_status === 'connected' && <CheckCircle className="h-3 w-3 mr-1" />}
@@ -119,7 +119,7 @@ export const SupplierDashboard: React.FC = () => {
     },
     {
       key: 'product_count',
-      label: 'Produits',
+      header: 'Produits',
       render: (supplier) => (
         <div className="text-center">
           <div className="font-medium">{supplier.product_count.toLocaleString()}</div>
@@ -129,7 +129,7 @@ export const SupplierDashboard: React.FC = () => {
     },
     {
       key: 'last_sync_at',
-      label: 'Dernière sync',
+      header: 'Dernière sync',
       render: (supplier) => (
         <div className="text-sm">
           {supplier.last_sync_at ? 
@@ -141,7 +141,7 @@ export const SupplierDashboard: React.FC = () => {
     },
     {
       key: 'actions',
-      label: 'Actions',
+      header: 'Actions',
       render: (supplier) => (
         <div className="flex items-center gap-2">
           <Button
@@ -175,7 +175,7 @@ export const SupplierDashboard: React.FC = () => {
   const batchColumns = [
     {
       key: 'supplier',
-      label: 'Fournisseur',
+      header: 'Fournisseur',
       render: (batch) => {
         const supplier = suppliers.find(s => s.id === batch.supplier_id);
         return supplier?.name || 'Inconnu';
@@ -183,7 +183,7 @@ export const SupplierDashboard: React.FC = () => {
     },
     {
       key: 'batch_type',
-      label: 'Type',
+      header: 'Type',
       render: (batch) => (
         <div className="flex items-center gap-2">
           {getTypeIcon(batch.batch_type)}
@@ -193,7 +193,7 @@ export const SupplierDashboard: React.FC = () => {
     },
     {
       key: 'status',
-      label: 'Statut',
+      header: 'Statut',
       render: (batch) => (
         <Badge className={getStatusColor(batch.status)}>
           {batch.status}
@@ -202,7 +202,7 @@ export const SupplierDashboard: React.FC = () => {
     },
     {
       key: 'progress',
-      label: 'Progression',
+      header: 'Progression',
       render: (batch) => (
         <div className="space-y-1">
           <div className="flex justify-between text-sm">
@@ -220,7 +220,7 @@ export const SupplierDashboard: React.FC = () => {
     },
     {
       key: 'results',
-      label: 'Résultats',
+      header: 'Résultats',
       render: (batch) => (
         <div className="text-sm">
           <div className="text-green-600">✓ {batch.successful_imports}</div>
@@ -232,7 +232,7 @@ export const SupplierDashboard: React.FC = () => {
     },
     {
       key: 'created_at',
-      label: 'Créé le',
+      header: 'Créé le',
       render: (batch) => (
         <div className="text-sm">
           {new Date(batch.created_at).toLocaleDateString('fr-FR')}
@@ -408,8 +408,6 @@ export const SupplierDashboard: React.FC = () => {
                 data={suppliers}
                 columns={supplierColumns}
                 loading={loading}
-                searchTerm={searchTerm}
-                onSearch={setSearchTerm}
               />
             </CardContent>
           </Card>

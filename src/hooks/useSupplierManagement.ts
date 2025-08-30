@@ -239,7 +239,7 @@ export const useSupplierManagement = () => {
 
       if (error) throw error;
 
-      setSupplierFeeds(prev => [...prev, data]);
+      setSupplierFeeds(prev => [...prev, data as SupplierFeed]);
       toast({
         title: "Flux créé",
         description: "Le flux de données a été configuré",
@@ -326,7 +326,7 @@ export const useSupplierManagement = () => {
       const { data, error } = await query;
       if (error) throw error;
 
-      setImportBatches(data || []);
+      setImportBatches((data || []) as ImportBatch[]);
     } catch (err) {
       console.error('Error fetching import batches:', err);
     }
@@ -343,7 +343,7 @@ export const useSupplierManagement = () => {
         .limit(limit);
 
       if (error) throw error;
-      setSupplierProducts(data || []);
+      setSupplierProducts((data || []) as SupplierProduct[]);
     } catch (err) {
       console.error('Error fetching supplier products:', err);
     }
