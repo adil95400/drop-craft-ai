@@ -9,7 +9,7 @@ export const ImportManagementLazy = lazy(() => import('@/pages/ImportManagement'
 export const CatalogueLazy = lazy(() => import('@/pages/Catalogue'));
 export const CatalogueRealLazy = lazy(() => import('@/pages/CatalogueReal'));
 
-// Keep existing for compatibility during transition
+// Keep existing for compatibility during transition  
 export const DashboardUltraProLazy = lazy(() => import('@/pages/Dashboard'));
 export const CatalogueUltraProRealLazy = lazy(() => import('@/pages/Catalogue'));
 export const CatalogueUltraProAdvancedLazy = lazy(() => import('@/pages/Catalogue'));

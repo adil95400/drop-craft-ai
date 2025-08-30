@@ -3,8 +3,11 @@ import { useSearchParams } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Progress } from '@/components/ui/progress'
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
+import { useSimplePlan } from '@/hooks/useSimplePlan'
 import { useRealAnalytics } from "@/hooks/useRealAnalytics"
 import { useRealIntegrations } from "@/hooks/useRealIntegrations"
 import { useRealSuppliers } from "@/hooks/useRealSuppliers"
@@ -23,6 +26,7 @@ import {
   Package, 
   Users, 
   TrendingUp,
+  TrendingDown,
   DollarSign,
   ArrowUpRight,
   ArrowDownRight,
@@ -41,7 +45,12 @@ import {
   Crown,
   Activity,
   Globe,
-  Shield
+  Shield,
+  Euro,
+  Brain,
+  Sparkles,
+  Eye,
+  Download
 } from 'lucide-react'
 
 const Dashboard = () => {
@@ -49,6 +58,7 @@ const Dashboard = () => {
   const [searchParams] = useSearchParams()
   const { toast } = useToast()
   const { checkSubscription } = useStripeSubscription()
+  const { plan, isUltraPro, isPro, loading: planLoading } = useSimplePlan(user)
   
   // Real data hooks
   const { analytics, isLoading } = useRealAnalytics()
@@ -61,6 +71,8 @@ const Dashboard = () => {
   const { workflows, stats: automationStats, isLoading: automationLoading } = useRealAutomation()
   
   const [initialLoadComplete, setInitialLoadComplete] = useState(false)
+  const [dateRange, setDateRange] = useState('7d')
+  const [aiInsights, setAiInsights] = useState<string[]>([])
 
   // Handle checkout success/cancel notifications
   useEffect(() => {
@@ -99,6 +111,19 @@ const Dashboard = () => {
       return () => clearTimeout(timer)
     }
   }, [authLoading])
+
+  // Generate AI insights for Ultra Pro users
+  useEffect(() => {
+    if (isUltraPro() && analytics && !isLoading) {
+      const insights = [
+        `Votre taux de conversion de ${analytics.conversionRate.toFixed(1)}% est ${analytics.conversionRate > 3 ? 'excellent' : 'à améliorer'}`,
+        `Avec ${analytics.orders} commandes et un panier moyen de €${analytics.averageOrderValue.toFixed(2)}, vous générez €${analytics.revenue.toLocaleString()}`,
+        `${analytics.products} produits en catalogue - Optimisez vos top performers pour maximiser les ventes`,
+        analytics.revenue > 10000 ? 'Croissance prometteuse ! Considérez l\'expansion vers de nouveaux marchés' : 'Continuez vos efforts marketing pour augmenter le chiffre d\'affaires'
+      ];
+      setAiInsights(insights);
+    }
+  }, [analytics, isLoading, isUltraPro])
 
   // Enhanced metrics combining all modules
   const metrics = [
@@ -182,7 +207,57 @@ const Dashboard = () => {
     })
   }
 
-  if (authLoading || !initialLoadComplete) {
+  const handleExport = async () => {
+    if (!isPro()) {
+      toast({
+        title: "Fonctionnalité Pro",
+        description: "L'export de données nécessite un plan Pro ou Ultra Pro",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      toast({
+        title: "Export en cours",
+        description: "Génération du rapport PDF...",
+      });
+      
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const data = `Dashboard Report - ${new Date().toLocaleDateString()}
+      
+Revenue: €${analytics?.revenue || 0}
+Orders: ${analytics?.orders || 0}  
+Products: ${analytics?.products || 0}
+Conversion Rate: ${analytics?.conversionRate?.toFixed(1) || 0}%
+
+Generated on: ${new Date().toLocaleString()}`;
+      
+      const blob = new Blob([data], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dashboard-report-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Export terminé",
+        description: "Le rapport a été téléchargé avec succès",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur d'export",
+        description: "Impossible de générer le rapport",
+        variant: "destructive"
+      });
+    }
+  }
+
+  if (authLoading || planLoading || !initialLoadComplete) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -223,21 +298,82 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8">
-      {/* Onboarding Checklist */}
-      <OnboardingChecklist />
+      {/* Onboarding Checklist - Only for Standard users */}
+      {!isPro() && <OnboardingChecklist />}
+
+      {/* AI Insights for Ultra Pro users */}
+      {isUltraPro() && aiInsights.length > 0 && (
+        <Card className="border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50/50 to-blue-50/50">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Brain className="h-5 w-5 text-purple-600" />
+                Insights IA
+              </CardTitle>
+              <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                <Sparkles className="h-3 w-3 mr-1" />
+                Intelligence
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {aiInsights.map((insight, index) => (
+                <div key={index} className="flex items-start gap-3 p-3 bg-white/50 rounded-lg border">
+                  <div className="h-2 w-2 bg-purple-500 rounded-full mt-2"></div>
+                  <p className="text-sm text-gray-700 flex-1">{insight}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Enhanced Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <Crown className="h-8 w-8 text-primary" />
-            Dashboard Ultra Pro
+            {isUltraPro() ? (
+              <>
+                <Crown className="h-8 w-8 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent" />
+                <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  Dashboard Ultra Pro
+                </span>
+              </>
+            ) : isPro() ? (
+              <>
+                <Crown className="h-8 w-8 text-primary" />
+                Dashboard Pro
+              </>
+            ) : (
+              <>
+                <BarChart3 className="h-8 w-8 text-primary" />
+                Dashboard
+              </>
+            )}
           </h1>
           <p className="text-muted-foreground">
-            Bienvenue, {user?.email} ! Vue d'ensemble complète de votre écosystème e-commerce.
+            Bienvenue, {user?.email} ! 
+            {isUltraPro() && " Intelligence artificielle et analytics avancés."}
+            {isPro() && !isUltraPro() && " Analytics professionnels et automatisation."}
+            {!isPro() && " Vue d'ensemble de votre activité e-commerce."}
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {isUltraPro() && (
+            <Select value={dateRange} onValueChange={setDateRange}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1d">Aujourd'hui</SelectItem>
+                <SelectItem value="7d">7 jours</SelectItem>
+                <SelectItem value="30d">30 jours</SelectItem>
+                <SelectItem value="90d">90 jours</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+          
           <Button 
             variant="outline" 
             size="sm" 
@@ -247,9 +383,31 @@ const Dashboard = () => {
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingAny ? 'animate-spin' : ''}`} />
             Actualiser
           </Button>
-          <Badge variant="default" className="gap-1 bg-green-100 text-green-800">
+          
+          {isPro() && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExport}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          )}
+          
+          {isUltraPro() && (
+            <Button 
+              size="sm" 
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            >
+              <Bot className="h-4 w-4 mr-2" />
+              IA Insights
+            </Button>
+          )}
+          
+          <Badge variant="default" className={`gap-1 ${isUltraPro() ? 'bg-purple-100 text-purple-800' : isPro() ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
             <Activity className="h-3 w-3" />
-            Système opérationnel
+            {isUltraPro() ? 'Ultra Pro' : isPro() ? 'Pro' : 'Standard'}
           </Badge>
         </div>
       </div>
