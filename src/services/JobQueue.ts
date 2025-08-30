@@ -228,13 +228,15 @@ export class JobQueueManager {
         .insert({
           id: job.id,
           user_id: job.userId,
-          supplier_id: job.supplierId,
-          type: job.type,
+          source_type: job.type,
           status: job.status,
-          priority: job.priority,
-          scheduled_at: job.scheduledAt.toISOString(),
-          total_items: job.totalItems,
-          metadata: job.metadata,
+          total_rows: job.totalItems,
+          mapping_config: { 
+            priority: job.priority,
+            supplier_id: job.supplierId,
+            scheduled_at: job.scheduledAt.toISOString(),
+            ...job.metadata 
+          },
         });
 
       if (error) {
@@ -251,13 +253,15 @@ export class JobQueueManager {
         .from('import_jobs')
         .update({
           status: job.status,
-          progress: job.progress,
-          processed_items: job.processedItems,
-          success_count: job.successCount,
-          error_count: job.errorCount,
+          processed_rows: job.processedItems,
+          success_rows: job.successCount,
+          error_rows: job.errorCount,
           errors: job.errors,
-          started_at: job.startedAt?.toISOString(),
-          completed_at: job.completedAt?.toISOString(),
+          result_data: { 
+            progress: job.progress,
+            started_at: job.startedAt?.toISOString(),
+            completed_at: job.completedAt?.toISOString(),
+          },
         })
         .eq('id', job.id);
 

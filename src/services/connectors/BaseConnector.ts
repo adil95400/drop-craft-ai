@@ -11,8 +11,7 @@ export abstract class BaseConnector {
 
   // Authentication
   abstract validateCredentials(): Promise<boolean>;
-  abstract refreshCredentials?(): Promise<SupplierCredentials>;
-
+  
   // Products
   abstract fetchProducts(options?: {
     page?: number;
@@ -23,16 +22,30 @@ export abstract class BaseConnector {
 
   abstract fetchProduct(sku: string): Promise<SupplierProduct | null>;
 
-  // Inventory
-  abstract updateInventory?(products: Array<{sku: string, stock: number}>): Promise<boolean>;
-  abstract fetchInventory?(skus: string[]): Promise<Array<{sku: string, stock: number}>>;
+  // Optional methods that can be overridden
+  async refreshCredentials?(): Promise<SupplierCredentials> {
+    throw new Error('Credential refresh not implemented');
+  }
 
-  // Orders
-  abstract createOrder?(order: any): Promise<string>; // returns order ID
-  abstract getOrderStatus?(orderId: string): Promise<string>;
+  async updateInventory?(products: Array<{sku: string, stock: number}>): Promise<boolean> {
+    throw new Error('Inventory updates not supported');
+  }
+  
+  async fetchInventory?(skus: string[]): Promise<Array<{sku: string, stock: number}>> {
+    throw new Error('Inventory fetching not supported');
+  }
 
-  // Webhooks
-  abstract setupWebhooks?(webhookUrl: string): Promise<boolean>;
+  async createOrder?(order: any): Promise<string> {
+    throw new Error('Order creation not supported');
+  }
+  
+  async getOrderStatus?(orderId: string): Promise<string> {
+    throw new Error('Order status not supported');
+  }
+
+  async setupWebhooks?(webhookUrl: string): Promise<boolean> {
+    throw new Error('Webhooks not supported');
+  }
 
   // Rate limiting helper
   protected async rateLimit(): Promise<void> {
