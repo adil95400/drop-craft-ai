@@ -17,6 +17,7 @@ import {
 } from '@/components/modals';
 import { NewAutomationDialog } from '@/components/automation/NewAutomationDialog';
 import { AutomationConfigDialog } from '@/components/automation/AutomationConfigDialog';
+import { AIInsightsModal } from '@/components/dashboard/AIInsightsModal';
 
 interface ModalProviderProps {
   children: React.ReactNode;
@@ -129,6 +130,12 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
           automation={modalData.selectedAutomation}
         />
       )}
+      
+      {/* AI Insights Modal */}
+      <AIInsightsModal
+        open={modalStates.aiInsights}
+        onOpenChange={(open) => !open && closeModal('aiInsights')}
+      />
     </>
   );
 };

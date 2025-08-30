@@ -20,6 +20,7 @@ export interface ModalState {
   generateReport: boolean;
   createSupplier: boolean;
   supplierFeed: boolean;
+  aiInsights: boolean;
 }
 
 export interface ModalData {
@@ -53,6 +54,7 @@ export const useModals = () => {
     generateReport: false,
     createSupplier: false,
     supplierFeed: false,
+    aiInsights: false,
   });
 
   const [modalData, setModalData] = useState<ModalData>({});
@@ -90,6 +92,7 @@ export const useModals = () => {
       generateReport: false,
       createSupplier: false,
       supplierFeed: false,
+      aiInsights: false,
     });
     setModalData({});
   };

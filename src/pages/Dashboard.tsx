@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress'
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
+import { useModals } from '@/hooks/useModals'
 import { useSimplePlan } from '@/hooks/useSimplePlan'
 import { useRealAnalytics } from "@/hooks/useRealAnalytics"
 import { useRealIntegrations } from "@/hooks/useRealIntegrations"
@@ -57,6 +58,7 @@ const Dashboard = () => {
   const { user, loading: authLoading } = useAuth()
   const [searchParams] = useSearchParams()
   const { toast } = useToast()
+  const { openModal } = useModals()
   const { checkSubscription } = useStripeSubscription()
   const { plan, isUltraPro, isPro, loading: planLoading } = useSimplePlan(user)
   
@@ -402,6 +404,7 @@ Generated on: ${new Date().toLocaleString()}`;
             <Button 
               size="sm" 
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              onClick={() => openModal('aiInsights')}
             >
               <Bot className="h-4 w-4 mr-2" />
               IA Insights
