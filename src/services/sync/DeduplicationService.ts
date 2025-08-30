@@ -41,7 +41,7 @@ export class DeduplicationService {
   // Récupération des produits existants
   private async getExistingProducts(): Promise<SupplierProduct[]> {
     const { data: products } = await supabase
-      .from('products')
+      .from('imported_products')
       .select(`
         id, sku, name, description, price, cost_price, currency,
         stock_quantity, image_urls, supplier_sku, supplier_name,
@@ -49,26 +49,24 @@ export class DeduplicationService {
       `)
 
     return products?.map(p => ({
-      id: p.id,
-      sku: p.sku,
-      title: p.name,
+      id: p.id || '',
+      sku: p.sku || '',
+      title: p.name || '',
       description: p.description || '',
-      price: p.price,
-      costPrice: p.cost_price,
-      currency: p.currency,
+      price: p.price || 0,
+      costPrice: p.cost_price || 0,
+      currency: p.currency || 'EUR',
       stock: p.stock_quantity || 0,
       images: Array.isArray(p.image_urls) ? p.image_urls : [],
-      category: p.category,
-      brand: p.brand,
-      weight: p.weight,
-      ean: p.ean,
-      gtin: p.gtin,
+      category: p.category || '',
+      brand: p.brand || '',
+      weight: p.weight || 0,
       variants: [],
       attributes: {},
       supplier: {
         id: p.supplier_name || 'unknown',
         name: p.supplier_name || 'Unknown',
-        sku: p.supplier_sku || p.sku
+        sku: p.supplier_sku || p.sku || ''
       }
     })) || []
   }
@@ -142,7 +140,7 @@ export class DeduplicationService {
     const groups = new Map<string, SupplierProduct[]>()
     
     products.forEach(product => {
-      const ean = product.ean || product.gtin
+      const ean = (product as any).ean || (product as any).gtin
       if (ean && ean.trim()) {
         const key = ean.toLowerCase().trim()
         if (!groups.has(key)) {
@@ -293,7 +291,7 @@ export class DeduplicationService {
 
     // Données techniques (10%)
     if (product.weight) score += 3
-    if (product.ean || product.gtin) score += 4
+    if ((product as any).ean || (product as any).gtin) score += 4
     if (product.variants && product.variants.length > 0) score += 3
 
     return score
@@ -305,13 +303,17 @@ export class DeduplicationService {
     const discardedSkus = duplicateSkus.filter(sku => sku !== selectedProduct.sku)
 
     try {
-      await supabase.from('deduplication_logs').insert({
-        reason: group.reason,
-        confidence: group.confidence,
-        selected_sku: selectedProduct.sku,
-        discarded_skus: discardedSkus,
-        duplicate_count: group.products.length,
+      // Utiliser activity_logs en attendant que deduplication_logs soit créé
+      await supabase.from('activity_logs').insert({
+        user_id: 'system', // Placeholder
+        action: 'deduplication',
+        description: `Deduplication performed: ${group.reason}`,
         metadata: {
+          reason: group.reason,
+          confidence: group.confidence,
+          selected_sku: selectedProduct.sku,
+          discarded_skus: discardedSkus,
+          duplicate_count: group.products.length,
           titles: group.products.map(p => p.title),
           suppliers: group.products.map(p => p.supplier.name)
         }
@@ -324,25 +326,34 @@ export class DeduplicationService {
   // Statistiques de déduplication
   async getDeduplicationStats(days: number = 30): Promise<any> {
     const { data, error } = await supabase
-      .from('deduplication_logs')
+      .from('activity_logs')
       .select('*')
+      .eq('action', 'deduplication')
       .gte('created_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
 
     if (error) return null
 
     const stats = {
       total_duplicates_found: data?.length || 0,
-      total_products_discarded: data?.reduce((sum, log) => sum + log.discarded_skus.length, 0) || 0,
+      total_products_discarded: data?.reduce((sum, log) => {
+        const metadata = log.metadata as any
+        return sum + (metadata?.discarded_skus?.length || 0)
+      }, 0) || 0,
       by_reason: {} as Record<string, number>,
       average_confidence: 0
     }
 
     data?.forEach(log => {
-      stats.by_reason[log.reason] = (stats.by_reason[log.reason] || 0) + 1
+      const metadata = log.metadata as any
+      const reason = metadata?.reason || 'unknown'
+      stats.by_reason[reason] = (stats.by_reason[reason] || 0) + 1
     })
 
     if (data && data.length > 0) {
-      stats.average_confidence = data.reduce((sum, log) => sum + log.confidence, 0) / data.length
+      stats.average_confidence = data.reduce((sum, log) => {
+        const metadata = log.metadata as any
+        return sum + (metadata?.confidence || 0)
+      }, 0) / data.length
     }
 
     return stats

@@ -270,10 +270,10 @@ export class ShopifyConnector {
 
         // Mettre à jour le statut local
         await supabase
-          .from('products')
+          .from('imported_products')
           .update({ 
             published_at: new Date().toISOString(),
-            sync_status: 'synced'
+            status: 'published'
           })
           .eq('id', localProduct.id)
 
@@ -282,8 +282,8 @@ export class ShopifyConnector {
         
         // Marquer comme erreur de sync
         await supabase
-          .from('products')
-          .update({ sync_status: 'error' })
+          .from('imported_products')
+          .update({ status: 'error' })
           .eq('id', localProduct.id)
       }
     }
@@ -349,14 +349,11 @@ export class ShopifyConnector {
   private async handleNewOrder(order: ShopifyOrder): Promise<void> {
     // Enregistrer la commande localement
     await supabase.from('orders').insert({
-      external_id: order.id?.toString(),
-      platform: 'shopify',
-      customer_email: order.email,
+      order_number: order.name || `SHOP-${order.id}`,
       total_amount: parseFloat(order.total_price),
       status: 'pending',
       shipping_address: order.shipping_address,
-      line_items: order.line_items,
-      raw_data: order
+      user_id: (await supabase.auth.getUser()).data.user?.id || ''
     })
 
     console.log(`Imported Shopify order: ${order.name}`)
@@ -369,17 +366,17 @@ export class ShopifyConnector {
         status: order.fulfillment_status || 'pending',
         updated_at: new Date().toISOString()
       })
-      .eq('external_id', order.id?.toString())
+      .eq('order_number', order.name || `SHOP-${order.id}`)
   }
 
   private async handleOrderPaid(order: ShopifyOrder): Promise<void> {
     await supabase
       .from('orders')
       .update({
-        payment_status: 'paid',
+        status: 'paid',
         updated_at: new Date().toISOString()
       })
-      .eq('external_id', order.id?.toString())
+      .eq('order_number', order.name || `SHOP-${order.id}`)
   }
 
   // Utilitaire pour les requêtes API
