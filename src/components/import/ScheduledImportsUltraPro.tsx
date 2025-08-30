@@ -286,7 +286,7 @@ export const ScheduledImportsUltraPro = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => toggleScheduledImport({ id: scheduledImport.id, is_active: !scheduledImport.is_active })}
+                          onClick={() => toggleScheduledImport(scheduledImport.id)}
                           className="hover:bg-primary/10"
                         >
                           {scheduledImport.is_active ? (

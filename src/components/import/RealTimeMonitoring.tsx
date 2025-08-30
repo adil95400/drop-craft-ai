@@ -57,7 +57,7 @@ export const RealTimeMonitoring = () => {
 
   const activeSchedules = scheduledImports.filter(s => s.is_active).length
 
-  const systemStatus = activeBulkImport ? 'importing' : activeJobs > 0 ? 'processing' : 'idle'
+  const systemStatus = activeBulkImport.isActive ? 'importing' : activeJobs > 0 ? 'processing' : 'idle'
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -153,13 +153,13 @@ export const RealTimeMonitoring = () => {
 
   const ActiveOperations = () => (
     <div className="space-y-4">
-      {activeBulkImport && (
+      {activeBulkImport.isActive && (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg">Import en Masse en Cours</CardTitle>
-                <CardDescription>Type: {activeBulkImport}</CardDescription>
+                <CardDescription>Type: {activeBulkImport.type}</CardDescription>
               </div>
               <Badge className="bg-blue-100 text-blue-800">En cours</Badge>
             </div>
@@ -206,7 +206,7 @@ export const RealTimeMonitoring = () => {
         </Card>
       )}
 
-      {activeBulkImport === null && activeJobs === 0 && (
+      {!activeBulkImport.isActive && activeJobs === 0 && (
         <Card>
           <CardContent className="p-8 text-center">
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
