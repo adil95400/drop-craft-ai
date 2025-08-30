@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useEnhancedAuth } from "@/hooks/useEnhancedAuth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -47,6 +48,7 @@ import { AdvancedMonitoring } from "@/components/integrations/AdvancedMonitoring
 import { SecurityAudit } from "@/components/integrations/SecurityAudit"
 
 const Integrations = () => {
+  const { user, loading } = useEnhancedAuth()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedIntegration, setSelectedIntegration] = useState<any>(null)
   const { 
@@ -334,6 +336,27 @@ const Integrations = () => {
         variant: "destructive"
       })
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6 space-y-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="container mx-auto p-6 space-y-8">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold mb-4">Authentification requise</h2>
+          <p className="text-muted-foreground">Connectez-vous pour accéder aux intégrations.</p>
+        </div>
+      </div>
+    )
   }
 
   return (
