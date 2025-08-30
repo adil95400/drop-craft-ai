@@ -2,340 +2,185 @@ import { useState } from "react"
 import { useEnhancedAuth } from "@/hooks/useEnhancedAuth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
-  Search,
-  Plus,
-  Settings,
-  CheckCircle,
-  Clock,
-  AlertCircle,
-  Zap,
-  ShoppingCart,
-  BarChart3,
-  Mail,
-  MessageSquare,
-  Truck,
-  CreditCard,
-  Globe,
-  Users,
   ExternalLink,
-  RotateCw,
-  Activity
+  Plus,
+  FileText,
+  Database,
+  Image,
+  Code,
+  Download,
+  Sheet
 } from "lucide-react"
-import { useRealIntegrations } from "@/hooks/useRealIntegrations"
 import { useToast } from "@/hooks/use-toast"
-import { IntegrationModal } from "@/components/integrations/IntegrationModal"
-import { IntegrationsTable } from "@/components/integrations/IntegrationsTable"
-import { SyncLogsTable } from "@/components/integrations/SyncLogsTable"
-import { CreateIntegrationForm } from "@/components/integrations/CreateIntegrationForm"
-import { RealIntegrationsManager } from "@/components/integrations/RealIntegrationsManager"
-import { WebhookManager } from "@/components/integrations/WebhookManager"
-import { RealTimeMonitor } from "@/components/integrations/RealTimeMonitor"
-import { APIKeysManager } from "@/components/integrations/APIKeysManager"
-import { IntegrationHealthMonitor } from "@/components/integrations/IntegrationHealthMonitor"
-import { IntegrationAnalytics } from "@/components/integrations/IntegrationAnalytics"
-import { ConnectionManager } from "@/components/integrations/ConnectionManager"
-import { TemplateMarketplace } from "@/components/integrations/TemplateMarketplace"
-import { WorkflowBuilder } from "@/components/integrations/WorkflowBuilder"
-import { AdvancedFiltering } from "@/components/integrations/AdvancedFiltering"
-import { CompleteMarketplace } from "@/components/integrations/CompleteMarketplace"
-import { QuickSetup } from "@/components/integrations/QuickSetup"
-import { AdvancedMonitoring } from "@/components/integrations/AdvancedMonitoring"
-import { SecurityAudit } from "@/components/integrations/SecurityAudit"
 
 const Integrations = () => {
   const { user, loading } = useEnhancedAuth()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedIntegration, setSelectedIntegration] = useState<any>(null)
-  const { 
-    integrations: realIntegrations, 
-    stats, 
-    isLoading,
-    connectShopify,
-    connectAliExpress,
-    connectBigBuy,
-    testConnection,
-    syncProducts,
-    syncOrders,
-    deleteIntegration
-  } = useRealIntegrations()
+  const [selectedPlatform, setSelectedPlatform] = useState<any>(null)
+  const [configDialog, setConfigDialog] = useState(false)
   const { toast } = useToast()
 
-  const ecommerceIntegrations = [
+  // Données des plateformes inspirées de l'image de référence
+  const platforms = [
     {
-      name: "Shopify",
-      description: "Synchronisez vos produits et commandes avec votre boutique Shopify",
-      logo: "https://logos-world.net/wp-content/uploads/2020/11/Shopify-Logo.png",
-      category: "E-commerce",
-      status: "connected",
-      features: ["Sync produits", "Gestion stock", "Commandes auto"],
-      popularity: "Très populaire"
+      id: "afosto",
+      name: "Afosto",
+      logo: "https://images.g2crowd.com/uploads/product/image/social_landscape/social_landscape_4c9b6c1e9c4a4c9b6a1c9b6a1c9b6a1c/afosto.png",
+      category: "E-commerce"
     },
     {
-      name: "WooCommerce", 
-      description: "Intégration complète avec votre boutique WordPress WooCommerce",
-      logo: "https://logos-world.net/wp-content/uploads/2020/11/WooCommerce-Logo.png",
-      category: "E-commerce",
-      status: "available",
-      features: ["Import/Export", "Webhooks", "API REST"],
-      popularity: "Populaire"
+      id: "bigcommerce", 
+      name: "BigCommerce",
+      logo: "https://logos-world.net/wp-content/uploads/2021/02/BigCommerce-Logo.png",
+      category: "E-commerce"
     },
     {
-      name: "PrestaShop",
-      description: "Connectez votre boutique PrestaShop en quelques clics",
-      logo: "https://logos-world.net/wp-content/uploads/2020/11/PrestaShop-Logo.png", 
-      category: "E-commerce",
-      status: "available",
-      features: ["Sync bidirectionnelle", "Modules natifs", "Support multi-langues"],
-      popularity: "Populaire"
+      id: "ccv",
+      name: "CCV Shop",
+      logo: "https://www.ccv.eu/app/uploads/2023/03/ccv-shop-logo.svg",
+      category: "E-commerce"
     },
     {
+      id: "crawler",
+      name: "Crawler",
+      logo: "https://via.placeholder.com/120x60/6366f1/ffffff?text=Crawler",
+      category: "Tools"
+    },
+    {
+      id: "itsperfect",
+      name: "ItsPerfect",
+      logo: "https://via.placeholder.com/120x60/059669/ffffff?text=ItsPerfect",
+      category: "E-commerce"
+    },
+    {
+      id: "lightspeed",
+      name: "Lightspeed",
+      logo: "https://logos-world.net/wp-content/uploads/2021/05/Lightspeed-Logo.png",
+      category: "E-commerce"
+    },
+    {
+      id: "lightspeed-e",
+      name: "Lightspeed E - Series",
+      logo: "https://logos-world.net/wp-content/uploads/2021/05/Lightspeed-Logo.png",
+      category: "E-commerce"
+    },
+    {
+      id: "magento",
       name: "Magento",
-      description: "Solution enterprise pour boutiques Magento",
       logo: "https://logos-world.net/wp-content/uploads/2020/09/Magento-Logo.png",
-      category: "E-commerce", 
-      status: "available",
-      features: ["API GraphQL", "Sync temps réel", "Multi-stores"],
-      popularity: "Enterprise"
+      category: "E-commerce"
+    },
+    {
+      id: "mijnwebwinkel",
+      name: "Mijnwebwinkel",
+      logo: "https://via.placeholder.com/120x60/22c55e/ffffff?text=Mijnwebwinkel",
+      category: "E-commerce"
+    },
+    {
+      id: "oxid",
+      name: "Oxid",
+      logo: "https://via.placeholder.com/120x60/1f2937/ffffff?text=OXID",
+      category: "E-commerce"
+    },
+    {
+      id: "prestashop",
+      name: "PrestaShop",
+      logo: "https://logos-world.net/wp-content/uploads/2020/11/PrestaShop-Logo.png",
+      category: "E-commerce"
+    },
+    {
+      id: "shopify",
+      name: "Shopify", 
+      logo: "https://logos-world.net/wp-content/uploads/2020/11/Shopify-Logo.png",
+      category: "E-commerce"
+    },
+    {
+      id: "shoptrader",
+      name: "Shoptrader",
+      logo: "https://via.placeholder.com/120x60/3b82f6/ffffff?text=SHOPTRADER",
+      category: "E-commerce"
+    },
+    {
+      id: "shopware5",
+      name: "Shopware 5",
+      logo: "https://via.placeholder.com/120x60/0ea5e9/ffffff?text=shopware",
+      category: "E-commerce"
+    },
+    {
+      id: "shopware6",
+      name: "Shopware 6", 
+      logo: "https://via.placeholder.com/120x60/0ea5e9/ffffff?text=shopware",
+      category: "E-commerce"
+    },
+    {
+      id: "squarespace",
+      name: "Squarespace",
+      logo: "https://logos-world.net/wp-content/uploads/2020/11/Squarespace-Logo.png",
+      category: "E-commerce"
+    },
+    {
+      id: "woocommerce",
+      name: "WooCommerce",
+      logo: "https://logos-world.net/wp-content/uploads/2020/11/WooCommerce-Logo.png",
+      category: "E-commerce"
+    },
+    {
+      id: "akeneo",
+      name: "Akeneo",
+      logo: "https://via.placeholder.com/120x60/8b5cf6/ffffff?text=akeneo",
+      category: "PIM"
     }
   ]
 
-  const supplierIntegrations = [
+  // Fiches techniques
+  const technicalFiles = [
     {
-      name: "AliExpress",
-      description: "Import automatique des meilleurs produits AliExpress",
-      logo: "https://logos-world.net/wp-content/uploads/2020/05/AliExpress-Logo.png",
-      category: "Fournisseurs",
-      status: "connected",
-      features: ["API officielle", "Prix temps réel", "Stock auto"],
-      popularity: "Leader mondial"
+      id: "xml",
+      name: "XML",
+      icon: <Code className="w-8 h-8 text-orange-600" />,
+      description: "Configuration XML"
     },
     {
-      name: "Amazon",
-      description: "Accès aux produits Amazon via API officielle",
-      logo: "https://logos-world.net/wp-content/uploads/2020/04/Amazon-Logo.png",
-      category: "Fournisseurs", 
-      status: "connected",
-      features: ["Products API", "Advertising API", "FBA Integration"],
-      popularity: "Marketplace #1"
+      id: "csv", 
+      name: "CSV",
+      icon: <Sheet className="w-8 h-8 text-green-600" />,
+      description: "Format CSV"
     },
     {
-      name: "eBay",
-      description: "Synchronisation avec la marketplace eBay",
-      logo: "https://logos-world.net/wp-content/uploads/2020/11/eBay-Logo.png",
-      category: "Fournisseurs",
-      status: "available", 
-      features: ["Trading API", "Finding API", "Shopping API"],
-      popularity: "Marketplace historique"
+      id: "text",
+      name: "Text",
+      icon: <FileText className="w-8 h-8 text-red-600" />,
+      description: "Fichier texte"
     },
     {
-      name: "BigBuy",
-      description: "Fournisseur dropshipping européen de confiance",
-      logo: "https://www.bigbuy.eu/skin/frontend/bigbuy/default/images/logo.svg",
-      category: "Fournisseurs",
-      status: "available",
-      features: ["Catalogue EU", "Livraison rapide", "Support français"],
-      popularity: "Premium EU"
+      id: "json",
+      name: "JSON", 
+      icon: <Database className="w-8 h-8 text-blue-600" />,
+      description: "Format JSON"
+    },
+    {
+      id: "google",
+      name: "Google Sheets",
+      icon: <Sheet className="w-8 h-8 text-green-600" />,
+      description: "Google Sheets"
     }
   ]
 
-  const marketingIntegrations = [
-    {
-      name: "Google Ads",
-      description: "Créez et gérez vos campagnes publicitaires Google",
-      logo: "https://logos-world.net/wp-content/uploads/2020/09/Google-Ads-Logo.png",
-      category: "Marketing",
-      status: "available",
-      features: ["Campagnes auto", "Conversion tracking", "Smart bidding"],
-      popularity: "Essentiel"
-    },
-    {
-      name: "Facebook Ads",
-      description: "Publicités Facebook et Instagram optimisées IA",
-      logo: "https://logos-world.net/wp-content/uploads/2020/05/Facebook-Logo.png", 
-      category: "Marketing",
-      status: "available",
-      features: ["Pixel Facebook", "Catalogues produits", "Lookalike audiences"],
-      popularity: "Social #1"
-    },
-    {
-      name: "Mailchimp",
-      description: "Email marketing automation pour vos clients",
-      logo: "https://logos-world.net/wp-content/uploads/2021/02/Mailchimp-Logo.png",
-      category: "Marketing",
-      status: "connected",
-      features: ["Segmentation auto", "Abandoned cart", "A/B testing"],
-      popularity: "Email leader"
-    },
-    {
-      name: "Klaviyo",
-      description: "Plateforme email marketing avancée pour e-commerce",
-      logo: "https://logos-world.net/wp-content/uploads/2021/03/Klaviyo-Logo.png",
-      category: "Marketing", 
-      status: "available",
-      features: ["CDP intégré", "Flows avancés", "Revenue attribution"],
-      popularity: "E-commerce spécialisé"
-    }
-  ]
-
-  const analyticsIntegrations = [
-    {
-      name: "Google Analytics",
-      description: "Suivi avancé des performances de votre boutique",
-      logo: "https://logos-world.net/wp-content/uploads/2020/03/Google-Analytics-Logo.png",
-      category: "Analytics",
-      status: "connected",
-      features: ["GA4", "E-commerce tracking", "Custom events"],
-      popularity: "Standard web"
-    },
-    {
-      name: "Hotjar",
-      description: "Heatmaps et enregistrements de sessions utilisateurs",
-      logo: "https://logos-world.net/wp-content/uploads/2021/01/Hotjar-Logo.png",
-      category: "Analytics",
-      status: "available", 
-      features: ["Heatmaps", "Session recordings", "Feedback polls"],
-      popularity: "UX insights"
-    },
-    {
-      name: "Mixpanel",
-      description: "Analytics produit avancé et cohort analysis",
-      logo: "https://logos-world.net/wp-content/uploads/2021/02/Mixpanel-Logo.png",
-      category: "Analytics",
-      status: "available",
-      features: ["Event tracking", "Funnels", "Retention analysis"],
-      popularity: "Product analytics"
-    }
-  ]
-
-  const paymentIntegrations = [
-    {
-      name: "Stripe",
-      description: "Processeur de paiement moderne et sécurisé",
-      logo: "https://logos-world.net/wp-content/uploads/2021/03/Stripe-Logo.png",
-      category: "Paiement",
-      status: "connected",
-      features: ["Multi-devises", "Subscriptions", "Fraud protection"],
-      popularity: "Fintech leader"
-    },
-    {
-      name: "PayPal",
-      description: "Solution de paiement globale et trusted",
-      logo: "https://logos-world.net/wp-content/uploads/2020/04/PayPal-Logo.png",
-      category: "Paiement", 
-      status: "connected",
-      features: ["Express checkout", "Pay Later", "Seller protection"],
-      popularity: "Confiance mondiale"
-    },
-    {
-      name: "Klarna",
-      description: "Paiement en plusieurs fois pour vos clients",
-      logo: "https://logos-world.net/wp-content/uploads/2021/02/Klarna-Logo.png",
-      category: "Paiement",
-      status: "available",
-      features: ["Buy now pay later", "Installments", "Banking"],
-      popularity: "BNPL leader"
-    }
-  ]
-
-  const getAllIntegrations = () => {
-    return [
-      ...ecommerceIntegrations,
-      ...supplierIntegrations, 
-      ...marketingIntegrations,
-      ...analyticsIntegrations,
-      ...paymentIntegrations
-    ]
+  const handlePlatformClick = (platform: any) => {
+    setSelectedPlatform(platform)
+    setConfigDialog(true)
   }
 
-  const filteredIntegrations = getAllIntegrations().filter(integration =>
-    integration.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    integration.category.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "connected":
-        return <Badge className="bg-green-100 text-green-800 border-green-200"><CheckCircle className="w-3 h-3 mr-1" />Connecté</Badge>
-      case "pending":
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200"><Clock className="w-3 h-3 mr-1" />En attente</Badge>
-      default:
-        return <Badge variant="outline">Disponible</Badge>
-    }
-  }
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "E-commerce": return <ShoppingCart className="w-4 h-4" />
-      case "Fournisseurs": return <Truck className="w-4 h-4" />
-      case "Marketing": return <BarChart3 className="w-4 h-4" />
-      case "Analytics": return <BarChart3 className="w-4 h-4" />
-      case "Paiement": return <CreditCard className="w-4 h-4" />
-      default: return <Globe className="w-4 h-4" />
-    }
-  }
-
-  const handleConnect = async (integration: any, credentials?: any) => {
-    try {
-      switch (integration.name) {
-        case 'Shopify':
-          await connectShopify(credentials)
-          break
-        case 'AliExpress':
-          await connectAliExpress(credentials)
-          break
-        case 'BigBuy':
-          await connectBigBuy(credentials)
-          break
-        default:
-          toast({
-            title: "Intégration en cours de développement",
-            description: `L'intégration ${integration.name} sera bientôt disponible.`
-          })
-      }
-    } catch (error) {
-      toast({
-        title: "Erreur de connexion",
-        description: "Impossible de connecter l'intégration.",
-        variant: "destructive"
-      })
-    }
-  }
-
-  const handleSync = async (integration: any) => {
-    try {
-      await syncProducts({ integrationId: integration.id, platform: 'products' })
-      toast({
-        title: "Synchronisation lancée",
-        description: `Synchronisation des données ${integration.name} en cours.`
-      })
-    } catch (error) {
-      toast({
-        title: "Erreur de synchronisation",
-        description: "Impossible de lancer la synchronisation.",
-        variant: "destructive"
-      })
-    }
-  }
-
-  const handleTest = async (integration: any) => {
-    try {
-      await testConnection(integration.id)
-      toast({
-        title: "Test réussi",
-        description: `La connexion à ${integration.name} fonctionne correctement.`
-      })
-    } catch (error) {
-      toast({
-        title: "Test échoué",
-        description: "La connexion ne fonctionne pas correctement.",
-        variant: "destructive"
-      })
-    }
+  const handleConnect = () => {
+    toast({
+      title: "Connexion en cours",
+      description: `Configuration de ${selectedPlatform?.name} en cours...`
+    })
+    setConfigDialog(false)
   }
 
   if (loading) {
@@ -360,204 +205,145 @@ const Integrations = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Intégrations</h1>
-            <p className="text-muted-foreground">
-              Connectez vos outils préférés en quelques clics
+    <div className="container mx-auto p-6 max-w-7xl">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs">i</span>
+            </div>
+            <p className="text-sm text-blue-800">
+              Vous débutez avec Channable ? Commencez par notre démo interactive pour voir comment cela fonctionne: aucun import de données n'est nécessaire !
             </p>
+            <Button variant="link" className="text-blue-600 p-0 h-auto">
+              Voir la démo de Channable
+            </Button>
           </div>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Demander une intégration
-          </Button>
         </div>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+          Configurez votre import avec des plugins
+        </h1>
+      </div>
 
-        {/* Search */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Rechercher une intégration..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Intégrations</CardTitle>
-              <Globe className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{realIntegrations.length || getAllIntegrations().length}</div>
-              <p className="text-xs text-muted-foreground">
-                +5 ce mois-ci
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Connectées</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.connected || getAllIntegrations().filter(i => i.status === 'connected').length}
+      {/* Grille des plateformes */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-12">
+        {platforms.map((platform) => (
+          <Card 
+            key={platform.id}
+            className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border border-gray-200 bg-white"
+            onClick={() => handlePlatformClick(platform)}
+          >
+            <CardContent className="p-4 flex flex-col items-center text-center space-y-3">
+              <div className="w-16 h-16 flex items-center justify-center">
+                <img 
+                  src={platform.logo} 
+                  alt={platform.name}
+                  className="max-w-full max-h-full object-contain"
+                  onError={(e) => {
+                    e.currentTarget.src = `https://via.placeholder.com/80x40/6366f1/ffffff?text=${platform.name.charAt(0)}`
+                  }}
+                />
               </div>
-              <p className="text-xs text-muted-foreground">
-                Actives maintenant
-              </p>
+              <h3 className="font-medium text-sm text-gray-900 leading-tight">
+                {platform.name}
+              </h3>
             </CardContent>
           </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Categories</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">5</div>
-              <p className="text-xs text-muted-foreground">
-                E-commerce, Marketing, etc.
-              </p>
-            </CardContent>
-          </Card>
+        ))}
+      </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Popularité</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">94%</div>
-              <p className="text-xs text-muted-foreground">
-                Taux d'adoption moyen
-              </p>
-            </CardContent>
-          </Card>
+      {/* Section fiches techniques */}
+      <div className="space-y-6">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Ou configuration à l'aide de fiches techniques
+        </h2>
+        
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {technicalFiles.map((file) => (
+            <Card 
+              key={file.id}
+              className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border border-gray-200 bg-white"
+            >
+              <CardContent className="p-4 flex flex-col items-center text-center space-y-3">
+                <div className="w-16 h-16 flex items-center justify-center">
+                  {file.icon}
+                </div>
+                <h3 className="font-medium text-sm text-gray-900">
+                  {file.name}
+                </h3>
+              </CardContent>
+            </Card>
+          ))}
         </div>
+      </div>
 
-        <Tabs defaultValue="real" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-1 p-1 bg-muted/30 rounded-lg h-auto">
-            <TabsTrigger value="real" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <CheckCircle className="h-3 w-3" />
-              <span className="text-xs font-medium">Réelles</span>
-            </TabsTrigger>
-            <TabsTrigger value="manage" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <Settings className="h-3 w-3" />
-              <span className="text-xs font-medium">Gestion</span>
-            </TabsTrigger>
-            <TabsTrigger value="create" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <Plus className="h-3 w-3" />
-              <span className="text-xs font-medium">Créer</span>
-            </TabsTrigger>
-            <TabsTrigger value="logs" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <BarChart3 className="h-3 w-3" />
-              <span className="text-xs font-medium">Logs</span>
-            </TabsTrigger>
-            <TabsTrigger value="webhooks" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <Zap className="h-3 w-3" />
-              <span className="text-xs font-medium">Webhooks</span>
-            </TabsTrigger>
-            <TabsTrigger value="monitor" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <Activity className="h-3 w-3" />
-              <span className="text-xs font-medium">Monitor</span>
-            </TabsTrigger>
-            <TabsTrigger value="api-keys" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <ExternalLink className="h-3 w-3" />
-              <span className="text-xs font-medium">API Keys</span>
-            </TabsTrigger>
-            <TabsTrigger value="health" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <Users className="h-3 w-3" />
-              <span className="text-xs font-medium">Santé</span>
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <BarChart3 className="h-3 w-3" />
-              <span className="text-xs font-medium">Analytics</span>
-            </TabsTrigger>
-            <TabsTrigger value="connections" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <Globe className="h-3 w-3" />
-              <span className="text-xs font-medium">Connexions</span>
-            </TabsTrigger>
-            <TabsTrigger value="marketplace" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <Globe className="h-3 w-3" />
-              <span className="text-xs font-medium">Complet</span>
-            </TabsTrigger>
-            <TabsTrigger value="setup" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <Plus className="h-3 w-3" />
-              <span className="text-xs font-medium">Setup</span>
-            </TabsTrigger>
-            <TabsTrigger value="monitoring" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <Activity className="h-3 w-3" />
-              <span className="text-xs font-medium">Monitor+</span>
-            </TabsTrigger>
-            <TabsTrigger value="security" className="flex-col gap-1 h-auto py-2 px-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200 hover:bg-background/50">
-              <Settings className="h-3 w-3" />
-              <span className="text-xs font-medium">Sécurité</span>
-            </TabsTrigger>
-          </TabsList>
+      {/* Dialog de configuration */}
+      <Dialog open={configDialog} onOpenChange={setConfigDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-4">
+              <ExternalLink className="w-5 h-5 text-blue-600" />
+              <DialogTitle>Connecter avec</DialogTitle>
+            </div>
+            {selectedPlatform && (
+              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                <img 
+                  src={selectedPlatform.logo} 
+                  alt={selectedPlatform.name}
+                  className="w-12 h-12 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.src = `https://via.placeholder.com/48x24/6366f1/ffffff?text=${selectedPlatform.name.charAt(0)}`
+                  }}
+                />
+                <span className="font-medium">{selectedPlatform.name}</span>
+              </div>
+            )}
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nom *</Label>
+              <Input 
+                id="name" 
+                placeholder={selectedPlatform?.name} 
+                defaultValue={selectedPlatform?.name}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="url">URL de la plateforme *</Label>
+              <Input 
+                id="url" 
+                placeholder="ex: https://www.exempleboutique.fr"
+              />
+            </div>
 
-          <TabsContent value="real" className="space-y-6">
-            <RealIntegrationsManager />
-          </TabsContent>
+            <div className="space-y-2">
+              <Label htmlFor="credentials">Clé API / Token *</Label>
+              <Input 
+                id="credentials" 
+                placeholder="Votre clé d'API ou token d'accès"
+                type="password"
+              />
+            </div>
 
-          <TabsContent value="manage" className="space-y-6">
-            <IntegrationsTable />
-          </TabsContent>
-
-          <TabsContent value="create" className="space-y-6">
-            <CreateIntegrationForm />
-          </TabsContent>
-
-          <TabsContent value="logs" className="space-y-6">
-            <SyncLogsTable />
-          </TabsContent>
-
-          <TabsContent value="webhooks" className="space-y-6">
-            <WebhookManager />
-          </TabsContent>
-
-          <TabsContent value="monitor" className="space-y-6">
-            <RealTimeMonitor />
-          </TabsContent>
-
-          <TabsContent value="api-keys" className="space-y-6">
-            <APIKeysManager />
-          </TabsContent>
-
-          <TabsContent value="health" className="space-y-6">
-            <IntegrationHealthMonitor />
-          </TabsContent>
-
-          <TabsContent value="analytics" className="space-y-6">
-            <IntegrationAnalytics />
-          </TabsContent>
-
-          <TabsContent value="connections" className="space-y-6">
-            <ConnectionManager />
-          </TabsContent>
-
-          <TabsContent value="marketplace" className="space-y-6">
-            <CompleteMarketplace />
-          </TabsContent>
-
-          <TabsContent value="setup">
-            <QuickSetup />
-          </TabsContent>
-
-          <TabsContent value="monitoring">
-            <AdvancedMonitoring />
-          </TabsContent>
-
-          <TabsContent value="security">
-            <SecurityAudit />
-          </TabsContent>
-        </Tabs>
+            <div className="flex items-center justify-between pt-4">
+              <Button variant="ghost" className="text-blue-600">
+                Aide
+              </Button>
+              <div className="space-x-2">
+                <Button variant="outline" onClick={() => setConfigDialog(false)}>
+                  Fermer
+                </Button>
+                <Button onClick={handleConnect} className="bg-blue-600 hover:bg-blue-700">
+                  Se connecter avec {selectedPlatform?.name}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
