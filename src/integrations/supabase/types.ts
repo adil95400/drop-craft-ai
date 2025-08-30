@@ -3113,6 +3113,39 @@ export type Database = {
           },
         ]
       }
+      user_preferences: {
+        Row: {
+          created_at: string
+          dashboard_config: Json
+          id: string
+          notification_settings: Json
+          preferences: Json
+          shortcuts: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dashboard_config?: Json
+          id?: string
+          notification_settings?: Json
+          preferences?: Json
+          shortcuts?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dashboard_config?: Json
+          id?: string
+          notification_settings?: Json
+          preferences?: Json
+          shortcuts?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_quotas: {
         Row: {
           created_at: string | null
@@ -3340,6 +3373,10 @@ export type Database = {
           updated_at: string
           user_id: string
         }[]
+      }
+      get_dashboard_analytics: {
+        Args: { user_id_param?: string }
+        Returns: Json
       }
       get_effective_plan: {
         Args: {
