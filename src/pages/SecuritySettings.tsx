@@ -5,6 +5,7 @@ import { useEnhancedAuth } from '@/hooks/useEnhancedAuth'
 import { SessionManager } from '@/components/auth/SessionManager'
 import { RoleManager } from '@/components/admin/RoleManager'
 import { UserForceDisconnect } from '@/components/admin/UserForceDisconnect'
+import { ForceDisconnectDemo } from '@/components/admin/ForceDisconnectDemo'
 import { 
   Shield, 
   Users, 
@@ -44,11 +45,10 @@ export const SecuritySettings = () => {
         icon: UserX,
         component: (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Utilisez cette fonctionnalité pour déconnecter immédiatement un utilisateur 
-              de toutes ses sessions actives. Cette action est irréversible.
-            </p>
-            <UserForceDisconnect />
+            <div>
+              <h4 className="font-medium mb-2">Test de Déconnexion Forcée</h4>
+              <ForceDisconnectDemo />
+            </div>
           </div>
         ),
         description: 'Forcer la déconnexion d\'un utilisateur'
