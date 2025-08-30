@@ -818,6 +818,65 @@ export type Database = {
         }
         Relationships: []
       }
+      import_batches: {
+        Row: {
+          batch_type: string
+          completed_at: string | null
+          created_at: string | null
+          error_details: Json | null
+          failed_imports: number | null
+          id: string
+          processed_products: number | null
+          processing_time_ms: number | null
+          started_at: string | null
+          status: string | null
+          successful_imports: number | null
+          supplier_id: string
+          total_products: number | null
+          user_id: string
+        }
+        Insert: {
+          batch_type: string
+          completed_at?: string | null
+          created_at?: string | null
+          error_details?: Json | null
+          failed_imports?: number | null
+          id?: string
+          processed_products?: number | null
+          processing_time_ms?: number | null
+          started_at?: string | null
+          status?: string | null
+          successful_imports?: number | null
+          supplier_id: string
+          total_products?: number | null
+          user_id: string
+        }
+        Update: {
+          batch_type?: string
+          completed_at?: string | null
+          created_at?: string | null
+          error_details?: Json | null
+          failed_imports?: number | null
+          id?: string
+          processed_products?: number | null
+          processing_time_ms?: number | null
+          started_at?: string | null
+          status?: string | null
+          successful_imports?: number | null
+          supplier_id?: string
+          total_products?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_batches_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       import_connectors: {
         Row: {
           config: Json
@@ -2505,26 +2564,228 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_feeds: {
+        Row: {
+          authentication: Json | null
+          created_at: string | null
+          error_log: Json | null
+          feed_config: Json | null
+          feed_type: string
+          feed_url: string | null
+          field_mapping: Json | null
+          id: string
+          is_active: boolean | null
+          last_import_at: string | null
+          last_import_status: string | null
+          supplier_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          authentication?: Json | null
+          created_at?: string | null
+          error_log?: Json | null
+          feed_config?: Json | null
+          feed_type: string
+          feed_url?: string | null
+          field_mapping?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_import_at?: string | null
+          last_import_status?: string | null
+          supplier_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          authentication?: Json | null
+          created_at?: string | null
+          error_log?: Json | null
+          feed_config?: Json | null
+          feed_type?: string
+          feed_url?: string | null
+          field_mapping?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_import_at?: string | null
+          last_import_status?: string | null
+          supplier_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_feeds_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_marketplace: {
+        Row: {
+          commission_rate: number | null
+          created_at: string | null
+          display_order: number | null
+          id: string
+          integration_complexity: string | null
+          is_featured: boolean | null
+          marketing_copy: string | null
+          min_order_value: number | null
+          setup_time_minutes: number | null
+          supplier_id: string
+          supported_countries: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          commission_rate?: number | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          integration_complexity?: string | null
+          is_featured?: boolean | null
+          marketing_copy?: string | null
+          min_order_value?: number | null
+          setup_time_minutes?: number | null
+          supplier_id: string
+          supported_countries?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          commission_rate?: number | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          integration_complexity?: string | null
+          is_featured?: boolean | null
+          marketing_copy?: string | null
+          min_order_value?: number | null
+          setup_time_minutes?: number | null
+          supplier_id?: string
+          supported_countries?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_marketplace_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_products: {
+        Row: {
+          attributes: Json | null
+          brand: string | null
+          category: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          ean: string | null
+          external_sku: string
+          global_sku: string | null
+          id: string
+          image_urls: string[] | null
+          import_batch_id: string | null
+          last_updated: string | null
+          name: string
+          price: number
+          raw_data: Json | null
+          stock_quantity: number | null
+          subcategory: string | null
+          supplier_id: string
+          upc: string | null
+          user_id: string
+        }
+        Insert: {
+          attributes?: Json | null
+          brand?: string | null
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          ean?: string | null
+          external_sku: string
+          global_sku?: string | null
+          id?: string
+          image_urls?: string[] | null
+          import_batch_id?: string | null
+          last_updated?: string | null
+          name: string
+          price: number
+          raw_data?: Json | null
+          stock_quantity?: number | null
+          subcategory?: string | null
+          supplier_id: string
+          upc?: string | null
+          user_id: string
+        }
+        Update: {
+          attributes?: Json | null
+          brand?: string | null
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          ean?: string | null
+          external_sku?: string
+          global_sku?: string | null
+          id?: string
+          image_urls?: string[] | null
+          import_batch_id?: string | null
+          last_updated?: string | null
+          name?: string
+          price?: number
+          raw_data?: Json | null
+          stock_quantity?: number | null
+          subcategory?: string | null
+          supplier_id?: string
+          upc?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           access_count: number | null
           api_endpoint: string | null
           api_key: string | null
+          connection_status: string | null
           contact_email: string | null
           contact_phone: string | null
           country: string | null
           created_at: string
           credentials_updated_at: string | null
+          description: string | null
           encrypted_credentials: Json | null
           id: string
           last_access_at: string | null
           last_sync_at: string | null
+          logo_url: string | null
           name: string
           next_sync_at: string | null
+          product_count: number | null
           rating: number | null
+          sector: string | null
           status: string | null
+          supplier_type: string | null
           sync_enabled: boolean | null
           sync_frequency: string | null
+          tags: string[] | null
           total_products: number | null
           updated_at: string
           user_id: string
@@ -2534,21 +2795,28 @@ export type Database = {
           access_count?: number | null
           api_endpoint?: string | null
           api_key?: string | null
+          connection_status?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           created_at?: string
           credentials_updated_at?: string | null
+          description?: string | null
           encrypted_credentials?: Json | null
           id?: string
           last_access_at?: string | null
           last_sync_at?: string | null
+          logo_url?: string | null
           name: string
           next_sync_at?: string | null
+          product_count?: number | null
           rating?: number | null
+          sector?: string | null
           status?: string | null
+          supplier_type?: string | null
           sync_enabled?: boolean | null
           sync_frequency?: string | null
+          tags?: string[] | null
           total_products?: number | null
           updated_at?: string
           user_id: string
@@ -2558,21 +2826,28 @@ export type Database = {
           access_count?: number | null
           api_endpoint?: string | null
           api_key?: string | null
+          connection_status?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           created_at?: string
           credentials_updated_at?: string | null
+          description?: string | null
           encrypted_credentials?: Json | null
           id?: string
           last_access_at?: string | null
           last_sync_at?: string | null
+          logo_url?: string | null
           name?: string
           next_sync_at?: string | null
+          product_count?: number | null
           rating?: number | null
+          sector?: string | null
           status?: string | null
+          supplier_type?: string | null
           sync_enabled?: boolean | null
           sync_frequency?: string | null
+          tags?: string[] | null
           total_products?: number | null
           updated_at?: string
           user_id?: string
@@ -3208,6 +3483,30 @@ export type Database = {
       rotate_api_key: {
         Args: { key_id: string }
         Returns: Json
+      }
+      search_suppliers: {
+        Args: {
+          country_filter?: string
+          limit_count?: number
+          offset_count?: number
+          search_term?: string
+          sector_filter?: string
+          supplier_type_filter?: string
+        }
+        Returns: {
+          connection_status: string
+          country: string
+          created_at: string
+          description: string
+          id: string
+          logo_url: string
+          name: string
+          product_count: number
+          rating: number
+          sector: string
+          supplier_type: string
+          tags: string[]
+        }[]
       }
       secure_admin_set_role: {
         Args: { new_role: string; target_user_id: string }
