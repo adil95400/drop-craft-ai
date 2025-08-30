@@ -15,6 +15,7 @@ import { useMarketing } from "@/hooks/useMarketing"
 import { useRealAutomation } from "@/hooks/useRealAutomation"
 import { useStripeSubscription } from "@/hooks/useStripeSubscription"
 import { ActivityFeed } from "@/components/activity/ActivityFeed"
+import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts'
 import { 
   BarChart3, 
@@ -221,6 +222,9 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8">
+      {/* Onboarding Checklist */}
+      <OnboardingChecklist />
+
       {/* Enhanced Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
