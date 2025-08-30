@@ -114,7 +114,8 @@ const Dashboard = () => {
 
   // Generate AI insights for Ultra Pro users
   useEffect(() => {
-    if (isUltraPro() && analytics && !isLoading) {
+    const isUltraProPlan = plan === 'ultra_pro'
+    if (isUltraProPlan && analytics && !isLoading) {
       const insights = [
         `Votre taux de conversion de ${analytics.conversionRate.toFixed(1)}% est ${analytics.conversionRate > 3 ? 'excellent' : 'à améliorer'}`,
         `Avec ${analytics.orders} commandes et un panier moyen de €${analytics.averageOrderValue.toFixed(2)}, vous générez €${analytics.revenue.toLocaleString()}`,
@@ -122,8 +123,10 @@ const Dashboard = () => {
         analytics.revenue > 10000 ? 'Croissance prometteuse ! Considérez l\'expansion vers de nouveaux marchés' : 'Continuez vos efforts marketing pour augmenter le chiffre d\'affaires'
       ];
       setAiInsights(insights);
+    } else if (!isUltraProPlan) {
+      setAiInsights([]);
     }
-  }, [analytics, isLoading, isUltraPro])
+  }, [analytics, isLoading, plan])
 
   // Enhanced metrics combining all modules
   const metrics = [
