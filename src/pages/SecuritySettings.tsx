@@ -4,13 +4,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useEnhancedAuth } from '@/hooks/useEnhancedAuth'
 import { SessionManager } from '@/components/auth/SessionManager'
 import { RoleManager } from '@/components/admin/RoleManager'
+import { UserForceDisconnect } from '@/components/admin/UserForceDisconnect'
 import { 
   Shield, 
   Users, 
   Settings, 
   Activity,
   Eye,
-  Bell
+  Bell,
+  UserX
 } from 'lucide-react'
 
 export const SecuritySettings = () => {
@@ -28,13 +30,30 @@ export const SecuritySettings = () => {
 
   // Add admin-only tabs
   if (isAdmin) {
-    tabs.push({
-      value: 'roles',
-      label: 'Rôles & Permissions',
-      icon: Users,
-      component: <RoleManager />,
-      description: 'Gérez les rôles utilisateurs'
-    })
+    tabs.push(
+      {
+        value: 'roles',
+        label: 'Rôles & Permissions',
+        icon: Users,
+        component: <RoleManager />,
+        description: 'Gérez les rôles utilisateurs'
+      },
+      {
+        value: 'disconnect',
+        label: 'Déconnexion Forcée',
+        icon: UserX,
+        component: (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Utilisez cette fonctionnalité pour déconnecter immédiatement un utilisateur 
+              de toutes ses sessions actives. Cette action est irréversible.
+            </p>
+            <UserForceDisconnect />
+          </div>
+        ),
+        description: 'Forcer la déconnexion d\'un utilisateur'
+      }
+    )
   }
 
   return (
@@ -96,7 +115,7 @@ export const SecuritySettings = () => {
 
       {/* Security Tabs */}
       <Tabs defaultValue="sessions" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-3' : 'grid-cols-1'}`}>
           {tabs.map((tab) => {
             const IconComponent = tab.icon
             return (

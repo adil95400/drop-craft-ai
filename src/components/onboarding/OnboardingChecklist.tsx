@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { CheckCircle2, Circle, ArrowRight, Store, Package, Zap, Search, CreditCard } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider'
+import { usePlan } from '@/contexts/PlanContext'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -22,7 +22,7 @@ interface OnboardingStep {
 
 export const OnboardingChecklist = () => {
   const { user } = useAuth()
-  const { plan, hasFeature } = useUnifiedPlan()
+  const { plan, hasFeature } = usePlan()
   const navigate = useNavigate()
   const [steps, setSteps] = useState<OnboardingStep[]>([])
   const [completionRate, setCompletionRate] = useState(0)
@@ -46,7 +46,7 @@ export const OnboardingChecklist = () => {
         title: 'Choisir un plan',
         description: 'Sélectionnez le plan qui correspond à vos besoins',
         icon: CreditCard,
-        completed: plan !== 'standard',
+        completed: plan !== 'free',
         action: 'Voir les plans',
         route: '/pricing'
       },
@@ -110,7 +110,7 @@ export const OnboardingChecklist = () => {
   }, [user, plan])
 
   const handleStepAction = (step: OnboardingStep) => {
-    if (step.planRequired && !hasFeature('advanced-features')) {
+    if (step.planRequired && !hasFeature('ai-analysis')) {
       navigate('/pricing')
       return
     }
@@ -157,7 +157,7 @@ export const OnboardingChecklist = () => {
       <CardContent className="space-y-3">
         {steps.map((step) => {
           const IconComponent = step.icon
-          const isLocked = step.planRequired && !hasFeature('advanced-features')
+          const isLocked = step.planRequired && !hasFeature('ai-analysis')
           
           return (
             <div

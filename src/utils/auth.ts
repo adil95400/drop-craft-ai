@@ -24,6 +24,30 @@ export const cleanupAuthState = () => {
   }
 };
 
+/**
+ * Get device info for session tracking
+ */
+export const getDeviceInfo = () => {
+  return {
+    userAgent: navigator.userAgent,
+    platform: navigator.platform,
+    language: navigator.language,
+    viewport: `${window.innerWidth}x${window.innerHeight}`,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    cookieEnabled: navigator.cookieEnabled,
+    onLine: navigator.onLine
+  }
+}
+
+/**
+ * Generate a secure session token
+ */
+export const generateSessionToken = () => {
+  const array = new Uint8Array(32)
+  crypto.getRandomValues(array)
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
+}
+
 // Enhanced auth utilities
 export const performSecureSignOut = async (supabase: any) => {
   try {
