@@ -23,6 +23,10 @@ import {
   Info
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { ShopifyConfigDialog } from "@/components/modals/ShopifyConfigDialog"
+import { PrestaShopConfigDialog } from "@/components/modals/PrestaShopConfigDialog"
+import { XMLConfigDialog } from "@/components/modals/XMLConfigDialog"
+import { CSVConfigDialog } from "@/components/modals/CSVConfigDialog"
 
 const Integrations = () => {
   const { user, loading } = useEnhancedAuth()
@@ -34,6 +38,10 @@ const Integrations = () => {
   } = useIntegrations()
   const [selectedPlatform, setSelectedPlatform] = useState<any>(null)
   const [configDialog, setConfigDialog] = useState(false)
+  const [shopifyDialog, setShopifyDialog] = useState(false)
+  const [prestashopDialog, setPrestashopDialog] = useState(false)
+  const [xmlDialog, setXmlDialog] = useState(false)
+  const [csvDialog, setCsvDialog] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     url: '',
@@ -219,13 +227,27 @@ const Integrations = () => {
   }
 
   const handlePlatformClick = (platform: any) => {
-    setSelectedPlatform(platform)
-    setFormData({
-      name: platform.name,
-      url: '',
-      credentials: ''
-    })
-    setConfigDialog(true)
+    if (platform.id === 'shopify') {
+      setShopifyDialog(true)
+    } else if (platform.id === 'prestashop') {
+      setPrestashopDialog(true)
+    } else {
+      setSelectedPlatform(platform)
+      setFormData({
+        name: platform.name,
+        url: '',
+        credentials: ''
+      })
+      setConfigDialog(true)
+    }
+  }
+
+  const handleTechnicalFileClick = (fileId: string) => {
+    if (fileId === 'xml') {
+      setXmlDialog(true)
+    } else if (fileId === 'csv') {
+      setCsvDialog(true)
+    }
   }
 
   const handleConnect = async () => {
@@ -382,6 +404,7 @@ const Integrations = () => {
             <Card 
               key={file.id}
               className="cursor-pointer hover:shadow-card transition-smooth border bg-card hover:border-primary/30"
+              onClick={() => handleTechnicalFileClick(file.id)}
             >
               <CardContent className="p-4 flex flex-col items-center text-center space-y-3">
                 <div className="w-16 h-16 flex items-center justify-center">
@@ -471,6 +494,24 @@ const Integrations = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Specialized Dialogs */}
+      <ShopifyConfigDialog 
+        open={shopifyDialog} 
+        onOpenChange={setShopifyDialog} 
+      />
+      <PrestaShopConfigDialog 
+        open={prestashopDialog} 
+        onOpenChange={setPrestashopDialog} 
+      />
+      <XMLConfigDialog 
+        open={xmlDialog} 
+        onOpenChange={setXmlDialog} 
+      />
+      <CSVConfigDialog 
+        open={csvDialog} 
+        onOpenChange={setCsvDialog} 
+      />
     </div>
   )
 }
