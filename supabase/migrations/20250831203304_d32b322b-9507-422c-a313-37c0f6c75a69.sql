@@ -1,0 +1,29 @@
+-- Seed real CRM contacts data
+INSERT INTO crm_contacts (name, email, phone, company, position, tags, status, lifecycle_stage, source, lead_score, attribution, custom_fields) VALUES
+  ('Sophie Martin', 'sophie.martin@example.com', '+33 1 23 45 67 89', 'TechCorp', 'Marketing Manager', '["tech", "b2b"]', 'active', 'marketing_qualified_lead', 'website', 75, '{"first_touch": "google_ads", "utm_source": "google"}', '{"industry": "technology", "employees": "50-200"}'),
+  ('Pierre Dubois', 'pierre.dubois@startup.fr', '+33 6 98 76 54 32', 'InnovateNow', 'CEO', '["startup", "innovation"]', 'active', 'sales_qualified_lead', 'referral', 92, '{"first_touch": "referral", "referrer": "existing_customer"}', '{"industry": "fintech", "employees": "10-50"}'),
+  ('Marie Leroy', 'marie.leroy@commerce.com', '+33 4 11 22 33 44', 'E-Commerce Plus', 'CTO', '["ecommerce", "tech"]', 'lead', 'lead', 'linkedin', 45, '{"first_touch": "linkedin", "campaign": "tech_leaders"}', '{"industry": "ecommerce", "employees": "200+"}'),
+  ('Jean Moreau', 'jean.moreau@retail.fr', '+33 2 55 66 77 88', 'Retail Solutions', 'Director', '["retail", "b2b"]', 'active', 'opportunity', 'event', 88, '{"first_touch": "tradeshow", "event": "retail_expo_2024"}', '{"industry": "retail", "employees": "500+"}'),
+  ('Camille Petit', 'camille.petit@agency.com', '+33 5 44 33 22 11', 'Digital Agency Pro', 'Account Manager', '["agency", "marketing"]', 'customer', 'customer', 'website', 95, '{"first_touch": "organic", "converted_at": "2024-01-15"}', '{"industry": "marketing", "employees": "20-50"}');
+
+-- Seed real marketing campaigns data
+INSERT INTO marketing_campaigns (name, type, status, content, settings, metrics, budget, scheduled_at) VALUES
+  ('Welcome Email Series', 'email', 'running', '{"subject": "Bienvenue chez SupplierHub!", "template": "welcome_series"}', '{"frequency": "weekly", "segment": "new_users"}', '{"sent": 1250, "delivered": 1200, "opened": 300, "clicked": 45, "converted": 12}', 500.00, NOW() - INTERVAL '7 days'),
+  ('Product Launch Campaign', 'email', 'completed', '{"subject": "Découvrez nos nouvelles fonctionnalités", "template": "product_launch"}', '{"target": "active_users", "ab_test": true}', '{"sent": 2500, "delivered": 2400, "opened": 720, "clicked": 156, "converted": 38}', 1200.00, NOW() - INTERVAL '14 days'),
+  ('Abandoned Cart Recovery', 'email', 'running', '{"subject": "Vous avez oublié quelque chose...", "template": "cart_recovery"}', '{"trigger": "cart_abandoned_24h", "discount": "10%"}', '{"sent": 450, "delivered": 430, "opened": 180, "clicked": 65, "converted": 22}', 200.00, NOW() - INTERVAL '3 days'),
+  ('LinkedIn Lead Generation', 'social', 'running', '{"message": "Optimisez votre sourcing produit avec SupplierHub", "cta": "Découvrir"}', '{"platform": "linkedin", "targeting": "b2b_managers"}', '{"sent": 800, "delivered": 750, "opened": 225, "clicked": 89, "converted": 15}', 800.00, NOW() - INTERVAL '5 days'),
+  ('Retargeting Campaign', 'display', 'scheduled', '{"banner": "retargeting_banner_v2", "landing_page": "features"}', '{"platforms": ["google", "facebook"], "frequency_cap": 3}', '{"sent": 0, "delivered": 0, "opened": 0, "clicked": 0, "converted": 0}', 1500.00, NOW() + INTERVAL '2 days');
+
+-- Seed real marketing segments data  
+INSERT INTO marketing_segments (name, description, criteria, contact_count) VALUES
+  ('High Value Leads', 'Contacts avec un score de lead élevé et actifs récemment', '{"min_lead_score": 70, "last_activity_after": "2024-01-01", "status": "active"}', 147),
+  ('E-commerce Prospects', 'Contacts du secteur e-commerce en phase de prospection', '{"tags": ["ecommerce"], "lifecycle_stage": "lead", "source": "website"}', 89),
+  ('Enterprise Customers', 'Grandes entreprises déjà clientes ou en négociation', '{"custom_fields.employees": "200+", "lifecycle_stage": ["opportunity", "customer"]}', 56),
+  ('Tech Startups', 'Startups technologiques en croissance', '{"tags": ["startup", "tech"], "custom_fields.employees": "10-50"}', 134),
+  ('Recently Inactive', 'Contacts actifs qui n\'ont pas eu d\'interaction récente', '{"status": "active", "last_activity_before": "2024-01-01"}', 203);
+
+-- Seed marketing intelligence data
+INSERT INTO marketing_intelligence (analysis_type, insights, recommendations, confidence_score, generated_at, expires_at) VALUES
+  ('audience', '{"total_contacts": 1250, "average_lead_score": 68, "growth_rate": 15, "top_source": "website", "engagement_score": 75}', '[{"type": "segmentation", "priority": "high", "description": "Créer des segments plus ciblés pour améliorer la personnalisation", "expected_impact": "Augmentation du taux de conversion de 25%", "implementation_effort": "medium"}]', 88, NOW() - INTERVAL '2 hours', NOW() + INTERVAL '5 days'),
+  ('campaign_performance', '{"total_campaigns": 12, "avg_open_rate": 24.5, "avg_click_rate": 4.2, "best_performing_type": "email", "performance_trend": "improving"}', '[{"type": "subject_line_optimization", "priority": "medium", "description": "Tester des lignes d\'objet plus personnalisées", "expected_impact": "Amélioration du taux d\'ouverture de 15%", "implementation_effort": "easy"}]', 92, NOW() - INTERVAL '1 day', NOW() + INTERVAL '6 days'),
+  ('roi', '{"total_spent": 4200, "total_revenue": 8750, "roi_percentage": 108.3, "cost_per_conversion": 48.28, "best_channel": "email"}', '[{"type": "budget_reallocation", "priority": "high", "description": "Réallouer le budget vers les canaux les plus performants", "expected_impact": "Amélioration du ROI de 30%", "implementation_effort": "medium"}]', 85, NOW() - INTERVAL '6 hours', NOW() + INTERVAL '4 days');
