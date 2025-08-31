@@ -11,6 +11,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { GlobalSyncProvider } from "@/components/layout/GlobalSyncProvider";
 import { SyncStatusIndicator } from "@/components/sync/SyncStatusIndicator";
+import { AppFlowProvider } from "@/components/app-flow/AppFlowManager";
+import { FlowProgressIndicator, RecommendedFlows } from "@/components/app-flow/FlowProgressIndicator";
+import { SmartBreadcrumbs } from "@/components/common/SmartBreadcrumbs";
+import { UnifiedNavigation } from "@/components/navigation/UnifiedNavigation";
+import { PerformanceMonitor } from "@/components/performance/PerformanceMonitor";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -39,8 +44,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isMobile = useIsMobile();
 
   return (
-    <GlobalSyncProvider>
-      <SidebarProvider defaultOpen={!isMobile}>
+    <AppFlowProvider>
+      <GlobalSyncProvider>
+        <PerformanceMonitor>
+          <SidebarProvider defaultOpen={!isMobile}>
       <div className="min-h-screen w-full bg-background">
         {/* Desktop Grid Layout */}
         <div className="hidden md:grid md:grid-cols-[280px_1fr] min-h-screen">
@@ -49,19 +56,31 @@ export function AppLayout({ children }: AppLayoutProps) {
             <AppSidebar />
           </div>
           
-          {/* Desktop Content */}
-          <div className="flex flex-col min-w-0">
-            <AppHeader />
+        {/* Desktop Content */}
+        <div className="flex flex-col min-w-0">
+          <AppHeader />
 
-            {/* Admin Plan Switcher */}
-            <div className="p-4 border-b">
-              <AdminPlanSwitcher />
+          {/* Admin Plan Switcher */}
+          <div className="p-4 border-b">
+            <AdminPlanSwitcher />
+          </div>
+
+          {/* Navigation unifiée et breadcrumbs */}
+          <div className="px-4 lg:px-6 py-2 border-b bg-muted/20">
+            <div className="flex items-center justify-between gap-4">
+              <UnifiedNavigation />
+              <div className="text-xs text-muted-foreground">
+                Navigation intelligente • ⌘K
+              </div>
             </div>
+          </div>
 
-            {/* Main Content */}
-            <main className="flex-1 overflow-auto min-w-0 p-4 lg:p-6 bg-background">
-              {children}
-            </main>
+          {/* Main Content */}
+          <main className="flex-1 overflow-auto min-w-0 p-4 lg:p-6 bg-background">
+            <SmartBreadcrumbs />
+            <RecommendedFlows />
+            {children}
+          </main>
 
             {/* Footer */}
             <footer className="border-t bg-muted/30 py-4 px-6">
@@ -93,8 +112,15 @@ export function AppLayout({ children }: AppLayoutProps) {
               <AdminPlanSwitcher />
             </div>
 
+            {/* Mobile Navigation */}
+            <div className="px-4 py-2 border-b bg-muted/20">
+              <UnifiedNavigation />
+            </div>
+
             {/* Mobile Content */}
             <main className="flex-1 overflow-auto min-w-0 p-4 bg-background">
+              <SmartBreadcrumbs />
+              <RecommendedFlows />
               {children}
             </main>
 
@@ -117,7 +143,12 @@ export function AppLayout({ children }: AppLayoutProps) {
       
       {/* Integrated Chat Support - Available on all pages */}
       <IntegratedChatSupport />
+      
+      {/* Indicateur de progression du flux */}  
+      <FlowProgressIndicator />
     </SidebarProvider>
-    </GlobalSyncProvider>
+        </PerformanceMonitor>
+      </GlobalSyncProvider>
+    </AppFlowProvider>
   );
 }
