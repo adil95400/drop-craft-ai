@@ -1,6 +1,9 @@
-import { useState } from "react"
+import { useState, useEffect, memo } from "react"
 import { useEnhancedAuth } from "@/hooks/useEnhancedAuth"
 import { useIntegrations } from "@/hooks/useIntegrations"
+import { useCanvaIntegration } from "@/hooks/useCanvaIntegration"
+import { ErrorBoundary } from "@/components/common/ErrorBoundary"
+import { IntegrationsSkeleton } from "@/components/common/IntegrationsSkeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -28,15 +31,20 @@ import { PrestaShopConfigDialog } from "@/components/modals/PrestaShopConfigDial
 import { XMLConfigDialog } from "@/components/modals/XMLConfigDialog"
 import { CSVConfigDialog } from "@/components/modals/CSVConfigDialog"
 
-const Integrations = () => {
-  const { user, loading } = useEnhancedAuth()
+const Integrations = memo(() => {
+  const { user, loading: authLoading } = useEnhancedAuth()
   const { 
     integrations, 
     connectedIntegrations, 
     addIntegration, 
-    isAdding 
+    isAdding,
+    isLoading: integrationsLoading,
+    error: integrationsError
   } = useIntegrations()
+  const { checkConnectionStatus } = useCanvaIntegration()
   const [selectedPlatform, setSelectedPlatform] = useState<any>(null)
+  const [canvaConnected, setCanvaConnected] = useState(false)
+  const [loadingTimeout, setLoadingTimeout] = useState(false)
   const [configDialog, setConfigDialog] = useState(false)
   const [shopifyDialog, setShopifyDialog] = useState(false)
   const [prestashopDialog, setPrestashopDialog] = useState(false)
@@ -48,6 +56,27 @@ const Integrations = () => {
     credentials: ''
   })
   const { toast } = useToast()
+
+  // Check Canva connection status and set loading timeout
+  useEffect(() => {
+    const checkCanva = async () => {
+      try {
+        const connected = await checkConnectionStatus()
+        setCanvaConnected(connected)
+      } catch (error) {
+        console.warn('Failed to check Canva status:', error)
+      }
+    }
+    
+    checkCanva()
+    
+    // Set timeout for loading state
+    const timeout = setTimeout(() => {
+      setLoadingTimeout(true)
+    }, 10000) // 10 seconds timeout
+    
+    return () => clearTimeout(timeout)
+  }, [checkConnectionStatus])
 
   // Données des plateformes inspirées de l'image de référence
   const platforms = [
@@ -215,7 +244,7 @@ const Integrations = () => {
 
   // Check if platform is already connected
   const isPlatformConnected = (platformId: string) => {
-    return connectedIntegrations.some(int => int.platform_name.toLowerCase() === platformId)
+    return (connectedIntegrations || []).some((int: any) => int.platform_name?.toLowerCase() === platformId)
   }
 
   // Get connection status icon
@@ -279,12 +308,31 @@ const Integrations = () => {
     }
   }
 
-  if (loading) {
+  // Show loading state
+  if (authLoading || (integrationsLoading && !loadingTimeout)) {
+    return <IntegrationsSkeleton />
+  }
+
+  // Show error state
+  if (integrationsError && loadingTimeout) {
     return (
       <div className="container mx-auto p-6 space-y-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
+        <Card className="mx-auto max-w-md mt-8">
+          <CardHeader className="text-center">
+            <CardTitle className="text-lg text-destructive">Erreur de chargement</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-muted-foreground text-sm">
+              Impossible de charger les intégrations. Veuillez réessayer.
+            </p>
+            <Button 
+              onClick={() => window.location.reload()}
+              variant="outline"
+            >
+              Réessayer
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -301,7 +349,8 @@ const Integrations = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <ErrorBoundary>
+      <div className="container mx-auto p-6 max-w-7xl">
       {/* Header */}
       <div className="mb-8">
         <div className="bg-primary-soft/20 border border-primary/20 rounded-lg p-4 mb-6">
@@ -323,13 +372,13 @@ const Integrations = () => {
       </div>
 
       {/* Connected Integrations */}
-      {connectedIntegrations.length > 0 && (
+      {(connectedIntegrations || []).length > 0 && (
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-foreground mb-4">
-            Intégrations connectées ({connectedIntegrations.length})
+            Intégrations connectées ({(connectedIntegrations || []).length})
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {connectedIntegrations.map((integration) => (
+            {(connectedIntegrations || []).map((integration: any) => (
               <Card key={integration.id} className="border hover:shadow-card transition-smooth bg-card">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -512,8 +561,11 @@ const Integrations = () => {
         open={csvDialog} 
         onOpenChange={setCsvDialog} 
       />
-    </div>
+      </div>
+    </ErrorBoundary>
   )
-}
+})
+
+Integrations.displayName = 'Integrations'
 
 export default Integrations

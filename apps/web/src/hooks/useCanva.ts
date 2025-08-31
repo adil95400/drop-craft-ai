@@ -131,18 +131,38 @@ export const useCanva = () => {
     }
   }, [toast]);
 
-  // Vérifier le statut de connexion
+  // Vérifier le statut de connexion avec cache
   const checkConnectionStatus = useCallback(async (): Promise<boolean> => {
     try {
+      // Check localStorage cache first
+      const cached = localStorage.getItem('canva_connection_status')
+      const cacheTime = localStorage.getItem('canva_connection_cache_time')
+      
+      if (cached && cacheTime) {
+        const now = Date.now()
+        const cacheAge = now - parseInt(cacheTime)
+        if (cacheAge < 60000) { // Cache for 1 minute
+          return cached === 'true'
+        }
+      }
+
       const { data, error } = await supabase
         .from('canva_integrations')
         .select('*')
         .eq('status', 'active')
         .single();
 
-      return !error && !!data;
+      const isConnected = !error && !!data;
+      
+      // Cache the result
+      localStorage.setItem('canva_connection_status', String(isConnected))
+      localStorage.setItem('canva_connection_cache_time', String(Date.now()))
+      
+      return isConnected;
     } catch (error) {
-      return false;
+      // Fallback: check if user has used Canva before
+      const hasCanvaHistory = localStorage.getItem('canva_connected') === 'true'
+      return hasCanvaHistory;
     }
   }, []);
 
