@@ -72,6 +72,7 @@ import {
   AdminLazy,
   PaymentSuccessLazy,
   IntegrationsUltraProLazy,
+  AdvancedIntelligencePageLazy,
 } from '@/components/lazy/LazyPages';
 
 // Light pages (direct imports)
@@ -1025,7 +1026,7 @@ const App = () => (
             <Route path="/intelligence" element={
               <AuthGuard requireRole="user">
                 <AppLayout>
-                  <AdvancedIntelligencePage />
+                  <AdvancedIntelligencePageLazy />
                 </AppLayout>
               </AuthGuard>
             } />
