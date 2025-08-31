@@ -176,6 +176,144 @@ export type Database = {
         }
         Relationships: []
       }
+      automated_campaigns: {
+        Row: {
+          ai_optimization_data: Json
+          ai_segmentation: Json
+          automation_flow: Json
+          campaign_name: string
+          campaign_type: string
+          content_templates: Json
+          created_at: string
+          current_metrics: Json
+          execution_schedule: Json
+          id: string
+          last_executed_at: string | null
+          next_execution_at: string | null
+          performance_goals: Json
+          status: string
+          success_metrics: Json
+          target_criteria: Json
+          trigger_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_optimization_data?: Json
+          ai_segmentation?: Json
+          automation_flow?: Json
+          campaign_name: string
+          campaign_type: string
+          content_templates?: Json
+          created_at?: string
+          current_metrics?: Json
+          execution_schedule?: Json
+          id?: string
+          last_executed_at?: string | null
+          next_execution_at?: string | null
+          performance_goals?: Json
+          status?: string
+          success_metrics?: Json
+          target_criteria?: Json
+          trigger_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_optimization_data?: Json
+          ai_segmentation?: Json
+          automation_flow?: Json
+          campaign_name?: string
+          campaign_type?: string
+          content_templates?: Json
+          created_at?: string
+          current_metrics?: Json
+          execution_schedule?: Json
+          id?: string
+          last_executed_at?: string | null
+          next_execution_at?: string | null
+          performance_goals?: Json
+          status?: string
+          success_metrics?: Json
+          target_criteria?: Json
+          trigger_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      automated_decisions: {
+        Row: {
+          actual_outcome: Json
+          ai_reasoning: Json
+          confidence_level: number
+          created_at: string
+          decision_parameters: Json
+          decision_title: string
+          decision_type: string
+          entity_id: string | null
+          entity_type: string
+          executed_at: string | null
+          execution_mode: string
+          expected_outcome: Json
+          id: string
+          input_data: Json
+          learning_feedback: Json
+          performance_score: number | null
+          recommended_action: Json
+          risk_assessment: Json
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_outcome?: Json
+          ai_reasoning?: Json
+          confidence_level?: number
+          created_at?: string
+          decision_parameters?: Json
+          decision_title: string
+          decision_type: string
+          entity_id?: string | null
+          entity_type: string
+          executed_at?: string | null
+          execution_mode?: string
+          expected_outcome?: Json
+          id?: string
+          input_data?: Json
+          learning_feedback?: Json
+          performance_score?: number | null
+          recommended_action?: Json
+          risk_assessment?: Json
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_outcome?: Json
+          ai_reasoning?: Json
+          confidence_level?: number
+          created_at?: string
+          decision_parameters?: Json
+          decision_title?: string
+          decision_type?: string
+          entity_id?: string | null
+          entity_type?: string
+          executed_at?: string | null
+          execution_mode?: string
+          expected_outcome?: Json
+          id?: string
+          input_data?: Json
+          learning_feedback?: Json
+          performance_score?: number | null
+          recommended_action?: Json
+          risk_assessment?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       automation_executions: {
         Row: {
           completed_at: string | null
@@ -225,6 +363,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      automation_rules: {
+        Row: {
+          actions: Json
+          ai_conditions: Json
+          created_at: string
+          description: string | null
+          execution_count: number
+          id: string
+          is_active: boolean
+          last_executed_at: string | null
+          name: string
+          performance_metrics: Json
+          priority: number
+          rule_type: string
+          success_rate: number
+          trigger_conditions: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actions?: Json
+          ai_conditions?: Json
+          created_at?: string
+          description?: string | null
+          execution_count?: number
+          id?: string
+          is_active?: boolean
+          last_executed_at?: string | null
+          name: string
+          performance_metrics?: Json
+          priority?: number
+          rule_type: string
+          success_rate?: number
+          trigger_conditions?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actions?: Json
+          ai_conditions?: Json
+          created_at?: string
+          description?: string | null
+          execution_count?: number
+          id?: string
+          is_active?: boolean
+          last_executed_at?: string | null
+          name?: string
+          performance_metrics?: Json
+          priority?: number
+          rule_type?: string
+          success_rate?: number
+          trigger_conditions?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       automation_workflows: {
         Row: {
@@ -331,6 +526,75 @@ export type Database = {
           updated_at?: string
           user_id?: string
           views?: number
+        }
+        Relationships: []
+      }
+      business_intelligence_insights: {
+        Row: {
+          acknowledged_at: string | null
+          acted_upon_at: string | null
+          actionable_recommendations: Json
+          ai_analysis: Json
+          category: string
+          confidence_score: number
+          created_at: string
+          description: string
+          expires_at: string | null
+          id: string
+          impact_score: number
+          insight_type: string
+          outcome_data: Json
+          priority: number
+          severity: string
+          status: string
+          supporting_data: Json
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acted_upon_at?: string | null
+          actionable_recommendations?: Json
+          ai_analysis?: Json
+          category: string
+          confidence_score?: number
+          created_at?: string
+          description: string
+          expires_at?: string | null
+          id?: string
+          impact_score?: number
+          insight_type: string
+          outcome_data?: Json
+          priority?: number
+          severity?: string
+          status?: string
+          supporting_data?: Json
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acted_upon_at?: string | null
+          actionable_recommendations?: Json
+          ai_analysis?: Json
+          category?: string
+          confidence_score?: number
+          created_at?: string
+          description?: string
+          expires_at?: string | null
+          id?: string
+          impact_score?: number
+          insight_type?: string
+          outcome_data?: Json
+          priority?: number
+          severity?: string
+          status?: string
+          supporting_data?: Json
+          title?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -850,6 +1114,72 @@ export type Database = {
           total_orders?: number | null
           total_spent?: number | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dynamic_pricing: {
+        Row: {
+          ai_confidence: number
+          applied_at: string | null
+          competitor_analysis: Json
+          created_at: string
+          current_price: number
+          demand_forecast: Json
+          expected_sales_impact: number
+          expires_at: string | null
+          id: string
+          market_factors: Json
+          original_price: number
+          performance_data: Json
+          price_change_reason: string
+          product_id: string | null
+          profit_impact: number
+          status: string
+          suggested_price: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_confidence?: number
+          applied_at?: string | null
+          competitor_analysis?: Json
+          created_at?: string
+          current_price: number
+          demand_forecast?: Json
+          expected_sales_impact?: number
+          expires_at?: string | null
+          id?: string
+          market_factors?: Json
+          original_price: number
+          performance_data?: Json
+          price_change_reason: string
+          product_id?: string | null
+          profit_impact?: number
+          status?: string
+          suggested_price: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_confidence?: number
+          applied_at?: string | null
+          competitor_analysis?: Json
+          created_at?: string
+          current_price?: number
+          demand_forecast?: Json
+          expected_sales_impact?: number
+          expires_at?: string | null
+          id?: string
+          market_factors?: Json
+          original_price?: number
+          performance_data?: Json
+          price_change_reason?: string
+          product_id?: string | null
+          profit_impact?: number
+          status?: string
+          suggested_price?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -2627,6 +2957,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      smart_inventory: {
+        Row: {
+          auto_reorder_enabled: boolean
+          cost_optimization: Json
+          created_at: string
+          current_stock: number
+          demand_forecast: Json
+          id: string
+          last_reorder_at: string | null
+          maximum_threshold: number
+          minimum_threshold: number
+          next_reorder_prediction: string | null
+          optimal_stock: number
+          performance_metrics: Json
+          product_id: string
+          reorder_point: number
+          reorder_quantity: number
+          seasonality_data: Json
+          stock_risk_level: string
+          supplier_performance: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_reorder_enabled?: boolean
+          cost_optimization?: Json
+          created_at?: string
+          current_stock?: number
+          demand_forecast?: Json
+          id?: string
+          last_reorder_at?: string | null
+          maximum_threshold?: number
+          minimum_threshold?: number
+          next_reorder_prediction?: string | null
+          optimal_stock?: number
+          performance_metrics?: Json
+          product_id: string
+          reorder_point?: number
+          reorder_quantity?: number
+          seasonality_data?: Json
+          stock_risk_level?: string
+          supplier_performance?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_reorder_enabled?: boolean
+          cost_optimization?: Json
+          created_at?: string
+          current_stock?: number
+          demand_forecast?: Json
+          id?: string
+          last_reorder_at?: string | null
+          maximum_threshold?: number
+          minimum_threshold?: number
+          next_reorder_prediction?: string | null
+          optimal_stock?: number
+          performance_metrics?: Json
+          product_id?: string
+          reorder_point?: number
+          reorder_quantity?: number
+          seasonality_data?: Json
+          stock_risk_level?: string
+          supplier_performance?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       sourcing_history: {
         Row: {
