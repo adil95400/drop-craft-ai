@@ -52,23 +52,25 @@ interface PrintfulProduct {
 }
 
 export class PrintfulConnector extends BaseConnector {
-  private baseUrl = 'https://api.printful.com';
-
   constructor(credentials: SupplierCredentials) {
-    super(credentials);
+    super(credentials, 'https://api.printful.com');
     this.rateLimitDelay = 500; // 2 requests per second max
+  }
+
+  protected getSupplierName(): string {
+    return 'Printful';
+  }
+
+  protected getAuthHeaders(): Record<string, string> {
+    return {
+      'Authorization': `Bearer ${this.credentials.apiKey}`,
+    };
   }
 
   async validateCredentials(): Promise<boolean> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/oauth/scopes`, {
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      return response.status === 200;
+      await this.makeRequest('/oauth/scopes');
+      return true;
     } catch (error) {
       console.error('Printful credential validation failed:', error);
       return false;
@@ -83,14 +85,7 @@ export class PrintfulConnector extends BaseConnector {
   }): Promise<SupplierProduct[]> {
     try {
       // First get all product categories
-      const response = await this.makeRequest(`${this.baseUrl}/products`, {
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
+      const data = await this.makeRequest('/products');
       
       if (!data.result || !Array.isArray(data.result)) {
         throw new Error('Invalid response format from Printful API');
@@ -113,13 +108,7 @@ export class PrintfulConnector extends BaseConnector {
       const detailedProducts = await Promise.all(
         products.map(async (product: any) => {
           try {
-            const detailResponse = await this.makeRequest(`${this.baseUrl}/products/${product.id}`, {
-              headers: {
-                'Authorization': `Bearer ${this.credentials.apiKey}`,
-                'Content-Type': 'application/json',
-              },
-            });
-            const detailData = await detailResponse.json();
+            const detailData = await this.makeRequest(`/products/${product.id}`);
             return detailData.result;
           } catch (error) {
             console.warn(`Failed to fetch details for product ${product.id}:`, error);
@@ -139,14 +128,7 @@ export class PrintfulConnector extends BaseConnector {
 
   async fetchProduct(sku: string): Promise<SupplierProduct | null> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/products/${sku}`, {
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
+      const data = await this.makeRequest(`/products/${sku}`);
       
       if (!data.result) {
         return null;
@@ -159,14 +141,20 @@ export class PrintfulConnector extends BaseConnector {
     }
   }
 
+  async updateInventory(products: SupplierProduct[]): Promise<import('./BaseConnector').SyncResult> {
+    // Printful is print-on-demand, inventory is always available
+    return {
+      total: products.length,
+      imported: products.length,
+      duplicates: 0,
+      errors: [],
+    };
+  }
+
   async createOrder(order: any): Promise<string> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/orders`, {
+      const data = await this.makeRequest('/orders', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           recipient: order.shipping_address,
           items: order.line_items.map((item: any) => ({
@@ -183,8 +171,6 @@ export class PrintfulConnector extends BaseConnector {
           },
         }),
       });
-
-      const data = await response.json();
       
       if (!data.result?.id) {
         throw new Error('Failed to create order with Printful');
@@ -199,14 +185,7 @@ export class PrintfulConnector extends BaseConnector {
 
   async getOrderStatus(orderId: string): Promise<string> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/orders/${orderId}`, {
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
+      const data = await this.makeRequest(`/orders/${orderId}`);
       
       if (!data.result) {
         throw new Error('Failed to get order status from Printful');

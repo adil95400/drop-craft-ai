@@ -26,23 +26,25 @@ interface VidaXLProduct {
 }
 
 export class VidaXLConnector extends BaseConnector {
-  private baseUrl = 'https://api.vidaxl.com/v1';
-
   constructor(credentials: SupplierCredentials) {
-    super(credentials);
+    super(credentials, 'https://api.vidaxl.com/v1');
     this.rateLimitDelay = 2000; // 30 requests per minute
+  }
+
+  protected getSupplierName(): string {
+    return 'VidaXL';
+  }
+
+  protected getAuthHeaders(): Record<string, string> {
+    return {
+      'Authorization': `Bearer ${this.credentials.apiKey}`,
+    };
   }
 
   async validateCredentials(): Promise<boolean> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/auth/validate`, {
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      return response.status === 200;
+      await this.makeRequest('/auth/validate');
+      return true;
     } catch (error) {
       console.error('VidaXL credential validation failed:', error);
       return false;
@@ -66,14 +68,7 @@ export class VidaXLConnector extends BaseConnector {
         ...(options?.lastSync && { modified_after: options.lastSync.toISOString() }),
       });
 
-      const response = await this.makeRequest(`${this.baseUrl}/products?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
+      const data = await this.makeRequest(`/products?${params}`);
       
       if (!data.products || !Array.isArray(data.products)) {
         throw new Error('Invalid response format from VidaXL API');
@@ -90,14 +85,7 @@ export class VidaXLConnector extends BaseConnector {
 
   async fetchProduct(sku: string): Promise<SupplierProduct | null> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/products/${sku}`, {
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
+      const data = await this.makeRequest(`/products/${sku}`);
       
       if (!data.product) {
         return null;
@@ -110,49 +98,45 @@ export class VidaXLConnector extends BaseConnector {
     }
   }
 
-  async fetchInventory(skus: string[]): Promise<Array<{sku: string, stock: number}>> {
+  async updateInventory(products: SupplierProduct[]): Promise<import('./BaseConnector').SyncResult> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/inventory`, {
+      const skus = products.map(p => p.sku);
+      const data = await this.makeRequest('/inventory', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ skus }),
       });
-
-      const data = await response.json();
       
       if (!data.inventory || !Array.isArray(data.inventory)) {
         throw new Error('Invalid inventory response from VidaXL API');
       }
 
-      return data.inventory.map((item: any) => ({
-        sku: item.sku,
-        stock: item.available_stock || 0,
-      }));
+      return {
+        total: products.length,
+        imported: data.inventory?.length || 0,
+        duplicates: 0,
+        errors: [],
+      };
     } catch (error) {
-      console.error('Error fetching VidaXL inventory:', error);
-      throw error;
+      console.error('Error updating VidaXL inventory:', error);
+      return {
+        total: products.length,
+        imported: 0,
+        duplicates: 0,
+        errors: [error.message],
+      };
     }
   }
 
   async createOrder(order: any): Promise<string> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/orders`, {
+      const data = await this.makeRequest('/orders', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           items: order.line_items,
           shipping_address: order.shipping_address,
           notes: order.customer_note,
         }),
       });
-
-      const data = await response.json();
       
       if (!data.order_id) {
         throw new Error('Failed to create order with VidaXL');
@@ -167,14 +151,7 @@ export class VidaXLConnector extends BaseConnector {
 
   async getOrderStatus(orderId: string): Promise<string> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/orders/${orderId}`, {
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
+      const data = await this.makeRequest(`/orders/${orderId}`);
       
       if (!data.order) {
         throw new Error('Failed to get order status from VidaXL');

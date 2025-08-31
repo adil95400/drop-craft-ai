@@ -27,17 +27,26 @@ interface WooCommerceProduct {
 }
 
 export class WooCommerceConnector extends BaseConnector {
-  private apiUrl: string
-
   constructor(credentials: WooCommerceCredentials) {
-    super(credentials)
-    this.apiUrl = `${credentials.siteUrl}/wp-json/wc/v3`
+    super(credentials, `${credentials.siteUrl}/wp-json/wc/v3`)
+  }
+
+  protected getSupplierName(): string {
+    return 'WooCommerce';
+  }
+
+  protected getAuthHeaders(): Record<string, string> {
+    const credentials = this.credentials as WooCommerceCredentials;
+    const auth = btoa(`${credentials.consumerKey}:${credentials.consumerSecret}`);
+    return {
+      'Authorization': `Basic ${auth}`,
+    };
   }
 
   async validateCredentials(): Promise<boolean> {
     try {
-      const response = await this.makeWooRequest('/products?per_page=1')
-      return response.ok
+      await this.makeRequest('/products?per_page=1');
+      return true;
     } catch (error) {
       console.error('WooCommerce credentials validation failed:', error)
       return false
@@ -64,41 +73,49 @@ export class WooCommerceConnector extends BaseConnector {
       params.append('modified_after', options.lastSync.toISOString())
     }
 
-    const response = await this.makeWooRequest(`/products?${params}`)
-    const products: WooCommerceProduct[] = await response.json()
+    const products: WooCommerceProduct[] = await this.makeRequest(`/products?${params}`)
 
     return products.map(product => this.transformProduct(product))
   }
 
   async fetchProduct(sku: string): Promise<SupplierProduct | null> {
-    const response = await this.makeWooRequest(`/products?sku=${sku}`)
-    const products: WooCommerceProduct[] = await response.json()
+    const products: WooCommerceProduct[] = await this.makeRequest(`/products?sku=${sku}`)
 
     if (products.length === 0) return null
     return this.transformProduct(products[0])
   }
 
-  async updateInventory(products: Array<{sku: string, stock: number}>): Promise<boolean> {
+  async updateInventory(products: SupplierProduct[]): Promise<import('./BaseConnector').SyncResult> {
     try {
-      const batchUpdates = products.map(({ sku, stock }) => ({
+      const batchUpdates = products.map((product) => ({
         method: 'PUT',
-        path: `/products/${sku}`,
+        path: `/products/${product.sku}`,
         body: {
-          stock_quantity: stock,
+          stock_quantity: product.stock,
           manage_stock: true,
-          stock_status: stock > 0 ? 'instock' : 'outofstock'
+          stock_status: product.stock > 0 ? 'instock' : 'outofstock'
         }
       }))
 
-      const response = await this.makeWooRequest('/products/batch', {
+      await this.makeRequest('/products/batch', {
         method: 'POST',
         body: JSON.stringify({ update: batchUpdates })
-      })
+      });
 
-      return response.ok
+      return {
+        total: products.length,
+        imported: products.length,
+        duplicates: 0,
+        errors: [],
+      };
     } catch (error) {
       console.error('WooCommerce inventory update failed:', error)
-      return false
+      return {
+        total: products.length,
+        imported: 0,
+        duplicates: 0,
+        errors: [error.message],
+      };
     }
   }
 
@@ -121,18 +138,15 @@ export class WooCommerceConnector extends BaseConnector {
       }]
     }
 
-    const response = await this.makeWooRequest('/orders', {
+    const createdOrder = await this.makeRequest('/orders', {
       method: 'POST',
       body: JSON.stringify(wooOrder)
     })
-
-    const createdOrder = await response.json()
     return createdOrder.id.toString()
   }
 
   async getOrderStatus(orderId: string): Promise<string> {
-    const response = await this.makeWooRequest(`/orders/${orderId}`)
-    const order = await response.json()
+    const order = await this.makeRequest(`/orders/${orderId}`)
     return order.status
   }
 
@@ -154,7 +168,7 @@ export class WooCommerceConnector extends BaseConnector {
       ]
 
       for (const webhook of webhooks) {
-        await this.makeWooRequest('/webhooks', {
+        await this.makeRequest('/webhooks', {
           method: 'POST',
           body: JSON.stringify(webhook)
         })
@@ -191,17 +205,4 @@ export class WooCommerceConnector extends BaseConnector {
     }
   }
 
-  private async makeWooRequest(endpoint: string, options: RequestInit = {}): Promise<Response> {
-    const credentials = this.credentials as WooCommerceCredentials
-    const auth = btoa(`${credentials.consumerKey}:${credentials.consumerSecret}`)
-
-    return this.makeRequest(`${this.apiUrl}${endpoint}`, {
-      ...options,
-      headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    })
-  }
 }

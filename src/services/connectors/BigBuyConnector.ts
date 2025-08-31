@@ -39,24 +39,26 @@ interface BigBuyProduct {
 }
 
 export class BigBuyConnector extends BaseConnector {
-  private baseUrl = 'https://api.bigbuy.eu';
   private version = 'v1';
 
   constructor(credentials: SupplierCredentials) {
-    super(credentials);
+    super(credentials, 'https://api.bigbuy.eu');
     this.rateLimitDelay = 1500; // BigBuy rate limit: 40 requests/minute
+  }
+
+  protected getSupplierName(): string {
+    return 'BigBuy';
+  }
+
+  protected getAuthHeaders(): Record<string, string> {
+    return {
+      'Authorization': `Bearer ${this.credentials.apiKey}`,
+    };
   }
 
   async validateCredentials(): Promise<boolean> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/${this.version}/user`, {
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
+      const data = await this.makeRequest(`/${this.version}/user`);
       return data.status === 'success';
     } catch (error) {
       console.error('BigBuy credential validation failed:', error);
@@ -86,17 +88,7 @@ export class BigBuyConnector extends BaseConnector {
         params.append('updatedAfter', options.lastSync.toISOString());
       }
 
-      const response = await this.makeRequest(
-        `${this.baseUrl}/${this.version}/catalog/products?${params}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${this.credentials.apiKey}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      const data = await response.json();
+      const data = await this.makeRequest(`/${this.version}/catalog/products?${params}`);
       
       if (data.status !== 'success') {
         throw new Error(`BigBuy API error: ${data.message}`);
@@ -111,17 +103,7 @@ export class BigBuyConnector extends BaseConnector {
 
   async fetchProduct(sku: string): Promise<SupplierProduct | null> {
     try {
-      const response = await this.makeRequest(
-        `${this.baseUrl}/${this.version}/catalog/products/${sku}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${this.credentials.apiKey}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      const data = await response.json();
+      const data = await this.makeRequest(`/${this.version}/catalog/products/${sku}`);
       
       if (data.status !== 'success') {
         return null;
@@ -134,51 +116,41 @@ export class BigBuyConnector extends BaseConnector {
     }
   }
 
-  async fetchInventory(skus: string[]): Promise<Array<{sku: string, stock: number}>> {
+  async updateInventory(products: SupplierProduct[]): Promise<import('./BaseConnector').SyncResult> {
     try {
-      const response = await this.makeRequest(
-        `${this.baseUrl}/${this.version}/catalog/products/stock`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${this.credentials.apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ skus }),
-        }
-      );
-
-      const data = await response.json();
+      const skus = products.map(p => p.sku);
+      const data = await this.makeRequest(`/${this.version}/catalog/products/stock`, {
+        method: 'POST',
+        body: JSON.stringify({ skus }),
+      });
       
       if (data.status !== 'success') {
         throw new Error(`BigBuy API error: ${data.message}`);
       }
 
-      return data.data.map((item: any) => ({
-        sku: item.sku,
-        stock: item.stock || 0,
-      }));
+      return {
+        total: products.length,
+        imported: data.data?.length || 0,
+        duplicates: 0,
+        errors: [],
+      };
     } catch (error) {
-      console.error('BigBuy fetchInventory failed:', error);
-      throw error;
+      console.error('BigBuy updateInventory failed:', error);
+      return {
+        total: products.length,
+        imported: 0,
+        duplicates: 0,
+        errors: [error.message],
+      };
     }
   }
 
   async createOrder(order: any): Promise<string> {
     try {
-      const response = await this.makeRequest(
-        `${this.baseUrl}/${this.version}/orders`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${this.credentials.apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(order),
-        }
-      );
-
-      const data = await response.json();
+      const data = await this.makeRequest(`/${this.version}/orders`, {
+        method: 'POST',
+        body: JSON.stringify(order),
+      });
       
       if (data.status !== 'success') {
         throw new Error(`BigBuy order creation failed: ${data.message}`);
@@ -193,17 +165,7 @@ export class BigBuyConnector extends BaseConnector {
 
   async getOrderStatus(orderId: string): Promise<string> {
     try {
-      const response = await this.makeRequest(
-        `${this.baseUrl}/${this.version}/orders/${orderId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${this.credentials.apiKey}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      const data = await response.json();
+      const data = await this.makeRequest(`/${this.version}/orders/${orderId}`);
       
       if (data.status !== 'success') {
         throw new Error(`BigBuy API error: ${data.message}`);

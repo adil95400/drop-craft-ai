@@ -205,40 +205,46 @@ export class RealMarketingService {
       description: `Campaign "${campaign.data.name}" launched`,
       metadata: {
         campaign_type: campaign.data.type,
-        target_segment_id: campaign.data.target_segment_id,
+        // Remove target_segment_id as it doesn't exist in the database
+        campaign_name: campaign.data.name,
       },
     });
   }
 
   // Marketing Intelligence
   async getMarketingIntelligence(filters?: {
-    analysis_type?: string;
+    channel?: string;
     limit?: number;
   }): Promise<MarketingIntelligence[]> {
     let query = supabase
       .from('marketing_intelligence')
       .select('*');
 
-    if (filters?.analysis_type) {
-      query = query.eq('analysis_type', filters.analysis_type);
+    if (filters?.channel) {
+      query = query.eq('channel', filters.channel);
     }
 
     query = query
-      .order('generated_at', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(filters?.limit || 20);
 
     const { data, error } = await query;
     
     if (error) throw error;
     
+    // Map database fields to interface
     return (data || []).map(intel => ({
-      ...intel,
-      insights: typeof intel.insights === 'object' && intel.insights !== null
-        ? intel.insights as Record<string, any>
+      id: intel.id,
+      user_id: intel.user_id,
+      analysis_type: 'campaign_performance', // Default since this field doesn't exist in DB
+      insights: typeof intel.audience_insights === 'object' && intel.audience_insights !== null
+        ? intel.audience_insights as Record<string, any>
         : {},
-      recommendations: Array.isArray(intel.recommendations) 
-        ? intel.recommendations 
+      recommendations: Array.isArray(intel.optimization_suggestions) 
+        ? intel.optimization_suggestions 
         : [],
+      confidence_score: intel.performance_score || 0,
+      generated_at: intel.created_at,
     } as MarketingIntelligence));
   }
 
@@ -283,30 +289,37 @@ export class RealMarketingService {
         confidenceScore = 0;
     }
 
+    // Store intelligence in database using actual schema
     const { data, error } = await supabase
       .from('marketing_intelligence')
       .insert({
         user_id: user.user.id,
-        analysis_type: analysisType,
-        insights,
-        recommendations,
-        confidence_score: confidenceScore,
-        generated_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+        channel: analysisType, // Use analysis type as channel
+        attribution_model: 'last_click',
+        performance_score: confidenceScore,
+        roi_analysis: insights,
+        audience_insights: insights,
+        conversion_data: { insights, recommendations },
+        optimization_suggestions: recommendations,
       })
       .select()
       .single();
 
     if (error) throw error;
     
+    // Return mapped to interface
     return {
-      ...data,
-      insights: typeof data.insights === 'object' && data.insights !== null
-        ? data.insights as Record<string, any>
+      id: data.id,
+      user_id: data.user_id,
+      analysis_type: analysisType,
+      insights: typeof data.audience_insights === 'object' && data.audience_insights !== null
+        ? data.audience_insights as Record<string, any>
         : {},
-      recommendations: Array.isArray(data.recommendations) 
-        ? data.recommendations 
+      recommendations: Array.isArray(data.optimization_suggestions) 
+        ? data.optimization_suggestions 
         : [],
+      confidence_score: data.performance_score || 0,
+      generated_at: data.created_at,
     } as MarketingIntelligence;
   }
 

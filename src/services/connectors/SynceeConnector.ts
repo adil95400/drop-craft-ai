@@ -42,23 +42,25 @@ interface SynceeProduct {
 }
 
 export class SynceeConnector extends BaseConnector {
-  private baseUrl = 'https://api.syncee.com/v1';
-
   constructor(credentials: SupplierCredentials) {
-    super(credentials);
+    super(credentials, 'https://api.syncee.com/v1');
     this.rateLimitDelay = 1000; // 1 request per second
+  }
+
+  protected getSupplierName(): string {
+    return 'Syncee';
+  }
+
+  protected getAuthHeaders(): Record<string, string> {
+    return {
+      'Authorization': `Bearer ${this.credentials.apiKey}`,
+    };
   }
 
   async validateCredentials(): Promise<boolean> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/user/profile`, {
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      return response.status === 200;
+      await this.makeRequest('/user/profile');
+      return true;
     } catch (error) {
       console.error('Syncee credential validation failed:', error);
       return false;
@@ -82,14 +84,7 @@ export class SynceeConnector extends BaseConnector {
         ...(options?.lastSync && { modified_since: options.lastSync.toISOString() }),
       });
 
-      const response = await this.makeRequest(`${this.baseUrl}/products?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
+      const data = await this.makeRequest(`/products?${params}`);
       
       if (!data.data || !Array.isArray(data.data)) {
         throw new Error('Invalid response format from Syncee API');
@@ -106,14 +101,7 @@ export class SynceeConnector extends BaseConnector {
 
   async fetchProduct(sku: string): Promise<SupplierProduct | null> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/products/${sku}`, {
-        headers: {
-          'Authorization': `Bearer ${this.credentials.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
+      const data = await this.makeRequest(`/products/${sku}`);
       
       if (!data.data) {
         return null;
@@ -126,27 +114,32 @@ export class SynceeConnector extends BaseConnector {
     }
   }
 
-  async fetchInventory(skus: string[]): Promise<Array<{sku: string, stock: number}>> {
+  async updateInventory(products: SupplierProduct[]): Promise<import('./BaseConnector').SyncResult> {
     try {
-      const inventoryPromises = skus.map(async (sku) => {
-        const response = await this.makeRequest(`${this.baseUrl}/products/${sku}/inventory`, {
-          headers: {
-            'Authorization': `Bearer ${this.credentials.apiKey}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        const data = await response.json();
+      const inventoryPromises = products.map(async (product) => {
+        const data = await this.makeRequest(`/products/${product.sku}/inventory`);
         return {
-          sku,
+          sku: product.sku,
           stock: data.data?.stock_quantity || 0,
         };
       });
 
-      return await Promise.all(inventoryPromises);
+      const results = await Promise.all(inventoryPromises);
+      
+      return {
+        total: products.length,
+        imported: results.length,
+        duplicates: 0,
+        errors: [],
+      };
     } catch (error) {
-      console.error('Error fetching Syncee inventory:', error);
-      throw error;
+      console.error('Error updating Syncee inventory:', error);
+      return {
+        total: products.length,
+        imported: 0,
+        duplicates: 0,
+        errors: [error.message],
+      };
     }
   }
 
