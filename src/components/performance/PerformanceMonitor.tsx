@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, ReactNode } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -22,7 +22,12 @@ interface PerformanceMetrics {
   cacheHitRate: number
 }
 
-export function PerformanceMonitor() {
+interface PerformanceMonitorProps {
+  children: ReactNode
+  showWidget?: boolean
+}
+
+export function PerformanceMonitor({ children, showWidget = false }: PerformanceMonitorProps) {
   const [metrics, setMetrics] = useState<PerformanceMetrics>({
     fps: 60,
     memoryUsage: 0,
@@ -101,7 +106,7 @@ export function PerformanceMonitor() {
 
   const scoreBadge = getScoreBadge(overallScore)
 
-  return (
+  const PerformanceWidget = () => (
     <Card className="relative overflow-hidden">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
@@ -259,5 +264,16 @@ export function PerformanceMonitor() {
         </div>
       )}
     </Card>
+  )
+
+  return (
+    <>
+      {children}
+      {showWidget && (
+        <div className="fixed bottom-4 left-4 z-50 w-80">
+          <PerformanceWidget />
+        </div>
+      )}
+    </>
   )
 }
