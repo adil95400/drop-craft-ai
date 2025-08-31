@@ -128,7 +128,7 @@ const MarketingCreate = () => {
 
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
-      {[1, 2, 3].map((stepNumber) => (
+      {[1, 2, 3].map((stepNumber, index) => (
         <React.Fragment key={stepNumber}>
           <div className={`
             w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
@@ -139,7 +139,7 @@ const MarketingCreate = () => {
           `}>
             {stepNumber}
           </div>
-          {stepNumber < 3 && (
+          {index < 2 && (
             <div className={`w-16 h-1 mx-2 ${step > stepNumber ? 'bg-primary' : 'bg-border'}`} />
           )}
         </React.Fragment>
