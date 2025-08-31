@@ -66,9 +66,9 @@ export class StockSyncService {
         execution_time: Date.now() - startTime
       };
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Stock sync error:', error);
-      errors.push(error.message);
+      errors.push(error?.message || 'Unknown error');
       
       return {
         success: false,
@@ -130,19 +130,19 @@ export class StockSyncService {
               .eq('id', product.id);
 
             if (updateError) {
-              errors.push(`Failed to update product ${product.sku}: ${updateError.message}`);
+              errors.push(`Failed to update product ${product.sku}: ${updateError?.message || 'Unknown error'}`);
             } else {
               productsSynced++;
             }
           }
 
-        } catch (error) {
-          errors.push(`Supplier sync error (${supplier.name}): ${error.message}`);
+        } catch (error: any) {
+          errors.push(`Supplier sync error (${supplier.name}): ${error?.message || 'Unknown error'}`);
         }
       }
 
-    } catch (error) {
-      errors.push(`Supplier sync setup error: ${error.message}`);
+    } catch (error: any) {
+      errors.push(`Supplier sync setup error: ${error?.message || 'Unknown error'}`);
     }
 
     return { success: errors.length === 0, products_synced: productsSynced, errors, execution_time: 0 };
@@ -197,13 +197,13 @@ export class StockSyncService {
             .update({ last_sync_at: new Date().toISOString() })
             .eq('id', integration.id);
 
-        } catch (error) {
-          errors.push(`Platform sync error (${integration.platform_type}): ${error.message}`);
+        } catch (error: any) {
+          errors.push(`Platform sync error (${integration.platform_type}): ${error?.message || 'Unknown error'}`);
         }
       }
 
-    } catch (error) {
-      errors.push(`Platform sync setup error: ${error.message}`);
+    } catch (error: any) {
+      errors.push(`Platform sync setup error: ${error?.message || 'Unknown error'}`);
     }
 
     return { success: errors.length === 0, products_synced: productsSynced, errors, execution_time: 0 };
@@ -250,8 +250,8 @@ export class StockSyncService {
           throw new Error(`Unsupported platform: ${integration.platform_type}`);
       }
 
-    } catch (error) {
-      return { success: false, error: error.message };
+    } catch (error: any) {
+      return { success: false, error: error?.message || 'Unknown error' };
     }
   }
 
@@ -359,7 +359,7 @@ export class StockSyncService {
               .eq('id', product.id);
 
             if (updateError) {
-              errors.push(`Failed to update price for ${product.sku}: ${updateError.message}`);
+              errors.push(`Failed to update price for ${product.sku}: ${updateError?.message || 'Unknown error'}`);
             } else {
               console.log(`💲 ${product.sku}: ${product.price} → ${newPrice} (${reason})`);
 
@@ -381,13 +381,13 @@ export class StockSyncService {
             }
           }
 
-        } catch (error) {
-          errors.push(`Price adjustment error for ${product.sku}: ${error.message}`);
+        } catch (error: any) {
+          errors.push(`Price adjustment error for ${product.sku}: ${error?.message || 'Unknown error'}`);
         }
       }
 
-    } catch (error) {
-      errors.push(`Price adjustment setup error: ${error.message}`);
+    } catch (error: any) {
+      errors.push(`Price adjustment setup error: ${error?.message || 'Unknown error'}`);
     }
 
     return { errors };
@@ -417,8 +417,7 @@ export class StockSyncService {
       user_id: userId,
       source_type: 'stock_sync',
       status: 'pending',
-      mapping_config: config,
-      scheduled_at: this.getNextScheduleTime(config.sync_frequency).toISOString()
+      mapping_config: config as any
     });
 
     console.log(`⏰ Stock sync scheduled for ${config.sync_frequency} intervals`);
@@ -470,11 +469,11 @@ export class StockSyncService {
     // Get next scheduled sync
     const { data: nextSync } = await supabase
       .from('import_jobs')
-      .select('scheduled_at')
+      .select('created_at')
       .eq('user_id', userId)
       .eq('source_type', 'stock_sync')
       .eq('status', 'pending')
-      .order('scheduled_at', { ascending: true })
+      .order('created_at', { ascending: true })
       .limit(1)
       .single();
 
@@ -490,11 +489,15 @@ export class StockSyncService {
       .gte('created_at', today.toISOString());
 
     const productsSyncedToday = todayLogs?.reduce((total, log) => {
-      return total + (log.metadata?.products_synced || 0);
+      const metadata = log.metadata as any || {};
+      return total + (metadata.products_synced || 0);
     }, 0) || 0;
 
     const totalSyncs = todayLogs?.length || 0;
-    const errorSyncs = todayLogs?.filter(log => (log.metadata?.errors || 0) > 0).length || 0;
+    const errorSyncs = todayLogs?.filter(log => {
+      const metadata = log.metadata as any || {};
+      return (metadata.errors || 0) > 0;
+    }).length || 0;
     const errorRate = totalSyncs > 0 ? (errorSyncs / totalSyncs) * 100 : 0;
 
     // Count active suppliers and platforms
@@ -512,7 +515,7 @@ export class StockSyncService {
 
     return {
       last_sync: lastSync?.created_at || null,
-      next_sync: nextSync?.scheduled_at || null,
+      next_sync: nextSync?.created_at || null,
       products_synced_today: productsSyncedToday,
       error_rate: Math.round(errorRate * 100) / 100,
       active_suppliers: activeSuppliers || 0,
