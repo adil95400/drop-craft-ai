@@ -101,19 +101,19 @@ export function SystemMonitoringDashboard() {
                     {metric.component_name === 'cpu' && <Cpu className="h-4 w-4" />}
                     {metric.component_name || 'Composant'}
                   </CardTitle>
-                  {getStatusIcon(metric.status)}
+                  {getStatusIcon(metric.health_status)}
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <Badge variant={getStatusColor(metric.status)}>
-                      {metric.status}
+                  <Badge variant={metric.health_status === 'healthy' ? 'default' : 'destructive'}>
+                      {metric.health_status}
                     </Badge>
                     <div className="text-sm text-muted-foreground">
                       Dernière vérification: {new Date(metric.last_check_at).toLocaleTimeString()}
                     </div>
-                    {metric.metrics && (
+                    {metric.metrics_data && (
                       <div className="text-xs">
-                        Response Time: {JSON.stringify(metric.metrics).slice(0, 50)}...
+                        Données: {JSON.stringify(metric.metrics_data).slice(0, 50)}...
                       </div>
                     )}
                   </div>
@@ -153,24 +153,24 @@ export function SystemMonitoringDashboard() {
             {performanceMetrics?.map((metric, index) => (
               <Card key={index}>
                 <CardHeader>
-                  <CardTitle className="text-sm">{metric.metric_name}</CardTitle>
+                <CardTitle className="text-sm">{metric.metric_name}</CardTitle>
                   <CardDescription>
-                    Catégorie: {metric.category}
+                    Type: {metric.metric_type}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <div className="text-2xl font-bold">{Number(metric.value).toFixed(2)}</div>
+                    <div className="text-2xl font-bold">{Number(metric.metric_value).toFixed(2)}</div>
                     <div className="text-sm text-muted-foreground">
-                      {metric.unit}
+                      {metric.metric_unit}
                     </div>
                     <Progress 
-                      value={Number(metric.value)} 
-                      max={Number(metric.threshold)} 
+                      value={Number(metric.metric_value)} 
+                      max={100} 
                       className="h-2"
                     />
                     <div className="text-xs text-muted-foreground">
-                      Seuil: {metric.threshold} {metric.unit}
+                      Limite: {metric.metric_unit}
                     </div>
                   </div>
                 </CardContent>
@@ -192,15 +192,9 @@ export function SystemMonitoringDashboard() {
                     <Tooltip />
                     <Line 
                       type="monotone" 
-                      dataKey="value" 
+                      dataKey="metric_value" 
                       stroke="hsl(var(--primary))" 
                       strokeWidth={2}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="threshold" 
-                      stroke="hsl(var(--destructive))" 
-                      strokeDasharray="5 5"
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -217,19 +211,19 @@ export function SystemMonitoringDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {healthMetrics?.filter(m => m.status !== 'healthy').map((alert, index) => (
+                  {healthMetrics?.filter(m => m.health_status !== 'healthy').map((alert, index) => (
                     <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center gap-2">
-                        {getStatusIcon(alert.status)}
+                        {getStatusIcon(alert.health_status)}
                         <div>
                           <div className="font-medium">{alert.component_name}</div>
                           <div className="text-sm text-muted-foreground">
-                            Statut: {alert.status}
+                            Statut: {alert.health_status}
                           </div>
                         </div>
                       </div>
-                      <Badge variant={getStatusColor(alert.status)}>
-                        {alert.status}
+                      <Badge variant={getStatusColor(alert.health_status)}>
+                        {alert.health_status}
                       </Badge>
                     </div>
                   )) || (
@@ -264,7 +258,7 @@ export function SystemMonitoringDashboard() {
                   <div className="flex justify-between items-center">
                     <span>Alertes actives</span>
                     <span className="font-medium text-red-500">
-                      {healthMetrics?.filter(m => m.status !== 'healthy').length || 0}
+                      {healthMetrics?.filter(m => m.health_status !== 'healthy').length || 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">

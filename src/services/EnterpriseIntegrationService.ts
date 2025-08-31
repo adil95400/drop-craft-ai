@@ -33,6 +33,7 @@ export class EnterpriseIntegrationService {
     const { data, error } = await supabase
       .from('enterprise_integrations')
       .insert({
+        user_id: (await supabase.auth.getUser()).data.user?.id!,
         provider_name: integrationData.providerName,
         integration_type: integrationData.integrationType,
         configuration: integrationData.configuration,
@@ -50,6 +51,7 @@ export class EnterpriseIntegrationService {
     const { data, error } = await supabase
       .from('enterprise_settings')
       .upsert({
+        user_id: (await supabase.auth.getUser()).data.user?.id!,
         setting_key: key,
         setting_value: value,
         setting_category: category

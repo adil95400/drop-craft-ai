@@ -71,6 +71,7 @@ export class AdvancedAnalyticsService {
     const { data, error } = await supabase
       .from('ab_test_experiments')
       .insert({
+        user_id: (await supabase.auth.getUser()).data.user?.id!,
         experiment_name: testConfig.experimentName,
         experiment_type: testConfig.experimentType,
         hypothesis: testConfig.hypothesis,

@@ -74,6 +74,7 @@ import {
   IntegrationsUltraProLazy,
   AdvancedIntelligencePageLazy,
   AutomationOptimizationPageLazy,
+  AdvancedAnalyticsEnterprisePageLazy,
 } from '@/components/lazy/LazyPages';
 
 // Light pages (direct imports)

@@ -36,7 +36,11 @@ export function EnterpriseIntegrationDashboard() {
 
   const handleCreateIntegration = () => {
     if (newIntegration.providerName && newIntegration.integrationType) {
-      createIntegration()
+      createIntegration({
+        providerName: newIntegration.providerName,
+        integrationType: newIntegration.integrationType,
+        configuration: newIntegration.configuration
+      })
       setNewIntegration({ providerName: '', integrationType: '', configuration: {} })
     }
   }
