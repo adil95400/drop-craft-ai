@@ -1022,6 +1022,13 @@ const App = () => (
                 </AppLayout>
               </AuthGuard>
             } />
+            <Route path="/intelligence" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <AdvancedIntelligencePage />
+                </AppLayout>
+              </AuthGuard>
+            } />
             <Route path="/reviews-ultra-pro-optimized" element={
               <AuthGuard requireRole="user">
                 <AppLayout>
