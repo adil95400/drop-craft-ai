@@ -351,22 +351,48 @@ const Integrations = memo(() => {
   return (
     <ErrorBoundary>
       <div className="container mx-auto p-6 max-w-7xl">
-      {/* Header */}
+      {/* Flux recommandés */}
       <div className="mb-8">
-        <div className="bg-primary-soft/20 border border-primary/20 rounded-lg p-4 mb-6">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-              <Info className="w-3 h-3 text-primary-foreground" />
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+              <Info className="w-5 h-5 text-white" />
             </div>
-            <p className="text-sm text-primary">
-              Vous débutez avec Channable ? Commencez par notre démo interactive pour voir comment cela fonctionne: aucun import de données n'est nécessaire !
-            </p>
-            <Button variant="link" className="text-primary p-0 h-auto">
-              Voir la démo de Channable
-            </Button>
+            <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">Flux recommandés</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">Onboarding</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Configuration initiale de votre compte</p>
+                  </div>
+                  <Button size="sm" className="bg-black hover:bg-gray-800 text-white">
+                    Démarrer
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">Marketing Flow</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Paramétrez vos outils marketing</p>
+                  </div>
+                  <Button size="sm" className="bg-black hover:bg-gray-800 text-white">
+                    Démarrer
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
-        <h1 className="text-2xl font-semibold mb-2">
+        
+        <h1 className="text-2xl font-semibold mb-2 text-gray-900 dark:text-gray-100">
           Configurez votre import avec des plugins
         </h1>
       </div>
@@ -407,32 +433,40 @@ const Integrations = memo(() => {
           return (
             <Card 
               key={platform.id}
-              className={`cursor-pointer hover:shadow-card transition-smooth border bg-card ${
-                isConnected ? 'border-success/30 bg-success/5' : 'hover:border-primary/30'
+              className={`cursor-pointer hover:shadow-md transition-all duration-200 border-2 bg-white dark:bg-gray-800 ${
+                isConnected 
+                  ? 'border-green-200 bg-green-50 dark:bg-green-900/10 dark:border-green-800' 
+                  : 'border-gray-200 hover:border-blue-300 dark:border-gray-700 dark:hover:border-blue-600'
               }`}
               onClick={() => !isConnected && handlePlatformClick(platform)}
             >
-              <CardContent className="p-4 flex flex-col items-center text-center space-y-3 relative">
+              <CardContent className="p-4 flex flex-col items-center text-center space-y-3 relative min-h-[120px]">
                 {isConnected && (
                   <div className="absolute top-2 right-2">
-                    <CheckCircle className="w-4 h-4 text-success" />
+                    <CheckCircle className="w-4 h-4 text-green-600" />
                   </div>
                 )}
-                <div className="w-16 h-16 flex items-center justify-center">
+                <div className="w-16 h-16 flex items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
                   <img 
                     src={platform.logo} 
                     alt={platform.name}
                     className="max-w-full max-h-full object-contain"
+                    style={{ filter: 'none' }}
                     onError={(e) => {
-                      e.currentTarget.src = `https://via.placeholder.com/80x40/6366f1/ffffff?text=${platform.name.charAt(0)}`
+                      const target = e.currentTarget
+                      target.style.display = 'none'
+                      const fallback = document.createElement('div')
+                      fallback.className = 'w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg'
+                      fallback.textContent = platform.name.charAt(0).toUpperCase()
+                      target.parentNode?.appendChild(fallback)
                     }}
                   />
                 </div>
-                <h3 className="font-medium text-sm text-foreground leading-tight">
+                <h3 className="font-medium text-sm text-gray-900 dark:text-gray-100 leading-tight">
                   {platform.name}
                 </h3>
                 {isConnected && (
-                  <Badge className="bg-success/10 text-success border-success/20 text-xs">
+                  <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-green-200 dark:border-green-800 text-xs">
                     Connecté
                   </Badge>
                 )}
@@ -452,16 +486,19 @@ const Integrations = memo(() => {
           {technicalFiles.map((file) => (
             <Card 
               key={file.id}
-              className="cursor-pointer hover:shadow-card transition-smooth border bg-card hover:border-primary/30"
+              className="cursor-pointer hover:shadow-md transition-all duration-200 border-2 border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
               onClick={() => handleTechnicalFileClick(file.id)}
             >
-              <CardContent className="p-4 flex flex-col items-center text-center space-y-3">
-                <div className="w-16 h-16 flex items-center justify-center">
+              <CardContent className="p-4 flex flex-col items-center text-center space-y-3 min-h-[120px]">
+                <div className="w-16 h-16 flex items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-lg">
                   {file.icon}
                 </div>
-                <h3 className="font-medium text-sm text-foreground">
+                <h3 className="font-medium text-sm text-gray-900 dark:text-gray-100">
                   {file.name}
                 </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {file.description}
+                </p>
               </CardContent>
             </Card>
           ))}
