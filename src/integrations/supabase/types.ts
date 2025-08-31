@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      ab_test_experiments: {
+        Row: {
+          confidence_interval: Json | null
+          control_variant: Json
+          created_at: string
+          current_results: Json
+          ended_at: string | null
+          experiment_name: string
+          experiment_type: string
+          hypothesis: string | null
+          id: string
+          started_at: string | null
+          statistical_significance: number | null
+          status: string
+          success_metrics: Json
+          test_variants: Json
+          traffic_allocation: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence_interval?: Json | null
+          control_variant?: Json
+          created_at?: string
+          current_results?: Json
+          ended_at?: string | null
+          experiment_name: string
+          experiment_type: string
+          hypothesis?: string | null
+          id?: string
+          started_at?: string | null
+          statistical_significance?: number | null
+          status?: string
+          success_metrics?: Json
+          test_variants?: Json
+          traffic_allocation?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence_interval?: Json | null
+          control_variant?: Json
+          created_at?: string
+          current_results?: Json
+          ended_at?: string | null
+          experiment_name?: string
+          experiment_type?: string
+          hypothesis?: string | null
+          id?: string
+          started_at?: string | null
+          statistical_significance?: number | null
+          status?: string
+          success_metrics?: Json
+          test_variants?: Json
+          traffic_allocation?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       activity_logs: {
         Row: {
           action: string
@@ -55,6 +115,51 @@ export type Database = {
           severity?: string | null
           source?: string | null
           user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      advanced_reports: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          file_url: string | null
+          generated_at: string
+          id: string
+          report_config: Json
+          report_data: Json
+          report_name: string
+          report_type: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          file_url?: string | null
+          generated_at?: string
+          id?: string
+          report_config?: Json
+          report_data?: Json
+          report_name: string
+          report_type: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          file_url?: string | null
+          generated_at?: string
+          id?: string
+          report_config?: Json
+          report_data?: Json
+          report_name?: string
+          report_type?: string
+          status?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -1184,6 +1289,93 @@ export type Database = {
         }
         Relationships: []
       }
+      enterprise_integrations: {
+        Row: {
+          authentication_data: Json
+          configuration: Json
+          created_at: string
+          error_logs: Json
+          id: string
+          integration_type: string
+          is_active: boolean
+          last_sync_at: string | null
+          performance_metrics: Json
+          provider_name: string
+          sync_frequency: string
+          sync_status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          authentication_data?: Json
+          configuration?: Json
+          created_at?: string
+          error_logs?: Json
+          id?: string
+          integration_type: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          performance_metrics?: Json
+          provider_name: string
+          sync_frequency?: string
+          sync_status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          authentication_data?: Json
+          configuration?: Json
+          created_at?: string
+          error_logs?: Json
+          id?: string
+          integration_type?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          performance_metrics?: Json
+          provider_name?: string
+          sync_frequency?: string
+          sync_status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      enterprise_settings: {
+        Row: {
+          access_level: string
+          created_at: string
+          id: string
+          is_encrypted: boolean
+          setting_category: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_level?: string
+          created_at?: string
+          id?: string
+          is_encrypted?: boolean
+          setting_category: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_level?: string
+          created_at?: string
+          id?: string
+          is_encrypted?: boolean
+          setting_category?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       generated_content: {
         Row: {
           ai_model: string | null
@@ -2063,6 +2255,45 @@ export type Database = {
           },
         ]
       }
+      performance_metrics: {
+        Row: {
+          collected_at: string
+          created_at: string
+          dimensions: Json
+          id: string
+          metadata: Json
+          metric_name: string
+          metric_type: string
+          metric_unit: string | null
+          metric_value: number
+          user_id: string
+        }
+        Insert: {
+          collected_at?: string
+          created_at?: string
+          dimensions?: Json
+          id?: string
+          metadata?: Json
+          metric_name: string
+          metric_type: string
+          metric_unit?: string | null
+          metric_value: number
+          user_id: string
+        }
+        Update: {
+          collected_at?: string
+          created_at?: string
+          dimensions?: Json
+          id?: string
+          metadata?: Json
+          metric_name?: string
+          metric_type?: string
+          metric_unit?: string | null
+          metric_value?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       plans_limits: {
         Row: {
           created_at: string | null
@@ -2132,6 +2363,54 @@ export type Database = {
           sync_status?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      predictive_analytics: {
+        Row: {
+          accuracy_score: number | null
+          confidence_level: number
+          created_at: string
+          id: string
+          input_data: Json
+          model_version: string
+          prediction_period: string
+          prediction_results: Json
+          prediction_type: string
+          target_metric: string
+          updated_at: string
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          accuracy_score?: number | null
+          confidence_level?: number
+          created_at?: string
+          id?: string
+          input_data?: Json
+          model_version?: string
+          prediction_period: string
+          prediction_results?: Json
+          prediction_type: string
+          target_metric: string
+          updated_at?: string
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          accuracy_score?: number | null
+          confidence_level?: number
+          created_at?: string
+          id?: string
+          input_data?: Json
+          model_version?: string
+          prediction_period?: string
+          prediction_results?: Json
+          prediction_type?: string
+          target_metric?: string
+          updated_at?: string
+          user_id?: string
+          valid_until?: string | null
         }
         Relationships: []
       }
@@ -3611,6 +3890,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      system_health_monitoring: {
+        Row: {
+          alerts_triggered: Json
+          component_name: string
+          component_type: string
+          created_at: string
+          error_rate: number
+          health_status: string
+          id: string
+          last_check_at: string
+          metrics_data: Json
+          performance_score: number
+          response_time_ms: number | null
+          updated_at: string
+          uptime_percentage: number
+          user_id: string
+        }
+        Insert: {
+          alerts_triggered?: Json
+          component_name: string
+          component_type: string
+          created_at?: string
+          error_rate?: number
+          health_status?: string
+          id?: string
+          last_check_at?: string
+          metrics_data?: Json
+          performance_score?: number
+          response_time_ms?: number | null
+          updated_at?: string
+          uptime_percentage?: number
+          user_id: string
+        }
+        Update: {
+          alerts_triggered?: Json
+          component_name?: string
+          component_type?: string
+          created_at?: string
+          error_rate?: number
+          health_status?: string
+          id?: string
+          last_check_at?: string
+          metrics_data?: Json
+          performance_score?: number
+          response_time_ms?: number | null
+          updated_at?: string
+          uptime_percentage?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       user_api_keys: {
         Row: {
