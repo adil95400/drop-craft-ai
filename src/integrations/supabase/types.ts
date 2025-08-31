@@ -662,6 +662,48 @@ export type Database = {
         }
         Relationships: []
       }
+      competitive_intelligence: {
+        Row: {
+          competitive_data: Json
+          competitor_name: string
+          created_at: string
+          gap_opportunities: Json
+          id: string
+          market_position: Json
+          price_analysis: Json
+          product_id: string | null
+          threat_level: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          competitive_data?: Json
+          competitor_name: string
+          created_at?: string
+          gap_opportunities?: Json
+          id?: string
+          market_position?: Json
+          price_analysis?: Json
+          product_id?: string | null
+          threat_level?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          competitive_data?: Json
+          competitor_name?: string
+          created_at?: string
+          gap_opportunities?: Json
+          id?: string
+          market_position?: Json
+          price_analysis?: Json
+          product_id?: string | null
+          threat_level?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       crm_contacts: {
         Row: {
           attribution: Json | null
@@ -724,6 +766,48 @@ export type Database = {
           status?: string | null
           tags?: string[] | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      customer_behavior_analytics: {
+        Row: {
+          analysis_data: Json
+          behavior_type: string
+          behavioral_score: number
+          churn_probability: number | null
+          created_at: string
+          customer_id: string | null
+          id: string
+          lifetime_value: number | null
+          recommendations: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_data?: Json
+          behavior_type: string
+          behavioral_score?: number
+          churn_probability?: number | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          lifetime_value?: number | null
+          recommendations?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_data?: Json
+          behavior_type?: string
+          behavioral_score?: number
+          churn_probability?: number | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          lifetime_value?: number | null
+          recommendations?: Json
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -1385,6 +1469,51 @@ export type Database = {
           target_audience?: Json | null
           type?: string
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      marketing_intelligence: {
+        Row: {
+          attribution_model: string
+          audience_insights: Json
+          campaign_id: string | null
+          channel: string
+          conversion_data: Json
+          created_at: string
+          id: string
+          optimization_suggestions: Json
+          performance_score: number
+          roi_analysis: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attribution_model?: string
+          audience_insights?: Json
+          campaign_id?: string | null
+          channel: string
+          conversion_data?: Json
+          created_at?: string
+          id?: string
+          optimization_suggestions?: Json
+          performance_score?: number
+          roi_analysis?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attribution_model?: string
+          audience_insights?: Json
+          campaign_id?: string | null
+          channel?: string
+          conversion_data?: Json
+          created_at?: string
+          id?: string
+          optimization_suggestions?: Json
+          performance_score?: number
+          roi_analysis?: Json
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -2215,6 +2344,48 @@ export type Database = {
           permission_name?: string
           resource_type?: string | null
           role_name?: string
+        }
+        Relationships: []
+      }
+      sales_intelligence: {
+        Row: {
+          analysis_type: string
+          confidence_score: number
+          created_at: string
+          id: string
+          market_insights: Json
+          predictions: Json
+          product_id: string | null
+          recommended_actions: Json
+          time_period: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_type: string
+          confidence_score?: number
+          created_at?: string
+          id?: string
+          market_insights?: Json
+          predictions?: Json
+          product_id?: string | null
+          recommended_actions?: Json
+          time_period: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_type?: string
+          confidence_score?: number
+          created_at?: string
+          id?: string
+          market_insights?: Json
+          predictions?: Json
+          product_id?: string | null
+          recommended_actions?: Json
+          time_period?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
