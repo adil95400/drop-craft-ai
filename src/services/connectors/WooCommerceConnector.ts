@@ -36,7 +36,7 @@ export class WooCommerceConnector extends BaseConnector {
 
   async validateCredentials(): Promise<boolean> {
     try {
-      const response = await this.makeWooRequest('/products', { per_page: 1 })
+      const response = await this.makeWooRequest('/products?per_page=1')
       return response.ok
     } catch (error) {
       console.error('WooCommerce credentials validation failed:', error)
@@ -179,14 +179,15 @@ export class WooCommerceConnector extends BaseConnector {
       brand: '', // Extract from attributes if available
       images: product.images.map(img => img.src),
       stock: product.stock_quantity || 0,
-      availability: product.stock_status === 'instock',
-      url: product.permalink,
       attributes: product.attributes.reduce((acc, attr) => {
         acc[attr.name] = attr.options.join(', ')
         return acc
       }, {} as Record<string, string>),
-      supplier: 'WooCommerce',
-      updatedAt: new Date().toISOString()
+      supplier: {
+        id: 'woocommerce',
+        name: 'WooCommerce',
+        sku: product.sku
+      }
     }
   }
 
