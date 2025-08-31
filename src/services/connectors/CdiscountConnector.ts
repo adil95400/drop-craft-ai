@@ -1,180 +1,112 @@
-import { BaseConnector } from './BaseConnector';
-import { SupplierProduct, SupplierCredentials } from '@/types/suppliers';
-
-interface CdiscountProduct {
-  Id: string;
-  Sku: string;
-  Name: string;
-  Description: string;
-  Price: number;
-  Currency: string;
-  StockQuantity: number;
-  Images: string[];
-  Category: string;
-  Brand: string;
-  Weight: number;
-  Variants: Array<{
-    Id: string;
-    Sku: string;
-    Name: string;
-    Price: number;
-    StockQuantity: number;
-    Attributes: Record<string, string>;
-  }>;
-}
+import { BaseConnector, FetchOptions, SyncResult } from './BaseConnector';
+import { SupplierCredentials, SupplierProduct } from '@/types/suppliers';
 
 export class CdiscountConnector extends BaseConnector {
-  private baseUrl = 'https://ws.cdiscount.com/MarketplaceAPI';
-  
   constructor(credentials: SupplierCredentials) {
-    super(credentials);
-    this.rateLimitDelay = 2000; // Cdiscount rate limit: 30 requests/minute
+    super(credentials, 'https://ope-api.cdiscount.com');
+    this.rateLimitDelay = 1000; // 1 second between requests for Cdiscount
+  }
+
+  protected getAuthHeaders(): Record<string, string> {
+    return {
+      'Authorization': `Bearer ${this.credentials.apiKey}`,
+      'X-Cdiscount-ApiKey': this.credentials.apiKey || '',
+    };
+  }
+
+  protected getSupplierName(): string {
+    return 'Cdiscount Pro';
   }
 
   async validateCredentials(): Promise<boolean> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/GetSellerInformation`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.credentials.accessToken}`,
-        },
-        body: JSON.stringify({
-          ApiKey: this.credentials.apiKey,
-        }),
-      });
-
-      const data = await response.json();
-      return data.OperationSuccess === true;
+      const response = await this.makeRequest('/v1/ping');
+      return response.success === true;
     } catch (error) {
       console.error('Cdiscount credential validation failed:', error);
       return false;
     }
   }
 
-  async fetchProducts(options: {
-    page?: number;
-    limit?: number;
-    lastSync?: Date;
-    category?: string;
-  } = {}): Promise<SupplierProduct[]> {
-    const { page = 1, limit = 50 } = options;
-    
+  async fetchProducts(options: FetchOptions = {}): Promise<SupplierProduct[]> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/GetProductList`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.credentials.accessToken}`,
-        },
-        body: JSON.stringify({
-          ApiKey: this.credentials.apiKey,
-          PageNumber: page,
-          PageSize: Math.min(limit, 100),
-          ProductStateFilter: 'Active',
-        }),
+      const params = new URLSearchParams({
+        limit: (options.limit || 100).toString(),
+        page: (options.page || 1).toString(),
       });
 
-      const data = await response.json();
-      
-      if (!data.OperationSuccess) {
-        throw new Error(`Cdiscount API error: ${data.ErrorMessage}`);
+      if (options.category) {
+        params.append('category', options.category);
       }
 
-      return data.ProductList.map((product: CdiscountProduct) => this.transformProduct(product));
+      const response = await this.makeRequest(`/v1/products?${params}`);
+      
+      if (!response.products || !Array.isArray(response.products)) {
+        throw new Error('Invalid response format from Cdiscount API');
+      }
+
+      return response.products.map((product: any) => this.transformCdiscountProduct(product));
     } catch (error) {
-      console.error('Cdiscount fetchProducts failed:', error);
-      throw error;
+      this.handleError(error, 'fetchProducts');
+      return [];
     }
   }
 
   async fetchProduct(sku: string): Promise<SupplierProduct | null> {
     try {
-      const response = await this.makeRequest(`${this.baseUrl}/GetProduct`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.credentials.accessToken}`,
-        },
-        body: JSON.stringify({
-          ApiKey: this.credentials.apiKey,
-          Sku: sku,
-        }),
-      });
-
-      const data = await response.json();
+      const response = await this.makeRequest(`/v1/products/${encodeURIComponent(sku)}`);
       
-      if (!data.OperationSuccess) {
+      if (!response.product) {
         return null;
       }
 
-      return this.transformProduct(data.Product);
+      return this.transformCdiscountProduct(response.product);
     } catch (error) {
-      console.error('Cdiscount fetchProduct failed:', error);
+      console.error(`Failed to fetch product ${sku}:`, error);
       return null;
     }
   }
 
-  async fetchInventory(skus: string[]): Promise<Array<{sku: string, stock: number}>> {
-    try {
-      const response = await this.makeRequest(`${this.baseUrl}/GetStockQuantityList`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.credentials.accessToken}`,
-        },
-        body: JSON.stringify({
-          ApiKey: this.credentials.apiKey,
-          SkuList: skus,
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (!data.OperationSuccess) {
-        throw new Error(`Cdiscount API error: ${data.ErrorMessage}`);
-      }
-
-      return data.StockQuantityList.map((item: any) => ({
-        sku: item.Sku,
-        stock: item.StockQuantity || 0,
-      }));
-    } catch (error) {
-      console.error('Cdiscount fetchInventory failed:', error);
-      throw error;
-    }
+  async updateInventory(products: SupplierProduct[]): Promise<SyncResult> {
+    // Cdiscount doesn't allow inventory updates through their API
+    // This would typically be read-only for marketplace products
+    return {
+      total: products.length,
+      imported: 0,
+      duplicates: 0,
+      errors: ['Inventory updates not supported for Cdiscount marketplace products'],
+    };
   }
 
-  protected transformProduct(rawProduct: CdiscountProduct): SupplierProduct {
+  private transformCdiscountProduct(cdiscountProduct: any): SupplierProduct {
+    const baseProduct = this.normalizeProduct(cdiscountProduct);
+    
+    // Cdiscount-specific transformations
     return {
-      id: rawProduct.Id,
-      sku: rawProduct.Sku,
-      title: rawProduct.Name,
-      description: rawProduct.Description || '',
-      price: rawProduct.Price,
-      currency: rawProduct.Currency || 'EUR',
-      stock: rawProduct.StockQuantity || 0,
-      images: rawProduct.Images || [],
-      category: rawProduct.Category || 'Uncategorized',
-      brand: rawProduct.Brand,
-      weight: rawProduct.Weight,
-      variants: rawProduct.Variants?.map(variant => ({
-        id: variant.Id,
-        sku: variant.Sku,
-        title: variant.Name,
-        price: variant.Price,
-        stock: variant.StockQuantity,
-        attributes: variant.Attributes,
-      })) || [],
+      ...baseProduct,
+      id: cdiscountProduct.ProductId || cdiscountProduct.Ean,
+      sku: cdiscountProduct.Ean || cdiscountProduct.ProductId,
+      title: cdiscountProduct.Name || cdiscountProduct.BrandName,
+      description: cdiscountProduct.Description || cdiscountProduct.MarketingDescription,
+      price: parseFloat(cdiscountProduct.SalePrice) || 0,
+      costPrice: parseFloat(cdiscountProduct.BestOffer?.Price) || undefined,
+      currency: 'EUR',
+      stock: cdiscountProduct.AvailableOfferCount || 0,
+      images: cdiscountProduct.ImageList ? 
+        cdiscountProduct.ImageList.map((img: any) => img.ImageUrl) : [],
+      category: cdiscountProduct.Category?.Name || 'General',
+      brand: cdiscountProduct.BrandName || '',
       attributes: {
-        brand: rawProduct.Brand,
-        category: rawProduct.Category,
-        weight: rawProduct.Weight,
+        ean: cdiscountProduct.Ean,
+        model: cdiscountProduct.Model,
+        isEligibleForCDiscount: cdiscountProduct.IsEligibleForCDiscount,
+        deliveryInformation: cdiscountProduct.DeliveryInformation,
+        offerCount: cdiscountProduct.AvailableOfferCount,
       },
       supplier: {
         id: 'cdiscount',
         name: 'Cdiscount Pro',
-        sku: rawProduct.Sku,
+        sku: cdiscountProduct.Ean || cdiscountProduct.ProductId,
       },
     };
   }

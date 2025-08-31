@@ -1,117 +1,103 @@
-import { SupplierProduct, SupplierCredentials, ImportJob } from '@/types/suppliers';
+import { SupplierCredentials, SupplierProduct } from '@/types/suppliers';
+
+export interface FetchOptions {
+  limit?: number;
+  category?: string;
+  lastSync?: Date;
+  page?: number;
+}
+
+export interface SyncResult {
+  total: number;
+  imported: number;
+  duplicates: number;
+  errors: string[];
+}
 
 export abstract class BaseConnector {
   protected credentials: SupplierCredentials;
-  protected rateLimitDelay: number = 1000; // ms between requests
-  protected maxRetries: number = 3;
+  protected baseURL: string;
+  protected rateLimitDelay: number = 1000; // 1 second between requests
 
-  constructor(credentials: SupplierCredentials) {
+  constructor(credentials: SupplierCredentials, baseURL: string) {
     this.credentials = credentials;
+    this.baseURL = baseURL;
   }
 
-  // Authentication
+  // Abstract methods that each connector must implement
   abstract validateCredentials(): Promise<boolean>;
-  
-  // Products
-  abstract fetchProducts(options?: {
-    page?: number;
-    limit?: number;
-    lastSync?: Date;
-    category?: string;
-  }): Promise<SupplierProduct[]>;
-
+  abstract fetchProducts(options?: FetchOptions): Promise<SupplierProduct[]>;
   abstract fetchProduct(sku: string): Promise<SupplierProduct | null>;
+  abstract updateInventory(products: SupplierProduct[]): Promise<SyncResult>;
 
-  // Optional methods that can be overridden
-  async refreshCredentials?(): Promise<SupplierCredentials> {
-    throw new Error('Credential refresh not implemented');
-  }
-
-  async updateInventory?(products: Array<{sku: string, stock: number}>): Promise<boolean> {
-    throw new Error('Inventory updates not supported');
-  }
-  
-  async fetchInventory?(skus: string[]): Promise<Array<{sku: string, stock: number}>> {
-    throw new Error('Inventory fetching not supported');
-  }
-
-  async createOrder?(order: any): Promise<string> {
-    throw new Error('Order creation not supported');
-  }
-  
-  async getOrderStatus?(orderId: string): Promise<string> {
-    throw new Error('Order status not supported');
-  }
-
-  async setupWebhooks?(webhookUrl: string): Promise<boolean> {
-    throw new Error('Webhooks not supported');
-  }
-
-  // Rate limiting helper
-  protected async rateLimit(): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, this.rateLimitDelay));
-  }
-
-  // Retry mechanism
-  protected async retry<T>(
-    operation: () => Promise<T>,
-    maxRetries: number = this.maxRetries
-  ): Promise<T> {
-    let lastError: Error;
-    
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        if (attempt > 0) {
-          await this.rateLimit();
-        }
-        return await operation();
-      } catch (error) {
-        lastError = error as Error;
-        if (attempt === maxRetries) {
-          throw lastError;
-        }
-        console.warn(`Attempt ${attempt + 1} failed:`, error);
-      }
-    }
-    
-    throw lastError!;
-  }
-
-  // Generic HTTP helper with rate limiting
+  // Common helper methods
   protected async makeRequest(
-    url: string,
+    endpoint: string,
     options: RequestInit = {}
-  ): Promise<Response> {
-    await this.rateLimit();
+  ): Promise<any> {
+    const url = `${this.baseURL}${endpoint}`;
     
-    return this.retry(async () => {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          'User-Agent': 'DropshipPlatform/1.0',
-          ...options.headers,
-        },
-      });
+    const defaultHeaders = {
+      'Content-Type': 'application/json',
+      'User-Agent': 'SupplierHub/1.0',
+    };
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      return response;
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...defaultHeaders,
+        ...this.getAuthHeaders(),
+        ...options.headers,
+      },
     });
+
+    // Rate limiting
+    await new Promise(resolve => setTimeout(resolve, this.rateLimitDelay));
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return response.json();
   }
 
-  // Transform product data from supplier format to our format
-  protected abstract transformProduct(rawProduct: any): SupplierProduct;
+  protected abstract getAuthHeaders(): Record<string, string>;
 
-  // Validate product data
-  protected validateProduct(product: SupplierProduct): boolean {
-    return !!(
-      product.id &&
-      product.sku &&
-      product.title &&
-      product.price > 0 &&
-      product.currency
-    );
+  // Common data transformation methods
+  protected normalizeProduct(rawProduct: any): SupplierProduct {
+    return {
+      id: rawProduct.id || rawProduct.sku,
+      sku: rawProduct.sku || rawProduct.id,
+      title: rawProduct.title || rawProduct.name,
+      description: rawProduct.description || '',
+      price: parseFloat(rawProduct.price) || 0,
+      costPrice: parseFloat(rawProduct.cost_price || rawProduct.wholesale_price) || undefined,
+      currency: rawProduct.currency || 'EUR',
+      stock: parseInt(rawProduct.stock) || 0,
+      images: Array.isArray(rawProduct.images) 
+        ? rawProduct.images 
+        : rawProduct.image_url 
+          ? [rawProduct.image_url] 
+          : [],
+      category: rawProduct.category || 'Uncategorized',
+      brand: rawProduct.brand || '',
+      weight: parseFloat(rawProduct.weight) || undefined,
+      dimensions: rawProduct.dimensions || undefined,
+      variants: rawProduct.variants || [],
+      attributes: rawProduct.attributes || {},
+      supplier: {
+        id: rawProduct.supplier_id || this.credentials.supplierId || '',
+        name: rawProduct.supplier_name || this.getSupplierName(),
+        sku: rawProduct.supplier_sku || rawProduct.sku,
+      },
+    };
+  }
+
+  protected abstract getSupplierName(): string;
+
+  // Error handling
+  protected handleError(error: any, context: string): void {
+    console.error(`${this.getSupplierName()} ${context}:`, error);
+    throw new Error(`${this.getSupplierName()} API Error: ${error.message}`);
   }
 }
