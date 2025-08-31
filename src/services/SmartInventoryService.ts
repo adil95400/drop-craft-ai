@@ -14,7 +14,7 @@ export interface SmartInventory {
   seasonality_data: any;
   supplier_performance: any;
   cost_optimization: any;
-  stock_risk_level: 'low' | 'medium' | 'high' | 'critical';
+  stock_risk_level: string;
   auto_reorder_enabled: boolean;
   last_reorder_at?: string;
   next_reorder_prediction?: string;
@@ -47,7 +47,7 @@ export class SmartInventoryService {
       .order('stock_risk_level', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as SmartInventory[];
   }
 
   static async analyzeProduct(productId: string, analysisType: string = 'full'): Promise<InventoryAnalysis> {
@@ -75,7 +75,7 @@ export class SmartInventoryService {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as SmartInventory;
   }
 
   static async enableAutoReorder(inventoryId: string, enabled: boolean): Promise<SmartInventory> {
@@ -90,18 +90,18 @@ export class SmartInventoryService {
       .order('stock_risk_level', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as SmartInventory[];
   }
 
   static async getReorderRecommendations(): Promise<SmartInventory[]> {
     const { data, error } = await supabase
       .from('smart_inventory')
       .select('*, imported_products(name, sku, category, supplier_name)')
-      .lte('current_stock', supabase.raw('reorder_point'))
+      .filter('current_stock', 'lte', 'reorder_point')
       .order('stock_risk_level', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as SmartInventory[];
   }
 
   static async bulkAnalyzeInventory(productIds: string[]): Promise<InventoryAnalysis[]> {
@@ -177,7 +177,9 @@ export class SmartInventoryService {
     const orderData = {
       productId: inventory.product_id,
       quantity: inventory.reorder_quantity,
-      estimatedCost: inventory.reorder_quantity * (inventory.cost_optimization?.unitCost || 10),
+      estimatedCost: inventory.reorder_quantity * (
+        (inventory.cost_optimization as any)?.unitCost || 10
+      ),
       estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 jours
       supplier: 'Fournisseur principal'
     };

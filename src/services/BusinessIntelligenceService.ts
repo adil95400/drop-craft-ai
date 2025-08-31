@@ -68,7 +68,7 @@ export class BusinessIntelligenceService {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as BusinessInsight[];
   }
 
   static async getInsightsByCategory(category: BusinessInsight['category']): Promise<BusinessInsight[]> {
@@ -79,7 +79,7 @@ export class BusinessIntelligenceService {
       .order('impact_score', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as BusinessInsight[];
   }
 
   static async getInsightsBySeverity(severity: BusinessInsight['severity']): Promise<BusinessInsight[]> {
@@ -90,7 +90,7 @@ export class BusinessIntelligenceService {
       .order('confidence_score', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as BusinessInsight[];
   }
 
   static async updateInsightStatus(
@@ -122,7 +122,7 @@ export class BusinessIntelligenceService {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as BusinessInsight;
   }
 
   static async acknowledgeInsight(insightId: string): Promise<BusinessInsight> {
@@ -148,7 +148,7 @@ export class BusinessIntelligenceService {
       .limit(10);
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as BusinessInsight[];
   }
 
   static async getInsightMetrics(): Promise<any> {
@@ -200,22 +200,48 @@ export class BusinessIntelligenceService {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as BusinessInsight[];
   }
 
-  static async createCustomInsight(insightData: Partial<BusinessInsight>): Promise<BusinessInsight> {
+  static async createCustomInsight(insightData: {
+    insight_type: string;
+    category: string;
+    title: string;
+    description: string;
+    severity?: string;
+    confidence_score?: number;
+    impact_score?: number;
+    actionable_recommendations?: any;
+    supporting_data?: any;
+    ai_analysis?: any;
+    priority?: number;
+  }): Promise<BusinessInsight> {
+    const { data: currentUser } = await supabase.auth.getUser();
+    if (!currentUser.user) throw new Error('Not authenticated');
+
     const { data, error } = await supabase
       .from('business_intelligence_insights')
       .insert({
-        ...insightData,
+        user_id: currentUser.user.id,
+        insight_type: insightData.insight_type,
+        category: insightData.category,
+        title: insightData.title,
+        description: insightData.description,
+        severity: insightData.severity || 'info',
+        confidence_score: insightData.confidence_score || 0,
+        impact_score: insightData.impact_score || 0,
+        actionable_recommendations: insightData.actionable_recommendations || [],
+        supporting_data: insightData.supporting_data || {},
+        ai_analysis: insightData.ai_analysis || {},
         status: 'new',
-        created_at: new Date().toISOString()
+        priority: insightData.priority || 5,
+        outcome_data: {}
       })
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return data as BusinessInsight;
   }
 
   static async getDashboardSummary(): Promise<any> {

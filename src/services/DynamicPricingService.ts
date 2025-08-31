@@ -14,7 +14,7 @@ export interface DynamicPricing {
   demand_forecast: any;
   profit_impact: number;
   expected_sales_impact: number;
-  status: 'pending' | 'approved' | 'applied' | 'rejected';
+  status: string;
   applied_at?: string;
   expires_at?: string;
   performance_data: any;
@@ -43,7 +43,7 @@ export class DynamicPricingService {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as DynamicPricing[];
   }
 
   static async optimizeProductPrice(productId: string, marketData: any = {}): Promise<PricingOptimization> {
@@ -74,7 +74,7 @@ export class DynamicPricingService {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as DynamicPricing;
   }
 
   static async rejectPricingRecommendation(recommendationId: string): Promise<DynamicPricing> {
@@ -86,7 +86,7 @@ export class DynamicPricingService {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as DynamicPricing;
   }
 
   static async applyPricingRecommendation(recommendationId: string): Promise<boolean> {
@@ -131,7 +131,7 @@ export class DynamicPricingService {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as DynamicPricing;
   }
 
   static async getPendingRecommendations(): Promise<DynamicPricing[]> {
@@ -142,7 +142,7 @@ export class DynamicPricingService {
       .order('ai_confidence', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as DynamicPricing[];
   }
 
   static async getPerformanceMetrics(): Promise<any> {

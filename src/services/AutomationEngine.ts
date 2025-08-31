@@ -36,18 +36,43 @@ export class AutomationEngineService {
       .order('priority', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as AutomationRule[];
   }
 
-  static async createRule(ruleData: Partial<AutomationRule>): Promise<AutomationRule> {
+  static async createRule(ruleData: {
+    name: string;
+    description?: string;
+    rule_type: string;
+    trigger_conditions?: any;
+    ai_conditions?: any;
+    actions?: any;
+    is_active?: boolean;
+    priority?: number;
+  }): Promise<AutomationRule> {
+    const { data: currentUser } = await supabase.auth.getUser();
+    if (!currentUser.user) throw new Error('Not authenticated');
+
     const { data, error } = await supabase
       .from('automation_rules')
-      .insert(ruleData)
+      .insert({
+        user_id: currentUser.user.id,
+        name: ruleData.name,
+        description: ruleData.description || '',
+        rule_type: ruleData.rule_type,
+        trigger_conditions: ruleData.trigger_conditions || {},
+        ai_conditions: ruleData.ai_conditions || {},
+        actions: ruleData.actions || [],
+        is_active: ruleData.is_active ?? true,
+        priority: ruleData.priority ?? 5,
+        execution_count: 0,
+        success_rate: 100.0,
+        performance_metrics: {}
+      })
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return data as AutomationRule;
   }
 
   static async updateRule(id: string, updates: Partial<AutomationRule>): Promise<AutomationRule> {
@@ -112,7 +137,7 @@ export class AutomationEngineService {
       .order('priority', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as AutomationRule[];
   }
 
   // Templates de règles prédéfinies

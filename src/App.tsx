@@ -73,6 +73,7 @@ import {
   PaymentSuccessLazy,
   IntegrationsUltraProLazy,
   AdvancedIntelligencePageLazy,
+  AutomationOptimizationPageLazy,
 } from '@/components/lazy/LazyPages';
 
 // Light pages (direct imports)
@@ -1027,6 +1028,15 @@ const App = () => (
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <AdvancedIntelligencePageLazy />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/automation-optimization" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
+                    <AutomationOptimizationPageLazy />
+                  </Suspense>
                 </AppLayout>
               </AuthGuard>
             } />

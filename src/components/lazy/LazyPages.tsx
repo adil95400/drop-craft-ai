@@ -57,3 +57,4 @@ export const AdminLazy = lazy(() => import('@/pages/Admin'));
 export const PaymentSuccessLazy = lazy(() => import('@/pages/PaymentSuccess'));
 export const IntegrationsUltraProLazy = lazy(() => import('@/pages/IntegrationsUltraPro'));
 export const AdvancedIntelligencePageLazy = lazy(() => import('@/pages/AdvancedIntelligencePage'));
+export const AutomationOptimizationPageLazy = lazy(() => import('@/pages/AutomationOptimizationPage'));
