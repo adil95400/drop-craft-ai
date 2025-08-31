@@ -4,6 +4,49 @@ import type { Database } from "@/integrations/supabase/types";
 type SystemHealthMonitoring = Database['public']['Tables']['system_health_monitoring']['Row'];
 
 export class SystemMonitoringService {
+  static async getSystemHealth() {
+    const { data, error } = await supabase
+      .from('system_health_monitoring')
+      .select('*')
+      .order('last_check_at', { ascending: false })
+    
+    if (error) throw error
+    return data
+  }
+
+  static async getPerformanceMetrics() {
+    const { data, error } = await supabase
+      .from('performance_metrics')
+      .select('*')
+      .eq('metric_type', 'system')
+      .order('collected_at', { ascending: false })
+    
+    if (error) throw error
+    return data
+  }
+
+  static async runSystemHealthCheck() {
+    const { data, error } = await supabase.functions.invoke('system-monitoring', {
+      body: {
+        action: 'health_check'
+      }
+    })
+
+    if (error) throw error
+    return data
+  }
+
+  static async optimizeSystemPerformance() {
+    const { data, error } = await supabase.functions.invoke('system-monitoring', {
+      body: {
+        action: 'optimize_system'
+      }
+    })
+
+    if (error) throw error
+    return data
+  }
+
   async getSystemHealth() {
     try {
       const { data, error } = await supabase.functions.invoke('system-monitoring', {

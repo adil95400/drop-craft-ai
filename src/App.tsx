@@ -1107,6 +1107,24 @@ const App = () => (
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
+            <Route path="/automation-optimization" element={
+              <AuthGuard>
+                <AppLayout>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
+                    <AutomationOptimizationPageLazy />
+                  </Suspense>
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/advanced-analytics-enterprise" element={
+              <AuthGuard>
+                <AppLayout>
+                  <Suspense fallback={<OptimizedSkeleton variant="dashboard" />}>
+                    <AdvancedAnalyticsEnterprisePageLazy />
+                  </Suspense>
+                </AppLayout>
+              </AuthGuard>
+            } />
           </Routes>
             </ModalProvider>
           </TooltipProvider>

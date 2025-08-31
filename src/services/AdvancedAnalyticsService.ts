@@ -6,6 +6,98 @@ type AdvancedReports = Database['public']['Tables']['advanced_reports']['Row'];
 type PredictiveAnalytics = Database['public']['Tables']['predictive_analytics']['Row'];
 
 export class AdvancedAnalyticsService {
+  static async getPerformanceMetrics(metricType?: string, timeRange?: string) {
+    const { data, error } = await supabase
+      .from('performance_metrics')
+      .select('*')
+      .order('collected_at', { ascending: false })
+    
+    if (error) throw error
+    return data
+  }
+
+  static async getAdvancedReports() {
+    const { data, error } = await supabase
+      .from('advanced_reports')
+      .select('*')
+      .order('generated_at', { ascending: false })
+    
+    if (error) throw error
+    return data
+  }
+
+  static async getPredictiveAnalytics() {
+    const { data, error } = await supabase
+      .from('predictive_analytics')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data
+  }
+
+  static async getABTests() {
+    const { data, error } = await supabase
+      .from('ab_test_experiments')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data
+  }
+
+  static async generateAdvancedReport(config: { reportType: string; config: any }) {
+    const { data, error } = await supabase.functions.invoke('advanced-analytics', {
+      body: {
+        action: 'generate_report',
+        reportType: config.reportType,
+        config: config.config
+      }
+    })
+
+    if (error) throw error
+    return data
+  }
+
+  static async createABTest(testConfig: {
+    experimentName: string;
+    experimentType: string;
+    hypothesis: string;
+    controlVariant: any;
+    testVariants: any[];
+    successMetrics: any[];
+    trafficAllocation: any;
+  }) {
+    const { data, error } = await supabase
+      .from('ab_test_experiments')
+      .insert({
+        experiment_name: testConfig.experimentName,
+        experiment_type: testConfig.experimentType,
+        hypothesis: testConfig.hypothesis,
+        control_variant: testConfig.controlVariant,
+        test_variants: testConfig.testVariants,
+        success_metrics: testConfig.successMetrics,
+        traffic_allocation: testConfig.trafficAllocation,
+        status: 'draft'
+      })
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  }
+
+  static async runPredictiveAnalysis() {
+    const { data, error } = await supabase.functions.invoke('advanced-analytics', {
+      body: {
+        action: 'run_predictive_analysis'
+      }
+    })
+
+    if (error) throw error
+    return data
+  }
+
   async generateAdvancedReport(reportType: string, config: any) {
     try {
       const { data, error } = await supabase.functions.invoke('advanced-analytics', {

@@ -5,6 +5,74 @@ type EnterpriseIntegrations = Database['public']['Tables']['enterprise_integrati
 type EnterpriseSettings = Database['public']['Tables']['enterprise_settings']['Row'];
 
 export class EnterpriseIntegrationService {
+  static async getEnterpriseIntegrations() {
+    const { data, error } = await supabase
+      .from('enterprise_integrations')
+      .select('*')
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data
+  }
+
+  static async getEnterpriseSettings() {
+    const { data, error } = await supabase
+      .from('enterprise_settings')
+      .select('*')
+      .order('setting_category', { ascending: true })
+    
+    if (error) throw error
+    return data
+  }
+
+  static async createEnterpriseIntegration(integrationData: {
+    providerName: string;
+    integrationType: string;
+    configuration: any;
+  }) {
+    const { data, error } = await supabase
+      .from('enterprise_integrations')
+      .insert({
+        provider_name: integrationData.providerName,
+        integration_type: integrationData.integrationType,
+        configuration: integrationData.configuration,
+        is_active: false,
+        sync_status: 'disconnected'
+      })
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  }
+
+  static async updateEnterpriseSetting(key: string, value: any, category: string) {
+    const { data, error } = await supabase
+      .from('enterprise_settings')
+      .upsert({
+        setting_key: key,
+        setting_value: value,
+        setting_category: category
+      })
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  }
+
+  static async syncEnterpriseIntegration(integrationId: string) {
+    const { data, error } = await supabase.functions.invoke('enterprise-integration', {
+      body: {
+        action: 'sync_integration',
+        integrationId
+      }
+    })
+
+    if (error) throw error
+    return data
+  }
+
   async testConnection(integrationType: string, providerName: string, configuration: any) {
     try {
       const { data, error } = await supabase.functions.invoke('enterprise-integration', {
