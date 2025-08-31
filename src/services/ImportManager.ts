@@ -77,48 +77,41 @@ export class ImportManager {
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
-      .from('import_templates')
-      .insert({
-        ...template,
-        user_id: user.user.id,
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+    // For now, store templates in localStorage until table is created
+    const templates = this.getStoredTemplates();
+    const newTemplate: ImportTemplate = {
+      ...template,
+      id: crypto.randomUUID(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    
+    templates.push(newTemplate);
+    localStorage.setItem('import_templates', JSON.stringify(templates));
+    return newTemplate;
   }
 
   async getTemplates(): Promise<ImportTemplate[]> {
-    const { data, error } = await supabase
-      .from('import_templates')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
+    // For now, get templates from localStorage until table is created
+    return this.getStoredTemplates();
   }
 
   async updateTemplate(id: string, updates: Partial<ImportTemplate>): Promise<ImportTemplate> {
-    const { data, error } = await supabase
-      .from('import_templates')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+    // For now, update templates in localStorage until table is created
+    const templates = this.getStoredTemplates();
+    const index = templates.findIndex(t => t.id === id);
+    if (index === -1) throw new Error('Template not found');
+    
+    templates[index] = { ...templates[index], ...updates, updated_at: new Date().toISOString() };
+    localStorage.setItem('import_templates', JSON.stringify(templates));
+    return templates[index];
   }
 
   async deleteTemplate(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('import_templates')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
+    // For now, delete templates from localStorage until table is created
+    const templates = this.getStoredTemplates();
+    const filtered = templates.filter(t => t.id !== id);
+    localStorage.setItem('import_templates', JSON.stringify(filtered));
   }
 
   // Field Mapping and Validation
@@ -416,29 +409,28 @@ export class ImportManager {
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) throw new Error('User not authenticated');
 
-    const jobData = {
+    // Create a simplified job for demo (would save to database in production)
+    const job: ImportJob = {
+      id: crypto.randomUUID(),
       user_id: user.user.id,
       source_type: sourceType,
       source_url: sourceData.url || sourceData.xmlUrl || sourceData.ftpUrl,
       file_data: sourceData.fileData || sourceData,
       mapping_config: mappings,
+      validation_rules: validationRules,
+      config: config,
       total_rows: result?.total_rows || 0,
       processed_rows: result?.processed_rows || 0,
       success_rows: result?.success_rows || 0,
       error_rows: result?.error_rows || 0,
       errors: result?.errors || [],
       result_data: result,
-      status: (result?.error_rows || 0) > 0 ? 'completed' : 'completed' as const,
+      status: (result?.error_rows || 0) > 0 ? 'completed' : 'completed',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabase
-      .from('import_jobs')
-      .insert(jobData)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+    return job;
   }
 
   private fieldMappingsToRecord(mappings: FieldMapping[]): Record<string, string> {
@@ -476,6 +468,16 @@ export class ImportManager {
     // This is a simplified implementation
     // You would use DOMParser or similar in production
     return data;
+  }
+
+  // Helper method for localStorage templates
+  private getStoredTemplates(): ImportTemplate[] {
+    try {
+      const stored = localStorage.getItem('import_templates');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
   }
 }
 
