@@ -282,7 +282,7 @@ export default function AnalyticsUltraPro() {
               </Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-indigo-400">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-white/50 dark:bg-gray-900/50 rounded-lg">
                 <Users className="h-8 w-8 text-blue-500 mx-auto mb-2" />
