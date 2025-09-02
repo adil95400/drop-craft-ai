@@ -1,6 +1,8 @@
 import React from 'react';
 import { FeatureGate } from '@/components/common/FeatureGate';
 import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
+import { CSVMappingInterface } from '@/components/import/CSVMappingInterface';
+import { URLImportInterface } from '@/components/import/URLImportInterface';
 
 // Lazy load the actual import components
 const ImportBasic = React.lazy(() => import('./Import'));
@@ -9,6 +11,30 @@ const ImportAdvanced = React.lazy(() => import('./ImportAdvanced'));
 const UnifiedImport: React.FC = () => {
   const { getFeatureConfig } = useUnifiedPlan();
   const config = getFeatureConfig('import');
+  const [activeTab, setActiveTab] = React.useState<'basic' | 'csv' | 'url' | 'xml' | 'ftp'>('basic');
+  const [csvData, setCsvData] = React.useState<{headers: string[], rows: string[][]} | null>(null);
+  const [showMappingInterface, setShowMappingInterface] = React.useState(false);
+
+  const handleCSVUpload = (data: {headers: string[], rows: string[][]}) => {
+    setCsvData(data);
+    setShowMappingInterface(true);
+  };
+
+  const handleMappingComplete = (mappings: any) => {
+    console.log('Mappings completed:', mappings);
+    setShowMappingInterface(false);
+    // Process the import with mappings
+  };
+
+  if (showMappingInterface && csvData) {
+    return (
+      <CSVMappingInterface
+        csvData={csvData}
+        onMappingComplete={handleMappingComplete}
+        onCancel={() => setShowMappingInterface(false)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -24,11 +50,97 @@ const UnifiedImport: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Import Method Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab('basic')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'basic' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
+          >
+            Import Basique
+          </button>
+          <button
+            onClick={() => setActiveTab('csv')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'csv' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
+          >
+            CSV Avancé
+          </button>
+          <FeatureGate feature="advanced-import" fallback={null} showUpgrade={false}>
+            <button
+              onClick={() => setActiveTab('url')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'url' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              Import URL
+            </button>
+          </FeatureGate>
+        </div>
         
-        {/* Basic Import - Always Available */}
-        <React.Suspense fallback={<div>Chargement...</div>}>
-          <ImportBasic />
-        </React.Suspense>
+        {/* Import Content */}
+        {activeTab === 'basic' && (
+          <React.Suspense fallback={<div>Chargement...</div>}>
+            <ImportBasic />
+          </React.Suspense>
+        )}
+
+        {activeTab === 'csv' && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Import CSV avec Mapping</h2>
+            <p className="text-muted-foreground mb-4">
+              Importez vos produits depuis un fichier CSV avec mapping automatique des colonnes.
+            </p>
+            
+            {/* CSV Upload Component would go here */}
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+              <div className="space-y-4">
+                <div className="text-4xl">📄</div>
+                <div>
+                  <h3 className="text-lg font-medium">Téléchargez votre fichier CSV</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Formats supportés: CSV, TSV (max 10MB)
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    // Mock CSV data for demo
+                    const mockData = {
+                      headers: ['Nom', 'Prix', 'Description', 'SKU', 'Stock', 'Marque', 'Catégorie'],
+                      rows: [
+                        ['Produit 1', '29.99', 'Description du produit 1', 'SKU001', '100', 'BrandA', 'Électronique'],
+                        ['Produit 2', '39.99', 'Description du produit 2', 'SKU002', '50', 'BrandB', 'Maison'],
+                      ]
+                    };
+                    handleCSVUpload(mockData);
+                  }}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                >
+                  Télécharger un fichier (Demo)
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'url' && (
+          <URLImportInterface
+            onProductScraped={(product) => {
+              console.log('Product scraped:', product);
+              // Handle the scraped product
+            }}
+            onCancel={() => setActiveTab('basic')}
+          />
+        )}
       </div>
 
       {/* Advanced Features */}
@@ -46,9 +158,21 @@ const UnifiedImport: React.FC = () => {
         <div className="border-t pt-6">
           <h2 className="text-xl font-semibold mb-4">Import IA</h2>
           <div className="p-4 border rounded-lg bg-gradient-to-r from-primary/5 to-purple-500/5">
-            <p className="text-sm text-muted-foreground">
-              Fonctionnalités d'import automatisé avec IA disponibles
+            <h3 className="font-medium mb-2">🤖 Import Intelligent</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Notre IA analyse automatiquement vos fichiers et optimise les données produits.
             </p>
+            <div className="flex gap-2">
+              <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
+                Auto-mapping
+              </span>
+              <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
+                Enrichissement SEO
+              </span>
+              <span className="px-2 py-1 text-xs rounded bg-purple-100 text-purple-800">
+                Détection doublons
+              </span>
+            </div>
           </div>
         </div>
       </FeatureGate>
@@ -58,9 +182,15 @@ const UnifiedImport: React.FC = () => {
         <div className="border-t pt-6">
           <h2 className="text-xl font-semibold mb-4">Import en Masse</h2>
           <div className="p-4 border rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              Interface d'import en masse pour traiter plusieurs fichiers simultanément.
+            <h3 className="font-medium mb-2">⚡ Traitement par lots</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Importez plusieurs fichiers simultanément avec gestion des files d'attente.
             </p>
+            <div className="text-xs text-muted-foreground">
+              • Jusqu'à 10 fichiers en parallèle<br/>
+              • Gestion automatique des erreurs<br/>
+              • Rapports détaillés d'import
+            </div>
           </div>
         </div>
       </FeatureGate>
@@ -70,9 +200,15 @@ const UnifiedImport: React.FC = () => {
         <div className="border-t pt-6">
           <h2 className="text-xl font-semibold mb-4">Import Programmé</h2>
           <div className="p-4 border rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              Planifiez vos imports pour qu'ils s'exécutent automatiquement.
+            <h3 className="font-medium mb-2">⏰ Automatisation</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Planifiez vos imports pour qu'ils s'exécutent automatiquement selon vos besoins.
             </p>
+            <div className="text-xs text-muted-foreground">
+              • Planification quotidienne/hebdomadaire<br/>
+              • Notifications de statut<br/>
+              • Historique complet des exécutions
+            </div>
           </div>
         </div>
       </FeatureGate>
