@@ -273,7 +273,7 @@ export default function AnalyticsUltraPro() {
 
         {/* Métriques Temps Réel */}
         <Card className="border-primary/20 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
-          <CardHeader className="bg-indigo-300">
+          <CardHeader className="bg-indigo-400">
             <CardTitle className="flex items-center gap-2 text-slate-950">
               <Gauge className="h-5 w-5" />
               Métriques Temps Réel
