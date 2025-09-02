@@ -1,6 +1,7 @@
-import React, { createContext, useContext, ReactNode } from 'react'
+import React, { createContext, useContext, ReactNode, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePlan as useSupabasePlan, PlanType } from '@/hooks/usePlan'
+import { usePlanStore } from '@/stores'
 
 interface UnifiedPlanContextType {
   plan: PlanType
@@ -13,6 +14,13 @@ interface UnifiedPlanContextType {
   error: string | null
   updatePlan: (newPlan: PlanType) => Promise<boolean>
   refetch: () => void
+  
+  // Enhanced feature flags
+  getFeatureConfig: (moduleName: string) => {
+    enabled: boolean;
+    features: Record<string, boolean>;
+    title: string;
+  }
 }
 
 const UnifiedPlanContext = createContext<UnifiedPlanContextType | undefined>(undefined)
@@ -71,9 +79,67 @@ const PLAN_FEATURES = {
 export function UnifiedPlanProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const { plan, hasPlan, isUltraPro, isPro, loading, error, updatePlan, refetch } = useSupabasePlan(user)
+  const planStore = usePlanStore()
+
+  // Sync plan with store
+  useEffect(() => {
+    if (plan && plan !== planStore.currentPlan) {
+      planStore.setPlan(plan)
+    }
+  }, [plan, planStore])
 
   const hasFeature = (feature: string): boolean => {
-    return PLAN_FEATURES[plan].includes(feature as any)
+    return PLAN_FEATURES[plan].includes(feature as any) || planStore.hasFeature(feature)
+  }
+
+  const getFeatureConfig = (moduleName: string) => {
+    const moduleConfigs = {
+      'import': {
+        enabled: true,
+        features: {
+          'basic-import': true,
+          'ai-import': hasFeature('ai-import'),
+          'bulk-import': hasFeature('bulk-import'),
+          'scheduled-import': hasFeature('scheduled-import'),
+          'advanced-import': hasFeature('advanced-import'),
+        },
+        title: isUltraPro() ? 'Import Ultra Pro' : isPro() ? 'Import Pro' : 'Import'
+      },
+      'crm': {
+        enabled: isPro() || isUltraPro(),
+        features: {
+          'basic-crm': isPro() || isUltraPro(),
+          'crm-prospects': hasFeature('crm-prospects'),
+          'advanced-crm': hasFeature('advanced-crm'),
+        },
+        title: isUltraPro() ? 'CRM Ultra Pro' : 'CRM Pro'
+      },
+      'analytics': {
+        enabled: true,
+        features: {
+          'basic-analytics': true,
+          'advanced-analytics': hasFeature('advanced-analytics'),
+          'predictive-analytics': hasFeature('predictive-analytics'),
+          'ai-insights': hasFeature('ai-insights'),
+        },
+        title: isUltraPro() ? 'Analytics Ultra Pro' : isPro() ? 'Analytics Pro' : 'Analytics'
+      },
+      'seo': {
+        enabled: isPro() || isUltraPro(),
+        features: {
+          'basic-seo': isPro() || isUltraPro(),
+          'advanced-seo': hasFeature('advanced-seo'),
+          'seo-automation': hasFeature('seo-automation'),
+        },
+        title: isUltraPro() ? 'SEO Ultra Pro' : 'SEO Pro'
+      }
+    }
+    
+    return moduleConfigs[moduleName as keyof typeof moduleConfigs] || {
+      enabled: false,
+      features: {},
+      title: moduleName
+    }
   }
 
   const isFree = plan === 'standard'
@@ -88,7 +154,8 @@ export function UnifiedPlanProvider({ children }: { children: ReactNode }) {
     loading,
     error,
     updatePlan,
-    refetch
+    refetch,
+    getFeatureConfig
   }
 
   return (

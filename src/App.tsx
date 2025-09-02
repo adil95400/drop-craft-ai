@@ -17,6 +17,7 @@ import { ModalProvider } from '@/components/ModalProvider';
 import IntegrationsOptimized from './pages/IntegrationsOptimized';
 import IntegrationsUltraPro from './pages/IntegrationsUltraPro';
 import Integrations from './pages/Integrations';
+import UnifiedImport from './pages/UnifiedImport';
 
 // Lazy loaded heavy pages
 import {
@@ -101,6 +102,7 @@ import Suppliers from './pages/Suppliers';
 import { SupplierDashboard } from './pages/SupplierDashboard';
 import { SupplierMarketplace } from './pages/SupplierMarketplace';
 import SupplierConnectors from './pages/SupplierConnectors';
+import UnifiedSuppliers from './pages/UnifiedSuppliers';
 import SubscriptionDashboard from './pages/SubscriptionDashboard';
 import SecuritySettings from './pages/SecuritySettings';
 import WinnersPage from './domains/winners/pages/WinnersPage';
@@ -251,7 +253,7 @@ const App = () => (
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
-                    <ImportLazy />
+                    <UnifiedImport />
                   </Suspense>
                 </AppLayout>
               </AuthGuard>
@@ -260,7 +262,7 @@ const App = () => (
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <Suspense fallback={<OptimizedSkeleton variant="list" />}>
-                    <ImportUltraProLazy />
+                    <UnifiedImport />
                   </Suspense>
                 </AppLayout>
               </AuthGuard>
@@ -915,7 +917,7 @@ const App = () => (
             <Route path="/suppliers" element={
               <AuthGuard requireRole="user">
                 <AppLayout>
-                  <Suppliers />
+                  <UnifiedSuppliers />
                 </AppLayout>
               </AuthGuard>
             } />
