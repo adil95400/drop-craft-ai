@@ -1,5 +1,5 @@
-import { BaseConnector } from './BaseConnector';
-import { SupplierProduct, SupplierCredentials } from '@/types/suppliers';
+import { BaseConnector, FetchOptions, SyncResult } from './BaseConnector';
+import { SupplierCredentials, SupplierProduct } from '@/types/suppliers';
 
 interface EproloProduct {
   id: string;
@@ -60,21 +60,16 @@ export class EproloConnector extends BaseConnector {
     }
   }
 
-  async fetchProducts(options?: {
-    page?: number;
-    limit?: number;
-    lastSync?: Date;
-    category?: string;
-  }): Promise<SupplierProduct[]> {
-    const page = options?.page || 1;
-    const limit = Math.min(options?.limit || 50, 100);
+  async fetchProducts(options: FetchOptions = {}): Promise<SupplierProduct[]> {
+    const page = options.page || 1;
+    const limit = Math.min(options.limit || 50, 100);
     
     try {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
-        ...(options?.category && { category: options.category }),
-        ...(options?.lastSync && { updated_since: options.lastSync.toISOString() }),
+        ...(options.category && { category: options.category }),
+        ...(options.lastSync && { updated_since: options.lastSync.toISOString() }),
       });
 
       const data = await this.makeRequest(`/products?${params}`);
@@ -87,8 +82,8 @@ export class EproloConnector extends BaseConnector {
         this.transformProduct(product)
       );
     } catch (error) {
-      console.error('Error fetching Eprolo products:', error);
-      throw error;
+      this.handleError(error, 'fetchProducts');
+      return [];
     }
   }
 
@@ -107,7 +102,7 @@ export class EproloConnector extends BaseConnector {
     }
   }
 
-  async updateInventory(products: SupplierProduct[]): Promise<import('./BaseConnector').SyncResult> {
+  async updateInventory(products: SupplierProduct[]): Promise<SyncResult> {
     try {
       const skus = products.map(p => p.sku);
       const data = await this.makeRequest('/inventory', {

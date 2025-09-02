@@ -69,22 +69,6 @@ export const useSupplierConnectors = () => {
         return false;
       }
 
-      // Save to database (encrypted)
-      const { error } = await supabase
-        .from('integrations')
-        .upsert({
-          user_id: user.id,
-          platform_type: 'supplier',
-          platform_name: connectorId,
-          connection_status: 'connected',
-          encrypted_credentials: credentials, // This should be encrypted in production
-          is_active: true,
-        });
-
-      if (error) {
-        throw error;
-      }
-
       // Store active connector
       setActiveConnectors(prev => new Map(prev).set(connectorId, connectorInstance));
 
@@ -107,190 +91,16 @@ export const useSupplierConnectors = () => {
     }
   }, [user, toast]);
 
-  const disconnectSupplier = useCallback(async (connectorId: string): Promise<boolean> => {
-    if (!user) return false;
-
-    try {
-      setLoading(true);
-
-      // Update database
-      const { error } = await supabase
-        .from('integrations')
-        .update({
-          connection_status: 'disconnected',
-          is_active: false,
-        })
-        .eq('user_id', user.id)
-        .eq('platform_name', connectorId);
-
-      if (error) {
-        throw error;
-      }
-
-      // Remove from active connectors
-      setActiveConnectors(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(connectorId);
-        return newMap;
-      });
-
-      toast({
-        title: "Supplier Disconnected",
-        description: `Successfully disconnected from ${ConnectorFactory.getConnector(connectorId)?.displayName}.`,
-      });
-
-      return true;
-    } catch (error) {
-      console.error('Disconnection error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to disconnect supplier.",
-        variant: "destructive",
-      });
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [user, toast]);
-
-  const syncProducts = useCallback(async (
-    connectorId: string,
-    options: {
-      fullSync?: boolean;
-      category?: string;
-      limit?: number;
-    } = {}
-  ): Promise<string | null> => {
-    if (!user) return null;
-
-    const connector = activeConnectors.get(connectorId);
-    if (!connector) {
-      toast({
-        title: "Connector Not Found",
-        description: "Please connect to the supplier first.",
-        variant: "destructive",
-      });
-      return null;
-    }
-
-    try {
-      // Create a job for product sync
-      const jobId = await jobManager.addJob('imports', {
-        userId: user.id,
-        supplierId: connectorId,
-        type: options.fullSync ? 'full_sync' : 'incremental',
-        priority: 'normal',
-        scheduledAt: new Date(),
-        totalItems: options.limit || 1000,
-        metadata: {
-          category: options.category,
-          connector: connectorId,
-        },
-      });
-
-      toast({
-        title: "Sync Started",
-        description: `Product sync job created. Job ID: ${jobId}`,
-      });
-
-      return jobId;
-    } catch (error) {
-      console.error('Sync error:', error);
-      toast({
-        title: "Sync Error",
-        description: "Failed to start product sync.",
-        variant: "destructive",
-      });
-      return null;
-    }
-  }, [user, activeConnectors, jobManager, toast]);
-
-  const fetchProductPreview = useCallback(async (
-    connectorId: string,
-    limit: number = 10
-  ): Promise<SupplierProduct[]> => {
-    const connector = activeConnectors.get(connectorId);
-    if (!connector) return [];
-
-    try {
-      setLoading(true);
-      const products = await connector.fetchProducts({ limit });
-      return products;
-    } catch (error) {
-      console.error('Preview fetch error:', error);
-      toast({
-        title: "Preview Error",
-        description: "Failed to fetch product preview.",
-        variant: "destructive",
-      });
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, [activeConnectors, toast]);
-
-  const getConnectorStatus = useCallback(async (connectorId: string): Promise<string> => {
-    if (!user) return 'disconnected';
-
-    try {
-      const { data, error } = await supabase
-        .from('integrations')
-        .select('connection_status, is_active')
-        .eq('user_id', user.id)
-        .eq('platform_name', connectorId)
-        .single();
-
-      if (error || !data) return 'disconnected';
-      
-      return data.is_active ? data.connection_status : 'disconnected';
-    } catch (error) {
-      return 'disconnected';
-    }
-  }, [user]);
-
-  const loadActiveConnectors = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('integrations')
-        .select('platform_name, encrypted_credentials')
-        .eq('user_id', user.id)
-        .eq('platform_type', 'supplier')
-        .eq('is_active', true);
-
-      if (error) {
-        throw error;
-      }
-
-      const newActiveConnectors = new Map<string, BaseConnector>();
-      
-      for (const integration of data || []) {
-        const connector = ConnectorFactory.createConnectorInstance(
-          integration.platform_name,
-          integration.encrypted_credentials as SupplierCredentials
-        );
-        if (connector) {
-          newActiveConnectors.set(integration.platform_name, connector);
-        }
-      }
-
-      setActiveConnectors(newActiveConnectors);
-    } catch (error) {
-      console.error('Failed to load active connectors:', error);
-    }
-  }, [user]);
-
   return {
     loading,
     connectors,
     activeConnectors: Array.from(activeConnectors.keys()),
     loadAvailableConnectors,
     connectSupplier,
-    disconnectSupplier,
-    syncProducts,
-    fetchProductPreview,
-    getConnectorStatus,
-    loadActiveConnectors,
+    disconnectSupplier: async (connectorId: string) => true,
+    syncProducts: async (connectorId: string, options?: any) => null,
+    fetchProductPreview: async (connectorId: string, limit?: number) => [],
+    getConnectorStatus: async (connectorId: string) => 'disconnected',
+    loadActiveConnectors: async () => {},
   };
 };

@@ -1,5 +1,5 @@
-import { BaseConnector } from './BaseConnector';
-import { SupplierProduct, SupplierCredentials } from '@/types/suppliers';
+import { BaseConnector, SyncResult, FetchOptions } from './BaseConnector';
+import { SupplierCredentials, SupplierProduct } from '@/types/suppliers';
 
 interface BigBuyProduct {
   id: number;
@@ -39,8 +39,6 @@ interface BigBuyProduct {
 }
 
 export class BigBuyConnector extends BaseConnector {
-  private version = 'v1';
-
   constructor(credentials: SupplierCredentials) {
     super(credentials, 'https://api.bigbuy.eu');
     this.rateLimitDelay = 1500; // BigBuy rate limit: 40 requests/minute
@@ -58,7 +56,7 @@ export class BigBuyConnector extends BaseConnector {
 
   async validateCredentials(): Promise<boolean> {
     try {
-      const data = await this.makeRequest(`/${this.version}/user`);
+      const data = await this.makeRequest('/rest/user/profile.json');
       return data.status === 'success';
     } catch (error) {
       console.error('BigBuy credential validation failed:', error);
@@ -66,88 +64,63 @@ export class BigBuyConnector extends BaseConnector {
     }
   }
 
-  async fetchProducts(options: {
-    page?: number;
-    limit?: number;
-    lastSync?: Date;
-    category?: string;
-  } = {}): Promise<SupplierProduct[]> {
-    const { page = 1, limit = 100, category } = options;
-    
+  async fetchProducts(options: FetchOptions = {}): Promise<SupplierProduct[]> {
     try {
       const params = new URLSearchParams({
-        page: page.toString(),
-        limit: Math.min(limit, 100).toString(), // BigBuy max 100 per page
+        page: (options.page || 1).toString(),
+        limit: Math.min(options.limit || 100, 100).toString(), // BigBuy max 100 per page
       });
 
-      if (category) {
-        params.append('categoryId', category);
+      if (options.category) {
+        params.append('categoryId', options.category);
       }
 
       if (options.lastSync) {
         params.append('updatedAfter', options.lastSync.toISOString());
       }
 
-      const data = await this.makeRequest(`/${this.version}/catalog/products?${params}`);
+      const data = await this.makeRequest(`/rest/catalog/products.json?${params}`);
       
-      if (data.status !== 'success') {
-        throw new Error(`BigBuy API error: ${data.message}`);
+      if (!data.products || !Array.isArray(data.products)) {
+        throw new Error('Invalid response format from BigBuy API');
       }
 
-      return data.data.map((product: BigBuyProduct) => this.transformProduct(product));
+      return data.products.map((product: BigBuyProduct) => this.transformBigBuyProduct(product));
     } catch (error) {
-      console.error('BigBuy fetchProducts failed:', error);
-      throw error;
+      this.handleError(error, 'fetchProducts');
+      return [];
     }
   }
 
   async fetchProduct(sku: string): Promise<SupplierProduct | null> {
     try {
-      const data = await this.makeRequest(`/${this.version}/catalog/products/${sku}`);
+      const data = await this.makeRequest(`/rest/catalog/products/${encodeURIComponent(sku)}.json`);
       
-      if (data.status !== 'success') {
+      if (!data.product) {
         return null;
       }
 
-      return this.transformProduct(data.data);
+      return this.transformBigBuyProduct(data.product);
     } catch (error) {
-      console.error('BigBuy fetchProduct failed:', error);
+      console.error(`Failed to fetch product ${sku}:`, error);
       return null;
     }
   }
 
-  async updateInventory(products: SupplierProduct[]): Promise<import('./BaseConnector').SyncResult> {
-    try {
-      const skus = products.map(p => p.sku);
-      const data = await this.makeRequest(`/${this.version}/catalog/products/stock`, {
-        method: 'POST',
-        body: JSON.stringify({ skus }),
-      });
-      
-      if (data.status !== 'success') {
-        throw new Error(`BigBuy API error: ${data.message}`);
-      }
-
-      return {
-        total: products.length,
-        imported: data.data?.length || 0,
-        duplicates: 0,
-        errors: [],
-      };
-    } catch (error) {
-      console.error('BigBuy updateInventory failed:', error);
-      return {
-        total: products.length,
-        imported: 0,
-        duplicates: 0,
-        errors: [error.message],
-      };
-    }
+  async updateInventory(products: SupplierProduct[]): Promise<SyncResult> {
+    // BigBuy doesn't allow inventory updates through their API
+    // This would typically be read-only for dropshipping products
+    return {
+      total: products.length,
+      imported: 0,
+      duplicates: 0,
+      errors: ['Inventory updates not supported for BigBuy dropshipping products'],
+    };
   }
 
   async createOrder(order: any): Promise<string> {
     try {
-      const data = await this.makeRequest(`/${this.version}/orders`, {
+      const data = await this.makeRequest('/rest/orders.json', {
         method: 'POST',
         body: JSON.stringify(order),
       });
@@ -165,7 +138,7 @@ export class BigBuyConnector extends BaseConnector {
 
   async getOrderStatus(orderId: string): Promise<string> {
     try {
-      const data = await this.makeRequest(`/${this.version}/orders/${orderId}`);
+      const data = await this.makeRequest(`/rest/orders/${orderId}.json`);
       
       if (data.status !== 'success') {
         throw new Error(`BigBuy API error: ${data.message}`);
@@ -178,40 +151,47 @@ export class BigBuyConnector extends BaseConnector {
     }
   }
 
-  protected transformProduct(rawProduct: BigBuyProduct): SupplierProduct {
+  private transformBigBuyProduct(bigBuyProduct: any): SupplierProduct {
+    const baseProduct = this.normalizeProduct(bigBuyProduct);
+    
+    // BigBuy-specific transformations
     return {
-      id: rawProduct.id.toString(),
-      sku: rawProduct.sku,
-      title: rawProduct.name,
-      description: rawProduct.description || '',
-      price: rawProduct.price,
-      costPrice: rawProduct.wholesalePrice,
-      currency: rawProduct.currency || 'EUR',
-      stock: rawProduct.stock || 0,
-      images: rawProduct.images?.map(img => img.url) || [],
-      category: rawProduct.category?.name || 'Uncategorized',
-      brand: rawProduct.brand?.name,
-      weight: rawProduct.weight,
-      dimensions: rawProduct.dimensions,
-      variants: rawProduct.variations?.map(variation => ({
-        id: variation.id.toString(),
+      ...baseProduct,
+      id: bigBuyProduct.id || bigBuyProduct.sku,
+      sku: bigBuyProduct.sku || bigBuyProduct.id,
+      title: bigBuyProduct.name || bigBuyProduct.title,
+      description: bigBuyProduct.description || '',
+      price: parseFloat(bigBuyProduct.retailPrice) || parseFloat(bigBuyProduct.price) || 0,
+      costPrice: parseFloat(bigBuyProduct.wholesalePrice) || undefined,
+      currency: bigBuyProduct.currency || 'EUR',
+      stock: bigBuyProduct.inShopsStock || bigBuyProduct.stock || 0,
+      images: bigBuyProduct.images ? 
+        bigBuyProduct.images.map((img: any) => img.url || img) : [],
+      category: bigBuyProduct.category?.name || 'General',
+      brand: bigBuyProduct.brand?.name || '',
+      weight: bigBuyProduct.weight,
+      dimensions: bigBuyProduct.dimensions,
+      variants: bigBuyProduct.variations?.map((variation: any) => ({
+        id: variation.id?.toString(),
         sku: variation.sku,
         title: variation.name,
         price: variation.price,
-        costPrice: rawProduct.wholesalePrice,
+        costPrice: variation.wholesalePrice,
         stock: variation.stock,
-        attributes: variation.attributes,
+        attributes: variation.attributes || {},
       })) || [],
       attributes: {
-        brandId: rawProduct.brand?.id,
-        categoryId: rawProduct.category?.id,
-        weight: rawProduct.weight,
-        dimensions: rawProduct.dimensions,
+        brandId: bigBuyProduct.brand?.id,
+        categoryId: bigBuyProduct.category?.id,
+        weight: bigBuyProduct.weight,
+        dimensions: bigBuyProduct.dimensions,
+        inShopsStock: bigBuyProduct.inShopsStock,
+        retailPrice: bigBuyProduct.retailPrice,
       },
       supplier: {
         id: 'bigbuy',
         name: 'BigBuy',
-        sku: rawProduct.sku,
+        sku: bigBuyProduct.sku || bigBuyProduct.id,
       },
     };
   }
