@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebarPlanGated";
+import { OptimizedSidebar } from "@/components/sidebar/OptimizedSidebar";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { RealTimeNotifications } from "@/components/notifications/RealTimeNotifications";
 import { IntegratedChatSupport } from "@/components/support/IntegratedChatSupport";
@@ -50,10 +50,10 @@ export function AppLayout({ children }: AppLayoutProps) {
           <SidebarProvider defaultOpen={!isMobile}>
       <div className="min-h-screen w-full bg-background">
         {/* Desktop Grid Layout */}
-        <div className="hidden md:grid md:grid-cols-[280px_1fr] min-h-screen">
-          {/* Desktop Sidebar - Fixed position */}
+        <div className="hidden md:grid md:grid-cols-[300px_1fr] min-h-screen">
+          {/* Desktop Sidebar - Fixed position avec la nouvelle sidebar */}
           <div className="z-20">
-            <AppSidebar />
+            <OptimizedSidebar />
           </div>
           
         {/* Desktop Content */}
@@ -100,9 +100,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         </div>
 
-        {/* Mobile Layout with Off-canvas Sidebar */}
+        {/* Mobile Layout avec nouvelle sidebar */}
         <div className="md:hidden min-h-screen">
-          <AppSidebar />
+          <OptimizedSidebar />
           
           <SidebarInset className="flex flex-col min-h-screen">
             <AppHeader showTrigger />
