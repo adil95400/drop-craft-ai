@@ -1,75 +1,192 @@
-import { useState } from 'react'
-import { BarChart3, TrendingUp, DollarSign, Users, ShoppingCart, Eye, ArrowUp, ArrowDown, Calendar, Filter, Download, RefreshCw, Zap, Target, Globe, Smartphone, Bot, Layers, Gauge, Award, AlertTriangle } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Progress } from '@/components/ui/progress'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
-import { useToast } from "@/hooks/use-toast"
-const salesData = [
-  { name: 'Jan', ventes: 45000, visiteurs: 12000, commandes: 890, conversionRate: 7.4 },
-  { name: 'Fév', ventes: 52000, visiteurs: 14000, commandes: 1020, conversionRate: 7.3 },
-  { name: 'Mar', ventes: 48000, visiteurs: 13500, commandes: 960, conversionRate: 7.1 },
-  { name: 'Avr', ventes: 61000, visiteurs: 16000, commandes: 1180, conversionRate: 7.4 },
-  { name: 'Mai', ventes: 55000, visiteurs: 15200, commandes: 1050, conversionRate: 6.9 },
-  { name: 'Jun', ventes: 67000, visiteurs: 17800, commandes: 1290, conversionRate: 7.2 }
-]
-
-const productPerformance = [
-  { name: 'Écouteurs Pro', ventes: 15600, marge: 65, stock: 89 },
-  { name: 'Smartphone X1', ventes: 12400, marge: 45, stock: 23 },
-  { name: 'Montre Sport', ventes: 9800, marge: 55, stock: 67 },
-  { name: 'Tablette HD', ventes: 8200, marge: 42, stock: 12 },
-  { name: 'Casque Gaming', ventes: 7100, marge: 58, stock: 45 }
-]
-
-const trafficSources = [
-  { name: 'Organique', value: 45, color: '#22c55e' },
-  { name: 'Payant', value: 28, color: '#3b82f6' },
-  { name: 'Social', value: 15, color: '#8b5cf6' },
-  { name: 'Email', value: 8, color: '#f59e0b' },
-  { name: 'Direct', value: 4, color: '#ef4444' }
-]
-
-const conversionFunnel = [
-  { stage: 'Visiteurs', count: 17800, rate: 100 },
-  { stage: 'Vues Produit', count: 8900, rate: 50 },
-  { stage: 'Panier', count: 3560, rate: 20 },
-  { stage: 'Commande', count: 1290, rate: 7.2 },
-  { stage: 'Paiement', count: 1251, rate: 7.0 }
-]
-
-const cohortData = [
-  { month: 'Jan', retention1: 100, retention3: 85, retention6: 72, retention12: 65 },
-  { month: 'Fév', retention1: 100, retention3: 88, retention6: 75, retention12: 68 },
-  { month: 'Mar', retention1: 100, retention3: 82, retention6: 70, retention12: 62 },
-  { month: 'Avr', retention1: 100, retention3: 90, retention6: 78, retention12: 71 },
-  { month: 'Mai', retention1: 100, retention3: 86, retention6: 74, retention12: 67 },
-  { month: 'Jun', retention1: 100, retention3: 84, retention6: 72, retention12: 65 }
-]
-
-const radarData = [
-  { subject: 'Acquisition', A: 85, fullMark: 100 },
-  { subject: 'Activation', A: 92, fullMark: 100 },
-  { subject: 'Rétention', A: 78, fullMark: 100 },
-  { subject: 'Revenus', A: 88, fullMark: 100 },
-  { subject: 'Referral', A: 65, fullMark: 100 },
-  { subject: 'UX', A: 94, fullMark: 100 }
-]
-
+import { useState } from 'react';
+import { BarChart3, TrendingUp, DollarSign, Users, ShoppingCart, Eye, ArrowUp, ArrowDown, Calendar, Filter, Download, RefreshCw, Zap, Target, Globe, Smartphone, Bot, Layers, Gauge, Award, AlertTriangle } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import { useToast } from "@/hooks/use-toast";
+const salesData = [{
+  name: 'Jan',
+  ventes: 45000,
+  visiteurs: 12000,
+  commandes: 890,
+  conversionRate: 7.4
+}, {
+  name: 'Fév',
+  ventes: 52000,
+  visiteurs: 14000,
+  commandes: 1020,
+  conversionRate: 7.3
+}, {
+  name: 'Mar',
+  ventes: 48000,
+  visiteurs: 13500,
+  commandes: 960,
+  conversionRate: 7.1
+}, {
+  name: 'Avr',
+  ventes: 61000,
+  visiteurs: 16000,
+  commandes: 1180,
+  conversionRate: 7.4
+}, {
+  name: 'Mai',
+  ventes: 55000,
+  visiteurs: 15200,
+  commandes: 1050,
+  conversionRate: 6.9
+}, {
+  name: 'Jun',
+  ventes: 67000,
+  visiteurs: 17800,
+  commandes: 1290,
+  conversionRate: 7.2
+}];
+const productPerformance = [{
+  name: 'Écouteurs Pro',
+  ventes: 15600,
+  marge: 65,
+  stock: 89
+}, {
+  name: 'Smartphone X1',
+  ventes: 12400,
+  marge: 45,
+  stock: 23
+}, {
+  name: 'Montre Sport',
+  ventes: 9800,
+  marge: 55,
+  stock: 67
+}, {
+  name: 'Tablette HD',
+  ventes: 8200,
+  marge: 42,
+  stock: 12
+}, {
+  name: 'Casque Gaming',
+  ventes: 7100,
+  marge: 58,
+  stock: 45
+}];
+const trafficSources = [{
+  name: 'Organique',
+  value: 45,
+  color: '#22c55e'
+}, {
+  name: 'Payant',
+  value: 28,
+  color: '#3b82f6'
+}, {
+  name: 'Social',
+  value: 15,
+  color: '#8b5cf6'
+}, {
+  name: 'Email',
+  value: 8,
+  color: '#f59e0b'
+}, {
+  name: 'Direct',
+  value: 4,
+  color: '#ef4444'
+}];
+const conversionFunnel = [{
+  stage: 'Visiteurs',
+  count: 17800,
+  rate: 100
+}, {
+  stage: 'Vues Produit',
+  count: 8900,
+  rate: 50
+}, {
+  stage: 'Panier',
+  count: 3560,
+  rate: 20
+}, {
+  stage: 'Commande',
+  count: 1290,
+  rate: 7.2
+}, {
+  stage: 'Paiement',
+  count: 1251,
+  rate: 7.0
+}];
+const cohortData = [{
+  month: 'Jan',
+  retention1: 100,
+  retention3: 85,
+  retention6: 72,
+  retention12: 65
+}, {
+  month: 'Fév',
+  retention1: 100,
+  retention3: 88,
+  retention6: 75,
+  retention12: 68
+}, {
+  month: 'Mar',
+  retention1: 100,
+  retention3: 82,
+  retention6: 70,
+  retention12: 62
+}, {
+  month: 'Avr',
+  retention1: 100,
+  retention3: 90,
+  retention6: 78,
+  retention12: 71
+}, {
+  month: 'Mai',
+  retention1: 100,
+  retention3: 86,
+  retention6: 74,
+  retention12: 67
+}, {
+  month: 'Jun',
+  retention1: 100,
+  retention3: 84,
+  retention6: 72,
+  retention12: 65
+}];
+const radarData = [{
+  subject: 'Acquisition',
+  A: 85,
+  fullMark: 100
+}, {
+  subject: 'Activation',
+  A: 92,
+  fullMark: 100
+}, {
+  subject: 'Rétention',
+  A: 78,
+  fullMark: 100
+}, {
+  subject: 'Revenus',
+  A: 88,
+  fullMark: 100
+}, {
+  subject: 'Referral',
+  A: 65,
+  fullMark: 100
+}, {
+  subject: 'UX',
+  A: 94,
+  fullMark: 100
+}];
 export default function AnalyticsUltraPro() {
-  const { toast } = useToast()
-  const [dateRange, setDateRange] = useState('7d')
-  const [activeTab, setActiveTab] = useState('overview')
+  const {
+    toast
+  } = useToast();
+  const [dateRange, setDateRange] = useState('7d');
+  const [activeTab, setActiveTab] = useState('overview');
   const [realTimeMetrics, setRealTimeMetrics] = useState({
     activeUsers: 127,
     currentSales: 2450,
     conversionRate: 7.2,
     avgOrderValue: 89.50
-  })
-
+  });
   const kpis = {
     totalRevenue: 67000,
     revenueGrowth: 12.5,
@@ -87,29 +204,20 @@ export default function AnalyticsUltraPro() {
     cacGrowth: -3.2,
     ltv: 156.40,
     ltvGrowth: 8.9
-  }
-
+  };
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'EUR'
-    }).format(amount)
-  }
-
+    }).format(amount);
+  };
   const getGrowthIcon = (growth: number) => {
-    return growth >= 0 ? (
-      <ArrowUp className="h-3 w-3 text-green-500" />
-    ) : (
-      <ArrowDown className="h-3 w-3 text-red-500" />
-    )
-  }
-
+    return growth >= 0 ? <ArrowUp className="h-3 w-3 text-green-500" /> : <ArrowDown className="h-3 w-3 text-red-500" />;
+  };
   const getGrowthColor = (growth: number) => {
-    return growth >= 0 ? 'text-green-600' : 'text-red-600'
-  }
-
-  return (
-    <div className="space-y-6 p-6">
+    return growth >= 0 ? 'text-green-600' : 'text-red-600';
+  };
+  return <div className="space-y-6 p-6">
         {/* Header avec Contrôles Temps Réel */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div>
@@ -137,21 +245,21 @@ export default function AnalyticsUltraPro() {
             </Select>
             
             <Button variant="outline" className="gap-2" onClick={() => {
-              toast({
-                title: "Actualisation en cours",
-                description: "Les données sont en cours de mise à jour...",
-              });
-            }}>
+          toast({
+            title: "Actualisation en cours",
+            description: "Les données sont en cours de mise à jour..."
+          });
+        }}>
               <RefreshCw className="h-4 w-4" />
               Actualiser
             </Button>
             
             <Button variant="outline" className="gap-2" onClick={() => {
-              toast({
-                title: "Export en cours",
-                description: "Le rapport détaillé est en cours de génération...",
-              });
-            }}>
+          toast({
+            title: "Export en cours",
+            description: "Le rapport détaillé est en cours de génération..."
+          });
+        }}>
               <Download className="h-4 w-4" />
               Export
             </Button>
@@ -165,7 +273,7 @@ export default function AnalyticsUltraPro() {
 
         {/* Métriques Temps Réel */}
         <Card className="border-primary/20 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
-          <CardHeader>
+          <CardHeader className="bg-indigo-300">
             <CardTitle className="flex items-center gap-2 text-primary">
               <Gauge className="h-5 w-5" />
               Métriques Temps Réel
@@ -329,14 +437,8 @@ export default function AnalyticsUltraPro() {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip formatter={(value) => [formatCurrency(value as number), 'CA']} />
-                      <Area 
-                        type="monotone" 
-                        dataKey="ventes" 
-                        stroke="hsl(var(--primary))" 
-                        fill="hsl(var(--primary))" 
-                        fillOpacity={0.3}
-                      />
+                      <Tooltip formatter={value => [formatCurrency(value as number), 'CA']} />
+                      <Area type="monotone" dataKey="ventes" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -356,13 +458,7 @@ export default function AnalyticsUltraPro() {
                       <PolarGrid />
                       <PolarAngleAxis dataKey="subject" />
                       <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                      <Radar
-                        name="Performance"
-                        dataKey="A"
-                        stroke="hsl(var(--primary))"
-                        fill="hsl(var(--primary))"
-                        fillOpacity={0.3}
-                      />
+                      <Radar name="Performance" dataKey="A" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} />
                     </RadarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -379,8 +475,7 @@ export default function AnalyticsUltraPro() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {conversionFunnel.map((stage, index) => (
-                    <div key={stage.stage} className="relative">
+                  {conversionFunnel.map((stage, index) => <div key={stage.stage} className="relative">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium">{stage.stage}</span>
                         <div className="flex items-center gap-4">
@@ -392,15 +487,10 @@ export default function AnalyticsUltraPro() {
                           </span>
                         </div>
                       </div>
-                      <Progress 
-                        value={stage.rate} 
-                        className="h-2" 
-                        style={{ 
-                          '--progress-background': `hsl(${220 + index * 20} 70% ${60 - index * 5}%)` 
-                        } as React.CSSProperties}
-                      />
-                    </div>
-                  ))}
+                      <Progress value={stage.rate} className="h-2" style={{
+                  '--progress-background': `hsl(${220 + index * 20} 70% ${60 - index * 5}%)`
+                } as React.CSSProperties} />
+                    </div>)}
                 </div>
               </CardContent>
             </Card>
@@ -420,20 +510,8 @@ export default function AnalyticsUltraPro() {
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip />
-                      <Line 
-                        type="monotone" 
-                        dataKey="ventes" 
-                        stroke="hsl(var(--primary))" 
-                        strokeWidth={3}
-                        name="Revenus"
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="commandes" 
-                        stroke="#8b5cf6" 
-                        strokeWidth={2}
-                        name="Commandes"
-                      />
+                      <Line type="monotone" dataKey="ventes" stroke="hsl(var(--primary))" strokeWidth={3} name="Revenus" />
+                      <Line type="monotone" dataKey="commandes" stroke="#8b5cf6" strokeWidth={2} name="Commandes" />
                     </LineChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -543,8 +621,7 @@ export default function AnalyticsUltraPro() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {productPerformance.map((product, index) => (
-                      <div key={product.name} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    {productPerformance.map((product, index) => <div key={product.name} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                             <span className="text-xs font-bold">{index + 1}</span>
@@ -565,13 +642,9 @@ export default function AnalyticsUltraPro() {
                             <p className="text-sm font-medium">{product.stock}</p>
                             <p className="text-xs text-muted-foreground">Stock</p>
                           </div>
-                          <div className={`w-3 h-3 rounded-full ${
-                            product.stock > 50 ? 'bg-green-500' : 
-                            product.stock > 20 ? 'bg-yellow-500' : 'bg-red-500'
-                          }`}></div>
+                          <div className={`w-3 h-3 rounded-full ${product.stock > 50 ? 'bg-green-500' : product.stock > 20 ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
                         </div>
-                      </div>
-                    ))}
+                      </div>)}
                   </div>
                 </CardContent>
               </Card>
@@ -671,30 +744,20 @@ export default function AnalyticsUltraPro() {
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
-                      <Pie
-                        data={trafficSources}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={120}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {trafficSources.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
+                      <Pie data={trafficSources} cx="50%" cy="50%" innerRadius={60} outerRadius={120} paddingAngle={5} dataKey="value">
+                        {trafficSources.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                       </Pie>
                       <Tooltip />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="flex flex-wrap justify-center gap-2 mt-4">
-                    {trafficSources.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                    {trafficSources.map((item, index) => <div key={index} className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{
+                    backgroundColor: item.color
+                  }}></div>
                         <span className="text-sm">{item.name}</span>
                         <span className="text-sm font-medium">{item.value}%</span>
-                      </div>
-                    ))}
+                      </div>)}
                   </div>
                 </CardContent>
               </Card>
@@ -704,14 +767,32 @@ export default function AnalyticsUltraPro() {
                   <CardTitle>Performance par Canal</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {[
-                    { canal: 'Google Ads', cac: 22.50, roas: 4.2, conversions: 156 },
-                    { canal: 'Facebook Ads', cac: 18.30, roas: 3.8, conversions: 89 },
-                    { canal: 'Instagram', cac: 31.20, roas: 2.9, conversions: 67 },
-                    { canal: 'Email', cac: 5.80, roas: 8.1, conversions: 45 },
-                    { canal: 'SEO', cac: 8.90, roas: 12.3, conversions: 234 }
-                  ].map((canal, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  {[{
+                canal: 'Google Ads',
+                cac: 22.50,
+                roas: 4.2,
+                conversions: 156
+              }, {
+                canal: 'Facebook Ads',
+                cac: 18.30,
+                roas: 3.8,
+                conversions: 89
+              }, {
+                canal: 'Instagram',
+                cac: 31.20,
+                roas: 2.9,
+                conversions: 67
+              }, {
+                canal: 'Email',
+                cac: 5.80,
+                roas: 8.1,
+                conversions: 45
+              }, {
+                canal: 'SEO',
+                cac: 8.90,
+                roas: 12.3,
+                conversions: 234
+              }].map((canal, index) => <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div>
                         <p className="font-medium text-sm">{canal.canal}</p>
                         <p className="text-xs text-muted-foreground">{canal.conversions} conversions</p>
@@ -726,8 +807,7 @@ export default function AnalyticsUltraPro() {
                           <p className="text-xs text-muted-foreground">ROAS</p>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    </div>)}
                 </CardContent>
               </Card>
             </div>
@@ -815,6 +895,5 @@ export default function AnalyticsUltraPro() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
-  )
+      </div>;
 }
