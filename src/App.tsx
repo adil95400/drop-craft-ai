@@ -127,6 +127,7 @@ import SecurityCenter from './pages/SecurityCenter';
 import DataManagement from './pages/DataManagement';
 import ComplianceCenter from './pages/ComplianceCenter';
 import AIAssistant from './pages/AIAssistant';
+import AIPage from './pages/AIPage';
 import CRMLeads from './pages/CRMLeads';
 import CRMActivity from './pages/CRMActivity';
 import CRMCalendar from './pages/CRMCalendar';
@@ -911,6 +912,13 @@ const App = () => (
               <AuthGuard requireRole="user">
                 <AppLayout>
                   <AIAssistant />
+                </AppLayout>
+              </AuthGuard>
+            } />
+            <Route path="/ai" element={
+              <AuthGuard requireRole="user">
+                <AppLayout>
+                  <AIPage />
                 </AppLayout>
               </AuthGuard>
             } />
