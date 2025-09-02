@@ -1223,6 +1223,51 @@ export type Database = {
         }
         Relationships: []
       }
+      deduplication_results: {
+        Row: {
+          algorithm_used: string | null
+          created_at: string | null
+          deduplication_rate: number | null
+          duplicates_found: number | null
+          execution_time_ms: number | null
+          id: string
+          job_id: string | null
+          merged_products: number | null
+          results_data: Json | null
+          total_products: number
+          unique_products: number | null
+          user_id: string
+        }
+        Insert: {
+          algorithm_used?: string | null
+          created_at?: string | null
+          deduplication_rate?: number | null
+          duplicates_found?: number | null
+          execution_time_ms?: number | null
+          id?: string
+          job_id?: string | null
+          merged_products?: number | null
+          results_data?: Json | null
+          total_products: number
+          unique_products?: number | null
+          user_id: string
+        }
+        Update: {
+          algorithm_used?: string | null
+          created_at?: string | null
+          deduplication_rate?: number | null
+          duplicates_found?: number | null
+          execution_time_ms?: number | null
+          id?: string
+          job_id?: string | null
+          merged_products?: number | null
+          results_data?: Json | null
+          total_products?: number
+          unique_products?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       dynamic_pricing: {
         Row: {
           ai_confidence: number
@@ -1524,6 +1569,7 @@ export type Database = {
       }
       import_jobs: {
         Row: {
+          completed_at: string | null
           created_at: string
           error_rows: number | null
           errors: string[] | null
@@ -1532,8 +1578,10 @@ export type Database = {
           mapping_config: Json | null
           processed_rows: number | null
           result_data: Json | null
+          scheduled_at: string | null
           source_type: string
           source_url: string | null
+          started_at: string | null
           status: string
           success_rows: number | null
           total_rows: number | null
@@ -1541,6 +1589,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string
           error_rows?: number | null
           errors?: string[] | null
@@ -1549,8 +1598,10 @@ export type Database = {
           mapping_config?: Json | null
           processed_rows?: number | null
           result_data?: Json | null
+          scheduled_at?: string | null
           source_type: string
           source_url?: string | null
+          started_at?: string | null
           status?: string
           success_rows?: number | null
           total_rows?: number | null
@@ -1558,6 +1609,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          completed_at?: string | null
           created_at?: string
           error_rows?: number | null
           errors?: string[] | null
@@ -1566,8 +1618,10 @@ export type Database = {
           mapping_config?: Json | null
           processed_rows?: number | null
           result_data?: Json | null
+          scheduled_at?: string | null
           source_type?: string
           source_url?: string | null
+          started_at?: string | null
           status?: string
           success_rows?: number | null
           total_rows?: number | null
@@ -2209,7 +2263,10 @@ export type Database = {
           shipping_address: Json | null
           status: string | null
           total_amount: number
+          tracking_info: Json | null
           tracking_number: string | null
+          tracking_status: string | null
+          tracking_updated_at: string | null
           updated_at: string | null
           user_id: string
         }
@@ -2225,7 +2282,10 @@ export type Database = {
           shipping_address?: Json | null
           status?: string | null
           total_amount?: number
+          tracking_info?: Json | null
           tracking_number?: string | null
+          tracking_status?: string | null
+          tracking_updated_at?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -2241,7 +2301,10 @@ export type Database = {
           shipping_address?: Json | null
           status?: string | null
           total_amount?: number
+          tracking_info?: Json | null
           tracking_number?: string | null
+          tracking_status?: string | null
+          tracking_updated_at?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -3891,6 +3954,45 @@ export type Database = {
           },
         ]
       }
+      sync_statistics: {
+        Row: {
+          created_at: string | null
+          errors_count: number | null
+          execution_time_ms: number | null
+          id: string
+          metadata: Json | null
+          products_processed: number | null
+          products_updated: number | null
+          sync_date: string | null
+          sync_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          errors_count?: number | null
+          execution_time_ms?: number | null
+          id?: string
+          metadata?: Json | null
+          products_processed?: number | null
+          products_updated?: number | null
+          sync_date?: string | null
+          sync_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          errors_count?: number | null
+          execution_time_ms?: number | null
+          id?: string
+          metadata?: Json | null
+          products_processed?: number | null
+          products_updated?: number | null
+          sync_date?: string | null
+          sync_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       system_health_monitoring: {
         Row: {
           alerts_triggered: Json
@@ -4142,6 +4244,48 @@ export type Database = {
           updated_at?: string | null
           user_agent?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      webhook_configurations: {
+        Row: {
+          created_at: string | null
+          endpoint_url: string
+          error_count: number | null
+          events_enabled: string[] | null
+          id: string
+          is_active: boolean | null
+          last_event_at: string | null
+          platform_type: string
+          updated_at: string | null
+          user_id: string
+          webhook_secret: string
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint_url: string
+          error_count?: number | null
+          events_enabled?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          last_event_at?: string | null
+          platform_type: string
+          updated_at?: string | null
+          user_id: string
+          webhook_secret: string
+        }
+        Update: {
+          created_at?: string | null
+          endpoint_url?: string
+          error_count?: number | null
+          events_enabled?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          last_event_at?: string | null
+          platform_type?: string
+          updated_at?: string | null
+          user_id?: string
+          webhook_secret?: string
         }
         Relationships: []
       }
