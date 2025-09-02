@@ -26,6 +26,327 @@ export const SUPPLIER_CATEGORIES = {
   SPECIALIZED: 'Sites Spécialisés'
 }
 
+export const WISE2SYNC_SUPPLIERS: Supplier[] = [
+  // FOURNISSEURS EUROPÉENS PRIORITAIRES
+  
+  // BigBuy - Espagne (Priority #1)
+  {
+    id: 'bigbuy',
+    name: 'bigbuy',
+    displayName: 'BigBuy',
+    description: '300K+ produits européens, synchronisation temps réel',
+    category: 'Dropshipping Premium',
+    icon: '🇪🇸',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'XML', 'CSV'],
+    features: ['API complète', 'Stock temps réel', 'Images HD', 'Tracking'],
+    regions: ['EU', 'ES', 'FR', 'DE', 'IT'],
+    isPopular: true,
+    isNew: false,
+    status: 'active'
+  },
+
+  // Cdiscount Pro - France (Priority #2)
+  {
+    id: 'cdiscount-pro',
+    name: 'cdiscount-pro',
+    displayName: 'Cdiscount Pro',
+    description: 'Marketplace française, API/EDI complète',
+    category: 'Marketplace Française',
+    icon: '🇫🇷',
+    requiresAuth: true,
+    authType: 'oauth',
+    supportedFormats: ['API', 'EDI', 'XML'],
+    features: ['Marketplace', 'Publication auto', 'Gestion commandes'],
+    regions: ['FR'],
+    isPopular: true,
+    status: 'active'
+  },
+
+  // Eprolo - Europe (Priority #3)
+  {
+    id: 'eprolo',
+    name: 'eprolo',
+    displayName: 'Eprolo',
+    description: '1M+ produits, dropshipping européen premium',
+    category: 'Dropshipping Premium',
+    icon: '📦',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'CSV'],
+    features: ['Dropshipping', 'POD', 'Branding', 'Fast Shipping'],
+    regions: ['EU', 'US', 'Global'],
+    isPopular: true,
+    status: 'active'
+  },
+
+  // VidaXL - Pays-Bas (Priority #4)
+  {
+    id: 'vidaxl',
+    name: 'vidaxl',
+    displayName: 'VidaXL',
+    description: '85K+ produits mobilier/jardin européen',
+    category: 'Mobilier & Jardin',
+    icon: '🪴',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'XML', 'CSV'],
+    features: ['Mobilier', 'Jardin', 'Décoration', 'Livraison EU'],
+    regions: ['EU', 'NL', 'DE', 'FR'],
+    isPopular: true,
+    status: 'active'
+  },
+
+  // Syncee - Hongrie (Priority #5)
+  {
+    id: 'syncee',
+    name: 'syncee',
+    displayName: 'Syncee',
+    description: '8M+ produits, 12K+ marques mondiales',
+    category: 'Marketplace Globale',
+    icon: '🔄',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'CSV'],
+    features: ['Sync auto', 'Multi-marques', 'Dropshipping'],
+    regions: ['EU', 'Global'],
+    isPopular: true,
+    status: 'active'
+  },
+
+  // FOURNISSEURS LITUANIENS (67 fournisseurs selon Wise2Sync)
+  {
+    id: 'artejas',
+    name: 'artejas',
+    displayName: 'Artėjas',
+    description: 'Fournisseur lituanien spécialisé produits techniques',
+    category: 'Fournisseurs Européens',
+    icon: '🇱🇹',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'XML', 'Email'],
+    features: ['Technique', 'B2B', 'Export EU'],
+    regions: ['LT', 'EU'],
+    status: 'active'
+  },
+  {
+    id: 'baltijos-prekes',
+    name: 'baltijos-prekes',
+    displayName: 'Baltijos prekės',
+    description: 'Distributeur balte multi-catégories',
+    category: 'Fournisseurs Européens',
+    icon: '🇱🇹',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'FTP'],
+    features: ['Multi-catégories', 'Distribution', 'Prix compétitifs'],
+    regions: ['LT', 'LV', 'EE'],
+    status: 'active'
+  },
+  {
+    id: 'lietuvos-prekyba',
+    name: 'lietuvos-prekyba',
+    displayName: 'Lietuvos prekyba',
+    description: 'Grande distribution lituanienne',
+    category: 'Fournisseurs Européens',
+    icon: '🇱🇹',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'EDI'],
+    features: ['Grande distribution', 'Alimentaire', 'Non-alimentaire'],
+    regions: ['LT', 'EU'],
+    status: 'active'
+  },
+
+  // FOURNISSEURS LETTONS (65 fournisseurs)
+  {
+    id: 'baltijas-produkti',
+    name: 'baltijas-produkti',
+    displayName: 'Baltijas produkti',
+    description: 'Produits baltes authentiques',
+    category: 'Fournisseurs Européens',
+    icon: '🇱🇻',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'XML'],
+    features: ['Produits locaux', 'Artisanat', 'Alimentaire'],
+    regions: ['LV', 'EU'],
+    status: 'active'
+  },
+  {
+    id: 'latvijas-vairumtirgotajs',
+    name: 'latvijas-vairumtirgotajs',
+    displayName: 'Latvijas vairumtirgotājs',
+    description: 'Grossiste letton multi-secteurs',
+    category: 'Fournisseurs Européens',
+    icon: '🇱🇻',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'Email'],
+    features: ['Vente en gros', 'Multi-secteurs', 'B2B'],
+    regions: ['LV', 'EU'],
+    status: 'active'
+  },
+
+  // FOURNISSEURS POLONAIS (43 fournisseurs)
+  {
+    id: 'hurtownia-polska',
+    name: 'hurtownia-polska',
+    displayName: 'Hurtownia Polska',
+    description: 'Grande hurtownia polonaise',
+    category: 'Fournisseurs Européens',
+    icon: '🇵🇱',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'CSV', 'EDI'],
+    features: ['Hurtownia', 'Distribution', 'Logistique'],
+    regions: ['PL', 'EU'],
+    isPopular: true,
+    status: 'active'
+  },
+  {
+    id: 'dystrybutor-tech',
+    name: 'dystrybutor-tech',
+    displayName: 'Dystrybutor Tech',
+    description: 'Distribution technologie Pologne',
+    category: 'Technologie',
+    icon: '🇵🇱',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'XML'],
+    features: ['High-tech', 'Électronique', 'B2B'],
+    regions: ['PL', 'EU'],
+    status: 'active'
+  },
+  {
+    id: 'polskie-produkty',
+    name: 'polskie-produkty',
+    displayName: 'Polskie Produkty',
+    description: 'Produits made in Poland',
+    category: 'Fournisseurs Européens',
+    icon: '🇵🇱',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'FTP'],
+    features: ['Made in Poland', 'Artisanat', 'Export'],
+    regions: ['PL', 'EU'],
+    status: 'active'
+  },
+
+  // FOURNISSEURS ESTONIENS (19 fournisseurs)
+  {
+    id: 'balti-kaubad',
+    name: 'balti-kaubad',
+    displayName: 'Balti kaubad',
+    description: 'Fournisseur estonien premium',
+    category: 'Fournisseurs Européens',
+    icon: '🇪🇪',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'XML'],
+    features: ['Premium', 'Baltes', 'Digital'],
+    regions: ['EE', 'EU'],
+    status: 'active'
+  },
+  {
+    id: 'eesti-hulgimuuk',
+    name: 'eesti-hulgimuuk',
+    displayName: 'Eesti hulgimüük',
+    description: 'Vente en gros estonienne',
+    category: 'Fournisseurs Européens',
+    icon: '🇪🇪',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'Email'],
+    features: ['Vente en gros', 'B2B', 'Digital'],
+    regions: ['EE', 'EU'],
+    status: 'active'
+  },
+
+  // FOURNISSEURS GRECS (6 fournisseurs)
+  {
+    id: 'greek-suppliers',
+    name: 'greek-suppliers',
+    displayName: 'Greek Suppliers',
+    description: 'Fournisseurs grecs traditionnels',
+    category: 'Fournisseurs Européens',
+    icon: '🇬🇷',
+    requiresAuth: true,
+    authType: 'credentials',
+    supportedFormats: ['CSV', 'Email'],
+    features: ['Produits grecs', 'Alimentaire', 'Artisanat'],
+    regions: ['GR', 'EU'],
+    status: 'active'
+  },
+
+  // PRINT-ON-DEMAND
+  {
+    id: 'printful',
+    name: 'printful',
+    displayName: 'Printful',
+    description: 'Print-on-demand leader mondial',
+    category: 'Print-on-Demand',
+    icon: '🖨️',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'Webhook'],
+    features: ['POD', 'Personnalisation', 'Dropshipping', 'Global'],
+    regions: ['Global', 'EU', 'US'],
+    isPopular: true,
+    status: 'active'
+  },
+  {
+    id: 'printify',
+    name: 'printify',
+    displayName: 'Printify',
+    description: 'Print-on-demand network global',
+    category: 'Print-on-Demand',
+    icon: '🎨',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'Webhook'],
+    features: ['POD', 'Multi-fournisseurs', 'Qualité premium'],
+    regions: ['Global', 'EU', 'US'],
+    isPopular: true,
+    status: 'active'
+  },
+
+  // DROPSHIPPING PREMIUM
+  {
+    id: 'appscenic',
+    name: 'appscenic',
+    displayName: 'AppScenic',
+    description: 'Dropshipping UK/EU premium',
+    category: 'Dropshipping Premium',
+    icon: '🎭',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'CSV'],
+    features: ['Dropshipping', 'UK/EU', 'Fast shipping', 'Qualité'],
+    regions: ['UK', 'EU'],
+    isPopular: true,
+    status: 'active'
+  },
+
+  // MATTERHORN - Mode/Lingerie
+  {
+    id: 'matterhorn',
+    name: 'matterhorn',
+    displayName: 'Matterhorn',
+    description: '120K+ produits lingerie/mode européens',
+    category: 'Mode & Lingerie',
+    icon: '👙',
+    requiresAuth: true,
+    authType: 'api_key',
+    supportedFormats: ['API', 'XML', 'EDI'],
+    features: ['Mode', 'Lingerie', 'Premium brands', 'EU'],
+    regions: ['EU', 'DE', 'FR'],
+    isPopular: true,
+    status: 'active'
+  }
+];
+
 export const SUPPLIERS: Supplier[] = [
   // Grandes Plateformes
   {

@@ -3715,25 +3715,39 @@ export type Database = {
           access_count: number | null
           api_endpoint: string | null
           api_key: string | null
+          commission_rate: number | null
           connection_status: string | null
+          connector_type: string | null
           contact_email: string | null
           contact_phone: string | null
           country: string | null
           created_at: string
           credentials_updated_at: string | null
+          delivery_time_days: number | null
           description: string | null
           encrypted_credentials: Json | null
+          error_count: number | null
           id: string
+          integration_features: Json | null
+          is_premium: boolean | null
           last_access_at: string | null
           last_sync_at: string | null
+          last_sync_status: string | null
           logo_url: string | null
+          minimum_order_value: number | null
+          monthly_fee: number | null
           name: string
           next_sync_at: string | null
           product_count: number | null
+          rate_limits: Json | null
           rating: number | null
           sector: string | null
+          setup_complexity: string | null
+          setup_fee: number | null
           status: string | null
+          success_rate: number | null
           supplier_type: string | null
+          supported_regions: string[] | null
           sync_enabled: boolean | null
           sync_frequency: string | null
           tags: string[] | null
@@ -3746,25 +3760,39 @@ export type Database = {
           access_count?: number | null
           api_endpoint?: string | null
           api_key?: string | null
+          commission_rate?: number | null
           connection_status?: string | null
+          connector_type?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           created_at?: string
           credentials_updated_at?: string | null
+          delivery_time_days?: number | null
           description?: string | null
           encrypted_credentials?: Json | null
+          error_count?: number | null
           id?: string
+          integration_features?: Json | null
+          is_premium?: boolean | null
           last_access_at?: string | null
           last_sync_at?: string | null
+          last_sync_status?: string | null
           logo_url?: string | null
+          minimum_order_value?: number | null
+          monthly_fee?: number | null
           name: string
           next_sync_at?: string | null
           product_count?: number | null
+          rate_limits?: Json | null
           rating?: number | null
           sector?: string | null
+          setup_complexity?: string | null
+          setup_fee?: number | null
           status?: string | null
+          success_rate?: number | null
           supplier_type?: string | null
+          supported_regions?: string[] | null
           sync_enabled?: boolean | null
           sync_frequency?: string | null
           tags?: string[] | null
@@ -3777,25 +3805,39 @@ export type Database = {
           access_count?: number | null
           api_endpoint?: string | null
           api_key?: string | null
+          commission_rate?: number | null
           connection_status?: string | null
+          connector_type?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           created_at?: string
           credentials_updated_at?: string | null
+          delivery_time_days?: number | null
           description?: string | null
           encrypted_credentials?: Json | null
+          error_count?: number | null
           id?: string
+          integration_features?: Json | null
+          is_premium?: boolean | null
           last_access_at?: string | null
           last_sync_at?: string | null
+          last_sync_status?: string | null
           logo_url?: string | null
+          minimum_order_value?: number | null
+          monthly_fee?: number | null
           name?: string
           next_sync_at?: string | null
           product_count?: number | null
+          rate_limits?: Json | null
           rating?: number | null
           sector?: string | null
+          setup_complexity?: string | null
+          setup_fee?: number | null
           status?: string | null
+          success_rate?: number | null
           supplier_type?: string | null
+          supported_regions?: string[] | null
           sync_enabled?: boolean | null
           sync_frequency?: string | null
           tags?: string[] | null
@@ -4580,6 +4622,10 @@ export type Database = {
           has_api_key: boolean
           id: string
         }[]
+      }
+      get_supplier_stats: {
+        Args: { user_id_param: string }
+        Returns: Json
       }
       get_user_plan: {
         Args: { user_id_param: string }
