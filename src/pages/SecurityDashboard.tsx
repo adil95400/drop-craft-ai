@@ -13,9 +13,9 @@ export default function SecurityDashboard() {
 
   const securityMetrics = [
     { title: 'Score de Sécurité', value: 87, max: 100, status: 'good' },
-    { title: 'Vulnérabilités', value: 2, max: 0, status: 'warning' },
-    { title: 'Accès Surveillés', value: 1247, status: 'info' },
-    { title: 'Dernière Analyse', value: '2h', status: 'info' }
+    { title: 'Vulnérabilités', value: 2, max: 10, status: 'warning' },
+    { title: 'Accès Surveillés', value: 1247, max: 2000, status: 'info' },
+    { title: 'Dernière Analyse', value: 2, max: 24, status: 'info', unit: 'h' }
   ];
 
   const securityAlerts = [
@@ -90,8 +90,10 @@ export default function SecurityDashboard() {
                 <Shield className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{metric.value}</div>
-                {metric.max !== undefined && (
+                <div className="text-2xl font-bold">
+                  {metric.value}{(metric as any).unit || ''}
+                </div>
+                {metric.max !== undefined && typeof metric.value === 'number' && (
                   <Progress 
                     value={(metric.value / metric.max) * 100} 
                     className="mt-2 h-2"
