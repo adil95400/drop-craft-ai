@@ -13,6 +13,7 @@ import Dashboard from '@/pages/Dashboard';
 import SubscriptionDashboard from '@/pages/SubscriptionDashboard';
 import QuotaManagerPage from '@/pages/QuotaManagerPage';
 import SupplierHub from '@/components/SupplierHub';
+import UnifiedImport from '@/pages/UnifiedImport';
 import { ModuleRoutes } from '@/components/routing/ModuleRoutes';
 
 // Pages simples pour éviter les erreurs
@@ -31,6 +32,7 @@ function App() {
               <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
               <Route path="/products" element={<AppLayout><ProductsPage /></AppLayout>} />
               <Route path="/suppliers" element={<AppLayout><SupplierHub /></AppLayout>} />
+              <Route path="/import" element={<AppLayout><UnifiedImport /></AppLayout>} />
               <Route path="/subscription" element={<AppLayout><SubscriptionDashboard /></AppLayout>} />
               <Route path="/quotas" element={<AppLayout><QuotaManagerPage /></AppLayout>} />
               <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />

@@ -162,7 +162,7 @@ export const SmartBreadcrumbs = () => {
             const isLast = index === breadcrumbs.length - 1
             
             return (
-              <React.Fragment key={crumb.path}>
+              <div key={crumb.path}>
                 <BreadcrumbItem>
                   {isLast ? (
                     <BreadcrumbPage className="flex items-center gap-2">
@@ -200,7 +200,7 @@ export const SmartBreadcrumbs = () => {
                     <ChevronRight className="h-4 w-4" />
                   </BreadcrumbSeparator>
                 )}
-              </React.Fragment>
+              </div>
             )
           })}
         </BreadcrumbList>
