@@ -44,6 +44,16 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['supplier-management', 'basic-import'],
     description: 'Gestion des fournisseurs'
   },
+  import: {
+    id: 'import',
+    name: 'Import Produits',
+    icon: 'Upload',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/import',
+    features: ['basic-import', 'bulk-import', 'url-scraping'],
+    description: 'Import de données produits'
+  },
 
   // Modules Pro
   analytics: {

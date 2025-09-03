@@ -2,7 +2,7 @@ import { MODULE_REGISTRY } from '@/config/modules';
 import type { PlanType } from '@/hooks/usePlan';
 import { 
   BarChart3, Package, Truck, TrendingUp, Zap, Users, Search, 
-  Brain, Shield, Plug, Settings, Crown, Sparkles 
+  Brain, Shield, Plug, Settings, Crown, Sparkles, Upload 
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -58,6 +58,7 @@ export function getSidebarItems(currentPlan: PlanType): SidebarItem[] {
     'BarChart3': BarChart3,
     'Package': Package,
     'Truck': Truck,
+    'Upload': Upload,
     'TrendingUp': TrendingUp,
     'Zap': Zap,
     'Users': Users,
