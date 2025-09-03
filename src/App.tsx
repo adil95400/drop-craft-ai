@@ -12,11 +12,11 @@ import Index from '@/pages/Index';
 import Dashboard from '@/pages/Dashboard';
 import SubscriptionDashboard from '@/pages/SubscriptionDashboard';
 import QuotaManagerPage from '@/pages/QuotaManagerPage';
+import SupplierHub from '@/components/SupplierHub';
 import { ModuleRoutes } from '@/components/routing/ModuleRoutes';
 
 // Pages simples pour éviter les erreurs
 const ProductsPage = () => <div>Products - En cours de développement</div>;
-const SupplierHub = () => <div>Suppliers - En cours de développement</div>;
 
 const queryClient = new QueryClient();
 
