@@ -6,6 +6,54 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Firecrawl API integration
+async function firecrawlScrape(url: string, apiKey: string) {
+  try {
+    const response = await fetch('https://api.firecrawl.dev/v0/scrape', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        url: url,
+        formats: ['markdown', 'html'],
+        extractorOptions: {
+          extractionSchema: {
+            type: 'object',
+            properties: {
+              products: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string' },
+                    price: { type: 'string' },
+                    description: { type: 'string' },
+                    image: { type: 'string' },
+                    category: { type: 'string' },
+                    sku: { type: 'string' },
+                    availability: { type: 'string' }
+                  }
+                }
+              }
+            }
+          }
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Firecrawl API error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Firecrawl error:', error);
+    return null;
+  }
+}
+
 interface ScrapeRequest {
   url: string
   config?: {
@@ -63,21 +111,47 @@ serve(async (req) => {
     }
 
     try {
-      // Fetch the page
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch URL: ${response.status} ${response.statusText}`)
-      }
-
-      const html = await response.text()
+      let scrapedData: any[] = []
       
-      // Advanced scraping with multiple strategies
-      const scrapedData = await scrapeProductData(html, url, config)
+      // Try Firecrawl first if API key is available
+      const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY')
+      if (firecrawlApiKey) {
+        console.log('Using Firecrawl for advanced scraping')
+        const firecrawlResult = await firecrawlScrape(url, firecrawlApiKey)
+        
+        if (firecrawlResult?.data?.extractedContent?.products) {
+          scrapedData = firecrawlResult.data.extractedContent.products.map((product: any) => ({
+            name: product.name || 'Produit extrait',
+            description: product.description || '',
+            price: parseFloat(product.price?.replace(/[^\d.,]/g, '').replace(',', '.')) || 0,
+            currency: 'EUR',
+            image_urls: product.image ? [product.image] : [],
+            category: product.category || 'Divers',
+            sku: product.sku || `FIRECRAWL-${Date.now()}`,
+            supplier_name: new URL(url).hostname.replace('www.', ''),
+            supplier_url: url,
+            tags: ['firecrawl', 'ai-extracted'],
+            availability_status: product.availability === 'in_stock' ? 'in_stock' : 'out_of_stock'
+          }))
+        }
+      }
+      
+      // Fallback to custom scraping if Firecrawl didn't work or no API key
+      if (scrapedData.length === 0) {
+        console.log('Falling back to custom scraping')
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch URL: ${response.status} ${response.statusText}`)
+        }
+
+        const html = await response.text()
+        scrapedData = await scrapeProductData(html, url, config)
+      }
       
       if (!scrapedData || scrapedData.length === 0) {
         await supabaseClient

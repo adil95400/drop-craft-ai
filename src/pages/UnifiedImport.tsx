@@ -3,6 +3,7 @@ import { FeatureGate } from '@/components/common/FeatureGate';
 import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
 import { CSVMappingInterface } from '@/components/import/CSVMappingInterface';
 import { URLImportInterface } from '@/components/import/URLImportInterface';
+import { XMLImportInterface } from '@/components/import/XMLImportInterface';
 import { FTPImportInterface } from '@/components/import/FTPImportInterface';
 import { BulkZipImportInterface } from '@/components/import/BulkZipImportInterface';
 import { ImportHistoryInterface } from '@/components/import/ImportHistoryInterface';
@@ -195,16 +196,10 @@ const UnifiedImport: React.FC = () => {
         )}
 
         {activeTab === 'xml' && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Import depuis flux XML</h2>
-            <p className="text-muted-foreground mb-4">
-              Importez depuis des flux XML (Google Shopping, Lengow, etc.)
-            </p>
-            
-            <React.Suspense fallback={<div>Chargement des fonctionnalités XML...</div>}>
-              <ImportAdvanced />
-            </React.Suspense>
-          </div>
+          <XMLImportInterface 
+            onImportComplete={handleImportComplete}
+            onCancel={() => setActiveTab('basic')}
+          />
         )}
 
         {activeTab === 'ftp' && (
