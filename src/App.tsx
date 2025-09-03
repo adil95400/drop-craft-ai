@@ -20,6 +20,8 @@ import FTPImportConfig from '@/pages/import/FTPImportConfig';
 import ScheduledImportConfig from '@/pages/import/ScheduledImportConfig';
 import BulkImportConfig from '@/pages/import/BulkImportConfig';
 import AIImportConfig from '@/pages/import/AIImportConfig';
+import ImportHistory from '@/pages/ImportHistory';
+import ImportedProducts from '@/pages/ImportedProducts';
 import { ModuleRoutes } from '@/components/routing/ModuleRoutes';
 
 // Pages simples pour éviter les erreurs
@@ -45,6 +47,8 @@ function App() {
               <Route path="/import/scheduled-config" element={<AppLayout><ScheduledImportConfig /></AppLayout>} />
               <Route path="/import/bulk-config" element={<AppLayout><BulkImportConfig /></AppLayout>} />
               <Route path="/import/ai-config" element={<AppLayout><AIImportConfig /></AppLayout>} />
+              <Route path="/import/history" element={<AppLayout><ImportHistory /></AppLayout>} />
+              <Route path="/import/products" element={<AppLayout><ImportedProducts /></AppLayout>} />
               <Route path="/subscription" element={<AppLayout><SubscriptionDashboard /></AppLayout>} />
               <Route path="/quotas" element={<AppLayout><QuotaManagerPage /></AppLayout>} />
               <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />
