@@ -23,7 +23,7 @@ import AIImportConfig from '@/pages/import/AIImportConfig';
 import { ModuleRoutes } from '@/components/routing/ModuleRoutes';
 
 // Pages simples pour éviter les erreurs
-const ProductsPage = () => <div>Products - En cours de développement</div>;
+import Products from '@/pages/Products';
 
 const queryClient = new QueryClient();
 
@@ -36,7 +36,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
-              <Route path="/products" element={<AppLayout><ProductsPage /></AppLayout>} />
+              <Route path="/products" element={<AppLayout><Products /></AppLayout>} />
               <Route path="/suppliers" element={<AppLayout><SupplierHub /></AppLayout>} />
               <Route path="/import" element={<AppLayout><UnifiedImport /></AppLayout>} />
               <Route path="/import/url-config" element={<AppLayout><URLImportConfig /></AppLayout>} />
