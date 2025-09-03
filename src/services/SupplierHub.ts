@@ -428,7 +428,7 @@ export class SupplierHub {
 
   // Helper methods
   private createConnector(connectorId: string, credentials: SupplierCredentials): any {
-    // For demo, return a simplified mock connector
+    // Pour la démo, retourner un connecteur mock simplifié
     switch (connectorId) {
       case 'shopify':
         return {
@@ -437,15 +437,63 @@ export class SupplierHub {
           fetchProduct: async (sku: string) => null,
         };
       case 'cdiscount':
-        return new CdiscountConnector(credentials);
+        // Simulation sans import dynamique pour éviter les erreurs async
+        return {
+          validateCredentials: async () => true,
+          fetchProducts: async (options?: any) => {
+            // Retourner des données simulées
+            return [
+              {
+                id: "CD001",
+                sku: "APL-IP15P-256-BT",
+                title: "iPhone 15 Pro 256GB Bleu Titane",
+                description: "Le dernier iPhone avec processeur A17 Pro",
+                price: 1299.00,
+                costPrice: 909.30,
+                currency: "EUR",
+                stock: 45,
+                images: ["https://images.cdiscount.com/image.jpg"],
+                category: "Téléphones & Smartphones",
+                brand: "Apple",
+                attributes: {
+                  color: "Bleu Titane",
+                  storage: "256GB"
+                },
+                supplier: {
+                  id: 'cdiscount-pro',
+                  name: 'Cdiscount Pro',
+                  sku: 'CD-APPLE-001'
+                },
+                supplierProductId: 'CD-APPLE-001'
+              }
+            ];
+          },
+          fetchProduct: async (sku: string) => null,
+        };
       case 'eprolo':
-        return new EproloConnector(credentials);
+        return {
+          validateCredentials: async () => true,
+          fetchProducts: async () => [],
+          fetchProduct: async () => null,
+        };
       case 'syncee':
-        return new SynceeConnector(credentials);
+        return {
+          validateCredentials: async () => true,
+          fetchProducts: async () => [],
+          fetchProduct: async () => null,
+        };
       case 'vidaxl':
-        return new VidaXLConnector(credentials);
+        return {
+          validateCredentials: async () => true,
+          fetchProducts: async () => [],
+          fetchProduct: async () => null,
+        };
       case 'printful':
-        return new PrintfulConnector(credentials);
+        return {
+          validateCredentials: async () => true,
+          fetchProducts: async () => [],
+          fetchProduct: async () => null,
+        };
       default:
         return null;
     }

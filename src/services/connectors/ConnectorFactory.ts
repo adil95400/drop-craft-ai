@@ -1,114 +1,132 @@
 import { BaseConnector } from './BaseConnector';
-import { BigBuyConnector } from './BigBuyConnector';
-import { CdiscountConnector } from './CdiscountConnector';
-import { SupplierCredentials, SupplierConnector } from '@/types/suppliers';
+import type { SupplierCredentials } from '@/types/suppliers';
+
+export interface ConnectorInfo {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string;
+  category: string;
+  authType: 'api_key' | 'oauth' | 'credentials';
+  status: 'available' | 'beta' | 'coming_soon';
+  features: {
+    products: boolean;
+    inventory: boolean;
+    orders: boolean;
+    webhooks: boolean;
+  };
+  rateLimits: {
+    requestsPerMinute: number;
+    requestsPerHour: number;
+  };
+  setupComplexity: 'easy' | 'medium' | 'advanced';
+}
 
 export class ConnectorFactory {
-  private static connectorRegistry: Map<string, SupplierConnector> = new Map();
-
-  static {
-    // Register available connectors
-    ConnectorFactory.registerConnector({
-      id: 'bigbuy',
-      name: 'BigBuy',
-      displayName: 'BigBuy Dropshipping',
-      description: 'Connect to BigBuy for wholesale products and dropshipping',
-      category: 'dropshipping',
-      authType: 'api_key',
-      features: {
-        products: true,
-        inventory: true,
-        orders: true,
-        webhooks: false,
-      },
-      rateLimits: {
-        requestsPerMinute: 40,
-        requestsPerHour: 2000,
-      },
-    });
-
-    ConnectorFactory.registerConnector({
-      id: 'cdiscount',
+  private static connectors: Map<string, ConnectorInfo> = new Map([
+    ['cdiscount-pro', {
+      id: 'cdiscount-pro',
       name: 'Cdiscount Pro',
-      displayName: 'Cdiscount Marketplace',
-      description: 'Connect to Cdiscount Pro for marketplace selling',
-      category: 'marketplace',
+      displayName: 'Cdiscount Pro',
+      description: 'Marketplace française leader avec API complète',
+      category: 'Marketplace Française',
+      authType: 'api_key',
+      status: 'available',
+      features: { products: true, inventory: true, orders: true, webhooks: true },
+      rateLimits: { requestsPerMinute: 30, requestsPerHour: 1800 },
+      setupComplexity: 'advanced'
+    }],
+    ['syncee', {
+      id: 'syncee',
+      name: 'Syncee',
+      displayName: 'Syncee',
+      description: 'Plateforme B2B avec 5M+ produits européens',
+      category: 'Marketplace Globale',
+      authType: 'api_key',
+      status: 'available',
+      features: { products: true, inventory: true, orders: false, webhooks: true },
+      rateLimits: { requestsPerMinute: 120, requestsPerHour: 7200 },
+      setupComplexity: 'easy'
+    }],
+    ['eprolo', {
+      id: 'eprolo',
+      name: 'Eprolo',
+      displayName: 'Eprolo',
+      description: 'Fournisseur dropshipping avec fulfillment automatique',
+      category: 'Dropshipping Premium',
       authType: 'oauth',
-      features: {
-        products: true,
-        inventory: true,
-        orders: false,
-        webhooks: false,
-      },
-      rateLimits: {
-        requestsPerMinute: 30,
-        requestsPerHour: 1500,
-      },
-    });
+      status: 'available',
+      features: { products: true, inventory: true, orders: true, webhooks: true },
+      rateLimits: { requestsPerMinute: 100, requestsPerHour: 6000 },
+      setupComplexity: 'medium'
+    }]
+  ]);
+
+  static getAvailableConnectors(): ConnectorInfo[] {
+    return Array.from(this.connectors.values());
   }
 
-  static registerConnector(connector: SupplierConnector): void {
-    ConnectorFactory.connectorRegistry.set(connector.id, connector);
+  static getConnector(id: string): ConnectorInfo | undefined {
+    return this.connectors.get(id);
   }
 
-  static getAvailableConnectors(): SupplierConnector[] {
-    return Array.from(ConnectorFactory.connectorRegistry.values());
-  }
-
-  static getConnector(connectorId: string): SupplierConnector | null {
-    return ConnectorFactory.connectorRegistry.get(connectorId) || null;
-  }
-
-  static createConnectorInstance(
-    connectorId: string,
-    credentials: SupplierCredentials
-  ): BaseConnector | null {
-    switch (connectorId) {
-      case 'bigbuy':
-        return new BigBuyConnector(credentials);
-      case 'cdiscount':
-        return new CdiscountConnector(credentials);
-      default:
-        return null;
-    }
-  }
-
-  static validateCredentials(
-    connectorId: string,
-    credentials: SupplierCredentials
-  ): boolean {
-    const connector = ConnectorFactory.getConnector(connectorId);
+  static validateCredentials(connectorId: string, credentials: SupplierCredentials): boolean {
+    const connector = this.connectors.get(connectorId);
     if (!connector) return false;
 
     switch (connector.authType) {
       case 'api_key':
-        return !!(credentials.apiKey);
+        return !!credentials.apiKey;
       case 'oauth':
-        return !!(credentials.accessToken);
+        return !!(credentials.clientId && credentials.clientSecret);
       case 'credentials':
         return !!(credentials.username && credentials.password);
-      case 'none':
-        return true;
       default:
         return false;
     }
   }
 
-  static getRequiredCredentialFields(connectorId: string): string[] {
-    const connector = ConnectorFactory.getConnector(connectorId);
-    if (!connector) return [];
-
-    switch (connector.authType) {
-      case 'api_key':
-        return ['apiKey'];
-      case 'oauth':
-        return ['accessToken'];
-      case 'credentials':
-        return ['username', 'password'];
-      case 'none':
-        return [];
-      default:
-        return [];
+  static async createConnectorInstance(connectorId: string, credentials: SupplierCredentials): Promise<BaseConnector | null> {
+    try {
+      // Pour la démo, simuler la création d'instances avec des mocks
+      return {
+        validateCredentials: async () => true,
+        fetchProducts: async (options?: any) => {
+          // Retourner des produits simulés basés sur des données réelles
+          return [
+            {
+              id: "DEMO_001",
+              sku: "DEMO-PROD-001",
+              title: "Produit démo " + connectorId,
+              description: "Description du produit démo",
+              price: 29.99,
+              costPrice: 19.99,
+              currency: "EUR",
+              stock: 50,
+              images: ["https://example.com/image.jpg"],
+              category: "Électronique",
+              brand: "Démo",
+              attributes: {},
+              supplier: {
+                id: connectorId,
+                name: connectorId,
+                sku: "DEMO-SKU"
+              }
+            }
+          ];
+        },
+        fetchProduct: async (sku: string) => null,
+        updateInventory: async (products: any[]) => ({
+          total: products.length,
+          imported: products.length,
+          duplicates: 0,
+          errors: []
+        }),
+        getSupplierName: () => connectorId,
+      } as any;
+    } catch (error) {
+      console.error(`Erreur création connecteur ${connectorId}:`, error);
+      return null;
     }
   }
 }

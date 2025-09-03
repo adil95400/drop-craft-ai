@@ -53,7 +53,7 @@ export const useSupplierConnectors = () => {
       }
 
       // Create connector instance
-      const connectorInstance = ConnectorFactory.createConnectorInstance(connectorId, credentials);
+      const connectorInstance = await ConnectorFactory.createConnectorInstance(connectorId, credentials);
       if (!connectorInstance) {
         throw new Error(`Connector ${connectorId} not found`);
       }

@@ -19,6 +19,11 @@ export interface SupplierCredentials {
   username?: string;
   password?: string;
   endpoint?: string;
+  secretKey?: string;
+  sellerId?: string;
+  clientId?: string;
+  clientSecret?: string;
+  storeId?: string;
   [key: string]: any;
 }
 
@@ -47,6 +52,7 @@ export interface SupplierProduct {
     name: string;
     sku: string;
   };
+  supplierProductId?: string;
 }
 
 export interface ProductVariant {
