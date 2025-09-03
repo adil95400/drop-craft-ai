@@ -3,6 +3,9 @@ import { FeatureGate } from '@/components/common/FeatureGate';
 import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
 import { CSVMappingInterface } from '@/components/import/CSVMappingInterface';
 import { URLImportInterface } from '@/components/import/URLImportInterface';
+import { FTPImportInterface } from '@/components/import/FTPImportInterface';
+import { BulkZipImportInterface } from '@/components/import/BulkZipImportInterface';
+import { ImportHistoryInterface } from '@/components/import/ImportHistoryInterface';
 
 // Lazy load the actual import components
 const ImportBasic = React.lazy(() => import('./Import'));
@@ -11,7 +14,7 @@ const ImportAdvanced = React.lazy(() => import('./ImportAdvanced'));
 const UnifiedImport: React.FC = () => {
   const { getFeatureConfig } = useUnifiedPlan();
   const config = getFeatureConfig('import');
-  const [activeTab, setActiveTab] = React.useState<'basic' | 'csv' | 'url' | 'xml' | 'ftp'>('basic');
+  const [activeTab, setActiveTab] = React.useState<'basic' | 'csv' | 'url' | 'xml' | 'ftp' | 'bulk' | 'history'>('basic');
   const [csvData, setCsvData] = React.useState<{headers: string[], rows: string[][]} | null>(null);
   const [showMappingInterface, setShowMappingInterface] = React.useState(false);
 
@@ -24,6 +27,12 @@ const UnifiedImport: React.FC = () => {
     console.log('Mappings completed:', mappings);
     setShowMappingInterface(false);
     // Process the import with mappings
+  };
+
+  const handleImportComplete = (result: any) => {
+    console.log('Import completed:', result);
+    // Optionally switch to history tab to see the result
+    setActiveTab('history');
   };
 
   if (showMappingInterface && csvData) {
@@ -52,7 +61,7 @@ const UnifiedImport: React.FC = () => {
         </div>
 
         {/* Import Method Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 flex-wrap">
           <button
             onClick={() => setActiveTab('basic')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -82,9 +91,55 @@ const UnifiedImport: React.FC = () => {
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
-              Import URL
+              Scraper URL
             </button>
           </FeatureGate>
+          <FeatureGate feature="advanced-import" fallback={null} showUpgrade={false}>
+            <button
+              onClick={() => setActiveTab('xml')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'xml' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              Flux XML
+            </button>
+          </FeatureGate>
+          <FeatureGate feature="advanced-import" fallback={null} showUpgrade={false}>
+            <button
+              onClick={() => setActiveTab('ftp')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'ftp' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              Import FTP
+            </button>
+          </FeatureGate>
+          <FeatureGate feature="bulk-import" fallback={null} showUpgrade={false}>
+            <button
+              onClick={() => setActiveTab('bulk')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'bulk' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              Import ZIP
+            </button>
+          </FeatureGate>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'history' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
+          >
+            Historique
+          </button>
         </div>
         
         {/* Import Content */}
@@ -134,12 +189,34 @@ const UnifiedImport: React.FC = () => {
 
         {activeTab === 'url' && (
           <URLImportInterface
-            onProductScraped={(product) => {
-              console.log('Product scraped:', product);
-              // Handle the scraped product
-            }}
+            onProductScraped={handleImportComplete}
             onCancel={() => setActiveTab('basic')}
           />
+        )}
+
+        {activeTab === 'xml' && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Import depuis flux XML</h2>
+            <p className="text-muted-foreground mb-4">
+              Importez depuis des flux XML (Google Shopping, Lengow, etc.)
+            </p>
+            
+            <React.Suspense fallback={<div>Chargement des fonctionnalités XML...</div>}>
+              <ImportAdvanced />
+            </React.Suspense>
+          </div>
+        )}
+
+        {activeTab === 'ftp' && (
+          <FTPImportInterface onImportComplete={handleImportComplete} />
+        )}
+
+        {activeTab === 'bulk' && (
+          <BulkZipImportInterface onImportComplete={handleImportComplete} />
+        )}
+
+        {activeTab === 'history' && (
+          <ImportHistoryInterface />
         )}
       </div>
 
@@ -162,14 +239,14 @@ const UnifiedImport: React.FC = () => {
             <p className="text-sm text-muted-foreground mb-4">
               Notre IA analyse automatiquement vos fichiers et optimise les données produits.
             </p>
-            <div className="flex gap-2">
-              <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
+            <div className="flex gap-2 flex-wrap">
+              <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                 Auto-mapping
               </span>
-              <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
+              <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
                 Enrichissement SEO
               </span>
-              <span className="px-2 py-1 text-xs rounded bg-purple-100 text-purple-800">
+              <span className="px-2 py-1 text-xs rounded bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
                 Détection doublons
               </span>
             </div>
