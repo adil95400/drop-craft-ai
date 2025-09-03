@@ -7,6 +7,7 @@ import { XMLFeedImporter } from '@/components/import/XMLFeedImporter';
 import { FTPImporter } from '@/components/import/FTPImporter';
 import { BulkZipImport } from '@/components/import/BulkZipImport';
 import { ImportHistory } from '@/components/import/ImportHistory';
+import { ImportDashboard } from '@/components/import/ImportDashboard';
 
 // Lazy load the actual import components
 const ImportBasic = React.lazy(() => import('./Import'));
@@ -141,6 +142,12 @@ const UnifiedImport: React.FC = () => {
           >
             Historique
           </button>
+          <button
+            onClick={() => window.location.href = '/import/products'}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-muted text-muted-foreground hover:bg-muted/80`}
+          >
+            Produits Importés
+          </button>
         </div>
         
         {/* Import Content */}
@@ -208,7 +215,10 @@ const UnifiedImport: React.FC = () => {
         )}
 
         {activeTab === 'history' && (
-          <ImportHistory />
+          <>
+            <ImportHistory />
+            <ImportDashboard />
+          </>
         )}
       </div>
 

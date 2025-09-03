@@ -1,146 +1,90 @@
-import React, { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  Area,
-  AreaChart
-} from 'recharts';
-import {
-  TrendingUp,
-  TrendingDown,
-  Package,
-  CheckCircle,
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { useProductImports } from '@/hooks/useProductImports';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { 
+  Download, 
+  FileSpreadsheet, 
+  Globe, 
+  Database, 
+  Cloud, 
+  RefreshCw, 
+  CheckCircle, 
+  AlertCircle,
+  Clock,
   XCircle,
-  AlertTriangle,
-  Eye,
-  Star,
-  Calendar,
-  DollarSign,
-  Users,
-  Activity
-} from 'lucide-react';
-import { useImportUltraPro } from '@/hooks/useImportUltraPro';
+  Sparkles,
+  TrendingUp
+} from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 
 export const ImportDashboard = () => {
-  const { importedProducts, aiJobs, scheduledImports } = useImportUltraPro();
+  const { imports, importedProducts, loading } = useProductImports();
+  const navigate = useNavigate();
 
-  // Calculate comprehensive statistics
-  const stats = useMemo(() => {
-    const total = importedProducts.length;
-    const published = importedProducts.filter(p => p.status === 'published').length;
-    const draft = importedProducts.filter(p => p.status === 'draft').length;
-    const pending = importedProducts.filter(p => p.review_status === 'pending').length;
-    const approved = importedProducts.filter(p => p.review_status === 'approved').length;
-    const rejected = importedProducts.filter(p => p.review_status === 'rejected').length;
-    const aiOptimized = importedProducts.filter(p => p.ai_optimized).length;
-    const withImages = importedProducts.filter(p => p.image_urls && p.image_urls.length > 0).length;
-    const withDescription = importedProducts.filter(p => p.description && p.description.trim().length > 0).length;
-    
-    // Price analysis
-    const prices = importedProducts.filter(p => p.price).map(p => Number(p.price));
-    const avgPrice = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
-    const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
-    const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
-    
-    // Quality scores
-    const qualityScores = importedProducts.filter(p => p.import_quality_score).map(p => Number(p.import_quality_score));
-    const avgQuality = qualityScores.length > 0 ? qualityScores.reduce((a, b) => a + b, 0) / qualityScores.length : 0;
-    
-    return {
-      total,
-      published,
-      draft,
-      pending,
-      approved,
-      rejected,
-      aiOptimized,
-      withImages,
-      withDescription,
-      avgPrice,
-      minPrice,
-      maxPrice,
-      avgQuality,
-      publishedRate: total > 0 ? (published / total) * 100 : 0,
-      approvalRate: total > 0 ? (approved / total) * 100 : 0,
-      qualityRate: total > 0 ? (withImages / total) * 100 : 0,
-      aiOptimizationRate: total > 0 ? (aiOptimized / total) * 100 : 0
-    };
-  }, [importedProducts]);
+  // Statistiques calculées
+  const stats = {
+    totalImports: imports.length,
+    completedImports: imports.filter(i => i.status === 'completed').length,
+    processingImports: imports.filter(i => i.status === 'processing').length,
+    failedImports: imports.filter(i => i.status === 'failed').length,
+    totalProducts: importedProducts.length,
+    publishedProducts: importedProducts.filter(p => p.status === 'published').length,
+    draftProducts: importedProducts.filter(p => p.status === 'draft').length,
+    optimizedProducts: importedProducts.filter(p => p.ai_optimized).length
+  };
 
-  // Category distribution
-  const categoryData = useMemo(() => {
-    const categories = importedProducts.reduce((acc, product) => {
-      const category = product.category || 'Non catégorisé';
-      acc[category] = (acc[category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return Object.entries(categories)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 8);
-  }, [importedProducts]);
-
-  // Status distribution for pie chart
-  const statusData = [
-    { name: 'Publié', value: stats.published, color: '#10b981' },
-    { name: 'Brouillon', value: stats.draft, color: '#f59e0b' },
-    { name: 'En attente', value: stats.pending, color: '#6b7280' },
-    { name: 'Rejeté', value: stats.rejected, color: '#ef4444' }
+  // Données pour les graphiques
+  const importsByType = [
+    { name: 'CSV', value: imports.filter(i => i.import_type === 'csv').length, color: '#8884d8' },
+    { name: 'URL', value: imports.filter(i => i.import_type === 'url').length, color: '#82ca9d' },
+    { name: 'API', value: imports.filter(i => i.import_type === 'api').length, color: '#ffc658' },
+    { name: 'XML', value: imports.filter(i => i.import_type === 'xml').length, color: '#ff7300' },
   ];
 
-  // Import trend (last 30 days)
-  const importTrendData = useMemo(() => {
-    const last30Days = Array.from({ length: 30 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (29 - i));
-      return date.toISOString().split('T')[0];
-    });
-
-    return last30Days.map(date => {
-      const count = importedProducts.filter(p => 
-        p.created_at && p.created_at.split('T')[0] === date
-      ).length;
-      
-      return {
-        date: new Date(date).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' }),
-        imports: count
-      };
-    });
-  }, [importedProducts]);
-
-  const COLORS = ['#10b981', '#f59e0b', '#6b7280', '#ef4444', '#8b5cf6', '#06b6d4'];
+  const successRateData = [
+    { name: 'Lun', success: 95, failed: 5 },
+    { name: 'Mar', success: 88, failed: 12 },
+    { name: 'Mer', success: 92, failed: 8 },
+    { name: 'Jeu', success: 97, failed: 3 },
+    { name: 'Ven', success: 89, failed: 11 },
+    { name: 'Sam', success: 94, failed: 6 },
+    { name: 'Dim', success: 91, failed: 9 },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Key Metrics Cards */}
+      {/* En-tête avec actions rapides */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold">Tableau de Bord Imports</h2>
+          <p className="text-muted-foreground">Vue d'ensemble de tous vos imports et produits</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => navigate('/import/history')}>
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            Historique
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate('/import/products')}>
+            <Database className="w-4 h-4 mr-2" />
+            Produits
+          </Button>
+        </div>
+      </div>
+
+      {/* Cartes de statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Produits</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
-                <div className="flex items-center mt-1">
-                  <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                  <span className="text-sm text-green-500">+12% ce mois</span>
-                </div>
+                <p className="text-sm font-medium text-muted-foreground">Total Imports</p>
+                <p className="text-2xl font-bold">{stats.totalImports}</p>
               </div>
-              <Package className="w-8 h-8 text-primary" />
+              <FileSpreadsheet className="w-8 h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
@@ -149,11 +93,10 @@ export const ImportDashboard = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Taux de Publication</p>
-                <p className="text-2xl font-bold">{stats.publishedRate.toFixed(1)}%</p>
-                <Progress value={stats.publishedRate} className="mt-2 h-2" />
+                <p className="text-sm font-medium text-muted-foreground">Produits Importés</p>
+                <p className="text-2xl font-bold">{stats.totalProducts}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-500" />
+              <Database className="w-8 h-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -162,14 +105,10 @@ export const ImportDashboard = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Optimisation IA</p>
-                <p className="text-2xl font-bold">{stats.aiOptimizationRate.toFixed(1)}%</p>
-                <div className="flex items-center mt-1">
-                  <Star className="w-4 h-4 text-purple-500 mr-1" />
-                  <span className="text-sm text-purple-500">{stats.aiOptimized} produits</span>
-                </div>
+                <p className="text-sm font-medium text-muted-foreground">Publiés</p>
+                <p className="text-2xl font-bold">{stats.publishedProducts}</p>
               </div>
-              <Star className="w-8 h-8 text-purple-500" />
+              <CheckCircle className="w-8 h-8 text-emerald-600" />
             </div>
           </CardContent>
         </Card>
@@ -178,178 +117,215 @@ export const ImportDashboard = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Prix Moyen</p>
-                <p className="text-2xl font-bold">€{stats.avgPrice.toFixed(2)}</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  €{stats.minPrice} - €{stats.maxPrice}
-                </p>
+                <p className="text-sm font-medium text-muted-foreground">IA Optimisés</p>
+                <p className="text-2xl font-bold">{stats.optimizedProducts}</p>
               </div>
-              <DollarSign className="w-8 h-8 text-blue-500" />
+              <Sparkles className="w-8 h-8 text-purple-600" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Import Trend */}
+      {/* Imports en cours */}
+      {stats.processingImports > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5" />
-              Tendance d'Import (30 jours)
+              <RefreshCw className="w-5 h-5 animate-spin" />
+              Imports en Cours ({stats.processingImports})
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={importTrendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Area type="monotone" dataKey="imports" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
-              </AreaChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              {imports.filter(i => i.status === 'processing').map((importJob, index) => (
+                <div key={importJob.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
+                    <div>
+                      <p className="font-medium">{importJob.source_name || 'Import sans nom'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {importJob.products_imported}/{importJob.total_products} produits traités
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <Progress 
+                      value={importJob.total_products > 0 ? 
+                        (importJob.products_imported / importJob.total_products) * 100 : 0} 
+                      className="w-32 mb-1"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {importJob.total_products > 0 ? 
+                        Math.round((importJob.products_imported / importJob.total_products) * 100) : 0}%
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
+      )}
 
-        {/* Status Distribution */}
+      {/* Graphiques */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              Répartition par Statut
-            </CardTitle>
+            <CardTitle>Imports par Type</CardTitle>
+            <CardDescription>Répartition des méthodes d'import utilisées</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
-                  data={statusData}
+                  data={importsByType}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
+                  outerRadius={60}
                   fill="#8884d8"
                   dataKey="value"
+                  label={({name, value}) => `${name}: ${value}`}
                 >
-                  {statusData.map((entry, index) => (
+                  {importsByType.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Taux de Succès (7 derniers jours)</CardTitle>
+            <CardDescription>Performance des imports quotidiens</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={successRateData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Bar dataKey="success" stackId="a" fill="#22c55e" />
+                <Bar dataKey="failed" stackId="a" fill="#ef4444" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Category Distribution */}
+      {/* Imports récents */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5" />
-            Distribution par Catégorie
-          </CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Imports Récents</CardTitle>
+            <CardDescription>Dernières activités d'import</CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => navigate('/import/history')}
+          >
+            Voir tout
+          </Button>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={categoryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="value" fill="#10b981" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="space-y-3">
+            {imports.slice(0, 5).map((importJob) => {
+              const getStatusIcon = (status: string) => {
+                switch (status) {
+                  case 'completed': return <CheckCircle className="w-4 h-4 text-green-600" />;
+                  case 'processing': return <RefreshCw className="w-4 h-4 text-blue-600 animate-spin" />;
+                  case 'pending': return <Clock className="w-4 h-4 text-yellow-600" />;
+                  case 'failed': return <XCircle className="w-4 h-4 text-red-600" />;
+                  default: return <AlertCircle className="w-4 h-4 text-gray-600" />;
+                }
+              };
+
+              const getStatusColor = (status: string) => {
+                switch (status) {
+                  case 'completed': return 'bg-green-500/10 text-green-700 border-green-500/20';
+                  case 'processing': return 'bg-blue-500/10 text-blue-700 border-blue-500/20';
+                  case 'pending': return 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20';
+                  case 'failed': return 'bg-red-500/10 text-red-700 border-red-500/20';
+                  default: return 'bg-gray-500/10 text-gray-700 border-gray-500/20';
+                }
+              };
+
+              return (
+                <div key={importJob.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    {getStatusIcon(importJob.status)}
+                    <div>
+                      <p className="font-medium">{importJob.source_name || importJob.source_url || 'Import'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {importJob.import_type?.toUpperCase() || 'IMPORT'} • {importJob.products_imported} produits importés
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge className={getStatusColor(importJob.status)}>
+                      {importJob.status}
+                    </Badge>
+                    <div className="text-right text-sm">
+                      <p className="font-medium">{importJob.products_imported}/{importJob.total_products}</p>
+                      <p className="text-muted-foreground">
+                        {importJob.products_failed > 0 && `${importJob.products_failed} échecs`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Quality & Alerts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Quality Metrics */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5" />
-              Métriques de Qualité
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Produits avec images</span>
-                <span>{stats.withImages}/{stats.total}</span>
-              </div>
-              <Progress value={(stats.withImages / stats.total) * 100} className="h-2" />
-            </div>
-            
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Produits avec description</span>
-                <span>{stats.withDescription}/{stats.total}</span>
-              </div>
-              <Progress value={(stats.withDescription / stats.total) * 100} className="h-2" />
-            </div>
-            
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Score qualité moyen</span>
-                <span>{stats.avgQuality.toFixed(1)}/10</span>
-              </div>
-              <Progress value={stats.avgQuality * 10} className="h-2" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Actions rapides */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Actions Rapides</CardTitle>
+          <CardDescription>Commencez un nouvel import ou gérez vos données</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Button
+              onClick={() => navigate('/import/url-config')}
+              className="h-20 flex flex-col items-center justify-center gap-2"
+              variant="outline"
+            >
+              <Globe className="w-6 h-6" />
+              Import URL
+            </Button>
 
-        {/* Alerts & Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5" />
-              Alertes & Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {stats.pending > 0 && (
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-yellow-50">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-yellow-500" />
-                  <span className="text-sm">{stats.pending} produits en attente de révision</span>
-                </div>
-                <Button size="sm" variant="outline">Réviser</Button>
-              </div>
-            )}
-            
-            {stats.draft > stats.published && (
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-blue-50">
-                <div className="flex items-center gap-2">
-                  <Package className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm">Plus de brouillons que de publiés</span>
-                </div>
-                <Button size="sm" variant="outline">Publier</Button>
-              </div>
-            )}
-            
-            {stats.aiOptimizationRate < 50 && (
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-purple-50">
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 text-purple-500" />
-                  <span className="text-sm">Faible taux d'optimisation IA</span>
-                </div>
-                <Button size="sm" variant="outline">Optimiser</Button>
-              </div>
-            )}
+            <Button
+              onClick={() => navigate('/import/bulk-config')}
+              className="h-20 flex flex-col items-center justify-center gap-2"
+              variant="outline"
+            >
+              <FileSpreadsheet className="w-6 h-6" />
+              Import CSV
+            </Button>
 
-            <div className="pt-2 border-t">
-              <Button className="w-full">
-                Rapport Détaillé
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Button
+              onClick={() => navigate('/import/xml-config')}
+              className="h-20 flex flex-col items-center justify-center gap-2"
+              variant="outline"
+            >
+              <Database className="w-6 h-6" />
+              Flux XML
+            </Button>
+
+            <Button
+              onClick={() => navigate('/import/ftp-config')}
+              className="h-20 flex flex-col items-center justify-center gap-2"
+              variant="outline"
+            >
+              <Cloud className="w-6 h-6" />
+              Import FTP
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

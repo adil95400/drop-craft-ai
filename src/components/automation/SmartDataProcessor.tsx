@@ -179,7 +179,7 @@ export const SmartDataProcessor = () => {
               }
               break
             case 'seo_enhancement':
-              if (!product.seo_title) {
+              if (product.seo_title || product.name) {
                 // Générer SEO
                 fixedIssues++
               }

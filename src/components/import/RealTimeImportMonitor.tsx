@@ -187,7 +187,7 @@ export const RealTimeImportMonitor = () => {
                         {job.status === 'pending' && <Clock className="w-4 h-4 text-white" />}
                       </div>
                       <div>
-                        <p className="font-medium text-sm">{job.source_name || 'Import'}</p>
+                        <p className="font-medium text-sm">{job.source_url || job.source_type || 'Import'}</p>
                         <p className="text-xs text-gray-500">
                           {job.created_at ? formatDistanceToNow(new Date(job.created_at), { 
                             locale: fr, 
