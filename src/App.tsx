@@ -14,6 +14,12 @@ import SubscriptionDashboard from '@/pages/SubscriptionDashboard';
 import QuotaManagerPage from '@/pages/QuotaManagerPage';
 import SupplierHub from '@/components/SupplierHub';
 import UnifiedImport from '@/pages/UnifiedImport';
+import URLImportConfig from '@/pages/import/URLImportConfig';
+import XMLImportConfig from '@/pages/import/XMLImportConfig';
+import FTPImportConfig from '@/pages/import/FTPImportConfig';
+import ScheduledImportConfig from '@/pages/import/ScheduledImportConfig';
+import BulkImportConfig from '@/pages/import/BulkImportConfig';
+import AIImportConfig from '@/pages/import/AIImportConfig';
 import { ModuleRoutes } from '@/components/routing/ModuleRoutes';
 
 // Pages simples pour éviter les erreurs
@@ -33,6 +39,12 @@ function App() {
               <Route path="/products" element={<AppLayout><ProductsPage /></AppLayout>} />
               <Route path="/suppliers" element={<AppLayout><SupplierHub /></AppLayout>} />
               <Route path="/import" element={<AppLayout><UnifiedImport /></AppLayout>} />
+              <Route path="/import/url-config" element={<AppLayout><URLImportConfig /></AppLayout>} />
+              <Route path="/import/xml-config" element={<AppLayout><XMLImportConfig /></AppLayout>} />
+              <Route path="/import/ftp-config" element={<AppLayout><FTPImportConfig /></AppLayout>} />
+              <Route path="/import/scheduled-config" element={<AppLayout><ScheduledImportConfig /></AppLayout>} />
+              <Route path="/import/bulk-config" element={<AppLayout><BulkImportConfig /></AppLayout>} />
+              <Route path="/import/ai-config" element={<AppLayout><AIImportConfig /></AppLayout>} />
               <Route path="/subscription" element={<AppLayout><SubscriptionDashboard /></AppLayout>} />
               <Route path="/quotas" element={<AppLayout><QuotaManagerPage /></AppLayout>} />
               <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />

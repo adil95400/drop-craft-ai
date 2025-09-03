@@ -10,42 +10,42 @@ const ImportAdvanced: React.FC = () => {
       title: 'Import par URL',
       description: 'Importez directement depuis une URL de produit',
       icon: Link,
-      action: () => console.log('URL import')
+      action: () => window.location.href = '/import/url-config'
     },
     {
       id: 'xml',
       title: 'Import XML',
       description: 'Flux XML/RSS compatibles Google Shopping',
       icon: FileText,
-      action: () => console.log('XML import')
+      action: () => window.location.href = '/import/xml-config'
     },
     {
       id: 'ftp',
       title: 'Import FTP/SFTP',
       description: 'Connexion automatique aux serveurs FTP',
       icon: Server,
-      action: () => console.log('FTP import')
+      action: () => window.location.href = '/import/ftp-config'
     },
     {
       id: 'scheduled',
       title: 'Import Programmé',
       description: 'Planifiez vos imports automatiques',
       icon: Calendar,
-      action: () => console.log('Scheduled import')
+      action: () => window.location.href = '/import/scheduled-config'
     },
     {
       id: 'bulk',
       title: 'Import en Masse',
       description: 'Traitez plusieurs fichiers simultanément',
       icon: Upload,
-      action: () => console.log('Bulk import')
+      action: () => window.location.href = '/import/bulk-config'
     },
     {
       id: 'ai',
       title: 'Import IA',
       description: 'Import automatisé avec intelligence artificielle',
       icon: Zap,
-      action: () => console.log('AI import')
+      action: () => window.location.href = '/import/ai-config'
     }
   ];
 
