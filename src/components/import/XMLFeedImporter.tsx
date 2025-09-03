@@ -121,16 +121,20 @@ export const XMLFeedImporter = () => {
 
       // Create import connector if auto-sync is enabled
       if (config.autoSync) {
-        await supabase.from('import_connectors').insert({
-          name: `Flux XML - ${config.feedType}`,
-          provider: 'xml_feed',
-          config: {
-            url: config.url,
-            feedType: config.feedType,
-            syncInterval: config.syncInterval,
-            mapping: config.mapping
-          }
-        })
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await supabase.from('import_connectors').insert({
+            user_id: user.id,
+            name: `Flux XML - ${config.feedType}`,
+            provider: 'xml_feed',
+            config: {
+              url: config.url,
+              feedType: config.feedType,
+              syncInterval: config.syncInterval,
+              mapping: config.mapping
+            }
+          })
+        }
       }
 
     } catch (error) {

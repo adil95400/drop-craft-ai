@@ -49,9 +49,13 @@ export const FTPImporter = () => {
 
     try {
       // Create or update import connector for testing
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+
       const { data: connectorData, error: connectorError } = await supabase
         .from('import_connectors')
         .upsert({
+          user_id: user.id,
           name: `FTP - ${config.url}`,
           provider: 'ftp',
           config: {
@@ -112,9 +116,13 @@ export const FTPImporter = () => {
 
     try {
       // Create import connector
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+
       const { data: connectorData, error: connectorError } = await supabase
         .from('import_connectors')
         .insert({
+          user_id: user.id,
           name: `FTP - ${config.url}`,
           provider: 'ftp',
           config: {

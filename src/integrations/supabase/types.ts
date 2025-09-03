@@ -2250,6 +2250,42 @@ export type Database = {
           },
         ]
       }
+      order_routing_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          notes: string | null
+          order_id: string
+          routing_data: Json | null
+          routing_method: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          notes?: string | null
+          order_id: string
+          routing_data?: Json | null
+          routing_method: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string
+          routing_data?: Json | null
+          routing_method?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           billing_address: Json | null
@@ -3709,6 +3745,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      supplier_routing_rules: {
+        Row: {
+          api_endpoint: string | null
+          created_at: string
+          edi_config: Json | null
+          email_address: string | null
+          id: string
+          is_active: boolean
+          routing_method: string
+          supplier_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_endpoint?: string | null
+          created_at?: string
+          edi_config?: Json | null
+          email_address?: string | null
+          id?: string
+          is_active?: boolean
+          routing_method: string
+          supplier_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_endpoint?: string | null
+          created_at?: string
+          edi_config?: Json | null
+          email_address?: string | null
+          id?: string
+          is_active?: boolean
+          routing_method?: string
+          supplier_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       suppliers: {
         Row: {

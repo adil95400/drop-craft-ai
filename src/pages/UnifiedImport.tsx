@@ -3,10 +3,10 @@ import { FeatureGate } from '@/components/common/FeatureGate';
 import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
 import { CSVMappingInterface } from '@/components/import/CSVMappingInterface';
 import { URLImportInterface } from '@/components/import/URLImportInterface';
-import { XMLImportInterface } from '@/components/import/XMLImportInterface';
-import { FTPImportInterface } from '@/components/import/FTPImportInterface';
-import { BulkZipImportInterface } from '@/components/import/BulkZipImportInterface';
-import { ImportHistoryInterface } from '@/components/import/ImportHistoryInterface';
+import { XMLFeedImporter } from '@/components/import/XMLFeedImporter';
+import { FTPImporter } from '@/components/import/FTPImporter';
+import { BulkZipImport } from '@/components/import/BulkZipImport';
+import { ImportHistory } from '@/components/import/ImportHistory';
 
 // Lazy load the actual import components
 const ImportBasic = React.lazy(() => import('./Import'));
@@ -196,22 +196,19 @@ const UnifiedImport: React.FC = () => {
         )}
 
         {activeTab === 'xml' && (
-          <XMLImportInterface 
-            onImportComplete={handleImportComplete}
-            onCancel={() => setActiveTab('basic')}
-          />
+          <XMLFeedImporter />
         )}
 
         {activeTab === 'ftp' && (
-          <FTPImportInterface onImportComplete={handleImportComplete} />
+          <FTPImporter />
         )}
 
         {activeTab === 'bulk' && (
-          <BulkZipImportInterface onImportComplete={handleImportComplete} />
+          <BulkZipImport />
         )}
 
         {activeTab === 'history' && (
-          <ImportHistoryInterface />
+          <ImportHistory />
         )}
       </div>
 

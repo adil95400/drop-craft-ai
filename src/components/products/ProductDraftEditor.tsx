@@ -130,9 +130,17 @@ export const ProductDraftEditor: React.FC<ProductDraftEditorProps> = ({
         tags: data.tags || [],
         image_urls: data.image_urls || [],
         variants: [], // Would load from variants table
-        seo_data: data.seo_data || {},
-        translations: data.translations || {},
-        status: data.status || 'draft'
+        seo_data: {
+          title: data.seo_title || '',
+          description: data.seo_description || '',
+          keywords: data.seo_keywords || []
+        },
+        translations: (data.ai_optimization_data && typeof data.ai_optimization_data === 'object' && data.ai_optimization_data !== null) 
+          ? (data.ai_optimization_data as any).translations || {} 
+          : {},
+        status: (data.status === 'published' || data.status === 'draft' || data.status === 'review') 
+          ? data.status 
+          : 'draft'
       })
     } catch (error) {
       console.error('Error loading product:', error)
@@ -149,7 +157,11 @@ export const ProductDraftEditor: React.FC<ProductDraftEditorProps> = ({
   const saveProduct = async () => {
     setSaving(true)
     try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+
       const productData = {
+        user_id: user.id,
         name: product.name,
         description: product.description,
         price: product.price,
@@ -160,8 +172,13 @@ export const ProductDraftEditor: React.FC<ProductDraftEditorProps> = ({
         brand: product.brand,
         tags: product.tags,
         image_urls: product.image_urls,
-        seo_data: product.seo_data,
-        translations: product.translations,
+        seo_title: product.seo_data.title,
+        seo_description: product.seo_data.description,
+        seo_keywords: product.seo_data.keywords,
+        ai_optimization_data: {
+          translations: product.translations,
+          last_optimized: new Date().toISOString()
+        },
         status: product.status
       }
 

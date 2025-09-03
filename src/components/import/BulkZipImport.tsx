@@ -45,10 +45,15 @@ export const BulkZipImport = () => {
 
       if (uploadError) throw uploadError
 
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+
       // Create import job record
       const { data: jobData, error: jobError } = await supabase
         .from('import_jobs')
         .insert({
+          user_id: user.id,
           source_type: 'bulk_zip',
           source_url: uploadData.path,
           status: 'processing',
