@@ -91,11 +91,11 @@ export default function SecurityDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {metric.value}{(metric as any).unit || ''}
+                  {String(metric.value)}{(metric as any).unit || ''}
                 </div>
                 {metric.max !== undefined && typeof metric.value === 'number' && (
                   <Progress 
-                    value={(metric.value / metric.max) * 100} 
+                    value={(Number(metric.value) / metric.max) * 100} 
                     className="mt-2 h-2"
                   />
                 )}

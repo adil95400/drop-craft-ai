@@ -15,6 +15,36 @@ export interface SidebarItem {
   requiredPlan?: PlanType;
 }
 
+// Interface pour NavItem (pour compatibilité)
+export interface NavItem {
+  title: string;
+  url?: string;
+  icon: any;
+  badge?: {
+    text: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+  };
+  status?: "active" | "warning" | "syncing" | "connected" | "new";
+  items?: NavItem[];
+  shortcut?: string;
+  description?: string;
+  category?: "core" | "advanced" | "tools" | "support";
+}
+
+// Configuration de l'activité utilisateur
+export const userActivityConfig = {
+  status: "online" as "online" | "away" | "offline",
+  notifications: 8,
+  plan: "Ultra Pro",
+  lastSync: "Il y a 2 min",
+  activeConnections: 3,
+  todayRevenue: "€2,847",
+  pendingTasks: 12,
+  avatar: "/avatars/user-pro.jpg",
+  name: "Utilisateur Pro",
+  email: "pro@dropcraft.ai"
+};
+
 // Génération dynamique des éléments de sidebar basée sur la configuration des modules
 export function getSidebarItems(currentPlan: PlanType): SidebarItem[] {
   const planBadgeMap: Record<PlanType, string> = {
