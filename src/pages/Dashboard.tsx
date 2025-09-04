@@ -16,12 +16,19 @@ import {
   Eye,
   Target,
   Zap,
-  BarChart3
+  BarChart3,
+  Brain,
+  Sparkles,
+  Bell
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { usePlan } from '@/contexts/PlanContext';
 import { CanvaIntegrationPanel } from '@/components/marketing/CanvaIntegrationPanel';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
+import { AIRecommendations } from '@/components/ai/AIRecommendations';
+import { RealTimeAnalytics } from '@/components/analytics/RealTimeAnalytics';
+import { CompetitiveAnalyzer } from '@/components/dashboard/CompetitiveAnalyzer';
 
 interface DashboardStats {
   revenue: number;
@@ -42,9 +49,14 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [recentOrders, setRecentOrders] = useState([]);
   const [topProducts, setTopProducts] = useState([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(true);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
     fetchDashboardData();
+    checkOnboardingStatus();
+    fetchNotifications();
   }, [user]);
 
   const fetchDashboardData = async () => {
@@ -94,6 +106,55 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const checkOnboardingStatus = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', user.id)
+        .single();
+      
+      const completed = profile?.onboarding_completed ?? false;
+      setOnboardingCompleted(completed);
+      if (!completed) {
+        setShowOnboarding(true);
+      }
+    } catch (error) {
+      console.error('Error checking onboarding status:', error);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: insights } = await supabase
+        .from('business_intelligence_insights')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'new')
+        .gte('priority', 7)
+        .order('created_at', { ascending: false })
+        .limit(3);
+      
+      setNotifications(insights || []);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  const handleOnboardingComplete = (data: any) => {
+    setOnboardingCompleted(true);
+    setShowOnboarding(false);
+    console.log('Onboarding completed with data:', data);
+  };
+
+  const handleOnboardingSkip = () => {
+    setShowOnboarding(false);
   };
 
   const formatCurrency = (amount: number) => {
@@ -153,20 +214,72 @@ const Dashboard = () => {
     );
   }
 
+  // Afficher l'onboarding si nécessaire
+  if (showOnboarding && !onboardingCompleted) {
+    return (
+      <OnboardingWizard
+        onComplete={handleOnboardingComplete}
+        onSkip={handleOnboardingSkip}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* Notifications critiques en haut */}
+      {notifications.length > 0 && (
+        <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center">
+              <Bell className="h-5 w-5 text-primary mr-2" />
+              <h3 className="font-semibold">Alertes IA Critiques</h3>
+              <Badge variant="destructive" className="ml-2">
+                {notifications.length}
+              </Badge>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {notifications.slice(0, 2).map((notification) => (
+              <div key={notification.id} className="bg-white/50 rounded p-3 text-sm">
+                <div className="font-medium text-primary">{notification.title}</div>
+                <div className="text-muted-foreground">{notification.description}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Tableau de bord</h2>
+          <h2 className="text-3xl font-bold tracking-tight flex items-center">
+            Tableau de bord
+            {!onboardingCompleted && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-3"
+                onClick={() => setShowOnboarding(true)}
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Finaliser la config
+              </Button>
+            )}
+          </h2>
           <p className="text-muted-foreground">
             Vue d'ensemble de votre activité e-commerce
           </p>
         </div>
         {isUltraPro && (
-          <Button size="sm" className="gap-2">
-            <Zap className="h-4 w-4" />
-            Rapport AI
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" className="gap-2" variant="outline">
+              <Brain className="h-4 w-4" />
+              Insights IA
+            </Button>
+            <Button size="sm" className="gap-2">
+              <Zap className="h-4 w-4" />
+              Rapport AI
+            </Button>
+          </div>
         )}
       </div>
 
@@ -244,14 +357,41 @@ const Dashboard = () => {
       )}
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6">
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-          <TabsTrigger value="orders">Commandes récentes</TabsTrigger>
-          <TabsTrigger value="products">Produits top</TabsTrigger>
+          <TabsTrigger value="ai-insights">IA Insights</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="competitive">Concurrence</TabsTrigger>
+          <TabsTrigger value="orders">Commandes</TabsTrigger>
+          <TabsTrigger value="products">Produits</TabsTrigger>
           {isUltraPro && <TabsTrigger value="canva">Design Canva</TabsTrigger>}
         </TabsList>
 
+        {/* Nouveaux onglets IA */}
+        <TabsContent value="ai-insights" className="space-y-4">
+          <AIRecommendations limit={6} />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-4">
+          <RealTimeAnalytics />
+        </TabsContent>
+
+        <TabsContent value="competitive" className="space-y-4">
+          <CompetitiveAnalyzer />
+        </TabsContent>
+
         <TabsContent value="overview" className="space-y-4">
+          {/* Aperçu IA en première section */}
+          {isUltraPro && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Brain className="h-5 w-5 mr-2 text-primary" />
+                Aperçu Intelligence Artificielle
+              </h3>
+              <AIRecommendations limit={3} />
+            </div>
+          )}
+          
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
@@ -302,6 +442,12 @@ const Dashboard = () => {
                     Voir les clients
                   </a>
                 </Button>
+                {isUltraPro && (
+                  <Button variant="outline" className="w-full justify-start bg-gradient-to-r from-primary/5 to-purple-500/5 border-primary/20">
+                    <Brain className="mr-2 h-4 w-4 text-primary" />
+                    Optimisation IA
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>
