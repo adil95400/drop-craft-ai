@@ -100,6 +100,12 @@ verify_jwt = true
 [functions.marketplace-connector]
 verify_jwt = true
 
+[functions.cli-manager]
+verify_jwt = true
+
+[functions.sso-manager]
+verify_jwt = true
+
 [edge-runtime]
 enabled = true
 ip_version = "ipv4"
