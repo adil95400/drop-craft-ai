@@ -8,6 +8,9 @@ import { FTPImporter } from '@/components/import/FTPImporter';
 import { BulkZipImport } from '@/components/import/BulkZipImport';
 import { ImportHistory } from '@/components/import/ImportHistory';
 import { ImportDashboard } from '@/components/import/ImportDashboard';
+import { RealTimeImportProcessor } from '@/components/import/RealTimeImportProcessor';
+import { SmartImportRecommendations } from '@/components/import/SmartImportRecommendations';
+import { ImportPerformanceMonitor } from '@/components/import/ImportPerformanceMonitor';
 
 // Lazy load the actual import components
 const ImportBasic = React.lazy(() => import('./Import'));
@@ -16,7 +19,7 @@ const ImportAdvanced = React.lazy(() => import('./ImportAdvanced'));
 const UnifiedImport: React.FC = () => {
   const { getFeatureConfig } = useUnifiedPlan();
   const config = getFeatureConfig('import');
-  const [activeTab, setActiveTab] = React.useState<'basic' | 'csv' | 'url' | 'xml' | 'ftp' | 'bulk' | 'history'>('basic');
+  const [activeTab, setActiveTab] = React.useState<'basic' | 'csv' | 'url' | 'xml' | 'ftp' | 'bulk' | 'history' | 'realtime' | 'recommendations' | 'monitor'>('basic');
   const [csvData, setCsvData] = React.useState<{headers: string[], rows: string[][]} | null>(null);
   const [showMappingInterface, setShowMappingInterface] = React.useState(false);
 
@@ -142,6 +145,42 @@ const UnifiedImport: React.FC = () => {
           >
             Historique
           </button>
+          <FeatureGate feature="ai-import" fallback={null} showUpgrade={false}>
+            <button
+              onClick={() => setActiveTab('realtime')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'realtime' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              Temps Réel
+            </button>
+          </FeatureGate>
+          <FeatureGate feature="ai-import" fallback={null} showUpgrade={false}>
+            <button
+              onClick={() => setActiveTab('recommendations')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'recommendations' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              Recommandations IA
+            </button>
+          </FeatureGate>
+          <FeatureGate feature="ai-import" fallback={null} showUpgrade={false}>
+            <button
+              onClick={() => setActiveTab('monitor')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'monitor' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              Monitoring
+            </button>
+          </FeatureGate>
           <button
             onClick={() => window.location.href = '/import/products'}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-muted text-muted-foreground hover:bg-muted/80`}
@@ -219,6 +258,18 @@ const UnifiedImport: React.FC = () => {
             <ImportHistory />
             <ImportDashboard />
           </>
+        )}
+
+        {activeTab === 'realtime' && (
+          <RealTimeImportProcessor />
+        )}
+
+        {activeTab === 'recommendations' && (
+          <SmartImportRecommendations />
+        )}
+
+        {activeTab === 'monitor' && (
+          <ImportPerformanceMonitor />
         )}
       </div>
 
