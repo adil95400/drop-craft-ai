@@ -107,7 +107,7 @@ export const useSupplierHub = () => {
   // Schedule sync mutation
   const scheduleSync = useMutation({
     mutationFn: async (schedule: SyncSchedule) => {
-      return await supplierHub.scheduleSync(schedule);
+      return await supplierHub.scheduleSync(schedule.connectorId, schedule);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sync-schedules'] });
@@ -186,7 +186,7 @@ export const useSupplierHub = () => {
       template?: ImportTemplate; 
       config?: any 
     }) => {
-      return await importManager.importFromUrl(url, template, config);
+      return await importManager.importFromUrl(url, template?.id, config);
     },
     onSuccess: (job) => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] });
@@ -207,7 +207,7 @@ export const useSupplierHub = () => {
       template?: ImportTemplate; 
       config?: any 
     }) => {
-      return await importManager.importFromXml(xmlUrl, template, config);
+      return await importManager.importFromXml(xmlUrl, template?.id, config);
     },
     onSuccess: (job) => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] });
@@ -228,7 +228,7 @@ export const useSupplierHub = () => {
       template?: ImportTemplate; 
       config?: any 
     }) => {
-      return await importManager.importFromCsv(fileData, template, config);
+      return await importManager.importFromCsv(JSON.stringify(fileData), template?.id, config);
     },
     onSuccess: (job) => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] });
@@ -257,7 +257,7 @@ export const useSupplierHub = () => {
       template?: ImportTemplate; 
       config?: any 
     }) => {
-      return await importManager.importFromFtp(ftpUrl, username, password, filePath, fileType, template, config);
+      return await importManager.importFromFtp(ftpUrl, username, password, filePath, template?.id, config);
     },
     onSuccess: (job) => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] });

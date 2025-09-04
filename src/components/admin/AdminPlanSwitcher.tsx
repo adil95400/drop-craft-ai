@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
-  ADMIN_MODE_OPTIONS, 
+  ADMIN_MODE_CONFIG, 
   getAdminModeLabel, 
   isAdmin,
   type AdminMode 
@@ -95,8 +95,8 @@ export const AdminPlanSwitcher = () => {
                   <span>Mode normal (plan : {profile.plan})</span>
                 </div>
               </SelectItem>
-              {ADMIN_MODE_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
+              {ADMIN_MODE_CONFIG.filter(option => option.value !== null).map((option) => (
+                <SelectItem key={option.value} value={option.value as string}>
                   <div className="flex items-center gap-2">
                     {option.value === 'bypass' ? (
                       <Crown className="h-3 w-3" />
