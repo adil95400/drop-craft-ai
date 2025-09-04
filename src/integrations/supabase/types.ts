@@ -2778,47 +2778,77 @@ export type Database = {
         Row: {
           admin_mode: string | null
           avatar_url: string | null
+          business_goals: string[] | null
+          business_name: string | null
+          business_type: string | null
           company: string | null
           created_at: string | null
           email_notifications: boolean | null
+          experience_level: string | null
           full_name: string | null
           id: string
+          interests: string[] | null
           last_login_at: string | null
           login_count: number | null
+          monthly_volume: string | null
+          notification_settings: Json | null
+          onboarding_completed: boolean | null
           plan: Database["public"]["Enums"]["plan_type"] | null
+          preferences: Json | null
           role: string
           role_updated_at: string | null
           updated_at: string | null
+          website: string | null
         }
         Insert: {
           admin_mode?: string | null
           avatar_url?: string | null
+          business_goals?: string[] | null
+          business_name?: string | null
+          business_type?: string | null
           company?: string | null
           created_at?: string | null
           email_notifications?: boolean | null
+          experience_level?: string | null
           full_name?: string | null
           id: string
+          interests?: string[] | null
           last_login_at?: string | null
           login_count?: number | null
+          monthly_volume?: string | null
+          notification_settings?: Json | null
+          onboarding_completed?: boolean | null
           plan?: Database["public"]["Enums"]["plan_type"] | null
+          preferences?: Json | null
           role?: string
           role_updated_at?: string | null
           updated_at?: string | null
+          website?: string | null
         }
         Update: {
           admin_mode?: string | null
           avatar_url?: string | null
+          business_goals?: string[] | null
+          business_name?: string | null
+          business_type?: string | null
           company?: string | null
           created_at?: string | null
           email_notifications?: boolean | null
+          experience_level?: string | null
           full_name?: string | null
           id?: string
+          interests?: string[] | null
           last_login_at?: string | null
           login_count?: number | null
+          monthly_volume?: string | null
+          notification_settings?: Json | null
+          onboarding_completed?: boolean | null
           plan?: Database["public"]["Enums"]["plan_type"] | null
+          preferences?: Json | null
           role?: string
           role_updated_at?: string | null
           updated_at?: string | null
+          website?: string | null
         }
         Relationships: []
       }
@@ -4231,6 +4261,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_notifications: {
+        Row: {
+          category: string
+          created_at: string | null
+          data: Json | null
+          expires_at: string | null
+          id: string
+          message: string
+          priority: number | null
+          read: boolean | null
+          read_at: string | null
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string | null
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          message: string
+          priority?: number | null
+          read?: boolean | null
+          read_at?: string | null
+          title: string
+          type?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          message?: string
+          priority?: number | null
+          read?: boolean | null
+          read_at?: string | null
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_preferences: {
         Row: {

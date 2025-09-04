@@ -29,6 +29,7 @@ import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { AIRecommendations } from '@/components/ai/AIRecommendations';
 import { RealTimeAnalytics } from '@/components/analytics/RealTimeAnalytics';
 import { CompetitiveAnalyzer } from '@/components/dashboard/CompetitiveAnalyzer';
+import { NotificationProvider } from '@/components/notifications/NotificationService';
 
 interface DashboardStats {
   revenue: number;
@@ -133,10 +134,10 @@ const Dashboard = () => {
     
     try {
       const { data: insights } = await supabase
-        .from('business_intelligence_insights')
+        .from('user_notifications')
         .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'new')
+        .eq('read', false)
         .gte('priority', 7)
         .order('created_at', { ascending: false })
         .limit(3);
@@ -217,15 +218,18 @@ const Dashboard = () => {
   // Afficher l'onboarding si nécessaire
   if (showOnboarding && !onboardingCompleted) {
     return (
-      <OnboardingWizard
-        onComplete={handleOnboardingComplete}
-        onSkip={handleOnboardingSkip}
-      />
+      <NotificationProvider>
+        <OnboardingWizard
+          onComplete={handleOnboardingComplete}
+          onSkip={handleOnboardingSkip}
+        />
+      </NotificationProvider>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <NotificationProvider>
+      <div className="space-y-6">
       {/* Notifications critiques en haut */}
       {notifications.length > 0 && (
         <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 border border-primary/20 rounded-lg p-4">
@@ -536,6 +540,7 @@ const Dashboard = () => {
         )}
       </Tabs>
     </div>
+    </NotificationProvider>
   );
 };
 

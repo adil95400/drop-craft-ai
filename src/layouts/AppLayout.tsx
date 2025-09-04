@@ -1,3 +1,6 @@
+import React from 'react';
+import { useIsMobile } from '@/hooks/useResponsive';
+import { MobileHeader, MobileNav, MobileQuickActions } from '@/components/mobile/MobileNav';
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -21,6 +24,7 @@ import {
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlanContext } from '@/components/plan/UnifiedPlanProvider';
+import { NotificationBell } from '@/components/notifications/NotificationService';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -54,12 +58,28 @@ const navigation: NavItem[] = [
 ];
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { plan, hasFeature } = usePlanContext();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
+
+  // Version mobile optimisée
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-background">
+        <MobileHeader />
+        <main className="pb-20 pt-4">
+          <div className="container max-w-screen-sm mx-auto px-4">
+            {children}
+          </div>
+        </main>
+        <MobileNav notifications={2} />
+      </div>
+    );
+  }
 
   const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
     <div className="flex h-full flex-col">
@@ -179,12 +199,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
             {/* Actions */}
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm">
-                <Bell className="h-5 w-5" />
-                <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 text-xs">
-                  3
-                </Badge>
-              </Button>
+              <NotificationBell />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
