@@ -22,6 +22,7 @@ import { useImportUltraPro } from '@/hooks/useImportUltraPro'
 import { BulkImportUltraPro } from '@/components/import/BulkImportUltraPro'
 import { AIImportUltraPro } from '@/components/import/AIImportUltraPro'
 import { ImportUltraProInterface } from '@/components/import/ImportUltraProInterface'
+import { ExtensionsImportInterface } from '@/components/import/ExtensionsImportInterface'
 
 export const ProductionImportInterface = () => {
   const { dashboardStats, isLoadingStats, seedDatabase, isSeeding } = useProductionData()
@@ -231,9 +232,10 @@ export const ProductionImportInterface = () => {
 
       {/* Import Interfaces */}
       <Tabs value={activeView} onValueChange={setActiveView} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="interface">Interface Unifiée</TabsTrigger>
+          <TabsTrigger value="extensions">Extensions IA</TabsTrigger>
           <TabsTrigger value="bulk">Import en Masse</TabsTrigger>
           <TabsTrigger value="ai">IA Avancée</TabsTrigger>
         </TabsList>
@@ -300,6 +302,16 @@ export const ProductionImportInterface = () => {
 
         <TabsContent value="interface">
           <ImportUltraProInterface />
+        </TabsContent>
+
+        <TabsContent value="extensions">
+          <ExtensionsImportInterface 
+            importMethod="all"
+            onExtensionActivated={(ext) => {
+              console.log('Extension activée:', ext)
+              // Ici on pourrait déclencher des actions spécifiques selon l'extension
+            }}
+          />
         </TabsContent>
 
         <TabsContent value="bulk">
