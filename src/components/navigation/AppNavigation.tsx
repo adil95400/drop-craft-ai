@@ -12,7 +12,12 @@ import {
   Settings,
   Bell,
   Search,
-  Plus
+  Plus,
+  Puzzle,
+  Store,
+  Terminal,
+  Palette,
+  Shield
 } from 'lucide-react';
 import { usePlan } from '@/contexts/PlanContext';
 
@@ -55,6 +60,37 @@ const navigationItems: NavItem[] = [
   }
 ];
 
+const extensionItems: NavItem[] = [
+  {
+    href: '/extensions',
+    label: 'Hub Extensions',
+    icon: Puzzle
+  },
+  {
+    href: '/extensions/marketplace',
+    label: 'Marketplace',
+    icon: Store
+  },
+  {
+    href: '/extensions/cli',
+    label: 'Outils CLI',
+    icon: Terminal,
+    proOnly: true
+  },
+  {
+    href: '/extensions/white-label',
+    label: 'White-Label',
+    icon: Palette,
+    ultraProOnly: true
+  },
+  {
+    href: '/extensions/sso',
+    label: 'Enterprise SSO',
+    icon: Shield,
+    ultraProOnly: true
+  }
+];
+
 export function AppNavigation() {
   const location = useLocation();
   const { isPro, isUltraPro } = usePlan();
@@ -65,11 +101,17 @@ export function AppNavigation() {
     return true;
   };
 
-  return (
-    <nav className="flex flex-col space-y-1">
-      {navigationItems.map((item) => {
+  const renderNavItems = (items: NavItem[], title?: string) => (
+    <div className="space-y-1">
+      {title && (
+        <p className="text-xs font-medium text-muted-foreground px-3 mb-2">
+          {title}
+        </p>
+      )}
+      {items.map((item) => {
         const Icon = item.icon;
-        const isActive = location.pathname === item.href;
+        const isActive = location.pathname === item.href || 
+          (item.href === '/extensions' && location.pathname.startsWith('/extensions'));
         const canAccess = canAccessItem(item);
 
         return (
@@ -106,6 +148,13 @@ export function AppNavigation() {
           </Link>
         );
       })}
+    </div>
+  );
+
+  return (
+    <nav className="flex flex-col space-y-4">
+      {renderNavItems(navigationItems)}
+      {renderNavItems(extensionItems, "Extensions")}
     </nav>
   );
 }
