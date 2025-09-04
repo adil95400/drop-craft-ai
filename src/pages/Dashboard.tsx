@@ -29,6 +29,10 @@ import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { AIRecommendations } from '@/components/ai/AIRecommendations';
 import { RealTimeAnalytics } from '@/components/analytics/RealTimeAnalytics';
 import { CompetitiveAnalyzer } from '@/components/dashboard/CompetitiveAnalyzer';
+import { AutomationCenter } from '@/components/dashboard/AutomationCenter';
+import { PerformanceDashboard } from '@/components/dashboard/PerformanceDashboard';
+import { AIOptimizer } from '@/components/ai/AIOptimizer';
+import { PredictiveAnalytics } from '@/components/analytics/PredictiveAnalytics';
 import { NotificationProvider } from '@/components/notifications/NotificationService';
 
 interface DashboardStats {
@@ -361,10 +365,14 @@ const Dashboard = () => {
       )}
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-10">
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="ai-insights">IA Insights</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="predictive">Prédictif</TabsTrigger>
+          <TabsTrigger value="automation">Automation</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="ai-optimizer">Optimiseur IA</TabsTrigger>
           <TabsTrigger value="competitive">Concurrence</TabsTrigger>
           <TabsTrigger value="orders">Commandes</TabsTrigger>
           <TabsTrigger value="products">Produits</TabsTrigger>
@@ -380,8 +388,24 @@ const Dashboard = () => {
           <RealTimeAnalytics />
         </TabsContent>
 
+        <TabsContent value="predictive" className="space-y-4">
+          <PredictiveAnalytics />
+        </TabsContent>
+
+        <TabsContent value="automation" className="space-y-4">
+          <AutomationCenter />
+        </TabsContent>
+
         <TabsContent value="competitive" className="space-y-4">
           <CompetitiveAnalyzer />
+        </TabsContent>
+
+        <TabsContent value="performance" className="space-y-4">
+          <PerformanceDashboard />
+        </TabsContent>
+
+        <TabsContent value="ai-optimizer" className="space-y-4">
+          <AIOptimizer />
         </TabsContent>
 
         <TabsContent value="overview" className="space-y-4">
