@@ -1184,6 +1184,7 @@ export type Database = {
       customers: {
         Row: {
           address: Json | null
+          country: string | null
           created_at: string | null
           email: string
           id: string
@@ -1197,6 +1198,7 @@ export type Database = {
         }
         Insert: {
           address?: Json | null
+          country?: string | null
           created_at?: string | null
           email: string
           id?: string
@@ -1210,6 +1212,7 @@ export type Database = {
         }
         Update: {
           address?: Json | null
+          country?: string | null
           created_at?: string | null
           email?: string
           id?: string
@@ -4099,6 +4102,7 @@ export type Database = {
           sector: string | null
           setup_complexity: string | null
           setup_fee: number | null
+          slug: string | null
           status: string | null
           success_rate: number | null
           supplier_type: string | null
@@ -4144,6 +4148,7 @@ export type Database = {
           sector?: string | null
           setup_complexity?: string | null
           setup_fee?: number | null
+          slug?: string | null
           status?: string | null
           success_rate?: number | null
           supplier_type?: string | null
@@ -4189,6 +4194,7 @@ export type Database = {
           sector?: string | null
           setup_complexity?: string | null
           setup_fee?: number | null
+          slug?: string | null
           status?: string | null
           success_rate?: number | null
           supplier_type?: string | null
@@ -4803,6 +4809,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_expired_sessions: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_old_security_events: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -5035,6 +5045,10 @@ export type Database = {
         Returns: string
       }
       get_user_role: {
+        Args: { user_id_param?: string }
+        Returns: string
+      }
+      get_user_role_secure: {
         Args: { user_id_param?: string }
         Returns: string
       }
