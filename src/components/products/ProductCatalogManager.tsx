@@ -351,149 +351,17 @@ export function ProductCatalogManager({ onImport }: ProductCatalogManagerProps) 
         ))}
       </div>
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Rechercher des produits..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-        
-        <div className="flex gap-2">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border rounded-md bg-background"
-          >
-            <option value="">Toutes catégories</option>
-            {categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-          
-          {selectedProducts.length > 0 && (
-            <Button
-              onClick={handleBulkImport}
-              disabled={importing}
-              className="flex items-center gap-2"
-            >
-              {importing ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Import...
-                </>
-              ) : (
-                <>
-                  <Plus className="h-4 w-4" />
-                  Importer ({selectedProducts.length})
-                </>
-              )}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {products.map((product) => {
-          const formatCurrency = (price: number) => {
-            return new Intl.NumberFormat('fr-FR', {
-              style: 'currency',
-              currency: 'EUR'
-            }).format(price);
-          };
-
-          return (
-            <Card 
-              key={product.id} 
-              className={`group hover:shadow-lg transition-all duration-200 cursor-pointer ${
-                selectedProducts.includes(product.id) 
-                  ? 'border-primary shadow-md' 
-                  : 'hover:border-primary/50'
-              }`}
-              onClick={() => toggleProductSelection(product.id)}
-            >
-              <div className="relative">
-                <img
-                  src={product.image_url || '/placeholder-product.jpg'}
-                  alt={product.name}
-                  className="w-full h-48 object-cover rounded-t-lg"
-                />
-                
-                <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-                  {product.is_trending && (
-                    <Badge className="bg-red-500 text-white text-xs">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      Tendance
-                    </Badge>
-                  )}
-                  {product.is_bestseller && (
-                    <Badge className="bg-yellow-500 text-white text-xs">
-                      <Star className="h-3 w-3 mr-1" />
-                      Best
-                    </Badge>
-                  )}
-                </div>
-
-                {selectedProducts.includes(product.id) && (
-                  <div className="absolute top-2 right-2 bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center">
-                    ✓
-                  </div>
-                )}
-              </div>
-
-              <CardContent className="p-4">
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-sm line-clamp-2 min-h-[2.5rem]">
-                    {product.name}
-                  </h3>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-primary">
-                      {formatCurrency(product.price)}
-                    </span>
-                    {product.profit_margin && (
-                      <Badge variant="outline" className="text-xs">
-                        +{product.profit_margin.toFixed(0)}% marge
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{product.supplier_name}</span>
-                    <div className="flex items-center">
-                      <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
-                      <span>{product.rating}</span>
-                      <span className="ml-1">({product.reviews_count})</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
       {products.length === 0 && !loading && (
         <Card>
           <CardContent className="text-center py-12">
             <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Aucun produit trouvé</h3>
+            <p className="text-muted-foreground">
+              Essayez de modifier vos critères de recherche
+            </p>
           </CardContent>
         </Card>
       )}
     </div>
   );
-}
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(price);
-  }
 }
