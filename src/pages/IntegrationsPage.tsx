@@ -7,6 +7,9 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Plug, CheckCircle, Settings, Plus, Search, Zap, Globe, ShoppingCart } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { IntegrationsManager } from '@/components/integrations/IntegrationsManager';
+import { LiveAnalyticsDashboard } from '@/components/analytics/LiveAnalyticsDashboard';
+import { OperationalAI } from '@/components/ai/OperationalAI';
 
 export default function IntegrationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -183,70 +186,15 @@ export default function IntegrationsPage() {
 
         {/* Contenu Principal */}
         <Tabs defaultValue="integrations" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="integrations">Intégrations</TabsTrigger>
-            <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
-            <TabsTrigger value="api">API</TabsTrigger>
-            <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
-          </TabsList>
+            <TabsList>
+              <TabsTrigger value="integrations">Intégrations Live</TabsTrigger>
+              <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
+              <TabsTrigger value="api">Analytics Live</TabsTrigger>
+              <TabsTrigger value="marketplace">IA Opérationnelle</TabsTrigger>
+            </TabsList>
 
           <TabsContent value="integrations" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Mes Intégrations</CardTitle>
-                    <CardDescription>
-                      Gérez vos connexions avec les services externes
-                    </CardDescription>
-                  </div>
-                  <Input
-                    placeholder="Rechercher une intégration..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="max-w-sm"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {integrations.map((integration, i) => (
-                    <Card key={i} className="relative">
-                      {integration.premium && (
-                        <Badge className="absolute top-2 right-2 text-xs">PREMIUM</Badge>
-                      )}
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center space-x-3">
-                          <integration.icon className="h-8 w-8" />
-                          <div>
-                            <CardTitle className="text-lg">{integration.name}</CardTitle>
-                            <Badge variant="outline" className="text-xs">
-                              {integration.category}
-                            </Badge>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <p className="text-sm text-muted-foreground mb-4">
-                          {integration.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <Badge variant={getStatusColor(integration.status)}>
-                            {getStatusText(integration.status)}
-                          </Badge>
-                          <Button 
-                            variant={integration.status === 'connected' ? 'outline' : 'default'}
-                            size="sm"
-                          >
-                            {integration.status === 'connected' ? 'Configurer' : 'Connecter'}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <IntegrationsManager />
           </TabsContent>
 
           <TabsContent value="webhooks" className="space-y-4">
@@ -289,43 +237,11 @@ export default function IntegrationsPage() {
           </TabsContent>
 
           <TabsContent value="api" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>API Management</CardTitle>
-                <CardDescription>
-                  Gérez vos clés API et surveillez l'utilisation
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Plug className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">API Management</h3>
-                  <p className="text-muted-foreground">
-                    Interface de gestion des API en cours de développement
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <LiveAnalyticsDashboard />
           </TabsContent>
 
           <TabsContent value="marketplace" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Marketplace</CardTitle>
-                <CardDescription>
-                  Découvrez de nouvelles intégrations disponibles
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Search className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Marketplace des Intégrations</h3>
-                  <p className="text-muted-foreground">
-                    Catalogue complet des intégrations disponibles bientôt en ligne
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <OperationalAI />
           </TabsContent>
         </Tabs>
       </div>
