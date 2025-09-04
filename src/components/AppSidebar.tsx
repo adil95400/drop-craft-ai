@@ -171,10 +171,10 @@ const navigationGroups = [
         badge: "Plugins"
       },
       {
-        title: "Extension",
-        url: "/extension",
+        title: "Extensions Hub",
+        url: "/extensions",
         icon: Bot,
-        badge: "Ext"
+        badge: "Hub"
       }
     ]
   },

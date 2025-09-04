@@ -29,6 +29,14 @@ import ImportedProducts from '@/pages/ImportedProducts';
 import { ModuleRoutes } from '@/components/routing/ModuleRoutes';
 import Products from '@/pages/Products';
 
+// Extensions Pages
+import ExtensionsHub from '@/pages/ExtensionsHub';
+import MarketplacePage from '@/pages/extensions/MarketplacePage';
+import DeveloperPage from '@/pages/extensions/DeveloperPage';
+import CLIToolsPage from '@/pages/extensions/CLIToolsPage';
+import WhiteLabelPage from '@/pages/extensions/WhiteLabelPage';
+import SSOPage from '@/pages/extensions/SSOPage';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -64,6 +72,15 @@ function App() {
                 <Route path="/import/products" element={<AppLayout><ImportedProducts /></AppLayout>} />
                 <Route path="/subscription" element={<AppLayout><SubscriptionDashboard /></AppLayout>} />
                 <Route path="/quotas" element={<AppLayout><QuotaManagerPage /></AppLayout>} />
+                
+                {/* Extensions Routes */}
+                <Route path="/extensions" element={<AppLayout><ExtensionsHub /></AppLayout>} />
+                <Route path="/extensions/marketplace" element={<AppLayout><MarketplacePage /></AppLayout>} />
+                <Route path="/extensions/developer" element={<AppLayout><DeveloperPage /></AppLayout>} />
+                <Route path="/extensions/cli" element={<AppLayout><CLIToolsPage /></AppLayout>} />
+                <Route path="/extensions/white-label" element={<AppLayout><WhiteLabelPage /></AppLayout>} />
+                <Route path="/extensions/sso" element={<AppLayout><SSOPage /></AppLayout>} />
+                
                 <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
