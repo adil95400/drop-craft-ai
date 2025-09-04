@@ -10,6 +10,9 @@ import { AppLayout } from '@/layouts/AppLayout';
 // Pages
 import Index from '@/pages/Index';
 import Dashboard from '@/pages/Dashboard';
+import Orders from '@/pages/Orders';
+import Customers from '@/pages/Customers';
+import Marketing from '@/pages/Marketing';
 import SubscriptionDashboard from '@/pages/SubscriptionDashboard';
 import QuotaManagerPage from '@/pages/QuotaManagerPage';
 import SupplierHub from '@/components/SupplierHub';
@@ -39,6 +42,9 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
               <Route path="/products" element={<AppLayout><Products /></AppLayout>} />
+              <Route path="/orders" element={<AppLayout><Orders /></AppLayout>} />
+              <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
+              <Route path="/marketing" element={<AppLayout><Marketing /></AppLayout>} />
               <Route path="/suppliers" element={<AppLayout><SupplierHub /></AppLayout>} />
               <Route path="/import" element={<AppLayout><UnifiedImport /></AppLayout>} />
               <Route path="/import/url-config" element={<AppLayout><URLImportConfig /></AppLayout>} />

@@ -1,154 +1,241 @@
-import { ReactNode } from "react";
-import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
-import { OptimizedSidebar } from "@/components/sidebar/OptimizedSidebar";
-import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
-import { RealTimeNotifications } from "@/components/notifications/RealTimeNotifications";
-import { IntegratedChatSupport } from "@/components/support/IntegratedChatSupport";
-import { AdminUserDropdown } from "@/components/admin/AdminUserDropdown";
-import { AdminPlanSwitcher } from "@/components/admin/AdminPlanSwitcher";
-import { RoleBadge } from "@/components/ui/role-badge";
-import { useAuth } from "@/contexts/AuthContext";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { GlobalSyncProvider } from "@/components/layout/GlobalSyncProvider";
-import { SyncStatusIndicator } from "@/components/sync/SyncStatusIndicator";
-import { AppFlowProvider } from "@/components/app-flow/AppFlowManager";
-import { FlowProgressIndicator, RecommendedFlows } from "@/components/app-flow/FlowProgressIndicator";
-import { SmartBreadcrumbs } from "@/components/common/SmartBreadcrumbs";
-import { UnifiedNavigation } from "@/components/navigation/UnifiedNavigation";
-import { PerformanceMonitor } from "@/components/performance/PerformanceMonitor";
+import { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { 
+  Bell, Search, User, Settings, Menu, Home, Package, 
+  ShoppingCart, TrendingUp, Users, FileText, Zap,
+  Brain, Shield, Plug, Crown, Upload, BarChart3, Truck
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { NavLink, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { usePlanContext } from '@/components/plan/UnifiedPlanProvider';
 
 interface AppLayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
-// Composant Header unifié
-const AppHeader = ({ showTrigger = false }: { showTrigger?: boolean }) => {
-  const { profile } = useAuth();
-  
-  return (
-    <header className="sticky top-0 z-30 h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex items-center justify-between px-6 h-full">
-        {showTrigger && <SidebarTrigger className="mr-auto" aria-label="Toggle navigation menu" />}
-        <div className="flex items-center gap-3 ml-auto">
-          {profile && <RoleBadge role={profile.role} />}
-          <SyncStatusIndicator compact />
-          <RealTimeNotifications />
-          <AdminUserDropdown />
-        </div>
-      </div>
-    </header>
-  );
-};
+interface NavItem {
+  title: string;
+  url: string;
+  icon: any;
+  badge?: string;
+  requiredPlan?: 'standard' | 'pro' | 'ultra_pro';
+}
+
+const navigation: NavItem[] = [
+  { title: 'Dashboard', url: '/dashboard', icon: Home },
+  { title: 'Produits', url: '/products', icon: Package },
+  { title: 'Commandes', url: '/orders', icon: ShoppingCart },
+  { title: 'Import', url: '/import', icon: Upload },
+  { title: 'Fournisseurs', url: '/suppliers', icon: Truck },
+  { title: 'Analytics', url: '/analytics', icon: BarChart3, requiredPlan: 'pro' },
+  { title: 'Clients', url: '/customers', icon: Users },
+  { title: 'CRM', url: '/crm', icon: Users, requiredPlan: 'pro' },
+  { title: 'Marketing', url: '/marketing', icon: TrendingUp, requiredPlan: 'pro' },
+  { title: 'Blog', url: '/blog', icon: FileText, requiredPlan: 'pro' },
+  { title: 'SEO', url: '/seo', icon: Search, requiredPlan: 'pro' },
+  { title: 'IA Assistant', url: '/ai', icon: Brain, badge: 'AI', requiredPlan: 'ultra_pro' },
+  { title: 'Automation', url: '/automation', icon: Zap, requiredPlan: 'ultra_pro' },
+  { title: 'Sécurité', url: '/security', icon: Shield, requiredPlan: 'ultra_pro' },
+  { title: 'Intégrations', url: '/integrations', icon: Plug },
+  { title: 'Abonnement', url: '/subscription', icon: Crown },
+];
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const { plan, hasFeature } = usePlanContext();
+  const location = useLocation();
 
-  return (
-    <AppFlowProvider>
-      <GlobalSyncProvider>
-        <PerformanceMonitor>
-          <SidebarProvider defaultOpen={!isMobile}>
-      <div className="min-h-screen w-full bg-background">
-        {/* Desktop Grid Layout */}
-        <div className="hidden md:grid md:grid-cols-[300px_1fr] min-h-screen">
-          {/* Desktop Sidebar - Fixed position avec la nouvelle sidebar */}
-          <div className="z-20">
-            <OptimizedSidebar />
+  const isActive = (path: string) => location.pathname === path;
+
+  const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
+    <div className="flex h-full flex-col">
+      {/* Logo */}
+      <div className="flex h-16 items-center border-b px-6">
+        <NavLink to="/dashboard" className="flex items-center space-x-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded bg-primary text-white">
+            <Crown className="h-5 w-5" />
           </div>
-          
-        {/* Desktop Content */}
-        <div className="flex flex-col min-w-0">
-          <AppHeader />
+          <span className="font-bold text-xl">Shopopti+</span>
+        </NavLink>
+      </div>
 
-          {/* Admin Plan Switcher */}
-          <div className="p-4 border-b">
-            <AdminPlanSwitcher />
-          </div>
-
-          {/* Navigation unifiée et breadcrumbs */}
-          <div className="px-4 lg:px-6 py-2 border-b bg-muted/20">
-            <div className="flex items-center justify-between gap-4">
-              <UnifiedNavigation />
-              <div className="text-xs text-muted-foreground">
-                Navigation intelligente • ⌘K
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <main className="flex-1 overflow-auto min-w-0 p-4 lg:p-6 bg-background">
-            <SmartBreadcrumbs />
-            <RecommendedFlows />
-            {children}
-          </main>
-
-            {/* Footer */}
-            <footer className="border-t bg-muted/30 py-4 px-6">
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <div className="flex items-center gap-4">
-                  <span>© 2024 Shopopti Pro</span>
-                  <span>•</span>
-                  <span>Version 2.1.0</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span>Status: ✅ Opérationnel</span>
-                  <span>•</span>
-                  <span>Uptime: 99.9%</span>
+      {/* Navigation */}
+      <nav className="flex-1 space-y-1 p-4">
+        {navigation.map((item) => {
+          // Vérifier les permissions de plan
+          if (item.requiredPlan && !hasFeature('advanced-features') && item.requiredPlan !== 'standard') {
+            return (
+              <div key={item.title} className="relative">
+                <div className="flex items-center space-x-3 rounded-lg px-3 py-2 text-muted-foreground cursor-not-allowed opacity-50">
+                  <item.icon className="h-5 w-5" />
+                  <span>{item.title}</span>
+                  <Badge variant="outline" className="ml-auto text-xs">
+                    {item.requiredPlan === 'pro' ? 'PRO' : 'ULTRA'}
+                  </Badge>
                 </div>
               </div>
-            </footer>
+            );
+          }
+
+          return (
+            <NavLink
+              key={item.title}
+              to={item.url}
+              onClick={() => mobile && setSidebarOpen(false)}
+              className={`flex items-center space-x-3 rounded-lg px-3 py-2 transition-colors ${
+                isActive(item.url)
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}
+            >
+              <item.icon className="h-5 w-5" />
+              <span>{item.title}</span>
+              {item.badge && (
+                <Badge variant="secondary" className="ml-auto text-xs">
+                  {item.badge}
+                </Badge>
+              )}
+            </NavLink>
+          );
+        })}
+      </nav>
+
+      {/* Plan info */}
+      <div className="border-t p-4">
+        <div className="rounded-lg bg-muted p-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Plan {plan}</p>
+              <p className="text-xs text-muted-foreground">
+                {plan === 'ultra_pro' ? 'Toutes les fonctionnalités' : 'Fonctionnalités limitées'}
+              </p>
+            </div>
+            {plan !== 'ultra_pro' && (
+              <Button size="sm" variant="outline" asChild>
+                <NavLink to="/subscription">
+                  <Crown className="h-4 w-4" />
+                </NavLink>
+              </Button>
+            )}
           </div>
-        </div>
-
-        {/* Mobile Layout avec nouvelle sidebar */}
-        <div className="md:hidden min-h-screen">
-          <OptimizedSidebar />
-          
-          <SidebarInset className="flex flex-col min-h-screen">
-            <AppHeader showTrigger />
-
-            {/* Mobile Admin Plan Switcher */}
-            <div className="p-4 border-b">
-              <AdminPlanSwitcher />
-            </div>
-
-            {/* Mobile Navigation */}
-            <div className="px-4 py-2 border-b bg-muted/20">
-              <UnifiedNavigation />
-            </div>
-
-            {/* Mobile Content */}
-            <main className="flex-1 overflow-auto min-w-0 p-4 bg-background">
-              <SmartBreadcrumbs />
-              <RecommendedFlows />
-              {children}
-            </main>
-
-            {/* Mobile Footer */}
-            <footer className="border-t bg-muted/30 py-3 px-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <span>© 2024 Shopopti Pro</span>
-                  <span>•</span>
-                  <span>v2.1.0</span>
-                </div>
-                <div className="flex items-center gap-2 mt-1 sm:mt-0">
-                  <span>✅ Opérationnel</span>
-                </div>
-              </div>
-            </footer>
-          </SidebarInset>
         </div>
       </div>
-      
-      {/* Integrated Chat Support - Available on all pages */}
-      <IntegratedChatSupport />
-      
-      {/* Indicateur de progression du flux */}  
-      <FlowProgressIndicator />
-    </SidebarProvider>
-        </PerformanceMonitor>
-      </GlobalSyncProvider>
-    </AppFlowProvider>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
+        <div className="flex flex-col border-r bg-card">
+          <Sidebar />
+        </div>
+      </div>
+
+      {/* Mobile Sidebar */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-64">
+          <Sidebar mobile />
+        </SheetContent>
+      </Sheet>
+
+      {/* Main Content */}
+      <div className="md:pl-64">
+        {/* Header */}
+        <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="flex h-16 items-center gap-4 px-6">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+            </Sheet>
+
+            {/* Search */}
+            <div className="flex-1 max-w-md">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher..."
+                  className="pl-8"
+                />
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm">
+                <Bell className="h-5 w-5" />
+                <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 text-xs">
+                  3
+                </Badge>
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src="/avatars/user-pro.jpg" alt="Avatar" />
+                      <AvatarFallback>
+                        {user?.email?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {user?.user_metadata?.full_name || 'Utilisateur'}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <NavLink to="/profile">
+                      <User className="mr-2 h-4 w-4" />
+                      Profil
+                    </NavLink>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <NavLink to="/settings">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Paramètres
+                    </NavLink>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    Déconnexion
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1">
+          {children}
+        </main>
+      </div>
+    </div>
   );
 }
