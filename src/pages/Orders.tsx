@@ -52,6 +52,11 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [filters, setFilters] = useState({
+    status: 'all',
+    dateRange: 'all',
+    search: ''
+  });
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
