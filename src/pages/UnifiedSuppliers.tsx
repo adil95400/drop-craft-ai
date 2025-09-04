@@ -2,10 +2,14 @@ import React from 'react';
 import { FeatureGate } from '@/components/common/FeatureGate';
 import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
 import SupplierHub from '@/components/SupplierHub';
+import { RealTimeSupplierMonitor } from '@/components/suppliers/RealTimeSupplierMonitor';
+import { SupplierPerformanceAnalytics } from '@/components/suppliers/SupplierPerformanceAnalytics';
+import { AutomatedSupplierWorkflows } from '@/components/suppliers/AutomatedSupplierWorkflows';
 
 const UnifiedSuppliers: React.FC = () => {
   const { getFeatureConfig } = useUnifiedPlan();
   const config = getFeatureConfig('suppliers');
+  const [activeTab, setActiveTab] = React.useState<'hub' | 'monitor' | 'analytics' | 'workflows'>('hub');
 
   return (
     <div className="space-y-6">
@@ -13,89 +17,73 @@ const UnifiedSuppliers: React.FC = () => {
         <h1 className="text-2xl font-bold">
           {config.title || 'Fournisseurs'}
         </h1>
-        {config.features?.['premium-integrations'] && (
+        {config.features?.['supplier-analytics'] && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary">
-              ⭐ Premium
+              📊 Analytics Activées
             </span>
           </div>
         )}
       </div>
+
+      {/* Supplier Method Tabs */}
+      <div className="flex gap-2 mb-6 flex-wrap">
+        <button
+          onClick={() => setActiveTab('hub')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'hub' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          Hub Fournisseurs
+        </button>
+        
+        <FeatureGate feature="supplier-monitoring" fallback={null} showUpgrade={false}>
+          <button
+            onClick={() => setActiveTab('monitor')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'monitor' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
+          >
+            Monitoring Temps Réel
+          </button>
+        </FeatureGate>
+        
+        <FeatureGate feature="supplier-analytics" fallback={null} showUpgrade={false}>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'analytics' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
+          >
+            Analytics Performance
+          </button>
+        </FeatureGate>
+        
+        <FeatureGate feature="automation" fallback={null} showUpgrade={false}>
+          <button
+            onClick={() => setActiveTab('workflows')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === 'workflows' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
+          >
+            Workflows Automatisés
+          </button>
+        </FeatureGate>
+      </div>
       
-      {/* Main Supplier Hub - Always Available */}
-      <SupplierHub />
-
-      {/* Premium Integrations */}
-      <FeatureGate feature="premium-integrations">
-        <div className="border-t pt-6">
-          <h2 className="text-xl font-semibold mb-4">Intégrations Premium</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="p-4 border rounded-lg bg-gradient-to-r from-primary/5 to-purple-500/5">
-              <h3 className="font-medium mb-2">BigBuy Pro</h3>
-              <p className="text-sm text-muted-foreground">
-                Connecteur avancé avec sync automatique et gestion des stocks en temps réel.
-              </p>
-            </div>
-            <div className="p-4 border rounded-lg bg-gradient-to-r from-primary/5 to-blue-500/5">
-              <h3 className="font-medium mb-2">Cdiscount Pro</h3>
-              <p className="text-sm text-muted-foreground">
-                Intégration marketplace avec publication automatique et suivi des commandes.
-              </p>
-            </div>
-            <div className="p-4 border rounded-lg bg-gradient-to-r from-primary/5 to-green-500/5">
-              <h3 className="font-medium mb-2">Syncee Premium</h3>
-              <p className="text-sm text-muted-foreground">
-                Accès aux fournisseurs premium avec mapping automatique des produits.
-              </p>
-            </div>
-          </div>
-        </div>
-      </FeatureGate>
-
-      {/* Advanced Automation */}
-      <FeatureGate feature="advanced-automation">
-        <div className="border-t pt-6">
-          <h2 className="text-xl font-semibold mb-4">Automatisation Avancée</h2>
-          <div className="p-4 border rounded-lg">
-            <h3 className="font-medium mb-2">Sync Intelligent</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Synchronisation automatique des catalogues avec détection des changements et mise à jour en temps réel.
-            </p>
-            <div className="flex gap-2">
-              <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
-                Sync Auto
-              </span>
-              <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
-                Détection Prix
-              </span>
-              <span className="px-2 py-1 text-xs rounded bg-purple-100 text-purple-800">
-                Stock Temps Réel
-              </span>
-            </div>
-          </div>
-        </div>
-      </FeatureGate>
-
-      {/* Business Intelligence */}
-      <FeatureGate feature="analytics-insights">
-        <div className="border-t pt-6">
-          <h2 className="text-xl font-semibold mb-4">Intelligence Business</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-medium mb-2">Analyse de Performance</h3>
-              <p className="text-sm text-muted-foreground">
-                Insights sur la performance de vos fournisseurs avec recommandations d'optimisation.
-              </p>
-            </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-medium mb-2">Prédictions IA</h3>
-              <p className="text-sm text-muted-foreground">
-                Prédictions de stock et de demande basées sur l'historique et les tendances marché.
-              </p>
-            </div>
-          </div>
-        </div>
-      </FeatureGate>
+      {/* Content */}
+      {activeTab === 'hub' && <SupplierHub />}
+      {activeTab === 'monitor' && <RealTimeSupplierMonitor />}
+      {activeTab === 'analytics' && <SupplierPerformanceAnalytics />}
+      {activeTab === 'workflows' && <AutomatedSupplierWorkflows />}
     </div>
   );
 };
