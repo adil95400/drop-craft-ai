@@ -4889,6 +4889,10 @@ export type Database = {
         }
         Returns: Database["public"]["Enums"]["plan_type"]
       }
+      get_final_security_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_marketplace_products: {
         Args: {
           category_filter?: string
