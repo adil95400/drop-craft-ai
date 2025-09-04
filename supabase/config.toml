@@ -97,6 +97,9 @@ verify_jwt = true
 [functions.ai-automation]
 verify_jwt = true
 
+[functions.marketplace-connector]
+verify_jwt = true
+
 [edge-runtime]
 enabled = true
 ip_version = "ipv4"
