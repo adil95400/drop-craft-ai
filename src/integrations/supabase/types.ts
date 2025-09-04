@@ -5017,6 +5017,10 @@ export type Database = {
           website: string
         }[]
       }
+      get_security_configuration_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_subscription_status_secure: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -5155,6 +5159,10 @@ export type Database = {
       secure_admin_set_role: {
         Args: { new_role: string; target_user_id: string }
         Returns: Json
+      }
+      secure_all_user_tables: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       secure_newsletter_signup: {
         Args: { email_param: string; source_param?: string; user_ip?: unknown }
