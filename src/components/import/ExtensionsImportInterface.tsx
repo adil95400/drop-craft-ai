@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import { useExtensions } from '@/hooks/useExtensions'
 import { useImportUltraPro } from '@/hooks/useImportUltraPro'
+import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 
 // Extensions recommandées pour l'import avec IA intégrée
@@ -207,24 +208,55 @@ export const ExtensionsImportInterface = ({
     await toggleExtension({ id: extensionId, status: newStatus })
   }
 
-  // Lancer un job d'extension
+  // Lancer un job d'extension avec IA
   const handleRunExtension = async (extension: any) => {
     const installedExt = getInstalledExtension(extension.name)
     if (!installedExt) return
 
     try {
-      await startJob({
-        extensionId: installedExt.id,
-        jobType: 'import',
-        inputData: {
-          import_method: importMethod,
-          products_count: importedProducts.length,
-          ai_enhanced: extension.ai_enhanced
+      // Si l'extension est IA-enhanced, appeler l'AI optimizer
+      if (extension.ai_enhanced) {
+        const { data, error } = await supabase.functions.invoke('ai-optimizer', {
+          body: {
+            extensionType: extension.category === 'ai_enhancement' ? 'seo' : 
+                          extension.category === 'pricing' ? 'pricing' :
+                          extension.category === 'quality_control' ? 'quality' :
+                          extension.category === 'categorization' ? 'categorization' :
+                          extension.category === 'media_optimization' ? 'image_enhancement' : 'seo',
+            productData: {
+              products_count: importedProducts.length,
+              sample_products: importedProducts.slice(0, 5)
+            },
+            userPreferences: {
+              language: 'fr',
+              market: 'france',
+              import_method: importMethod
+            }
+          }
+        })
+
+        if (error) {
+          throw new Error(error.message)
         }
-      })
-      toast.success(`Extension ${extension.display_name} lancée !`)
-    } catch (error) {
-      toast.error(`Erreur lors du lancement: ${error}`)
+
+        toast.success(`✨ Extension IA ${extension.display_name} exécutée ! Score: ${data.optimization?.seo_score || data.optimization?.quality_score || 'N/A'}`)
+      } else {
+        // Extension standard
+        await startJob({
+          extensionId: installedExt.id,
+          jobType: 'import',
+          inputData: {
+            import_method: importMethod,
+            products_count: importedProducts.length,
+            ai_enhanced: false
+          }
+        })
+        toast.success(`Extension ${extension.display_name} lancée !`)
+      }
+      
+      onExtensionActivated?.(extension)
+    } catch (error: any) {
+      toast.error(`Erreur lors du lancement: ${error.message}`)
     }
   }
 

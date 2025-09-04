@@ -91,6 +91,12 @@ verify_jwt = true
 [functions.force-disconnect-user]
 verify_jwt = true
 
+[functions.ai-optimizer]
+verify_jwt = true
+
+[functions.ai-automation]
+verify_jwt = true
+
 [edge-runtime]
 enabled = true
 ip_version = "ipv4"

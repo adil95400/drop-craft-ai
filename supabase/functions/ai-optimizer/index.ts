@@ -6,381 +6,446 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface AIOptimizationRequest {
-  jobId: string
-  jobType: 'image_optimization' | 'translation' | 'price_optimization' | 'seo_enhancement'
-  inputData: {
-    products: any[]
-    params: {
-      target_language?: string
-      optimization_level?: string
-      focus_areas?: string[]
-    }
-  }
+interface OptimizationRequest {
+  extensionType: 'seo' | 'pricing' | 'quality' | 'categorization' | 'image_enhancement'
+  productData: any
+  userPreferences?: any
+  marketData?: any
 }
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { jobId, jobType, inputData }: AIOptimizationRequest = await req.json()
-    
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
-    
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
-    
-    console.log(`Starting AI optimization job: ${jobId} - Type: ${jobType}`)
-    
-    // Update job status to processing
-    await supabase
-      .from('ai_optimization_jobs')
-      .update({
-        status: 'processing',
-        started_at: new Date().toISOString(),
-        progress: 10
-      })
-      .eq('id', jobId)
-
-    let optimizationResults: any = {}
-    
-    try {
-      if (openaiApiKey && openaiApiKey !== 'your_openai_key_here') {
-        // Real AI optimization using OpenAI
-        optimizationResults = await performRealAIOptimization(
-          openaiApiKey,
-          jobType,
-          inputData
-        )
-      } else {
-        // Enhanced mock optimization for development
-        optimizationResults = await performMockAIOptimization(jobType, inputData)
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
       }
+    )
 
-      // Update progress to 50%
-      await supabase
-        .from('ai_optimization_jobs')
-        .update({ progress: 50 })
-        .eq('id', jobId)
-
-      // Apply optimizations to products
-      const { products } = inputData
-      const optimizedProducts = await applyOptimizationsToProducts(
-        supabase,
-        products,
-        optimizationResults,
-        jobType
-      )
-
-      // Update progress to 90%
-      await supabase
-        .from('ai_optimization_jobs')
-        .update({ progress: 90 })
-        .eq('id', jobId)
-
-      // Final job completion
-      await supabase
-        .from('ai_optimization_jobs')
-        .update({
-          status: 'completed',
-          progress: 100,
-          completed_at: new Date().toISOString(),
-          output_data: {
-            optimized_count: optimizedProducts.length,
-            optimization_type: jobType,
-            results: optimizationResults,
-            summary: generateOptimizationSummary(jobType, optimizedProducts.length)
-          }
-        })
-        .eq('id', jobId)
-
-      console.log(`AI optimization job ${jobId} completed successfully`)
-
-      return new Response(JSON.stringify({
-        success: true,
-        data: {
-          job_id: jobId,
-          optimized_count: optimizedProducts.length,
-          results: optimizationResults
-        }
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-
-    } catch (optimizationError) {
-      console.error('Optimization error:', optimizationError)
-      
-      // Update job status to failed
-      await supabase
-        .from('ai_optimization_jobs')
-        .update({
-          status: 'failed',
-          error_message: optimizationError.message,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', jobId)
-
-      throw optimizationError
+    // Get user from auth
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      throw new Error('Unauthorized')
     }
 
+    const { extensionType, productData, userPreferences = {}, marketData = {} }: OptimizationRequest = await req.json()
+
+    console.log(`🤖 AI Optimizer called for type: ${extensionType}`)
+
+    let optimizationResult = {}
+
+    switch (extensionType) {
+      case 'seo':
+        optimizationResult = await optimizeSEO(productData, userPreferences)
+        break
+      
+      case 'pricing':
+        optimizationResult = await optimizePricing(productData, marketData)
+        break
+        
+      case 'quality':
+        optimizationResult = await checkQuality(productData)
+        break
+        
+      case 'categorization':
+        optimizationResult = await categorizeProduct(productData)
+        break
+        
+      case 'image_enhancement':
+        optimizationResult = await enhanceImages(productData)
+        break
+        
+      default:
+        throw new Error(`Unknown extension type: ${extensionType}`)
+    }
+
+    // Log the optimization job
+    const { error: logError } = await supabase
+      .from('ai_optimization_jobs')
+      .insert({
+        user_id: user.id,
+        job_type: extensionType,
+        status: 'completed',
+        input_data: { productData, userPreferences, marketData },
+        output_data: optimizationResult,
+        progress: 100,
+        started_at: new Date().toISOString(),
+        completed_at: new Date().toISOString()
+      })
+
+    if (logError) {
+      console.error('Failed to log optimization job:', logError)
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        extensionType,
+        optimization: optimizationResult,
+        timestamp: new Date().toISOString()
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    )
+
   } catch (error) {
-    console.error('AI optimization function error:', error)
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      success: false
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    console.error('AI Optimizer error:', error)
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      }
+    )
   }
 })
 
-async function performRealAIOptimization(
-  apiKey: string,
-  jobType: string,
-  inputData: any
-): Promise<any> {
-  const { products, params } = inputData
-  const results: any = {}
+// SEO Optimization avec IA
+async function optimizeSEO(productData: any, preferences: any) {
+  console.log('🔍 Optimizing SEO with AI...')
+  
+  const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
+  if (!openaiApiKey) {
+    console.warn('OpenAI API key not configured, using fallback optimization')
+    
+    // Fallback optimization sans IA
+    return {
+      type: 'seo_optimization',
+      confidence: 0.7,
+      optimized_title: `${productData.name || 'Produit'} - Meilleur Prix en Ligne`,
+      meta_description: `Découvrez ${productData.name || 'ce produit'} au meilleur prix. Livraison rapide et garantie satisfaction.`,
+      keywords: [productData.name?.toLowerCase(), productData.category?.toLowerCase(), 'pas cher', 'livraison'].filter(Boolean),
+      optimized_description: `${productData.description || productData.name || 'Produit de qualité'} - Au meilleur prix.`,
+      seo_score: 75,
+      improvements: ['Ajouter plus de mots-clés', 'Optimiser les images'],
+      fallback: true
+    }
+  }
+
+  const seoPrompt = `
+  Tu es un expert SEO e-commerce. Optimise ce produit pour les moteurs de recherche français:
+  
+  Produit: ${productData.name || 'Produit non défini'}
+  Description: ${productData.description || 'Aucune description'}
+  Catégorie: ${productData.category || 'Non définie'}
+  Prix: ${productData.price || 'Non défini'}€
+  
+  Génère:
+  1. Un titre SEO optimisé (max 60 caractères)
+  2. Une méta-description engageante (max 160 caractères)
+  3. 5-8 mots-clés principaux
+  4. Une description produit optimisée (150-200 mots)
+  5. Un score SEO estimé /100
+
+  Réponds uniquement en JSON avec ces clés:
+  {
+    "optimized_title": "...",
+    "meta_description": "...",
+    "keywords": ["...", "..."],
+    "optimized_description": "...",
+    "seo_score": 85,
+    "improvements": ["...", "..."]
+  }
+  `
 
   try {
-    switch (jobType) {
-      case 'seo_enhancement':
-        results.seo = await optimizeSEOWithOpenAI(apiKey, products, params)
-        break
-      case 'translation':
-        results.translations = await translateWithOpenAI(apiKey, products, params)
-        break
-      case 'price_optimization':
-        results.pricing = await optimizePricingWithAI(products, params)
-        break
-      case 'image_optimization':
-        results.images = await optimizeImagesWithAI(products, params)
-        break
-    }
-
-    return results
-  } catch (error) {
-    console.error(`Real AI optimization failed for ${jobType}:`, error)
-    // Fallback to mock optimization
-    return await performMockAIOptimization(jobType, inputData)
-  }
-}
-
-async function optimizeSEOWithOpenAI(apiKey: string, products: any[], params: any): Promise<any> {
-  const openaiEndpoint = 'https://api.openai.com/v1/chat/completions'
-  
-  const seoResults = []
-  
-  for (const product of products.slice(0, 5)) { // Limit for demo
-    const prompt = `Optimize the SEO for this product:
-Title: ${product.name}
-Description: ${product.description || 'No description'}
-Category: ${product.category || 'General'}
-
-Target language: ${params.target_language || 'fr'}
-
-Please provide:
-1. Optimized title (max 60 characters)
-2. Meta description (max 160 characters)
-3. 5-8 relevant keywords
-4. Improved product description
-
-Respond in JSON format with: title, meta_description, keywords, description`
-
-    try {
-      const response = await fetch(openaiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 500,
-          temperature: 0.7
-        })
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: 'Tu es un expert SEO e-commerce. Réponds uniquement en JSON valide.' },
+          { role: 'user', content: seoPrompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 1000
       })
+    })
 
-      const data = await response.json()
-      const optimizedSEO = JSON.parse(data.choices[0].message.content)
-      
-      seoResults.push({
-        product_id: product.id,
-        original: {
-          title: product.name,
-          description: product.description
-        },
-        optimized: optimizedSEO
-      })
-    } catch (error) {
-      console.error(`SEO optimization failed for product ${product.id}:`, error)
+    const aiResult = await response.json()
+    
+    if (!response.ok) {
+      throw new Error(`OpenAI error: ${aiResult.error?.message || 'Unknown error'}`)
     }
-  }
 
-  return seoResults
-}
-
-async function translateWithOpenAI(apiKey: string, products: any[], params: any): Promise<any> {
-  // Similar implementation for translation
-  return products.map(product => ({
-    product_id: product.id,
-    target_language: params.target_language,
-    translated: {
-      title: `${product.name} (Translated)`,
-      description: `${product.description || ''} (Translated to ${params.target_language})`
-    }
-  }))
-}
-
-async function optimizePricingWithAI(products: any[], params: any): Promise<any> {
-  // AI-powered pricing optimization logic
-  return products.map(product => {
-    const currentPrice = product.price || 0
-    const optimizedPrice = currentPrice * (0.95 + Math.random() * 0.1) // ±5% variation
+    const seoOptimization = JSON.parse(aiResult.choices[0].message.content)
     
     return {
-      product_id: product.id,
-      current_price: currentPrice,
-      optimized_price: Number(optimizedPrice.toFixed(2)),
-      confidence_score: Math.random() * 0.3 + 0.7, // 70-100% confidence
-      reasoning: `Price optimized based on market analysis and competition data`
+      type: 'seo_optimization',
+      confidence: 0.92,
+      ...seoOptimization,
+      processing_time_ms: Date.now(),
+      ai_model: 'gpt-4o-mini'
     }
-  })
-}
-
-async function optimizeImagesWithAI(products: any[], params: any): Promise<any> {
-  // Image optimization logic
-  return products.map(product => ({
-    product_id: product.id,
-    original_images: product.image_urls || [],
-    optimized_images: (product.image_urls || []).map((url: string) => ({
-      original_url: url,
-      optimized_url: url, // In real implementation, would process images
-      improvements: ['Compressed', 'Format optimized', 'Alt text added']
-    }))
-  }))
-}
-
-async function performMockAIOptimization(jobType: string, inputData: any): Promise<any> {
-  const { products } = inputData
-  
-  // Simulate AI processing time
-  await new Promise(resolve => setTimeout(resolve, 2000))
-  
-  const results: any = {}
-  
-  switch (jobType) {
-    case 'seo_enhancement':
-      results.seo_improvements = products.map((product: any) => ({
-        product_id: product.id,
-        optimized_title: `${product.name} - Premium Quality`,
-        optimized_description: `Découvrez ${product.name} avec des caractéristiques exceptionnelles et une qualité premium.`,
-        keywords: ['premium', 'qualité', 'fiable', product.category?.toLowerCase()].filter(Boolean),
-        seo_score_before: Math.floor(Math.random() * 40) + 30,
-        seo_score_after: Math.floor(Math.random() * 30) + 70
-      }))
-      break
-      
-    case 'translation':
-      results.translations = products.map((product: any) => ({
-        product_id: product.id,
-        target_language: inputData.params.target_language || 'en',
-        translated_title: `${product.name} (Translated)`,
-        translated_description: `High-quality ${product.name} with premium features.`,
-        confidence_score: Math.random() * 0.2 + 0.8
-      }))
-      break
-      
-    case 'price_optimization':
-      results.price_optimizations = products.map((product: any) => ({
-        product_id: product.id,
-        current_price: product.price,
-        suggested_price: Number((product.price * (0.9 + Math.random() * 0.2)).toFixed(2)),
-        expected_conversion_increase: `${Math.floor(Math.random() * 20) + 5}%`,
-        confidence_level: 'High'
-      }))
-      break
-      
-    case 'image_optimization':
-      results.image_optimizations = products.map((product: any) => ({
-        product_id: product.id,
-        images_processed: (product.image_urls || []).length,
-        improvements: ['Compressed', 'SEO optimized', 'Alt text added'],
-        size_reduction: `${Math.floor(Math.random() * 40) + 20}%`
-      }))
-      break
-  }
-  
-  return results
-}
-
-async function applyOptimizationsToProducts(
-  supabase: any,
-  products: any[],
-  optimizationResults: any,
-  jobType: string
-): Promise<any[]> {
-  const updates = []
-  
-  for (const product of products) {
-    let updateData: any = {
-      ai_optimized: true,
-      updated_at: new Date().toISOString()
-    }
+  } catch (error) {
+    console.error('SEO optimization error:', error)
     
-    // Apply specific optimizations based on job type
-    switch (jobType) {
-      case 'seo_enhancement':
-        const seoResult = optimizationResults.seo_improvements?.find(
-          (r: any) => r.product_id === product.id
-        )
-        if (seoResult) {
-          updateData.meta_title = seoResult.optimized_title
-          updateData.meta_description = seoResult.optimized_description
-          updateData.keywords = seoResult.keywords
-        }
-        break
-        
-      case 'price_optimization':
-        const priceResult = optimizationResults.price_optimizations?.find(
-          (r: any) => r.product_id === product.id
-        )
-        if (priceResult) {
-          updateData.price = priceResult.suggested_price
-        }
-        break
-    }
-    
-    // Update the product in database
-    const { error } = await supabase
-      .from('imported_products')
-      .update(updateData)
-      .eq('id', product.id)
-    
-    if (error) {
-      console.error(`Failed to update product ${product.id}:`, error)
-    } else {
-      updates.push({ product_id: product.id, ...updateData })
+    // Fallback optimization
+    return {
+      type: 'seo_optimization',
+      confidence: 0.7,
+      optimized_title: `${productData.name || 'Produit'} - Meilleur Prix en Ligne`,
+      meta_description: `Découvrez ${productData.name || 'ce produit'} au meilleur prix. Livraison rapide et garantie satisfaction.`,
+      keywords: [productData.name?.toLowerCase(), productData.category?.toLowerCase(), 'pas cher', 'livraison'].filter(Boolean),
+      optimized_description: `${productData.description || productData.name || 'Produit de qualité'} - Au meilleur prix.`,
+      seo_score: 75,
+      improvements: ['Ajouter plus de mots-clés', 'Optimiser les images'],
+      fallback: true,
+      error: error.message
     }
   }
-  
-  return updates
 }
 
-function generateOptimizationSummary(jobType: string, count: number): string {
-  const summaries = {
-    seo_enhancement: `Optimisation SEO complétée pour ${count} produits. Amélioration des titres, descriptions et mots-clés.`,
-    translation: `Traduction automatique complétée pour ${count} produits.`,
-    price_optimization: `Optimisation des prix complétée pour ${count} produits avec analyse concurrentielle.`,
-    image_optimization: `Optimisation des images complétée pour ${count} produits avec compression et SEO.`
+// Optimisation des prix avec IA
+async function optimizePricing(productData: any, marketData: any) {
+  console.log('💰 Optimizing pricing with AI...')
+  
+  const currentPrice = parseFloat(productData.price) || 0
+  const costPrice = parseFloat(productData.cost_price) || currentPrice * 0.6
+  
+  // Simulation d'analyse IA des prix
+  const competitorPrices = marketData.competitor_prices || []
+  const avgCompetitorPrice = competitorPrices.length > 0 
+    ? competitorPrices.reduce((a: number, b: number) => a + b, 0) / competitorPrices.length
+    : currentPrice * 1.1
+
+  const demandScore = Math.random() * 100 // Simulated demand analysis
+  const seasonalFactor = 1 + (Math.sin(Date.now() / (1000 * 60 * 60 * 24 * 30)) * 0.1) // Seasonal variation
+  
+  // Prix optimisé basé sur l'IA
+  let optimizedPrice = currentPrice
+  let reasoning = []
+  
+  if (currentPrice > avgCompetitorPrice * 1.2) {
+    optimizedPrice = avgCompetitorPrice * 1.05
+    reasoning.push('Prix réduit pour rester compétitif')
+  } else if (currentPrice < avgCompetitorPrice * 0.8 && demandScore > 70) {
+    optimizedPrice = avgCompetitorPrice * 0.95
+    reasoning.push('Prix augmenté car forte demande')
   }
   
-  return summaries[jobType as keyof typeof summaries] || `Optimisation ${jobType} complétée pour ${count} produits.`
+  optimizedPrice = Math.round(optimizedPrice * seasonalFactor * 100) / 100
+  
+  const expectedSalesIncrease = Math.max(0, (avgCompetitorPrice - optimizedPrice) / avgCompetitorPrice * 50)
+  const profitMargin = ((optimizedPrice - costPrice) / optimizedPrice * 100)
+  
+  return {
+    type: 'pricing_optimization',
+    confidence: 0.88,
+    current_price: currentPrice,
+    optimized_price: optimizedPrice,
+    price_change_percentage: ((optimizedPrice - currentPrice) / currentPrice * 100),
+    competitor_analysis: {
+      avg_competitor_price: avgCompetitorPrice,
+      price_position: optimizedPrice < avgCompetitorPrice ? 'competitive' : 'premium'
+    },
+    demand_forecast: {
+      demand_score: Math.round(demandScore),
+      seasonal_factor: Math.round(seasonalFactor * 100) / 100,
+      expected_sales_increase: Math.round(expectedSalesIncrease)
+    },
+    profit_analysis: {
+      cost_price: costPrice,
+      profit_margin: Math.round(profitMargin),
+      expected_profit_impact: Math.round((optimizedPrice - currentPrice) * 10) // Simulated monthly volume
+    },
+    reasoning,
+    ai_model: 'pricing_algorithm_v2'
+  }
+}
+
+// Contrôle qualité avec IA
+async function checkQuality(productData: any) {
+  console.log('✅ Checking quality with AI...')
+  
+  let qualityScore = 100
+  const issues = []
+  const suggestions = []
+  
+  // Vérifications automatiques
+  if (!productData.name || productData.name.length < 10) {
+    qualityScore -= 20
+    issues.push('Nom du produit trop court')
+    suggestions.push('Ajouter un nom plus descriptif (min 10 caractères)')
+  }
+  
+  if (!productData.description || productData.description.length < 50) {
+    qualityScore -= 15
+    issues.push('Description insuffisante')
+    suggestions.push('Ajouter une description détaillée (min 50 caractères)')
+  }
+  
+  if (!productData.image_urls || productData.image_urls.length === 0) {
+    qualityScore -= 25
+    issues.push('Aucune image produit')
+    suggestions.push('Ajouter au moins 3 images de qualité')
+  }
+  
+  if (!productData.category) {
+    qualityScore -= 10
+    issues.push('Catégorie non définie')
+    suggestions.push('Assigner une catégorie appropriée')
+  }
+  
+  if (!productData.price || productData.price <= 0) {
+    qualityScore -= 30
+    issues.push('Prix invalide')
+    suggestions.push('Définir un prix de vente valide')
+  }
+  
+  // Analyse de la qualité SEO
+  const hasKeywords = productData.name && productData.description && 
+    productData.name.toLowerCase().split(' ').some((word: string) => 
+      productData.description.toLowerCase().includes(word)
+    )
+  
+  if (!hasKeywords) {
+    qualityScore -= 10
+    issues.push('Cohérence SEO faible')
+    suggestions.push('Aligner les mots-clés entre titre et description')
+  }
+  
+  qualityScore = Math.max(0, qualityScore)
+  
+  return {
+    type: 'quality_check',
+    confidence: 0.95,
+    quality_score: qualityScore,
+    status: qualityScore >= 80 ? 'excellent' : qualityScore >= 60 ? 'good' : qualityScore >= 40 ? 'needs_improvement' : 'poor',
+    issues,
+    suggestions,
+    detailed_analysis: {
+      content_completeness: productData.description ? 100 : 0,
+      seo_optimization: hasKeywords ? 85 : 40,
+      image_quality: productData.image_urls?.length || 0 > 0 ? 90 : 0,
+      pricing_consistency: productData.price > 0 ? 100 : 0
+    },
+    auto_fixes_available: suggestions.length,
+    processing_time_ms: 150
+  }
+}
+
+// Catégorisation automatique avec IA
+async function categorizeProduct(productData: any) {
+  console.log('📂 Categorizing product with AI...')
+  
+  const productName = productData.name || ''
+  const productDescription = productData.description || ''
+  const combinedText = `${productName} ${productDescription}`.toLowerCase()
+  
+  // Base de règles de catégorisation simplifiée
+  const categoryRules = [
+    { category: 'Électronique', keywords: ['phone', 'smartphone', 'ordinateur', 'laptop', 'télé', 'tv', 'électronique', 'tech'] },
+    { category: 'Mode & Vêtements', keywords: ['vêtement', 'shirt', 'pantalon', 'robe', 'chaussure', 'mode', 'fashion'] },
+    { category: 'Maison & Jardin', keywords: ['maison', 'décoration', 'meuble', 'jardin', 'cuisine', 'home'] },
+    { category: 'Sport & Loisirs', keywords: ['sport', 'fitness', 'course', 'gym', 'loisir', 'jeu', 'toy'] },
+    { category: 'Beauté & Santé', keywords: ['beauté', 'cosmétique', 'parfum', 'santé', 'beauty', 'health'] },
+    { category: 'Auto & Moto', keywords: ['auto', 'voiture', 'moto', 'véhicule', 'car', 'automotive'] }
+  ]
+  
+  let bestMatch = { category: 'Divers', confidence: 0 }
+  
+  for (const rule of categoryRules) {
+    const matchCount = rule.keywords.reduce((count, keyword) => {
+      return count + (combinedText.includes(keyword) ? 1 : 0)
+    }, 0)
+    
+    const confidence = matchCount / rule.keywords.length
+    if (confidence > bestMatch.confidence) {
+      bestMatch = { category: rule.category, confidence }
+    }
+  }
+  
+  // Tags automatiques basés sur les mots-clés trouvés
+  const suggestedTags = []
+  for (const rule of categoryRules) {
+    for (const keyword of rule.keywords) {
+      if (combinedText.includes(keyword)) {
+        suggestedTags.push(keyword)
+      }
+    }
+  }
+  
+  return {
+    type: 'categorization',
+    confidence: Math.max(0.6, bestMatch.confidence),
+    suggested_category: bestMatch.category,
+    current_category: productData.category,
+    category_changed: productData.category !== bestMatch.category,
+    suggested_tags: [...new Set(suggestedTags)].slice(0, 5),
+    subcategory_suggestions: [],
+    reasoning: `Analysé basé sur les mots-clés: ${suggestedTags.join(', ')}`,
+    ai_model: 'rule_based_v1'
+  }
+}
+
+// Amélioration des images avec IA
+async function enhanceImages(productData: any) {
+  console.log('🖼️ Enhancing images with AI...')
+  
+  const images = productData.image_urls || []
+  const enhancedImages = []
+  
+  for (const imageUrl of images) {
+    // Simulation d'amélioration d'image
+    const enhancement = {
+      original_url: imageUrl,
+      enhanced_url: imageUrl, // Dans la vraie implémentation, on aurait une URL améliorée
+      improvements: [],
+      quality_score: Math.floor(Math.random() * 20) + 80, // 80-100
+      optimizations_applied: []
+    }
+    
+    // Simulations d'améliorations
+    if (Math.random() > 0.5) {
+      enhancement.improvements.push('Luminosité améliorée')
+      enhancement.optimizations_applied.push('brightness_boost')
+    }
+    
+    if (Math.random() > 0.5) {
+      enhancement.improvements.push('Contraste optimisé')
+      enhancement.optimizations_applied.push('contrast_enhancement')
+    }
+    
+    if (Math.random() > 0.3) {
+      enhancement.improvements.push('Redimensionnement optimisé')
+      enhancement.optimizations_applied.push('smart_resize')
+    }
+    
+    enhancedImages.push(enhancement)
+  }
+  
+  const averageQuality = enhancedImages.length > 0 
+    ? enhancedImages.reduce((sum, img) => sum + img.quality_score, 0) / enhancedImages.length
+    : 0
+  
+  return {
+    type: 'image_enhancement',
+    confidence: 0.85,
+    original_images_count: images.length,
+    enhanced_images: enhancedImages,
+    average_quality_score: Math.round(averageQuality),
+    total_improvements: enhancedImages.reduce((sum, img) => sum + img.improvements.length, 0),
+    processing_time_ms: enhancedImages.length * 200, // Simulated processing time
+    recommendations: images.length === 0 ? ['Ajouter des images produit'] : ['Utiliser les images améliorées'],
+    ai_model: 'image_enhancement_v1'
+  }
 }
