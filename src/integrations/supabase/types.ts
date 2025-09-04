@@ -4809,6 +4809,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_and_secure_all_policies: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       cleanup_expired_sessions: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -5183,6 +5187,10 @@ export type Database = {
       validate_customer_access: {
         Args: { customer_id: string }
         Returns: boolean
+      }
+      verify_security_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       verify_supplier_ownership: {
         Args: { supplier_id: string; user_id: string }
