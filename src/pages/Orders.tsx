@@ -39,7 +39,7 @@ interface Order {
   };
   order_items?: {
     product_name: string;
-    quantity: number;
+    qty: number;
     unit_price: number;
   }[];
 }
@@ -69,7 +69,7 @@ const Orders = () => {
         .select(`
           *,
           customers (name, email),
-          order_items (product_name, quantity, unit_price)
+          order_items (product_name, qty, unit_price)
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -412,9 +412,9 @@ const Orders = () => {
                                   {selectedOrder.order_items?.map((item, index) => (
                                     <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
                                       <span className="text-sm">{item.product_name}</span>
-                                      <span className="text-sm">
-                                        {item.quantity} × {formatCurrency(item.unit_price)}
-                                      </span>
+                                       <span className="text-sm">
+                                         {item.qty} × {formatCurrency(item.unit_price)}
+                                       </span>
                                     </div>
                                   ))}
                                 </div>

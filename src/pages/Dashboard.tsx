@@ -57,8 +57,8 @@ const Dashboard = () => {
       const { data: analyticsData } = await supabase
         .rpc('get_dashboard_analytics', { user_id_param: user.id });
       
-      if (analyticsData && typeof analyticsData === 'object') {
-        setStats(analyticsData as DashboardStats);
+      if (analyticsData && typeof analyticsData === 'object' && !Array.isArray(analyticsData)) {
+        setStats(analyticsData as unknown as DashboardStats);
       }
 
       // Fetch recent orders

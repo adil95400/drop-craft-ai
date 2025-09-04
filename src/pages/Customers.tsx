@@ -54,7 +54,7 @@ const Customers = () => {
     name: '',
     email: '',
     phone: '',
-    status: 'active' as const
+    status: 'active'
   });
 
   useEffect(() => {
@@ -258,7 +258,7 @@ const Customers = () => {
               </div>
               <div>
                 <Label htmlFor="status">Statut</Label>
-                <Select value={newCustomer.status} onValueChange={(value: string) => setNewCustomer({ ...newCustomer, status: value as 'active' | 'inactive' })}>
+                <Select value={newCustomer.status} onValueChange={(value: string) => setNewCustomer({ ...newCustomer, status: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
