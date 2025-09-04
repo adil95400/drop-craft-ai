@@ -52,7 +52,7 @@ export const useProductionData = () => {
         .select(`
           *,
           suppliers(name, slug),
-          inventory(stock, warehouse)
+          inventory_levels(stock, warehouse)
         `)
         .order('created_at', { ascending: false })
 

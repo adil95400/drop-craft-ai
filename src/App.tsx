@@ -15,7 +15,7 @@ import Customers from '@/pages/Customers';
 import Marketing from '@/pages/Marketing';
 import SubscriptionDashboard from '@/pages/SubscriptionDashboard';
 import QuotaManagerPage from '@/pages/QuotaManagerPage';
-import SupplierHub from '@/components/SupplierHub';
+import Suppliers from "@/pages/Suppliers";
 import UnifiedImport from '@/pages/UnifiedImport';
 import URLImportConfig from '@/pages/import/URLImportConfig';
 import XMLImportConfig from '@/pages/import/XMLImportConfig';
@@ -45,7 +45,7 @@ function App() {
               <Route path="/orders" element={<AppLayout><Orders /></AppLayout>} />
               <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
               <Route path="/marketing" element={<AppLayout><Marketing /></AppLayout>} />
-              <Route path="/suppliers" element={<AppLayout><SupplierHub /></AppLayout>} />
+              <Route path="/suppliers" element={<AppLayout><Suppliers /></AppLayout>} />
               <Route path="/import" element={<AppLayout><UnifiedImport /></AppLayout>} />
               <Route path="/import/url-config" element={<AppLayout><URLImportConfig /></AppLayout>} />
               <Route path="/import/xml-config" element={<AppLayout><XMLImportConfig /></AppLayout>} />
