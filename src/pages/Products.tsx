@@ -1,586 +1,506 @@
-import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { 
-  Plus, Search, Filter, Download, Upload, Eye, Edit, Trash2, 
-  Star, TrendingUp, Package, ShoppingCart, BarChart3, Settings,
-  Image, Tag, Globe, Zap, Copy, RefreshCw
+  Search, 
+  Filter, 
+  Plus, 
+  Eye, 
+  Edit, 
+  Package, 
+  DollarSign,
+  TrendingUp,
+  AlertCircle,
+  Star,
+  Image as ImageIcon
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { usePlan } from '@/contexts/PlanContext';
 
 interface Product {
   id: string;
   name: string;
-  sku: string;
+  description?: string;
   price: number;
-  cost_price: number;
-  stock: number;
-  category: string;
-  status: 'draft' | 'active' | 'archived';
-  featured: boolean;
-  images: string[];
+  cost_price?: number;
+  currency: string;
+  category?: string;
+  sku?: string;
+  status: string;
+  image_urls?: string[];
+  ai_optimized: boolean;
   created_at: string;
-  sales_count: number;
-  revenue: number;
-  conversion_rate: number;
+  supplier_name?: string;
 }
 
 const Products = () => {
+  const { user } = useAuth();
   const { toast } = useToast();
-  
-  const [products] = useState<Product[]>([
-    {
-      id: '1',
-      name: 'iPhone 15 Pro Max',
-      sku: 'IPH15PM-256',
-      price: 1299,
-      cost_price: 899,
-      stock: 25,
-      category: 'Smartphones',
-      status: 'active',
-      featured: true,
-      images: ['/placeholder.svg'],
-      created_at: '2024-01-15',
-      sales_count: 156,
-      revenue: 202644,
-      conversion_rate: 0.045
-    },
-    {
-      id: '2',
-      name: 'MacBook Pro 16"',
-      sku: 'MBP16-512',
-      price: 2899,
-      cost_price: 2299,
-      stock: 12,
-      category: 'Ordinateurs',
-      status: 'active',
-      featured: false,
-      images: ['/placeholder.svg'],
-      created_at: '2024-01-10',
-      sales_count: 89,
-      revenue: 258011,
-      conversion_rate: 0.032
-    },
-    {
-      id: '3',
-      name: 'Samsung Galaxy S24',
-      sku: 'SGS24-128',
-      price: 899,
-      cost_price: 679,
-      stock: 0,
-      category: 'Smartphones',
-      status: 'active',
-      featured: false,
-      images: ['/placeholder.svg'],
-      created_at: '2024-01-08',
-      sales_count: 203,
-      revenue: 182697,
-      conversion_rate: 0.056
-    }
-  ]);
-
+  const { isUltraPro, isPro } = usePlan();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('created_at');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const categories = [...new Set(products.map(p => p.category))];
-  
-  const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           product.category.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = filterStatus === 'all' || product.status === filterStatus;
-      const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
-      
-      return matchesSearch && matchesStatus && matchesCategory;
-    }).sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          return a.name.localeCompare(b.name);
-        case 'price':
-          return b.price - a.price;
-        case 'stock':
-          return b.stock - a.stock;
-        case 'sales':
-          return b.sales_count - a.sales_count;
-        default:
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      }
-    });
-  }, [products, searchTerm, filterStatus, filterCategory, sortBy]);
+  useEffect(() => {
+    fetchProducts();
+  }, [user]);
 
-  const totalProducts = products.length;
-  const activeProducts = products.filter(p => p.status === 'active').length;
-  const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0);
-  const lowStockProducts = products.filter(p => p.stock <= 5).length;
+  const fetchProducts = async () => {
+    if (!user) return;
 
-  const handleBulkAction = (action: string) => {
-    if (selectedProducts.length === 0) {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('imported_products')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
       toast({
-        title: "Aucun produit sélectionné",
-        description: "Veuillez sélectionner au moins un produit.",
+        title: "Erreur",
+        description: "Impossible de charger les produits",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    switch (action) {
-      case 'activate':
-        toast({
-          title: "Produits activés",
-          description: `${selectedProducts.length} produits ont été activés.`
-        });
-        break;
-      case 'deactivate':
-        toast({
-          title: "Produits désactivés",
-          description: `${selectedProducts.length} produits ont été désactivés.`
-        });
-        break;
-      case 'delete':
-        toast({
-          title: "Produits supprimés",
-          description: `${selectedProducts.length} produits ont été supprimés.`
-        });
-        break;
-      case 'duplicate':
-        toast({
-          title: "Produits dupliqués",
-          description: `${selectedProducts.length} produits ont été dupliqués.`
-        });
-        break;
-    }
-    setSelectedProducts([]);
   };
 
-  const toggleProductSelection = (productId: string) => {
-    setSelectedProducts(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    );
+  const updateProductStatus = async (productId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('imported_products')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', productId)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      setProducts(products.map(product => 
+        product.id === productId ? { ...product, status: newStatus } : product
+      ));
+
+      toast({
+        title: "Succès",
+        description: "Statut du produit mis à jour",
+      });
+    } catch (error) {
+      console.error('Error updating product status:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut",
+        variant: "destructive"
+      });
+    }
   };
 
-  const selectAllProducts = () => {
-    if (selectedProducts.length === filteredProducts.length) {
-      setSelectedProducts([]);
-    } else {
-      setSelectedProducts(filteredProducts.map(p => p.id));
-    }
+  const formatCurrency = (amount: number, currency: string = 'EUR') => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: currency
+    }).format(amount);
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'default';
+      case 'published': return 'default';
       case 'draft': return 'secondary';
-      case 'archived': return 'outline';
+      case 'pending': return 'outline';
+      case 'archived': return 'destructive';
       default: return 'secondary';
     }
   };
 
-  const getStockColor = (stock: number) => {
-    if (stock === 0) return 'destructive';
-    if (stock <= 5) return 'secondary';
-    return 'default';
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.category?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
+    const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+
+  const productStats = {
+    total: products.length,
+    published: products.filter(p => p.status === 'published').length,
+    draft: products.filter(p => p.status === 'draft').length,
+    optimized: products.filter(p => p.ai_optimized).length,
+    totalValue: products.reduce((sum, product) => sum + product.price, 0)
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-bold tracking-tight">Produits</h2>
+        </div>
+        <div className="grid gap-4 md:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-muted rounded w-1/2"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Gestion des Produits</h1>
-          <p className="text-muted-foreground">Gérez votre catalogue produit</p>
+          <h2 className="text-3xl font-bold tracking-tight">Produits</h2>
+          <p className="text-muted-foreground">
+            Gérez votre catalogue de produits importés
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            Exporter
-          </Button>
-          <Button variant="outline">
-            <Upload className="w-4 h-4 mr-2" />
-            Importer
-          </Button>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Nouveau Produit
+          {isUltraPro && (
+            <Button variant="outline" size="sm">
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Analyse AI
+            </Button>
+          )}
+          <Button size="sm" className="gap-2" asChild>
+            <a href="/import">
+              <Plus className="h-4 w-4" />
+              Importer des produits
+            </a>
           </Button>
         </div>
       </div>
 
-      {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Produits</CardTitle>
+            <CardTitle className="text-sm font-medium">Total</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalProducts}</div>
-            <p className="text-xs text-muted-foreground">{activeProducts} actifs</p>
+            <div className="text-2xl font-bold">{productStats.total}</div>
           </CardContent>
         </Card>
-
+        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Valeur Stock</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Publiés</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalValue.toLocaleString('fr-FR')}€</div>
-            <p className="text-xs text-muted-foreground">Valeur totale</p>
+            <div className="text-2xl font-bold">{productStats.published}</div>
+            <p className="text-xs text-muted-foreground">
+              {productStats.draft} en brouillon
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Stock Faible</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Optimisés AI</CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{lowStockProducts}</div>
-            <p className="text-xs text-muted-foreground">Produits à réapprovisionner</p>
+            <div className="text-2xl font-bold">{productStats.optimized}</div>
+            <p className="text-xs text-muted-foreground">
+              {((productStats.optimized / Math.max(productStats.total, 1)) * 100).toFixed(0)}% du total
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenus</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Valeur totale</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {products.reduce((sum, p) => sum + p.revenue, 0).toLocaleString('fr-FR')}€
+              {formatCurrency(productStats.totalValue)}
             </div>
-            <p className="text-xs text-muted-foreground">Total des ventes</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Prix moyen</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(productStats.totalValue / Math.max(productStats.total, 1))}
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filtres et recherche */}
+      {/* Filters and Products List */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Catalogue de produits</CardTitle>
+              <CardDescription>
+                {filteredProducts.length} produit(s) trouvé(s)
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher par nom, SKU ou catégorie..."
+                  placeholder="Rechercher un produit..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-8 w-[300px]"
                 />
               </div>
-            </div>
-            
-            <div className="flex gap-2">
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-32">
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <Filter className="mr-2 h-4 w-4" />
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous statuts</SelectItem>
-                  <SelectItem value="active">Actifs</SelectItem>
-                  <SelectItem value="draft">Brouillons</SelectItem>
-                  <SelectItem value="archived">Archivés</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border shadow-md z-50">
                   <SelectItem value="all">Toutes catégories</SelectItem>
                   {categories.map(category => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                    <SelectItem key={category} value={category!}>
+                      {category}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-32">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[150px]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="created_at">Plus récent</SelectItem>
-                  <SelectItem value="name">Nom A-Z</SelectItem>
-                  <SelectItem value="price">Prix décroissant</SelectItem>
-                  <SelectItem value="stock">Stock décroissant</SelectItem>
-                  <SelectItem value="sales">Ventes décroissant</SelectItem>
+                <SelectContent className="bg-background border shadow-md z-50">
+                  <SelectItem value="all">Tous les statuts</SelectItem>
+                  <SelectItem value="published">Publié</SelectItem>
+                  <SelectItem value="draft">Brouillon</SelectItem>
+                  <SelectItem value="pending">En attente</SelectItem>
+                  <SelectItem value="archived">Archivé</SelectItem>
                 </SelectContent>
               </Select>
-
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-              >
-                <Package className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-              >
-                <BarChart3 className="w-4 h-4" />
-              </Button>
             </div>
           </div>
-
-          {/* Actions en lot */}
-          {selectedProducts.length > 0 && (
-            <div className="mt-4 p-4 bg-muted rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">
-                  {selectedProducts.length} produit(s) sélectionné(s)
-                </span>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => handleBulkAction('activate')}>
-                    <Eye className="w-4 h-4 mr-1" />
-                    Activer
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleBulkAction('deactivate')}>
-                    <Settings className="w-4 h-4 mr-1" />
-                    Désactiver
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleBulkAction('duplicate')}>
-                    <Copy className="w-4 h-4 mr-1" />
-                    Dupliquer
-                  </Button>
-                  <Button size="sm" variant="destructive" onClick={() => handleBulkAction('delete')}>
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Supprimer
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Liste des produits */}
-      <div className="space-y-4">
-        {/* En-tête de sélection */}
-        <div className="flex items-center gap-2 p-2">
-          <input
-            type="checkbox"
-            checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
-            onChange={selectAllProducts}
-            className="rounded"
-          />
-          <Label className="text-sm">Sélectionner tout ({filteredProducts.length} produits)</Label>
-        </div>
-
-        {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredProducts.map((product) => (
-              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="relative">
-                  <img
-                    src={product.images[0]}
-                    alt={product.name}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute top-2 left-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedProducts.includes(product.id)}
-                      onChange={() => toggleProductSelection(product.id)}
-                      className="rounded"
+              <Card key={product.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                <div className="aspect-square bg-muted relative">
+                  {product.image_urls?.[0] ? (
+                    <img 
+                      src={product.image_urls[0]} 
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling!.classList.remove('hidden');
+                      }}
                     />
+                  ) : null}
+                  <div className={`absolute inset-0 flex items-center justify-center ${product.image_urls?.[0] ? 'hidden' : ''}`}>
+                    <ImageIcon className="h-12 w-12 text-muted-foreground" />
                   </div>
+                  
                   <div className="absolute top-2 right-2 flex gap-1">
-                    {product.featured && (
-                      <Badge variant="default" className="text-xs">
-                        <Star className="w-3 h-3 mr-1" />
-                        Vedette
-                      </Badge>
-                    )}
                     <Badge variant={getStatusColor(product.status)} className="text-xs">
                       {product.status}
                     </Badge>
+                    {product.ai_optimized && (
+                      <Badge variant="default" className="text-xs">
+                        <Star className="h-3 w-3 mr-1" />
+                        AI
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 
                 <CardContent className="p-4">
                   <div className="space-y-2">
-                    <h3 className="font-semibold truncate">{product.name}</h3>
-                    <p className="text-sm text-muted-foreground">{product.sku}</p>
+                    <h3 className="font-medium line-clamp-2 text-sm">{product.name}</h3>
                     
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-bold text-lg">{product.price}€</p>
-                        <p className="text-xs text-muted-foreground">Coût: {product.cost_price}€</p>
+                        <p className="text-lg font-bold">{formatCurrency(product.price, product.currency)}</p>
+                        {isPro && product.cost_price && (
+                          <p className="text-xs text-muted-foreground">
+                            Coût: {formatCurrency(product.cost_price, product.currency)}
+                          </p>
+                        )}
                       </div>
-                      <Badge variant={getStockColor(product.stock)}>
-                        {product.stock} en stock
-                      </Badge>
+                      {isPro && product.cost_price && (
+                        <div className="text-right">
+                          <p className="text-xs text-emerald-600 font-medium">
+                            +{((product.price - product.cost_price) / product.cost_price * 100).toFixed(0)}%
+                          </p>
+                        </div>
+                      )}
                     </div>
-
-                    <div className="text-xs text-muted-foreground space-y-1">
-                      <div className="flex justify-between">
-                        <span>Ventes:</span>
-                        <span>{product.sales_count}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Revenus:</span>
-                        <span>{product.revenue.toLocaleString('fr-FR')}€</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Conversion:</span>
-                        <span>{(product.conversion_rate * 100).toFixed(1)}%</span>
-                      </div>
+                    
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{product.category || 'Sans catégorie'}</span>
+                      <span>{product.sku || 'Sans SKU'}</span>
                     </div>
-
-                    <div className="flex gap-1 pt-2">
-                      <Button size="sm" variant="outline" className="flex-1">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="flex-1">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="flex-1">
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="destructive" className="flex-1">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    
+                    {product.supplier_name && (
+                      <p className="text-xs text-muted-foreground">
+                        Fournisseur: {product.supplier_name}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mt-4">
+                    <Dialog onOpenChange={(open) => open && setSelectedProduct(product)}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="flex-1">
+                          <Eye className="h-4 w-4 mr-1" />
+                          Voir
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>{selectedProduct?.name}</DialogTitle>
+                          <DialogDescription>
+                            Détails du produit
+                          </DialogDescription>
+                        </DialogHeader>
+                        
+                        {selectedProduct && (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <h4 className="font-medium mb-2">Informations générales</h4>
+                                <div className="space-y-2 text-sm">
+                                  <div><strong>Prix:</strong> {formatCurrency(selectedProduct.price, selectedProduct.currency)}</div>
+                                  {isPro && selectedProduct.cost_price && (
+                                    <div><strong>Prix de revient:</strong> {formatCurrency(selectedProduct.cost_price, selectedProduct.currency)}</div>
+                                  )}
+                                  <div><strong>Catégorie:</strong> {selectedProduct.category || 'N/A'}</div>
+                                  <div><strong>SKU:</strong> {selectedProduct.sku || 'N/A'}</div>
+                                  <div><strong>Statut:</strong> 
+                                    <Badge variant={getStatusColor(selectedProduct.status)} className="ml-2">
+                                      {selectedProduct.status}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <h4 className="font-medium mb-2">Optimisation</h4>
+                                <div className="space-y-2 text-sm">
+                                  <div>
+                                    <strong>IA Optimisé:</strong> 
+                                    {selectedProduct.ai_optimized ? (
+                                      <Badge variant="default" className="ml-2">
+                                        <Star className="h-3 w-3 mr-1" />
+                                        Oui
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="secondary" className="ml-2">Non</Badge>
+                                    )}
+                                  </div>
+                                  <div><strong>Fournisseur:</strong> {selectedProduct.supplier_name || 'N/A'}</div>
+                                  <div><strong>Créé le:</strong> {new Date(selectedProduct.created_at).toLocaleDateString()}</div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {selectedProduct.description && (
+                              <div>
+                                <h4 className="font-medium mb-2">Description</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {selectedProduct.description}
+                                </p>
+                              </div>
+                            )}
+                            
+                            <div className="flex justify-between items-center pt-4 border-t">
+                              <Select
+                                value={selectedProduct.status}
+                                onValueChange={(value) => updateProductStatus(selectedProduct.id, value)}
+                              >
+                                <SelectTrigger className="w-[150px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="bg-background border shadow-md z-50">
+                                  <SelectItem value="published">Publié</SelectItem>
+                                  <SelectItem value="draft">Brouillon</SelectItem>
+                                  <SelectItem value="pending">En attente</SelectItem>
+                                  <SelectItem value="archived">Archivé</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              
+                              <Button variant="outline">
+                                <Edit className="h-4 w-4 mr-2" />
+                                Modifier
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                    
+                    <Select
+                      value={product.status}
+                      onValueChange={(value) => updateProductStatus(product.id, value)}
+                    >
+                      <SelectTrigger className="w-[100px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-md z-50">
+                        <SelectItem value="published">Publié</SelectItem>
+                        <SelectItem value="draft">Brouillon</SelectItem>
+                        <SelectItem value="pending">En attente</SelectItem>
+                        <SelectItem value="archived">Archivé</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
-        ) : (
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="border-b">
-                    <tr className="text-left">
-                      <th className="p-4 w-12">
-                        <input
-                          type="checkbox"
-                          checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
-                          onChange={selectAllProducts}
-                          className="rounded"
-                        />
-                      </th>
-                      <th className="p-4">Produit</th>
-                      <th className="p-4">SKU</th>
-                      <th className="p-4">Prix</th>
-                      <th className="p-4">Stock</th>
-                      <th className="p-4">Statut</th>
-                      <th className="p-4">Ventes</th>
-                      <th className="p-4">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredProducts.map((product) => (
-                      <tr key={product.id} className="border-b hover:bg-muted/50">
-                        <td className="p-4">
-                          <input
-                            type="checkbox"
-                            checked={selectedProducts.includes(product.id)}
-                            onChange={() => toggleProductSelection(product.id)}
-                            className="rounded"
-                          />
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={product.images[0]}
-                              alt={product.name}
-                              className="w-12 h-12 object-cover rounded"
-                            />
-                            <div>
-                              <p className="font-medium">{product.name}</p>
-                              <p className="text-sm text-muted-foreground">{product.category}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-4 font-mono text-sm">{product.sku}</td>
-                        <td className="p-4">
-                          <div>
-                            <p className="font-semibold">{product.price}€</p>
-                            <p className="text-xs text-muted-foreground">Coût: {product.cost_price}€</p>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <Badge variant={getStockColor(product.stock)}>
-                            {product.stock}
-                          </Badge>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex gap-1">
-                            <Badge variant={getStatusColor(product.status)}>
-                              {product.status}
-                            </Badge>
-                            {product.featured && (
-                              <Badge variant="outline" className="text-xs">
-                                <Star className="w-3 h-3" />
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="text-sm">
-                            <p>{product.sales_count} ventes</p>
-                            <p className="text-muted-foreground">{product.revenue.toLocaleString('fr-FR')}€</p>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex gap-1">
-                            <Button size="sm" variant="ghost">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="ghost">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="ghost">
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="ghost" className="text-destructive">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {filteredProducts.length === 0 && (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <Package className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">Aucun produit trouvé</h3>
-              <p className="text-muted-foreground mb-4">
-                Aucun produit ne correspond à vos critères de recherche.
+          
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-8">
+              <Package className="mx-auto h-12 w-12 text-muted-foreground" />
+              <p className="mt-2 text-muted-foreground">
+                {searchTerm || categoryFilter !== 'all' || statusFilter !== 'all'
+                  ? 'Aucun produit ne correspond aux critères de recherche'
+                  : 'Aucun produit importé trouvé'
+                }
               </p>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Créer un nouveau produit
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+              {products.length === 0 && (
+                <Button className="mt-4" asChild>
+                  <a href="/import">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Importer mes premiers produits
+                  </a>
+                </Button>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

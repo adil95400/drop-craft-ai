@@ -1,152 +1,156 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { useRealProducts } from "@/hooks/useRealProducts";
-import { supabase } from "@/integrations/supabase/client";
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CreateProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onProductCreated?: () => void;
 }
 
-export const CreateProductDialog = ({ open, onOpenChange }: CreateProductDialogProps) => {
+export function CreateProductDialog({ open, onOpenChange, onProductCreated }: CreateProductDialogProps) {
+  const { user } = useAuth();
   const { toast } = useToast();
-  const { addProduct, isAdding } = useRealProducts();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    category: "",
-    sku: ""
+    name: '',
+    description: '',
+    price: '',
+    sku: '',
+    category: '',
+    status: 'draft' as const
   });
 
-  const handleCreate = async () => {
-    if (!formData.name || !formData.price) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs obligatoires",
-        variant: "destructive"
-      });
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
 
+    setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Erreur",
-          description: "Vous devez être connecté pour créer un produit",
-          variant: "destructive"
-        });
-        return;
-      }
+      const { error } = await supabase
+        .from('imported_products')
+        .insert([{
+          ...formData,
+          price: parseFloat(formData.price) || 0,
+          user_id: user.id,
+          currency: 'EUR'
+        }]);
 
-      addProduct({
-        name: formData.name,
-        description: formData.description || undefined,
-        price: parseFloat(formData.price),
-        category: formData.category || undefined,
-        sku: formData.sku || undefined,
-        status: 'active'
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Produit créé avec succès",
       });
 
+      onProductCreated?.();
       onOpenChange(false);
-      setFormData({
-        name: "",
-        description: "",
-        price: "",
-        category: "",
-        sku: ""
-      });
+      setFormData({ name: '', description: '', price: '', sku: '', category: '', status: 'draft' });
     } catch (error) {
       console.error('Error creating product:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la création du produit",
+        description: "Impossible de créer le produit",
         variant: "destructive"
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Ajouter un Nouveau Produit</DialogTitle>
+          <DialogTitle>Créer un nouveau produit</DialogTitle>
           <DialogDescription>
-            Créez un nouveau produit dans votre catalogue
+            Ajoutez un nouveau produit à votre catalogue
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nom du produit</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Nom du produit"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="price">Prix</Label>
-              <Input
-                id="price"
-                type="number"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                placeholder="0.00"
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Nom du produit *</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
           </div>
           
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Description du produit"
-              rows={3}
             />
           </div>
           
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="category">Catégorie</Label>
+            <div>
+              <Label htmlFor="price">Prix (€) *</Label>
               <Input
-                id="category"
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                placeholder="Catégorie"
+                id="price"
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                required
               />
             </div>
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="sku">SKU</Label>
               <Input
                 id="sku"
                 value={formData.sku}
                 onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                placeholder="SKU du produit"
               />
             </div>
           </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Annuler
-          </Button>
-          <Button onClick={handleCreate} disabled={isAdding}>
-            {isAdding ? "Création..." : "Créer le produit"}
-          </Button>
-        </DialogFooter>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="category">Catégorie</Label>
+              <Input
+                id="category"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="status">Statut</Label>
+              <Select value={formData.status} onValueChange={(value: any) => setFormData({ ...formData, status: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-background border shadow-md z-50">
+                  <SelectItem value="draft">Brouillon</SelectItem>
+                  <SelectItem value="published">Publié</SelectItem>
+                  <SelectItem value="pending">En attente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Annuler
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Création...' : 'Créer le produit'}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
-};
+}

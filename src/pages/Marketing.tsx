@@ -1,551 +1,475 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { toast } from "sonner";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { 
+  Megaphone, 
   Target, 
-  Mail, 
-  MessageSquare, 
   TrendingUp, 
-  Users,
-  Zap,
-  Calendar,
+  Users, 
+  Mail, 
+  Share2,
   BarChart3,
-  Send,
+  Zap,
+  Palette,
+  Eye,
   Play,
   Pause,
-  Eye,
-  Edit,
-  Copy,
-  Plus,
-  Filter,
-  ArrowUp,
-  ArrowDown
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useUnifiedMarketing } from "@/hooks/useUnifiedMarketing";
-import { UnifiedMarketingHub } from "@/components/marketing/UnifiedMarketingHub";
-import { IntelligentCampaignBuilder } from "@/components/marketing/IntelligentCampaignBuilder";
-import { AutomatedMarketingSync } from "@/components/marketing/AutomatedMarketingSync";
-import { AdvancedAnalyticsDashboard } from "@/components/marketing/AdvancedAnalyticsDashboard";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+  Settings,
+  Plus
+} from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { usePlan } from '@/contexts/PlanContext';
+import { CanvaIntegrationPanel } from '@/components/marketing/CanvaIntegrationPanel';
+
+interface Campaign {
+  id: string;
+  campaign_name: string;
+  campaign_type: string;
+  status: string;
+  target_criteria: any;
+  performance_goals: any;
+  current_metrics: any;
+  created_at: string;
+}
 
 const Marketing = () => {
-  const navigate = useNavigate();
-  
-  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
-  const { campaigns, stats, isLoading } = useUnifiedMarketing();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { isUltraPro, isPro } = usePlan();
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedStores, setSelectedStores] = useState<string[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  const mockCampaigns = [
-    {
-      id: "1",
-      name: "Black Friday 2024",
-      type: "email",
-      status: "active",
-      budget: "€2,500",
-      spent: "€1,847",
-      conversions: 234,
-      roi: "+280%",
-      reach: "15.2K",
-      engagement: "8.4%"
-    },
-    {
-      id: "2", 
-      name: "Produits iPhone 15",
-      type: "ads",
-      status: "active",
-      budget: "€5,000",
-      spent: "€3,245",
-      conversions: 156,
-      roi: "+190%",
-      reach: "42.1K",
-      engagement: "5.2%"
-    },
-    {
-      id: "3",
-      name: "Retargeting Abandons",
-      type: "retargeting",
-      status: "paused",
-      budget: "€1,200",
-      spent: "€890",
-      conversions: 89,
-      roi: "+150%",
-      reach: "8.7K",
-      engagement: "12.1%"
-    },
-    {
-      id: "4",
-      name: "Newsletter Hebdo",
-      type: "email",
-      status: "active",
-      budget: "€500",
-      spent: "€320",
-      conversions: 67,
-      roi: "+120%",
-      reach: "25.3K",
-      engagement: "6.8%"
+  useEffect(() => {
+    fetchCampaigns();
+  }, [user]);
+
+  const fetchCampaigns = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('automated_campaigns')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setCampaigns(data || []);
+    } catch (error) {
+      console.error('Error fetching campaigns:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les campagnes",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-  ];
-
-  // Use real campaigns data or fallback to mock data for demo
-  const displayCampaigns = campaigns.length > 0 ? campaigns.map(campaign => ({
-    id: campaign.id,
-    name: campaign.name,
-    type: campaign.type,
-    status: campaign.status,
-    budget: campaign.budget_total ? `€${campaign.budget_total.toLocaleString()}` : '€0',
-    spent: `€${campaign.budget_spent.toLocaleString()}`,
-    conversions: (campaign.metrics as any)?.conversions || 0,
-    roi: (campaign.metrics as any)?.roas ? `+${Math.round((campaign.metrics as any).roas * 100)}%` : '+0%',
-    reach: (campaign.metrics as any)?.impressions ? `${((campaign.metrics as any).impressions / 1000).toFixed(1)}K` : '0',
-    engagement: (campaign.metrics as any)?.ctr ? `${((campaign.metrics as any).ctr * 100).toFixed(1)}%` : '0%'
-  })) : mockCampaigns;
-
-  // Real-time marketing metrics from unified hook
-  const realMetrics = [
-    {
-      title: "ROI Moyen",
-      value: stats.avgROAS ? `+${Math.round(stats.avgROAS * 100)}%` : "+210%",
-      change: "+15%",
-      trend: "up",
-      icon: TrendingUp,
-      color: "text-green-600"
-    },
-    {
-      title: "Budget Total",
-      value: `€${stats.totalBudget.toLocaleString()}`,
-      change: "-8%",
-      trend: "down",
-      icon: Target,
-      color: "text-blue-600"
-    },
-    {
-      title: "Campagnes Actives",
-      value: stats.activeCampaigns.toString(),
-      change: "+3.2%",
-      trend: "up",
-      icon: Mail,
-      color: "text-purple-600"
-    },
-    {
-      title: "Taux Conversion",
-      value: `${(stats.conversionRate * 100).toFixed(1)}%`,
-      change: "+1.8%",
-      trend: "up",
-      icon: MessageSquare,
-      color: "text-orange-600"
-    }
-  ];
-
-  // Campaign types with real data
-  const campaignTypesData = [
-    { type: "email", label: "Email Marketing", icon: Mail, count: campaigns.filter(c => c.type === 'email').length || 12 },
-    { type: "ads", label: "Publicités", icon: Target, count: campaigns.filter(c => c.type === 'ads').length || 8 },
-    { type: "social", label: "Réseaux Sociaux", icon: MessageSquare, count: campaigns.filter(c => c.type === 'social').length || 15 },
-    { type: "sms", label: "SMS Marketing", icon: Users, count: campaigns.filter(c => c.type === 'sms').length || 5 }
-  ];
-
-  const handleCreateCampaign = () => {
-    toast.success('Assistant de création de campagne lancé');
-    navigate('/marketing/create');
   };
 
-  const handleCampaignAction = (action: string, campaignId: string) => {
-    const campaign = displayCampaigns.find(c => c.id === campaignId);
-    toast.success(`Campagne "${campaign?.name}" ${action === 'pause' ? 'mise en pause' : action === 'play' ? 'relancée' : action}`);
+  const updateCampaignStatus = async (campaignId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('automated_campaigns')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', campaignId)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      setCampaigns(campaigns.map(campaign => 
+        campaign.id === campaignId ? { ...campaign, status: newStatus } : campaign
+      ));
+
+      toast({
+        title: "Succès",
+        description: "Statut de la campagne mis à jour",
+      });
+    } catch (error) {
+      console.error('Error updating campaign status:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut",
+        variant: "destructive"
+      });
+    }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active": return "default";
-      case "paused": return "secondary";
-      case "draft": return "outline";
-      default: return "secondary";
+      case 'active': return 'default';
+      case 'paused': return 'secondary';
+      case 'draft': return 'outline';
+      case 'completed': return 'default';
+      default: return 'secondary';
     }
   };
 
-  const getTypeIcon = (type: string) => {
+  const getCampaignTypeIcon = (type: string) => {
     switch (type) {
-      case "email": return Mail;
-      case "ads": return Target;
-      case "social": return MessageSquare;
-      case "retargeting": return Users;
-      default: return Target;
+      case 'email': return Mail;
+      case 'social': return Share2;
+      case 'ads': return Target;
+      default: return Megaphone;
     }
   };
+
+  const campaignStats = {
+    total: campaigns.length,
+    active: campaigns.filter(c => c.status === 'active').length,
+    draft: campaigns.filter(c => c.status === 'draft').length,
+    totalReach: campaigns.reduce((sum, campaign) => sum + (campaign.current_metrics?.reach || 0), 0),
+    totalEngagement: campaigns.reduce((sum, campaign) => sum + (campaign.current_metrics?.engagement || 0), 0)
+  };
+
+  const handleDesignSelected = (designData: any) => {
+    toast({
+      title: "Design sélectionné",
+      description: "Le design Canva a été intégré à votre campagne marketing",
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-bold tracking-tight">Marketing</h2>
+        </div>
+        <div className="grid gap-4 md:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-muted rounded w-1/2"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
-      {/* Navigation Tabs */}
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-          <TabsTrigger value="builder">Créateur IA</TabsTrigger>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Marketing</h2>
+          <p className="text-muted-foreground">
+            Créez et gérez vos campagnes marketing avec l'intégration Canva
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {isUltraPro && (
+            <Button variant="outline" size="sm">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Analytics AI
+            </Button>
+          )}
+          <Button size="sm" className="gap-2">
+            <Plus className="h-4 w-4" />
+            Nouvelle campagne
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Campagnes</CardTitle>
+            <Megaphone className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{campaignStats.total}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Actives</CardTitle>
+            <Play className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{campaignStats.active}</div>
+            <p className="text-xs text-muted-foreground">
+              {campaignStats.draft} en brouillon
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Portée totale</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{campaignStats.totalReach.toLocaleString()}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Engagement</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{campaignStats.totalEngagement.toLocaleString()}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="campaigns" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="campaigns">Campagnes</TabsTrigger>
+          <TabsTrigger value="canva">Design Canva</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="realtime">Temps Réel</TabsTrigger>
-          <TabsTrigger value="automation">Automation</TabsTrigger>
+          {isUltraPro && <TabsTrigger value="automation">Automation AI</TabsTrigger>}
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-6 mt-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Marketing Pro
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Créez et gérez vos campagnes marketing intelligentes
-              </p>
-            </div>
-            <div className="flex space-x-3">
-              <Button 
-                variant="outline"
-                onClick={() => {
-                  toast.promise(
-                    new Promise((resolve) => {
-                      setTimeout(() => {
-                        const reportData = displayCampaigns.map(c => ({
-                          'Campagne': c.name,
-                          'Type': c.type,
-                          'Budget': c.budget,
-                          'Dépensé': c.spent,
-                          'ROI': c.roi,
-                          'Conversions': c.conversions,
-                          'Engagement': c.engagement
-                        }));
-                        
-                        const headers = Object.keys(reportData[0]).join(',');
-                        const rows = reportData.map(row => Object.values(row).join(','));
-                        const csv = [headers, ...rows].join('\n');
-                        
-                        const blob = new Blob([csv], { type: 'text/csv' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `rapport-marketing-${new Date().toISOString().split('T')[0]}.csv`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                        resolve('success');
-                      }, 1500);
-                    }),
-                    {
-                      loading: 'Génération du rapport marketing...',
-                      success: 'Rapport marketing exporté avec succès',
-                      error: 'Erreur lors de l\'export'
-                    }
-                  );
-                }}
-              >
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Rapports
-              </Button>
-              <Button onClick={handleCreateCampaign}>
-                <Plus className="mr-2 h-4 w-4" />
-                Nouvelle Campagne
-              </Button>
-              <Button variant="outline" onClick={() => navigate("/marketing-ultra-pro")}>
-                <Zap className="mr-2 h-4 w-4" />
-                Ultra Pro
-              </Button>
-            </div>
-          </div>
-
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {realMetrics.map((metric, index) => (
-              <Card key={index} className="border-border bg-card shadow-card">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {metric.title}
-                  </CardTitle>
-                  <metric.icon className={`h-4 w-4 ${metric.color}`} />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{metric.value}</div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    {metric.trend === "up" ? (
-                      <ArrowUp className="h-3 w-3 text-green-600 mr-1" />
-                    ) : (
-                      <ArrowDown className="h-3 w-3 text-red-600 mr-1" />
-                    )}
-                    <span className={metric.trend === "up" ? "text-green-600" : "text-red-600"}>
-                      {metric.change}
-                    </span>
-                    <span className="ml-1">vs mois dernier</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Left Column - Campaigns */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Campaign Types Overview */}
-              <Card className="border-border bg-card shadow-card">
-                <CardHeader>
-                  <CardTitle>Types de Campagnes</CardTitle>
-                  <CardDescription>Vue d'ensemble de vos campagnes actives</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {campaignTypesData.map((type, index) => (
-                      <div key={index} className="text-center p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                        <type.icon className="h-8 w-8 mx-auto mb-2 text-primary" />
-                        <div className="font-medium text-sm">{type.label}</div>
-                        <div className="text-xs text-muted-foreground">{type.count} campagnes</div>
+        <TabsContent value="campaigns" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Mes campagnes marketing</CardTitle>
+              <CardDescription>
+                Gérez toutes vos campagnes marketing en un seul endroit
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {campaigns.map((campaign) => {
+                  const TypeIcon = getCampaignTypeIcon(campaign.campaign_type);
+                  return (
+                    <div key={campaign.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <TypeIcon className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">{campaign.campaign_name}</p>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span className="capitalize">{campaign.campaign_type}</span>
+                            <span>•</span>
+                            <span>Créée le {new Date(campaign.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Active Campaigns */}
-              <Card className="border-border bg-card shadow-card">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>Campagnes Actives</CardTitle>
-                      <CardDescription>Gérez vos campagnes en cours</CardDescription>
+                      
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="font-medium">Portée: {campaign.current_metrics?.reach || 0}</p>
+                          <p className="text-sm text-muted-foreground">
+                            CTR: {campaign.current_metrics?.ctr || 0}%
+                          </p>
+                        </div>
+                        
+                        <Badge variant={getStatusColor(campaign.status)}>
+                          {campaign.status}
+                        </Badge>
+                        
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => updateCampaignStatus(
+                              campaign.id, 
+                              campaign.status === 'active' ? 'paused' : 'active'
+                            )}
+                          >
+                            {campaign.status === 'active' ? (
+                              <Pause className="h-4 w-4" />
+                            ) : (
+                              <Play className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Settings className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                    <Button variant="outline" size="sm">
-                      <Filter className="mr-2 h-4 w-4" />
-                      Filtrer
+                  );
+                })}
+                
+                {campaigns.length === 0 && (
+                  <div className="text-center py-8">
+                    <Megaphone className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <p className="mt-2 text-muted-foreground">
+                      Aucune campagne marketing créée
+                    </p>
+                    <Button className="mt-4" variant="outline">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Créer ma première campagne
                     </Button>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {displayCampaigns.map((campaign) => {
-                      const TypeIcon = getTypeIcon(campaign.type);
-                      return (
-                        <div 
-                          key={campaign.id} 
-                          className="border border-border rounded-lg p-4 hover:bg-muted/20 transition-colors cursor-pointer"
-                          onClick={() => setSelectedCampaign(campaign.id)}
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                                <TypeIcon className="h-5 w-5 text-primary" />
-                              </div>
-                              <div>
-                                <h4 className="font-semibold">{campaign.name}</h4>
-                                <p className="text-sm text-muted-foreground">
-                                  {campaign.reach} portée • ROI {campaign.roi}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge variant={getStatusColor(campaign.status)}>
-                                {campaign.status === "active" ? "Actif" : 
-                                 campaign.status === "paused" ? "Pausé" : "Brouillon"}
-                              </Badge>
-                              <div className="flex gap-1">
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                {campaign.status === "active" ? (
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-8 w-8"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleCampaignAction("pause", campaign.id);
-                                    }}
-                                  >
-                                    <Pause className="h-4 w-4" />
-                                  </Button>
-                                ) : (
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-8 w-8"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleCampaignAction("play", campaign.id);
-                                    }}
-                                  >
-                                    <Play className="h-4 w-4" />
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <div>
-                              <div className="text-muted-foreground">Budget</div>
-                              <div className="font-medium">{campaign.budget}</div>
-                            </div>
-                            <div>
-                              <div className="text-muted-foreground">Dépensé</div>
-                              <div className="font-medium">{campaign.spent}</div>
-                            </div>
-                            <div>
-                              <div className="text-muted-foreground">Conversions</div>
-                              <div className="font-medium">{campaign.conversions}</div>
-                            </div>
-                            <div>
-                              <div className="text-muted-foreground">Engagement</div>
-                              <div className="font-medium">{campaign.engagement}</div>
-                            </div>
-                          </div>
+        <TabsContent value="canva" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Intégration Canva Design
+              </CardTitle>
+              <CardDescription>
+                Créez et utilisez des designs Canva pour vos campagnes marketing
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CanvaIntegrationPanel
+                onDesignSelected={handleDesignSelected}
+                selectedStores={selectedStores}
+                selectedProducts={selectedProducts}
+                selectedCategories={selectedCategories}
+                selectedEvents={[]}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                          <div className="mt-3">
-                            <div className="flex justify-between text-xs mb-1">
-                              <span>Budget utilisé</span>
-                              <span>{Math.round((parseFloat(campaign.spent.replace('€', '').replace(',', '')) / parseFloat(campaign.budget.replace('€', '').replace(',', ''))) * 100)}%</span>
-                            </div>
-                            <Progress 
-                              value={Math.round((parseFloat(campaign.spent.replace('€', '').replace(',', '')) / parseFloat(campaign.budget.replace('€', '').replace(',', ''))) * 100)} 
-                              className="h-2" 
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
+        <TabsContent value="analytics" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance des campagnes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>Taux d'ouverture email</span>
+                      <span>24.5%</span>
+                    </div>
+                    <Progress value={24.5} className="mt-2" />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>Taux de clic</span>
+                      <span>3.2%</span>
+                    </div>
+                    <Progress value={3.2} className="mt-2" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>Conversion</span>
+                      <span>1.8%</span>
+                    </div>
+                    <Progress value={1.8} className="mt-2" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Right Column */}
-            <div className="space-y-6">
-              {/* Quick Actions */}
-              <Card className="border-border bg-card shadow-card">
-                <CardHeader>
-                  <CardTitle>Actions Rapides</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start" 
-                    onClick={handleCreateCampaign}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Créer Email Campaign
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start"
-                    onClick={() => {
-                      toast.success('Redirection vers Facebook Ads Manager');
-                      window.open('https://www.facebook.com/adsmanager', '_blank');
-                    }}
-                  >
-                    <Target className="mr-2 h-4 w-4" />
-                    Nouvelle Pub Facebook
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start"
-                    onClick={() => {
-                      toast.success('Configuration du retargeting démarrée');
-                    }}
-                  >
-                    <Users className="mr-2 h-4 w-4" />
-                    Campagne Retargeting
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start"
-                    onClick={() => {
-                      if (selectedCampaign) {
-                        const campaign = displayCampaigns.find(c => c.id === selectedCampaign);
-                        toast.success(`Duplication de la campagne "${campaign?.name}"`);
-                      } else {
-                        toast.error('Sélectionnez une campagne à dupliquer');
-                      }
-                    }}
-                  >
-                    <Copy className="mr-2 h-4 w-4" />
-                    Dupliquer Campagne
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Performance This Month */}
-              <Card className="border-border bg-card shadow-card">
-                <CardHeader>
-                  <CardTitle>Performance du Mois</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Engagement social</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Total Impressions</span>
-                    <span className="font-semibold">{stats.totalImpressions.toLocaleString()}</span>
+                    <span className="text-sm">Likes</span>
+                    <span className="font-medium">1,234</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Total Clics</span>
-                    <span className="font-semibold text-green-600">{stats.totalClicks.toLocaleString()}</span>
+                    <span className="text-sm">Partages</span>
+                    <span className="font-medium">567</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Taux de conversion</span>
-                    <span className="font-semibold">{(stats.conversionRate * 100).toFixed(1)}%</span>
+                    <span className="text-sm">Commentaires</span>
+                    <span className="font-medium">89</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">Budget dépensé</span>
-                    <span className="font-semibold">€{stats.totalSpent.toLocaleString()}</span>
+                    <span className="text-sm">Portée organique</span>
+                    <span className="font-medium">12,456</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">ROAS Moyen</span>
-                    <span className="font-semibold text-primary">{stats.avgROAS.toFixed(1)}x</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Top Performing Content */}
-              <Card className="border-border bg-card shadow-card">
-                <CardHeader>
-                  <CardTitle>Meilleurs Contenus</CardTitle>
-                  <CardDescription>Vos créations les plus performantes</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {[
-                      { title: "Black Friday Deal iPhone", engagement: "12.4%", type: "Email" },
-                      { title: "Product Launch Video", engagement: "9.8%", type: "Social" },
-                      { title: "Customer Testimonials", engagement: "8.7%", type: "Ad" },
-                      { title: "Holiday Collection", engagement: "7.2%", type: "Email" }
-                    ].map((content, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                        <div>
-                          <div className="font-medium text-sm">{content.title}</div>
-                          <div className="text-xs text-muted-foreground">{content.type}</div>
-                        </div>
-                        <Badge variant="secondary">{content.engagement}</Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
-        <TabsContent value="realtime" className="space-y-6 mt-6">
-          <UnifiedMarketingHub />
-        </TabsContent>
+        {isUltraPro && (
+          <TabsContent value="automation" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5" />
+                  Marketing Automation AI
+                </CardTitle>
+                <CardDescription>
+                  Automatisation intelligente de vos campagnes marketing
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Segmentation automatique</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          L'IA analyse automatiquement vos clients et crée des segments pour des campagnes ciblées
+                        </p>
+                        <Button variant="outline" className="w-full">
+                          Configurer la segmentation
+                        </Button>
+                      </CardContent>
+                    </Card>
 
-        <TabsContent value="builder" className="space-y-6 mt-6">
-          <IntelligentCampaignBuilder />
-        </TabsContent>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Optimisation des envois</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Détermination automatique du meilleur moment pour envoyer vos campagnes
+                        </p>
+                        <Button variant="outline" className="w-full">
+                          Activer l'optimisation
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
 
-        <TabsContent value="analytics" className="space-y-6 mt-6">
-          <AdvancedAnalyticsDashboard />
-        </TabsContent>
-
-        <TabsContent value="automation" className="space-y-6 mt-6">
-          <AutomatedMarketingSync />
-        </TabsContent>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Génération de contenu AI</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Création automatique de contenus marketing personnalisés avec Canva
+                      </p>
+                      <div className="flex gap-2">
+                        <Button variant="outline">
+                          Générer du contenu email
+                        </Button>
+                        <Button variant="outline">
+                          Créer des visuels social media
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
