@@ -37,6 +37,11 @@ import CLIToolsPage from '@/pages/extensions/CLIToolsPage';
 import WhiteLabelPage from '@/pages/extensions/WhiteLabelPage';
 import SSOPage from '@/pages/extensions/SSOPage';
 
+// Landing Pages
+import Features from '@/pages/Features';
+import Pricing from '@/pages/Pricing';
+import Contact from '@/pages/Contact';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -80,6 +85,11 @@ function App() {
                 <Route path="/extensions/cli" element={<AppLayout><CLIToolsPage /></AppLayout>} />
                 <Route path="/extensions/white-label" element={<AppLayout><WhiteLabelPage /></AppLayout>} />
                 <Route path="/extensions/sso" element={<AppLayout><SSOPage /></AppLayout>} />
+                
+                {/* Landing Pages */}
+                <Route path="/features" element={<Features />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/contact" element={<Contact />} />
                 
                 <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />
                 <Route path="*" element={<Navigate to="/" replace />} />
