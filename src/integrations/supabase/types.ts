@@ -1421,6 +1421,256 @@ export type Database = {
         }
         Relationships: []
       }
+      extension_data: {
+        Row: {
+          ai_enhanced: boolean | null
+          ai_metadata: Json
+          created_at: string
+          data_content: Json
+          data_type: string
+          extension_id: string
+          external_id: string | null
+          id: string
+          job_id: string | null
+          quality_score: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_enhanced?: boolean | null
+          ai_metadata?: Json
+          created_at?: string
+          data_content?: Json
+          data_type: string
+          extension_id: string
+          external_id?: string | null
+          id?: string
+          job_id?: string | null
+          quality_score?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_enhanced?: boolean | null
+          ai_metadata?: Json
+          created_at?: string
+          data_content?: Json
+          data_type?: string
+          extension_id?: string
+          external_id?: string | null
+          id?: string
+          job_id?: string | null
+          quality_score?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extension_data_extension_id_fkey"
+            columns: ["extension_id"]
+            isOneToOne: false
+            referencedRelation: "extensions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extension_data_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "extension_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      extension_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_details: Json
+          error_items: number | null
+          extension_id: string
+          id: string
+          input_data: Json
+          job_type: string
+          output_data: Json
+          processed_items: number | null
+          progress: number
+          started_at: string | null
+          status: string
+          success_items: number | null
+          total_items: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_details?: Json
+          error_items?: number | null
+          extension_id: string
+          id?: string
+          input_data?: Json
+          job_type: string
+          output_data?: Json
+          processed_items?: number | null
+          progress?: number
+          started_at?: string | null
+          status?: string
+          success_items?: number | null
+          total_items?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_details?: Json
+          error_items?: number | null
+          extension_id?: string
+          id?: string
+          input_data?: Json
+          job_type?: string
+          output_data?: Json
+          processed_items?: number | null
+          progress?: number
+          started_at?: string | null
+          status?: string
+          success_items?: number | null
+          total_items?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extension_jobs_extension_id_fkey"
+            columns: ["extension_id"]
+            isOneToOne: false
+            referencedRelation: "extensions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      extension_webhooks: {
+        Row: {
+          created_at: string
+          error_count: number | null
+          event_types: string[]
+          extension_id: string
+          id: string
+          is_active: boolean
+          last_triggered_at: string | null
+          success_count: number | null
+          updated_at: string
+          user_id: string
+          webhook_secret: string | null
+          webhook_url: string
+        }
+        Insert: {
+          created_at?: string
+          error_count?: number | null
+          event_types?: string[]
+          extension_id: string
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          success_count?: number | null
+          updated_at?: string
+          user_id: string
+          webhook_secret?: string | null
+          webhook_url: string
+        }
+        Update: {
+          created_at?: string
+          error_count?: number | null
+          event_types?: string[]
+          extension_id?: string
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          success_count?: number | null
+          updated_at?: string
+          user_id?: string
+          webhook_secret?: string | null
+          webhook_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extension_webhooks_extension_id_fkey"
+            columns: ["extension_id"]
+            isOneToOne: false
+            referencedRelation: "extensions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      extensions: {
+        Row: {
+          api_endpoints: Json
+          category: string
+          configuration: Json
+          created_at: string
+          description: string | null
+          display_name: string
+          id: string
+          install_date: string
+          last_sync_at: string | null
+          metadata: Json
+          name: string
+          permissions: Json
+          provider: string
+          rate_limits: Json
+          status: string
+          sync_frequency: string | null
+          updated_at: string
+          user_id: string
+          version: string
+        }
+        Insert: {
+          api_endpoints?: Json
+          category: string
+          configuration?: Json
+          created_at?: string
+          description?: string | null
+          display_name: string
+          id?: string
+          install_date?: string
+          last_sync_at?: string | null
+          metadata?: Json
+          name: string
+          permissions?: Json
+          provider: string
+          rate_limits?: Json
+          status?: string
+          sync_frequency?: string | null
+          updated_at?: string
+          user_id: string
+          version?: string
+        }
+        Update: {
+          api_endpoints?: Json
+          category?: string
+          configuration?: Json
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          id?: string
+          install_date?: string
+          last_sync_at?: string | null
+          metadata?: Json
+          name?: string
+          permissions?: Json
+          provider?: string
+          rate_limits?: Json
+          status?: string
+          sync_frequency?: string | null
+          updated_at?: string
+          user_id?: string
+          version?: string
+        }
+        Relationships: []
+      }
       generated_content: {
         Row: {
           ai_model: string | null
