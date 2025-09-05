@@ -43,6 +43,10 @@ import { ModernNavigation } from '@/components/layout/ModernNavigation';
 import ModernBilling from '@/pages/modern/ModernBilling';
 import AdminDashboard from '@/components/modern/AdminDashboard';
 
+// Nouvelles pages de refonte
+import ModernSuppliersPage from '@/pages/ModernSuppliersPage';
+import ModernImportPage from '@/pages/ModernImportPage';
+
 // Auth Page
 import AuthPage from '@/pages/AuthPage';
 
@@ -143,6 +147,19 @@ function App() {
                     </RequirePlan>
                   </AppLayout>
                 } />
+                
+                {/* Nouvelles routes refonte */}
+                <Route path="/suppliers-v2" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernSuppliersPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import-v2" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernImportPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
                 <Route path="/modern/billing" element={<AppLayout><ModernBilling /></AppLayout>} />
                 <Route path="/modern/customers" element={
                   <AppLayout>

@@ -32,6 +32,7 @@ import {
 import { useAuthWithPlan } from '@/components/unified/UnifiedProvider'
 import { usePlanConditionalRender, ConditionalFeature } from '@/components/unified/UnifiedComponent'
 import { ProFeature, UltraProFeature } from '@/components/unified/UnifiedFeatureGate'
+import { useUnifiedSystem } from '@/hooks/useUnifiedSystem'
 import { supabase } from '@/integrations/supabase/client'
 
 // Import des composants existants
@@ -589,6 +590,29 @@ export default function UnifiedDashboard() {
             </UltraProFeature>
           </TabsContent>
         </Tabs>
+        
+        {/* Section de test - Nouvelles pages refonte */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Pages refonte V2 (Test)
+            </CardTitle>
+            <CardDescription>
+              Nouvelles pages avec système unifié et design moderne
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4">
+              <Button variant="outline" asChild>
+                <a href="/suppliers-v2">Fournisseurs V2</a>
+              </Button>
+              <Button variant="outline" asChild>
+                <a href="/import-v2">Import V2</a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </NotificationProvider>
   )
