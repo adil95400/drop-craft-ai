@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 export const useProfileActions = () => {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const updateProfile = async (data: { full_name?: string; bio?: string }) => {
@@ -19,7 +19,6 @@ export const useProfileActions = () => {
 
       if (error) throw error;
 
-      await refreshProfile();
       toast({
         title: "Profil mis à jour",
         description: "Vos informations ont été sauvegardées avec succès.",
@@ -76,7 +75,6 @@ export const useProfileActions = () => {
 
       if (updateError) throw updateError;
 
-      await refreshProfile();
       toast({
         title: "Avatar mis à jour",
         description: "Votre photo de profil a été changée avec succès.",
