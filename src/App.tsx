@@ -28,6 +28,8 @@ import ImportHistory from '@/pages/ImportHistory';
 import ImportedProducts from '@/pages/ImportedProducts';
 import { ModuleRoutes } from '@/components/routing/ModuleRoutes';
 import Products from '@/pages/Products';
+import { RequirePlan } from '@/components/plan/RequirePlan';
+import { AdminRoute } from '@/components/auth/AdminRoute';
 
 // Nouvelles pages modernes
 import ModernProducts from '@/pages/modern/ModernProducts';
@@ -37,6 +39,7 @@ import ModernCustomers from '@/pages/modern/ModernCustomers';
 import ModernOrders from '@/pages/modern/ModernOrders';
 import ModernMarketing from '@/pages/modern/ModernMarketing';
 import { ModernNavigation } from '@/components/layout/ModernNavigation';
+import AdminDashboard from '@/components/modern/AdminDashboard';
 
 // Extensions Pages
 import ExtensionsHub from '@/pages/ExtensionsHub';
@@ -81,13 +84,43 @@ function App() {
                 <Route path="/suppliers" element={<AppLayout><Suppliers /></AppLayout>} />
                 <Route path="/import" element={<AppLayout><UnifiedImport /></AppLayout>} />
                 
-                {/* Routes modernes */}
-                <Route path="/modern/products" element={<AppLayout><ModernProducts /></AppLayout>} />
-                <Route path="/modern/suppliers" element={<AppLayout><ModernSuppliers /></AppLayout>} />
+                {/* Routes modernes avec protection par plan */}
+                <Route path="/modern/products" element={
+                  <AppLayout>
+                    <RequirePlan minPlan="pro">
+                      <ModernProducts />
+                    </RequirePlan>
+                  </AppLayout>
+                } />
+                <Route path="/modern/suppliers" element={
+                  <AppLayout>
+                    <RequirePlan minPlan="pro">
+                      <ModernSuppliers />
+                    </RequirePlan>
+                  </AppLayout>
+                } />
                 <Route path="/modern/import" element={<AppLayout><ModernImport /></AppLayout>} />
-                <Route path="/modern/customers" element={<AppLayout><ModernCustomers /></AppLayout>} />
-                <Route path="/modern/orders" element={<AppLayout><ModernOrders /></AppLayout>} />
-                <Route path="/modern/marketing" element={<AppLayout><ModernMarketing /></AppLayout>} />
+                <Route path="/modern/customers" element={
+                  <AppLayout>
+                    <RequirePlan minPlan="pro">
+                      <ModernCustomers />
+                    </RequirePlan>
+                  </AppLayout>
+                } />
+                <Route path="/modern/orders" element={
+                  <AppLayout>
+                    <RequirePlan minPlan="pro">
+                      <ModernOrders />
+                    </RequirePlan>
+                  </AppLayout>
+                } />
+                <Route path="/modern/marketing" element={
+                  <AppLayout>
+                    <RequirePlan minPlan="ultra_pro">
+                      <ModernMarketing />
+                    </RequirePlan>
+                  </AppLayout>
+                } />
                 
                 <Route path="/import/url-config" element={<AppLayout><URLImportConfig /></AppLayout>} />
                 <Route path="/import/xml-config" element={<AppLayout><XMLImportConfig /></AppLayout>} />
@@ -117,6 +150,16 @@ function App() {
                 <Route path="/blog" element={<Blog />} />
                 
                 <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin" element={
+                  <AppLayout>
+                    <AdminRoute>
+                      <AdminDashboard />
+                    </AdminRoute>
+                  </AppLayout>
+                } />
+                
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
               <Toaster />
