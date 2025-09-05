@@ -44,6 +44,8 @@ import ModernBilling from '@/pages/modern/ModernBilling';
 import AdminDashboard from '@/components/modern/AdminDashboard';
 
 // Nouvelles pages de refonte
+import ModernDashboard from '@/pages/ModernDashboard';
+import ModernSuppliersHub from '@/pages/ModernSuppliersHub';
 import ModernSuppliersPage from '@/pages/ModernSuppliersPage';
 import ModernImportPage from '@/pages/ModernImportPage';
 
@@ -102,35 +104,34 @@ function App() {
                 <Route path="/modern" element={<AppLayout><ModernNavigation /></AppLayout>} />
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
+                    <AppLayout><ModernDashboard /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard-old" element={
+                  <ProtectedRoute>
                     <AppLayout><UnifiedDashboard /></AppLayout>
                   </ProtectedRoute>
                 } />
-                <Route path="/products" element={
-                  <ProtectedRoute>
-                    <AppLayout><Products /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/orders" element={
-                  <ProtectedRoute>
-                    <AppLayout><Orders /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/customers" element={
-                  <ProtectedRoute>
-                    <AppLayout><Customers /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/marketing" element={
-                  <ProtectedRoute>
-                    <AppLayout><Marketing /></AppLayout>
-                  </ProtectedRoute>
-                } />
+                
+                {/* Hub fournisseurs moderne */}
                 <Route path="/suppliers" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernSuppliersHub /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/suppliers-old" element={
                   <ProtectedRoute>
                     <AppLayout><Suppliers /></AppLayout>
                   </ProtectedRoute>
                 } />
-                <Route path="/import" element={<AppLayout><UnifiedImport /></AppLayout>} />
+                
+                {/* Import moderne */}
+                <Route path="/import" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernImportPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import-old" element={<AppLayout><UnifiedImport /></AppLayout>} />
                 
                 {/* Routes modernes avec protection par plan */}
                 <Route path="/modern/products" element={
