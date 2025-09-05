@@ -33,6 +33,10 @@ import Products from '@/pages/Products';
 import ModernProducts from '@/pages/modern/ModernProducts';
 import ModernSuppliers from '@/pages/modern/ModernSuppliers';
 import ModernImport from '@/pages/modern/ModernImport';
+import ModernCustomers from '@/pages/modern/ModernCustomers';
+import ModernOrders from '@/pages/modern/ModernOrders';
+import ModernMarketing from '@/pages/modern/ModernMarketing';
+import { ModernNavigation } from '@/components/layout/ModernNavigation';
 
 // Extensions Pages
 import ExtensionsHub from '@/pages/ExtensionsHub';
@@ -68,6 +72,7 @@ function App() {
             <NotificationProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/modern" element={<AppLayout><ModernNavigation /></AppLayout>} />
                 <Route path="/dashboard" element={<AppLayout><UnifiedDashboard /></AppLayout>} />
                 <Route path="/products" element={<AppLayout><Products /></AppLayout>} />
                 <Route path="/orders" element={<AppLayout><Orders /></AppLayout>} />
@@ -79,9 +84,11 @@ function App() {
                 {/* Routes modernes */}
                 <Route path="/modern/products" element={<AppLayout><ModernProducts /></AppLayout>} />
                 <Route path="/modern/suppliers" element={<AppLayout><ModernSuppliers /></AppLayout>} />
-        <Route path="/modern-customers" element={<AppLayout><ModernCustomers /></AppLayout>} />
-        <Route path="/modern-orders" element={<AppLayout><ModernOrders /></AppLayout>} />
-        <Route path="/modern-marketing" element={<AppLayout><ModernMarketing /></AppLayout>} />
+                <Route path="/modern/import" element={<AppLayout><ModernImport /></AppLayout>} />
+                <Route path="/modern/customers" element={<AppLayout><ModernCustomers /></AppLayout>} />
+                <Route path="/modern/orders" element={<AppLayout><ModernOrders /></AppLayout>} />
+                <Route path="/modern/marketing" element={<AppLayout><ModernMarketing /></AppLayout>} />
+                
                 <Route path="/import/url-config" element={<AppLayout><URLImportConfig /></AppLayout>} />
                 <Route path="/import/xml-config" element={<AppLayout><XMLImportConfig /></AppLayout>} />
                 <Route path="/import/ftp-config" element={<AppLayout><FTPImportConfig /></AppLayout>} />
