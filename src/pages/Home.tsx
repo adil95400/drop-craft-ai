@@ -62,37 +62,40 @@ const Home = () => {
     });
   };
 
-  // Optimisation automatique de la page d'accueil avec Canva
+  // Optimisations de performance et animations
   useEffect(() => {
-    const optimizeHomePage = async () => {
-      const pageData = {
-        hero: {
-          title: "Transformez votre E-commerce avec l'IA",
-          subtitle: "Découvrez, importez et vendez les produits gagnants",
-          cta: "Démarrer Gratuitement"
-        },
-        features: features.map(f => ({
-          title: f.title,
-          description: f.description,
-          icon: f.icon.name
-        })),
-        testimonials: testimonials,
-        stats: stats
-      };
+    // Preload des images critiques
+    const preloadImages = [
+      heroBackground,
+      dashboardPreview,
+      demoVideoThumbnail,
+      productsShowcase
+    ];
+    
+    preloadImages.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
 
-      const brandColors = {
-        primary: "#3b82f6", // Couleur primaire de notre design
-        secondary: "#8b5cf6"
-      };
+    // Animation d'entrée pour les éléments
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-slide-up');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
 
-      // Optimiser la page complète avec Canva (en arrière-plan)
-      optimizeFullPage(pageData, brandColors);
-    };
+    // Observer tous les éléments avec la classe observe-on-scroll
+    document.querySelectorAll('.observe-on-scroll').forEach((el) => {
+      observer.observe(el);
+    });
 
-    // Lancer l'optimisation après un court délai pour ne pas affecter le chargement initial
-    const timer = setTimeout(optimizeHomePage, 2000);
-    return () => clearTimeout(timer);
-  }, [optimizeFullPage]);
+    return () => observer.disconnect();
+  }, []);
 
   const features = [
     {
@@ -297,27 +300,27 @@ const Home = () => {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
           
           <div className="relative max-w-7xl mx-auto text-center">
-            <div className="mb-8 animate-slide-up">
-              <Badge variant="secondary" className="mb-6 px-6 py-3 text-base shadow-lg">
+            <div className="mb-8 observe-on-scroll opacity-0">
+              <Badge variant="secondary" className="mb-6 px-6 py-3 text-base shadow-lg animate-pulse-glow">
                 <Crown className="w-5 h-5 mr-3" />
                 🏆 Plateforme N°1 en France • +25K Utilisateurs
               </Badge>
             </div>
             
-            <h1 className="text-6xl md:text-8xl font-bold mb-8 bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent animate-slide-up">
+            <h1 className="text-6xl md:text-8xl font-bold mb-8 bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent observe-on-scroll opacity-0 animate-glow-pulse">
               Shopopti Pro
             </h1>
             
-            <p className="text-2xl md:text-3xl text-foreground mb-6 max-w-4xl mx-auto font-medium animate-slide-up">
+            <p className="text-2xl md:text-3xl text-foreground mb-6 max-w-4xl mx-auto font-medium observe-on-scroll opacity-0">
               La première plateforme de <span className="text-primary font-bold">dropshipping intelligent</span>
             </p>
             
-            <p className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed animate-slide-up">
+            <p className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed observe-on-scroll opacity-0">
               Révolutionnez votre e-commerce avec l'intelligence artificielle avancée. 
               Automatisation complète, produits gagnants identifiés en temps réel, profits maximisés.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16 animate-slide-up">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16 observe-on-scroll opacity-0">
               <Button 
                 size="lg" 
                 onClick={handleGetStarted}
@@ -339,19 +342,22 @@ const Home = () => {
             </div>
 
             {/* Enhanced Stats with Growth Indicators */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto animate-slide-up">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center group">
-                  <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
-                    <stat.icon className="h-8 w-8 text-white" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto observe-on-scroll opacity-0">
+              {stats.map((stat, index) => {
+                const delayClass = `stagger-${index + 1}`;
+                return (
+                  <div key={index} className={`text-center group ${delayClass}`}>
+                    <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4 shadow-lg hover-lift animate-float">
+                      <stat.icon className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
+                    <div className="text-sm text-muted-foreground mb-2">{stat.label}</div>
+                    <Badge variant="secondary" className="text-xs bg-success/10 text-success border-success/20">
+                      {stat.growth}
+                    </Badge>
                   </div>
-                  <div className="text-3xl font-bold text-foreground mb-1">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground mb-2">{stat.label}</div>
-                  <Badge variant="secondary" className="text-xs bg-success/10 text-success border-success/20">
-                    {stat.growth}
-                  </Badge>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
