@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
-import { useSimplePlan } from '@/hooks/useSimplePlan'
+import { useLegacyPlan } from '@/lib/migration-helper'
 import { 
   TrendingUp, 
   DollarSign, 
@@ -29,7 +29,7 @@ interface SmartMetric {
 
 export const SmartDashboard = () => {
   const { user } = useAuth()
-  const { plan, isPro, isUltraPro } = useSimplePlan(user)
+  const { plan, isPro, isUltraPro } = useLegacyPlan(user)
 
   const intelligentMetrics: SmartMetric[] = [
     {

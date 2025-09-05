@@ -10,7 +10,7 @@ import { NotificationProvider } from '@/components/notifications/NotificationSer
 
 // Pages
 import Index from '@/pages/Index';
-import Dashboard from '@/pages/Dashboard';
+import UnifiedDashboard from '@/pages/unified/UnifiedDashboard';
 import Orders from '@/pages/Orders';
 import Customers from '@/pages/Customers';
 import Marketing from '@/pages/Marketing';
@@ -63,7 +63,7 @@ function App() {
             <NotificationProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
-                <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
+                <Route path="/dashboard" element={<AppLayout><UnifiedDashboard /></AppLayout>} />
                 <Route path="/products" element={<AppLayout><Products /></AppLayout>} />
                 <Route path="/orders" element={<AppLayout><Orders /></AppLayout>} />
                 <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
