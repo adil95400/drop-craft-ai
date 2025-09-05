@@ -40,6 +40,7 @@ import ModernOrders from '@/pages/modern/ModernOrders';
 import ModernMarketing from '@/pages/modern/ModernMarketing';
 import { ModernNavigation } from '@/components/layout/ModernNavigation';
 import ModernBilling from '@/pages/modern/ModernBilling';
+import AdminDashboard from '@/components/modern/AdminDashboard';
 
 // Extensions Pages
 import ExtensionsHub from '@/pages/ExtensionsHub';
@@ -121,6 +122,7 @@ function App() {
                     </RequirePlan>
                   </AppLayout>
                 } />
+                <Route path="/modern/billing" element={<AppLayout><ModernBilling /></AppLayout>} />
                 
                 <Route path="/import/url-config" element={<AppLayout><URLImportConfig /></AppLayout>} />
                 <Route path="/import/xml-config" element={<AppLayout><XMLImportConfig /></AppLayout>} />
@@ -155,7 +157,7 @@ function App() {
                 <Route path="/admin" element={
                   <AppLayout>
                     <AdminRoute>
-                      <Navigate to="/admin/dashboard" replace />
+                      <AdminDashboard />
                     </AdminRoute>
                   </AppLayout>
                 } />

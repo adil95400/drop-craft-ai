@@ -69,6 +69,14 @@ const modernPages: NavItem[] = [
     badgeVariant: 'default'
   },
   {
+    title: 'Import',
+    description: 'Import multi-formats avec mappage intelligent',
+    href: '/modern/import',
+    icon: Upload,
+    badge: 'Nouveau',
+    badgeVariant: 'default'
+  },
+  {
     title: 'Facturation',
     description: 'Gestion des abonnements et facturation Stripe',
     href: '/modern/billing',

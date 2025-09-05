@@ -46,6 +46,7 @@ import { AIOptimizer } from '@/components/ai/AIOptimizer'
 import { PredictiveAnalytics } from '@/components/analytics/PredictiveAnalytics'
 import { MobileOptimizer } from '@/components/mobile/MobileOptimizer'
 import { NotificationProvider } from '@/components/notifications/NotificationService'
+import { BillingWidget } from '@/components/modern/BillingWidget'
 
 interface DashboardStats {
   revenue: number
@@ -485,7 +486,7 @@ export default function UnifiedDashboard() {
               </div>
             </UltraProFeature>
             
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-3">
               <Card>
                 <CardHeader>
                   <CardTitle>Activité récente</CardTitle>
@@ -511,6 +512,8 @@ export default function UnifiedDashboard() {
                   </div>
                 </CardContent>
               </Card>
+
+              <BillingWidget />
 
               <Card>
                 <CardHeader>
