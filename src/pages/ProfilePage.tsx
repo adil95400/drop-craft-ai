@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useProfileActions } from '@/hooks/useProfileActions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,17 +9,19 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { User, Mail, Shield, Crown, Camera, Save, Calendar } from 'lucide-react';
+import { User, Mail, Shield, Crown, Camera, Save, Calendar, Loader2 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 const ProfilePage = () => {
   const { user, profile } = useAuth();
   const { role, isAdmin } = useUserRole();
+  const { updateProfile, uploadAvatar, loading } = useProfileActions();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
     bio: profile?.bio || '',
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!user) return null;
 
@@ -46,9 +49,30 @@ const ProfilePage = () => {
     );
   };
 
-  const handleSave = () => {
-    // TODO: Implement profile update logic
-    setIsEditing(false);
+  const handleSave = async () => {
+    const success = await updateProfile(formData);
+    if (success) {
+      setIsEditing(false);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        return;
+      }
+      await uploadAvatar(file);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -101,9 +125,22 @@ const ProfilePage = () => {
                     size="sm"
                     variant="secondary"
                     className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0"
+                    onClick={handleAvatarClick}
+                    disabled={loading}
                   >
-                    <Camera className="h-4 w-4" />
+                    {loading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Camera className="h-4 w-4" />
+                    )}
                   </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-lg font-medium">
@@ -196,8 +233,12 @@ const ProfilePage = () => {
                     >
                       Annuler
                     </Button>
-                    <Button onClick={handleSave}>
-                      <Save className="w-4 h-4 mr-2" />
+                    <Button onClick={handleSave} disabled={loading}>
+                      {loading ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4 mr-2" />
+                      )}
                       Sauvegarder
                     </Button>
                   </>

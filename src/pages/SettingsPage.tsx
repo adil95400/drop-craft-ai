@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useSettingsActions } from '@/hooks/useSettingsActions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -8,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { 
   Settings, 
   Bell, 
@@ -20,7 +22,8 @@ import {
   Eye,
   Download,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Loader2
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Helmet } from 'react-helmet-async';
@@ -30,6 +33,7 @@ const SettingsPage = () => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useUserRole();
   const { theme, setTheme } = useTheme();
+  const { saveSettings, changePassword, exportData, deleteAccount, loading } = useSettingsActions();
   
   const [notifications, setNotifications] = useState({
     email: true,
@@ -43,6 +47,48 @@ const SettingsPage = () => {
     activityVisible: false,
     analyticsEnabled: true
   });
+
+  const [language, setLanguage] = useState('fr');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Auto-save settings when they change
+  useEffect(() => {
+    if (hasChanges) {
+      const timeoutId = setTimeout(() => {
+        saveSettings({
+          notifications,
+          privacy,
+          language
+        });
+        setHasChanges(false);
+      }, 1000);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [notifications, privacy, language, hasChanges, saveSettings]);
+
+  const handleNotificationChange = (key: keyof typeof notifications, value: boolean) => {
+    setNotifications(prev => ({ ...prev, [key]: value }));
+    setHasChanges(true);
+  };
+
+  const handlePrivacyChange = (key: keyof typeof privacy, value: boolean) => {
+    setPrivacy(prev => ({ ...prev, [key]: value }));
+    setHasChanges(true);
+  };
+
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value);
+    setHasChanges(true);
+  };
+
+  const handleDeleteAccount = async () => {
+    const success = await deleteAccount();
+    if (success) {
+      signOut();
+    }
+  };
 
   if (!user) return null;
 
@@ -103,7 +149,7 @@ const SettingsPage = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Globe className="h-4 w-4 text-muted-foreground" />
-                  <Select defaultValue="fr">
+                  <Select value={language} onValueChange={handleLanguageChange}>
                     <SelectTrigger className="w-32">
                       <SelectValue />
                     </SelectTrigger>
@@ -142,7 +188,7 @@ const SettingsPage = () => {
                 <Switch
                   checked={notifications.email}
                   onCheckedChange={(checked) => 
-                    setNotifications({ ...notifications, email: checked })
+                    handleNotificationChange('email', checked)
                   }
                 />
               </div>
@@ -162,7 +208,7 @@ const SettingsPage = () => {
                 <Switch
                   checked={notifications.push}
                   onCheckedChange={(checked) => 
-                    setNotifications({ ...notifications, push: checked })
+                    handleNotificationChange('push', checked)
                   }
                 />
               </div>
@@ -179,7 +225,7 @@ const SettingsPage = () => {
                 <Switch
                   checked={notifications.marketing}
                   onCheckedChange={(checked) => 
-                    setNotifications({ ...notifications, marketing: checked })
+                    handleNotificationChange('marketing', checked)
                   }
                 />
               </div>
@@ -199,7 +245,7 @@ const SettingsPage = () => {
                 <Switch
                   checked={notifications.security}
                   onCheckedChange={(checked) => 
-                    setNotifications({ ...notifications, security: checked })
+                    handleNotificationChange('security', checked)
                   }
                   disabled
                 />
@@ -229,7 +275,7 @@ const SettingsPage = () => {
                 <Switch
                   checked={privacy.profileVisible}
                   onCheckedChange={(checked) => 
-                    setPrivacy({ ...privacy, profileVisible: checked })
+                    handlePrivacyChange('profileVisible', checked)
                   }
                 />
               </div>
@@ -246,7 +292,7 @@ const SettingsPage = () => {
                 <Switch
                   checked={privacy.activityVisible}
                   onCheckedChange={(checked) => 
-                    setPrivacy({ ...privacy, activityVisible: checked })
+                    handlePrivacyChange('activityVisible', checked)
                   }
                 />
               </div>
@@ -263,7 +309,7 @@ const SettingsPage = () => {
                 <Switch
                   checked={privacy.analyticsEnabled}
                   onCheckedChange={(checked) => 
-                    setPrivacy({ ...privacy, analyticsEnabled: checked })
+                    handlePrivacyChange('analyticsEnabled', checked)
                   }
                 />
               </div>
@@ -289,7 +335,8 @@ const SettingsPage = () => {
                     Dernière modification : Il y a 30 jours
                   </p>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={changePassword} disabled={loading}>
+                  {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   Modifier
                 </Button>
               </div>
@@ -306,7 +353,14 @@ const SettingsPage = () => {
                     </Badge>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    // TODO: Implement 2FA setup
+                    alert('Configuration 2FA - Fonctionnalité à venir');
+                  }}
+                >
                   Configurer
                 </Button>
               </div>
@@ -320,7 +374,14 @@ const SettingsPage = () => {
                     Gérer les appareils connectés
                   </p>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    // TODO: Implement session management
+                    alert('Gestion des sessions - Fonctionnalité à venir');
+                  }}
+                >
                   Voir tout
                 </Button>
               </div>
@@ -346,8 +407,12 @@ const SettingsPage = () => {
                     Téléchargez une archive de toutes vos données
                   </p>
                 </div>
-                <Button variant="outline" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
+                <Button variant="outline" size="sm" onClick={exportData} disabled={loading}>
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4 mr-2" />
+                  )}
                   Exporter
                 </Button>
               </div>
@@ -362,7 +427,12 @@ const SettingsPage = () => {
                     <p className="text-sm">
                       Ces actions sont irréversibles. Procédez avec prudence.
                     </p>
-                    <Button variant="destructive" size="sm">
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={() => setShowDeleteDialog(true)}
+                      disabled={loading}
+                    >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Supprimer mon compte
                     </Button>
@@ -373,6 +443,18 @@ const SettingsPage = () => {
           </Card>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Supprimer le compte"
+        description="Cette action est irréversible. Toutes vos données seront définitivement supprimées."
+        confirmText="Supprimer définitivement"
+        cancelText="Annuler"
+        onConfirm={handleDeleteAccount}
+        variant="destructive"
+        icon={<AlertTriangle className="h-5 w-5" />}
+      />
     </>
   );
 };
