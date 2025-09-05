@@ -52,6 +52,9 @@ import ModernImportPage from '@/pages/ModernImportPage';
 import ModernOrdersPage from '@/pages/ModernOrdersPage';
 import ModernIntegrationsHub from '@/pages/ModernIntegrationsHub';
 import ModernMarketingPage from '@/pages/ModernMarketingPage';
+import ModernCustomersPage from '@/pages/ModernCustomersPage';
+import ModernAnalyticsPage from '@/pages/ModernAnalyticsPage';
+import ModernSettingsPage from '@/pages/ModernSettingsPage';
 
 // Auth Page
 import AuthPage from '@/pages/AuthPage';
@@ -102,7 +105,7 @@ function App() {
                 } />
                 <Route path="/settings" element={
                   <ProtectedRoute>
-                    <AppLayout><SettingsPage /></AppLayout>
+                    <AppLayout><ModernSettingsPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/modern" element={<AppLayout><ModernNavigation /></AppLayout>} />
@@ -139,6 +142,20 @@ function App() {
                 <Route path="/orders" element={
                   <ProtectedRoute>
                     <AppLayout><ModernOrdersPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Customers moderne */}
+                <Route path="/customers" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernCustomersPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Analytics moderne */}
+                <Route path="/analytics" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernAnalyticsPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 

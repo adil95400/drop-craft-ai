@@ -3,7 +3,7 @@
  * Adapte l'interface selon le rôle (admin vs user)
  */
 
-import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 
 const ModernDashboard: React.FC = () => {
+  const navigate = useNavigate()
   const { 
     user, 
     profile, 
@@ -106,7 +107,7 @@ const ModernDashboard: React.FC = () => {
             </Button>
             <Button 
               className="btn-gradient"
-              onClick={() => window.location.href = isAdmin ? '/admin' : '/products'}
+              onClick={() => navigate(isAdmin ? '/admin' : '/products')}
             >
               <Plus className="h-4 w-4 mr-2" />
               {isAdmin ? 'Gérer Système' : 'Nouveau Produit'}
@@ -170,7 +171,7 @@ const ModernDashboard: React.FC = () => {
                 <Button 
                   variant="outline" 
                   className="h-auto p-4 flex-col gap-2"
-                  onClick={() => window.location.href = '/import'}
+                  onClick={() => navigate('/import')}
                 >
                   <Package className="h-6 w-6" />
                   <span className="text-sm">Import Produits</span>
@@ -178,7 +179,7 @@ const ModernDashboard: React.FC = () => {
                 <Button 
                   variant="outline" 
                   className="h-auto p-4 flex-col gap-2"
-                  onClick={() => window.location.href = '/suppliers'}
+                  onClick={() => navigate('/suppliers')}
                 >
                   <Database className="h-6 w-6" />
                   <span className="text-sm">Fournisseurs</span>
@@ -186,7 +187,7 @@ const ModernDashboard: React.FC = () => {
                 <Button 
                   variant="outline" 
                   className="h-auto p-4 flex-col gap-2"
-                  onClick={() => window.location.href = '/analytics'}
+                  onClick={() => navigate('/analytics')}
                 >
                   <BarChart3 className="h-6 w-6" />
                   <span className="text-sm">Analytics</span>
@@ -194,7 +195,7 @@ const ModernDashboard: React.FC = () => {
                 <Button 
                   variant="outline" 
                   className="h-auto p-4 flex-col gap-2"
-                  onClick={() => window.location.href = '/settings'}
+                  onClick={() => navigate('/settings')}
                 >
                   <Settings className="h-6 w-6" />
                   <span className="text-sm">Paramètres</span>
