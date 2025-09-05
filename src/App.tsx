@@ -46,6 +46,10 @@ import AdminDashboard from '@/components/modern/AdminDashboard';
 // Auth Page
 import AuthPage from '@/pages/AuthPage';
 
+// Profile & Settings Pages
+import ProfilePage from '@/pages/ProfilePage';
+import SettingsPage from '@/pages/SettingsPage';
+
 // Extensions Pages
 import ExtensionsHub from '@/pages/ExtensionsHub';
 import MarketplacePage from '@/pages/extensions/MarketplacePage';
@@ -81,6 +85,16 @@ function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/profile" element={
+                  <ProtectedRoute>
+                    <AppLayout><ProfilePage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/settings" element={
+                  <ProtectedRoute>
+                    <AppLayout><SettingsPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
                 <Route path="/modern" element={<AppLayout><ModernNavigation /></AppLayout>} />
                 <Route path="/dashboard" element={
                   <ProtectedRoute>

@@ -129,6 +129,14 @@ export const UserAccountDropdown = () => {
         </DropdownMenuItem>
         
         <DropdownMenuItem
+          onClick={() => handleNavigation('/profile')}
+          className="cursor-pointer p-3 hover:bg-muted"
+        >
+          <User className="mr-3 h-4 w-4" />
+          <span>Profil</span>
+        </DropdownMenuItem>
+        
+        <DropdownMenuItem
           onClick={() => handleNavigation('/catalogue')}
           className="cursor-pointer p-3 hover:bg-muted"
         >
