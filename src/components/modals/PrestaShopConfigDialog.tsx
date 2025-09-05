@@ -82,8 +82,16 @@ export const PrestaShopConfigDialog = ({ open, onOpenChange }: PrestaShopConfigD
 
     try {
       await addIntegration({
-        platform_name: "PrestaShop",
-        platform_type: "ecommerce",
+        id: "prestashop",
+        name: "PrestaShop",
+        description: "Intégration PrestaShop",
+        category: "ecommerce",
+        logo: '🏬',
+        color: 'bg-blue-500',
+        features: [],
+        setupSteps: [],
+        status: 'available'
+      }, {
         platform_url: formData.shopUrl,
         connection_status: 'connected',
         is_active: true,

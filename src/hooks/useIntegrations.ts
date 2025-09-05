@@ -8,6 +8,7 @@ export interface Integration {
   platform_name: string;
   platform_url?: string;
   shop_domain?: string;
+  seller_id?: string;
   is_active: boolean;
   connection_status: 'connected' | 'disconnected' | 'error' | 'pending';
   sync_frequency: string;
@@ -18,6 +19,7 @@ export interface Integration {
   has_api_secret: boolean;
   last_error?: string;
   sync_settings: any;
+  store_config?: any;
 }
 
 export interface IntegrationTemplate {
@@ -261,6 +263,11 @@ export const useIntegrations = () => {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [syncLogs, setSyncLogs] = useState<any[]>([]);
   const { toast } = useToast();
 
   const fetchIntegrations = async () => {
@@ -272,7 +279,29 @@ export const useIntegrations = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setIntegrations(data || []);
+      
+      // Transform data to match Integration interface
+      const transformedData = data?.map(item => ({
+        id: item.id,
+        platform_type: item.platform_type,
+        platform_name: item.platform_name,
+        platform_url: item.platform_url || '',
+        shop_domain: item.shop_domain || '',
+        seller_id: item.seller_id || '',
+        is_active: item.is_active,
+        connection_status: item.connection_status as 'connected' | 'disconnected' | 'error' | 'pending',
+        sync_frequency: item.sync_frequency,
+        last_sync_at: item.last_sync_at,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        has_api_key: !!item.api_key,
+        has_api_secret: !!item.api_secret,
+        last_error: item.last_error,
+        sync_settings: item.sync_settings || {},
+        store_config: item.store_config || {}
+      })) || [];
+      
+      setIntegrations(transformedData);
     } catch (err: any) {
       setError(err.message);
       toast({
@@ -290,31 +319,57 @@ export const useIntegrations = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
+      const integrationData = {
+        user_id: user.id,
+        platform_type: template.category.toLowerCase(),
+        platform_name: template.name,
+        platform_url: config.url || '',
+        shop_domain: config.domain || '',
+        seller_id: config.sellerId || '',
+        is_active: true,
+        connection_status: 'pending',
+        sync_frequency: 'daily',
+        sync_settings: config,
+        store_config: config.storeConfig || {},
+        has_api_key: !!config.apiKey,
+        has_api_secret: !!config.apiSecret
+      };
+
       const { data, error } = await supabase
         .from('integrations')
-        .insert([{
-          user_id: user.id,
-          platform_type: template.category.toLowerCase(),
-          platform_name: template.name,
-          platform_url: config.url || '',
-          shop_domain: config.domain || '',
-          is_active: true,
-          connection_status: 'pending',
-          sync_frequency: 'daily',
-          sync_settings: config
-        }])
+        .insert([integrationData])
         .select()
         .single();
 
       if (error) throw error;
 
-      setIntegrations(prev => [data, ...prev]);
+      const newIntegration: Integration = {
+        id: data.id,
+        platform_type: data.platform_type,
+        platform_name: data.platform_name,
+        platform_url: data.platform_url || '',
+        shop_domain: data.shop_domain || '',
+        seller_id: data.seller_id || '',
+        is_active: data.is_active,
+        connection_status: data.connection_status as 'connected' | 'disconnected' | 'error' | 'pending',
+        sync_frequency: data.sync_frequency,
+        last_sync_at: data.last_sync_at,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        has_api_key: !!data.api_key,
+        has_api_secret: !!data.api_secret,
+        last_error: data.last_error,
+        sync_settings: data.sync_settings || {},
+        store_config: data.store_config || {}
+      };
+
+      setIntegrations(prev => [newIntegration, ...prev]);
       toast({
         title: "Succès",
         description: `Intégration ${template.name} connectée avec succès`,
       });
 
-      return data;
+      return newIntegration;
     } catch (err: any) {
       toast({
         title: "Erreur",
@@ -322,6 +377,66 @@ export const useIntegrations = () => {
         variant: "destructive"
       });
       throw err;
+    }
+  };
+
+  const createIntegration = connectIntegration;
+  const addIntegration = connectIntegration;
+
+  const updateIntegration = async (integrationId: string, updates: Partial<Integration>) => {
+    try {
+      setIsUpdating(true);
+      const { error } = await supabase
+        .from('integrations')
+        .update(updates)
+        .eq('id', integrationId);
+
+      if (error) throw error;
+
+      setIntegrations(prev => prev.map(integration => 
+        integration.id === integrationId 
+          ? { ...integration, ...updates }
+          : integration
+      ));
+
+      toast({
+        title: "Succès",
+        description: "Intégration mise à jour",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Erreur",
+        description: err.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const deleteIntegration = async (integrationId: string) => {
+    try {
+      setIsDeleting(true);
+      const { error } = await supabase
+        .from('integrations')
+        .delete()
+        .eq('id', integrationId);
+
+      if (error) throw error;
+
+      setIntegrations(prev => prev.filter(integration => integration.id !== integrationId));
+      toast({
+        title: "Succès",
+        description: "Intégration supprimée",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Erreur",
+        description: err.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -389,6 +504,7 @@ export const useIntegrations = () => {
 
   const syncIntegration = async (integrationId: string) => {
     try {
+      setIsSyncing(true);
       // Simulation d'une synchronisation
       const { error } = await supabase
         .from('integrations')
@@ -420,8 +536,47 @@ export const useIntegrations = () => {
         description: err.message,
         variant: "destructive"
       });
+    } finally {
+      setIsSyncing(false);
     }
   };
+
+  const testConnection = async (integrationId: string) => {
+    try {
+      // Simulation d'un test de connexion
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const { error } = await supabase
+        .from('integrations')
+        .update({ connection_status: 'connected' as 'connected' | 'disconnected' | 'error' | 'pending' })
+        .eq('id', integrationId);
+
+      if (error) throw error;
+
+      setIntegrations(prev => prev.map(integration => 
+        integration.id === integrationId 
+          ? { ...integration, connection_status: 'connected' as const }
+          : integration
+      ));
+
+      toast({
+        title: "Succès",
+        description: "Test de connexion réussi",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Erreur",
+        description: "Test de connexion échoué",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const syncData = syncIntegration;
+
+  // Computed properties
+  const connectedIntegrations = integrations.filter(i => i.connection_status === 'connected');
+  const isLoading = loading;
 
   useEffect(() => {
     fetchIntegrations();
@@ -432,10 +587,24 @@ export const useIntegrations = () => {
     templates: INTEGRATION_TEMPLATES,
     loading,
     error,
+    isUpdating,
+    isDeleting,
+    isSyncing,
+    isAdding,
+    syncLogs,
+    connectedIntegrations,
+    isLoading,
     refetch: fetchIntegrations,
+    fetchIntegrations,
     connectIntegration,
+    createIntegration,
+    addIntegration,
+    updateIntegration,
+    deleteIntegration,
     disconnectIntegration,
     updateIntegrationConfig,
-    syncIntegration
+    syncIntegration,
+    syncData,
+    testConnection
   };
 };

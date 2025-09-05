@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useIntegrations } from "@/hooks/useIntegrations";
+import { useIntegrations, IntegrationTemplate } from "@/hooks/useIntegrations";
 import { ShoppingBag, Key, Globe, Settings, CheckCircle } from "lucide-react";
 
 interface ShopifyConfigDialogProps {
@@ -43,8 +43,16 @@ export const ShopifyConfigDialog = ({ open, onOpenChange }: ShopifyConfigDialogP
 
     try {
       await addIntegration({
-        platform_name: "Shopify",
-        platform_type: "ecommerce",
+        id: "shopify",
+        name: "Shopify",
+        description: "Intégration Shopify",
+        category: "ecommerce",
+        logo: '🛍️',
+        color: 'bg-green-500',
+        features: [],
+        setupSteps: [],
+        status: 'available'
+      } as IntegrationTemplate, {
         platform_url: `https://${formData.shopDomain}.myshopify.com`,
         connection_status: 'connected',
         is_active: true,

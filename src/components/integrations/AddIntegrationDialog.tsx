@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Store, ShoppingCart, CreditCard, Megaphone } from 'lucide-react';
-import { useIntegrations, Integration } from '@/hooks/useIntegrations';
+import { useIntegrations, Integration, IntegrationTemplate } from '@/hooks/useIntegrations';
 
 const platformCategories = {
   ecommerce: {
@@ -94,10 +94,23 @@ export const AddIntegrationDialog = () => {
         connection_status: 'disconnected',
         sync_frequency: formData.sync_frequency,
         is_active: false,
+        sync_settings: {},
+        has_api_key: !!formData.api_key,
+        has_api_secret: !!formData.api_secret,
         credentials: Object.keys(credentials).length > 0 ? credentials : undefined,
       };
 
-      await createIntegration(integration);
+      await createIntegration({
+        id: selectedPlatform,
+        name: selectedPlatform,
+        description: `Intégration ${selectedPlatform}`,
+        category: selectedCategory,
+        logo: '🔗',
+        color: 'bg-blue-500',
+        features: [],
+        setupSteps: [],
+        status: 'available'
+      } as IntegrationTemplate, integration);
       setIsOpen(false);
       setSelectedPlatform('');
       setFormData({

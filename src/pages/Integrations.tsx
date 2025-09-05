@@ -290,9 +290,7 @@ const Integrations = memo(() => {
     }
 
     try {
-      await addIntegration({
-        platform_name: selectedPlatform.name,
-        platform_type: selectedPlatform.platform_type,
+      await addIntegration(selectedPlatform, {
         platform_url: formData.url,
         connection_status: 'connected',
         is_active: true,
