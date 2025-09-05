@@ -1,220 +1,441 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-import { useToast } from '@/hooks/use-toast'
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-type Integration = {
-  id: string
-  user_id: string
-  platform_name: string
-  platform_type: string
-  platform_url?: string
-  shop_domain?: string
-  seller_id?: string
-  store_config?: any
-  connection_status: 'connected' | 'disconnected' | 'error'
-  is_active: boolean
-  sync_frequency: 'manual' | 'hourly' | 'daily' | 'weekly'
-  last_sync_at?: string
-  created_at: string
-  updated_at: string
-  encrypted_credentials?: Record<string, any>
-  // Legacy fields - no longer used for security
-  api_key?: never
-  api_secret?: never
-  access_token?: never
-  refresh_token?: never
+export interface Integration {
+  id: string;
+  platform_type: string;
+  platform_name: string;
+  platform_url?: string;
+  shop_domain?: string;
+  is_active: boolean;
+  connection_status: 'connected' | 'disconnected' | 'error' | 'pending';
+  sync_frequency: string;
+  last_sync_at?: string;
+  created_at: string;
+  updated_at: string;
+  has_api_key: boolean;
+  has_api_secret: boolean;
+  last_error?: string;
+  sync_settings: any;
 }
 
-export type { Integration }
+export interface IntegrationTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  logo: string;
+  color: string;
+  features: string[];
+  setupSteps: string[];
+  isPopular?: boolean;
+  isPremium?: boolean;
+  status: 'available' | 'coming_soon' | 'beta';
+}
+
+const INTEGRATION_TEMPLATES: IntegrationTemplate[] = [
+  // E-commerce Platforms
+  {
+    id: 'shopify',
+    name: 'Shopify',
+    description: 'Synchronisez vos produits avec votre boutique Shopify',
+    category: 'E-commerce',
+    logo: '🛍️',
+    color: 'bg-green-500',
+    features: ['Sync produits', 'Gestion stock', 'Prix automatiques', 'SEO optimisé'],
+    setupSteps: ['Connectez votre boutique', 'Configurez les paramètres', 'Synchronisez vos produits'],
+    isPopular: true,
+    status: 'available'
+  },
+  {
+    id: 'woocommerce',
+    name: 'WooCommerce',
+    description: 'Intégration complète avec votre boutique WordPress',
+    category: 'E-commerce',
+    logo: '🏪',
+    color: 'bg-purple-500',
+    features: ['Plugin WordPress', 'Sync bidirectionnelle', 'Catégories auto', 'Images HD'],
+    setupSteps: ['Installez le plugin', 'Configurez les clés API', 'Activez la synchronisation'],
+    isPopular: true,
+    status: 'available'
+  },
+  {
+    id: 'prestashop',
+    name: 'PrestaShop',
+    description: 'Connectez votre boutique PrestaShop facilement',
+    category: 'E-commerce',
+    logo: '🏬',
+    color: 'bg-blue-500',
+    features: ['Module natif', 'Multi-langues', 'Gestion taxes', 'Variants produits'],
+    setupSteps: ['Téléchargez le module', 'Configurez les paramètres', 'Lancez l\'import'],
+    status: 'available'
+  },
+  {
+    id: 'magento',
+    name: 'Magento',
+    description: 'Solution enterprise pour Magento 2',
+    category: 'E-commerce',
+    logo: '🏢',
+    color: 'bg-orange-500',
+    features: ['Magento 2 compatible', 'Gestion B2B', 'Multi-stores', 'Performance optimisée'],
+    setupSteps: ['Installez l\'extension', 'Configurez les stores', 'Paramétrez les règles'],
+    isPremium: true,
+    status: 'available'
+  },
+
+  // Marketplaces
+  {
+    id: 'amazon',
+    name: 'Amazon',
+    description: 'Vendez sur la plus grande marketplace mondiale',
+    category: 'Marketplaces',
+    logo: '📦',
+    color: 'bg-yellow-500',
+    features: ['FBA compatible', 'Gestion repricing', 'Multi-pays', 'Rapports détaillés'],
+    setupSteps: ['Créez un compte vendeur', 'Obtenez les clés API', 'Configurez les règles pricing'],
+    isPopular: true,
+    isPremium: true,
+    status: 'available'
+  },
+  {
+    id: 'ebay',
+    name: 'eBay',
+    description: 'Marketplace historique avec milliards d\'acheteurs',
+    category: 'Marketplaces',
+    logo: '🏷️',
+    color: 'bg-red-500',
+    features: ['Enchères & Buy It Now', 'Gestion promotions', 'Multi-catégories', 'Store integration'],
+    setupSteps: ['Connectez votre compte', 'Validez les catégories', 'Configurez les templates'],
+    isPopular: true,
+    status: 'available'
+  },
+  {
+    id: 'etsy',
+    name: 'Etsy',
+    description: 'Parfait pour les produits artisanaux et créatifs',
+    category: 'Marketplaces',
+    logo: '🎨',
+    color: 'bg-pink-500',
+    features: ['Produits personnalisés', 'Gestion variations', 'SEO Etsy', 'Reviews management'],
+    setupSteps: ['Connectez votre boutique', 'Mappez les catégories', 'Optimisez les descriptions'],
+    status: 'available'
+  },
+  {
+    id: 'cdiscount',
+    name: 'Cdiscount',
+    description: 'Marketplace française leader',
+    category: 'Marketplaces',
+    logo: '🇫🇷',
+    color: 'bg-indigo-500',
+    features: ['Marketplace FR', 'C-Logistique', 'Gestion EAN', 'Promotions flash'],
+    setupSteps: ['Inscription vendeur', 'Validation catalogue', 'Configuration logistique'],
+    status: 'available'
+  },
+
+  // Social Commerce
+  {
+    id: 'facebook',
+    name: 'Facebook Shop',
+    description: 'Vendez directement sur Facebook et Instagram',
+    category: 'Social Commerce',
+    logo: '👥',
+    color: 'bg-blue-600',
+    features: ['Facebook Shop', 'Instagram Shopping', 'Pixel tracking', 'Audiences custom'],
+    setupSteps: ['Connectez Facebook Business', 'Configurez le catalogue', 'Activez Instagram Shopping'],
+    isPopular: true,
+    status: 'available'
+  },
+  {
+    id: 'tiktok',
+    name: 'TikTok Shop',
+    description: 'Nouvelle plateforme de social commerce en plein essor',
+    category: 'Social Commerce',
+    logo: '🎪',
+    color: 'bg-black',
+    features: ['TikTok Shop', 'Live shopping', 'Creator partnerships', 'Viral marketing'],
+    setupSteps: ['Demandez l\'accès', 'Configurez votre shop', 'Lancez vos campagnes'],
+    isPopular: true,
+    status: 'beta'
+  },
+  {
+    id: 'pinterest',
+    name: 'Pinterest',
+    description: 'Plateforme visuelle parfaite pour le e-commerce',
+    category: 'Social Commerce',
+    logo: '📌',
+    color: 'bg-red-400',
+    features: ['Product Rich Pins', 'Shopping features', 'Audiences visuelles', 'Trends insights'],
+    setupSteps: ['Créez un compte business', 'Validez votre site', 'Configurez le catalogue'],
+    status: 'available'
+  },
+
+  // Analytics & Tools
+  {
+    id: 'google_analytics',
+    name: 'Google Analytics',
+    description: 'Suivez vos performances avec GA4',
+    category: 'Analytics',
+    logo: '📊',
+    color: 'bg-green-600',
+    features: ['GA4 tracking', 'E-commerce enhanced', 'Conversions tracking', 'Custom reports'],
+    setupSteps: ['Connectez GA4', 'Configurez les événements', 'Activez le suivi e-commerce'],
+    isPopular: true,
+    status: 'available'
+  },
+  {
+    id: 'google_ads',
+    name: 'Google Ads',
+    description: 'Automatisez vos campagnes publicitaires',
+    category: 'Marketing',
+    logo: '🎯',
+    color: 'bg-yellow-600',
+    features: ['Smart Shopping', 'Dynamic remarketing', 'Performance Max', 'Bid automation'],
+    setupSteps: ['Connectez Google Ads', 'Importez vos produits', 'Configurez les campagnes'],
+    isPremium: true,
+    status: 'available'
+  },
+  {
+    id: 'mailchimp',
+    name: 'Mailchimp',
+    description: 'Email marketing et automation avancée',
+    category: 'Marketing',
+    logo: '📧',
+    color: 'bg-yellow-500',
+    features: ['Email campaigns', 'Automation flows', 'Segmentation', 'A/B testing'],
+    setupSteps: ['Connectez votre compte', 'Synchronisez les contacts', 'Créez vos campagnes'],
+    status: 'available'
+  },
+
+  // Logistics & Fulfillment
+  {
+    id: 'printful',
+    name: 'Printful',
+    description: 'Print-on-demand et fulfillment automatique',
+    category: 'Fulfillment',
+    logo: '🖨️',
+    color: 'bg-gray-700',
+    features: ['Print on demand', 'Fulfillment auto', '200+ produits', 'Mockup generator'],
+    setupSteps: ['Connectez Printful', 'Choisissez vos produits', 'Configurez les designs'],
+    isPopular: true,
+    status: 'available'
+  },
+  {
+    id: 'spocket',
+    name: 'Spocket',
+    description: 'Dropshipping de produits européens et américains',
+    category: 'Suppliers',
+    logo: '🚚',
+    color: 'bg-blue-400',
+    features: ['Produits EU/US', 'Livraison rapide', 'Échantillons gratuits', 'Branding personnalisé'],
+    setupSteps: ['Connectez votre compte', 'Parcourez le catalogue', 'Importez vos produits'],
+    status: 'available'
+  },
+
+  // Coming Soon
+  {
+    id: 'alibaba',
+    name: 'Alibaba',
+    description: 'Intégration directe avec les fournisseurs Alibaba',
+    category: 'Suppliers',
+    logo: '🏭',
+    color: 'bg-orange-600',
+    features: ['Fournisseurs vérifiés', 'Prix négociés', 'MOQ flexibles', 'Trade Assurance'],
+    setupSteps: ['En développement'],
+    status: 'coming_soon'
+  },
+  {
+    id: 'walmart',
+    name: 'Walmart',
+    description: 'Marketplace américaine en forte croissance',
+    category: 'Marketplaces',
+    logo: '🛒',
+    color: 'bg-blue-700',
+    features: ['Marketplace US', 'Fulfillment services', 'Walmart+', 'Grocery integration'],
+    setupSteps: ['Bientôt disponible'],
+    status: 'coming_soon'
+  }
+];
 
 export const useIntegrations = () => {
-  const { toast } = useToast()
-  const queryClient = useQueryClient()
+  const [integrations, setIntegrations] = useState<Integration[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const {
-    data: integrations = [],
-    isLoading,
-    error
-  } = useQuery({
-    queryKey: ['integrations'],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('integrations')
-          .select('*')
-          .order('created_at', { ascending: false })
-        
-        if (error) {
-          console.warn('Supabase integrations table not found, returning mock data:', error)
-          // Return mock integrations for demo
-          return [
-            {
-              id: 'mock-1',
-              user_id: 'mock-user',
-              platform_name: 'Shopify',
-              platform_type: 'ecommerce',
-              platform_url: 'https://demo-store.myshopify.com',
-              connection_status: 'connected' as const,
-              is_active: true,
-              sync_frequency: 'daily' as const,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            }
-          ] as Integration[]
-        }
-        
-        // Filter out legacy credential fields for security
-        return data.map(item => {
-          const { api_key, api_secret, access_token, refresh_token, ...secureItem } = item
-          return secureItem as Integration
-        })
-      } catch (err) {
-        console.warn('Failed to fetch integrations, using fallback:', err)
-        return [] as Integration[]
-      }
-    },
-    retry: 1,
-    staleTime: 30000, // Cache for 30 seconds
-    gcTime: 300000 // Keep in cache for 5 minutes (formerly cacheTime)
-  })
-
-  const addIntegration = useMutation({
-    mutationFn: async (integration: Omit<Integration, 'id' | 'created_at' | 'updated_at' | 'user_id'> & { credentials?: Record<string, string> }) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      // Separate credentials from integration data
-      const { credentials, ...integrationData } = integration
-      
-      // Create integration without credentials first
+  const fetchIntegrations = async () => {
+    try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('integrations')
-        .insert([{ ...integrationData, user_id: user.id }])
-        .select()
-        .single()
-      
-      if (error) throw error
-      
-      // Store credentials securely if provided
-      if (credentials && Object.keys(credentials).length > 0) {
-        const { error: credError } = await supabase.functions.invoke('secure-credentials', {
-          body: {
-            integrationId: data.id,
-            credentials,
-            action: 'store'
-          }
-        })
-        
-        if (credError) {
-          console.error('Failed to store credentials:', credError)
-          throw new Error('Failed to store credentials securely')
-        }
-      }
-      
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['integrations'] })
-      toast({
-        title: "Intégration ajoutée",
-        description: "L'intégration a été configurée avec succès.",
-      })
-    },
-    onError: () => {
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setIntegrations(data || []);
+    } catch (err: any) {
+      setError(err.message);
       toast({
         title: "Erreur",
-        description: "Impossible d'ajouter l'intégration.",
-        variant: "destructive",
-      })
+        description: "Impossible de charger les intégrations",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-  })
+  };
 
-  const updateIntegration = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Integration> }) => {
+  const connectIntegration = async (template: IntegrationTemplate, config: any = {}) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Non authentifié');
+
       const { data, error } = await supabase
         .from('integrations')
-        .update(updates)
-        .eq('id', id)
+        .insert([{
+          user_id: user.id,
+          platform_type: template.category.toLowerCase(),
+          platform_name: template.name,
+          platform_url: config.url || '',
+          shop_domain: config.domain || '',
+          is_active: true,
+          connection_status: 'pending',
+          sync_frequency: 'daily',
+          sync_settings: config
+        }])
         .select()
-        .single()
-      
-      if (error) throw error
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['integrations'] })
-      toast({
-        title: "Intégration mise à jour",
-        description: "L'intégration a été mise à jour avec succès.",
-      })
-    }
-  })
+        .single();
 
-  const deleteIntegration = useMutation({
-    mutationFn: async (id: string) => {
+      if (error) throw error;
+
+      setIntegrations(prev => [data, ...prev]);
+      toast({
+        title: "Succès",
+        description: `Intégration ${template.name} connectée avec succès`,
+      });
+
+      return data;
+    } catch (err: any) {
+      toast({
+        title: "Erreur",
+        description: err.message,
+        variant: "destructive"
+      });
+      throw err;
+    }
+  };
+
+  const disconnectIntegration = async (integrationId: string) => {
+    try {
       const { error } = await supabase
         .from('integrations')
-        .delete()
-        .eq('id', id)
-      
-      if (error) throw error
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['integrations'] })
-      toast({
-        title: "Intégration supprimée",
-        description: "L'intégration a été supprimée avec succès.",
-      })
-    }
-  })
+        .update({ 
+          is_active: false,
+          connection_status: 'disconnected'
+        })
+        .eq('id', integrationId);
 
-  const syncIntegration = useMutation({
-    mutationFn: async ({ integrationId, syncType }: { integrationId: string; syncType: string }) => {
-      const { data, error } = await supabase.functions.invoke('sync-integration', {
-        body: { integration_id: integrationId, sync_type: syncType }
-      })
-      
-      if (error) throw error
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['integrations'] })
-      toast({
-        title: "Synchronisation lancée",
-        description: "La synchronisation des données a commencé.",
-      })
-    },
-    onError: () => {
-      toast({
-        title: "Erreur de synchronisation",
-        description: "Impossible de lancer la synchronisation.",
-        variant: "destructive",
-      })
-    }
-  })
+      if (error) throw error;
 
-  const connectedIntegrations = (integrations || []).filter((i: Integration) => i.connection_status === 'connected')
-  const activeIntegrations = (integrations || []).filter((i: Integration) => i.is_active)
+      setIntegrations(prev => prev.map(integration => 
+        integration.id === integrationId 
+          ? { ...integration, is_active: false, connection_status: 'disconnected' as const }
+          : integration
+      ));
+
+      toast({
+        title: "Succès",
+        description: "Intégration déconnectée",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Erreur",
+        description: err.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const updateIntegrationConfig = async (integrationId: string, config: any) => {
+    try {
+      const { error } = await supabase
+        .from('integrations')
+        .update({ 
+          sync_settings: config,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', integrationId);
+
+      if (error) throw error;
+
+      setIntegrations(prev => prev.map(integration => 
+        integration.id === integrationId 
+          ? { ...integration, sync_settings: config }
+          : integration
+      ));
+
+      toast({
+        title: "Succès",
+        description: "Configuration mise à jour",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Erreur",
+        description: err.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const syncIntegration = async (integrationId: string) => {
+    try {
+      // Simulation d'une synchronisation
+      const { error } = await supabase
+        .from('integrations')
+        .update({ 
+          last_sync_at: new Date().toISOString(),
+          connection_status: 'connected'
+        })
+        .eq('id', integrationId);
+
+      if (error) throw error;
+
+      setIntegrations(prev => prev.map(integration => 
+        integration.id === integrationId 
+          ? { 
+              ...integration, 
+              last_sync_at: new Date().toISOString(),
+              connection_status: 'connected' as const
+            }
+          : integration
+      ));
+
+      toast({
+        title: "Succès",
+        description: "Synchronisation terminée",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Erreur",
+        description: err.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchIntegrations();
+  }, []);
 
   return {
     integrations,
-    connectedIntegrations,
-    activeIntegrations,
-    syncLogs: [],
-    loading: isLoading,
-    fetchIntegrations: () => queryClient.invalidateQueries({ queryKey: ['integrations'] }),
-    isLoading,
+    templates: INTEGRATION_TEMPLATES,
+    loading,
     error,
-    addIntegration: addIntegration.mutate,
-    createIntegration: addIntegration.mutate,
-    updateIntegration: updateIntegration.mutate,
-    deleteIntegration: deleteIntegration.mutate,
-    syncIntegration: syncIntegration.mutate,
-    testConnection: (integrationId: string) => updateIntegration.mutate({ id: integrationId, updates: { connection_status: 'connected' } }),
-    syncData: syncIntegration.mutate,
-    isAdding: addIntegration.isPending,
-    isUpdating: updateIntegration.isPending,
-    isDeleting: deleteIntegration.isPending,
-    isSyncing: syncIntegration.isPending
-  }
-}
+    refetch: fetchIntegrations,
+    connectIntegration,
+    disconnectIntegration,
+    updateIntegrationConfig,
+    syncIntegration
+  };
+};
