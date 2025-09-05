@@ -3050,6 +3050,7 @@ export type Database = {
           preferences: Json | null
           role: string
           role_updated_at: string | null
+          settings: Json | null
           updated_at: string | null
           website: string | null
         }
@@ -3075,6 +3076,7 @@ export type Database = {
           preferences?: Json | null
           role?: string
           role_updated_at?: string | null
+          settings?: Json | null
           updated_at?: string | null
           website?: string | null
         }
@@ -3100,6 +3102,7 @@ export type Database = {
           preferences?: Json | null
           role?: string
           role_updated_at?: string | null
+          settings?: Json | null
           updated_at?: string | null
           website?: string | null
         }

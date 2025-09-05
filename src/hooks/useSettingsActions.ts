@@ -30,7 +30,7 @@ export const useSettingsActions = () => {
       const { error } = await supabase
         .from('profiles')
         .update({ 
-          settings: settings,
+          settings: settings as any,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
