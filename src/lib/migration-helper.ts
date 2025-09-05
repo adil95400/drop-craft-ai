@@ -21,6 +21,7 @@ export function useLegacyPlan(user?: any) {
     hasPlan: unifiedStore.hasPlan,
     isUltraPro: unifiedStore.isUltraPro,
     isPro: unifiedStore.isPro,
+    hasFeature: unifiedStore.hasFeature, // Ajouté pour compatibilité
     updatePlan: (plan: PlanType) => user?.id && unifiedStore.updateUserPlan(user.id, plan),
     refetch: () => user?.id && unifiedStore.loadUserPlan(user.id)
   }

@@ -1,12 +1,12 @@
 import React from 'react'
-import { usePlan } from '@/hooks/usePlan'
+import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { ProductionImportInterface } from '@/components/import/ProductionImportInterface'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, Zap, TrendingUp } from 'lucide-react'
 
 export default function Import() {
-  const { isUltraPro, isPro } = usePlan()
+  const { isUltraPro, isPro } = useUnifiedPlan()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/80 to-background animate-fade-in">
@@ -29,7 +29,7 @@ export default function Import() {
               <p className="text-muted-foreground text-lg">
                 {isUltraPro 
                   ? "🚀 Import révolutionnaire avec IA avancée et automation totale"
-                  : isPro()
+                  : isPro
                   ? "⚡ Import optimisé avec IA et fonctionnalités premium"
                   : "📦 Import de produits depuis vos sources préférées"
                 }

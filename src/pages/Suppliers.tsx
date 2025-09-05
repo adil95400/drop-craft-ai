@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { usePlan } from '@/contexts/PlanContext';
+import { useLegacyPlan } from '@/lib/migration-helper';
 
 interface Supplier {
   id: string;
@@ -115,7 +115,7 @@ const mockSuppliers: Supplier[] = [
 const Suppliers = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { isPro, isUltraPro } = usePlan();
+  const { isPro, isUltraPro } = useLegacyPlan(user);
   const [suppliers] = useState<Supplier[]>(mockSuppliers);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');

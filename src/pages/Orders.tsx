@@ -23,7 +23,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { usePlan } from '@/contexts/PlanContext';
+import { useLegacyPlan } from '@/lib/migration-helper';
 
 interface Order {
   id: string;
@@ -47,7 +47,7 @@ interface Order {
 const Orders = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { isUltraPro, isPro } = usePlan();
+  const { isUltraPro, isPro } = useLegacyPlan(user);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

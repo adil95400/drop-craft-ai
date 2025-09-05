@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { usePlan } from '@/contexts/PlanContext'
+import { useLegacyPlan } from '@/lib/migration-helper'
 import { useRealProducts } from '@/hooks/useRealProducts'
 import { CatalogUltraProInterface } from '@/components/catalog/CatalogUltraProInterface'
 import { ProductCard } from '@/components/catalog/ProductCard'
@@ -16,7 +16,7 @@ import { SEO } from '@/components/SEO'
 
 export default function Catalogue() {
   const { user } = useAuth()
-  const { plan, isUltraPro, isPro, hasFeature } = usePlan()
+  const { plan, isUltraPro, isPro, hasFeature } = useLegacyPlan(user)
   const [searchTerm, setSearchTerm] = useState('')
   const [favorites, setFavorites] = useState<string[]>([])
   

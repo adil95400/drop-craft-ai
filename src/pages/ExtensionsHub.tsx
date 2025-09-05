@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useNavigate } from 'react-router-dom'
-import { usePlan } from '@/contexts/PlanContext'
+import { useLegacyPlan } from '@/lib/migration-helper'
 import { 
   Zap, 
   Code, 
@@ -22,7 +22,7 @@ import {
 
 export default function ExtensionsHub() {
   const navigate = useNavigate()
-  const { plan, isPro, isUltraPro } = usePlan()
+  const { plan, isPro, isUltraPro } = useLegacyPlan();
 
   const extensionFeatures = [
     {

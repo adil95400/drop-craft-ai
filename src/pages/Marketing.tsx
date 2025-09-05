@@ -23,7 +23,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { usePlan } from '@/contexts/PlanContext';
+import { useLegacyPlan } from '@/lib/migration-helper';
 import { CanvaIntegrationPanel } from '@/components/marketing/CanvaIntegrationPanel';
 
 interface Campaign {
@@ -40,7 +40,7 @@ interface Campaign {
 const Marketing = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { isUltraPro, isPro } = usePlan();
+  const { isUltraPro, isPro } = useLegacyPlan(user);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStores, setSelectedStores] = useState<string[]>([]);

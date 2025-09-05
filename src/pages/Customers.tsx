@@ -25,7 +25,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { usePlan } from '@/contexts/PlanContext';
+import { useLegacyPlan } from '@/lib/migration-helper';
 
 interface Customer {
   id: string;
@@ -43,7 +43,7 @@ interface Customer {
 const Customers = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { isUltraPro, isPro } = usePlan();
+  const { isUltraPro, isPro } = useLegacyPlan(user);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
