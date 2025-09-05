@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { usePlan } from '@/hooks/usePlan'
+import { usePlan } from '@/contexts/PlanContext'
 import { useRealProducts } from '@/hooks/useRealProducts'
 import { CatalogUltraProInterface } from '@/components/catalog/CatalogUltraProInterface'
 import { ProductCard } from '@/components/catalog/ProductCard'
@@ -16,12 +16,12 @@ import { SEO } from '@/components/SEO'
 
 export default function Catalogue() {
   const { user } = useAuth()
-  const { hasPlan, plan } = usePlan(user)
+  const { plan, isUltraPro, isPro, hasFeature } = usePlan()
   const [searchTerm, setSearchTerm] = useState('')
   const [favorites, setFavorites] = useState<string[]>([])
   
-  const isUltraPro = hasPlan('ultra_pro')
-  const isPro = hasPlan('pro')
+  // Safety check to ensure favorites is always an array
+  const safeFavorites = favorites || []
 
   // Hook pour les données réelles
   const { 
@@ -64,11 +64,12 @@ export default function Catalogue() {
   }
 
   const handleToggleFavorite = (productId: string) => {
-    setFavorites(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    )
+    setFavorites(prev => {
+      const safePrev = prev || []
+      return safePrev.includes(productId) 
+        ? safePrev.filter(id => id !== productId)
+        : [...safePrev, productId]
+    })
   }
 
   const handleViewAnalytics = (productId: string) => {
@@ -77,7 +78,7 @@ export default function Catalogue() {
   }
 
   const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.sku?.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -225,7 +226,7 @@ export default function Catalogue() {
                     onDuplicate={handleDuplicateProduct}
                     onToggleFavorite={handleToggleFavorite}
                     onViewAnalytics={handleViewAnalytics}
-                    isFavorite={favorites.includes(product.id)}
+                    isFavorite={safeFavorites.includes(product.id || '')}
                     variant="default"
                   />
                 ))}
