@@ -17,7 +17,7 @@ import {
   Download, History, Settings
 } from 'lucide-react'
 
-const ModernImportPageNew: React.FC = () => {
+const ModernImportPage: React.FC = () => {
   const { user, loading, getImportJobs } = useUnifiedSystem()
   const [importJobs, setImportJobs] = useState([])
   const [loadingJobs, setLoadingJobs] = useState(true)
@@ -288,4 +288,4 @@ const ModernImportPageNew: React.FC = () => {
   )
 }
 
-export default ModernImportPageNew
+export default ModernImportPage
