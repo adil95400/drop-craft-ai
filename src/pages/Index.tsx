@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import HomeNew from "./HomeNew";
+import Home from "./Home";
 import { Loader2 } from "lucide-react";
 
 const Index = () => {
@@ -19,7 +19,7 @@ const Index = () => {
 
   // If user is authenticated, AuthGuard will handle redirection
   // Just show the home page for non-authenticated users
-  return <HomeNew />;
+  return <Home />;
 };
 
 export default Index;
