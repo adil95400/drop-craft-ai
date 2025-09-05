@@ -1,0 +1,385 @@
+/**
+ * Page Commandes moderne - Gestion complète des commandes
+ */
+
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ActionButton } from '@/components/common/ActionButton'
+import { Helmet } from 'react-helmet-async'
+import { 
+  Package, Search, Filter, MoreHorizontal, 
+  Eye, Truck, CheckCircle, XCircle, Clock,
+  RefreshCw, Download, AlertTriangle
+} from 'lucide-react'
+
+interface Order {
+  id: string
+  order_number: string
+  customer_name: string
+  customer_email: string
+  status: string
+  total_amount: number
+  created_at: string
+  tracking_number?: string
+  items_count: number
+  shipping_address: string
+}
+
+const ModernOrdersPage: React.FC = () => {
+  const [orders, setOrders] = useState<Order[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadOrders()
+  }, [])
+
+  const loadOrders = async () => {
+    setLoading(true)
+    try {
+      // Simulation de données de commandes réalistes
+      const mockOrders: Order[] = [
+        {
+          id: '1',
+          order_number: 'ORD-2024-001',
+          customer_name: 'Marie Dubois',
+          customer_email: 'marie.dubois@email.com',
+          status: 'processing',
+          total_amount: 89.99,
+          created_at: '2024-01-15T10:30:00Z',
+          tracking_number: 'FR7845120456',
+          items_count: 2,
+          shipping_address: 'Paris, France'
+        },
+        {
+          id: '2',
+          order_number: 'ORD-2024-002',
+          customer_name: 'Jean Martin',
+          customer_email: 'jean.martin@email.com',
+          status: 'shipped',
+          total_amount: 156.50,
+          created_at: '2024-01-14T14:20:00Z',
+          tracking_number: 'FR7845120457',
+          items_count: 3,
+          shipping_address: 'Lyon, France'
+        },
+        {
+          id: '3',
+          order_number: 'ORD-2024-003',
+          customer_name: 'Sophie Leroux',
+          customer_email: 'sophie.leroux@email.com',
+          status: 'delivered',
+          total_amount: 234.00,
+          created_at: '2024-01-13T09:15:00Z',
+          tracking_number: 'FR7845120458',
+          items_count: 4,
+          shipping_address: 'Marseille, France'
+        },
+        {
+          id: '4',
+          order_number: 'ORD-2024-004',
+          customer_name: 'Pierre Durand',
+          customer_email: 'pierre.durand@email.com',
+          status: 'pending',
+          total_amount: 67.25,
+          created_at: '2024-01-15T16:45:00Z',
+          items_count: 1,
+          shipping_address: 'Toulouse, France'
+        }
+      ]
+      setOrders(mockOrders)
+    } catch (error) {
+      console.error('Erreur chargement commandes:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter
+    return matchesSearch && matchesStatus
+  })
+
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, { variant: any, icon: React.ReactNode }> = {
+      pending: { variant: 'secondary', icon: <Clock className="h-3 w-3" /> },
+      processing: { variant: 'default', icon: <Package className="h-3 w-3" /> },
+      shipped: { variant: 'default', icon: <Truck className="h-3 w-3" /> },
+      delivered: { variant: 'default', icon: <CheckCircle className="h-3 w-3" /> },
+      cancelled: { variant: 'destructive', icon: <XCircle className="h-3 w-3" /> }
+    }
+    const config = variants[status] || variants.pending
+    return (
+      <Badge variant={config.variant} className="gap-1">
+        {config.icon}
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    )
+  }
+
+  const orderStats = {
+    total: orders.length,
+    pending: orders.filter(o => o.status === 'pending').length,
+    processing: orders.filter(o => o.status === 'processing').length,
+    shipped: orders.filter(o => o.status === 'shipped').length,
+    delivered: orders.filter(o => o.status === 'delivered').length
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <Helmet>
+        <title>Commandes - Drop Craft AI | Gestion des Commandes</title>
+        <meta name="description" content="Gérez vos commandes dropshipping. Suivi, traitement et automatisation des expéditions." />
+      </Helmet>
+
+      <div className="space-y-6 p-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Commandes</h1>
+            <p className="text-muted-foreground">
+              Gérez vos {orders.length} commandes avec suivi automatique
+            </p>
+          </div>
+          
+          <div className="flex gap-2">
+            <ActionButton variant="outline" onClick={loadOrders}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualiser
+            </ActionButton>
+            <Button variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Exporter
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats rapides */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold">{orderStats.total}</div>
+              <p className="text-xs text-muted-foreground">Total</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-yellow-600">{orderStats.pending}</div>
+              <p className="text-xs text-muted-foreground">En attente</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-blue-600">{orderStats.processing}</div>
+              <p className="text-xs text-muted-foreground">En traitement</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-orange-600">{orderStats.shipped}</div>
+              <p className="text-xs text-muted-foreground">Expédiées</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-green-600">{orderStats.delivered}</div>
+              <p className="text-xs text-muted-foreground">Livrées</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="orders" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="orders">Toutes les commandes</TabsTrigger>
+            <TabsTrigger value="automation">Automatisation</TabsTrigger>
+            <TabsTrigger value="tracking">Suivi en temps réel</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="orders" className="space-y-6">
+            {/* Filtres */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Rechercher par numéro ou client..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <select 
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="px-3 py-2 border rounded-md"
+                  >
+                    <option value="all">Tous les statuts</option>
+                    <option value="pending">En attente</option>
+                    <option value="processing">En traitement</option>
+                    <option value="shipped">Expédiées</option>
+                    <option value="delivered">Livrées</option>
+                  </select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Table des commandes */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Commandes ({filteredOrders.length})</CardTitle>
+                <CardDescription>
+                  Gestion complète de vos commandes avec suivi automatique
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Commande</TableHead>
+                      <TableHead>Client</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Montant</TableHead>
+                      <TableHead>Suivi</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredOrders.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{order.order_number}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {new Date(order.created_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{order.customer_name}</div>
+                            <div className="text-sm text-muted-foreground">{order.shipping_address}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(order.status)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{order.total_amount}€</div>
+                          <div className="text-sm text-muted-foreground">{order.items_count} articles</div>
+                        </TableCell>
+                        <TableCell>
+                          {order.tracking_number ? (
+                            <Badge variant="outline">{order.tracking_number}</Badge>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">Pas de suivi</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Truck className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="automation" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Automatisation des Commandes</CardTitle>
+                <CardDescription>
+                  Configurez l'envoi automatique vers vos fournisseurs
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <h3 className="font-semibold mb-2">Envoi automatique</h3>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Transférez automatiquement les commandes vers vos fournisseurs
+                    </p>
+                    <Badge variant="default">Activé</Badge>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h3 className="font-semibold mb-2">Suivi automatique</h3>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Récupération automatique des numéros de suivi
+                    </p>
+                    <Badge variant="default">Activé</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tracking" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Suivi en Temps Réel</CardTitle>
+                <CardDescription>
+                  Monitoring des expéditions et alertes automatiques
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <span className="font-medium">Système de suivi opérationnel</span>
+                    </div>
+                    <Badge variant="default">En ligne</Badge>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-blue-600">24</div>
+                      <p className="text-sm text-muted-foreground">Colis en transit</p>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-green-600">89%</div>
+                      <p className="text-sm text-muted-foreground">Taux de livraison</p>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-orange-600">5.2j</div>
+                      <p className="text-sm text-muted-foreground">Délai moyen</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </>
+  )
+}
+
+export default ModernOrdersPage

@@ -132,6 +132,27 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                {/* Orders moderne */}
+                <Route path="/orders" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernOrdersPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Intégrations Hub */}
+                <Route path="/integrations" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernIntegrationsHub /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Marketing Hub */}
+                <Route path="/marketing" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernMarketingPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
                 {/* Import moderne */}
                 <Route path="/import" element={
                   <ProtectedRoute>
