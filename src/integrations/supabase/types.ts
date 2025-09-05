@@ -2098,6 +2098,86 @@ export type Database = {
           },
         ]
       }
+      ingestion_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_count: number | null
+          errors: Json | null
+          id: string
+          job_type: string
+          mapping_config: Json | null
+          priority: number | null
+          processed_items: number | null
+          progress: number | null
+          results: Json | null
+          scheduled_at: string | null
+          source_config: Json | null
+          source_type: string | null
+          started_at: string | null
+          status: string | null
+          success_count: number | null
+          supplier_id: string | null
+          total_items: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_count?: number | null
+          errors?: Json | null
+          id?: string
+          job_type: string
+          mapping_config?: Json | null
+          priority?: number | null
+          processed_items?: number | null
+          progress?: number | null
+          results?: Json | null
+          scheduled_at?: string | null
+          source_config?: Json | null
+          source_type?: string | null
+          started_at?: string | null
+          status?: string | null
+          success_count?: number | null
+          supplier_id?: string | null
+          total_items?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_count?: number | null
+          errors?: Json | null
+          id?: string
+          job_type?: string
+          mapping_config?: Json | null
+          priority?: number | null
+          processed_items?: number | null
+          progress?: number | null
+          results?: Json | null
+          scheduled_at?: string | null
+          source_config?: Json | null
+          source_type?: string | null
+          started_at?: string | null
+          status?: string | null
+          success_count?: number | null
+          supplier_id?: string | null
+          total_items?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ingestion_jobs_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integrations: {
         Row: {
           access_token: string | null
@@ -2499,6 +2579,84 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_routing: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          customer_info: Json | null
+          external_order_id: string | null
+          id: string
+          notes: string | null
+          order_data: Json
+          products: Json
+          shipping_address: Json | null
+          status: string | null
+          store_integration_id: string | null
+          supplier_id: string | null
+          supplier_order_id: string | null
+          total_amount: number | null
+          tracking_number: string | null
+          tracking_url: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          customer_info?: Json | null
+          external_order_id?: string | null
+          id?: string
+          notes?: string | null
+          order_data: Json
+          products?: Json
+          shipping_address?: Json | null
+          status?: string | null
+          store_integration_id?: string | null
+          supplier_id?: string | null
+          supplier_order_id?: string | null
+          total_amount?: number | null
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          customer_info?: Json | null
+          external_order_id?: string | null
+          id?: string
+          notes?: string | null
+          order_data?: Json
+          products?: Json
+          shipping_address?: Json | null
+          status?: string | null
+          store_integration_id?: string | null
+          supplier_id?: string | null
+          supplier_order_id?: string | null
+          total_amount?: number | null
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_routing_store_integration_id_fkey"
+            columns: ["store_integration_id"]
+            isOneToOne: false
+            referencedRelation: "store_integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_routing_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -3035,12 +3193,16 @@ export type Database = {
           business_name: string | null
           business_type: string | null
           company: string | null
+          company_name: string | null
+          company_website: string | null
           created_at: string | null
           email_notifications: boolean | null
           experience_level: string | null
+          feature_flags: Json | null
           full_name: string | null
           id: string
           interests: string[] | null
+          is_admin: boolean | null
           last_login_at: string | null
           login_count: number | null
           monthly_volume: string | null
@@ -3051,6 +3213,10 @@ export type Database = {
           role: string
           role_updated_at: string | null
           settings: Json | null
+          subscription_expires_at: string | null
+          subscription_plan: string | null
+          subscription_status: string | null
+          timezone: string | null
           updated_at: string | null
           website: string | null
         }
@@ -3061,12 +3227,16 @@ export type Database = {
           business_name?: string | null
           business_type?: string | null
           company?: string | null
+          company_name?: string | null
+          company_website?: string | null
           created_at?: string | null
           email_notifications?: boolean | null
           experience_level?: string | null
+          feature_flags?: Json | null
           full_name?: string | null
           id: string
           interests?: string[] | null
+          is_admin?: boolean | null
           last_login_at?: string | null
           login_count?: number | null
           monthly_volume?: string | null
@@ -3077,6 +3247,10 @@ export type Database = {
           role?: string
           role_updated_at?: string | null
           settings?: Json | null
+          subscription_expires_at?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string | null
+          timezone?: string | null
           updated_at?: string | null
           website?: string | null
         }
@@ -3087,12 +3261,16 @@ export type Database = {
           business_name?: string | null
           business_type?: string | null
           company?: string | null
+          company_name?: string | null
+          company_website?: string | null
           created_at?: string | null
           email_notifications?: boolean | null
           experience_level?: string | null
+          feature_flags?: Json | null
           full_name?: string | null
           id?: string
           interests?: string[] | null
+          is_admin?: boolean | null
           last_login_at?: string | null
           login_count?: number | null
           monthly_volume?: string | null
@@ -3103,6 +3281,10 @@ export type Database = {
           role?: string
           role_updated_at?: string | null
           settings?: Json | null
+          subscription_expires_at?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string | null
+          timezone?: string | null
           updated_at?: string | null
           website?: string | null
         }
@@ -3726,6 +3908,66 @@ export type Database = {
           },
         ]
       }
+      store_integrations: {
+        Row: {
+          connection_status: string | null
+          created_at: string | null
+          credentials: Json
+          error_log: Json | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          order_count: number | null
+          platform: string
+          product_count: number | null
+          store_name: string
+          store_url: string | null
+          sync_frequency: string | null
+          sync_settings: Json | null
+          updated_at: string | null
+          user_id: string
+          webhook_config: Json | null
+        }
+        Insert: {
+          connection_status?: string | null
+          created_at?: string | null
+          credentials?: Json
+          error_log?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          order_count?: number | null
+          platform: string
+          product_count?: number | null
+          store_name: string
+          store_url?: string | null
+          sync_frequency?: string | null
+          sync_settings?: Json | null
+          updated_at?: string | null
+          user_id: string
+          webhook_config?: Json | null
+        }
+        Update: {
+          connection_status?: string | null
+          created_at?: string | null
+          credentials?: Json
+          error_log?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          order_count?: number | null
+          platform?: string
+          product_count?: number | null
+          store_name?: string
+          store_url?: string | null
+          sync_frequency?: string | null
+          sync_settings?: Json | null
+          updated_at?: string | null
+          user_id?: string
+          webhook_config?: Json | null
+        }
+        Relationships: []
+      }
       stripe_webhooks: {
         Row: {
           created_at: string | null
@@ -4209,6 +4451,54 @@ export type Database = {
           updated_at?: string
           user_id?: string
           website?: string | null
+        }
+        Relationships: []
+      }
+      sync_history: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          duration_ms: number | null
+          entity_id: string | null
+          entity_type: string
+          errors: Json | null
+          id: string
+          items_processed: number | null
+          items_total: number | null
+          metadata: Json | null
+          status: string | null
+          sync_type: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          entity_id?: string | null
+          entity_type: string
+          errors?: Json | null
+          id?: string
+          items_processed?: number | null
+          items_total?: number | null
+          metadata?: Json | null
+          status?: string | null
+          sync_type?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          entity_id?: string | null
+          entity_type?: string
+          errors?: Json | null
+          id?: string
+          items_processed?: number | null
+          items_total?: number | null
+          metadata?: Json | null
+          status?: string | null
+          sync_type?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -5100,6 +5390,10 @@ export type Database = {
       }
       is_token_revoked: {
         Args: { check_user_id: string }
+        Returns: boolean
+      }
+      is_user_admin: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
       log_credential_access: {
