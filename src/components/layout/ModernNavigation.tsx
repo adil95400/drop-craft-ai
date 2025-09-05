@@ -12,6 +12,7 @@ import {
   Mail,
   Building2,
   Upload,
+  CreditCard,
   Sparkles,
   ArrowRight
 } from 'lucide-react'
@@ -68,10 +69,10 @@ const modernPages: NavItem[] = [
     badgeVariant: 'default'
   },
   {
-    title: 'Import',
-    description: 'Import multi-formats avec mappage intelligent',
-    href: '/modern/import',
-    icon: Upload,
+    title: 'Facturation',
+    description: 'Gestion des abonnements et facturation Stripe',
+    href: '/modern/billing',
+    icon: CreditCard,
     badge: 'Nouveau',
     badgeVariant: 'default'
   }
