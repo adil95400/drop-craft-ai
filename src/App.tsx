@@ -49,6 +49,9 @@ import ModernSuppliersHub from '@/pages/ModernSuppliersHub';
 import ModernProductsPage from '@/pages/ModernProductsPage';
 import ModernSuppliersPage from '@/pages/ModernSuppliersPage';
 import ModernImportPage from '@/pages/ModernImportPage';
+import ModernOrdersPage from '@/pages/ModernOrdersPage';
+import ModernIntegrationsHub from '@/pages/ModernIntegrationsHub';
+import ModernMarketingPage from '@/pages/ModernMarketingPage';
 
 // Auth Page
 import AuthPage from '@/pages/AuthPage';
