@@ -20,11 +20,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserAccountDropdown } from "@/components/common/UserAccountDropdown";
 import { SEO } from "@/components/SEO";
+import { useCanvaOptimization } from "@/hooks/useCanvaOptimization";
+import { useEffect } from "react";
 
 const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { optimizeFullPage, isOptimizing } = useCanvaOptimization();
 
   const handleGetStarted = () => {
     navigate("/auth");
@@ -33,6 +36,38 @@ const Home = () => {
       description: "Commencez votre aventure e-commerce",
     });
   };
+
+  // Optimisation automatique de la page d'accueil avec Canva
+  useEffect(() => {
+    const optimizeHomePage = async () => {
+      const pageData = {
+        hero: {
+          title: "Transformez votre E-commerce avec l'IA",
+          subtitle: "Découvrez, importez et vendez les produits gagnants",
+          cta: "Démarrer Gratuitement"
+        },
+        features: features.map(f => ({
+          title: f.title,
+          description: f.description,
+          icon: f.icon.name
+        })),
+        testimonials: testimonials,
+        stats: stats
+      };
+
+      const brandColors = {
+        primary: "#3b82f6", // Couleur primaire de notre design
+        secondary: "#8b5cf6"
+      };
+
+      // Optimiser la page complète avec Canva (en arrière-plan)
+      optimizeFullPage(pageData, brandColors);
+    };
+
+    // Lancer l'optimisation après un court délai pour ne pas affecter le chargement initial
+    const timer = setTimeout(optimizeHomePage, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const features = [
     {

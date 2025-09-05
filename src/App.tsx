@@ -41,6 +41,9 @@ import SSOPage from '@/pages/extensions/SSOPage';
 import Features from '@/pages/Features';
 import Pricing from '@/pages/Pricing';
 import Contact from '@/pages/Contact';
+import Testimonials from '@/pages/Testimonials';
+import About from '@/pages/About';
+import Blog from '@/pages/Blog';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -90,6 +93,9 @@ function App() {
                 <Route path="/features" element={<Features />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/testimonials" element={<Testimonials />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/blog" element={<Blog />} />
                 
                 <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />
                 <Route path="*" element={<Navigate to="/" replace />} />
