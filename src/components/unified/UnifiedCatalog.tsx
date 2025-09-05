@@ -144,11 +144,11 @@ export function UnifiedCatalog() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
-            placeholder={renderByPlan({
-              standard: "Rechercher des produits...",
-              pro: "Recherche intelligente avec IA...",
-              ultra_pro: "Recherche sémantique avancée..."
-            })}
+            placeholder={
+              effectivePlan === 'ultra_pro' ? "Recherche sémantique avancée..." :
+              effectivePlan === 'pro' ? "Recherche intelligente avec IA..." :
+              "Rechercher des produits..."
+            }
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
             className="pl-10"
@@ -172,7 +172,7 @@ export function UnifiedCatalog() {
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.total.toString()}</div>
+              <div className="text-2xl font-bold">{stats?.total ?? 0}</div>
               <p className="text-xs text-muted-foreground">
                 +12% ce mois
               </p>

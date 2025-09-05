@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePlanContext } from '@/components/plan/UnifiedPlanProvider';
+import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { NotificationBell } from '@/components/notifications/NotificationService';
 
 interface AppLayoutProps {
@@ -61,7 +61,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { plan, hasFeature } = usePlanContext();
+  const { effectivePlan: plan, hasFeature } = useUnifiedPlan();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
@@ -97,7 +97,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <nav className="flex-1 space-y-1 p-4">
         {navigation.map((item) => {
           // Vérifier les permissions de plan
-          if (item.requiredPlan && !hasFeature('advanced-features') && item.requiredPlan !== 'standard') {
+          if (item.requiredPlan && !hasFeature('advanced-analytics') && item.requiredPlan !== 'standard') {
             return (
               <div key={item.title} className="relative">
                 <div className="flex items-center space-x-3 rounded-lg px-3 py-2 text-muted-foreground cursor-not-allowed opacity-50">
