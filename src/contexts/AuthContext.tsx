@@ -62,8 +62,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [refreshingSubscription, setRefreshingSubscription] = useState(false)
 
   const refreshSubscription = async () => {
-    // Désactivé temporairement pour éviter les boucles infinies
-    return
+    if (!user || refreshingSubscription) return
+    
+    setRefreshingSubscription(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('check-subscription')
+      
+      if (error) {
+        console.error('Error refreshing subscription:', error)
+        return
+      }
+      
+      setSubscription(data)
+    } catch (error) {
+      console.error('Error refreshing subscription:', error)
+    } finally {
+      setRefreshingSubscription(false)
+    }
   }
 
   const fetchProfile = async () => {
@@ -124,6 +139,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (event === 'SIGNED_IN' && session?.user) {
         await fetchProfile()
+        // Refresh subscription on login
+        setTimeout(refreshSubscription, 1000)
       } else if (event === 'SIGNED_OUT') {
         setSubscription(null)
         setProfile(null)
