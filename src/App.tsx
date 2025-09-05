@@ -54,6 +54,7 @@ import ModernIntegrationsHub from '@/pages/ModernIntegrationsHub';
 import ModernMarketingPage from '@/pages/ModernMarketingPage';
 import ModernCustomersPage from '@/pages/ModernCustomersPage';
 import ModernAnalyticsPage from '@/pages/ModernAnalyticsPage';
+import ModernMarketplacePage from '@/pages/ModernMarketplacePage';
 import ModernSettingsPage from '@/pages/ModernSettingsPage';
 
 // Auth Page
