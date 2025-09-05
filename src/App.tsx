@@ -79,7 +79,9 @@ function App() {
                 {/* Routes modernes */}
                 <Route path="/modern/products" element={<AppLayout><ModernProducts /></AppLayout>} />
                 <Route path="/modern/suppliers" element={<AppLayout><ModernSuppliers /></AppLayout>} />
-                <Route path="/modern/import" element={<AppLayout><ModernImport /></AppLayout>} />
+        <Route path="/modern-customers" element={<AppLayout><ModernCustomers /></AppLayout>} />
+        <Route path="/modern-orders" element={<AppLayout><ModernOrders /></AppLayout>} />
+        <Route path="/modern-marketing" element={<AppLayout><ModernMarketing /></AppLayout>} />
                 <Route path="/import/url-config" element={<AppLayout><URLImportConfig /></AppLayout>} />
                 <Route path="/import/xml-config" element={<AppLayout><XMLImportConfig /></AppLayout>} />
                 <Route path="/import/ftp-config" element={<AppLayout><FTPImportConfig /></AppLayout>} />
