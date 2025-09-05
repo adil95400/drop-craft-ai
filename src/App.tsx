@@ -57,6 +57,19 @@ import ModernAnalyticsPage from '@/pages/ModernAnalyticsPage';
 import ModernMarketplacePage from '@/pages/ModernMarketplacePage';
 import ModernSettingsPage from '@/pages/ModernSettingsPage';
 
+// Import specialized pages
+import CSVImportPage from '@/pages/import/CSVImportPage';
+import WebScrapingPage from '@/pages/import/WebScrapingPage';
+import APIImportPage from '@/pages/import/APIImportPage';
+import DatabaseImportPage from '@/pages/import/DatabaseImportPage';
+import AIGenerationPage from '@/pages/import/AIGenerationPage';
+import ScheduledImportsPage from '@/pages/import/ScheduledImportsPage';
+
+// Marketplace pages
+import ProductDetailPage from '@/pages/marketplace/ProductDetailPage';
+import CategoryPage from '@/pages/marketplace/CategoryPage';
+import SupplierCatalogPage from '@/pages/marketplace/SupplierCatalogPage';
+
 // Auth Page
 import AuthPage from '@/pages/AuthPage';
 
@@ -174,10 +187,62 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                {/* Marketplace */}
+                <Route path="/marketplace" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernMarketplacePage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/marketplace/product/:id" element={
+                  <ProtectedRoute>
+                    <AppLayout><ProductDetailPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/marketplace/category/:category" element={
+                  <ProtectedRoute>
+                    <AppLayout><CategoryPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/marketplace/supplier/:supplierId" element={
+                  <ProtectedRoute>
+                    <AppLayout><SupplierCatalogPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
                 {/* Import moderne */}
                 <Route path="/import" element={
                   <ProtectedRoute>
                     <AppLayout><ModernImportPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import/csv" element={
+                  <ProtectedRoute>
+                    <AppLayout><CSVImportPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import/url" element={
+                  <ProtectedRoute>
+                    <AppLayout><WebScrapingPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import/api" element={
+                  <ProtectedRoute>
+                    <AppLayout><APIImportPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import/database" element={
+                  <ProtectedRoute>
+                    <AppLayout><DatabaseImportPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import/ai-generation" element={
+                  <ProtectedRoute>
+                    <AppLayout><AIGenerationPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import/scheduled" element={
+                  <ProtectedRoute>
+                    <AppLayout><ScheduledImportsPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/import-old" element={<AppLayout><UnifiedImport /></AppLayout>} />
@@ -232,7 +297,6 @@ function App() {
                     </RequirePlan>
                   </AppLayout>
                 } />
-                <Route path="/modern/billing" element={<AppLayout><ModernBilling /></AppLayout>} />
                 
                 <Route path="/import/url-config" element={<AppLayout><URLImportConfig /></AppLayout>} />
                 <Route path="/import/xml-config" element={<AppLayout><XMLImportConfig /></AppLayout>} />
