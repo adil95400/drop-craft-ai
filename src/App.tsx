@@ -3,7 +3,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { UnifiedPlanProvider } from '@/components/plan/UnifiedPlanProvider';
+import { UnifiedProvider } from '@/components/unified/UnifiedProvider';
 import { HelmetProvider } from 'react-helmet-async';
 import { AppLayout } from '@/layouts/AppLayout';
 import { NotificationProvider } from '@/components/notifications/NotificationService';
@@ -17,7 +17,7 @@ import Marketing from '@/pages/Marketing';
 import SubscriptionDashboard from '@/pages/SubscriptionDashboard';
 import QuotaManagerPage from '@/pages/QuotaManagerPage';
 import Suppliers from "@/pages/Suppliers";
-import UnifiedImport from '@/pages/UnifiedImport';
+import UnifiedImport from '@/pages/unified/UnifiedImport';
 import URLImportConfig from '@/pages/import/URLImportConfig';
 import XMLImportConfig from '@/pages/import/XMLImportConfig';
 import FTPImportConfig from '@/pages/import/FTPImportConfig';
@@ -59,7 +59,7 @@ function App() {
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <UnifiedPlanProvider>
+          <UnifiedProvider>
             <NotificationProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
@@ -103,7 +103,7 @@ function App() {
               <Toaster />
               <SonnerToaster />
             </NotificationProvider>
-          </UnifiedPlanProvider>
+          </UnifiedProvider>
         </AuthProvider>
       </QueryClientProvider>
     </HelmetProvider>
