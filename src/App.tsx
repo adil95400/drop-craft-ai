@@ -29,6 +29,11 @@ import ImportedProducts from '@/pages/ImportedProducts';
 import { ModuleRoutes } from '@/components/routing/ModuleRoutes';
 import Products from '@/pages/Products';
 
+// Nouvelles pages modernes
+import ModernProducts from '@/pages/modern/ModernProducts';
+import ModernSuppliers from '@/pages/modern/ModernSuppliers';
+import ModernImport from '@/pages/modern/ModernImport';
+
 // Extensions Pages
 import ExtensionsHub from '@/pages/ExtensionsHub';
 import MarketplacePage from '@/pages/extensions/MarketplacePage';
@@ -70,6 +75,11 @@ function App() {
                 <Route path="/marketing" element={<AppLayout><Marketing /></AppLayout>} />
                 <Route path="/suppliers" element={<AppLayout><Suppliers /></AppLayout>} />
                 <Route path="/import" element={<AppLayout><UnifiedImport /></AppLayout>} />
+                
+                {/* Routes modernes */}
+                <Route path="/modern/products" element={<AppLayout><ModernProducts /></AppLayout>} />
+                <Route path="/modern/suppliers" element={<AppLayout><ModernSuppliers /></AppLayout>} />
+                <Route path="/modern/import" element={<AppLayout><ModernImport /></AppLayout>} />
                 <Route path="/import/url-config" element={<AppLayout><URLImportConfig /></AppLayout>} />
                 <Route path="/import/xml-config" element={<AppLayout><XMLImportConfig /></AppLayout>} />
                 <Route path="/import/ftp-config" element={<AppLayout><FTPImportConfig /></AppLayout>} />
