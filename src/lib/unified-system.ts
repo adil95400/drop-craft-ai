@@ -155,6 +155,11 @@ export class UnifiedSystem {
     }
   }
 
+  // Alias pour getProducts - utilise les produits importés  
+  async getProducts(userId: string) {
+    return this.getImportedProducts(userId)
+  }
+
   // Gestion des jobs d'import
   async getImportJobs(userId: string) {
     try {

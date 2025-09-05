@@ -111,7 +111,7 @@ export default function Catalogue() {
             </div>
             <div className="flex items-center gap-3">
               <Button
-                onClick={() => console.log('Nouveau produit')}
+                onClick={() => window.location.href = '/products/new'}
                 disabled={isAdding}
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -241,7 +241,7 @@ export default function Catalogue() {
                 <p className="text-muted-foreground mb-4">
                   {searchTerm ? 'Aucun produit ne correspond à votre recherche.' : 'Commencez par ajouter des produits à votre catalogue.'}
                 </p>
-                <Button onClick={() => console.log('Ajouter un produit')}>
+                <Button onClick={() => window.location.href = '/products/new'}>
                   <Plus className="h-4 w-4 mr-2" />
                   Ajouter un produit
                 </Button>

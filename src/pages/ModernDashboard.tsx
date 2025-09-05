@@ -104,7 +104,10 @@ const ModernDashboard: React.FC = () => {
               <RefreshCw className="h-4 w-4 mr-2" />
               Actualiser
             </Button>
-            <Button className="btn-gradient">
+            <Button 
+              className="btn-gradient"
+              onClick={() => window.location.href = isAdmin ? '/admin' : '/products'}
+            >
               <Plus className="h-4 w-4 mr-2" />
               {isAdmin ? 'Gérer Système' : 'Nouveau Produit'}
             </Button>
@@ -164,29 +167,37 @@ const ModernDashboard: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="h-auto p-4 flex-col gap-2" asChild>
-                  <div>
-                    <Package className="h-6 w-6" />
-                    <span className="text-sm">Import Produits</span>
-                  </div>
+                <Button 
+                  variant="outline" 
+                  className="h-auto p-4 flex-col gap-2"
+                  onClick={() => window.location.href = '/import'}
+                >
+                  <Package className="h-6 w-6" />
+                  <span className="text-sm">Import Produits</span>
                 </Button>
-                <Button variant="outline" className="h-auto p-4 flex-col gap-2" asChild>
-                  <div>
-                    <Database className="h-6 w-6" />
-                    <span className="text-sm">Fournisseurs</span>
-                  </div>
+                <Button 
+                  variant="outline" 
+                  className="h-auto p-4 flex-col gap-2"
+                  onClick={() => window.location.href = '/suppliers'}
+                >
+                  <Database className="h-6 w-6" />
+                  <span className="text-sm">Fournisseurs</span>
                 </Button>
-                <Button variant="outline" className="h-auto p-4 flex-col gap-2" asChild>
-                  <div>
-                    <BarChart3 className="h-6 w-6" />
-                    <span className="text-sm">Analytics</span>
-                  </div>
+                <Button 
+                  variant="outline" 
+                  className="h-auto p-4 flex-col gap-2"
+                  onClick={() => window.location.href = '/analytics'}
+                >
+                  <BarChart3 className="h-6 w-6" />
+                  <span className="text-sm">Analytics</span>
                 </Button>
-                <Button variant="outline" className="h-auto p-4 flex-col gap-2" asChild>
-                  <div>
-                    <Settings className="h-6 w-6" />
-                    <span className="text-sm">Paramètres</span>
-                  </div>
+                <Button 
+                  variant="outline" 
+                  className="h-auto p-4 flex-col gap-2"
+                  onClick={() => window.location.href = '/settings'}
+                >
+                  <Settings className="h-6 w-6" />
+                  <span className="text-sm">Paramètres</span>
                 </Button>
               </div>
             </CardContent>

@@ -45,9 +45,10 @@ import AdminDashboard from '@/components/modern/AdminDashboard';
 
 // Nouvelles pages de refonte
 import ModernDashboard from '@/pages/ModernDashboard';
-import ModernSuppliersHub from '@/pages/ModernSuppliersHub';
+import ModernSuppliersHub from '@/pages/ModernSuppliersHub'; 
+import ModernProductsPage from '@/pages/ModernProductsPage';
 import ModernSuppliersPage from '@/pages/ModernSuppliersPage';
-import ModernImportPage from '@/pages/ModernImportPage';
+import ModernImportPageNew from '@/pages/ModernImportPageNew';
 
 // Auth Page
 import AuthPage from '@/pages/AuthPage';
@@ -124,11 +125,17 @@ function App() {
                     <AppLayout><Suppliers /></AppLayout>
                   </ProtectedRoute>
                 } />
+                {/* Products moderne */}
+                <Route path="/products" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernProductsPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
                 
                 {/* Import moderne */}
                 <Route path="/import" element={
                   <ProtectedRoute>
-                    <AppLayout><ModernImportPage /></AppLayout>
+                    <AppLayout><ModernImportPageNew /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/import-old" element={<AppLayout><UnifiedImport /></AppLayout>} />
@@ -157,7 +164,7 @@ function App() {
                 } />
                 <Route path="/import-v2" element={
                   <ProtectedRoute>
-                    <AppLayout><ModernImportPage /></AppLayout>
+                    <AppLayout><ModernImportPageNew /></AppLayout>
                   </ProtectedRoute>
                 } />
                 
