@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Mail, Lock, User, Building2 } from 'lucide-react';
+import { GoogleAuthButton } from './GoogleAuthButton';
+import { ForgotPasswordModal } from './ForgotPasswordModal';
 
 export const AuthInterface = () => {
   const { signIn, signUp, resetPassword, loading } = useAuth();
@@ -28,6 +30,7 @@ export const AuthInterface = () => {
   });
 
   const [resetEmail, setResetEmail] = useState('');
+  const [showForgotModal, setShowForgotModal] = useState(false);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,17 +210,25 @@ export const AuthInterface = () => {
                       'Se connecter'
                     )}
                   </Button>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Ou continuer avec
+                      </span>
+                    </div>
+                  </div>
+
+                  <GoogleAuthButton mode="signin" />
                 </form>
 
                 <div className="text-center">
                   <Button 
                     variant="link" 
-                    onClick={() => {
-                      const email = prompt('Entrez votre email pour réinitialiser le mot de passe:');
-                      if (email) {
-                        handleResetPassword(email);
-                      }
-                    }}
+                    onClick={() => setShowForgotModal(true)}
                   >
                     Mot de passe oublié ?
                   </Button>
@@ -336,11 +347,29 @@ export const AuthInterface = () => {
                       'Créer mon compte'
                     )}
                   </Button>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Ou s'inscrire avec
+                      </span>
+                    </div>
+                  </div>
+
+                  <GoogleAuthButton mode="signup" />
                 </form>
               </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
+
+        <ForgotPasswordModal
+          open={showForgotModal}
+          onOpenChange={setShowForgotModal}
+        />
       </div>
     </div>
   );

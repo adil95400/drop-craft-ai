@@ -30,6 +30,7 @@ import { ModuleRoutes } from '@/components/routing/ModuleRoutes';
 import Products from '@/pages/Products';
 import { RequirePlan } from '@/components/plan/RequirePlan';
 import { AdminRoute } from '@/components/auth/AdminRoute';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 // Nouvelles pages modernes
 import ModernProducts from '@/pages/modern/ModernProducts';
@@ -41,6 +42,9 @@ import ModernMarketing from '@/pages/modern/ModernMarketing';
 import { ModernNavigation } from '@/components/layout/ModernNavigation';
 import ModernBilling from '@/pages/modern/ModernBilling';
 import AdminDashboard from '@/components/modern/AdminDashboard';
+
+// Auth Page
+import AuthPage from '@/pages/AuthPage';
 
 // Extensions Pages
 import ExtensionsHub from '@/pages/ExtensionsHub';
@@ -76,13 +80,38 @@ function App() {
             <NotificationProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<AuthPage />} />
                 <Route path="/modern" element={<AppLayout><ModernNavigation /></AppLayout>} />
-                <Route path="/dashboard" element={<AppLayout><UnifiedDashboard /></AppLayout>} />
-                <Route path="/products" element={<AppLayout><Products /></AppLayout>} />
-                <Route path="/orders" element={<AppLayout><Orders /></AppLayout>} />
-                <Route path="/customers" element={<AppLayout><Customers /></AppLayout>} />
-                <Route path="/marketing" element={<AppLayout><Marketing /></AppLayout>} />
-                <Route path="/suppliers" element={<AppLayout><Suppliers /></AppLayout>} />
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <AppLayout><UnifiedDashboard /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/products" element={
+                  <ProtectedRoute>
+                    <AppLayout><Products /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/orders" element={
+                  <ProtectedRoute>
+                    <AppLayout><Orders /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/customers" element={
+                  <ProtectedRoute>
+                    <AppLayout><Customers /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/marketing" element={
+                  <ProtectedRoute>
+                    <AppLayout><Marketing /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/suppliers" element={
+                  <ProtectedRoute>
+                    <AppLayout><Suppliers /></AppLayout>
+                  </ProtectedRoute>
+                } />
                 <Route path="/import" element={<AppLayout><UnifiedImport /></AppLayout>} />
                 
                 {/* Routes modernes avec protection par plan */}
