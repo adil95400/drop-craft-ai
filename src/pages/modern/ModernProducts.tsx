@@ -50,14 +50,18 @@ import { useLegacyPlan } from '@/lib/migration-helper'
 
 interface Product {
   id: string
-  title: string
+  name?: string // Supabase field name
+  title?: string // Alternative field name for compatibility
   sku?: string
   category?: string
-  sale_price: number
+  price: number // Main price field from Supabase
+  sale_price?: number // Alternative price field
   cost_price?: number
   stock_quantity?: number
-  status: string
-  supplier_name?: string
+  status?: string
+  supplier?: string // Supabase field name
+  supplier_name?: string // Alternative field name
+  image_url?: string
   images?: string[]
   created_at: string
   updated_at: string
@@ -92,7 +96,14 @@ export default function ModernProducts() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setProducts(data || [])
+      // Transform data to match our interface
+      const transformedData = (data || []).map((item: any) => ({
+        ...item,
+        title: item.name || 'Produit sans nom',
+        sale_price: item.price || 0,
+        images: item.image_urls || []
+      }))
+      setProducts(transformedData)
     } catch (error) {
       console.error('Error fetching products:', error)
       toast({
@@ -291,8 +302,8 @@ export default function ModernProducts() {
   const stats = {
     total: products.length,
     active: products.filter(p => p.status === 'active').length,
-    totalValue: products.reduce((sum, p) => sum + p.price, 0),
-    lowStock: products.filter(p => p.stock_quantity < 10).length
+    totalValue: products.reduce((sum, p) => sum + (p.price || p.sale_price || 0), 0),
+    lowStock: products.filter(p => (p.stock_quantity || 0) < 10).length
   }
 
   const filters = (
@@ -474,10 +485,10 @@ export default function ModernProducts() {
                       <span>SKU:</span>
                       <span className="font-mono">{selectedProduct.sku || 'N/A'}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Prix:</span>
-                      <span className="font-medium">{formatCurrency(selectedProduct.price)}</span>
-                    </div>
+                     <div className="flex justify-between">
+                       <span>Prix:</span>
+                       <span className="font-medium">{formatCurrency(selectedProduct.price || selectedProduct.sale_price || 0)}</span>
+                     </div>
                     {isPro && selectedProduct.cost_price && (
                       <div className="flex justify-between">
                         <span>Prix de revient:</span>
