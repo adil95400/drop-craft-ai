@@ -5,7 +5,7 @@ interface UserPreferences {
   theme: 'light' | 'dark' | 'system';
   sidebarCollapsed: boolean;
   pageSize: number;
-  language: 'fr' | 'en';
+  language: 'fr' | 'en' | 'es';
   notifications: {
     email: boolean;
     push: boolean;

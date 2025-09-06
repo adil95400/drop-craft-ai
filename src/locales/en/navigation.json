@@ -1,0 +1,20 @@
+{
+  "dashboard": "Dashboard",
+  "orders": "Orders",
+  "customers": "Customers",
+  "products": "Products",
+  "catalog": "Catalog",
+  "inventory": "Inventory",
+  "marketing": "Marketing",
+  "analytics": "Analytics",
+  "reports": "Reports",
+  "settings": "Settings",
+  "profile": "Profile",
+  "logout": "Logout",
+  "help": "Help",
+  "support": "Support",
+  "notifications": "Notifications",
+  "search": "Search...",
+  "menu": "Menu",
+  "home": "Home"
+}

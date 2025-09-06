@@ -1,0 +1,23 @@
+{
+  "title": "Panel",
+  "welcome": "Bienvenido a tu panel",
+  "overview": "Resumen",
+  "stats": {
+    "totalOrders": "Pedidos Totales",
+    "totalRevenue": "Ingresos Totales", 
+    "totalProducts": "Productos Totales",
+    "totalCustomers": "Clientes Totales"
+  },
+  "charts": {
+    "revenue": "Evolución de Ingresos",
+    "orders": "Evolución de Pedidos",
+    "products": "Distribución de Productos"
+  },
+  "quickActions": {
+    "title": "Acciones Rápidas",
+    "newOrder": "Nuevo Pedido",
+    "addProduct": "Añadir Producto",
+    "viewCustomers": "Ver Clientes", 
+    "viewReports": "Ver Reportes"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome to your dashboard",
+  "overview": "Overview", 
+  "stats": {
+    "totalOrders": "Total Orders",
+    "totalRevenue": "Total Revenue",
+    "totalProducts": "Total Products",
+    "totalCustomers": "Total Customers"
+  },
+  "charts": {
+    "revenue": "Revenue Evolution",
+    "orders": "Orders Evolution",
+    "products": "Products Distribution"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "newOrder": "New Order",
+    "addProduct": "Add Product",
+    "viewCustomers": "View Customers",
+    "viewReports": "View Reports"
+  }
+}

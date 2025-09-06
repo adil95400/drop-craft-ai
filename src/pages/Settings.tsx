@@ -16,6 +16,8 @@ import { useEnhancedAuth } from "@/hooks/useEnhancedAuth";
 import { RealIntegrationsTab } from "@/components/integrations/RealIntegrationsTab";
 import { useUserPreferences } from "@/stores/globalStore";
 import { useTheme } from "next-themes";
+import { useTranslation } from 'react-i18next';
+import i18n from '@/lib/i18n';
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -55,6 +57,7 @@ const Settings = () => {
   const { isAdmin, role } = useEnhancedAuth();
   const navigate = useNavigate();
   const { setTheme } = useTheme();
+  const { t } = useTranslation(['settings', 'common', 'navigation']);
   
   // Use global store for preferences
   const {
@@ -129,7 +132,12 @@ const Settings = () => {
   useEffect(() => {
     setCompactMode(sidebarCollapsed);
     setSounds(storeNotifications.desktop);
-  }, [sidebarCollapsed, storeNotifications.desktop]);
+    
+    // Sync i18n language with store
+    if (storeLanguage && i18n.language !== storeLanguage) {
+      i18n.changeLanguage(storeLanguage);
+    }
+  }, [sidebarCollapsed, storeNotifications.desktop, storeLanguage]);
 
   const handleSaveProfile = async () => {
     try {
@@ -275,7 +283,7 @@ const Settings = () => {
       toggleSidebar();
     }
     
-    toast.success('Paramètres d\'apparence sauvegardés');
+    toast.success(t('settings:messages.appearanceSaved'));
   };
 
   // Handle theme change immediately
@@ -287,8 +295,17 @@ const Settings = () => {
   // Handle language change immediately
   const handleLanguageChange = (newLanguage: string) => {
     updateLanguage(newLanguage as any);
-    // You can add i18n logic here if needed
-    toast.success(`Langue changée vers ${newLanguage === 'fr' ? 'Français' : newLanguage === 'en' ? 'English' : newLanguage}`);
+    i18n.changeLanguage(newLanguage);
+    
+    const languageNames = {
+      fr: 'Français',
+      en: 'English',
+      es: 'Español'
+    };
+    
+    toast.success(t('settings:messages.languageChanged', { 
+      language: languageNames[newLanguage as keyof typeof languageNames] || newLanguage 
+    }));
   };
 
   const handleLogout = async () => {
@@ -424,16 +441,16 @@ const Settings = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Paramètres
+            {t('settings:title')}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Configurez votre compte et vos préférences
+            {t('settings:description')}
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleLogout} className="border-destructive/20 text-destructive hover:bg-destructive/10">
             <LogOut className="mr-2 h-4 w-4" />
-            Déconnexion
+            {t('navigation:logout')}
           </Button>
           <Button variant="default" onClick={handleSaveProfile} className="bg-primary hover:bg-primary/90">
             <Save className="mr-2 h-4 w-4" />
@@ -456,19 +473,19 @@ const Settings = () => {
               <TabsList className="grid w-full grid-cols-1 h-auto bg-transparent p-1 space-y-1">
                 <TabsTrigger value="profile" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <User className="mr-2 h-4 w-4" />
-                  Profil
+                  {t('settings:general.profile')}
                 </TabsTrigger>
                 <TabsTrigger value="notifications" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Bell className="mr-2 h-4 w-4" />
-                  Notifications
+                  {t('settings:tabs.notifications')}
                 </TabsTrigger>
                 <TabsTrigger value="security" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Shield className="mr-2 h-4 w-4" />
-                  Sécurité
+                  {t('settings:tabs.security')}
                 </TabsTrigger>
                 <TabsTrigger value="integrations" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Database className="mr-2 h-4 w-4" />
-                  Intégrations
+                  {t('settings:tabs.integrations')}
                 </TabsTrigger>
                 <TabsTrigger value="billing" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <CreditCard className="mr-2 h-4 w-4" />
@@ -480,7 +497,7 @@ const Settings = () => {
                 </TabsTrigger>
                 <TabsTrigger value="appearance" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Palette className="mr-2 h-4 w-4" />
-                  Apparence
+                  {t('settings:tabs.appearance')}
                 </TabsTrigger>
               </TabsList>
             </CardContent>
@@ -943,7 +960,7 @@ const Settings = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <h4 className="font-semibold">Thème</h4>
+                    <h4 className="font-semibold">{t('settings:appearance.theme')}</h4>
                     <Select value={storeTheme} onValueChange={handleThemeChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Choisir un thème" />
@@ -952,19 +969,19 @@ const Settings = () => {
                         <SelectItem value="light">
                           <div className="flex items-center">
                             <Sun className="mr-2 h-4 w-4" />
-                            Clair
+                            {t('settings:appearance.themes.light')}
                           </div>
                         </SelectItem>
                         <SelectItem value="dark">
                           <div className="flex items-center">
                             <Moon className="mr-2 h-4 w-4" />
-                            Sombre
+                            {t('settings:appearance.themes.dark')}
                           </div>
                         </SelectItem>
                         <SelectItem value="system">
                           <div className="flex items-center">
                             <Monitor className="mr-2 h-4 w-4" />
-                            Système
+                            {t('settings:appearance.themes.system')}
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -972,7 +989,7 @@ const Settings = () => {
                   </div>
 
                   <div className="space-y-3">
-                    <Label>Langue</Label>
+                    <Label>{t('settings:general.language')}</Label>
                     <Select value={storeLanguage} onValueChange={handleLanguageChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Choisir une langue" />

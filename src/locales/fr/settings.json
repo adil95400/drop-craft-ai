@@ -1,0 +1,46 @@
+{
+  "title": "Paramètres",
+  "description": "Configurez vos préférences et paramètres d'application",
+  "tabs": {
+    "general": "Général",
+    "appearance": "Apparence",
+    "notifications": "Notifications",
+    "security": "Sécurité",
+    "integrations": "Intégrations",
+    "support": "Support"
+  },
+  "general": {
+    "title": "Paramètres généraux",
+    "profile": "Profil utilisateur",
+    "name": "Nom",
+    "email": "Email",
+    "timezone": "Fuseau horaire",
+    "language": "Langue",
+    "currency": "Devise"
+  },
+  "appearance": {
+    "title": "Apparence",
+    "theme": "Thème",
+    "themes": {
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système"
+    },
+    "compactMode": "Mode compact",
+    "animations": "Animations",
+    "sounds": "Sons"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "desktop": "Notifications bureau",
+    "email": "Notifications email",
+    "push": "Notifications push",
+    "marketing": "Notifications marketing"
+  },
+  "messages": {
+    "saved": "Paramètres sauvegardés",
+    "appearanceSaved": "Paramètres d'apparence sauvegardés",
+    "languageChanged": "Langue changée vers {{language}}",
+    "themeChanged": "Thème changé vers {{theme}}"
+  }
+}

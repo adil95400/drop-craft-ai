@@ -1,0 +1,23 @@
+{
+  "title": "Tableau de bord",
+  "welcome": "Bienvenue sur votre tableau de bord",
+  "overview": "Vue d'ensemble",
+  "stats": {
+    "totalOrders": "Commandes totales",
+    "totalRevenue": "Chiffre d'affaires total",
+    "totalProducts": "Produits total",
+    "totalCustomers": "Clients total"
+  },
+  "charts": {
+    "revenue": "Évolution du chiffre d'affaires",
+    "orders": "Évolution des commandes",
+    "products": "Répartition des produits"
+  },
+  "quickActions": {
+    "title": "Actions rapides",
+    "newOrder": "Nouvelle commande",
+    "addProduct": "Ajouter un produit",
+    "viewCustomers": "Voir les clients",
+    "viewReports": "Voir les rapports"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "title": "Settings",
+  "description": "Configure your preferences and application settings",
+  "tabs": {
+    "general": "General",
+    "appearance": "Appearance",
+    "notifications": "Notifications",
+    "security": "Security",
+    "integrations": "Integrations",
+    "support": "Support"
+  },
+  "general": {
+    "title": "General settings",
+    "profile": "User profile",
+    "name": "Name",
+    "email": "Email",
+    "timezone": "Timezone",
+    "language": "Language",
+    "currency": "Currency"
+  },
+  "appearance": {
+    "title": "Appearance",
+    "theme": "Theme",
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "compactMode": "Compact mode",
+    "animations": "Animations",
+    "sounds": "Sounds"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "desktop": "Desktop notifications",
+    "email": "Email notifications",
+    "push": "Push notifications",
+    "marketing": "Marketing notifications"
+  },
+  "messages": {
+    "saved": "Settings saved",
+    "appearanceSaved": "Appearance settings saved",
+    "languageChanged": "Language changed to {{language}}",
+    "themeChanged": "Theme changed to {{theme}}"
+  }
+}

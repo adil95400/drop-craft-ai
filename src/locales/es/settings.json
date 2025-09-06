@@ -1,0 +1,46 @@
+{
+  "title": "Configuración",
+  "description": "Configure sus preferencias y configuración de la aplicación",
+  "tabs": {
+    "general": "General",
+    "appearance": "Apariencia",
+    "notifications": "Notificaciones",
+    "security": "Seguridad",
+    "integrations": "Integraciones",
+    "support": "Soporte"
+  },
+  "general": {
+    "title": "Configuración general",
+    "profile": "Perfil de usuario",
+    "name": "Nombre",
+    "email": "Email",
+    "timezone": "Zona horaria",
+    "language": "Idioma",
+    "currency": "Moneda"
+  },
+  "appearance": {
+    "title": "Apariencia",
+    "theme": "Tema",
+    "themes": {
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
+    },
+    "compactMode": "Modo compacto",
+    "animations": "Animaciones",
+    "sounds": "Sonidos"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "desktop": "Notificaciones de escritorio",
+    "email": "Notificaciones por email",
+    "push": "Notificaciones push",
+    "marketing": "Notificaciones de marketing"
+  },
+  "messages": {
+    "saved": "Configuración guardada",
+    "appearanceSaved": "Configuración de apariencia guardada",
+    "languageChanged": "Idioma cambiado a {{language}}",
+    "themeChanged": "Tema cambiado a {{theme}}"
+  }
+}

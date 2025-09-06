@@ -8,6 +8,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AppLayout } from '@/layouts/AppLayout';
 import { NotificationProvider } from '@/components/notifications/NotificationService';
 import { ThemeProvider } from 'next-themes';
+import '@/lib/i18n';
 
 // Pages
 import Index from '@/pages/Index';
