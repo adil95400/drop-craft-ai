@@ -164,7 +164,8 @@ export const AdvancedAnalytics: React.FC = () => {
           ...insight,
           insight_type: (insight.insight_type || 'recommendation') as 'opportunity' | 'trend' | 'anomaly' | 'recommendation',
           actionable_recommendations: (insight.actionable_recommendations as string[]) || [],
-          supporting_data: (insight.supporting_data as Record<string, any>) || {}
+          supporting_data: (insight.supporting_data as Record<string, any>) || {},
+          status: (insight.status || 'new') as 'new' | 'acknowledged' | 'acted_upon'
         }));
         setInsights(transformedInsights);
       }

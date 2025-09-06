@@ -147,7 +147,10 @@ export const MarketingAutomation: React.FC = () => {
         const transformedRules = rulesData.map(rule => ({
           ...rule,
           rule_type: (rule.rule_type || 'welcome') as 'welcome' | 'abandoned_cart' | 'purchase_follow_up' | 're_engagement',
-          actions: (rule.actions as Array<{type: string; config: Record<string, any>}>) || [],
+          actions: ((rule.actions as any[]) || []).map(action => ({
+            type: (action.type || 'send_email') as 'send_email' | 'add_tag' | 'update_score' | 'create_task',
+            config: action.config || {}
+          })),
           trigger_conditions: (rule.trigger_conditions as Record<string, any>) || {}
         }));
         setAutomationRules(transformedRules);
