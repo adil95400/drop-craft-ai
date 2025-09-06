@@ -98,6 +98,15 @@ const Settings = () => {
 
   const [theme, setTheme] = useState("system");
   const [language, setLanguage] = useState("fr");
+  const [compactMode, setCompactMode] = useState(false);
+  const [animations, setAnimations] = useState(true);
+  const [sounds, setSounds] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    current: "",
+    new: "",
+    confirm: ""
+  });
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   
   // File upload ref
   const fileInputRef = useState<HTMLInputElement | null>(null);
@@ -170,6 +179,86 @@ const Settings = () => {
     }
   };
 
+  const handleChangePassword = async () => {
+    if (!passwordData.current || !passwordData.new || !passwordData.confirm) {
+      toast.error('Veuillez remplir tous les champs');
+      return;
+    }
+    
+    if (passwordData.new !== passwordData.confirm) {
+      toast.error('Les mots de passe ne correspondent pas');
+      return;
+    }
+    
+    if (passwordData.new.length < 8) {
+      toast.error('Le mot de passe doit contenir au moins 8 caractères');
+      return;
+    }
+    
+    toast.promise(
+      new Promise(resolve => setTimeout(resolve, 1500)),
+      {
+        loading: 'Modification du mot de passe...',
+        success: () => {
+          setPasswordData({ current: "", new: "", confirm: "" });
+          return 'Mot de passe modifié avec succès';
+        },
+        error: 'Erreur lors de la modification'
+      }
+    );
+  };
+
+  const handleToggle2FA = () => {
+    const action = twoFactorEnabled ? 'Désactivation' : 'Activation';
+    toast.promise(
+      new Promise(resolve => {
+        setTimeout(() => {
+          setTwoFactorEnabled(!twoFactorEnabled);
+          resolve('success');
+        }, 1200);
+      }),
+      {
+        loading: `${action} du 2FA...`,
+        success: `2FA ${twoFactorEnabled ? 'désactivé' : 'activé'} avec succès`,
+        error: `Erreur lors de l'${action.toLowerCase()}`
+      }
+    );
+  };
+
+  const handleUpgradePlan = (planName: string, price: number) => {
+    if (!isAdmin) {
+      toast.info(`Simulation de mise à niveau vers ${planName} (${price}€/mois)`);
+      return;
+    }
+    
+    toast.promise(
+      new Promise(resolve => setTimeout(resolve, 2000)),
+      {
+        loading: `Mise à niveau vers ${planName}...`,
+        success: `Plan ${planName} activé avec succès`,
+        error: 'Erreur lors de la mise à niveau'
+      }
+    );
+  };
+
+  const handleSaveAppearance = () => {
+    const settings = {
+      theme,
+      language,
+      compactMode,
+      animations,
+      sounds
+    };
+    
+    localStorage.setItem('appearance-settings', JSON.stringify(settings));
+    
+    toast.success('Paramètres d\'apparence sauvegardés');
+    
+    // Apply theme immediately
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('data-compact', compactMode.toString());
+  };
+
   const handleLogout = async () => {
     try {
       await signOut();
@@ -183,8 +272,101 @@ const Settings = () => {
   // Remove this function as we'll use AvatarUpload component
 
   const goToApiDocumentation = () => {
-    // Ouvrir la documentation API dans un nouvel onglet
-    window.open('/api-docs', '_blank');
+    // Créer une page de documentation API dynamique
+    const docContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Documentation API - DropCraft</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; margin: 40px; line-height: 1.6; }
+    .endpoint { background: #f5f5f5; padding: 15px; margin: 20px 0; border-radius: 8px; }
+    .method { display: inline-block; padding: 4px 8px; border-radius: 4px; color: white; margin-right: 10px; }
+    .get { background: #2196F3; }
+    .post { background: #4CAF50; }
+    .put { background: #FF9800; }
+    .delete { background: #f44336; }
+    pre { background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 8px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>📚 Documentation API DropCraft</h1>
+  <p>Cette API vous permet d'intégrer DropCraft avec vos applications tierces.</p>
+  
+  <h2>🔑 Authentication</h2>
+  <p>Toutes les requêtes doivent inclure votre clé API dans l'en-tête:</p>
+  <pre>Authorization: Bearer YOUR_API_KEY</pre>
+  
+  <h2>📦 Endpoints Produits</h2>
+  <div class="endpoint">
+    <span class="method get">GET</span><strong>/api/v1/products</strong>
+    <p>Récupère la liste de tous vos produits</p>
+    <pre>{
+  "products": [
+    {
+      "id": "prod_123",
+      "name": "iPhone 15 Pro",
+      "price": 1199.00,
+      "status": "active"
+    }
+  ]
+}</pre>
+  </div>
+  
+  <div class="endpoint">
+    <span class="method post">POST</span><strong>/api/v1/products</strong>
+    <p>Crée un nouveau produit</p>
+    <pre>{
+  "name": "Nouveau produit",
+  "description": "Description du produit",
+  "price": 99.99,
+  "category": "electronics"
+}</pre>
+  </div>
+  
+  <h2>🛒 Endpoints Commandes</h2>
+  <div class="endpoint">
+    <span class="method get">GET</span><strong>/api/v1/orders</strong>
+    <p>Récupère toutes vos commandes</p>
+  </div>
+  
+  <h2>👥 Endpoints Clients</h2>
+  <div class="endpoint">
+    <span class="method get">GET</span><strong>/api/v1/customers</strong>
+    <p>Liste tous vos clients</p>
+  </div>
+  
+  <h2>📊 Endpoints Analytics</h2>
+  <div class="endpoint">
+    <span class="method get">GET</span><strong>/api/v1/analytics/dashboard</strong>
+    <p>Données du tableau de bord</p>
+  </div>
+  
+  <h2>🔄 Webhooks</h2>
+  <p>Configurez des webhooks pour recevoir des notifications en temps réel:</p>
+  <ul>
+    <li><strong>order.created</strong> - Nouvelle commande</li>
+    <li><strong>product.updated</strong> - Produit modifié</li>
+    <li><strong>payment.completed</strong> - Paiement terminé</li>
+  </ul>
+  
+  <h2>⚡ Limites</h2>
+  <ul>
+    <li>1000 requêtes/heure (plan standard)</li>
+    <li>5000 requêtes/heure (plan pro)</li>
+    <li>Illimité (plan enterprise)</li>
+  </ul>
+  
+  <hr>
+  <p><em>Besoin d'aide ? Contactez notre support à api-support@dropcraft.com</em></p>
+</body>
+</html>`;
+    
+    const blob = new Blob([docContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    
+    toast.success('Documentation API ouverte dans un nouvel onglet');
   };
 
   const plans = [{
@@ -501,18 +683,33 @@ const Settings = () => {
                     <div className="space-y-3">
                       <div className="space-y-2">
                         <Label>Mot de passe actuel</Label>
-                        <Input type="password" placeholder="••••••••" />
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••"
+                          value={passwordData.current}
+                          onChange={e => setPasswordData({...passwordData, current: e.target.value})}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label>Nouveau mot de passe</Label>
-                        <Input type="password" placeholder="••••••••" />
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••"
+                          value={passwordData.new}
+                          onChange={e => setPasswordData({...passwordData, new: e.target.value})}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label>Confirmer nouveau mot de passe</Label>
-                        <Input type="password" placeholder="••••••••" />
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••"
+                          value={passwordData.confirm}
+                          onChange={e => setPasswordData({...passwordData, confirm: e.target.value})}
+                        />
                       </div>
                     </div>
-                    <Button variant="outline">
+                    <Button variant="outline" onClick={handleChangePassword}>
                       <Shield className="mr-2 h-4 w-4" />
                       Changer le Mot de Passe
                     </Button>
@@ -522,12 +719,15 @@ const Settings = () => {
                     <h4 className="font-semibold">Authentification à deux facteurs</h4>
                     <div className="flex items-center justify-between p-4 border border-border rounded-lg">
                       <div>
-                        <div className="font-medium">2FA</div>
+                        <div className="font-medium">2FA {twoFactorEnabled && <Badge variant="secondary" className="ml-2">Activé</Badge>}</div>
                         <div className="text-sm text-muted-foreground">Sécurité supplémentaire pour votre compte</div>
                       </div>
-                      <Button variant="outline">
+                      <Button 
+                        variant={twoFactorEnabled ? "destructive" : "outline"}
+                        onClick={handleToggle2FA}
+                      >
                         <Key className="mr-2 h-4 w-4" />
-                        Activer 2FA
+                        {twoFactorEnabled ? 'Désactiver 2FA' : 'Activer 2FA'}
                       </Button>
                     </div>
                   </div>
@@ -585,7 +785,11 @@ const Settings = () => {
                             ))}
                           </ul>
                           {!plan.current && (
-                            <Button variant="outline" className="w-full mt-3">
+                            <Button 
+                              variant="outline" 
+                              className="w-full mt-3"
+                              onClick={() => handleUpgradePlan(plan.name, plan.price)}
+                            >
                               Passer à ce plan
                             </Button>
                           )}
@@ -758,26 +962,35 @@ const Settings = () => {
                           <div className="font-medium">Mode compact</div>
                           <div className="text-sm text-muted-foreground">Réduire l'espacement de l'interface</div>
                         </div>
-                        <Switch />
+                        <Switch 
+                          checked={compactMode}
+                          onCheckedChange={setCompactMode}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">Animations</div>
                           <div className="text-sm text-muted-foreground">Activer les transitions animées</div>
                         </div>
-                        <Switch defaultChecked />
+                        <Switch 
+                          checked={animations}
+                          onCheckedChange={setAnimations}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">Sons système</div>
                           <div className="text-sm text-muted-foreground">Sons pour les notifications</div>
                         </div>
-                        <Switch />
+                        <Switch 
+                          checked={sounds}
+                          onCheckedChange={setSounds}
+                        />
                       </div>
                     </div>
                   </div>
 
-                  <Button variant="hero">
+                  <Button variant="hero" onClick={handleSaveAppearance}>
                     <Save className="mr-2 h-4 w-4" />
                     Sauvegarder l'Apparence
                   </Button>

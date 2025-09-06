@@ -2,8 +2,8 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, User, Camera } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfileActions } from '@/hooks/useProfileActions';
 import { toast } from 'sonner';
 
 interface AvatarUploadProps {
@@ -19,8 +19,8 @@ const AvatarUpload = ({
   size = 'md',
   showUploadButton = true 
 }: AvatarUploadProps) => {
-  const { user, updateProfile, refetchProfile } = useAuth();
-  const [uploading, setUploading] = useState(false);
+  const { user } = useAuth();
+  const { uploadAvatar, loading } = useProfileActions();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sizeClasses = {
@@ -29,73 +29,26 @@ const AvatarUpload = ({
     lg: 'h-24 w-24'
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      uploadAvatar(file);
-    }
-  };
-
-  const uploadAvatar = async (file: File) => {
-    if (!user) {
-      toast.error('Vous devez être connecté pour uploader une photo');
-      return;
-    }
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Veuillez sélectionner un fichier image');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('La taille du fichier ne doit pas dépasser 5MB');
-      return;
-    }
-
-    setUploading(true);
-
-    try {
-      // Create a unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/avatar.${fileExt}`;
-
-      // Upload file to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, {
-          upsert: true // Replace existing file
-        });
-
-      if (uploadError) {
-        throw uploadError;
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Veuillez sélectionner un fichier image');
+        return;
       }
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
-      // Update user profile with new avatar URL
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_url: publicUrl })
-        .eq('id', user.id);
-
-      if (updateError) {
-        throw updateError;
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('La taille du fichier ne doit pas dépasser 5MB');
+        return;
       }
 
-      // Refresh profile data
-      await refetchProfile();
-
-      toast.success('Photo de profil mise à jour avec succès');
-    } catch (error: any) {
-      console.error('Error uploading avatar:', error);
-      toast.error('Erreur lors de l\'upload de la photo: ' + error.message);
-    } finally {
-      setUploading(false);
+      const success = await uploadAvatar(file);
+      if (success) {
+        // Clear the input to allow re-uploading the same file
+        event.target.value = '';
+      }
     }
   };
 
@@ -123,7 +76,7 @@ const AvatarUpload = ({
             variant="outline"
             className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full"
             onClick={handleUploadClick}
-            disabled={uploading}
+            disabled={loading}
           >
             <Camera className="h-4 w-4" />
           </Button>
@@ -134,10 +87,10 @@ const AvatarUpload = ({
         <Button 
           variant="outline" 
           onClick={handleUploadClick}
-          disabled={uploading}
+          disabled={loading}
         >
           <Upload className="mr-2 h-4 w-4" />
-          {uploading ? 'Upload en cours...' : 'Changer la photo'}
+          {loading ? 'Upload en cours...' : 'Changer la photo'}
         </Button>
       )}
 
