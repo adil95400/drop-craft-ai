@@ -5082,6 +5082,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_change_user_role: {
+        Args: { new_role: string; target_user_id: string }
+        Returns: Json
+      }
+      admin_get_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          full_name: string
+          id: string
+          is_admin: boolean
+          last_login_at: string
+          login_count: number
+          plan: string
+          role: string
+          subscription_status: string
+        }[]
+      }
       admin_set_role: {
         Args: { new_role: string; target_user_id: string }
         Returns: Json
@@ -5357,6 +5375,10 @@ export type Database = {
         Args: { user_id_param?: string }
         Returns: string
       }
+      has_feature_flag: {
+        Args: { flag_name: string; user_id_param: string }
+        Returns: boolean
+      }
       has_permission: {
         Args: {
           action_param?: string
@@ -5382,6 +5404,14 @@ export type Database = {
           quota_key_param: string
           user_id_param: string
         }
+        Returns: boolean
+      }
+      is_admin: {
+        Args: { user_id_param?: string }
+        Returns: boolean
+      }
+      is_current_user_admin: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
       is_supplier_owner: {

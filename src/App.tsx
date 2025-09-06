@@ -85,6 +85,7 @@ import SupplierCatalogPage from '@/pages/marketplace/SupplierCatalogPage';
 
 // Auth Page
 import AuthPage from '@/pages/AuthPage';
+import AdminPanel from '@/pages/AdminPanel';
 
 // Profile & Settings Pages
 import Profile from '@/pages/Profile';
@@ -346,23 +347,12 @@ function App() {
                 
                 <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />
                 
-                {/* Admin Routes */}
-                <Route path="/admin" element={
+                {/* Admin Panel Simple */}
+                <Route path="/admin-panel" element={
                   <ProtectedRoute>
-                    <AdminRoute>
-                      <AdminLayout />
-                    </AdminRoute>
+                    <AdminPanel />
                   </ProtectedRoute>
-                }>
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="products" element={<AdminProducts />} />
-                  <Route path="orders" element={<AdminOrders />} />
-                  <Route path="customers" element={<AdminCustomers />} />
-                  <Route path="suppliers" element={<AdminSuppliers />} />
-                  <Route path="subscriptions" element={<AdminSubscriptions />} />
-                  <Route path="integrations" element={<AdminIntegrations />} />
-                  <Route path="analytics" element={<AdminAnalytics />} />
-                </Route>
+                } />
                 
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

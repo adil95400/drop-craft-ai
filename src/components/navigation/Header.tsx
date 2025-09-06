@@ -20,18 +20,21 @@ import {
   LogOut, 
   User,
   Crown,
-  Zap
+  Zap,
+  Shield
 } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/contexts/PlanContext';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useAdminRole } from '@/hooks/useAdminRole';
 
 export function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, signOut, profile } = useAuth();
   const { plan, isPro, isUltraPro } = usePlan();
   const { t } = useLanguage();
+  const { isAdmin } = useAdminRole();
 
   const getPlanIcon = () => {
     if (isUltraPro) return <Crown className="h-4 w-4 text-yellow-500" />;
@@ -106,11 +109,17 @@ export function Header() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  {user?.email || t('common:user', 'Utilisateur')}
+                  {profile?.full_name || user?.email || t('common:user', 'Utilisateur')}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground flex items-center gap-1">
                   {t('common:plan', 'Plan')} {plan} {getPlanIcon()}
                 </p>
+                {isAdmin && (
+                  <div className="flex items-center gap-1 text-xs text-orange-600">
+                    <Crown className="h-3 w-3" />
+                    Administrateur
+                  </div>
+                )}
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -126,6 +135,14 @@ export function Header() {
                 <span>{t('navigation:settings')}</span>
               </Link>
             </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem asChild>
+                <Link to="/admin-panel" className="cursor-pointer">
+                  <Shield className="mr-2 h-4 w-4" />
+                  <span>Administration</span>
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem 
               className="cursor-pointer text-red-600"

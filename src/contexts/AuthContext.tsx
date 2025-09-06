@@ -93,16 +93,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) {
         console.error('Profile fetch error:', error)
-        // Set empty profile to avoid infinite loading
-        setProfile({ id: user.id, role: 'user' })
+        // Set default profile to avoid infinite loading
+        setProfile({ 
+          id: user.id, 
+          role: 'user',
+          is_admin: false,
+          full_name: user.user_metadata?.full_name || '',
+          plan: 'standard'
+        })
         return
       }
       
-      setProfile(data)
+      // Ensure role defaults and admin status consistency
+      const profileData = {
+        ...data,
+        role: data.role || 'user',
+        is_admin: data.is_admin || data.role === 'admin',
+        plan: data.plan || 'standard'
+      }
+      
+      setProfile(profileData)
     } catch (error) {
       console.error('Error fetching profile:', error)
-      // Set empty profile to avoid infinite loading
-      setProfile({ id: user.id, role: 'user' })
+      // Set default profile to avoid infinite loading
+      setProfile({ 
+        id: user.id, 
+        role: 'user',
+        is_admin: false,
+        full_name: user.user_metadata?.full_name || '',
+        plan: 'standard'
+      })
     }
   }
 

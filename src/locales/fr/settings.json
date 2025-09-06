@@ -1,6 +1,7 @@
 {
   "title": "Paramètres",
   "description": "Configurez vos préférences et paramètres d'application",
+  "userManagement": "Gestion des utilisateurs",
   "tabs": {
     "general": "Général",
     "appearance": "Apparence",
