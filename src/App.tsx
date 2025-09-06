@@ -85,8 +85,8 @@ import SupplierCatalogPage from '@/pages/marketplace/SupplierCatalogPage';
 import AuthPage from '@/pages/AuthPage';
 
 // Profile & Settings Pages
-import ProfilePage from '@/pages/ProfilePage';
-import SettingsPage from '@/pages/SettingsPage';
+import Profile from '@/pages/Profile';
+import Settings from '@/pages/Settings';
 
 // Extensions Pages
 import ExtensionsHub from '@/pages/ExtensionsHub';
@@ -125,12 +125,12 @@ function App() {
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/profile" element={
                   <ProtectedRoute>
-                    <AppLayout><ProfilePage /></AppLayout>
+                    <AppLayout><Profile /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/settings" element={
                   <ProtectedRoute>
-                    <AppLayout><ModernSettingsPage /></AppLayout>
+                    <AppLayout><Settings /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/modern" element={<AppLayout><ModernNavigation /></AppLayout>} />

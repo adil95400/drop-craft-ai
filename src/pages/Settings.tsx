@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEnhancedAuth } from "@/hooks/useEnhancedAuth";
 import { RealIntegrationsTab } from "@/components/integrations/RealIntegrationsTab";
 import { 
   Settings as SettingsIcon, 
@@ -49,6 +50,7 @@ import AvatarUpload from '@/components/common/AvatarUpload';
 
 const Settings = () => {
   const { user, profile, updateProfile, signOut } = useAuth();
+  const { isAdmin, role } = useEnhancedAuth();
   const navigate = useNavigate();
 
   const [profileData, setProfileData] = useState({

@@ -29,6 +29,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlan } from "@/hooks/usePlan";
+import { useEnhancedAuth } from "@/hooks/useEnhancedAuth";
 import { PlanBadge } from "@/components/plan/PlanBadge";
 
 // Logo Shopopti
@@ -289,6 +290,7 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { hasPlan, plan } = usePlan(user);
+  const { isAdmin } = useEnhancedAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [openGroups, setOpenGroups] = useState<string[]>([]);
 
@@ -326,7 +328,7 @@ export function AppSidebar() {
   };
 
   const handleNavigation = (item: any) => {
-    if (item.requiredPlan && !hasPlan(item.requiredPlan)) {
+    if (item.requiredPlan && !isAdmin && !hasPlan(item.requiredPlan)) {
       navigate('/pricing-plans', { 
         state: { highlightPlan: item.requiredPlan } 
       });
@@ -336,7 +338,7 @@ export function AppSidebar() {
   };
 
   const renderNavItem = (item: any) => {
-    const hasAccess = !item.requiredPlan || hasPlan(item.requiredPlan);
+    const hasAccess = !item.requiredPlan || isAdmin || hasPlan(item.requiredPlan);
     const isCurrentRoute = isActive(item.url);
     const ItemIcon = item.icon;
     const isLocked = !hasAccess;

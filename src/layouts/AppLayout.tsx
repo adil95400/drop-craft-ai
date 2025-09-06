@@ -24,6 +24,7 @@ import {
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
+import { useEnhancedAuth } from '@/hooks/useEnhancedAuth';
 import { NotificationBell } from '@/components/notifications/NotificationService';
 
 interface AppLayoutProps {
@@ -62,6 +63,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { effectivePlan: plan, hasFeature } = useUnifiedPlan();
+  const { isAdmin } = useEnhancedAuth();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
@@ -96,8 +98,8 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-4">
         {navigation.map((item) => {
-          // Vérifier les permissions de plan
-          if (item.requiredPlan && !hasFeature('advanced-analytics') && item.requiredPlan !== 'standard') {
+          // Vérifier les permissions de plan (Admin a accès à tout)
+          if (item.requiredPlan && !isAdmin && !hasFeature('advanced-analytics') && item.requiredPlan !== 'standard') {
             return (
               <div key={item.title} className="relative">
                 <div className="flex items-center space-x-3 rounded-lg px-3 py-2 text-muted-foreground cursor-not-allowed opacity-50">
