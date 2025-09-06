@@ -50,6 +50,9 @@ import { AdminSuppliers } from '@/pages/admin/AdminSuppliers';
 import AdminSubscriptions from '@/pages/admin/AdminSubscriptions';
 import AdminIntegrations from '@/pages/admin/AdminIntegrations';
 import AdminAnalytics from '@/pages/admin/AdminAnalytics';
+import AdminSEO from '@/pages/admin/AdminSEO';
+import AdminCRM from '@/pages/admin/AdminCRM';
+import AdminMarketing from '@/pages/admin/AdminMarketing';
 
 // Nouvelles pages de refonte
 import ModernDashboard from '@/pages/ModernDashboard';
