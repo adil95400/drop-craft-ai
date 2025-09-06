@@ -1,0 +1,31 @@
+{
+  "title": "Dashboard",
+  "welcome": "Willkommen zu Ihrem Dashboard",
+  "overview": "Übersicht Ihrer E-Commerce-Aktivität",
+  "stats": {
+    "totalOrders": "Gesamtbestellungen",
+    "totalRevenue": "Gesamtumsatz",
+    "totalProducts": "Gesamtprodukte",
+    "totalCustomers": "Gesamtkunden"
+  },
+  "charts": {
+    "revenue": "Umsatzentwicklung",
+    "orders": "Bestellentwicklung",
+    "products": "Produktverteilung"
+  },
+  "quickActions": {
+    "title": "Schnellaktionen",
+    "newOrder": "Neue Bestellung",
+    "addProduct": "Produkt hinzufügen",
+    "viewCustomers": "Kunden anzeigen",
+    "viewReports": "Berichte anzeigen"
+  },
+  "vsLastMonth": "vs letzter Monat",
+  "criticalAIAlerts": "Kritische KI-Warnungen",
+  "finalizeConfig": "Konfiguration abschließen",
+  "conversionRate": "Konversionsrate",
+  "averageBasket": "Durchschnittlicher Warenkorb",
+  "performance": "Leistung",
+  "excellent": "Ausgezeichnet",
+  "allIndicatorsPositive": "Alle Indikatoren sind positiv"
+}

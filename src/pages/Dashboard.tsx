@@ -24,6 +24,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { usePlan } from '@/contexts/PlanContext';
+import { useLanguage } from '@/hooks/useLanguage';
 import { CanvaIntegrationPanel } from '@/components/marketing/CanvaIntegrationPanel';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { AIRecommendations } from '@/components/ai/AIRecommendations';
@@ -51,6 +52,7 @@ interface DashboardStats {
 const Dashboard = () => {
   const { user } = useAuth();
   const { isUltraPro, isPro } = usePlan();
+  const { t } = useLanguage();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [recentOrders, setRecentOrders] = useState([]);
@@ -190,7 +192,7 @@ const Dashboard = () => {
             <span className={trend === 'up' ? 'text-emerald-500' : 'text-red-500'}>
               {Math.abs(change)}%
             </span>
-            <span className="ml-1">vs mois dernier</span>
+            <span className="ml-1">{t('dashboard:vsLastMonth', 'vs mois dernier')}</span>
           </div>
         )}
       </CardContent>
@@ -201,7 +203,7 @@ const Dashboard = () => {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold tracking-tight">Tableau de bord</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{t('dashboard:title')}</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
@@ -241,7 +243,7 @@ const Dashboard = () => {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center">
               <Bell className="h-5 w-5 text-primary mr-2" />
-              <h3 className="font-semibold">Alertes IA Critiques</h3>
+              <h3 className="font-semibold">{t('dashboard:criticalAIAlerts', 'Alertes IA Critiques')}</h3>
               <Badge variant="destructive" className="ml-2">
                 {notifications.length}
               </Badge>
@@ -261,7 +263,7 @@ const Dashboard = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight flex items-center">
-            Tableau de bord
+            {t('dashboard:title')}
             {!onboardingCompleted && (
               <Button
                 variant="outline"
@@ -270,12 +272,12 @@ const Dashboard = () => {
                 onClick={() => setShowOnboarding(true)}
               >
                 <Sparkles className="h-4 w-4 mr-2" />
-                Finaliser la config
+                {t('dashboard:finalizeConfig', 'Finaliser la config')}
               </Button>
             )}
           </h2>
           <p className="text-muted-foreground">
-            Vue d'ensemble de votre activité e-commerce
+            {t('dashboard:overview')}
           </p>
         </div>
         {isUltraPro && (
@@ -295,28 +297,28 @@ const Dashboard = () => {
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Chiffre d'affaires"
+          title={t('dashboard:stats.totalRevenue')}
           value={formatCurrency(stats?.revenue || 0)}
           icon={DollarSign}
           change={stats?.revenueGrowth}
           trend={stats?.revenueGrowth >= 0 ? 'up' : 'down'}
         />
         <StatCard
-          title="Commandes"
+          title={t('dashboard:stats.totalOrders')}
           value={stats?.orders || 0}
           icon={ShoppingCart}
           change={stats?.ordersGrowth}
           trend={stats?.ordersGrowth >= 0 ? 'up' : 'down'}
         />
         <StatCard
-          title="Produits"
+          title={t('dashboard:stats.totalProducts')}
           value={stats?.products || 0}
           icon={Package}
           change={undefined}
           trend={undefined}
         />
         <StatCard
-          title="Clients"
+          title={t('dashboard:stats.totalCustomers')}
           value={stats?.customers || 0}
           icon={Users}
           change={stats?.customersGrowth}
@@ -329,7 +331,7 @@ const Dashboard = () => {
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Taux de conversion</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard:conversionRate', 'Taux de conversion')}</CardTitle>
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -340,7 +342,7 @@ const Dashboard = () => {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Panier moyen</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard:averageBasket', 'Panier moyen')}</CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -352,13 +354,13 @@ const Dashboard = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Performance</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard:performance', 'Performance')}</CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-emerald-600">Excellente</div>
+              <div className="text-2xl font-bold text-emerald-600">{t('dashboard:excellent', 'Excellente')}</div>
               <p className="text-xs text-muted-foreground">
-                Tous les indicateurs sont positifs
+                {t('dashboard:allIndicatorsPositive', 'Tous les indicateurs sont positifs')}
               </p>
             </CardContent>
           </Card>

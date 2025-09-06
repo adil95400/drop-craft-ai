@@ -1,0 +1,46 @@
+{
+  "title": "Einstellungen",
+  "description": "Konfigurieren Sie Ihre Einstellungen und Anwendungseinstellungen",
+  "tabs": {
+    "general": "Allgemein",
+    "appearance": "Erscheinungsbild",
+    "notifications": "Benachrichtigungen",
+    "security": "Sicherheit",
+    "integrations": "Integrationen",
+    "support": "Support"
+  },
+  "general": {
+    "title": "Allgemeine Einstellungen",
+    "profile": "Benutzerprofil",
+    "name": "Name",
+    "email": "E-Mail",
+    "timezone": "Zeitzone",
+    "language": "Sprache",
+    "currency": "Währung"
+  },
+  "appearance": {
+    "title": "Erscheinungsbild",
+    "theme": "Theme",
+    "themes": {
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "System"
+    },
+    "compactMode": "Kompakter Modus",
+    "animations": "Animationen",
+    "sounds": "Töne"
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "desktop": "Desktop-Benachrichtigungen",
+    "email": "E-Mail-Benachrichtigungen",
+    "push": "Push-Benachrichtigungen",
+    "marketing": "Marketing-Benachrichtigungen"
+  },
+  "messages": {
+    "saved": "Einstellungen gespeichert",
+    "appearanceSaved": "Erscheinungseinstellungen gespeichert",
+    "languageChanged": "Sprache geändert zu {{language}}",
+    "themeChanged": "Theme geändert zu {{theme}}"
+  }
+}

@@ -300,7 +300,8 @@ const Settings = () => {
     const languageNames = {
       fr: 'Français',
       en: 'English',
-      es: 'Español'
+      es: 'Español',
+      de: 'Deutsch'
     };
     
     toast.success(t('settings:messages.languageChanged', { 

@@ -25,11 +25,13 @@ import {
 import { Sidebar } from './Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/contexts/PlanContext';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { plan, isPro, isUltraPro } = usePlan();
+  const { t } = useLanguage();
 
   const getPlanIcon = () => {
     if (isUltraPro) return <Crown className="h-4 w-4 text-yellow-500" />;
@@ -54,7 +56,7 @@ export function Header() {
             className="shrink-0 md:hidden"
           >
             <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle navigation menu</span>
+            <span className="sr-only">{t('navigation:menu')}</span>
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="flex flex-col p-0">
@@ -68,7 +70,7 @@ export function Header() {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <input
             type="search"
-            placeholder="Rechercher..."
+            placeholder={t('navigation:search')}
             className="w-full rounded-lg border border-input bg-background pl-8 pr-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
         </div>
@@ -85,7 +87,7 @@ export function Header() {
           <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
             3
           </Badge>
-          <span className="sr-only">View notifications</span>
+          <span className="sr-only">{t('navigation:notifications')}</span>
         </Button>
 
         {/* User Menu */}
@@ -104,10 +106,10 @@ export function Header() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  {user?.email || 'Utilisateur'}
+                  {user?.email || t('common:user', 'Utilisateur')}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground flex items-center gap-1">
-                  Plan {plan} {getPlanIcon()}
+                  {t('common:plan', 'Plan')} {plan} {getPlanIcon()}
                 </p>
               </div>
             </DropdownMenuLabel>
@@ -115,13 +117,13 @@ export function Header() {
             <DropdownMenuItem asChild>
               <Link to="/profile" className="cursor-pointer">
                 <User className="mr-2 h-4 w-4" />
-                <span>Profil</span>
+                <span>{t('navigation:profile')}</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/settings" className="cursor-pointer">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Paramètres</span>
+                <span>{t('navigation:settings')}</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -130,7 +132,7 @@ export function Header() {
               onClick={() => signOut()}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Déconnexion</span>
+              <span>{t('navigation:logout')}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

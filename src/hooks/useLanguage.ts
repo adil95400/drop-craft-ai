@@ -6,7 +6,7 @@ export const useLanguage = () => {
   const { t, i18n: i18nInstance } = useTranslation();
   const { language, updateLanguage } = useUserPreferences();
 
-  const changeLanguage = (newLanguage: 'fr' | 'en' | 'es') => {
+  const changeLanguage = (newLanguage: 'fr' | 'en' | 'es' | 'de') => {
     updateLanguage(newLanguage);
     i18n.changeLanguage(newLanguage);
   };
@@ -17,7 +17,8 @@ export const useLanguage = () => {
     const languageNames = {
       fr: 'Français',
       en: 'English',
-      es: 'Español'
+      es: 'Español',
+      de: 'Deutsch'
     };
     return languageNames[lang as keyof typeof languageNames] || lang;
   };

@@ -22,5 +22,7 @@
   "import": "Importer",
   "print": "Imprimer",
   "download": "Télécharger",
-  "upload": "Uploader"
+  "upload": "Uploader",
+  "user": "Utilisateur",
+  "plan": "Plan"
 }

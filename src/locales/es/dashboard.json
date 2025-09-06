@@ -1,7 +1,7 @@
 {
   "title": "Panel",
   "welcome": "Bienvenido a tu panel",
-  "overview": "Resumen",
+  "overview": "Resumen de tu actividad de comercio electrónico",
   "stats": {
     "totalOrders": "Pedidos Totales",
     "totalRevenue": "Ingresos Totales", 
@@ -19,5 +19,13 @@
     "addProduct": "Añadir Producto",
     "viewCustomers": "Ver Clientes", 
     "viewReports": "Ver Reportes"
-  }
+  },
+  "vsLastMonth": "vs mes pasado",
+  "criticalAIAlerts": "Alertas IA Críticas",
+  "finalizeConfig": "Finalizar Configuración",
+  "conversionRate": "Tasa de Conversión",
+  "averageBasket": "Cesta Promedio",
+  "performance": "Rendimiento",
+  "excellent": "Excelente",
+  "allIndicatorsPositive": "Todos los indicadores son positivos"
 }

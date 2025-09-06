@@ -1,7 +1,7 @@
 {
   "title": "Dashboard",
   "welcome": "Welcome to your dashboard",
-  "overview": "Overview", 
+  "overview": "Overview of your e-commerce activity",
   "stats": {
     "totalOrders": "Total Orders",
     "totalRevenue": "Total Revenue",
@@ -19,5 +19,13 @@
     "addProduct": "Add Product",
     "viewCustomers": "View Customers",
     "viewReports": "View Reports"
-  }
+  },
+  "vsLastMonth": "vs last month",
+  "criticalAIAlerts": "Critical AI Alerts",
+  "finalizeConfig": "Finalize Configuration",
+  "conversionRate": "Conversion Rate",
+  "averageBasket": "Average Basket",
+  "performance": "Performance",
+  "excellent": "Excellent",
+  "allIndicatorsPositive": "All indicators are positive"
 }
