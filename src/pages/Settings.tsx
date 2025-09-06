@@ -18,27 +18,47 @@ import { useUserPreferences } from "@/stores/globalStore";
 import { useTheme } from "next-themes";
 import { useTranslation } from 'react-i18next';
 import i18n from '@/lib/i18n';
-import { Settings as SettingsIcon, User, Bell, Key, Palette, Globe, Shield, CreditCard, Zap, Save, Upload, Moon, Sun, Monitor, Mail, Smartphone, Database, Copy, Eye, EyeOff, Trash2, Plus, Check, X, Crown, Briefcase, Users, LogOut, ExternalLink, FileText } from "lucide-react";
+import { 
+  Settings as SettingsIcon, 
+  User, 
+  Bell, 
+  Key, 
+  Palette, 
+  Globe, 
+  Shield, 
+  CreditCard, 
+  Zap, 
+  Save, 
+  Upload, 
+  Moon, 
+  Sun, 
+  Monitor, 
+  Mail, 
+  Smartphone, 
+  Database, 
+  Copy, 
+  Eye, 
+  EyeOff, 
+  Trash2, 
+  Plus, 
+  Check, 
+  X, 
+  Crown, 
+  Briefcase, 
+  Users,
+  LogOut,
+  ExternalLink,
+  FileText
+} from "lucide-react";
 import AvatarUpload from '@/components/common/AvatarUpload';
-const Settings = () => {
-  const {
-    user,
-    profile,
-    updateProfile,
-    signOut
-  } = useAuth();
-  const {
-    isAdmin,
-    role
-  } = useEnhancedAuth();
-  const navigate = useNavigate();
-  const {
-    setTheme
-  } = useTheme();
-  const {
-    t
-  } = useTranslation(['settings', 'common', 'navigation']);
 
+const Settings = () => {
+  const { user, profile, updateProfile, signOut } = useAuth();
+  const { isAdmin, role } = useEnhancedAuth();
+  const navigate = useNavigate();
+  const { setTheme } = useTheme();
+  const { t } = useTranslation(['settings', 'common', 'navigation']);
+  
   // Use global store for preferences
   const {
     theme: storeTheme,
@@ -50,6 +70,7 @@ const Settings = () => {
     updateNotifications,
     toggleSidebar
   } = useUserPreferences();
+
   const [profileData, setProfileData] = useState({
     name: profile?.full_name || user?.email?.split('@')[0] || "Utilisateur",
     email: user?.email || "",
@@ -58,6 +79,7 @@ const Settings = () => {
     website: profile?.website || "",
     bio: profile?.bio || ""
   });
+
   const [notifications, setNotifications] = useState({
     email: storeNotifications.email,
     push: storeNotifications.push,
@@ -66,6 +88,7 @@ const Settings = () => {
     newFeatures: true,
     orderUpdates: true
   });
+
   const [integrations, setIntegrations] = useState({
     shopify: true,
     woocommerce: false,
@@ -76,6 +99,7 @@ const Settings = () => {
     facebook: true,
     google: false
   });
+
   const [apiKeys, setApiKeys] = useState([{
     id: 1,
     name: "Production API",
@@ -100,7 +124,7 @@ const Settings = () => {
     confirm: ""
   });
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-
+  
   // File upload ref
   const fileInputRef = useState<HTMLInputElement | null>(null);
 
@@ -108,12 +132,13 @@ const Settings = () => {
   useEffect(() => {
     setCompactMode(sidebarCollapsed);
     setSounds(storeNotifications.desktop);
-
+    
     // Sync i18n language with store
     if (storeLanguage && i18n.language !== storeLanguage) {
       i18n.changeLanguage(storeLanguage);
     }
   }, [sidebarCollapsed, storeNotifications.desktop, storeLanguage]);
+
   const handleSaveProfile = async () => {
     try {
       await updateProfile({
@@ -123,11 +148,13 @@ const Settings = () => {
         website: profileData.website,
         bio: profileData.bio
       });
+      
       toast.success('Profil sauvegardé avec succès');
     } catch (error) {
       toast.error('Erreur lors de la sauvegarde du profil');
     }
   };
+
   const handleSaveNotifications = () => {
     // Update global store
     updateNotifications({
@@ -135,105 +162,127 @@ const Settings = () => {
       push: notifications.push,
       desktop: notifications.sms
     });
-    toast.promise(new Promise(resolve => setTimeout(resolve, 800)), {
-      loading: 'Sauvegarde des préférences...',
-      success: 'Préférences de notification sauvegardées',
-      error: 'Erreur lors de la sauvegarde'
-    });
+    
+    toast.promise(
+      new Promise(resolve => setTimeout(resolve, 800)), 
+      {
+        loading: 'Sauvegarde des préférences...',
+        success: 'Préférences de notification sauvegardées',
+        error: 'Erreur lors de la sauvegarde'
+      }
+    );
   };
+
   const handleApiKeyGenerate = () => {
-    toast.promise(new Promise(resolve => {
-      setTimeout(() => {
-        const newKey = {
-          id: Date.now(),
-          name: "Nouvelle API Key",
-          key: `sk_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
-          visible: false,
-          created: new Date().toISOString().split('T')[0]
-        };
-        setApiKeys([...apiKeys, newKey]);
-        resolve('success');
-      }, 1200);
-    }), {
-      loading: 'Génération de la nouvelle clé API...',
-      success: 'Nouvelle clé API créée avec succès',
-      error: 'Erreur lors de la génération'
-    });
+    toast.promise(
+      new Promise(resolve => {
+        setTimeout(() => {
+          const newKey = {
+            id: Date.now(),
+            name: "Nouvelle API Key",
+            key: `sk_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
+            visible: false,
+            created: new Date().toISOString().split('T')[0]
+          };
+          setApiKeys([...apiKeys, newKey]);
+          resolve('success');
+        }, 1200);
+      }), 
+      {
+        loading: 'Génération de la nouvelle clé API...',
+        success: 'Nouvelle clé API créée avec succès',
+        error: 'Erreur lors de la génération'
+      }
+    );
   };
+
   const toggleKeyVisibility = (id: number) => {
-    setApiKeys(apiKeys.map(key => key.id === id ? {
-      ...key,
-      visible: !key.visible
-    } : key));
+    setApiKeys(apiKeys.map(key => 
+      key.id === id ? { ...key, visible: !key.visible } : key
+    ));
   };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('Clé API copiée dans le presse-papier');
   };
+
   const deleteApiKey = (id: number) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette clé API ?')) {
       setApiKeys(apiKeys.filter(key => key.id !== id));
       toast.success('Clé API supprimée avec succès');
     }
   };
+
   const handleChangePassword = async () => {
     if (!passwordData.current || !passwordData.new || !passwordData.confirm) {
       toast.error('Veuillez remplir tous les champs');
       return;
     }
+    
     if (passwordData.new !== passwordData.confirm) {
       toast.error('Les mots de passe ne correspondent pas');
       return;
     }
+    
     if (passwordData.new.length < 8) {
       toast.error('Le mot de passe doit contenir au moins 8 caractères');
       return;
     }
-    toast.promise(new Promise(resolve => setTimeout(resolve, 1500)), {
-      loading: 'Modification du mot de passe...',
-      success: () => {
-        setPasswordData({
-          current: "",
-          new: "",
-          confirm: ""
-        });
-        return 'Mot de passe modifié avec succès';
-      },
-      error: 'Erreur lors de la modification'
-    });
+    
+    toast.promise(
+      new Promise(resolve => setTimeout(resolve, 1500)),
+      {
+        loading: 'Modification du mot de passe...',
+        success: () => {
+          setPasswordData({ current: "", new: "", confirm: "" });
+          return 'Mot de passe modifié avec succès';
+        },
+        error: 'Erreur lors de la modification'
+      }
+    );
   };
+
   const handleToggle2FA = () => {
     const action = twoFactorEnabled ? 'Désactivation' : 'Activation';
-    toast.promise(new Promise(resolve => {
-      setTimeout(() => {
-        setTwoFactorEnabled(!twoFactorEnabled);
-        resolve('success');
-      }, 1200);
-    }), {
-      loading: `${action} du 2FA...`,
-      success: `2FA ${twoFactorEnabled ? 'désactivé' : 'activé'} avec succès`,
-      error: `Erreur lors de l'${action.toLowerCase()}`
-    });
+    toast.promise(
+      new Promise(resolve => {
+        setTimeout(() => {
+          setTwoFactorEnabled(!twoFactorEnabled);
+          resolve('success');
+        }, 1200);
+      }),
+      {
+        loading: `${action} du 2FA...`,
+        success: `2FA ${twoFactorEnabled ? 'désactivé' : 'activé'} avec succès`,
+        error: `Erreur lors de l'${action.toLowerCase()}`
+      }
+    );
   };
+
   const handleUpgradePlan = (planName: string, price: number) => {
     if (!isAdmin) {
       toast.info(`Simulation de mise à niveau vers ${planName} (${price}€/mois)`);
       return;
     }
-    toast.promise(new Promise(resolve => setTimeout(resolve, 2000)), {
-      loading: `Mise à niveau vers ${planName}...`,
-      success: `Plan ${planName} activé avec succès`,
-      error: 'Erreur lors de la mise à niveau'
-    });
+    
+    toast.promise(
+      new Promise(resolve => setTimeout(resolve, 2000)),
+      {
+        loading: `Mise à niveau vers ${planName}...`,
+        success: `Plan ${planName} activé avec succès`,
+        error: 'Erreur lors de la mise à niveau'
+      }
+    );
   };
+
   const handleSaveAppearance = () => {
     // Update global store
-    updateNotifications({
-      desktop: sounds
-    });
+    updateNotifications({ desktop: sounds });
     if (compactMode !== sidebarCollapsed) {
       toggleSidebar();
     }
+    
     toast.success(t('settings:messages.appearanceSaved'));
   };
 
@@ -247,16 +296,19 @@ const Settings = () => {
   const handleLanguageChange = (newLanguage: string) => {
     updateLanguage(newLanguage as any);
     i18n.changeLanguage(newLanguage);
+    
     const languageNames = {
       fr: 'Français',
       en: 'English',
       es: 'Español',
       de: 'Deutsch'
     };
-    toast.success(t('settings:messages.languageChanged', {
-      language: languageNames[newLanguage as keyof typeof languageNames] || newLanguage
+    
+    toast.success(t('settings:messages.languageChanged', { 
+      language: languageNames[newLanguage as keyof typeof languageNames] || newLanguage 
     }));
   };
+
   const handleLogout = async () => {
     try {
       await signOut();
@@ -359,20 +411,21 @@ const Settings = () => {
   <p><em>Besoin d'aide ? Contactez notre support à api-support@dropcraft.com</em></p>
 </body>
 </html>`;
-    const blob = new Blob([docContent], {
-      type: 'text/html'
-    });
+    
+    const blob = new Blob([docContent], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
+    
     toast.success('Documentation API ouverte dans un nouvel onglet');
   };
+
   const plans = [{
     name: "Starter",
     price: 29,
     current: false,
     features: ["1000 produits", "Suivi basique", "Support email"]
   }, {
-    name: "Professional",
+    name: "Professional", 
     price: 79,
     current: true,
     features: ["Produits illimités", "IA avancée", "Support prioritaire", "API"]
@@ -382,7 +435,9 @@ const Settings = () => {
     current: false,
     features: ["Tout inclus", "White-label", "Support dédié", "Multi-utilisateurs"]
   }];
-  return <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
+
+  return (
+    <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -460,53 +515,86 @@ const Settings = () => {
                   <CardDescription>Gérez vos informations de profil</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <AvatarUpload currentAvatarUrl={profile?.avatar_url} userName={profileData.name} size="lg" showUploadButton={true} />
+                  <AvatarUpload 
+                    currentAvatarUrl={profile?.avatar_url}
+                    userName={profileData.name}
+                    size="lg"
+                    showUploadButton={true}
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Nom complet</Label>
-                      <Input id="name" value={profileData.name} onChange={e => setProfileData({
-                      ...profileData,
-                      name: e.target.value
-                    })} />
+                      <Input 
+                        id="name" 
+                        value={profileData.name} 
+                        onChange={e => setProfileData({
+                          ...profileData,
+                          name: e.target.value
+                        })} 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" value={profileData.email} disabled className="bg-muted" />
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        value={profileData.email} 
+                        disabled
+                        className="bg-muted"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Téléphone</Label>
-                      <Input id="phone" value={profileData.phone} onChange={e => setProfileData({
-                      ...profileData,
-                      phone: e.target.value
-                    })} />
+                      <Input 
+                        id="phone" 
+                        value={profileData.phone} 
+                        onChange={e => setProfileData({
+                          ...profileData,
+                          phone: e.target.value
+                        })} 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="company">Entreprise</Label>
-                      <Input id="company" value={profileData.company} onChange={e => setProfileData({
-                      ...profileData,
-                      company: e.target.value
-                    })} />
+                      <Input 
+                        id="company" 
+                        value={profileData.company} 
+                        onChange={e => setProfileData({
+                          ...profileData,
+                          company: e.target.value
+                        })} 
+                      />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="website">Site web</Label>
-                    <Input id="website" value={profileData.website} onChange={e => setProfileData({
-                    ...profileData,
-                    website: e.target.value
-                  })} />
+                    <Input 
+                      id="website" 
+                      value={profileData.website} 
+                      onChange={e => setProfileData({
+                        ...profileData,
+                        website: e.target.value
+                      })} 
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="bio">Bio</Label>
-                    <Textarea id="bio" value={profileData.bio} onChange={e => setProfileData({
-                    ...profileData,
-                    bio: e.target.value
-                  })} placeholder="Parlez-nous de vous..." rows={3} />
+                    <Textarea 
+                      id="bio" 
+                      value={profileData.bio} 
+                      onChange={e => setProfileData({
+                        ...profileData,
+                        bio: e.target.value
+                      })} 
+                      placeholder="Parlez-nous de vous..."
+                      rows={3}
+                    />
                   </div>
 
-                  <Button onClick={handleSaveProfile} variant="hero" className="bg-indigo-500 hover:bg-indigo-400">
+                  <Button onClick={handleSaveProfile} variant="hero">
                     <Save className="mr-2 h-4 w-4" />
                     Sauvegarder le Profil
                   </Button>
@@ -534,10 +622,13 @@ const Settings = () => {
                           <div className="text-sm text-muted-foreground">Notifications par email</div>
                         </div>
                       </div>
-                      <Switch checked={notifications.email} onCheckedChange={checked => setNotifications({
-                      ...notifications,
-                      email: checked
-                    })} />
+                      <Switch 
+                        checked={notifications.email} 
+                        onCheckedChange={checked => setNotifications({
+                          ...notifications,
+                          email: checked
+                        })} 
+                      />
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -548,10 +639,13 @@ const Settings = () => {
                           <div className="text-sm text-muted-foreground">Notifications navigateur</div>
                         </div>
                       </div>
-                      <Switch checked={notifications.push} onCheckedChange={checked => setNotifications({
-                      ...notifications,
-                      push: checked
-                    })} />
+                      <Switch 
+                        checked={notifications.push} 
+                        onCheckedChange={checked => setNotifications({
+                          ...notifications,
+                          push: checked
+                        })} 
+                      />
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -562,10 +656,13 @@ const Settings = () => {
                           <div className="text-sm text-muted-foreground">Notifications par SMS</div>
                         </div>
                       </div>
-                      <Switch checked={notifications.sms} onCheckedChange={checked => setNotifications({
-                      ...notifications,
-                      sms: checked
-                    })} />
+                      <Switch 
+                        checked={notifications.sms} 
+                        onCheckedChange={checked => setNotifications({
+                          ...notifications,
+                          sms: checked
+                        })} 
+                      />
                     </div>
                   </div>
 
@@ -577,10 +674,13 @@ const Settings = () => {
                         <div className="font-medium">Mises à jour commandes</div>
                         <div className="text-sm text-muted-foreground">Statut des colis et livraisons</div>
                       </div>
-                      <Switch checked={notifications.orderUpdates} onCheckedChange={checked => setNotifications({
-                      ...notifications,
-                      orderUpdates: checked
-                    })} />
+                      <Switch 
+                        checked={notifications.orderUpdates} 
+                        onCheckedChange={checked => setNotifications({
+                          ...notifications,
+                          orderUpdates: checked
+                        })} 
+                      />
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -588,10 +688,13 @@ const Settings = () => {
                         <div className="font-medium">Nouvelles fonctionnalités</div>
                         <div className="text-sm text-muted-foreground">Annonces produit et mises à jour</div>
                       </div>
-                      <Switch checked={notifications.newFeatures} onCheckedChange={checked => setNotifications({
-                      ...notifications,
-                      newFeatures: checked
-                    })} />
+                      <Switch 
+                        checked={notifications.newFeatures} 
+                        onCheckedChange={checked => setNotifications({
+                          ...notifications,
+                          newFeatures: checked
+                        })} 
+                      />
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -599,10 +702,13 @@ const Settings = () => {
                         <div className="font-medium">Marketing</div>
                         <div className="text-sm text-muted-foreground">Conseils et recommandations</div>
                       </div>
-                      <Switch checked={notifications.marketing} onCheckedChange={checked => setNotifications({
-                      ...notifications,
-                      marketing: checked
-                    })} />
+                      <Switch 
+                        checked={notifications.marketing} 
+                        onCheckedChange={checked => setNotifications({
+                          ...notifications,
+                          marketing: checked
+                        })} 
+                      />
                     </div>
                   </div>
 
@@ -627,24 +733,30 @@ const Settings = () => {
                     <div className="space-y-3">
                       <div className="space-y-2">
                         <Label>Mot de passe actuel</Label>
-                        <Input type="password" placeholder="••••••••" value={passwordData.current} onChange={e => setPasswordData({
-                        ...passwordData,
-                        current: e.target.value
-                      })} />
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••"
+                          value={passwordData.current}
+                          onChange={e => setPasswordData({...passwordData, current: e.target.value})}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label>Nouveau mot de passe</Label>
-                        <Input type="password" placeholder="••••••••" value={passwordData.new} onChange={e => setPasswordData({
-                        ...passwordData,
-                        new: e.target.value
-                      })} />
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••"
+                          value={passwordData.new}
+                          onChange={e => setPasswordData({...passwordData, new: e.target.value})}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label>Confirmer nouveau mot de passe</Label>
-                        <Input type="password" placeholder="••••••••" value={passwordData.confirm} onChange={e => setPasswordData({
-                        ...passwordData,
-                        confirm: e.target.value
-                      })} />
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••"
+                          value={passwordData.confirm}
+                          onChange={e => setPasswordData({...passwordData, confirm: e.target.value})}
+                        />
                       </div>
                     </div>
                     <Button variant="outline" onClick={handleChangePassword}>
@@ -660,7 +772,10 @@ const Settings = () => {
                         <div className="font-medium">2FA {twoFactorEnabled && <Badge variant="secondary" className="ml-2">Activé</Badge>}</div>
                         <div className="text-sm text-muted-foreground">Sécurité supplémentaire pour votre compte</div>
                       </div>
-                      <Button variant={twoFactorEnabled ? "destructive" : "outline"} onClick={handleToggle2FA}>
+                      <Button 
+                        variant={twoFactorEnabled ? "destructive" : "outline"}
+                        onClick={handleToggle2FA}
+                      >
                         <Key className="mr-2 h-4 w-4" />
                         {twoFactorEnabled ? 'Désactiver 2FA' : 'Activer 2FA'}
                       </Button>
@@ -701,22 +816,35 @@ const Settings = () => {
                   <div className="space-y-4">
                     <h4 className="font-semibold">Plan actuel</h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {plans.map(plan => <div key={plan.name} className={`p-4 border rounded-lg ${plan.current ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                      {plans.map((plan) => (
+                        <div 
+                          key={plan.name} 
+                          className={`p-4 border rounded-lg ${plan.current ? 'border-primary bg-primary/5' : 'border-border'}`}
+                        >
                           <div className="flex items-center justify-between mb-2">
                             <h5 className="font-semibold">{plan.name}</h5>
                             {plan.current && <Badge variant="secondary">Actuel</Badge>}
                           </div>
                           <div className="text-2xl font-bold mb-2">{plan.price}€<span className="text-sm font-normal">/mois</span></div>
                           <ul className="space-y-1 text-sm text-muted-foreground">
-                            {plan.features.map((feature, idx) => <li key={idx} className="flex items-center">
+                            {plan.features.map((feature, idx) => (
+                              <li key={idx} className="flex items-center">
                                 <Check className="h-3 w-3 mr-2 text-primary" />
                                 {feature}
-                              </li>)}
+                              </li>
+                            ))}
                           </ul>
-                          {!plan.current && <Button variant="outline" className="w-full mt-3" onClick={() => handleUpgradePlan(plan.name, plan.price)}>
+                          {!plan.current && (
+                            <Button 
+                              variant="outline" 
+                              className="w-full mt-3"
+                              onClick={() => handleUpgradePlan(plan.name, plan.price)}
+                            >
                               Passer à ce plan
-                            </Button>}
-                        </div>)}
+                            </Button>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -775,7 +903,8 @@ const Settings = () => {
                   </div>
 
                   <div className="space-y-3">
-                    {apiKeys.map(apiKey => <div key={apiKey.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                    {apiKeys.map((apiKey) => (
+                      <div key={apiKey.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
                         <div className="space-y-1">
                           <div className="font-medium">{apiKey.name}</div>
                           <div className="font-mono text-sm text-muted-foreground">
@@ -784,17 +913,30 @@ const Settings = () => {
                           <div className="text-xs text-muted-foreground">Créée le {apiKey.created}</div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm" onClick={() => toggleKeyVisibility(apiKey.id)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleKeyVisibility(apiKey.id)}
+                          >
                             {apiKey.visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => copyToClipboard(apiKey.key)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(apiKey.key)}
+                          >
                             <Copy className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => deleteApiKey(apiKey.id)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteApiKey(apiKey.id)}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                      </div>)}
+                      </div>
+                    ))}
                   </div>
 
                   <div className="p-4 bg-muted/50 rounded-lg">
@@ -870,21 +1012,30 @@ const Settings = () => {
                           <div className="font-medium">Mode compact</div>
                           <div className="text-sm text-muted-foreground">Réduire l'espacement de l'interface</div>
                         </div>
-                        <Switch checked={compactMode} onCheckedChange={setCompactMode} />
+                        <Switch 
+                          checked={compactMode}
+                          onCheckedChange={setCompactMode}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">Animations</div>
                           <div className="text-sm text-muted-foreground">Activer les transitions animées</div>
                         </div>
-                        <Switch checked={animations} onCheckedChange={setAnimations} />
+                        <Switch 
+                          checked={animations}
+                          onCheckedChange={setAnimations}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">Sons système</div>
                           <div className="text-sm text-muted-foreground">Sons pour les notifications</div>
                         </div>
-                        <Switch checked={sounds} onCheckedChange={setSounds} />
+                        <Switch 
+                          checked={sounds}
+                          onCheckedChange={setSounds}
+                        />
                       </div>
                     </div>
                   </div>
@@ -899,6 +1050,8 @@ const Settings = () => {
           </div>
         </div>
       </Tabs>
-    </div>;
+    </div>
+  );
 };
+
 export default Settings;
