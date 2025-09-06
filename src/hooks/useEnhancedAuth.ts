@@ -30,6 +30,9 @@ export const useEnhancedAuth = () => {
   }
 
   const canAccess = (permission: string): boolean => {
+    // Admins have access to everything
+    if (role === 'admin') return true
+    
     // Define permission mappings
     const permissions: Record<string, UserRole[]> = {
       // Admin only

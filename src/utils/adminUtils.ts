@@ -9,27 +9,30 @@ export interface UserProfile {
 }
 
 export function getEffectivePlan(profile: UserProfile): PlanType {
-  // If not admin or no admin_mode, return normal plan
-  if (profile.role !== 'admin' || !profile.admin_mode) {
-    return profile.plan;
-  }
-  
-  // If bypass mode, return ultra_pro
-  if (profile.admin_mode === 'bypass') {
+  // Admin always gets ultra_pro access
+  if (profile.role === 'admin') {
+    // If admin has specific mode, respect it, otherwise give ultra_pro
+    if (profile.admin_mode === 'bypass') {
+      return 'ultra_pro';
+    }
+    
+    if (profile.admin_mode?.startsWith('preview:')) {
+      const previewPlan = profile.admin_mode.split(':')[1] as PlanType;
+      return previewPlan;
+    }
+    
+    // Default admin access is ultra_pro
     return 'ultra_pro';
   }
   
-  // If preview mode, extract the plan from the mode string
-  if (profile.admin_mode.startsWith('preview:')) {
-    const previewPlan = profile.admin_mode.split(':')[1] as PlanType;
-    return previewPlan;
-  }
-  
-  // Default fallback
+  // Non-admin users get their normal plan
   return profile.plan;
 }
 
-export function canAccessFeature(feature: string, plan: PlanType): boolean {
+export function canAccessFeature(feature: string, plan: PlanType, role?: UserRole): boolean {
+  // Admin has access to all features
+  if (role === 'admin') return true;
+  
   const planHierarchy = { standard: 0, pro: 1, ultra_pro: 2 };
   
   // Feature to minimum plan mapping

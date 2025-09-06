@@ -56,9 +56,10 @@ export function useUnifiedSystem() {
     }
   }, [user?.id, authLoading])
 
-  // Fonction pour vérifier les features
+  // Fonction pour vérifier les features - Admin a accès à toutes les features
   const hasFeature = async (feature: string): Promise<boolean> => {
     if (!user?.id) return false
+    if (isAdmin) return true
     return await unifiedSystem.hasFeature(user.id, feature)
   }
 
@@ -80,10 +81,10 @@ export function useUnifiedSystem() {
     return await unifiedSystem.getImportJobs(user.id)
   }
 
-  // Vérifications de plan simplifiées
+  // Vérifications de plan simplifiées - Admin a accès à tout
   const isPro = profile?.plan === 'pro' || profile?.plan === 'ultra_pro' || isAdmin
   const isUltraPro = profile?.plan === 'ultra_pro' || isAdmin
-  const plan = profile?.plan || 'standard'
+  const plan = isAdmin ? 'ultra_pro' : (profile?.plan || 'standard')
 
   return {
     // État général

@@ -282,13 +282,13 @@ const ProductDetailPage: React.FC = () => {
           <TabsContent value="specifications">
             <Card>
               <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(product.specifications).map(([key, value]) => (
-                    <div key={key} className="flex justify-between p-3 border rounded">
-                      <span className="font-medium">{key}</span>
-                      <span className="text-muted-foreground">{value}</span>
-                    </div>
-                  ))}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   {Object.entries(product.specifications).map(([key, value]) => (
+                     <div key={key} className="flex justify-between p-3 border rounded">
+                       <span className="font-medium">{key}</span>
+                       <span className="text-muted-foreground">{String(value)}</span>
+                     </div>
+                   ))}
                 </div>
               </CardContent>
             </Card>
