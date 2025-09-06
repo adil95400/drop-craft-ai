@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEnhancedAuth } from "@/hooks/useEnhancedAuth";
 import { RealIntegrationsTab } from "@/components/integrations/RealIntegrationsTab";
+import { useUserPreferences } from "@/stores/globalStore";
+import { useTheme } from "next-themes";
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -52,6 +54,19 @@ const Settings = () => {
   const { user, profile, updateProfile, signOut } = useAuth();
   const { isAdmin, role } = useEnhancedAuth();
   const navigate = useNavigate();
+  const { setTheme } = useTheme();
+  
+  // Use global store for preferences
+  const {
+    theme: storeTheme,
+    language: storeLanguage,
+    sidebarCollapsed,
+    notifications: storeNotifications,
+    updateTheme,
+    updateLanguage,
+    updateNotifications,
+    toggleSidebar
+  } = useUserPreferences();
 
   const [profileData, setProfileData] = useState({
     name: profile?.full_name || user?.email?.split('@')[0] || "Utilisateur",
@@ -63,8 +78,8 @@ const Settings = () => {
   });
 
   const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
+    email: storeNotifications.email,
+    push: storeNotifications.push,
     sms: false,
     marketing: true,
     newFeatures: true,
@@ -96,11 +111,10 @@ const Settings = () => {
     created: "2024-01-10"
   }]);
 
-  const [theme, setTheme] = useState("system");
-  const [language, setLanguage] = useState("fr");
-  const [compactMode, setCompactMode] = useState(false);
+  // Use store values and local state for appearance
+  const [compactMode, setCompactMode] = useState(sidebarCollapsed);
   const [animations, setAnimations] = useState(true);
-  const [sounds, setSounds] = useState(false);
+  const [sounds, setSounds] = useState(storeNotifications.desktop);
   const [passwordData, setPasswordData] = useState({
     current: "",
     new: "",
@@ -110,6 +124,12 @@ const Settings = () => {
   
   // File upload ref
   const fileInputRef = useState<HTMLInputElement | null>(null);
+
+  // Sync local state with store on mount
+  useEffect(() => {
+    setCompactMode(sidebarCollapsed);
+    setSounds(storeNotifications.desktop);
+  }, [sidebarCollapsed, storeNotifications.desktop]);
 
   const handleSaveProfile = async () => {
     try {
@@ -128,6 +148,13 @@ const Settings = () => {
   };
 
   const handleSaveNotifications = () => {
+    // Update global store
+    updateNotifications({
+      email: notifications.email,
+      push: notifications.push,
+      desktop: notifications.sms
+    });
+    
     toast.promise(
       new Promise(resolve => setTimeout(resolve, 800)), 
       {
@@ -243,19 +270,26 @@ const Settings = () => {
 
   const handleSaveAppearance = () => {
     const settings = {
-      theme,
-      language,
+      theme: storeTheme,
+      language: storeLanguage,
       compactMode,
       animations,
       sounds
     };
     
-    localStorage.setItem('appearance-settings', JSON.stringify(settings));
+    // Update global store
+    updateNotifications({ desktop: sounds });
+    if (compactMode !== sidebarCollapsed) {
+      toggleSidebar();
+    }
+    
+    // Apply theme change
+    setTheme(storeTheme);
     
     toast.success('Paramètres d\'apparence sauvegardés');
     
     // Apply theme immediately
-    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('data-theme', storeTheme);
     document.documentElement.setAttribute('data-compact', compactMode.toString());
   };
 
@@ -399,11 +433,11 @@ const Settings = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleLogout}>
+          <Button variant="outline" onClick={handleLogout} className="border-destructive/20 text-destructive hover:bg-destructive/10">
             <LogOut className="mr-2 h-4 w-4" />
             Déconnexion
           </Button>
-          <Button variant="hero" onClick={handleSaveProfile}>
+          <Button variant="default" onClick={handleSaveProfile} className="bg-primary hover:bg-primary/90">
             <Save className="mr-2 h-4 w-4" />
             Sauvegarder
           </Button>
@@ -912,7 +946,7 @@ const Settings = () => {
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
                     <h4 className="font-semibold">Thème</h4>
-                    <Select value={theme} onValueChange={setTheme}>
+                    <Select value={storeTheme} onValueChange={updateTheme}>
                       <SelectTrigger>
                         <SelectValue placeholder="Choisir un thème" />
                       </SelectTrigger>
@@ -941,7 +975,7 @@ const Settings = () => {
 
                   <div className="space-y-3">
                     <Label>Langue</Label>
-                    <Select value={language} onValueChange={setLanguage}>
+                    <Select value={storeLanguage} onValueChange={updateLanguage}>
                       <SelectTrigger>
                         <SelectValue placeholder="Choisir une langue" />
                       </SelectTrigger>
@@ -990,7 +1024,7 @@ const Settings = () => {
                     </div>
                   </div>
 
-                  <Button variant="hero" onClick={handleSaveAppearance}>
+                  <Button variant="default" onClick={handleSaveAppearance} className="bg-primary hover:bg-primary/90">
                     <Save className="mr-2 h-4 w-4" />
                     Sauvegarder l'Apparence
                   </Button>
