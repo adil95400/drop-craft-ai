@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { UnifiedAuthProvider } from '@/contexts/UnifiedAuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UnifiedPlanProvider } from '@/components/plan/UnifiedPlanProvider';
 import { HelmetProvider } from 'react-helmet-async';
@@ -107,6 +108,9 @@ import Testimonials from '@/pages/Testimonials';
 import About from '@/pages/About';
 import Blog from '@/pages/Blog';
 
+// Unified Pages
+import UnifiedDashboardPage from '@/pages/UnifiedDashboardPage';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -127,8 +131,9 @@ function App() {
           disableTransitionOnChange
         >
           <AuthProvider>
-            <UnifiedPlanProvider>
-              <NotificationProvider>
+            <UnifiedAuthProvider>
+              <UnifiedPlanProvider>
+                <NotificationProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<AuthPage />} />
@@ -145,7 +150,7 @@ function App() {
                 <Route path="/modern" element={<AppLayout><ModernNavigation /></AppLayout>} />
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
-                    <AppLayout><ModernDashboard /></AppLayout>
+                    <UnifiedDashboardPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/dashboard-old" element={
@@ -360,6 +365,7 @@ function App() {
               <SonnerToaster />
             </NotificationProvider>
           </UnifiedPlanProvider>
+        </UnifiedAuthProvider>
         </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>

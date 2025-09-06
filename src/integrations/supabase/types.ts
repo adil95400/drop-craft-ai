@@ -5478,6 +5478,10 @@ export type Database = {
         Args: { user_id_param?: string }
         Returns: boolean
       }
+      is_admin_user: {
+        Args: { user_id?: string }
+        Returns: boolean
+      }
       is_current_user_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -5580,7 +5584,9 @@ export type Database = {
         Returns: string
       }
       user_has_role: {
-        Args: { _role: Database["public"]["Enums"]["app_role"] }
+        Args:
+          | { _role: Database["public"]["Enums"]["app_role"] }
+          | { required_role: string; user_id: string }
         Returns: boolean
       }
       validate_customer_access: {
@@ -5600,6 +5606,7 @@ export type Database = {
       app_role: "admin" | "user" | "staff"
       enhanced_app_role: "admin" | "manager" | "user"
       plan_type: "standard" | "pro" | "ultra_pro" | "free"
+      user_role: "user" | "admin" | "manager"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -5730,6 +5737,7 @@ export const Constants = {
       app_role: ["admin", "user", "staff"],
       enhanced_app_role: ["admin", "manager", "user"],
       plan_type: ["standard", "pro", "ultra_pro", "free"],
+      user_role: ["user", "admin", "manager"],
     },
   },
 } as const
