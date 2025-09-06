@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AdminRoute } from '@/components/admin/AdminRoute'
 import { AdminDashboard } from '@/components/admin/AdminDashboard'
 import { UserManagement } from '@/components/admin/UserManagement'
+import { SupplierManagement } from '@/components/suppliers/SupplierManagement'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
@@ -11,7 +12,8 @@ import {
   Shield, 
   Database,
   BarChart3,
-  FileText
+  FileText,
+  Building2
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -36,7 +38,7 @@ const AdminPanel = () => {
               </div>
             </div>
 
-            <TabsList className="grid w-full grid-cols-6 mb-8">
+            <TabsList className="grid w-full grid-cols-7 mb-8">
               <TabsTrigger value="dashboard" className="flex items-center gap-2">
                 <LayoutDashboard className="h-4 w-4" />
                 {t('navigation:dashboard')}
@@ -44,6 +46,10 @@ const AdminPanel = () => {
               <TabsTrigger value="users" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 Utilisateurs
+              </TabsTrigger>
+              <TabsTrigger value="suppliers" className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Fournisseurs
               </TabsTrigger>
               <TabsTrigger value="analytics" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
@@ -69,6 +75,10 @@ const AdminPanel = () => {
 
             <TabsContent value="users">
               <UserManagement />
+            </TabsContent>
+
+            <TabsContent value="suppliers">
+              <SupplierManagement />
             </TabsContent>
 
             <TabsContent value="analytics">

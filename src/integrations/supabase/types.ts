@@ -4313,6 +4313,74 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_sync_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_details: Json | null
+          error_items: number | null
+          id: string
+          job_type: string
+          processed_items: number | null
+          progress: number | null
+          results: Json | null
+          started_at: string | null
+          status: string
+          success_items: number | null
+          supplier_id: string
+          sync_config: Json | null
+          total_items: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_details?: Json | null
+          error_items?: number | null
+          id?: string
+          job_type?: string
+          processed_items?: number | null
+          progress?: number | null
+          results?: Json | null
+          started_at?: string | null
+          status?: string
+          success_items?: number | null
+          supplier_id: string
+          sync_config?: Json | null
+          total_items?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_details?: Json | null
+          error_items?: number | null
+          id?: string
+          job_type?: string
+          processed_items?: number | null
+          progress?: number | null
+          results?: Json | null
+          started_at?: string | null
+          status?: string
+          success_items?: number | null
+          supplier_id?: string
+          sync_config?: Json | null
+          total_items?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_sync_jobs_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           access_count: number | null
