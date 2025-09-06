@@ -41,7 +41,12 @@ import ModernOrders from '@/pages/modern/ModernOrders';
 import ModernMarketing from '@/pages/modern/ModernMarketing';
 import { ModernNavigation } from '@/components/layout/ModernNavigation';
 import ModernBilling from '@/pages/modern/ModernBilling';
-import AdminDashboard from '@/components/modern/AdminDashboard';
+import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminDashboard } from '@/pages/admin/AdminDashboard';
+import { AdminProducts } from '@/pages/admin/AdminProducts';
+import { AdminOrders } from '@/pages/admin/AdminOrders';
+import { AdminCustomers } from '@/pages/admin/AdminCustomers';
+import { AdminSuppliers } from '@/pages/admin/AdminSuppliers';
 
 // Nouvelles pages de refonte
 import ModernDashboard from '@/pages/ModernDashboard';
@@ -329,12 +334,18 @@ function App() {
                 
                 {/* Admin Routes */}
                 <Route path="/admin" element={
-                  <AppLayout>
+                  <ProtectedRoute>
                     <AdminRoute>
-                      <AdminDashboard />
+                      <AdminLayout />
                     </AdminRoute>
-                  </AppLayout>
-                } />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="products" element={<AdminProducts />} />
+                  <Route path="orders" element={<AdminOrders />} />
+                  <Route path="customers" element={<AdminCustomers />} />
+                  <Route path="suppliers" element={<AdminSuppliers />} />
+                </Route>
                 
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
