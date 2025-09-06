@@ -111,13 +111,27 @@ export const ClientDashboard: React.FC = () => {
         .from('orders')
         .select(`
           id, order_number, total_amount, status, created_at,
-          line_items
+          customers(name, email),
+          order_items(product_name, qty, unit_price)
         `)
         .order('created_at', { ascending: false })
         .limit(5);
 
       if (ordersData) {
-        setRecentOrders(ordersData);
+        const transformedOrders = ordersData.map(order => ({
+          id: order.id,
+          order_number: order.order_number,
+          customer_email: order.customers?.email || 'Email non disponible',
+          total_amount: order.total_amount,
+          status: order.status,
+          created_at: order.created_at,
+          items: order.order_items?.map(item => ({
+            product_name: item.product_name,
+            quantity: item.qty,
+            unit_price: item.unit_price
+          }))
+        }));
+        setRecentOrders(transformedOrders);
       }
 
       // Fetch top products
