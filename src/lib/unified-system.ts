@@ -11,6 +11,8 @@ type Profile = Database['public']['Tables']['profiles']['Row']
 type Supplier = Database['public']['Tables']['suppliers']['Row']
 type ImportedProduct = Database['public']['Tables']['imported_products']['Row']
 type ImportJob = Database['public']['Tables']['import_jobs']['Row']
+type Order = Database['public']['Tables']['orders']['Row']
+type Customer = Database['public']['Tables']['customers']['Row']
 
 export interface UnifiedSystemConfig {
   user: any
@@ -177,21 +179,139 @@ export class UnifiedSystem {
     }
   }
 
+  // Gestion des commandes
+  async getOrders(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+      return []
+    }
+  }
+
+  // Gestion des clients
+  async getCustomers(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching customers:', error)
+      return []
+    }
+  }
+
+  // Créer un nouveau produit
+  async createProduct(userId: string, productData: Partial<ImportedProduct> & { name: string; price: number }) {
+    try {
+      const { data, error } = await supabase
+        .from('imported_products')
+        .insert([{ 
+          ...productData, 
+          user_id: userId,
+          name: productData.name,
+          price: productData.price
+        }])
+        .select()
+        .single()
+
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error creating product:', error)
+      return { data: null, error }
+    }
+  }
+
+  // Mettre à jour un produit
+  async updateProduct(productId: string, productData: Partial<ImportedProduct>) {
+    try {
+      const { data, error } = await supabase
+        .from('imported_products')
+        .update(productData)
+        .eq('id', productId)
+        .select()
+        .single()
+
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error updating product:', error)
+      return { data: null, error }
+    }
+  }
+
+  // Supprimer un produit
+  async deleteProduct(productId: string) {
+    try {
+      const { error } = await supabase
+        .from('imported_products')
+        .delete()
+        .eq('id', productId)
+
+      if (error) throw error
+      return { error: null }
+    } catch (error) {
+      console.error('Error deleting product:', error)
+      return { error }
+    }
+  }
+
+  // Créer un job d'import
+  async createImportJob(userId: string, jobData: Partial<ImportJob> & { source_type: string }) {
+    try {
+      const { data, error } = await supabase
+        .from('import_jobs')
+        .insert([{ 
+          ...jobData, 
+          user_id: userId,
+          source_type: jobData.source_type,
+          status: jobData.status || 'pending'
+        }])
+        .select()
+        .single()
+
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error creating import job:', error)
+      return { data: null, error }
+    }
+  }
+
   // Statistiques du dashboard
   async getDashboardStats(userId: string) {
     try {
-      const [suppliers, products, jobs] = await Promise.all([
+      const [suppliers, products, jobs, orders, customers] = await Promise.all([
         this.getSuppliers(userId),
         this.getImportedProducts(userId),
-        this.getImportJobs(userId)
+        this.getImportJobs(userId),
+        this.getOrders(userId),
+        this.getCustomers(userId)
       ])
 
       return {
         totalSuppliers: suppliers.length,
         totalProducts: products.length,
         totalJobs: jobs.length,
+        totalOrders: orders.length,
+        totalCustomers: customers.length,
         recentJobs: jobs.slice(0, 5),
-        publishedProducts: products.filter(p => p.status === 'published').length
+        recentOrders: orders.slice(0, 5),
+        publishedProducts: products.filter(p => p.status === 'published').length,
+        pendingOrders: orders.filter(o => o.status === 'pending').length
       }
     } catch (error) {
       console.error('Error fetching dashboard stats:', error)
@@ -199,8 +319,12 @@ export class UnifiedSystem {
         totalSuppliers: 0,
         totalProducts: 0,
         totalJobs: 0,
+        totalOrders: 0,
+        totalCustomers: 0,
         recentJobs: [],
-        publishedProducts: 0
+        recentOrders: [],
+        publishedProducts: 0,
+        pendingOrders: 0
       }
     }
   }

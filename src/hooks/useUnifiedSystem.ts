@@ -99,11 +99,19 @@ export function useUnifiedSystem() {
     isUltraPro,
     hasFeature,
     
-    // Données
-    dashboardStats,
-    getSuppliers,
-    getProducts,
-    getImportJobs,
+  // Données
+  dashboardStats,
+  getSuppliers,
+  getProducts,
+  getImportJobs,
+  getOrders: () => unifiedSystem.getOrders(user?.id || ''),
+  getCustomers: () => unifiedSystem.getCustomers(user?.id || ''),
+  
+  // Actions CRUD
+  createProduct: (productData: any) => unifiedSystem.createProduct(user?.id || '', productData),
+  updateProduct: (productId: string, productData: any) => unifiedSystem.updateProduct(productId, productData),
+  deleteProduct: (productId: string) => unifiedSystem.deleteProduct(productId),
+  createImportJob: (jobData: any) => unifiedSystem.createImportJob(user?.id || '', jobData),
     
     // Refresh function
     refresh: () => {

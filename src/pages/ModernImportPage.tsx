@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useUnifiedSystem } from '@/hooks/useUnifiedSystem'
 import { ActionButton } from '@/components/common/ActionButton'
 import { Helmet } from 'react-helmet-async'
+import { ImportJobDialog } from '@/components/import/ImportJobDialog'
 import { 
   Upload, FileText, Globe, Database, 
   Zap, CheckCircle, XCircle, Clock,
@@ -21,6 +22,8 @@ const ModernImportPage: React.FC = () => {
   const { user, loading, getImportJobs } = useUnifiedSystem()
   const [importJobs, setImportJobs] = useState([])
   const [loadingJobs, setLoadingJobs] = useState(true)
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [selectedImportType, setSelectedImportType] = useState('')
 
   useEffect(() => {
     loadImportJobs()
@@ -163,8 +166,8 @@ const ModernImportPage: React.FC = () => {
                       <ActionButton
                         className="w-full"
                         onClick={async () => {
-                          // Redirection vers la méthode d'import spécifique
-                          window.location.href = `/import/${method.id}`
+                          setSelectedImportType(method.id)
+                          setImportDialogOpen(true)
                         }}
                       >
                         <Upload className="h-4 w-4 mr-2" />
@@ -284,6 +287,14 @@ const ModernImportPage: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Dialog d'import */}
+      <ImportJobDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        sourceType={selectedImportType}
+        onJobCreated={loadImportJobs}
+      />
     </>
   )
 }

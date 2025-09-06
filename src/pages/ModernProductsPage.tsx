@@ -11,16 +11,23 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useUnifiedSystem } from '@/hooks/useUnifiedSystem'
 import { ActionButton } from '@/components/common/ActionButton'
 import { Helmet } from 'react-helmet-async'
+import { useToast } from '@/hooks/use-toast'
+import { ProductCreateDialog } from '@/components/products/ProductCreateDialog'
+import { ProductEditDialog } from '@/components/products/ProductEditDialog'
 import { 
   Package, Search, Filter, MoreHorizontal, 
   Eye, Edit, Trash, Plus, Download, Upload
 } from 'lucide-react'
 
 const ModernProductsPage: React.FC = () => {
-  const { user, loading, getProducts } = useUnifiedSystem()
+  const { user, loading, getProducts, deleteProduct } = useUnifiedSystem()
+  const { toast } = useToast()
   const [products, setProducts] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [loadingProducts, setLoadingProducts] = useState(true)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState(null)
 
   useEffect(() => {
     loadProducts()
@@ -36,6 +43,29 @@ const ModernProductsPage: React.FC = () => {
       console.error('Erreur chargement produits:', error)
     } finally {
       setLoadingProducts(false)
+    }
+  }
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return
+    
+    try {
+      const { error } = await deleteProduct(productId)
+      if (error) throw error
+      
+      toast({
+        title: "Succès",
+        description: "Produit supprimé avec succès"
+      })
+      
+      loadProducts()
+    } catch (error) {
+      console.error('Error deleting product:', error)
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le produit",
+        variant: "destructive"
+      })
     }
   }
 
@@ -78,7 +108,7 @@ const ModernProductsPage: React.FC = () => {
               <Upload className="h-4 w-4 mr-2" />
               Importer
             </Button>
-            <Button className="btn-gradient">
+            <Button className="btn-gradient" onClick={() => setCreateDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Nouveau Produit
             </Button>
@@ -170,11 +200,22 @@ const ModernProductsPage: React.FC = () => {
                           <Button variant="ghost" size="sm">
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedProduct(product)
+                              setEditDialogOpen(true)
+                            }}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleDeleteProduct(product.id)}
+                          >
+                            <Trash className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -198,6 +239,20 @@ const ModernProductsPage: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Dialogs */}
+      <ProductCreateDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onProductCreated={loadProducts}
+      />
+      
+      <ProductEditDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        product={selectedProduct}
+        onProductUpdated={loadProducts}
+      />
     </>
   )
 }
