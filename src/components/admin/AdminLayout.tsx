@@ -42,7 +42,7 @@ const adminSidebarItems: AdminSidebarItem[] = [
   { title: 'Commandes', href: '/admin/orders', icon: ShoppingCart },
   { title: 'Import', href: '/admin/import', icon: Upload },
   { title: 'Fournisseurs', href: '/admin/suppliers', icon: Users },
-  { title: 'Analytics', href: '/admin/analytics', icon: BarChart3, badge: 'PRO', planRequired: 'pro' },
+  { title: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { title: 'Clients', href: '/admin/customers', icon: UserPlus },
   { title: 'CRM', href: '/admin/crm', icon: Mail, badge: 'PRO', planRequired: 'pro' },
   { title: 'Marketing', href: '/admin/marketing', icon: PenTool, badge: 'PRO', planRequired: 'pro' },
@@ -52,7 +52,7 @@ const adminSidebarItems: AdminSidebarItem[] = [
   { title: 'Automation', href: '/admin/automation', icon: Zap, badge: 'ULTRA', planRequired: 'ultra_pro' },
   { title: 'Sécurité', href: '/admin/security', icon: Shield, badge: 'ULTRA', planRequired: 'ultra_pro' },
   { title: 'Intégrations', href: '/admin/integrations', icon: Settings },
-  { title: 'Abonnement', href: '/admin/subscription', icon: CreditCard },
+  { title: 'Abonnements', href: '/admin/subscriptions', icon: CreditCard },
 ];
 
 export const AdminLayout = () => {

@@ -47,6 +47,9 @@ import { AdminProducts } from '@/pages/admin/AdminProducts';
 import { AdminOrders } from '@/pages/admin/AdminOrders';
 import { AdminCustomers } from '@/pages/admin/AdminCustomers';
 import { AdminSuppliers } from '@/pages/admin/AdminSuppliers';
+import AdminSubscriptions from '@/pages/admin/AdminSubscriptions';
+import AdminIntegrations from '@/pages/admin/AdminIntegrations';
+import AdminAnalytics from '@/pages/admin/AdminAnalytics';
 
 // Nouvelles pages de refonte
 import ModernDashboard from '@/pages/ModernDashboard';
@@ -345,6 +348,9 @@ function App() {
                   <Route path="orders" element={<AdminOrders />} />
                   <Route path="customers" element={<AdminCustomers />} />
                   <Route path="suppliers" element={<AdminSuppliers />} />
+                  <Route path="subscriptions" element={<AdminSubscriptions />} />
+                  <Route path="integrations" element={<AdminIntegrations />} />
+                  <Route path="analytics" element={<AdminAnalytics />} />
                 </Route>
                 
                 <Route path="*" element={<Navigate to="/" replace />} />

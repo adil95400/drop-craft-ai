@@ -25,9 +25,12 @@ export function useUnifiedModules() {
   // Fonctionnalités spécialisées
   const moduleFeatures = useModuleFeatures();
 
-  // Fonctions unifiées
+  // Fonctions unifiées avec gestion admin
   const unifiedFeatureCheck = useMemo(() => {
     return (feature: string): boolean => {
+      // Admin a accès à toutes les fonctionnalités
+      if (plan === 'ultra_pro') return true;
+      
       // Vérifie dans le store, le plan provider et les modules
       return (
         planStore.hasFeature(feature) ||
@@ -36,17 +39,20 @@ export function useUnifiedModules() {
         moduleFeatures.hasAnyFeature([feature])
       );
     };
-  }, [planStore, planHasFeature, moduleHasFeature, moduleFeatures]);
+  }, [planStore, planHasFeature, moduleHasFeature, moduleFeatures, plan]);
 
   const unifiedAccessCheck = useMemo(() => {
     return (moduleOrFeature: string): boolean => {
+      // Admin a accès à tout
+      if (plan === 'ultra_pro') return true;
+      
       // Peut être un module ou une fonctionnalité
       return (
         moduleCanAccess(moduleOrFeature) ||
         unifiedFeatureCheck(moduleOrFeature)
       );
     };
-  }, [moduleCanAccess, unifiedFeatureCheck]);
+  }, [moduleCanAccess, unifiedFeatureCheck, plan]);
 
   // Configuration unifiée des fonctionnalités
   const getUnifiedFeatureConfig = useMemo(() => {
