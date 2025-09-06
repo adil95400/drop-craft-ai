@@ -7,6 +7,7 @@ import { UnifiedPlanProvider } from '@/components/plan/UnifiedPlanProvider';
 import { HelmetProvider } from 'react-helmet-async';
 import { AppLayout } from '@/layouts/AppLayout';
 import { NotificationProvider } from '@/components/notifications/NotificationService';
+import { ThemeProvider } from 'next-themes';
 
 // Pages
 import Index from '@/pages/Index';
@@ -117,9 +118,15 @@ function App() {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <UnifiedPlanProvider>
-            <NotificationProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <UnifiedPlanProvider>
+              <NotificationProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<AuthPage />} />
@@ -363,6 +370,7 @@ function App() {
             </NotificationProvider>
           </UnifiedPlanProvider>
         </AuthProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     </HelmetProvider>
   );

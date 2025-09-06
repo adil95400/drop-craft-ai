@@ -269,28 +269,26 @@ const Settings = () => {
   };
 
   const handleSaveAppearance = () => {
-    const settings = {
-      theme: storeTheme,
-      language: storeLanguage,
-      compactMode,
-      animations,
-      sounds
-    };
-    
     // Update global store
     updateNotifications({ desktop: sounds });
     if (compactMode !== sidebarCollapsed) {
       toggleSidebar();
     }
     
-    // Apply theme change
-    setTheme(storeTheme);
-    
     toast.success('Paramètres d\'apparence sauvegardés');
-    
-    // Apply theme immediately
-    document.documentElement.setAttribute('data-theme', storeTheme);
-    document.documentElement.setAttribute('data-compact', compactMode.toString());
+  };
+
+  // Handle theme change immediately
+  const handleThemeChange = (newTheme: string) => {
+    updateTheme(newTheme as any);
+    setTheme(newTheme);
+  };
+
+  // Handle language change immediately
+  const handleLanguageChange = (newLanguage: string) => {
+    updateLanguage(newLanguage as any);
+    // You can add i18n logic here if needed
+    toast.success(`Langue changée vers ${newLanguage === 'fr' ? 'Français' : newLanguage === 'en' ? 'English' : newLanguage}`);
   };
 
   const handleLogout = async () => {
@@ -946,7 +944,7 @@ const Settings = () => {
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
                     <h4 className="font-semibold">Thème</h4>
-                    <Select value={storeTheme} onValueChange={updateTheme}>
+                    <Select value={storeTheme} onValueChange={handleThemeChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Choisir un thème" />
                       </SelectTrigger>
@@ -975,7 +973,7 @@ const Settings = () => {
 
                   <div className="space-y-3">
                     <Label>Langue</Label>
-                    <Select value={storeLanguage} onValueChange={updateLanguage}>
+                    <Select value={storeLanguage} onValueChange={handleLanguageChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Choisir une langue" />
                       </SelectTrigger>
