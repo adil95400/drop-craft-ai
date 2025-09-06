@@ -19,6 +19,7 @@ import {
   TrendingUp,
   Calendar
 } from 'lucide-react'
+// Force refresh to clear Sync import cache
 import { Supplier } from '@/hooks/useSuppliers'
 import { useTranslation } from 'react-i18next'
 
