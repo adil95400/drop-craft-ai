@@ -7,6 +7,7 @@ import { SystemAnalytics } from '@/components/admin/SystemAnalytics'
 import { DatabaseManagement } from '@/components/admin/DatabaseManagement'
 import { LogsViewer } from '@/components/admin/LogsViewer'
 import { AdvancedSettings } from '@/components/admin/AdvancedSettings'
+import { RealTimeMonitoring } from '@/components/admin/RealTimeMonitoring'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
@@ -17,7 +18,8 @@ import {
   Database,
   BarChart3,
   FileText,
-  Building2
+  Building2,
+  Activity
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -42,7 +44,7 @@ const AdminPanel = () => {
               </div>
             </div>
 
-            <TabsList className="grid w-full grid-cols-7 mb-8">
+            <TabsList className="grid w-full grid-cols-8 mb-8">
               <TabsTrigger value="dashboard" className="flex items-center gap-2">
                 <LayoutDashboard className="h-4 w-4" />
                 {t('navigation:dashboard')}
@@ -62,6 +64,10 @@ const AdminPanel = () => {
               <TabsTrigger value="database" className="flex items-center gap-2">
                 <Database className="h-4 w-4" />
                 Base de données
+              </TabsTrigger>
+              <TabsTrigger value="monitoring" className="flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                Monitoring
               </TabsTrigger>
               <TabsTrigger value="logs" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
@@ -91,6 +97,10 @@ const AdminPanel = () => {
 
             <TabsContent value="database">
               <DatabaseManagement />
+            </TabsContent>
+
+            <TabsContent value="monitoring">
+              <RealTimeMonitoring />
             </TabsContent>
 
             <TabsContent value="logs">
