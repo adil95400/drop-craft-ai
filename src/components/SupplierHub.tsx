@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import React, { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { useSuppliers, type SupplierTemplate } from '@/hooks/useSuppliers'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
@@ -32,9 +33,9 @@ import type { SupplierConnectorInfo } from '@/services/SupplierHub';
 
 const SupplierHub: React.FC = () => {
   const { toast } = useToast();
-  const [connectors] = useState<SupplierConnectorInfo[]>([
-    ...supplierHub.getAvailableConnectors(),
-    // Ajout des nouveaux connecteurs Wise2Sync
+  const { suppliers, loading, connectSupplier, disconnectSupplier, syncSupplier } = useSuppliers();
+  
+  const [supplierTemplates] = useState<SupplierTemplate[]>([
     {
       id: 'bigbuy',
       name: 'BigBuy',
@@ -47,103 +48,15 @@ const SupplierHub: React.FC = () => {
       features: { products: true, inventory: true, orders: true, webhooks: true },
       rateLimits: { requestsPerMinute: 60, requestsPerHour: 3600 },
       setupComplexity: 'medium'
-    },
-    {
-      id: 'cdiscount-pro',
-      name: 'Cdiscount Pro',
-      displayName: 'Cdiscount Pro',
-      description: 'Marketplace française, API/EDI complète',
-      category: 'Marketplace Française',
-      status: 'available',
-      authType: 'oauth',
-      logo: '/logos/cdiscount.svg',
-      features: { products: true, inventory: true, orders: true, webhooks: false },
-      rateLimits: { requestsPerMinute: 30, requestsPerHour: 1800 },
-      setupComplexity: 'advanced'
-    },
-    {
-      id: 'eprolo',
-      name: 'Eprolo',
-      displayName: 'Eprolo',
-      description: '1M+ produits, dropshipping européen premium',
-      category: 'Dropshipping Premium',
-      status: 'available',
-      authType: 'api_key',
-      features: { products: true, inventory: true, orders: true, webhooks: true },
-      rateLimits: { requestsPerMinute: 100, requestsPerHour: 6000 },
-      setupComplexity: 'easy'
-    },
-    {
-      id: 'vidaxl',
-      name: 'VidaXL',
-      displayName: 'VidaXL',
-      description: '85K+ produits mobilier/jardin européen',
-      category: 'Mobilier & Jardin',
-      status: 'available',
-      authType: 'api_key',
-      features: { products: true, inventory: true, orders: false, webhooks: false },
-      rateLimits: { requestsPerMinute: 40, requestsPerHour: 2400 },
-      setupComplexity: 'medium'
-    },
-    {
-      id: 'syncee',
-      name: 'Syncee',
-      displayName: 'Syncee',
-      description: '8M+ produits, 12K+ marques mondiales',
-      category: 'Marketplace Globale',
-      status: 'available',
-      authType: 'api_key',
-      features: { products: true, inventory: true, orders: false, webhooks: true },
-      rateLimits: { requestsPerMinute: 120, requestsPerHour: 7200 },
-      setupComplexity: 'easy'
-    },
-    {
-      id: 'printful',
-      name: 'Printful',
-      displayName: 'Printful',
-      description: 'Print-on-demand leader mondial',
-      category: 'Print-on-Demand',
-      status: 'available',
-      authType: 'api_key',
-      features: { products: true, inventory: false, orders: true, webhooks: true },
-      rateLimits: { requestsPerMinute: 120, requestsPerHour: 7200 },
-      setupComplexity: 'easy'
-    },
-    {
-      id: 'matterhorn',
-      name: 'Matterhorn',
-      displayName: 'Matterhorn',
-      description: '120K+ produits lingerie/mode européens',
-      category: 'Mode & Lingerie',
-      status: 'available',
-      authType: 'api_key',
-      features: { products: true, inventory: true, orders: true, webhooks: false },
-      rateLimits: { requestsPerMinute: 50, requestsPerHour: 3000 },
-      setupComplexity: 'advanced'
-    },
-    // Fournisseurs européens
-    {
-      id: 'hurtownia-polska',
-      name: 'Hurtownia Polska',
-      displayName: 'Hurtownia Polska',
-      description: 'Grande hurtownia polonaise',
-      category: 'Fournisseurs Européens',
-      status: 'available',
-      authType: 'credentials',
-      features: { products: true, inventory: false, orders: false, webhooks: false },
-      rateLimits: { requestsPerMinute: 20, requestsPerHour: 1200 },
-      setupComplexity: 'medium'
     }
   ]);
-  const [activeConnectors, setActiveConnectors] = useState<string[]>([]);
-  const [connectionDialog, setConnectionDialog] = useState<{ open: boolean; connector?: SupplierConnectorInfo }>({ open: false });
+  
+  const [connectionDialog, setConnectionDialog] = useState<{ open: boolean; template?: SupplierTemplate }>({ open: false });
   const [credentials, setCredentials] = useState<Record<string, string>>({});
-  const [syncProgress, setSyncProgress] = useState<Record<string, number>>({});
-  const [connecting, setConnecting] = useState<string | null>(null);
   const [stats, setStats] = useState({
-    connected: 0,
-    available: 0,
-    products: 1234,
+    connected: suppliers.length,
+    available: 12,
+    products: suppliers.reduce((sum, s) => sum + s.product_count, 0),
     syncToday: 8
   });
 

@@ -190,8 +190,11 @@ const importMethods: ImportMethod[] = [
 ]
 
 export const AdvancedImportMethods: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const { toast } = useToast()
+  const { importMethods, loading, executeImport } = useImportMethods()
+  
+  if (loading) {
+    return <div className="flex justify-center p-8"><div className="animate-spin h-6 w-6 border-2 border-primary rounded-full border-t-transparent"></div></div>
+  }
 
   const categories = ['all', 'Basic', 'Advanced', 'AI', 'Enterprise']
 
