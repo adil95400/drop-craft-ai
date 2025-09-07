@@ -6,7 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIntegrations, IntegrationTemplate, Integration } from '@/hooks/useIntegrations';
+import { AIIntegrationRecommendations } from '@/components/integrations/AIIntegrationRecommendations';
+import { SmartIntegrationHealth } from '@/components/integrations/SmartIntegrationHealth';
+import { IntegrationAnalytics } from '@/components/integrations/IntegrationAnalytics';
 import { 
   Store, 
   Settings, 
@@ -333,7 +337,7 @@ export default function ModernIntegrationsHub() {
     <div className="container mx-auto p-6 space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Hub d'Intégrations</h1>
+          <h1 className="text-3xl font-bold text-foreground">Hub d'Intégrations IA</h1>
           <p className="text-muted-foreground">Connectez {templates.length} plateformes - {connectedCount} connectées</p>
         </div>
         <Button onClick={() => window.open('https://docs.example.com/integrations', '_blank')}>
@@ -342,97 +346,120 @@ export default function ModernIntegrationsHub() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Store className="w-4 h-4 text-blue-500" />
-              Intégrations Connectées
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{connectedCount}</div>
-            <p className="text-xs text-muted-foreground mt-1">{activeIntegrations} actives</p>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="hub" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="hub">Hub Principal</TabsTrigger>
+          <TabsTrigger value="recommendations">Recommandations IA</TabsTrigger>
+          <TabsTrigger value="health">Santé & Monitoring</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Zap className="w-4 h-4 text-green-500" />
-              Plateformes Disponibles
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{templates.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {templates.filter(t => t.status === 'available').length} prêtes
-            </p>
-          </CardContent>
-        </Card>
+        <TabsContent value="hub" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Store className="w-4 h-4 text-blue-500" />
+                  Intégrations Connectées
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{connectedCount}</div>
+                <p className="text-xs text-muted-foreground mt-1">{activeIntegrations} actives</p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <RefreshCw className="w-4 h-4 text-orange-500" />
-              Synchronisations 24h
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">42</div>
-            <p className="text-xs text-muted-foreground mt-1">Dernières 24h</p>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-green-500" />
+                  Plateformes Disponibles
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{templates.length}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {templates.filter(t => t.status === 'available').length} prêtes
+                </p>
+              </CardContent>
+            </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Parcourir les Intégrations</CardTitle>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Rechercher une intégration..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[180px]">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Catégorie" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes les catégories</SelectItem>
-                {categories.slice(1).map(category => (
-                  <SelectItem key={category} value={category}>{category}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <RefreshCw className="w-4 h-4 text-orange-500" />
+                  Synchronisations 24h
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">42</div>
+                <p className="text-xs text-muted-foreground mt-1">Dernières 24h</p>
+              </CardContent>
+            </Card>
           </div>
-        </CardHeader>
-      </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredTemplates.map((template) => {
-          const integration = integrations.find(i => 
-            i.platform_name.toLowerCase() === template.name.toLowerCase()
-          );
-          
-          return (
-            <IntegrationCard
-              key={template.id}
-              template={template}
-              integration={integration}
-              onConnect={handleConnect}
-              onConfigure={handleConfigure}
-              onSync={handleSync}
-              onDisconnect={handleDisconnect}
-            />
-          );
-        })}
-      </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Parcourir les Intégrations</CardTitle>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Rechercher une intégration..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-[180px]">
+                    <Filter className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="Catégorie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les catégories</SelectItem>
+                    {categories.slice(1).map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+          </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTemplates.map((template) => {
+              const integration = integrations.find(i => 
+                i.platform_name.toLowerCase() === template.name.toLowerCase()
+              );
+              
+              return (
+                <IntegrationCard
+                  key={template.id}
+                  template={template}
+                  integration={integration}
+                  onConnect={handleConnect}
+                  onConfigure={handleConfigure}
+                  onSync={handleSync}
+                  onDisconnect={handleDisconnect}
+                />
+              );
+            })}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="recommendations">
+          <AIIntegrationRecommendations />
+        </TabsContent>
+
+        <TabsContent value="health">
+          <SmartIntegrationHealth />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <IntegrationAnalytics />
+        </TabsContent>
+      </Tabs>
 
       <ConnectDialog
         template={connectDialog.template}
