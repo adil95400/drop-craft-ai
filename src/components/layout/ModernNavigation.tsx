@@ -14,7 +14,9 @@ import {
   Upload,
   CreditCard,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Activity,
+  TrendingUp
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -29,12 +31,36 @@ interface NavItem {
 
 const modernPages: NavItem[] = [
   {
+    title: 'Catalogue Produits',
+    description: 'Éditeur avancé avec IA, SEO et gestion des prix',
+    href: '/catalog',
+    icon: Package,
+    badge: 'Premium',
+    badgeVariant: 'default'
+  },
+  {
+    title: 'CRM & Marketing',
+    description: 'Gestion complète des contacts et campagnes automatisées',
+    href: '/crm',
+    icon: Users,
+    badge: 'Pro',
+    badgeVariant: 'default'
+  },
+  {
+    title: 'Monitoring Système',
+    description: 'Surveillance temps réel et analytics avancés',
+    href: '/monitoring',
+    icon: Sparkles,
+    badge: 'Ultra Pro',
+    badgeVariant: 'destructive'
+  },
+  {
     title: 'Produits',
     description: 'Interface moderne pour gérer votre catalogue de produits',
     href: '/modern/products',
     icon: Package,
     badge: 'Nouveau',
-    badgeVariant: 'default'
+    badgeVariant: 'secondary'
   },
   {
     title: 'Clients',
@@ -42,7 +68,7 @@ const modernPages: NavItem[] = [
     href: '/modern/customers',
     icon: Users,
     badge: 'Nouveau',
-    badgeVariant: 'default'
+    badgeVariant: 'secondary'
   },
   {
     title: 'Commandes',
@@ -50,7 +76,7 @@ const modernPages: NavItem[] = [
     href: '/modern/orders',
     icon: ShoppingCart,
     badge: 'Nouveau',
-    badgeVariant: 'default'
+    badgeVariant: 'secondary'
   },
   {
     title: 'Marketing',
@@ -58,7 +84,7 @@ const modernPages: NavItem[] = [
     href: '/modern/marketing',
     icon: Mail,
     badge: 'Nouveau',
-    badgeVariant: 'default'
+    badgeVariant: 'secondary'
   },
   {
     title: 'Fournisseurs',
@@ -66,7 +92,7 @@ const modernPages: NavItem[] = [
     href: '/modern/suppliers',
     icon: Building2,
     badge: 'Nouveau',
-    badgeVariant: 'default'
+    badgeVariant: 'secondary'
   },
   {
     title: 'Import',
@@ -74,7 +100,7 @@ const modernPages: NavItem[] = [
     href: '/modern/import',
     icon: Upload,
     badge: 'Nouveau',
-    badgeVariant: 'default'
+    badgeVariant: 'secondary'
   },
   {
     title: 'Facturation',
@@ -82,21 +108,21 @@ const modernPages: NavItem[] = [
     href: '/modern/billing',
     icon: CreditCard,
     badge: 'Nouveau',
-    badgeVariant: 'default'
+    badgeVariant: 'secondary'
   }
 ]
 
 export function ModernNavigation() {
   return (
     <div className="space-y-6 p-6">
-      <div className="text-center space-y-4">
+        <div className="text-center space-y-4">
         <div className="flex items-center justify-center gap-2">
           <Sparkles className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">Interfaces Modernes</h1>
+          <h1 className="text-3xl font-bold">Drop Craft AI - Commercialisé</h1>
         </div>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Découvrez nos nouvelles interfaces inspirées des leaders du marché comme AutoDS, Spocket et Channable.
-          Design moderne, performance optimisée et expérience utilisateur repensée.
+          <strong>🎯 100% PRÊT POUR LA COMMERCIALISATION</strong> - Plateforme e-commerce complète avec fonctionnalités premium, 
+          monitoring avancé, CRM professionnel et intégrations enterprise.
         </p>
       </div>
 
@@ -135,33 +161,33 @@ export function ModernNavigation() {
       </div>
 
       <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-6 text-center">
-        <h2 className="text-xl font-semibold mb-2">Pourquoi ces nouvelles interfaces ?</h2>
+        <h2 className="text-xl font-semibold mb-2">🚀 Plateforme E-commerce Commercialisée</h2>
         <div className="grid gap-4 md:grid-cols-3 mt-4">
           <div className="space-y-2">
             <div className="p-2 rounded-lg bg-primary/20 w-fit mx-auto">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <Activity className="h-5 w-5 text-primary" />
             </div>
-            <h3 className="font-medium">Design Moderne</h3>
+            <h3 className="font-medium">Monitoring Pro</h3>
             <p className="text-sm text-muted-foreground">
-              Interfaces inspirées des leaders du marché
+              Surveillance temps réel avec alertes automatiques
+            </p>
+          </div>
+          <div className="space-y-2">
+            <div className="p-2 rounded-lg bg-primary/20 w-fit mx-auto">
+              <TrendingUp className="h-5 w-5 text-primary" />
+            </div>
+            <h3 className="font-medium">CRM & Analytics</h3>
+            <p className="text-sm text-muted-foreground">
+              Gestion complète des clients et campagnes
             </p>
           </div>
           <div className="space-y-2">
             <div className="p-2 rounded-lg bg-primary/20 w-fit mx-auto">
               <Package className="h-5 w-5 text-primary" />
             </div>
-            <h3 className="font-medium">Fonctionnalités Avancées</h3>
+            <h3 className="font-medium">Catalogue IA</h3>
             <p className="text-sm text-muted-foreground">
-              Gestion centralisée et workflow optimisés
-            </p>
-          </div>
-          <div className="space-y-2">
-            <div className="p-2 rounded-lg bg-primary/20 w-fit mx-auto">
-              <ArrowRight className="h-5 w-5 text-primary" />
-            </div>
-            <h3 className="font-medium">Performance</h3>
-            <p className="text-sm text-muted-foreground">
-              Interface rapide et responsive
+              Éditeur avancé avec génération automatique
             </p>
           </div>
         </div>

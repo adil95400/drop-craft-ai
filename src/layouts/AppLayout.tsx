@@ -42,10 +42,12 @@ interface NavItem {
 const navigation: NavItem[] = [
   { title: 'Dashboard', url: '/dashboard', icon: Home },
   { title: 'Produits', url: '/products', icon: Package },
+  { title: 'Catalogue', url: '/catalog', icon: Package, requiredPlan: 'pro' },
   { title: 'Commandes', url: '/orders', icon: ShoppingCart },
   { title: 'Import', url: '/import', icon: Upload },
   { title: 'Fournisseurs', url: '/suppliers', icon: Truck },
   { title: 'Analytics', url: '/analytics', icon: BarChart3, requiredPlan: 'pro' },
+  { title: 'Monitoring', url: '/monitoring', icon: TrendingUp, requiredPlan: 'ultra_pro' },
   { title: 'Clients', url: '/customers', icon: Users },
   { title: 'CRM', url: '/crm', icon: Users, requiredPlan: 'pro' },
   { title: 'Marketing', url: '/marketing', icon: TrendingUp, requiredPlan: 'pro' },
