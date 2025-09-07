@@ -12,6 +12,7 @@ import { AIIntegrationRecommendations } from '@/components/integrations/AIIntegr
 import { SmartIntegrationHealth } from '@/components/integrations/SmartIntegrationHealth';
 import { IntegrationAnalytics } from '@/components/integrations/IntegrationAnalytics';
 import { IntegrationWorkflowBuilder } from '@/components/integrations/IntegrationWorkflowBuilder';
+import { BusinessIntelligenceDashboard } from '@/components/intelligence/BusinessIntelligenceDashboard';
 import { 
   Store, 
   Settings, 
@@ -348,12 +349,13 @@ export default function ModernIntegrationsHub() {
       </div>
 
       <Tabs defaultValue="hub" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="hub">Hub Principal</TabsTrigger>
           <TabsTrigger value="recommendations">Recommandations IA</TabsTrigger>
           <TabsTrigger value="health">Santé & Monitoring</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="workflows">Workflows</TabsTrigger>
+          <TabsTrigger value="intelligence">Intelligence IA</TabsTrigger>
         </TabsList>
 
         <TabsContent value="hub" className="space-y-6">
@@ -464,6 +466,10 @@ export default function ModernIntegrationsHub() {
 
         <TabsContent value="workflows">
           <IntegrationWorkflowBuilder />
+        </TabsContent>
+
+        <TabsContent value="intelligence">
+          <BusinessIntelligenceDashboard />
         </TabsContent>
       </Tabs>
 

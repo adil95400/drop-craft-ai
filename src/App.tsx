@@ -21,6 +21,7 @@ import SubscriptionDashboard from '@/pages/SubscriptionDashboard';
 import QuotaManagerPage from '@/pages/QuotaManagerPage';
 import Suppliers from "@/pages/Suppliers";
 import AutomationPage from '@/pages/AutomationPage';
+import ProductIntelligencePage from '@/pages/ProductIntelligencePage';
 import UnifiedImport from '@/pages/unified/UnifiedImport';
 import URLImportConfig from '@/pages/import/URLImportConfig';
 import XMLImportConfig from '@/pages/import/XMLImportConfig';
@@ -274,6 +275,11 @@ function App() {
                 <Route path="/automation" element={
                   <ProtectedRoute>
                     <AppLayout><AutomationPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/product-intelligence" element={
+                  <ProtectedRoute>
+                    <AppLayout><ProductIntelligencePage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/import-old" element={<AppLayout><UnifiedImport /></AppLayout>} />
