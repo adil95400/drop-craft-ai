@@ -1,8 +1,12 @@
 import { useState } from 'react'
 import { AdminRoute } from '@/components/admin/AdminRoute'
-import { AdminDashboard } from '@/components/admin/AdminDashboard'
+import { EnhancedAdminDashboard } from '@/components/admin/EnhancedAdminDashboard'
 import { UserManagement } from '@/components/admin/UserManagement'
 import { SupplierManagement } from '@/components/suppliers/SupplierManagement'
+import { SystemAnalytics } from '@/components/admin/SystemAnalytics'
+import { DatabaseManagement } from '@/components/admin/DatabaseManagement'
+import { LogsViewer } from '@/components/admin/LogsViewer'
+import { AdvancedSettings } from '@/components/admin/AdvancedSettings'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
@@ -70,7 +74,7 @@ const AdminPanel = () => {
             </TabsList>
 
             <TabsContent value="dashboard">
-              <AdminDashboard />
+              <EnhancedAdminDashboard />
             </TabsContent>
 
             <TabsContent value="users">
@@ -82,67 +86,19 @@ const AdminPanel = () => {
             </TabsContent>
 
             <TabsContent value="analytics">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Analytics avancées</CardTitle>
-                  <CardDescription>
-                    Analysez les performances de votre plateforme
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Module analytics en cours de développement...
-                  </p>
-                </CardContent>
-              </Card>
+              <SystemAnalytics />
             </TabsContent>
 
             <TabsContent value="database">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Gestion de la base de données</CardTitle>
-                  <CardDescription>
-                    Surveillez et gérez votre base de données Supabase
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Module de gestion BDD en cours de développement...
-                  </p>
-                </CardContent>
-              </Card>
+              <DatabaseManagement />
             </TabsContent>
 
             <TabsContent value="logs">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Logs système</CardTitle>
-                  <CardDescription>
-                    Consultez les logs d'activité et de sécurité
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Module de logs en cours de développement...
-                  </p>
-                </CardContent>
-              </Card>
+              <LogsViewer />
             </TabsContent>
 
             <TabsContent value="settings">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Paramètres système</CardTitle>
-                  <CardDescription>
-                    Configurez les paramètres globaux de la plateforme
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Module de configuration système en cours de développement...
-                  </p>
-                </CardContent>
-              </Card>
+              <AdvancedSettings />
             </TabsContent>
           </Tabs>
         </div>
