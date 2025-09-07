@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { useSuppliers, type SupplierTemplate } from '@/hooks/useSuppliers'
+import { useRealSuppliers, type Supplier } from '@/hooks/useRealSuppliers'
+import { type SupplierTemplate } from '@/hooks/useSuppliers'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
@@ -33,7 +34,7 @@ import type { SupplierConnectorInfo } from '@/services/SupplierHub';
 
 const SupplierHub: React.FC = () => {
   const { toast } = useToast();
-  const { suppliers, loading, connectSupplier, disconnectSupplier, syncSupplier } = useSuppliers();
+  const { suppliers, isLoading, addSupplier, updateSupplier, deleteSupplier } = useRealSuppliers();
   
   // States pour la gestion des connecteurs
   const [activeConnectors, setActiveConnectors] = useState<string[]>([]);
@@ -64,7 +65,7 @@ const SupplierHub: React.FC = () => {
   const [stats, setStats] = useState({
     connected: suppliers.length,
     available: 12,
-    products: suppliers.reduce((sum, s) => sum + s.product_count, 0),
+    products: suppliers.reduce((sum, s) => sum + 0, 0),
     syncToday: 8
   });
 
@@ -116,17 +117,32 @@ const SupplierHub: React.FC = () => {
     setConnecting(connectionDialog.template.id);
     
     try {
-      const success = await connectSupplier(connectionDialog.template, credentials);
+      await addSupplier({
+        name: connectionDialog.template.name,
+        website: connectionDialog.template.logo || '',
+        country: credentials.country || '',
+        status: 'active',
+        rating: 0,
+        api_endpoint: credentials.apiKey || ''
+      });
 
-      if (success) {
-        setActiveConnectors(prev => [...prev, connectionDialog.template!.id]);
-        toast({
-          title: "Connexion réussie",
-          description: `${connectionDialog.template.displayName} a été connecté avec succès`,
-        });
-        setConnectionDialog({ open: false });
-      } else {
-        throw new Error('Connection failed');
+      // Success - the mutation will handle success automatically
+      setActiveConnectors(prev => [...prev, connectionDialog.template!.id]);
+      toast({
+        title: "Connexion réussie",
+        description: `${connectionDialog.template.displayName} a été connecté avec succès`,
+      });
+      setConnectionDialog({ open: false });
+    } catch (error) {
+      toast({
+        title: "Erreur de connexion",
+        description: "Vérifiez vos identifiants et réessayez",
+        variant: "destructive"
+      });
+    } finally {
+      setConnecting(null);
+    }
+  };
       }
     } catch (error) {
       toast({
@@ -141,7 +157,7 @@ const SupplierHub: React.FC = () => {
 
   const handleDisconnect = async (supplierId: string) => {
     try {
-      await disconnectSupplier(supplierId);
+      await deleteSupplier(supplierId);
       setActiveConnectors(prev => prev.filter(id => id !== supplierId));
       toast({
         title: "Déconnexion réussie",

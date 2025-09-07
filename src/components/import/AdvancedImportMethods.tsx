@@ -24,9 +24,10 @@ import {
   FileSpreadsheet
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { useImportMethods, type ImportMethodTemplate } from '@/hooks/useImportMethods'
+import { useRealImportMethods } from '@/hooks/useRealImportMethods'
+import { type ImportMethodTemplate } from '@/hooks/useImportMethods'
 
-interface ImportMethod {
+interface LocalImportMethod {
   id: string
   title: string
   description: string
@@ -192,10 +193,10 @@ const importMethods: ImportMethodTemplate[] = [
 
 export const AdvancedImportMethods: React.FC = () => {
   const { toast } = useToast()
-  const { importMethods: dbMethods, loading, executeImport } = useImportMethods()
+  const { importMethods: dbMethods, isLoading, executeImport, createMethod } = useRealImportMethods()
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   
-  if (loading) {
+  if (isLoading) {
     return <div className="flex justify-center p-8"><div className="animate-spin h-6 w-6 border-2 border-primary rounded-full border-t-transparent"></div></div>
   }
 
@@ -216,9 +217,16 @@ export const AdvancedImportMethods: React.FC = () => {
         variant: "destructive"
       })
     } else {
-      toast({
-        title: "Configuration",
-        description: `Configuration de ${method.title} en cours...`
+      // Créer la méthode dans la base de données
+      createMethod({
+        method_type: method.id,
+        method_name: method.title,
+        configuration: {
+          category: method.category,
+          complexity: method.complexity,
+          features: method.features
+        },
+        source_type: method.id
       })
     }
   }
