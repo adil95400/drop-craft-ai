@@ -4,9 +4,13 @@ import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/toaster'
 import { HelmetProvider } from 'react-helmet-async'
+import { initSentry } from '@/utils/sentry'
 import App from './App'
 import './index.css'
 import './styles/import-animations.css'
+
+// Initialize error monitoring
+initSentry()
 
 const queryClient = new QueryClient({
   defaultOptions: {

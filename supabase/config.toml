@@ -106,8 +106,5 @@ verify_jwt = true
 [functions.sso-manager]
 verify_jwt = true
 
-[edge-runtime]
-enabled = true
-ip_version = "ipv4"
-port = 54327
-inspector_port = 54328
+[functions.shopify-webhook]
+verify_jwt = false

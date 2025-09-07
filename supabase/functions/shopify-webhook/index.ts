@@ -1,321 +1,310 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createHmac } from "https://deno.land/std@0.190.0/node/crypto.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-shopify-topic, x-shopify-hmac-sha256, x-shopify-shop-domain',
-}
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-shopify-hmac-sha256, x-shopify-topic, x-shopify-shop-domain",
+};
+
+const logStep = (step: string, details?: any) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[SHOPIFY-WEBHOOK] ${step}${detailsStr}`);
+};
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
   }
 
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
+  );
+
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    // Get webhook headers
-    const topic = req.headers.get('x-shopify-topic')
-    const hmac = req.headers.get('x-shopify-hmac-sha256')
-    const shopDomain = req.headers.get('x-shopify-shop-domain')
+    logStep("Shopify webhook received");
     
-    if (!topic || !hmac || !shopDomain) {
-      return new Response(JSON.stringify({ error: 'Missing required Shopify headers' }), {
-        status: 400,
-        headers: corsHeaders
-      })
+    const body = await req.text();
+    const topic = req.headers.get("x-shopify-topic");
+    const shop = req.headers.get("x-shopify-shop-domain");
+    const hmac = req.headers.get("x-shopify-hmac-sha256");
+    
+    logStep("Webhook headers", { topic, shop, hmac: !!hmac });
+
+    // Verify webhook authenticity
+    const isValid = await verifyShopifyWebhook(body, hmac);
+    if (!isValid) {
+      logStep("Invalid webhook signature");
+      return new Response("Unauthorized", { status: 401, headers: corsHeaders });
     }
 
-    // Verify webhook authenticity (simplified - implement proper HMAC verification in production)
-    const body = await req.text()
-    
-    try {
-      const data = JSON.parse(body)
-      
-      console.log(`Processing Shopify webhook: ${topic} from ${shopDomain}`)
+    const webhookData = JSON.parse(body);
+    logStep("Processing webhook", { topic, shop });
 
-      // Handle different webhook types
-      switch (topic) {
-        case 'products/update':
-          await handleProductUpdate(supabaseClient, data, shopDomain)
-          break
-          
-        case 'inventory_levels/update':
-          await handleInventoryUpdate(supabaseClient, data, shopDomain)
-          break
-          
-        case 'orders/create':
-          await handleOrderCreate(supabaseClient, data, shopDomain)
-          break
-          
-        case 'orders/updated':
-          await handleOrderUpdate(supabaseClient, data, shopDomain)
-          break
-          
-        case 'orders/paid':
-          await handleOrderPaid(supabaseClient, data, shopDomain)
-          break
-          
-        default:
-          console.log(`Unhandled Shopify webhook topic: ${topic}`)
-      }
+    // Find user by shop domain
+    const { data: integration } = await supabaseClient
+      .from('integrations')
+      .select('user_id, id, configuration')
+      .eq('shop_domain', shop)
+      .eq('platform_type', 'shopify')
+      .single();
 
-      // Log webhook event
-      await supabaseClient
-        .from('webhook_events')
-        .insert({
-          source: 'shopify',
-          event_type: topic,
-          shop_domain: shopDomain,
-          data: data,
-          processed_at: new Date().toISOString(),
-          status: 'processed'
-        })
-
-    } catch (parseError) {
-      console.error('Error parsing webhook body:', parseError)
-      return new Response(JSON.stringify({ error: 'Invalid JSON payload' }), {
-        status: 400,
-        headers: corsHeaders
-      })
+    if (!integration) {
+      logStep("No integration found for shop", { shop });
+      return new Response("No integration found", { status: 404, headers: corsHeaders });
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
+    const userId = integration.user_id;
+
+    // Process different webhook types
+    switch (topic) {
+      case "orders/create":
+        await handleOrderCreate(supabaseClient, userId, webhookData);
+        break;
+      case "orders/updated":
+        await handleOrderUpdate(supabaseClient, userId, webhookData);
+        break;
+      case "orders/paid":
+        await handleOrderPaid(supabaseClient, userId, webhookData);
+        break;
+      case "orders/cancelled":
+        await handleOrderCancel(supabaseClient, userId, webhookData);
+        break;
+      case "orders/fulfilled":
+        await handleOrderFulfilled(supabaseClient, userId, webhookData);
+        break;
+      case "products/create":
+        await handleProductCreate(supabaseClient, userId, webhookData);
+        break;
+      case "products/update":
+        await handleProductUpdate(supabaseClient, userId, webhookData);
+        break;
+      case "app/uninstalled":
+        await handleAppUninstall(supabaseClient, userId, webhookData);
+        break;
+      default:
+        logStep("Unhandled webhook topic", { topic });
+    }
+
+    logStep("Webhook processed successfully", { topic });
+    
+    return new Response("OK", { 
+      status: 200, 
+      headers: corsHeaders 
+    });
 
   } catch (error) {
-    console.error('Shopify webhook error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logStep("ERROR in shopify-webhook", { message: errorMessage });
+    
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
+    });
   }
-})
+});
 
-async function handleProductUpdate(supabase: any, product: any, shopDomain: string) {
-  try {
-    // Find user by shop domain
-    const { data: integration } = await supabase
-      .from('integrations')
-      .select('user_id')
-      .eq('shop_domain', shopDomain)
-      .eq('platform_type', 'shopify')
-      .single()
+async function verifyShopifyWebhook(body: string, hmac: string | null): Promise<boolean> {
+  if (!hmac) return false;
+  
+  const webhookSecret = Deno.env.get("SHOPIFY_WEBHOOK_SECRET");
+  if (!webhookSecret) return false;
 
-    if (!integration) {
-      console.log(`No integration found for shop domain: ${shopDomain}`)
-      return
-    }
-
-    // Update or create product
-    const productData = {
-      user_id: integration.user_id,
-      supplier_product_id: product.id.toString(),
-      name: product.title,
-      description: product.body_html || '',
-      price: parseFloat(product.variants?.[0]?.price || '0'),
-      sku: product.variants?.[0]?.sku || '',
-      category: product.product_type || 'General',
-      brand: product.vendor || '',
-      image_urls: product.images?.map((img: any) => img.src) || [],
-      supplier_name: 'Shopify',
-      status: product.status === 'active' ? 'published' : 'draft',
-      updated_at: new Date().toISOString()
-    }
-
-    await supabase
-      .from('imported_products')
-      .upsert(productData, { 
-        onConflict: 'user_id,supplier_product_id,supplier_name' 
-      })
-
-    console.log(`Updated product: ${product.title}`)
-  } catch (error) {
-    console.error('Error handling product update:', error)
-  }
+  const calculated = createHmac("sha256", webhookSecret)
+    .update(body, "utf8")
+    .digest("base64");
+  
+  return calculated === hmac;
 }
 
-async function handleInventoryUpdate(supabase: any, inventoryLevel: any, shopDomain: string) {
-  try {
-    // Find user by shop domain
-    const { data: integration } = await supabase
-      .from('integrations')
-      .select('user_id')
-      .eq('shop_domain', shopDomain)
-      .eq('platform_type', 'shopify')
-      .single()
+async function handleOrderCreate(supabase: any, userId: string, orderData: any) {
+  logStep("Processing new order", { orderId: orderData.id });
+  
+  // Extract customer info
+  const customer = orderData.customer || {};
+  let customerId = null;
 
-    if (!integration) {
-      console.log(`No integration found for shop domain: ${shopDomain}`)
-      return
-    }
+  if (customer.email) {
+    // Upsert customer
+    const { data: existingCustomer } = await supabase
+      .from('customers')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('email', customer.email)
+      .single();
 
-    // Get variant info to find SKU
-    const variantResponse = await fetch(`https://${shopDomain}.myshopify.com/admin/api/2023-10/variants/${inventoryLevel.inventory_item_id}.json`, {
-      headers: {
-        'X-Shopify-Access-Token': integration.access_token
-      }
-    })
-    
-    if (!variantResponse.ok) {
-      console.log('Could not fetch variant information')
-      return
-    }
-    
-    const variantData = await variantResponse.json()
-    const sku = variantData.variant?.sku
-
-    if (sku) {
-      // Update inventory in our database
-      await supabase
-        .from('imported_products')
-        .update({ 
-          stock_quantity: inventoryLevel.available,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', integration.user_id)
-        .eq('sku', sku)
-        .eq('supplier_name', 'Shopify')
-
-      console.log(`Updated inventory for SKU ${sku}: ${inventoryLevel.available} units`)
-    }
-  } catch (error) {
-    console.error('Error handling inventory update:', error)
-  }
-}
-
-async function handleOrderCreate(supabase: any, order: any, shopDomain: string) {
-  try {
-    // Find user by shop domain
-    const { data: integration } = await supabase
-      .from('integrations')
-      .select('user_id')
-      .eq('shop_domain', shopDomain)
-      .eq('platform_type', 'shopify')
-      .single()
-
-    if (!integration) {
-      console.log(`No integration found for shop domain: ${shopDomain}`)
-      return
-    }
-
-    // Create order record
-    const { data: orderRecord, error: orderError } = await supabase
-      .from('orders')
-      .insert({
-        user_id: integration.user_id,
-        order_number: order.name || `SHOP-${order.id}`,
-        total_amount: parseFloat(order.total_price || '0'),
-        status: 'pending',
-        external_order_id: order.id.toString(),
-        platform: 'shopify',
-        customer_data: {
-          email: order.email,
-          name: `${order.shipping_address?.first_name} ${order.shipping_address?.last_name}`,
-          phone: order.shipping_address?.phone
-        },
-        shipping_address: order.shipping_address,
-        order_date: order.created_at
-      })
-      .select()
-      .single()
-
-    if (orderError) {
-      console.error('Error creating order:', orderError)
-      return
-    }
-
-    // Create order items
-    for (const item of order.line_items || []) {
-      await supabase
-        .from('order_items')
+    if (existingCustomer) {
+      customerId = existingCustomer.id;
+    } else {
+      const { data: newCustomer } = await supabase
+        .from('customers')
         .insert({
-          order_id: orderRecord.id,
-          product_name: item.title,
-          sku: item.sku,
-          qty: item.quantity,
-          price: parseFloat(item.price),
-          total: parseFloat(item.price) * item.quantity
+          user_id: userId,
+          name: `${customer.first_name || ''} ${customer.last_name || ''}`.trim(),
+          email: customer.email,
+          phone: customer.phone,
+          country: orderData.shipping_address?.country,
+          address: {
+            shipping: orderData.shipping_address,
+            billing: orderData.billing_address
+          }
         })
+        .select('id')
+        .single();
+      
+      customerId = newCustomer?.id;
     }
+  }
 
-    console.log(`Created order: ${order.name}`)
+  // Create order
+  await supabase.from('orders').insert({
+    user_id: userId,
+    customer_id: customerId,
+    order_number: orderData.order_number || orderData.name,
+    external_id: orderData.id.toString(),
+    status: mapOrderStatus(orderData.financial_status, orderData.fulfillment_status),
+    total_amount: parseFloat(orderData.total_price || '0'),
+    currency: orderData.currency,
+    order_date: orderData.created_at,
+    shipping_address: orderData.shipping_address,
+    billing_address: orderData.billing_address,
+    items: orderData.line_items?.map((item: any) => ({
+      product_name: item.title,
+      variant_title: item.variant_title,
+      quantity: item.quantity,
+      price: parseFloat(item.price),
+      sku: item.sku,
+      external_product_id: item.product_id?.toString(),
+      external_variant_id: item.variant_id?.toString()
+    })) || []
+  });
+
+  // Trigger supplier order automation if enabled
+  try {
+    await supabase.functions.invoke('supplier-order-automation', {
+      body: {
+        orderId: orderData.id.toString(),
+        items: orderData.line_items || [],
+        customerId: customerId,
+        totalAmount: parseFloat(orderData.total_price || '0')
+      }
+    });
   } catch (error) {
-    console.error('Error handling order creation:', error)
+    logStep("Failed to trigger supplier automation", { error: error.message });
   }
 }
 
-async function handleOrderUpdate(supabase: any, order: any, shopDomain: string) {
-  try {
-    // Find user by shop domain
-    const { data: integration } = await supabase
-      .from('integrations')
-      .select('user_id')
-      .eq('shop_domain', shopDomain)
-      .eq('platform_type', 'shopify')
-      .single()
+async function handleOrderUpdate(supabase: any, userId: string, orderData: any) {
+  logStep("Updating order", { orderId: orderData.id });
+  
+  await supabase
+    .from('orders')
+    .update({
+      status: mapOrderStatus(orderData.financial_status, orderData.fulfillment_status),
+      total_amount: parseFloat(orderData.total_price || '0'),
+      updated_at: new Date().toISOString()
+    })
+    .eq('user_id', userId)
+    .eq('external_id', orderData.id.toString());
+}
 
-    if (!integration) return
+async function handleOrderPaid(supabase: any, userId: string, orderData: any) {
+  logStep("Order paid", { orderId: orderData.id });
+  
+  await supabase
+    .from('orders')
+    .update({
+      status: 'paid'
+    })
+    .eq('user_id', userId)
+    .eq('external_id', orderData.id.toString());
+}
 
-    // Update order status
+async function handleOrderCancel(supabase: any, userId: string, orderData: any) {
+  logStep("Order cancelled", { orderId: orderData.id });
+  
+  await supabase
+    .from('orders')
+    .update({
+      status: 'cancelled'
+    })
+    .eq('user_id', userId)
+    .eq('external_id', orderData.id.toString());
+}
+
+async function handleOrderFulfilled(supabase: any, userId: string, orderData: any) {
+  logStep("Order fulfilled", { orderId: orderData.id });
+  
+  await supabase
+    .from('orders')
+    .update({
+      status: 'delivered',
+      delivery_date: new Date().toISOString()
+    })
+    .eq('user_id', userId)
+    .eq('external_id', orderData.id.toString());
+}
+
+async function handleProductCreate(supabase: any, userId: string, productData: any) {
+  logStep("Product created", { productId: productData.id });
+  
+  // Process product variants
+  for (const variant of productData.variants || []) {
+    await supabase.from('supplier_products').upsert({
+      user_id: userId,
+      name: productData.title,
+      description: productData.body_html?.replace(/<[^>]*>/g, ''),
+      price: parseFloat(variant.price || '0'),
+      sku: variant.sku,
+      external_id: variant.id.toString(),
+      image_url: productData.image?.src
+    }, {
+      onConflict: 'external_id,user_id'
+    });
+  }
+}
+
+async function handleProductUpdate(supabase: any, userId: string, productData: any) {
+  logStep("Product updated", { productId: productData.id });
+  
+  // Update existing products
+  for (const variant of productData.variants || []) {
     await supabase
-      .from('orders')
+      .from('supplier_products')
       .update({
-        status: mapShopifyOrderStatus(order.fulfillment_status),
+        name: productData.title,
+        description: productData.body_html?.replace(/<[^>]*>/g, ''),
+        price: parseFloat(variant.price || '0'),
+        sku: variant.sku,
+        image_url: productData.image?.src,
         updated_at: new Date().toISOString()
       })
-      .eq('user_id', integration.user_id)
-      .eq('external_order_id', order.id.toString())
-
-    console.log(`Updated order: ${order.name}`)
-  } catch (error) {
-    console.error('Error handling order update:', error)
+      .eq('user_id', userId)
+      .eq('external_id', variant.id.toString());
   }
 }
 
-async function handleOrderPaid(supabase: any, order: any, shopDomain: string) {
-  try {
-    // Find user by shop domain
-    const { data: integration } = await supabase
-      .from('integrations')
-      .select('user_id')
-      .eq('shop_domain', shopDomain)
-      .eq('platform_type', 'shopify')
-      .single()
-
-    if (!integration) return
-
-    // Update order to paid status
-    await supabase
-      .from('orders')
-      .update({
-        status: 'paid',
-        payment_status: 'paid',
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', integration.user_id)
-      .eq('external_order_id', order.id.toString())
-
-    console.log(`Order paid: ${order.name}`)
-  } catch (error) {
-    console.error('Error handling order paid:', error)
-  }
+async function handleAppUninstall(supabase: any, userId: string, data: any) {
+  logStep("App uninstalled", { userId });
+  
+  // Deactivate integration
+  await supabase
+    .from('integrations')
+    .update({
+      connection_status: 'disconnected',
+      is_active: false,
+      updated_at: new Date().toISOString()
+    })
+    .eq('user_id', userId)
+    .eq('platform_type', 'shopify');
 }
 
-function mapShopifyOrderStatus(fulfillmentStatus: string): string {
-  switch (fulfillmentStatus) {
-    case 'fulfilled':
-      return 'shipped'
-    case 'partial':
-      return 'processing'
-    case 'unfulfilled':
-    case null:
-      return 'pending'
-    default:
-      return 'pending'
-  }
+function mapOrderStatus(financialStatus: string, fulfillmentStatus: string): string {
+  if (fulfillmentStatus === 'fulfilled') return 'delivered';
+  if (financialStatus === 'paid') return 'processing';
+  if (financialStatus === 'pending') return 'pending';
+  if (financialStatus === 'refunded') return 'cancelled';
+  return 'pending';
 }
