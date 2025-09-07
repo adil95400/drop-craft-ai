@@ -8,6 +8,7 @@ import { DatabaseManagement } from '@/components/admin/DatabaseManagement'
 import { LogsViewer } from '@/components/admin/LogsViewer'
 import { AdvancedSettings } from '@/components/admin/AdvancedSettings'
 import { RealTimeMonitoring } from '@/components/admin/RealTimeMonitoring'
+import { FinalHealthCheck } from '@/components/admin/FinalHealthCheck'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
@@ -108,7 +109,10 @@ const AdminPanel = () => {
             </TabsContent>
 
             <TabsContent value="settings">
-              <AdvancedSettings />
+              <div className="space-y-6">
+                <AdvancedSettings />
+                <FinalHealthCheck />
+              </div>
             </TabsContent>
           </Tabs>
         </div>
