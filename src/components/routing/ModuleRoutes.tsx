@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 // Lazy loading des modules pour optimiser le bundle
 const Analytics = lazy(() => import('@/pages/Analytics'));
 const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
-const CRMPage = lazy(() => import('@/pages/CRMPage'));
+const CrmPage = lazy(() => import('@/pages/CrmPage'));
 const SEOManagerPage = lazy(() => import('@/pages/SEOManagerPage'));
 const AIPage = lazy(() => import('@/pages/AIPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));

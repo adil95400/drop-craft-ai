@@ -21,6 +21,9 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useSearchParams } from 'react-router-dom'
+import { useQuotaManager } from '@/hooks/useQuotaManager'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Package, Users, Database, Bot, TrendingUp, AlertTriangle } from 'lucide-react'
 
 interface Subscription {
   subscribed: boolean
