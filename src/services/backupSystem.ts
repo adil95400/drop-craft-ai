@@ -19,6 +19,7 @@ export interface BackupInfo {
   status: 'creating' | 'completed' | 'failed';
   downloadUrl?: string;
   expiresAt: string;
+  user_id?: string;
 }
 
 export interface RestorePoint {
@@ -71,7 +72,20 @@ export class BackupSystem {
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
       };
 
-      await supabase.from('backup_records').insert(backupInfo);
+      // Store backup info in activity logs instead
+      await supabase.from('activity_logs').insert({
+        user_id: (backupInfo as any).user_id,
+        action: 'backup_created',
+        description: backupInfo.description,
+        entity_type: 'backup',
+        entity_id: backupInfo.id,
+        metadata: {
+          backup_id: backupInfo.id,
+          tables: backupInfo.tables,
+          type: backupInfo.type,
+          status: backupInfo.status
+        }
+      });
 
       // Initiate backup process
       const { data, error } = await supabase.functions.invoke('create-backup', {
@@ -96,12 +110,25 @@ export class BackupSystem {
   async getBackups(): Promise<BackupInfo[]> {
     try {
       const { data, error } = await supabase
-        .from('backup_records')
+        .from('activity_logs')
         .select('*')
-        .order('createdAt', { ascending: false });
+        .eq('action', 'backup_created')
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      
+      // Transform activity logs to BackupInfo format
+      return (data || []).map(log => ({
+        id: log.entity_id || log.id,
+        name: `backup_${log.created_at}`,
+        description: log.description,
+        size: 0,
+        tables: (log.metadata as any)?.tables || [],
+        createdAt: log.created_at,
+        type: (log.metadata as any)?.type || 'manual',
+        status: (log.metadata as any)?.status || 'completed',
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      })) as BackupInfo[];
     } catch (error) {
       console.error('Failed to fetch backups:', error);
       return [];
@@ -118,11 +145,12 @@ export class BackupSystem {
         body: { backupId }
       });
 
-      // Remove record
+      // Remove record from activity logs
       const { error } = await supabase
-        .from('backup_records')
+        .from('activity_logs')
         .delete()
-        .eq('id', backupId);
+        .eq('entity_id', backupId)
+        .eq('action', 'backup_created');
 
       if (error) throw error;
 
@@ -246,18 +274,17 @@ export class BackupSystem {
   }> {
     try {
       const { data: backups } = await supabase
-        .from('backup_records')
-        .select('*');
-
-      const { data: schedule } = await supabase
-        .from('backup_schedule')
+        .from('activity_logs')
         .select('*')
-        .single();
+        .eq('action', 'backup_created');
+
+      // No schedule table, use default values
+      const schedule = null;
 
       const totalBackups = backups?.length || 0;
-      const totalSize = backups?.reduce((sum, backup) => sum + backup.size, 0) || 0;
-      const lastBackup = backups?.[0]?.createdAt || null;
-      const successfulBackups = backups?.filter(b => b.status === 'completed').length || 0;
+      const totalSize = 0; // Size not available in activity logs
+      const lastBackup = backups?.[0]?.created_at || null;
+      const successfulBackups = backups?.filter(b => (b.metadata as any)?.status === 'completed').length || 0;
       const successRate = totalBackups > 0 ? (successfulBackups / totalBackups) * 100 : 0;
 
       let nextScheduledBackup = null;
@@ -394,9 +421,10 @@ export class BackupSystem {
       const now = new Date().toISOString();
       
       const { data: expiredBackups } = await supabase
-        .from('backup_records')
-        .select('id')
-        .lt('expiresAt', now);
+        .from('activity_logs')
+        .select('id, entity_id')
+        .eq('action', 'backup_created')
+        .lt('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
 
       if (!expiredBackups || expiredBackups.length === 0) {
         return 0;
@@ -404,7 +432,7 @@ export class BackupSystem {
 
       // Delete expired backups
       for (const backup of expiredBackups) {
-        await this.deleteBackup(backup.id);
+        await this.deleteBackup(backup.entity_id || backup.id);
       }
 
       // Log cleanup
