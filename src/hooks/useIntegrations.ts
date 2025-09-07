@@ -25,13 +25,18 @@ export interface IntegrationTemplate {
   id: string
   name: string
   description: string
-  category: 'Marketing' | 'Analytics' | 'Payment' | 'Communication' | 'AI' | 'Automation' | 'Security'
+  category: 'Marketing' | 'Analytics' | 'Payment' | 'Communication' | 'AI' | 'Automation' | 'Security' | 'ecommerce' | 'marketplace'
   icon: any
   status: 'available' | 'beta' | 'coming_soon'
   premium: boolean
   rating: number
   installs: number
   features: string[]
+  logo?: string
+  color?: string
+  isPopular?: boolean
+  isPremium?: boolean
+  setupSteps?: any[]
 }
 
 export function useIntegrations() {
@@ -212,6 +217,23 @@ export function useIntegrations() {
     disconnectIntegration,
     syncIntegration,
     updateIntegrationSettings,
-    refetch: fetchIntegrations
+    refetch: fetchIntegrations,
+    // Ajout des propriétés manquantes
+    createIntegration: connectIntegration,
+    updateIntegration: updateIntegrationSettings,
+    deleteIntegration: disconnectIntegration,
+    testConnection: syncIntegration,
+    syncData: syncIntegration,
+    syncLogs: [],
+    fetchIntegrations,
+    addIntegration: connectIntegration,
+    isUpdating: false,
+    isDeleting: false,
+    isSyncing: false,
+    isAdding: false,
+    connectedIntegrations: integrations.filter(i => i.is_active),
+    isLoading: loading,
+    error: null,
+    templates: [] // Sera remplacé par de vraies données plus tard
   }
 }

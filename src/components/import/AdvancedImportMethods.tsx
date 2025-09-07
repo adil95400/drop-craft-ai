@@ -24,6 +24,7 @@ import {
   FileSpreadsheet
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { useImportMethods, type ImportMethodTemplate } from '@/hooks/useImportMethods'
 
 interface ImportMethod {
   id: string
@@ -36,7 +37,7 @@ interface ImportMethod {
   premium: boolean
 }
 
-const importMethods: ImportMethod[] = [
+const importMethods: ImportMethodTemplate[] = [
   {
     id: 'url',
     title: 'Import par URL',
@@ -190,7 +191,9 @@ const importMethods: ImportMethod[] = [
 ]
 
 export const AdvancedImportMethods: React.FC = () => {
-  const { importMethods, loading, executeImport } = useImportMethods()
+  const { toast } = useToast()
+  const { importMethods: dbMethods, loading, executeImport } = useImportMethods()
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
   
   if (loading) {
     return <div className="flex justify-center p-8"><div className="animate-spin h-6 w-6 border-2 border-primary rounded-full border-t-transparent"></div></div>
@@ -198,11 +201,14 @@ export const AdvancedImportMethods: React.FC = () => {
 
   const categories = ['all', 'Basic', 'Advanced', 'AI', 'Enterprise']
 
-  const filteredMethods = importMethods.filter(method => 
+  // Utiliser les méthodes statiques pour l'affichage
+  const methodsToDisplay = importMethods
+
+  const filteredMethods = methodsToDisplay.filter(method => 
     selectedCategory === 'all' || method.category === selectedCategory
   )
 
-  const handleConfigure = (method: ImportMethod) => {
+  const handleConfigure = (method: ImportMethodTemplate) => {
     if (method.premium) {
       toast({
         title: "Fonctionnalité Premium",

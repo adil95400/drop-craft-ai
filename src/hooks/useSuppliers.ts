@@ -28,6 +28,20 @@ export interface Supplier {
   is_premium: boolean
   created_at: string
   updated_at: string
+  api_endpoint?: string
+  sync_frequency?: string
+}
+
+export interface CreateSupplierData {
+  name: string
+  supplier_type: 'api' | 'email' | 'csv' | 'xml' | 'ftp'
+  country?: string
+  sector?: string
+  logo_url?: string
+  website?: string
+  description?: string
+  api_endpoint?: string
+  sync_frequency?: 'daily' | 'weekly' | 'manual' | 'hourly'
 }
 
 export interface SupplierTemplate {
@@ -262,6 +276,10 @@ export function useSuppliers() {
     disconnectSupplier,
     syncSupplier,
     updateSupplierCredentials,
-    refetch: fetchSuppliers
+    refetch: fetchSuppliers,
+    // Ajout des propriétés manquantes
+    createSupplier: connectSupplier,
+    updateSupplier: updateSupplierCredentials,
+    deleteSupplier: disconnectSupplier
   }
 }

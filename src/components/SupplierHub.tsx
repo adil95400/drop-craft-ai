@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,6 +35,11 @@ const SupplierHub: React.FC = () => {
   const { toast } = useToast();
   const { suppliers, loading, connectSupplier, disconnectSupplier, syncSupplier } = useSuppliers();
   
+  // States pour la gestion des connecteurs
+  const [activeConnectors, setActiveConnectors] = useState<string[]>([]);
+  const [connecting, setConnecting] = useState<string | null>(null);
+  const [syncProgress, setSyncProgress] = useState<Record<string, number>>({});
+  
   const [supplierTemplates] = useState<SupplierTemplate[]>([
     {
       id: 'bigbuy',
@@ -50,6 +55,9 @@ const SupplierHub: React.FC = () => {
       setupComplexity: 'medium'
     }
   ]);
+  
+  // Utiliser supplierTemplates comme connectors pour la compatibilité
+  const connectors = supplierTemplates;
   
   const [connectionDialog, setConnectionDialog] = useState<{ open: boolean; template?: SupplierTemplate }>({ open: false });
   const [credentials, setCredentials] = useState<Record<string, string>>({});
@@ -88,36 +96,33 @@ const SupplierHub: React.FC = () => {
     }
   };
 
-  const handleConnect = async (connector: SupplierConnectorInfo) => {
-    if (connector.status === 'coming_soon') {
+  const handleConnect = async (template: SupplierTemplate) => {
+    if (template.status === 'coming_soon') {
       toast({
         title: "Bientôt disponible",
-        description: `${connector.displayName} sera bientôt disponible. Restez connecté !`,
+        description: `${template.displayName} sera bientôt disponible. Restez connecté !`,
         variant: "default"
       });
       return;
     }
 
-    setConnectionDialog({ open: true, connector });
+    setConnectionDialog({ open: true, template });
     setCredentials({});
   };
 
   const handleSaveConnection = async () => {
-    if (!connectionDialog.connector) return;
+    if (!connectionDialog.template) return;
     
-    setConnecting(connectionDialog.connector.id);
+    setConnecting(connectionDialog.template.id);
     
     try {
-      const success = await supplierHub.connectSupplier(
-        connectionDialog.connector.id,
-        credentials
-      );
+      const success = await connectSupplier(connectionDialog.template, credentials);
 
       if (success) {
-        setActiveConnectors(prev => [...prev, connectionDialog.connector!.id]);
+        setActiveConnectors(prev => [...prev, connectionDialog.template!.id]);
         toast({
           title: "Connexion réussie",
-          description: `${connectionDialog.connector.displayName} a été connecté avec succès`,
+          description: `${connectionDialog.template.displayName} a été connecté avec succès`,
         });
         setConnectionDialog({ open: false });
       } else {
@@ -134,10 +139,10 @@ const SupplierHub: React.FC = () => {
     }
   };
 
-  const handleDisconnect = async (connectorId: string) => {
+  const handleDisconnect = async (supplierId: string) => {
     try {
-      await supplierHub.disconnectSupplier(connectorId);
-      setActiveConnectors(prev => prev.filter(id => id !== connectorId));
+      await disconnectSupplier(supplierId);
+      setActiveConnectors(prev => prev.filter(id => id !== supplierId));
       toast({
         title: "Déconnexion réussie",
         description: "Le fournisseur a été déconnecté",
@@ -209,8 +214,8 @@ const SupplierHub: React.FC = () => {
     }
   };
 
-  const renderCredentialFields = (connector: SupplierConnectorInfo) => {
-    switch (connector.authType) {
+  const renderCredentialFields = (template: SupplierTemplate) => {
+    switch (template.authType) {
       case 'api_key':
         return (
           <div className="space-y-4">
@@ -224,7 +229,7 @@ const SupplierHub: React.FC = () => {
                 onChange={(e) => setCredentials(prev => ({ ...prev, apiKey: e.target.value }))}
               />
             </div>
-            {connector.id === 'shopify' && (
+            {template.id === 'shopify' && (
               <div>
                 <Label htmlFor="shopDomain">Nom de boutique</Label>
                 <Input
@@ -470,15 +475,15 @@ const SupplierHub: React.FC = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Connecter {connectionDialog.connector?.displayName}
+              Connecter {connectionDialog.template?.displayName}
             </DialogTitle>
             <DialogDescription>
-              Configurez votre connexion à {connectionDialog.connector?.displayName}
+              Configurez votre connexion à {connectionDialog.template?.displayName}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
-            {connectionDialog.connector && renderCredentialFields(connectionDialog.connector)}
+            {connectionDialog.template && renderCredentialFields(connectionDialog.template)}
             
             <div className="flex justify-end gap-2 pt-4">
               <Button 
