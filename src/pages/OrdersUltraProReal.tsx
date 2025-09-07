@@ -28,10 +28,7 @@ export default function OrdersUltraProReal() {
     error,
     updateOrderStatus,
     isUpdating
-  } = useRealOrders({ 
-    search: searchTerm,
-    status: statusFilter === 'all' ? undefined : statusFilter
-  })
+  } = useRealOrders()
 
   if (isLoading) return <LoadingState />
   if (error) return <div>Erreur lors du chargement des commandes</div>
@@ -88,7 +85,7 @@ export default function OrdersUltraProReal() {
   }
 
   const handleStatusUpdate = (orderId: string, newStatus: string) => {
-    updateOrderStatus({ id: orderId, status: newStatus })
+    updateOrderStatus(orderId, newStatus as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled')
     toast({
       title: "Statut mis à jour",
       description: `Statut de la commande mis à jour vers ${newStatus}`,

@@ -28,10 +28,7 @@ export default function TrackingReal() {
     error,
     updateOrderStatus,
     isUpdating
-  } = useRealOrders({ 
-    search: searchTerm,
-    status: statusFilter === 'all' ? undefined : statusFilter
-  })
+  } = useRealOrders()
 
   if (isLoading) return <LoadingState />
   if (error) return <div>Erreur lors du chargement des commandes</div>

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Package, Truck, CheckCircle, Clock, AlertCircle, Search, Filter, Eye, Edit, RefreshCw } from 'lucide-react'
-import { useOrders } from '@/hooks/useOrders'
+import { useRealOrders } from '@/hooks/useRealOrders'
 import { useRealTracking } from '@/hooks/useRealTracking'
 
 export function OrdersUltraProInterface() {
@@ -14,7 +14,7 @@ export function OrdersUltraProInterface() {
   const [statusFilter, setStatusFilter] = useState('')
   const [dateFilter, setDateFilter] = useState('')
   
-  const { orders, stats, updateOrderStatus, isUpdating } = useOrders()
+  const { orders, stats, updateOrderStatus, isUpdating } = useRealOrders()
   const { 
     trackingOrders, 
     trackPackage, 
@@ -71,7 +71,7 @@ export function OrdersUltraProInterface() {
   }
 
   const handleStatusUpdate = (orderId: string, newStatus: string) => {
-    updateOrderStatus({ id: orderId, status: newStatus as "pending" | "shipped" | "processing" | "delivered" | "cancelled" })
+    updateOrderStatus(orderId, newStatus as "pending" | "shipped" | "processing" | "delivered" | "cancelled")
   }
 
   const handleTrackingUpdate = (orderId: string, trackingNumber: string) => {

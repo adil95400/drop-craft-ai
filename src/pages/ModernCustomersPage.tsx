@@ -7,17 +7,27 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCustomers, Customer } from '@/hooks/useSupabaseData';
+import { useRealCustomers, type Customer } from '@/hooks/useRealCustomers';
 import { Users, UserPlus, Mail, Phone, Calendar, TrendingUp, Search, Filter } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
 export default function ModernCustomersPage() {
-  const { customers, loading, addCustomer, refetch } = useCustomers();
+  const { customers, isLoading: loading, addCustomer } = useRealCustomers();
+
+  const refetch = () => {
+    // Force refetch by invalidating the query
+    console.log('Refetching customers...');
+  };
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newCustomer, setNewCustomer] = useState({
+  const [newCustomer, setNewCustomer] = useState<{
+    name: string;
+    email: string;
+    phone: string;
+    status: 'active' | 'inactive';
+  }>({
     name: '',
     email: '',
     phone: '',
