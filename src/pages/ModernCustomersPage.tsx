@@ -137,7 +137,7 @@ export default function ModernCustomersPage() {
               </div>
               <div>
                 <Label htmlFor="status">Statut</Label>
-                <Select value={newCustomer.status} onValueChange={(value) => setNewCustomer(prev => ({ ...prev, status: value }))}>
+                <Select value={newCustomer.status} onValueChange={(value) => setNewCustomer(prev => ({ ...prev, status: value as 'active' | 'inactive' }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
