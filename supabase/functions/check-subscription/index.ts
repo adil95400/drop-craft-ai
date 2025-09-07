@@ -59,13 +59,11 @@ serve(async (req) => {
         subscription_end: null,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'email' });
-      
-      // Also update the profiles table plan
-      await supabaseClient.from("profiles").update({ 
-        plan: 'standard' 
-      }).eq('id', user.id);
-      
-      return new Response(JSON.stringify({ subscribed: false }), {
+      return new Response(JSON.stringify({ 
+        subscribed: false,
+        subscription_tier: 'standard',
+        subscription_end: null
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -80,34 +78,35 @@ serve(async (req) => {
       limit: 1,
     });
     const hasActiveSub = subscriptions.data.length > 0;
-    let subscriptionTier = null;
+    let subscriptionTier = 'standard'; // Default to standard for free users
     let subscriptionEnd = null;
-    let planType = 'standard';
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
       
-      // Determine subscription tier from price
+      // Determine subscription tier from price amount
       const priceId = subscription.items.data[0].price.id;
       const price = await stripe.prices.retrieve(priceId);
       const amount = price.unit_amount || 0;
       
-      if (amount <= 999) {
-        subscriptionTier = "pro";
-        planType = "pro";
-      } else {
-        subscriptionTier = "ultra_pro";
-        planType = "ultra_pro";
+      // Map prices to tiers (in cents)
+      if (amount >= 3999) {
+        subscriptionTier = "ultra_pro"; // €39.99+
+      } else if (amount >= 1999) {
+        subscriptionTier = "pro"; // €19.99+
+      } else if (amount >= 999) {
+        subscriptionTier = "standard"; // €9.99+
       }
+      
       logStep("Determined subscription tier", { priceId, amount, subscriptionTier });
     } else {
       logStep("No active subscription found");
     }
 
-    // Update subscribers table
-    await supabaseClient.from("subscribers").upsert({
+    // Update Supabase with subscription info
+    const { error: upsertError } = await supabaseClient.from("subscribers").upsert({
       email: user.email,
       user_id: user.id,
       stripe_customer_id: customerId,
@@ -117,13 +116,12 @@ serve(async (req) => {
       updated_at: new Date().toISOString(),
     }, { onConflict: 'email' });
 
-    // Update profiles table plan
-    await supabaseClient.from("profiles").update({ 
-      plan: planType 
-    }).eq('id', user.id);
+    if (upsertError) {
+      logStep("Error updating subscriber", { error: upsertError });
+    } else {
+      logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
+    }
 
-    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier, planType });
-    
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
