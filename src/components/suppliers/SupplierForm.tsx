@@ -69,14 +69,14 @@ export const SupplierForm = ({
     resolver: zodResolver(supplierSchema),
     defaultValues: supplier ? {
       name: supplier.name,
-      supplier_type: supplier.supplier_type,
+      supplier_type: (supplier.supplier_type as 'api' | 'email' | 'csv' | 'xml' | 'ftp') || 'api',
       country: supplier.country || '',
       sector: supplier.sector || '',
       logo_url: supplier.logo_url || '',
       website: supplier.website || '',
       description: supplier.description || '',
       api_endpoint: supplier.api_endpoint || '',
-      sync_frequency: supplier.sync_frequency,
+      sync_frequency: (supplier.sync_frequency as 'daily' | 'weekly' | 'manual' | 'hourly') || 'daily',
     } : {
       name: '',
       supplier_type: 'api',

@@ -236,7 +236,26 @@ export const SupplierManagement = () => {
   // Handlers pour les fournisseurs
   const handleCreateSupplier = async (data: CreateSupplierData): Promise<{ success: boolean }> => {
     try {
-      await createSupplier(data)
+      // createSupplier attend un template et des credentials
+      const template = {
+        id: Date.now().toString(),
+        name: data.name,
+        displayName: data.name,
+        description: data.description || '',
+        category: 'Custom',
+        status: 'available' as const,
+        authType: 'api_key' as const,
+        features: { products: true, inventory: true, orders: false, webhooks: false },
+        rateLimits: { requestsPerMinute: 60, requestsPerHour: 3600 },
+        setupComplexity: 'medium' as const
+      };
+      
+      const credentials = {
+        api_endpoint: data.api_endpoint,
+        sync_frequency: data.sync_frequency
+      };
+      
+      await createSupplier(template, credentials)
       setShowForm(false)
       toast({
         title: "Succès",

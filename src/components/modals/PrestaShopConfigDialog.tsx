@@ -90,7 +90,11 @@ export const PrestaShopConfigDialog = ({ open, onOpenChange }: PrestaShopConfigD
         color: 'bg-blue-500',
         features: [],
         setupSteps: [],
-        status: 'available'
+        status: 'available',
+        icon: '🏬',
+        premium: false,
+        rating: 4.5,
+        installs: 1000
       }, {
         platform_url: formData.shopUrl,
         connection_status: 'connected',

@@ -145,8 +145,6 @@ export const AddIntegrationDialog = () => {
         sync_frequency: formData.sync_frequency,
         is_active: false,
         sync_settings: {},
-        has_api_key: !!formData.api_key,
-        has_api_secret: !!formData.api_secret,
         credentials: Object.keys(credentials).length > 0 ? credentials : undefined
       };
       await createIntegration({
