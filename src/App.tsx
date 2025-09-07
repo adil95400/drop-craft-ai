@@ -20,6 +20,7 @@ import Marketing from '@/pages/Marketing';
 import SubscriptionDashboard from '@/pages/SubscriptionDashboard';
 import QuotaManagerPage from '@/pages/QuotaManagerPage';
 import Suppliers from "@/pages/Suppliers";
+import AutomationPage from '@/pages/AutomationPage';
 import UnifiedImport from '@/pages/unified/UnifiedImport';
 import URLImportConfig from '@/pages/import/URLImportConfig';
 import XMLImportConfig from '@/pages/import/XMLImportConfig';
@@ -268,6 +269,11 @@ function App() {
                 <Route path="/import/scheduled" element={
                   <ProtectedRoute>
                     <AppLayout><ScheduledImportsPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/automation" element={
+                  <ProtectedRoute>
+                    <AppLayout><AutomationPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/import-old" element={<AppLayout><UnifiedImport /></AppLayout>} />

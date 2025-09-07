@@ -15,9 +15,11 @@ import {
 } from 'lucide-react';
 import { useAutomation } from '@/hooks/useAutomation';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AutomationRuleModal } from './AutomationRuleModal';
 
 export function AutomationDashboard() {
   const { triggers, stats, isLoading, updateTrigger } = useAutomation();
+  const [showCreateModal, setShowCreateModal] = React.useState(false);
 
   const getRuleIcon = (type: string) => {
     switch (type) {
@@ -143,7 +145,7 @@ export function AutomationDashboard() {
               <p className="text-muted-foreground mb-4">
                 Créez des déclencheurs d'automatisation pour optimiser votre business
               </p>
-              <Button>
+              <Button onClick={() => setShowCreateModal(true)}>
                 <Settings className="h-4 w-4 mr-2" />
                 Créer un déclencheur
               </Button>
@@ -198,6 +200,12 @@ export function AutomationDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Create Rule Modal */}
+      <AutomationRuleModal 
+        open={showCreateModal} 
+        onOpenChange={setShowCreateModal} 
+      />
     </div>
   );
 }
