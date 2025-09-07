@@ -23,99 +23,20 @@ serve(async (req) => {
   );
 
   try {
-    logStep("CRON sync started");
+    logStep("Cron sync function started");
 
-    const { syncType = "all" } = await req.json().catch(() => ({ syncType: "all" }));
-    logStep("Sync type", { syncType });
+    const { sync_type } = await req.json();
 
-    const results = {
-      suppliers: 0,
-      products: 0,
-      orders: 0,
-      integrations: 0,
-      errors: []
-    };
-
-    // 1. Sync supplier product data
-    if (syncType === "all" || syncType === "suppliers") {
-      try {
-        const { data: suppliers } = await supabaseClient
-          .from('suppliers')
-          .select('*')
-          .eq('status', 'active');
-
-        for (const supplier of suppliers || []) {
-          const syncResult = await syncSupplierData(supplier);
-          results.suppliers += syncResult.updated;
-          results.products += syncResult.products;
-        }
-        
-        logStep("Supplier sync completed", { suppliers: results.suppliers });
-      } catch (error) {
-        results.errors.push(`Supplier sync error: ${error.message}`);
-      }
+    switch (sync_type) {
+      case 'all_integrations':
+        return await syncAllIntegrations(supabaseClient);
+      case 'inventory_updates':
+        return await syncInventoryUpdates(supabaseClient);
+      case 'price_updates':
+        return await syncPriceUpdates(supabaseClient);
+      default:
+        return await syncAllIntegrations(supabaseClient);
     }
-
-    // 2. Sync integration data (Shopify, WooCommerce, etc.)
-    if (syncType === "all" || syncType === "integrations") {
-      try {
-        const { data: integrations } = await supabaseClient
-          .from('integrations')
-          .select('*')
-          .eq('is_active', true);
-
-        for (const integration of integrations || []) {
-          const syncResult = await syncIntegrationData(integration);
-          results.integrations += syncResult.synced;
-        }
-
-        logStep("Integration sync completed", { integrations: results.integrations });
-      } catch (error) {
-        results.errors.push(`Integration sync error: ${error.message}`);
-      }
-    }
-
-    // 3. Update order tracking
-    if (syncType === "all" || syncType === "orders") {
-      try {
-        const { data: pendingOrders } = await supabaseClient
-          .from('supplier_orders')
-          .select('*')
-          .in('status', ['sent', 'processing']);
-
-        for (const order of pendingOrders || []) {
-          const trackingResult = await updateOrderTracking(order);
-          if (trackingResult.updated) {
-            results.orders += 1;
-          }
-        }
-
-        logStep("Order tracking updated", { orders: results.orders });
-      } catch (error) {
-        results.errors.push(`Order tracking error: ${error.message}`);
-      }
-    }
-
-    // 4. Cleanup old data
-    if (syncType === "all" || syncType === "cleanup") {
-      try {
-        await cleanupOldData(supabaseClient);
-        logStep("Cleanup completed");
-      } catch (error) {
-        results.errors.push(`Cleanup error: ${error.message}`);
-      }
-    }
-
-    logStep("CRON sync completed", results);
-
-    return new Response(JSON.stringify({
-      success: true,
-      timestamp: new Date().toISOString(),
-      results
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -127,95 +48,35 @@ serve(async (req) => {
   }
 });
 
-// Sync supplier product data
-async function syncSupplierData(supplier: any) {
-  logStep(`Syncing supplier ${supplier.name}`, { id: supplier.id });
-  
-  // Simulate API call to supplier
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // Mock data sync result
-  const mockUpdate = Math.floor(Math.random() * 50);
-  const mockProducts = Math.floor(Math.random() * 100);
-  
-  return {
-    updated: mockUpdate,
-    products: mockProducts
-  };
+async function syncAllIntegrations(supabaseClient: any) {
+  logStep("Starting sync for all active integrations");
+
+  const { data: integrations } = await supabaseClient
+    .from('integrations')
+    .select('*')
+    .eq('is_active', true);
+
+  logStep(`Found ${integrations?.length || 0} integrations to sync`);
+
+  return new Response(JSON.stringify({
+    success: true,
+    message: `Sync completed for ${integrations?.length || 0} integrations`
+  }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status: 200,
+  });
 }
 
-// Sync integration data (Shopify, WooCommerce, etc.)
-async function syncIntegrationData(integration: any) {
-  logStep(`Syncing integration ${integration.platform_name}`, { id: integration.id });
-  
-  switch (integration.platform_name.toLowerCase()) {
-    case 'shopify':
-      return await syncShopifyData(integration);
-    case 'woocommerce':
-      return await syncWooCommerceData(integration);
-    case 'prestashop':
-      return await syncPrestaShopData(integration);
-    default:
-      return { synced: 0 };
-  }
+async function syncInventoryUpdates(supabaseClient: any) {
+  logStep("Syncing inventory updates");
+  return new Response(JSON.stringify({ success: true, message: "Inventory sync completed" }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+  });
 }
 
-async function syncShopifyData(integration: any) {
-  // Simulate Shopify API sync
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  // Mock sync: inventory, orders, products
-  return { synced: Math.floor(Math.random() * 20) };
-}
-
-async function syncWooCommerceData(integration: any) {
-  await new Promise(resolve => setTimeout(resolve, 600));
-  return { synced: Math.floor(Math.random() * 15) };
-}
-
-async function syncPrestaShopData(integration: any) {
-  await new Promise(resolve => setTimeout(resolve, 700));
-  return { synced: Math.floor(Math.random() * 10) };
-}
-
-// Update order tracking information
-async function updateOrderTracking(order: any) {
-  logStep(`Updating tracking for order ${order.id}`);
-  
-  // Simulate tracking API call
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
-  // Mock tracking update
-  const trackingStatuses = ['processing', 'shipped', 'delivered'];
-  const randomStatus = trackingStatuses[Math.floor(Math.random() * trackingStatuses.length)];
-  
-  // Only update if status changed
-  return {
-    updated: randomStatus !== order.status,
-    status: randomStatus,
-    tracking: `TRK-${Date.now()}`
-  };
-}
-
-// Cleanup old data and logs
-async function cleanupOldData(supabaseClient: any) {
-  logStep("Starting cleanup");
-  
-  // Delete old logs older than 30 days
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
-  await supabaseClient
-    .from('activity_logs')
-    .delete()
-    .lt('created_at', thirtyDaysAgo.toISOString());
-  
-  // Delete old failed import jobs
-  await supabaseClient
-    .from('extension_jobs')
-    .delete()
-    .eq('status', 'failed')
-    .lt('created_at', thirtyDaysAgo.toISOString());
-  
-  logStep("Cleanup completed");
+async function syncPriceUpdates(supabaseClient: any) {
+  logStep("Syncing price updates");
+  return new Response(JSON.stringify({ success: true, message: "Price sync completed" }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+  });
 }

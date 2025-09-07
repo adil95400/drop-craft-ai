@@ -49,7 +49,7 @@ export function ModuleRoutes() {
           path="/crm" 
           element={
             <ModuleGuard moduleId="crm">
-              <CRMPage />
+              <CrmPage />
             </ModuleGuard>
           } 
         />

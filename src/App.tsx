@@ -90,6 +90,10 @@ import SupplierCatalogPage from '@/pages/marketplace/SupplierCatalogPage';
 import AuthPage from '@/pages/AuthPage';
 import AdminPanel from '@/pages/AdminPanel';
 
+// Business Pages
+import CatalogPage from '@/pages/CatalogPage';
+import CrmPage from '@/pages/CrmPage';
+
 // Profile & Settings Pages
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
@@ -236,9 +240,23 @@ function App() {
                   <ProtectedRoute>
                     <AppLayout><SupplierCatalogPage /></AppLayout>
                   </ProtectedRoute>
-                } />
-                
-                {/* Import moderne */}
+                 } />
+                 
+                 {/* Catalog Management */}
+                 <Route path="/catalog" element={
+                   <ProtectedRoute>
+                     <AppLayout><CatalogPage /></AppLayout>
+                   </ProtectedRoute>
+                 } />
+                 
+                 {/* CRM & Marketing */}
+                 <Route path="/crm" element={
+                   <ProtectedRoute>
+                     <AppLayout><CrmPage /></AppLayout>
+                   </ProtectedRoute>
+                 } />
+                 
+                 {/* Import moderne */}
                 <Route path="/import" element={
                   <ProtectedRoute>
                     <AppLayout><ModernImportPage /></AppLayout>
