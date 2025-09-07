@@ -143,17 +143,6 @@ const SupplierHub: React.FC = () => {
       setConnecting(null);
     }
   };
-      }
-    } catch (error) {
-      toast({
-        title: "Erreur de connexion",
-        description: "Vérifiez vos identifiants et réessayez",
-        variant: "destructive"
-      });
-    } finally {
-      setConnecting(null);
-    }
-  };
 
   const handleDisconnect = async (supplierId: string) => {
     try {
