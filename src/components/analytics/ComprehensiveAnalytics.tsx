@@ -161,7 +161,7 @@ export function ComprehensiveAnalytics() {
       }
       const current = productsByCategory.get(category);
       current.count += 1;
-      current.revenue += parseFloat(product.price) || 0;
+      current.revenue += typeof product.price === 'string' ? parseFloat(product.price) || 0 : product.price || 0;
     });
 
     return Array.from(productsByCategory.entries()).map(([category, data]) => ({

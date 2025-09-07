@@ -302,21 +302,30 @@ export function UltimateHealthCheck() {
       
       try {
         const result = await check.check();
-        results.push({
+        const healthResult: HealthCheckResult = {
           category: check.category,
           name: check.name,
           status: result.status as 'success' | 'warning' | 'error',
-          message: result.message,
-          details: result.details,
-          performance: result.performance
-        });
+          message: result.message
+        };
+        
+        if ('details' in result && result.details) {
+          healthResult.details = result.details as string;
+        }
+        
+        if ('performance' in result && result.performance) {
+          healthResult.performance = result.performance as number;
+        }
+        
+        results.push(healthResult);
       } catch (error) {
         results.push({
           category: check.category,
           name: check.name,
-          status: 'error',
+          status: 'error' as 'success' | 'warning' | 'error',
           message: 'Vérification échouée',
-          details: String(error)
+          details: String(error),
+          performance: undefined
         });
       }
       
