@@ -5,10 +5,13 @@
   "installCommand": "npm install",
   "devCommand": "npm run dev",
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "VITE_SUPABASE_URL": "@vite_supabase_url",
+    "VITE_SUPABASE_PUBLISHABLE_KEY": "@vite_supabase_publishable_key",
+    "VITE_SUPABASE_PROJECT_ID": "@vite_supabase_project_id"
   },
   "functions": {
-    "app/api/**/*.ts": {
+    "api/**/*.js": {
       "runtime": "nodejs18.x"
     }
   },
@@ -27,6 +30,19 @@
         {
           "key": "Access-Control-Allow-Headers",
           "value": "Content-Type, Authorization"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "s-maxage=86400"
+        }
+      ]
+    },
+    {
+      "source": "/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     }
@@ -43,5 +59,7 @@
       "destination": "/",
       "permanent": false
     }
-  ]
+  ],
+  "trailingSlash": false,
+  "cleanUrls": true
 }

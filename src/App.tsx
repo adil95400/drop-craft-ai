@@ -109,6 +109,8 @@ import Contact from '@/pages/Contact';
 import Testimonials from '@/pages/Testimonials';
 import About from '@/pages/About';
 import Blog from '@/pages/Blog';
+import Legal from '@/pages/Legal';
+import Status from '@/pages/Status';
 
 // Unified Pages
 import UnifiedDashboardPage from '@/pages/UnifiedDashboardPage';
@@ -361,6 +363,9 @@ function App() {
                 <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/blog" element={<Blog />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/legal" element={<Legal />} />
+                <Route path="/status" element={<Status />} />
                 
                 <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />
                 
