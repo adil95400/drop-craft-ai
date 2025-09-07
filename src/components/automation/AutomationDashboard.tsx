@@ -13,36 +13,39 @@ import {
   Activity,
   Settings
 } from 'lucide-react';
-import { useAutomationRules, useToggleRuleStatus } from '@/hooks/useAutomation';
+import { useAutomation } from '@/hooks/useAutomation';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function AutomationDashboard() {
-  const { data: rules, isLoading, error } = useAutomationRules();
-  const toggleStatus = useToggleRuleStatus();
+  const { triggers, stats, isLoading, updateTrigger } = useAutomation();
 
   const getRuleIcon = (type: string) => {
     switch (type) {
-      case 'pricing': return <TrendingUp className="h-4 w-4" />;
-      case 'inventory': return <Package className="h-4 w-4" />;
-      case 'marketing': return <Mail className="h-4 w-4" />;
-      case 'order_processing': return <Activity className="h-4 w-4" />;
+      case 'order_status': return <Activity className="h-4 w-4" />;
+      case 'customer_behavior': return <Mail className="h-4 w-4" />;
+      case 'inventory_level': return <Package className="h-4 w-4" />;
+      case 'price_change': return <TrendingUp className="h-4 w-4" />;
+      case 'scheduled': return <Bot className="h-4 w-4" />;
       default: return <Bot className="h-4 w-4" />;
     }
   };
 
   const getRuleTypeLabel = (type: string) => {
     switch (type) {
-      case 'pricing': return 'Prix Dynamiques';
-      case 'inventory': return 'Gestion Stock';
-      case 'marketing': return 'Marketing Auto';
-      case 'order_processing': return 'Commandes';
+      case 'order_status': return 'Statut Commande';
+      case 'customer_behavior': return 'Comportement Client';
+      case 'inventory_level': return 'Niveau Stock';
+      case 'price_change': return 'Prix Dynamique';
+      case 'scheduled': return 'Programmé';
       default: return type;
     }
   };
 
-  const getSeverityColor = (successRate: number) => {
-    if (successRate >= 95) return 'text-green-600';
-    if (successRate >= 80) return 'text-yellow-600';
+  const getSeverityColor = (activeCount: number, totalCount: number) => {
+    if (totalCount === 0) return 'text-gray-500';
+    const rate = (activeCount / totalCount) * 100;
+    if (rate >= 80) return 'text-green-600';
+    if (rate >= 50) return 'text-yellow-600';
     return 'text-red-600';
   };
 
@@ -56,22 +59,8 @@ export function AutomationDashboard() {
     );
   }
 
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Erreur de chargement</h3>
-          <p className="text-muted-foreground">
-            Impossible de charger les règles d'automatisation
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const activeRules = rules?.filter(rule => rule.is_active) || [];
-  const inactiveRules = rules?.filter(rule => !rule.is_active) || [];
+  const activeTriggers = triggers?.filter(trigger => trigger.is_active) || [];
+  const inactiveTriggers = triggers?.filter(trigger => !trigger.is_active) || [];
 
   return (
     <div className="space-y-6">
@@ -85,7 +74,7 @@ export function AutomationDashboard() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Règles Actives</p>
-                <p className="text-2xl font-bold">{activeRules.length}</p>
+                <p className="text-2xl font-bold">{stats.activeTriggers}</p>
               </div>
             </div>
           </CardContent>
@@ -99,9 +88,7 @@ export function AutomationDashboard() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Exécutions Total</p>
-                <p className="text-2xl font-bold">
-                  {rules?.reduce((sum, rule) => sum + rule.execution_count, 0) || 0}
-                </p>
+                <p className="text-2xl font-bold">{stats.totalExecutions}</p>
               </div>
             </div>
           </CardContent>
@@ -116,8 +103,8 @@ export function AutomationDashboard() {
               <div>
                 <p className="text-sm text-muted-foreground">Taux de Succès</p>
                 <p className="text-2xl font-bold">
-                  {rules?.length ? 
-                    Math.round(rules.reduce((sum, rule) => sum + rule.success_rate, 0) / rules.length) 
+                  {stats.totalExecutions > 0 ? 
+                    Math.round((stats.successfulExecutions / stats.totalExecutions) * 100) 
                     : 0}%
                 </p>
               </div>
@@ -149,40 +136,37 @@ export function AutomationDashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {!rules || rules.length === 0 ? (
+          {!triggers || triggers.length === 0 ? (
             <div className="text-center py-8">
               <Bot className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Aucune règle configurée</h3>
+              <h3 className="text-lg font-semibold mb-2">Aucun déclencheur configuré</h3>
               <p className="text-muted-foreground mb-4">
-                Créez des règles d'automatisation IA pour optimiser votre business
+                Créez des déclencheurs d'automatisation pour optimiser votre business
               </p>
               <Button>
                 <Settings className="h-4 w-4 mr-2" />
-                Créer une règle
+                Créer un déclencheur
               </Button>
             </div>
           ) : (
             <div className="space-y-4">
-              {rules.map((rule) => (
-                <div key={rule.id} className="flex items-center justify-between p-4 border rounded-lg">
+              {triggers.map((trigger) => (
+                <div key={trigger.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-4">
                     <div className="p-2 bg-primary/10 rounded-lg">
-                      {getRuleIcon(rule.rule_type)}
+                      {getRuleIcon(trigger.trigger_type)}
                     </div>
                     <div>
-                      <h4 className="font-semibold">{rule.name}</h4>
+                      <h4 className="font-semibold">{trigger.name}</h4>
                       <p className="text-sm text-muted-foreground">
-                        {rule.description}
+                        {trigger.description}
                       </p>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline" className="text-xs">
-                          {getRuleTypeLabel(rule.rule_type)}
+                          {getRuleTypeLabel(trigger.trigger_type)}
                         </Badge>
-                        <span className={`text-xs font-medium ${getSeverityColor(rule.success_rate)}`}>
-                          {rule.success_rate.toFixed(1)}% succès
-                        </span>
                         <span className="text-xs text-muted-foreground">
-                          {rule.execution_count} exécutions
+                          Créé le {new Date(trigger.created_at).toLocaleDateString()}
                         </span>
                       </div>
                     </div>
@@ -191,24 +175,21 @@ export function AutomationDashboard() {
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="text-sm font-medium">
-                        Priorité {rule.priority}
+                        {trigger.is_active ? 'Actif' : 'Inactif'}
                       </p>
-                      {rule.last_executed_at && (
-                        <p className="text-xs text-muted-foreground">
-                          Dernière exécution: {new Date(rule.last_executed_at).toLocaleDateString()}
-                        </p>
-                      )}
+                      <p className="text-xs text-muted-foreground">
+                        Modifié: {new Date(trigger.updated_at).toLocaleDateString()}
+                      </p>
                     </div>
                     
                     <Switch
-                      checked={rule.is_active}
+                      checked={trigger.is_active}
                       onCheckedChange={(checked) => {
-                        toggleStatus.mutate({ 
-                          id: rule.id, 
-                          isActive: checked 
+                        updateTrigger({ 
+                          id: trigger.id, 
+                          updates: { is_active: checked }
                         });
                       }}
-                      disabled={toggleStatus.isPending}
                     />
                   </div>
                 </div>

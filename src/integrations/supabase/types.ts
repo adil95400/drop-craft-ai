@@ -419,6 +419,107 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_actions: {
+        Row: {
+          action_config: Json
+          action_type: string
+          created_at: string
+          execution_order: number
+          id: string
+          is_active: boolean
+          trigger_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_config?: Json
+          action_type: string
+          created_at?: string
+          execution_order?: number
+          id?: string
+          is_active?: boolean
+          trigger_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_config?: Json
+          action_type?: string
+          created_at?: string
+          execution_order?: number
+          id?: string
+          is_active?: boolean
+          trigger_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_actions_trigger_id_fkey"
+            columns: ["trigger_id"]
+            isOneToOne: false
+            referencedRelation: "automation_triggers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_execution_logs: {
+        Row: {
+          action_id: string
+          completed_at: string | null
+          error_message: string | null
+          execution_time_ms: number | null
+          id: string
+          input_data: Json
+          output_data: Json
+          started_at: string | null
+          status: string
+          trigger_id: string
+          user_id: string
+        }
+        Insert: {
+          action_id: string
+          completed_at?: string | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          input_data?: Json
+          output_data?: Json
+          started_at?: string | null
+          status?: string
+          trigger_id: string
+          user_id: string
+        }
+        Update: {
+          action_id?: string
+          completed_at?: string | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          input_data?: Json
+          output_data?: Json
+          started_at?: string | null
+          status?: string
+          trigger_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_execution_logs_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "automation_actions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_execution_logs_trigger_id_fkey"
+            columns: ["trigger_id"]
+            isOneToOne: false
+            referencedRelation: "automation_triggers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_executions: {
         Row: {
           completed_at: string | null
@@ -521,6 +622,42 @@ export type Database = {
           rule_type?: string
           success_rate?: number
           trigger_conditions?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      automation_triggers: {
+        Row: {
+          conditions: Json
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          trigger_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          trigger_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          trigger_type?: string
           updated_at?: string
           user_id?: string
         }
@@ -5519,6 +5656,10 @@ export type Database = {
         Args: { phone: string }
         Returns: string
       }
+      process_automation_trigger: {
+        Args: { context_data?: Json; trigger_id: string }
+        Returns: Json
+      }
       public_newsletter_signup: {
         Args: { email_param: string }
         Returns: Json
@@ -5573,6 +5714,10 @@ export type Database = {
       }
       secure_newsletter_signup: {
         Args: { email_param: string; source_param?: string; user_ip?: unknown }
+        Returns: Json
+      }
+      seed_sample_data: {
+        Args: Record<PropertyKey, never>
         Returns: Json
       }
       simple_mask_email: {
