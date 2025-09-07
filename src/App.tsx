@@ -93,6 +93,7 @@ import AdminPanel from '@/pages/AdminPanel';
 // Business Pages
 import CatalogPage from '@/pages/CatalogPage';
 import CrmPage from '@/pages/CrmPage';
+import MonitoringPage from '@/pages/MonitoringPage';
 
 // Profile & Settings Pages
 import Profile from '@/pages/Profile';
@@ -253,6 +254,13 @@ function App() {
                  <Route path="/crm" element={
                    <ProtectedRoute>
                      <AppLayout><CrmPage /></AppLayout>
+                   </ProtectedRoute>
+                 } />
+                 
+                 {/* System Monitoring */}
+                 <Route path="/monitoring" element={
+                   <ProtectedRoute>
+                     <AppLayout><MonitoringPage /></AppLayout>
                    </ProtectedRoute>
                  } />
                  
