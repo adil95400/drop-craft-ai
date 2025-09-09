@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/integrations/supabase/client'
 import { 
   Package, 
   Users, 
@@ -14,6 +16,31 @@ import {
 } from 'lucide-react'
 
 export function CommercializationQuickActions() {
+  const navigate = useNavigate()
+  const { toast } = useToast()
+
+  const handleFeatureAccess = async (href: string, featureName: string) => {
+    try {
+      // Vérifier si l'utilisateur a accès à cette fonctionnalité
+      toast({
+        title: `Accès à ${featureName}`,
+        description: "Redirection vers la fonctionnalité...",
+      })
+      
+      // Navigation vers la page
+      if (href.startsWith('/')) {
+        navigate(href)
+      } else {
+        window.open(href, '_blank')
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erreur d'accès",
+        description: "Impossible d'accéder à cette fonctionnalité",
+        variant: "destructive"
+      })
+    }
+  }
   const commercializationFeatures = [
     {
       title: 'Catalogue Produits Pro',
@@ -83,10 +110,12 @@ export function CommercializationQuickActions() {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-500" />
-                  <Button size="sm" variant="ghost" asChild>
-                    <Link to={feature.href}>
-                      <ExternalLink className="h-3 w-3" />
-                    </Link>
+                  <Button 
+                    size="sm" 
+                    variant="ghost"
+                    onClick={() => handleFeatureAccess(feature.href, feature.title)}
+                  >
+                    <ExternalLink className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
