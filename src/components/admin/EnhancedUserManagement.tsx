@@ -43,7 +43,7 @@ import { useTranslation } from 'react-i18next'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 
-type PlanType = 'free' | 'pro' | 'ultra_pro'
+type PlanType = 'standard' | 'pro' | 'ultra_pro'
 
 interface EnhancedUser {
   id: string
@@ -65,7 +65,7 @@ export const EnhancedUserManagement = () => {
   const [selectedUser, setSelectedUser] = useState<string | null>(null)
   const [newRole, setNewRole] = useState<'admin' | 'user'>('user')
   const [selectedUserForPlan, setSelectedUserForPlan] = useState<EnhancedUser | null>(null)
-  const [newPlan, setNewPlan] = useState<PlanType>('free')
+  const [newPlan, setNewPlan] = useState<PlanType>('standard')
   const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false)
   const [isUpdatingPlan, setIsUpdatingPlan] = useState(false)
 
@@ -81,14 +81,10 @@ export const EnhancedUserManagement = () => {
   const handlePlanChange = async (userId: string, plan: PlanType) => {
     setIsUpdatingPlan(true)
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          plan,
-          subscription_status: plan === 'free' ? 'inactive' : 'active',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId)
+      const { data, error } = await supabase.rpc('admin_update_user_plan', {
+        target_user_id: userId,
+        new_plan: plan
+      });
 
       if (error) throw error
 
@@ -143,12 +139,12 @@ export const EnhancedUserManagement = () => {
 
   const getPlanBadge = (plan: PlanType | null, subscriptionStatus?: string | null) => {
     const planConfig = {
-      free: { label: 'GRATUIT', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200' },
+      standard: { label: 'STANDARD', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200' },
       pro: { label: 'PRO', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
       ultra_pro: { label: 'ULTRA PRO', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' }
     }
     
-    const config = planConfig[plan as keyof typeof planConfig] || planConfig.free
+    const config = planConfig[plan as keyof typeof planConfig] || planConfig.standard
     const isActive = subscriptionStatus === 'active'
     
     return (
@@ -156,7 +152,7 @@ export const EnhancedUserManagement = () => {
         <Badge className={config.color}>
           {config.label}
         </Badge>
-        {plan !== 'free' && (
+        {plan !== 'standard' && (
           <Badge variant={isActive ? 'default' : 'destructive'} className="text-xs">
             {isActive ? 'ACTIF' : 'INACTIF'}
           </Badge>
@@ -329,7 +325,7 @@ export const EnhancedUserManagement = () => {
                               size="sm"
                               onClick={() => {
                                 setSelectedUserForPlan(user as EnhancedUser)
-                                setNewPlan(user.plan as PlanType || 'free')
+                                setNewPlan(user.plan as PlanType || 'standard')
                                 setIsPlanDialogOpen(true)
                               }}
                             >
@@ -341,7 +337,7 @@ export const EnhancedUserManagement = () => {
                             <DialogHeader>
                               <DialogTitle>Modifier le plan de {user.full_name}</DialogTitle>
                               <DialogDescription>
-                                Plan actuel: <strong>{(user.plan || 'free').toUpperCase()}</strong>
+                                Plan actuel: <strong>{(user.plan || 'standard').toUpperCase()}</strong>
                               </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4">
@@ -352,7 +348,7 @@ export const EnhancedUserManagement = () => {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="free">GRATUIT</SelectItem>
+                                    <SelectItem value="standard">STANDARD</SelectItem>
                                     <SelectItem value="pro">PRO - €29/mois</SelectItem>
                                     <SelectItem value="ultra_pro">ULTRA PRO - €99/mois</SelectItem>
                                   </SelectContent>

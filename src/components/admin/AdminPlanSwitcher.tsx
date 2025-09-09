@@ -37,6 +37,7 @@ export const AdminPlanSwitcher = () => {
 
     setIsLoading(true);
     try {
+      // Mettre à jour seulement le mode admin - pas le plan réel
       const { error } = await supabase
         .from('profiles')
         .update({ 

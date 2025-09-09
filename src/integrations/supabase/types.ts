@@ -5309,6 +5309,14 @@ export type Database = {
         Args: { new_role: string; target_user_id: string }
         Returns: Json
       }
+      admin_update_user_plan: {
+        Args: { new_plan: string; target_user_id: string }
+        Returns: Json
+      }
+      admin_update_user_role: {
+        Args: { new_role: string; target_user_id: string }
+        Returns: Json
+      }
       calculate_profit_margin: {
         Args: { cost_price: number; price: number }
         Returns: number
@@ -5362,6 +5370,10 @@ export type Database = {
           supplier_url: string
           trend_score: number
         }[]
+      }
+      get_current_user_admin_mode: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
