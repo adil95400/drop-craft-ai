@@ -94,27 +94,48 @@ export const BrowserExtensionImportInterface = () => {
 
   const handleDownload = async () => {
     setIsDownloading(true);
+    console.log('Starting extension download...');
     
     try {
       const { data, error } = await supabase.functions.invoke('extension-download');
+      console.log('Download response:', { data, error });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+      
+      if (!data?.success || !data?.data) {
+        console.error('Invalid response format:', data);
+        throw new Error('Format de réponse invalide');
+      }
+      
+      console.log('Converting base64 to blob...');
+      
+      // Convert base64 to binary
+      const binaryString = atob(data.data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
       
       // Create download link
-      const blob = new Blob([data], { type: 'application/zip' });
+      const blob = new Blob([bytes], { type: 'application/zip' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'dropcraft-extension.zip';
+      link.download = data.filename || 'dropcraft-extension.zip';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
+      console.log('Download completed successfully');
       toast.success("Extension téléchargée ! Consultez le guide d'installation pour l'activer.");
     } catch (error) {
       console.error('Download error:', error);
-      toast.error("Impossible de télécharger l'extension.");
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      toast.error(`Impossible de télécharger l'extension: ${errorMessage}`);
     } finally {
       setIsDownloading(false);
     }

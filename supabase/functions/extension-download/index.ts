@@ -255,27 +255,134 @@ chrome.action.onClicked.addListener((tab) => {
 };
 
 function createZipFile(files: Record<string, string>): Uint8Array {
-  // Simple ZIP file creation for demonstration
-  // In production, you'd use a proper ZIP library
   const encoder = new TextEncoder();
-  let zipData = new Uint8Array(0);
   
-  // This is a simplified ZIP structure - in production use proper ZIP library
+  // Create a proper ZIP file structure
+  const fileEntries: Uint8Array[] = [];
+  const centralDirectory: Uint8Array[] = [];
+  let offset = 0;
+
+  // Add basic icon file as placeholder (16x16 PNG)
+  const iconData = new Uint8Array([
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+    0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, // IHDR chunk
+    0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10, // 16x16 dimensions
+    0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x91, 0x68,
+    0x36, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41,
+    0x54, 0x08, 0x1D, 0x01, 0x01, 0x00, 0x00, 0xFF,
+    0xFF, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, 0xE2,
+    0x21, 0xBC, 0x33, 0x00, 0x00, 0x00, 0x00, 0x49,
+    0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
+  ]);
+
+  // Add icon files
+  const iconSizes = ['16', '32', '48', '128'];
+  for (const size of iconSizes) {
+    const filename = `icons/icon${size}.png`;
+    const fileEntry = createZipEntry(filename, iconData, offset);
+    fileEntries.push(fileEntry.data);
+    centralDirectory.push(fileEntry.centralDir);
+    offset += fileEntry.data.length;
+  }
+
+  // Add other files
   for (const [filename, content] of Object.entries(files)) {
     const fileData = encoder.encode(content);
-    // Add basic ZIP file structure (simplified)
-    const header = encoder.encode(`PK\u0003\u0004${filename}\u0000\u0000`);
-    const newData = new Uint8Array(zipData.length + header.length + fileData.length);
-    newData.set(zipData);
-    newData.set(header, zipData.length);
-    newData.set(fileData, zipData.length + header.length);
-    zipData = newData;
+    const fileEntry = createZipEntry(filename, fileData, offset);
+    fileEntries.push(fileEntry.data);
+    centralDirectory.push(fileEntry.centralDir);
+    offset += fileEntry.data.length;
   }
+
+  // Calculate total size
+  const centralDirSize = centralDirectory.reduce((sum, dir) => sum + dir.length, 0);
+  const totalSize = offset + centralDirSize + 22; // 22 bytes for end of central directory
+
+  // Combine all parts
+  const zipFile = new Uint8Array(totalSize);
+  let pos = 0;
+
+  // Add file entries
+  for (const entry of fileEntries) {
+    zipFile.set(entry, pos);
+    pos += entry.length;
+  }
+
+  // Add central directory
+  for (const dir of centralDirectory) {
+    zipFile.set(dir, pos);
+    pos += dir.length;
+  }
+
+  // Add end of central directory record
+  const endRecord = new Uint8Array(22);
+  endRecord.set([0x50, 0x4B, 0x05, 0x06], 0); // End signature
+  endRecord.set(new Uint16Array([0, 0]).buffer, 4); // Disk numbers
+  endRecord.set(new Uint16Array([centralDirectory.length]).buffer, 8); // Number of entries
+  endRecord.set(new Uint16Array([centralDirectory.length]).buffer, 10); // Total entries
+  endRecord.set(new Uint32Array([centralDirSize]).buffer, 12); // Central dir size
+  endRecord.set(new Uint32Array([offset]).buffer, 16); // Central dir offset
+  endRecord.set(new Uint16Array([0]).buffer, 20); // Comment length
+
+  zipFile.set(endRecord, pos);
+
+  return zipFile;
+}
+
+function createZipEntry(filename: string, data: Uint8Array, offset: number) {
+  const encoder = new TextEncoder();
+  const filenameBytes = encoder.encode(filename);
   
-  return zipData;
+  // Local file header
+  const localHeader = new Uint8Array(30 + filenameBytes.length);
+  localHeader.set([0x50, 0x4B, 0x03, 0x04], 0); // Local file header signature
+  localHeader.set([0x14, 0x00], 4); // Version needed to extract
+  localHeader.set([0x00, 0x00], 6); // General purpose bit flag
+  localHeader.set([0x00, 0x00], 8); // Compression method (stored)
+  localHeader.set([0x00, 0x00], 10); // File last modification time
+  localHeader.set([0x00, 0x00], 12); // File last modification date
+  localHeader.set(new Uint32Array([0]).buffer, 14); // CRC-32
+  localHeader.set(new Uint32Array([data.length]).buffer, 18); // Compressed size
+  localHeader.set(new Uint32Array([data.length]).buffer, 22); // Uncompressed size
+  localHeader.set(new Uint16Array([filenameBytes.length]).buffer, 26); // File name length
+  localHeader.set([0x00, 0x00], 28); // Extra field length
+  localHeader.set(filenameBytes, 30);
+
+  // File data
+  const fileEntry = new Uint8Array(localHeader.length + data.length);
+  fileEntry.set(localHeader, 0);
+  fileEntry.set(data, localHeader.length);
+
+  // Central directory file header
+  const centralHeader = new Uint8Array(46 + filenameBytes.length);
+  centralHeader.set([0x50, 0x4B, 0x01, 0x02], 0); // Central file header signature
+  centralHeader.set([0x14, 0x00], 4); // Version made by
+  centralHeader.set([0x14, 0x00], 6); // Version needed to extract
+  centralHeader.set([0x00, 0x00], 8); // General purpose bit flag
+  centralHeader.set([0x00, 0x00], 10); // Compression method
+  centralHeader.set([0x00, 0x00], 12); // File last modification time
+  centralHeader.set([0x00, 0x00], 14); // File last modification date
+  centralHeader.set(new Uint32Array([0]).buffer, 16); // CRC-32
+  centralHeader.set(new Uint32Array([data.length]).buffer, 20); // Compressed size
+  centralHeader.set(new Uint32Array([data.length]).buffer, 24); // Uncompressed size
+  centralHeader.set(new Uint16Array([filenameBytes.length]).buffer, 28); // File name length
+  centralHeader.set([0x00, 0x00], 30); // Extra field length
+  centralHeader.set([0x00, 0x00], 32); // File comment length
+  centralHeader.set([0x00, 0x00], 34); // Disk number where file starts
+  centralHeader.set([0x00, 0x00], 36); // Internal file attributes
+  centralHeader.set(new Uint32Array([0]).buffer, 38); // External file attributes
+  centralHeader.set(new Uint32Array([offset]).buffer, 42); // Relative offset of local header
+  centralHeader.set(filenameBytes, 46);
+
+  return {
+    data: fileEntry,
+    centralDir: centralHeader
+  };
 }
 
 serve(async (req) => {
+  console.log('Extension download request:', req.method);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -283,17 +390,29 @@ serve(async (req) => {
 
   try {
     if (req.method === 'GET') {
+      console.log('Generating ZIP file...');
+      
       // Generate ZIP file with extension
       const zipData = createZipFile(extensionFiles);
+      console.log('ZIP file generated, size:', zipData.length);
       
-      return new Response(zipData, {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/zip',
-          'Content-Disposition': 'attachment; filename="dropcraft-extension.zip"',
-          'Content-Length': zipData.length.toString(),
-        },
-      });
+      // Convert to base64 for JSON response (supabase.functions.invoke expects JSON)
+      const base64Data = btoa(String.fromCharCode(...zipData));
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          data: base64Data,
+          filename: 'dropcraft-extension.zip',
+          size: zipData.length
+        }),
+        {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
     }
 
     return new Response(
