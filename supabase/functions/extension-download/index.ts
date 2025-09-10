@@ -520,28 +520,61 @@ function showNotification(message, type) {
 }`
 };
 
+// CRC-32 calculation table
+const CRC32_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let j = 0; j < 8; j++) {
+      c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    }
+    table[i] = c;
+  }
+  return table;
+})();
+
+function calculateCRC32(data: Uint8Array): number {
+  let crc = 0xFFFFFFFF;
+  for (let i = 0; i < data.length; i++) {
+    crc = CRC32_TABLE[(crc ^ data[i]) & 0xFF] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+function writeUint16LE(buffer: Uint8Array, offset: number, value: number): void {
+  buffer[offset] = value & 0xFF;
+  buffer[offset + 1] = (value >>> 8) & 0xFF;
+}
+
+function writeUint32LE(buffer: Uint8Array, offset: number, value: number): void {
+  buffer[offset] = value & 0xFF;
+  buffer[offset + 1] = (value >>> 8) & 0xFF;
+  buffer[offset + 2] = (value >>> 16) & 0xFF;
+  buffer[offset + 3] = (value >>> 24) & 0xFF;
+}
+
 function createZipFile(files: Record<string, string>): Uint8Array {
+  console.log('Creating ZIP file with proper CRC32 validation...');
   const encoder = new TextEncoder();
   
-  // Create a proper ZIP file structure
   const fileEntries: Uint8Array[] = [];
   const centralDirectory: Uint8Array[] = [];
   let offset = 0;
 
-  // Add basic icon file as placeholder (16x16 PNG)
+  // Simple 16x16 transparent PNG icon
   const iconData = new Uint8Array([
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-    0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, // IHDR chunk
-    0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10, // 16x16 dimensions
-    0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x91, 0x68,
-    0x36, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41,
-    0x54, 0x08, 0x1D, 0x01, 0x01, 0x00, 0x00, 0xFF,
-    0xFF, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, 0xE2,
-    0x21, 0xBC, 0x33, 0x00, 0x00, 0x00, 0x00, 0x49,
-    0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+    0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+    0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10,
+    0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0xF3, 0xFF,
+    0x61, 0x00, 0x00, 0x00, 0x0B, 0x49, 0x44, 0x41,
+    0x54, 0x78, 0x9C, 0x63, 0x60, 0x00, 0x00, 0x00,
+    0x02, 0x00, 0x01, 0xE2, 0x21, 0xBC, 0x33, 0x00,
+    0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE,
+    0x42, 0x60, 0x82
   ]);
 
-  // Add icon files
+  // Add icon files for each size
   const iconSizes = ['16', '32', '48', '128'];
   for (const size of iconSizes) {
     const filename = `icons/icon${size}.png`;
@@ -551,7 +584,7 @@ function createZipFile(files: Record<string, string>): Uint8Array {
     offset += fileEntry.data.length;
   }
 
-  // Add other files
+  // Add extension files
   for (const [filename, content] of Object.entries(files)) {
     const fileData = encoder.encode(content);
     const fileEntry = createZipEntry(filename, fileData, offset);
@@ -560,84 +593,91 @@ function createZipFile(files: Record<string, string>): Uint8Array {
     offset += fileEntry.data.length;
   }
 
-  // Calculate total size
+  // Calculate sizes
   const centralDirSize = centralDirectory.reduce((sum, dir) => sum + dir.length, 0);
-  const totalSize = offset + centralDirSize + 22; // 22 bytes for end of central directory
+  const totalSize = offset + centralDirSize + 22;
 
-  // Combine all parts
+  console.log(`ZIP structure: ${fileEntries.length} files, ${centralDirSize} bytes central dir, ${totalSize} total bytes`);
+
+  // Build final ZIP
   const zipFile = new Uint8Array(totalSize);
   let pos = 0;
 
-  // Add file entries
+  // Write file entries
   for (const entry of fileEntries) {
     zipFile.set(entry, pos);
     pos += entry.length;
   }
 
-  // Add central directory
+  // Write central directory
   for (const dir of centralDirectory) {
     zipFile.set(dir, pos);
     pos += dir.length;
   }
 
-  // Add end of central directory record
+  // End of central directory record
   const endRecord = new Uint8Array(22);
-  endRecord.set([0x50, 0x4B, 0x05, 0x06], 0); // End signature
-  endRecord.set(new Uint16Array([0, 0]).buffer, 4); // Disk numbers
-  endRecord.set(new Uint16Array([centralDirectory.length]).buffer, 8); // Number of entries
-  endRecord.set(new Uint16Array([centralDirectory.length]).buffer, 10); // Total entries
-  endRecord.set(new Uint32Array([centralDirSize]).buffer, 12); // Central dir size
-  endRecord.set(new Uint32Array([offset]).buffer, 16); // Central dir offset
-  endRecord.set(new Uint16Array([0]).buffer, 20); // Comment length
+  endRecord.set([0x50, 0x4B, 0x05, 0x06], 0); // Signature
+  writeUint16LE(endRecord, 4, 0); // Number of this disk
+  writeUint16LE(endRecord, 6, 0); // Disk where central directory starts
+  writeUint16LE(endRecord, 8, centralDirectory.length); // Number of central directory records on this disk
+  writeUint16LE(endRecord, 10, centralDirectory.length); // Total number of central directory records
+  writeUint32LE(endRecord, 12, centralDirSize); // Size of central directory
+  writeUint32LE(endRecord, 16, offset); // Offset of start of central directory
+  writeUint16LE(endRecord, 20, 0); // Comment length
 
   zipFile.set(endRecord, pos);
 
+  console.log('ZIP file created successfully with proper structure');
   return zipFile;
 }
 
 function createZipEntry(filename: string, data: Uint8Array, offset: number) {
   const encoder = new TextEncoder();
   const filenameBytes = encoder.encode(filename);
+  const crc32 = calculateCRC32(data);
   
-  // Local file header
+  console.log(`Creating ZIP entry for ${filename}: ${data.length} bytes, CRC32: 0x${crc32.toString(16)}`);
+  
+  // Local file header (30 bytes + filename)
   const localHeader = new Uint8Array(30 + filenameBytes.length);
   localHeader.set([0x50, 0x4B, 0x03, 0x04], 0); // Local file header signature
-  localHeader.set([0x14, 0x00], 4); // Version needed to extract
-  localHeader.set([0x00, 0x00], 6); // General purpose bit flag
-  localHeader.set([0x00, 0x00], 8); // Compression method (stored)
-  localHeader.set([0x00, 0x00], 10); // File last modification time
-  localHeader.set([0x00, 0x00], 12); // File last modification date
-  localHeader.set(new Uint32Array([0]).buffer, 14); // CRC-32
-  localHeader.set(new Uint32Array([data.length]).buffer, 18); // Compressed size
-  localHeader.set(new Uint32Array([data.length]).buffer, 22); // Uncompressed size
-  localHeader.set(new Uint16Array([filenameBytes.length]).buffer, 26); // File name length
-  localHeader.set([0x00, 0x00], 28); // Extra field length
+  writeUint16LE(localHeader, 4, 20); // Version needed to extract
+  writeUint16LE(localHeader, 6, 0); // General purpose bit flag
+  writeUint16LE(localHeader, 8, 0); // Compression method (stored)
+  writeUint16LE(localHeader, 10, 0); // File last modification time
+  writeUint16LE(localHeader, 12, 0); // File last modification date
+  writeUint32LE(localHeader, 14, crc32); // CRC-32
+  writeUint32LE(localHeader, 18, data.length); // Compressed size
+  writeUint32LE(localHeader, 22, data.length); // Uncompressed size
+  writeUint16LE(localHeader, 26, filenameBytes.length); // File name length
+  writeUint16LE(localHeader, 28, 0); // Extra field length
   localHeader.set(filenameBytes, 30);
 
-  // File data
+  // Create complete file entry
   const fileEntry = new Uint8Array(localHeader.length + data.length);
   fileEntry.set(localHeader, 0);
   fileEntry.set(data, localHeader.length);
 
-  // Central directory file header
+  // Central directory file header (46 bytes + filename)
   const centralHeader = new Uint8Array(46 + filenameBytes.length);
   centralHeader.set([0x50, 0x4B, 0x01, 0x02], 0); // Central file header signature
-  centralHeader.set([0x14, 0x00], 4); // Version made by
-  centralHeader.set([0x14, 0x00], 6); // Version needed to extract
-  centralHeader.set([0x00, 0x00], 8); // General purpose bit flag
-  centralHeader.set([0x00, 0x00], 10); // Compression method
-  centralHeader.set([0x00, 0x00], 12); // File last modification time
-  centralHeader.set([0x00, 0x00], 14); // File last modification date
-  centralHeader.set(new Uint32Array([0]).buffer, 16); // CRC-32
-  centralHeader.set(new Uint32Array([data.length]).buffer, 20); // Compressed size
-  centralHeader.set(new Uint32Array([data.length]).buffer, 24); // Uncompressed size
-  centralHeader.set(new Uint16Array([filenameBytes.length]).buffer, 28); // File name length
-  centralHeader.set([0x00, 0x00], 30); // Extra field length
-  centralHeader.set([0x00, 0x00], 32); // File comment length
-  centralHeader.set([0x00, 0x00], 34); // Disk number where file starts
-  centralHeader.set([0x00, 0x00], 36); // Internal file attributes
-  centralHeader.set(new Uint32Array([0]).buffer, 38); // External file attributes
-  centralHeader.set(new Uint32Array([offset]).buffer, 42); // Relative offset of local header
+  writeUint16LE(centralHeader, 4, 20); // Version made by
+  writeUint16LE(centralHeader, 6, 20); // Version needed to extract
+  writeUint16LE(centralHeader, 8, 0); // General purpose bit flag
+  writeUint16LE(centralHeader, 10, 0); // Compression method
+  writeUint16LE(centralHeader, 12, 0); // File last modification time
+  writeUint16LE(centralHeader, 14, 0); // File last modification date
+  writeUint32LE(centralHeader, 16, crc32); // CRC-32
+  writeUint32LE(centralHeader, 20, data.length); // Compressed size
+  writeUint32LE(centralHeader, 24, data.length); // Uncompressed size
+  writeUint16LE(centralHeader, 28, filenameBytes.length); // File name length
+  writeUint16LE(centralHeader, 30, 0); // Extra field length
+  writeUint16LE(centralHeader, 32, 0); // File comment length
+  writeUint16LE(centralHeader, 34, 0); // Disk number where file starts
+  writeUint16LE(centralHeader, 36, 0); // Internal file attributes
+  writeUint32LE(centralHeader, 38, 0); // External file attributes
+  writeUint32LE(centralHeader, 42, offset); // Relative offset of local header
   centralHeader.set(filenameBytes, 46);
 
   return {
