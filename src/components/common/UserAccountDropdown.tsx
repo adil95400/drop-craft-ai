@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAdminRole } from '@/hooks/useAdminRole';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +26,7 @@ import { useNavigate } from 'react-router-dom';
 
 export const UserAccountDropdown = () => {
   const { user, profile, signOut } = useAuth();
-  const { role, isAdmin } = useUserRole();
+  const { isAdmin } = useAdminRole();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 

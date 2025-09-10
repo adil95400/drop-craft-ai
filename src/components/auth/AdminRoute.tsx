@@ -1,4 +1,4 @@
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAdminRole } from '@/hooks/useAdminRole';
 import { Loader2 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
@@ -7,9 +7,9 @@ interface AdminRouteProps {
 }
 
 export const AdminRoute = ({ children }: AdminRouteProps) => {
-  const { isAdmin, isLoading } = useUserRole();
+  const { isAdmin, loading } = useAdminRole();
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">

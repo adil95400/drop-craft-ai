@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { UserRole } from '@/hooks/useUserRole';
+export type UserRole = 'admin' | 'user'
 
 export const roleService = {
   async setUserRole(targetUserId: string, newRole: UserRole) {

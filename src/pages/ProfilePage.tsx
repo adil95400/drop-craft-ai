@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAdminRole } from '@/hooks/useAdminRole';
 import { useProfileActions } from '@/hooks/useProfileActions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import { Helmet } from 'react-helmet-async';
 
 const ProfilePage = () => {
   const { user, profile } = useAuth();
-  const { role, isAdmin } = useUserRole();
+  const { isAdmin } = useAdminRole();
   const { updateProfile, uploadAvatar, loading } = useProfileActions();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({

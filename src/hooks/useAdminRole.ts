@@ -5,14 +5,17 @@ import { useToast } from '@/hooks/use-toast'
 
 export interface AdminUser {
   id: string
+  email: string
   full_name: string | null
-  role: string
+  role: 'admin' | 'user'
   is_admin: boolean
   created_at: string
-  last_login_at: string | null
-  login_count: number
-  plan: string | null
-  subscription_status: string | null
+  last_sign_in_at: string | null
+  role_updated_at: string | null
+  plan?: string | null
+  subscription_status?: string | null
+  last_login_at?: string | null
+  login_count?: number
 }
 
 export const useAdminRole = () => {
@@ -36,7 +39,11 @@ export const useAdminRole = () => {
       
       if (error) throw error
       
-      setUsers(data || [])
+      setUsers(data?.map((user: any) => ({
+        ...user,
+        last_login_at: user.last_sign_in_at,
+        email: user.email || `user-${user.id}@domain.com`
+      })) || [])
       return { success: true, data }
     } catch (error: any) {
       console.error('Error fetching users:', error)
@@ -54,7 +61,7 @@ export const useAdminRole = () => {
   const changeUserRole = async (targetUserId: string, newRole: 'admin' | 'user') => {
     try {
       setLoading(true)
-      const { data, error } = await supabase.rpc('admin_change_user_role', {
+      const { data, error } = await supabase.rpc('admin_set_user_role', {
         target_user_id: targetUserId,
         new_role: newRole
       })

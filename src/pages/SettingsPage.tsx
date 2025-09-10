@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useAdminRole } from '@/hooks/useAdminRole';
 import { useSettingsActions } from '@/hooks/useSettingsActions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const SettingsPage = () => {
   const { user, signOut } = useAuth();
-  const { isAdmin } = useUserRole();
+  const { isAdmin } = useAdminRole();
   const { theme, setTheme } = useTheme();
   const { saveSettings, changePassword, exportData, deleteAccount, loading } = useSettingsActions();
   

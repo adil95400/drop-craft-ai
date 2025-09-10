@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { roleService } from '@/lib/roleService';
 import { useToast } from '@/hooks/use-toast';
-import { UserRole } from '@/hooks/useUserRole';
+import { UserRole } from '@/lib/roleService';
 
 interface RoleChangeDialogProps {
   isOpen: boolean;
