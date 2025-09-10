@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { compress } from "https://deno.land/x/compress@v0.4.1/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -158,7 +159,7 @@ chrome.action.onClicked.addListener((tab) => {
       const found = element.querySelector(selector);
       if (found) {
         const text = found.textContent.trim();
-        const priceMatch = text.match(/[\d,.]+(\\s*€|\\s*\\$|\\s*USD|\\s*EUR)?/);
+        const priceMatch = text.match(/[\\d,.]+(\\s*€|\\s*\\$|\\s*USD|\\s*EUR)?/);
         if (priceMatch) return priceMatch[0];
       }
     }
@@ -520,170 +521,69 @@ function showNotification(message, type) {
 }`
 };
 
-// CRC-32 calculation table
-const CRC32_TABLE = (() => {
-  const table = new Uint32Array(256);
-  for (let i = 0; i < 256; i++) {
-    let c = i;
-    for (let j = 0; j < 8; j++) {
-      c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+async function createZipFile(files: Record<string, string>): Promise<Uint8Array> {
+  console.log('Creating ZIP file with Deno compress library...');
+  
+  // Create temporary directory for files
+  const tempDir = await Deno.makeTempDir({ prefix: 'extension_' });
+  console.log(`Created temp directory: ${tempDir}`);
+  
+  try {
+    // Create icons directory
+    const iconsDir = `${tempDir}/icons`;
+    await Deno.mkdir(iconsDir, { recursive: true });
+    
+    // Simple 16x16 transparent PNG icon (working version)
+    const iconData = new Uint8Array([
+      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+      0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+      0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10,
+      0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0xF3, 0xFF,
+      0x61, 0x00, 0x00, 0x00, 0x0B, 0x49, 0x44, 0x41,
+      0x54, 0x78, 0x9C, 0x63, 0x60, 0x00, 0x00, 0x00,
+      0x02, 0x00, 0x01, 0xE2, 0x21, 0xBC, 0x33, 0x00,
+      0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE,
+      0x42, 0x60, 0x82
+    ]);
+    
+    // Write icon files
+    const iconSizes = ['16', '32', '48', '128'];
+    for (const size of iconSizes) {
+      await Deno.writeFile(`${iconsDir}/icon${size}.png`, iconData);
     }
-    table[i] = c;
+    
+    // Write extension files
+    for (const [filename, content] of Object.entries(files)) {
+      const filePath = `${tempDir}/${filename}`;
+      await Deno.writeTextFile(filePath, content);
+    }
+    
+    console.log('All files written, creating ZIP...');
+    
+    // Create ZIP file using compress library
+    const zipPath = `${tempDir}.zip`;
+    await compress(tempDir, zipPath, { overwrite: true });
+    
+    console.log(`ZIP created at: ${zipPath}`);
+    
+    // Read ZIP file
+    const zipData = await Deno.readFile(zipPath);
+    
+    console.log(`ZIP file size: ${zipData.length} bytes`);
+    
+    // Cleanup
+    await Deno.remove(tempDir, { recursive: true });
+    await Deno.remove(zipPath);
+    
+    return zipData;
+  } catch (error) {
+    console.error('Error creating ZIP:', error);
+    // Cleanup on error
+    try {
+      await Deno.remove(tempDir, { recursive: true });
+    } catch {}
+    throw error;
   }
-  return table;
-})();
-
-function calculateCRC32(data: Uint8Array): number {
-  let crc = 0xFFFFFFFF;
-  for (let i = 0; i < data.length; i++) {
-    crc = CRC32_TABLE[(crc ^ data[i]) & 0xFF] ^ (crc >>> 8);
-  }
-  return (crc ^ 0xFFFFFFFF) >>> 0;
-}
-
-function writeUint16LE(buffer: Uint8Array, offset: number, value: number): void {
-  buffer[offset] = value & 0xFF;
-  buffer[offset + 1] = (value >>> 8) & 0xFF;
-}
-
-function writeUint32LE(buffer: Uint8Array, offset: number, value: number): void {
-  buffer[offset] = value & 0xFF;
-  buffer[offset + 1] = (value >>> 8) & 0xFF;
-  buffer[offset + 2] = (value >>> 16) & 0xFF;
-  buffer[offset + 3] = (value >>> 24) & 0xFF;
-}
-
-function createZipFile(files: Record<string, string>): Uint8Array {
-  console.log('Creating ZIP file with proper CRC32 validation...');
-  const encoder = new TextEncoder();
-  
-  const fileEntries: Uint8Array[] = [];
-  const centralDirectory: Uint8Array[] = [];
-  let offset = 0;
-
-  // Simple 16x16 transparent PNG icon
-  const iconData = new Uint8Array([
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
-    0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
-    0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10,
-    0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0xF3, 0xFF,
-    0x61, 0x00, 0x00, 0x00, 0x0B, 0x49, 0x44, 0x41,
-    0x54, 0x78, 0x9C, 0x63, 0x60, 0x00, 0x00, 0x00,
-    0x02, 0x00, 0x01, 0xE2, 0x21, 0xBC, 0x33, 0x00,
-    0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE,
-    0x42, 0x60, 0x82
-  ]);
-
-  // Add icon files for each size
-  const iconSizes = ['16', '32', '48', '128'];
-  for (const size of iconSizes) {
-    const filename = `icons/icon${size}.png`;
-    const fileEntry = createZipEntry(filename, iconData, offset);
-    fileEntries.push(fileEntry.data);
-    centralDirectory.push(fileEntry.centralDir);
-    offset += fileEntry.data.length;
-  }
-
-  // Add extension files
-  for (const [filename, content] of Object.entries(files)) {
-    const fileData = encoder.encode(content);
-    const fileEntry = createZipEntry(filename, fileData, offset);
-    fileEntries.push(fileEntry.data);
-    centralDirectory.push(fileEntry.centralDir);
-    offset += fileEntry.data.length;
-  }
-
-  // Calculate sizes
-  const centralDirSize = centralDirectory.reduce((sum, dir) => sum + dir.length, 0);
-  const totalSize = offset + centralDirSize + 22;
-
-  console.log(`ZIP structure: ${fileEntries.length} files, ${centralDirSize} bytes central dir, ${totalSize} total bytes`);
-
-  // Build final ZIP
-  const zipFile = new Uint8Array(totalSize);
-  let pos = 0;
-
-  // Write file entries
-  for (const entry of fileEntries) {
-    zipFile.set(entry, pos);
-    pos += entry.length;
-  }
-
-  // Write central directory
-  for (const dir of centralDirectory) {
-    zipFile.set(dir, pos);
-    pos += dir.length;
-  }
-
-  // End of central directory record
-  const endRecord = new Uint8Array(22);
-  endRecord.set([0x50, 0x4B, 0x05, 0x06], 0); // Signature
-  writeUint16LE(endRecord, 4, 0); // Number of this disk
-  writeUint16LE(endRecord, 6, 0); // Disk where central directory starts
-  writeUint16LE(endRecord, 8, centralDirectory.length); // Number of central directory records on this disk
-  writeUint16LE(endRecord, 10, centralDirectory.length); // Total number of central directory records
-  writeUint32LE(endRecord, 12, centralDirSize); // Size of central directory
-  writeUint32LE(endRecord, 16, offset); // Offset of start of central directory
-  writeUint16LE(endRecord, 20, 0); // Comment length
-
-  zipFile.set(endRecord, pos);
-
-  console.log('ZIP file created successfully with proper structure');
-  return zipFile;
-}
-
-function createZipEntry(filename: string, data: Uint8Array, offset: number) {
-  const encoder = new TextEncoder();
-  const filenameBytes = encoder.encode(filename);
-  const crc32 = calculateCRC32(data);
-  
-  console.log(`Creating ZIP entry for ${filename}: ${data.length} bytes, CRC32: 0x${crc32.toString(16)}`);
-  
-  // Local file header (30 bytes + filename)
-  const localHeader = new Uint8Array(30 + filenameBytes.length);
-  localHeader.set([0x50, 0x4B, 0x03, 0x04], 0); // Local file header signature
-  writeUint16LE(localHeader, 4, 20); // Version needed to extract
-  writeUint16LE(localHeader, 6, 0); // General purpose bit flag
-  writeUint16LE(localHeader, 8, 0); // Compression method (stored)
-  writeUint16LE(localHeader, 10, 0); // File last modification time
-  writeUint16LE(localHeader, 12, 0); // File last modification date
-  writeUint32LE(localHeader, 14, crc32); // CRC-32
-  writeUint32LE(localHeader, 18, data.length); // Compressed size
-  writeUint32LE(localHeader, 22, data.length); // Uncompressed size
-  writeUint16LE(localHeader, 26, filenameBytes.length); // File name length
-  writeUint16LE(localHeader, 28, 0); // Extra field length
-  localHeader.set(filenameBytes, 30);
-
-  // Create complete file entry
-  const fileEntry = new Uint8Array(localHeader.length + data.length);
-  fileEntry.set(localHeader, 0);
-  fileEntry.set(data, localHeader.length);
-
-  // Central directory file header (46 bytes + filename)
-  const centralHeader = new Uint8Array(46 + filenameBytes.length);
-  centralHeader.set([0x50, 0x4B, 0x01, 0x02], 0); // Central file header signature
-  writeUint16LE(centralHeader, 4, 20); // Version made by
-  writeUint16LE(centralHeader, 6, 20); // Version needed to extract
-  writeUint16LE(centralHeader, 8, 0); // General purpose bit flag
-  writeUint16LE(centralHeader, 10, 0); // Compression method
-  writeUint16LE(centralHeader, 12, 0); // File last modification time
-  writeUint16LE(centralHeader, 14, 0); // File last modification date
-  writeUint32LE(centralHeader, 16, crc32); // CRC-32
-  writeUint32LE(centralHeader, 20, data.length); // Compressed size
-  writeUint32LE(centralHeader, 24, data.length); // Uncompressed size
-  writeUint16LE(centralHeader, 28, filenameBytes.length); // File name length
-  writeUint16LE(centralHeader, 30, 0); // Extra field length
-  writeUint16LE(centralHeader, 32, 0); // File comment length
-  writeUint16LE(centralHeader, 34, 0); // Disk number where file starts
-  writeUint16LE(centralHeader, 36, 0); // Internal file attributes
-  writeUint32LE(centralHeader, 38, 0); // External file attributes
-  writeUint32LE(centralHeader, 42, offset); // Relative offset of local header
-  centralHeader.set(filenameBytes, 46);
-
-  return {
-    data: fileEntry,
-    centralDir: centralHeader
-  };
 }
 
 serve(async (req) => {
@@ -717,11 +617,11 @@ serve(async (req) => {
         throw new Error('No extension files available');
       }
       
-      console.log('Generating ZIP file...');
+      console.log('Generating ZIP file with Deno compress library...');
       const startTime = Date.now();
       
-      // Generate ZIP file with extension
-      const zipData = createZipFile(extensionFiles);
+      // Generate ZIP file with extension using reliable library
+      const zipData = await createZipFile(extensionFiles);
       const generateTime = Date.now() - startTime;
       
       console.log(`ZIP file generated successfully in ${generateTime}ms`);
@@ -749,7 +649,8 @@ serve(async (req) => {
         metadata: {
           generatedAt: new Date().toISOString(),
           processingTime: generateTime + base64Time,
-          fileCount: fileCount + 4 // +4 for icon files
+          fileCount: fileCount + 4, // +4 for icon files
+          method: 'deno-compress-library'
         }
       };
       
@@ -757,7 +658,8 @@ serve(async (req) => {
         success: response.success,
         filename: response.filename,
         size: response.size,
-        dataLength: response.data.length
+        dataLength: response.data.length,
+        method: response.metadata.method
       });
       
       return new Response(
