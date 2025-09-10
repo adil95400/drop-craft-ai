@@ -1,8 +1,32 @@
-// Extension popup functionality
-class DropCraftExtension {
+// Drop Craft AI Chrome Extension Popup Script
+
+let scrapedProducts = [];
+let importedReviews = [];
+let sessionData = {
+  startTime: new Date(),
+  scrapedCount: 0,
+  reviewsImported: 0
+};
+let reviewConfig = {};
+
+// Initialize popup
+document.addEventListener('DOMContentLoaded', async () => {
+  const popup = new DropCraftPopup();
+  await popup.init();
+  // Make popup globally available for modal functions
+  window.reviewPopup = popup;
+});
+
+class DropCraftPopup {
   constructor() {
     this.scrapedProducts = [];
-    this.init();
+    this.importedReviews = [];
+    this.sessionData = {
+      startTime: new Date(),
+      scrapedCount: 0,
+      reviewsImported: 0
+    };
+    this.reviewConfig = {};
   }
 
   async init() {
@@ -14,9 +38,20 @@ class DropCraftExtension {
 
   async loadStoredData() {
     try {
-      const result = await chrome.storage.local.get(['scrapedProducts', 'sessionData']);
+      const result = await chrome.storage.local.get([
+        'scrapedProducts', 
+        'importedReviews', 
+        'sessionData', 
+        'reviewConfig'
+      ]);
       this.scrapedProducts = result.scrapedProducts || [];
-      this.sessionData = result.sessionData || {};
+      this.importedReviews = result.importedReviews || [];
+      this.sessionData = result.sessionData || {
+        startTime: new Date(),
+        scrapedCount: 0,
+        reviewsImported: 0
+      };
+      this.reviewConfig = result.reviewConfig || {};
     } catch (error) {
       console.error('Error loading stored data:', error);
     }
@@ -26,7 +61,9 @@ class DropCraftExtension {
     try {
       await chrome.storage.local.set({
         scrapedProducts: this.scrapedProducts,
-        sessionData: this.sessionData
+        importedReviews: this.importedReviews,
+        sessionData: this.sessionData,
+        reviewConfig: this.reviewConfig
       });
     } catch (error) {
       console.error('Error saving data:', error);
@@ -34,24 +71,111 @@ class DropCraftExtension {
   }
 
   bindEvents() {
-    document.getElementById('scrapCurrentPage').addEventListener('click', () => {
-      this.scrapCurrentPage();
-    });
+    // Main action buttons
+    document.getElementById('scrapCurrentPage').addEventListener('click', () => this.scrapCurrentPage());
+    document.getElementById('scrapAllProducts').addEventListener('click', () => this.scrapAllProducts());
+    document.getElementById('importReviews').addEventListener('click', () => this.importReviews());
+    document.getElementById('sendToApp').addEventListener('click', () => this.sendToApp());
+    document.getElementById('openDashboard').addEventListener('click', () => this.openDashboard());
+    document.getElementById('reviewSettings').addEventListener('click', () => this.openReviewSettings());
+    document.getElementById('openSettings').addEventListener('click', () => this.openSettings());
+    document.getElementById('clearData').addEventListener('click', () => this.clearData());
+  }
 
-    document.getElementById('scrapAllProducts').addEventListener('click', () => {
-      this.scrapAllProducts();
-    });
+  updateUI() {
+    // Update scraped count
+    const countElement = document.getElementById('scrapedCount');
+    if (countElement) {
+      countElement.textContent = this.scrapedProducts.length;
+    }
 
-    document.getElementById('openDashboard').addEventListener('click', () => {
-      this.openDashboard();
-    });
+    // Update reviews count
+    const reviewsCountElement = document.getElementById('reviewsCount');
+    if (reviewsCountElement) {
+      reviewsCountElement.textContent = this.importedReviews.length;
+    }
 
-    document.getElementById('openSettings').addEventListener('click', () => {
-      this.openSettings();
-    });
+    // Update session count (today's activities)
+    const sessionCountElement = document.getElementById('sessionsCount');
+    if (sessionCountElement) {
+      const today = new Date().toDateString();
+      const todayActivities = this.scrapedProducts.filter(p => 
+        new Date(p.scrapedAt).toDateString() === today
+      ).length + this.importedReviews.filter(r => 
+        new Date(r.scrapedAt).toDateString() === today
+      ).length;
+      sessionCountElement.textContent = todayActivities;
+    }
 
-    document.getElementById('clearData').addEventListener('click', () => {
-      this.clearData();
+    // Update recent products and reviews lists
+    this.updateRecentProducts();
+    this.updateRecentReviews();
+    
+    // Update connection status
+    this.checkConnection();
+  }
+
+  updateRecentProducts() {
+    const recentList = document.getElementById('recentProducts');
+    if (!recentList) return;
+
+    recentList.innerHTML = '';
+    
+    const recentProducts = this.scrapedProducts.slice(-3).reverse();
+    
+    if (recentProducts.length === 0) {
+      recentList.innerHTML = '<div class="no-data">Aucun produit scrapé</div>';
+      return;
+    }
+
+    recentProducts.forEach(product => {
+      const item = document.createElement('div');
+      item.className = 'recent-item';
+      
+      item.innerHTML = `
+        <div class="item-info">
+          <div class="item-name">${product.name || 'Produit sans nom'}</div>
+          <div class="item-meta">${product.domain || 'Site inconnu'} • ${product.price || 'Prix non défini'}</div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-icon" onclick="removeProduct('${product.id}')" title="Supprimer">×</button>
+        </div>
+      `;
+      
+      recentList.appendChild(item);
+    });
+  }
+
+  updateRecentReviews() {
+    const recentList = document.getElementById('recentReviews');
+    if (!recentList) return;
+
+    recentList.innerHTML = '';
+    
+    const recentReviews = this.importedReviews.slice(-3).reverse();
+    
+    if (recentReviews.length === 0) {
+      recentList.innerHTML = '<div class="no-data">Aucun avis importé</div>';
+      return;
+    }
+
+    recentReviews.forEach(review => {
+      const item = document.createElement('div');
+      item.className = 'recent-item';
+      
+      const stars = '★'.repeat(review.rating || 0) + '☆'.repeat(5 - (review.rating || 0));
+      
+      item.innerHTML = `
+        <div class="item-info">
+          <div class="item-name">${stars} ${review.title || review.content?.substring(0, 30) + '...' || 'Avis sans titre'}</div>
+          <div class="item-meta">${review.platform || 'Plateforme inconnue'} • ${review.author || 'Auteur inconnu'}</div>
+        </div>
+        <div class="item-actions">
+          <button class="btn-icon" onclick="removeReview('${review.id}')" title="Supprimer">×</button>
+        </div>
+      `;
+      
+      recentList.appendChild(item);
     });
   }
 
@@ -109,6 +233,47 @@ class DropCraftExtension {
       this.showNotification('Erreur lors du scraping avancé', 'error');
     } finally {
       this.showLoading(false);
+    }
+  }
+
+  async importReviews() {
+    try {
+      this.showLoading(true);
+      
+      // Get current review configuration
+      const config = await this.getReviewConfig();
+      
+      // Send message to background script to import reviews
+      const response = await chrome.runtime.sendMessage({
+        type: 'IMPORT_REVIEWS',
+        config: config
+      });
+
+      if (response && response.success) {
+        this.showNotification('Import des avis lancé avec succès!');
+        // Reload data and update UI
+        await this.loadStoredData();
+        this.updateUI();
+      } else {
+        throw new Error('Erreur lors de l\'import des avis');
+      }
+    } catch (error) {
+      console.error('Error importing reviews:', error);
+      this.showNotification('Erreur lors de l\'import des avis', 'error');
+    } finally {
+      this.showLoading(false);
+    }
+  }
+
+  async getReviewConfig() {
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'GET_REVIEW_CONFIG'
+      });
+      return response || {};
+    } catch (error) {
+      console.error('Error getting review config:', error);
+      return {};
     }
   }
 
@@ -295,9 +460,19 @@ class DropCraftExtension {
   }
 
   async sendToApp(products) {
+    if (!products) {
+      products = this.scrapedProducts;
+    }
+    
+    if (products.length === 0) {
+      this.showNotification('Aucun produit à envoyer', 'error');
+      return;
+    }
+
     try {
-      // Send data to main application
-      const response = await fetch('https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/api/extension/products', {
+      this.showLoading(true);
+      
+      const response = await fetch('https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/api/extension/import', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -310,10 +485,61 @@ class DropCraftExtension {
       });
 
       if (response.ok) {
-        console.log('Products sent to app successfully');
+        const result = await response.json();
+        this.showNotification(`${products.length} produit(s) envoyé(s) avec succès!`);
+        
+        // Clear sent products
+        this.scrapedProducts = [];
+        await this.saveData();
+        this.updateUI();
+      } else {
+        throw new Error('Erreur du serveur');
       }
     } catch (error) {
-      console.error('Error sending products to app:', error);
+      console.error('Error sending to app:', error);
+      this.showNotification('Erreur lors de l\'envoi à l\'application', 'error');
+    } finally {
+      this.showLoading(false);
+    }
+  }
+
+  async sendReviewsToApp() {
+    if (this.importedReviews.length === 0) {
+      this.showNotification('Aucun avis à envoyer', 'error');
+      return;
+    }
+
+    try {
+      this.showLoading(true);
+      
+      const response = await fetch('https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/api/extension/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reviews: this.importedReviews,
+          source: 'chrome_extension',
+          timestamp: new Date().toISOString()
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        this.showNotification(`${this.importedReviews.length} avis envoyé(s) avec succès!`);
+        
+        // Clear sent reviews
+        this.importedReviews = [];
+        await this.saveData();
+        this.updateUI();
+      } else {
+        throw new Error('Erreur du serveur');
+      }
+    } catch (error) {
+      console.error('Error sending reviews to app:', error);
+      this.showNotification('Erreur lors de l\'envoi des avis', 'error');
+    } finally {
+      this.showLoading(false);
     }
   }
 
@@ -323,40 +549,252 @@ class DropCraftExtension {
     });
   }
 
-  openSettings() {
-    chrome.tabs.create({
-      url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/extensions-hub'
-    });
+  openReviewSettings() {
+    // Open review settings modal
+    this.showReviewSettingsModal();
   }
 
-  async clearData() {
-    if (confirm('Êtes-vous sûr de vouloir effacer toutes les données?')) {
-      this.scrapedProducts = [];
-      await chrome.storage.local.clear();
-      this.updateUI();
-      this.showNotification('Données effacées avec succès');
+  showReviewSettingsModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Configuration des Avis</h3>
+          <button class="modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="config-section">
+            <h4>Plateformes d'avis</h4>
+            <label><input type="checkbox" id="trustpilot-enabled" checked> Trustpilot</label>
+            <label><input type="checkbox" id="google-enabled" checked> Google Reviews</label>
+            <label><input type="checkbox" id="facebook-enabled"> Facebook</label>
+            <label><input type="checkbox" id="yelp-enabled"> Yelp</label>
+            <label><input type="checkbox" id="amazon-enabled" checked> Amazon</label>
+            <label><input type="checkbox" id="aliexpress-enabled" checked> AliExpress</label>
+          </div>
+          <div class="config-section">
+            <h4>Filtres</h4>
+            <label>Note minimum: <input type="range" id="min-rating" min="1" max="5" value="1"> <span id="min-rating-display">1</span></label>
+            <label>Note maximum: <input type="range" id="max-rating" min="1" max="5" value="5"> <span id="max-rating-display">5</span></label>
+            <label>Nombre max d'avis: <input type="number" id="max-reviews" min="1" max="200" value="50"></label>
+            <label>Période (jours): <input type="number" id="date-range" min="1" max="365" value="30"></label>
+          </div>
+          <div class="config-section">
+            <h4>Import automatique</h4>
+            <label><input type="checkbox" id="auto-import"> Activer l'import automatique</label>
+            <label>Intervalle (minutes): <input type="number" id="import-interval" min="5" max="1440" value="60"></label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Annuler</button>
+          <button class="btn-primary" onclick="reviewPopup.saveReviewConfig(this)">Sauvegarder</button>
+        </div>
+      </div>
+    `;
+
+    // Add styles
+    const style = document.createElement('style');
+    style.textContent = `
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      }
+      .modal-content {
+        background: white;
+        border-radius: 8px;
+        padding: 0;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+      .modal-header {
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+      }
+      .modal-body {
+        padding: 20px;
+      }
+      .config-section {
+        margin-bottom: 20px;
+      }
+      .config-section h4 {
+        margin-bottom: 10px;
+        color: #333;
+      }
+      .config-section label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+      .config-section input[type="checkbox"] {
+        margin-right: 8px;
+      }
+      .config-section input[type="range"] {
+        margin: 0 8px;
+        width: 100px;
+      }
+      .config-section input[type="number"] {
+        margin-left: 8px;
+        padding: 4px 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 80px;
+      }
+      .modal-footer {
+        padding: 20px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+      .btn-primary, .btn-secondary {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+      .btn-secondary {
+        background: #f5f5f5;
+        color: #333;
+      }
+    `;
+    
+    document.head.appendChild(style);
+    document.body.appendChild(modal);
+
+    // Setup range input listeners
+    const minRating = document.getElementById('min-rating');
+    const maxRating = document.getElementById('max-rating');
+    const minDisplay = document.getElementById('min-rating-display');
+    const maxDisplay = document.getElementById('max-rating-display');
+
+    minRating.addEventListener('input', () => {
+      minDisplay.textContent = minRating.value;
+    });
+
+    maxRating.addEventListener('input', () => {
+      maxDisplay.textContent = maxRating.value;
+    });
+
+    // Load current config
+    this.loadReviewConfigInModal();
+  }
+
+  async loadReviewConfigInModal() {
+    const config = await this.getReviewConfig();
+    
+    // Set platform checkboxes
+    if (config.platforms) {
+      Object.keys(config.platforms).forEach(platform => {
+        const checkbox = document.getElementById(`${platform}-enabled`);
+        if (checkbox) {
+          checkbox.checked = config.platforms[platform].enabled;
+        }
+      });
+    }
+
+    // Set filters
+    if (config.filters) {
+      const minRating = document.getElementById('min-rating');
+      const maxRating = document.getElementById('max-rating');
+      const maxReviews = document.getElementById('max-reviews');
+      const dateRange = document.getElementById('date-range');
+
+      if (minRating) {
+        minRating.value = config.filters.minRating || 1;
+        document.getElementById('min-rating-display').textContent = minRating.value;
+      }
+      if (maxRating) {
+        maxRating.value = config.filters.maxRating || 5;
+        document.getElementById('max-rating-display').textContent = maxRating.value;
+      }
+      if (maxReviews) maxReviews.value = config.filters.maxReviews || 50;
+      if (dateRange) dateRange.value = config.filters.dateRange || 30;
+    }
+
+    // Set auto import
+    const autoImport = document.getElementById('auto-import');
+    const importInterval = document.getElementById('import-interval');
+    if (autoImport) autoImport.checked = config.autoImport || false;
+    if (importInterval) importInterval.value = config.importInterval || 60;
+  }
+
+  async saveReviewConfig(button) {
+    try {
+      const config = {
+        platforms: {
+          trustpilot: { enabled: document.getElementById('trustpilot-enabled').checked, maxReviews: parseInt(document.getElementById('max-reviews').value) },
+          google: { enabled: document.getElementById('google-enabled').checked, maxReviews: parseInt(document.getElementById('max-reviews').value) },
+          facebook: { enabled: document.getElementById('facebook-enabled').checked, maxReviews: parseInt(document.getElementById('max-reviews').value) },
+          yelp: { enabled: document.getElementById('yelp-enabled').checked, maxReviews: parseInt(document.getElementById('max-reviews').value) },
+          amazon: { enabled: document.getElementById('amazon-enabled').checked, maxReviews: parseInt(document.getElementById('max-reviews').value) },
+          aliexpress: { enabled: document.getElementById('aliexpress-enabled').checked, maxReviews: parseInt(document.getElementById('max-reviews').value) }
+        },
+        filters: {
+          minRating: parseInt(document.getElementById('min-rating').value),
+          maxRating: parseInt(document.getElementById('max-rating').value),
+          dateRange: parseInt(document.getElementById('date-range').value),
+          language: 'auto'
+        },
+        autoImport: document.getElementById('auto-import').checked,
+        importInterval: parseInt(document.getElementById('import-interval').value)
+      };
+
+      // Save to background script
+      await chrome.runtime.sendMessage({
+        type: 'UPDATE_REVIEW_CONFIG',
+        config: config
+      });
+
+      this.showNotification('Configuration sauvegardée avec succès!');
+      button.parentElement.parentElement.parentElement.remove();
+    } catch (error) {
+      console.error('Error saving review config:', error);
+      this.showNotification('Erreur lors de la sauvegarde', 'error');
     }
   }
 
-  updateUI() {
-    document.getElementById('scrapedCount').textContent = this.scrapedProducts.length;
-    
-    const recentProducts = document.getElementById('recentProducts');
-    recentProducts.innerHTML = '';
-    
-    if (this.scrapedProducts.length === 0) {
-      recentProducts.innerHTML = '<div class="product-item"><div class="product-name">Aucun produit scrapé</div></div>';
-    } else {
-      const recent = this.scrapedProducts.slice(-3).reverse();
-      recent.forEach(product => {
-        const item = document.createElement('div');
-        item.className = 'product-item';
-        item.innerHTML = `
-          <div class="product-name">${product.name || 'Produit sans nom'}</div>
-          <div class="product-price">${product.price || 'Prix non disponible'}</div>
-        `;
-        recentProducts.appendChild(item);
-      });
+  openSettings() {
+    chrome.tabs.create({
+      url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/settings'
+    });
+  }
+
+  clearData() {
+    if (confirm('Êtes-vous sûr de vouloir effacer toutes les données scrapées et avis importés ?')) {
+      this.scrapedProducts = [];
+      this.importedReviews = [];
+      this.sessionData = {
+        startTime: new Date(),
+        scrapedCount: 0,
+        reviewsImported: 0
+      };
+      this.saveData();
+      this.updateUI();
+      this.showNotification('Données effacées avec succès');
     }
   }
 
@@ -391,7 +829,21 @@ class DropCraftExtension {
   }
 }
 
-// Initialize extension when popup opens
-document.addEventListener('DOMContentLoaded', () => {
-  new DropCraftExtension();
-});
+// Global functions for item removal
+function removeProduct(productId) {
+  if (window.reviewPopup) {
+    window.reviewPopup.scrapedProducts = window.reviewPopup.scrapedProducts.filter(p => p.id !== productId);
+    window.reviewPopup.saveData();
+    window.reviewPopup.updateUI();
+    window.reviewPopup.showNotification('Produit supprimé');
+  }
+}
+
+function removeReview(reviewId) {
+  if (window.reviewPopup) {
+    window.reviewPopup.importedReviews = window.reviewPopup.importedReviews.filter(r => r.id !== reviewId);
+    window.reviewPopup.saveData();
+    window.reviewPopup.updateUI();
+    window.reviewPopup.showNotification('Avis supprimé');
+  }
+}

@@ -10,12 +10,13 @@
     }
     
     body {
-      width: 350px;
-      height: 500px;
+      width: 400px;
+      height: 600px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       overflow-x: hidden;
+      overflow-y: auto;
     }
     
     .header {
@@ -60,17 +61,51 @@
     }
     
     .section {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
     
     .section-title {
       font-size: 14px;
       font-weight: 500;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       opacity: 0.9;
     }
     
-    .btn {
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 12px 8px;
+      border-radius: 8px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+    
+    .stat-number {
+      font-size: 18px;
+      font-weight: 600;
+      display: block;
+    }
+    
+    .stat-label {
+      font-size: 10px;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
+    
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .btn-action {
       width: 100%;
       padding: 12px;
       background: rgba(255, 255, 255, 0.15);
@@ -81,89 +116,147 @@
       cursor: pointer;
       transition: all 0.2s;
       backdrop-filter: blur(10px);
-      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
-    .btn:hover {
+    .btn-action:hover {
       background: rgba(255, 255, 255, 0.25);
       transform: translateY(-1px);
     }
     
-    .btn:active {
+    .btn-action:active {
       transform: translateY(0);
     }
     
-    .btn.primary {
+    .btn-primary {
       background: rgba(34, 197, 94, 0.2);
       border-color: rgba(34, 197, 94, 0.4);
     }
     
-    .btn.primary:hover {
+    .btn-primary:hover {
       background: rgba(34, 197, 94, 0.3);
     }
     
-    .btn.danger {
+    .btn-secondary {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(99, 102, 241, 0.3);
+    }
+    
+    .nav-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .nav-btn {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .nav-btn.danger {
       background: rgba(239, 68, 68, 0.2);
       border-color: rgba(239, 68, 68, 0.4);
     }
     
-    .btn.danger:hover {
+    .nav-btn.danger:hover {
       background: rgba(239, 68, 68, 0.3);
     }
     
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+    .recent-section {
       margin-bottom: 16px;
     }
     
-    .stat {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 12px;
-      border-radius: 8px;
-      text-align: center;
-      backdrop-filter: blur(10px);
+    .recent-section h3 {
+      font-size: 13px;
+      margin-bottom: 8px;
+      opacity: 0.9;
     }
     
-    .stat-number {
-      font-size: 20px;
-      font-weight: 600;
-      display: block;
-    }
-    
-    .stat-label {
-      font-size: 11px;
-      opacity: 0.8;
-      margin-top: 2px;
-    }
-    
-    .recent-products {
+    .recent-list {
       max-height: 120px;
       overflow-y: auto;
     }
     
-    .product-item {
+    .recent-item {
       background: rgba(255, 255, 255, 0.1);
       padding: 8px;
       border-radius: 6px;
-      margin-bottom: 6px;
-      font-size: 12px;
+      margin-bottom: 4px;
+      font-size: 11px;
       backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     
-    .product-name {
+    .item-info {
+      flex: 1;
+    }
+    
+    .item-name {
       font-weight: 500;
       margin-bottom: 2px;
+      line-height: 1.2;
     }
     
-    .product-price {
-      color: #4ade80;
-      font-weight: 600;
+    .item-meta {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 10px;
+    }
+    
+    .item-actions {
+      display: flex;
+      gap: 4px;
+    }
+    
+    .btn-icon {
+      background: rgba(239, 68, 68, 0.2);
+      border: none;
+      border-radius: 4px;
+      color: white;
+      padding: 4px 6px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+    
+    .btn-icon:hover {
+      background: rgba(239, 68, 68, 0.4);
+    }
+    
+    .no-data {
+      text-align: center;
+      opacity: 0.7;
+      font-style: italic;
+      padding: 12px;
+    }
+    
+    .icon {
+      font-size: 16px;
     }
     
     .footer {
-      position: absolute;
+      position: sticky;
       bottom: 0;
       left: 0;
       right: 0;
@@ -187,27 +280,43 @@
     
     .loading {
       display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
       text-align: center;
       padding: 20px;
+      z-index: 10000;
+      backdrop-filter: blur(5px);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
     }
     
     .loading.show {
-      display: block;
+      display: flex;
     }
     
     .spinner {
-      width: 20px;
-      height: 20px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top: 2px solid white;
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid white;
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin: 0 auto 8px;
+      margin-bottom: 16px;
     }
     
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      font-size: 14px;
+      opacity: 0.9;
     }
   </style>
 </head>
@@ -223,53 +332,82 @@
   </div>
 
   <div class="main">
-    <div class="stats">
-      <div class="stat">
-        <span class="stat-number" id="scrapedCount">0</span>
-        <div class="stat-label">Produits scrapés</div>
-      </div>
-      <div class="stat">
-        <span class="stat-number" id="sessionsCount">1</span>
-        <div class="stat-label">Sessions actives</div>
-      </div>
-    </div>
-
     <div class="section">
-      <div class="section-title">Actions Rapides</div>
-      <button class="btn primary" id="scrapCurrentPage">
-        📦 Scraper cette page
-      </button>
-      <button class="btn" id="scrapAllProducts">
-        🔄 Scraper tous les produits
-      </button>
-      <button class="btn" id="openDashboard">
-        📊 Ouvrir le dashboard
-      </button>
-    </div>
-
-    <div class="section">
-      <div class="section-title">Produits récents</div>
-      <div class="recent-products" id="recentProducts">
-        <div class="product-item">
-          <div class="product-name">Aucun produit scrapé</div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-number" id="scrapedCount">0</div>
+          <div class="stat-label">Produits scrapés</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number" id="reviewsCount">0</div>
+          <div class="stat-label">Avis importés</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number" id="sessionsCount">0</div>
+          <div class="stat-label">Aujourd'hui</div>
         </div>
       </div>
+
+      <div class="actions">
+        <button id="scrapCurrentPage" class="btn-action btn-primary">
+          <span class="icon">🔍</span>
+          Scraper cette page
+        </button>
+        
+        <button id="importReviews" class="btn-action btn-primary">
+          <span class="icon">⭐</span>
+          Importer des avis
+        </button>
+        
+        <button id="scrapAllProducts" class="btn-action btn-secondary">
+          <span class="icon">📋</span>
+          Scraper tout
+        </button>
+      </div>
+
+      <div class="nav-buttons">
+        <button id="openDashboard" class="nav-btn">
+          <span class="icon">📊</span>
+          Ouvrir Dashboard
+        </button>
+        
+        <button id="reviewSettings" class="nav-btn">
+          <span class="icon">⭐</span>
+          Config. Avis
+        </button>
+        
+        <button id="openSettings" class="nav-btn">
+          <span class="icon">⚙️</span>
+          Paramètres
+        </button>
+        
+        <button id="clearData" class="nav-btn danger">
+          <span class="icon">🗑️</span>
+          Vider les données
+        </button>
+      </div>
     </div>
 
     <div class="section">
-      <div class="section-title">Configuration</div>
-      <button class="btn" id="openSettings">
-        ⚙️ Paramètres
-      </button>
-      <button class="btn danger" id="clearData">
-        🗑️ Effacer les données
-      </button>
+      <div class="recent-section">
+        <h3>Derniers produits scrapés:</h3>
+        <div id="recentProducts" class="recent-list">
+          <!-- Recent products will be populated here -->
+        </div>
+      </div>
+
+      <div class="recent-section">
+        <h3>Derniers avis importés:</h3>
+        <div id="recentReviews" class="recent-list">
+          <!-- Recent reviews will be populated here -->
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="loading" id="loading">
     <div class="spinner"></div>
-    <div>Scraping en cours...</div>
+    <div class="loading-text">Traitement en cours...</div>
   </div>
 
   <div class="footer">

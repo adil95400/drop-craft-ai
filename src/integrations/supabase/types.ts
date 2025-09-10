@@ -1408,6 +1408,66 @@ export type Database = {
         }
         Relationships: []
       }
+      developer_profiles: {
+        Row: {
+          avatar_url: string | null
+          average_rating: number | null
+          bio: string | null
+          company_name: string | null
+          created_at: string | null
+          developer_name: string
+          extensions_count: number | null
+          id: string
+          payout_email: string | null
+          tax_info: Json | null
+          total_downloads: number | null
+          total_revenue: number | null
+          total_reviews: number | null
+          updated_at: string | null
+          user_id: string
+          verified: boolean | null
+          website: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          average_rating?: number | null
+          bio?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          developer_name: string
+          extensions_count?: number | null
+          id?: string
+          payout_email?: string | null
+          tax_info?: Json | null
+          total_downloads?: number | null
+          total_revenue?: number | null
+          total_reviews?: number | null
+          updated_at?: string | null
+          user_id: string
+          verified?: boolean | null
+          website?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          average_rating?: number | null
+          bio?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          developer_name?: string
+          extensions_count?: number | null
+          id?: string
+          payout_email?: string | null
+          tax_info?: Json | null
+          total_downloads?: number | null
+          total_revenue?: number | null
+          total_reviews?: number | null
+          updated_at?: string | null
+          user_id?: string
+          verified?: boolean | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       dynamic_pricing: {
         Row: {
           ai_confidence: number
@@ -1688,6 +1748,106 @@ export type Database = {
             columns: ["extension_id"]
             isOneToOne: false
             referencedRelation: "extensions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      extension_purchases: {
+        Row: {
+          commission_amount: number | null
+          commission_rate: number | null
+          completed_at: string | null
+          created_at: string | null
+          currency: string | null
+          developer_amount: number | null
+          extension_id: string
+          id: string
+          price: number
+          status: string | null
+          stripe_payment_intent_id: string | null
+          user_id: string
+        }
+        Insert: {
+          commission_amount?: number | null
+          commission_rate?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          developer_amount?: number | null
+          extension_id: string
+          id?: string
+          price: number
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          user_id: string
+        }
+        Update: {
+          commission_amount?: number | null
+          commission_rate?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string | null
+          developer_amount?: number | null
+          extension_id?: string
+          id?: string
+          price?: number
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extension_purchases_extension_id_fkey"
+            columns: ["extension_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_extensions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      extension_reviews: {
+        Row: {
+          created_at: string | null
+          extension_id: string
+          helpful_count: number | null
+          id: string
+          rating: number
+          review: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+          verified_purchase: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          extension_id: string
+          helpful_count?: number | null
+          id?: string
+          rating: number
+          review?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+          verified_purchase?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          extension_id?: string
+          helpful_count?: number | null
+          id?: string
+          rating?: number
+          review?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+          verified_purchase?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extension_reviews_extension_id_fkey"
+            columns: ["extension_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_extensions"
             referencedColumns: ["id"]
           },
         ]
@@ -2310,6 +2470,60 @@ export type Database = {
           },
         ]
       }
+      imported_reviews: {
+        Row: {
+          author: string | null
+          content: string
+          country: string | null
+          created_at: string | null
+          date: string | null
+          extension_version: string | null
+          id: string
+          platform: string
+          rating: number | null
+          scraped_at: string | null
+          source: string | null
+          synced_at: string | null
+          title: string | null
+          url: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          author?: string | null
+          content: string
+          country?: string | null
+          created_at?: string | null
+          date?: string | null
+          extension_version?: string | null
+          id: string
+          platform: string
+          rating?: number | null
+          scraped_at?: string | null
+          source?: string | null
+          synced_at?: string | null
+          title?: string | null
+          url?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          author?: string | null
+          content?: string
+          country?: string | null
+          created_at?: string | null
+          date?: string | null
+          extension_version?: string | null
+          id?: string
+          platform?: string
+          rating?: number | null
+          scraped_at?: string | null
+          source?: string | null
+          synced_at?: string | null
+          title?: string | null
+          url?: string | null
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
       ingestion_jobs: {
         Row: {
           completed_at: string | null
@@ -2672,6 +2886,99 @@ export type Database = {
           name?: string
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      marketplace_extensions: {
+        Row: {
+          category: string
+          changelog: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          developer_id: string
+          developer_name: string
+          downloads_count: number | null
+          featured: boolean | null
+          files_data: Json | null
+          icon_url: string | null
+          id: string
+          last_updated_at: string | null
+          manifest_data: Json | null
+          name: string
+          price: number | null
+          published_at: string | null
+          rating: number | null
+          requirements: Json | null
+          reviews_count: number | null
+          screenshots: string[] | null
+          short_description: string | null
+          status: string
+          tags: string[] | null
+          trending: boolean | null
+          updated_at: string | null
+          verified: boolean | null
+          version: string
+        }
+        Insert: {
+          category: string
+          changelog?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          developer_id: string
+          developer_name: string
+          downloads_count?: number | null
+          featured?: boolean | null
+          files_data?: Json | null
+          icon_url?: string | null
+          id?: string
+          last_updated_at?: string | null
+          manifest_data?: Json | null
+          name: string
+          price?: number | null
+          published_at?: string | null
+          rating?: number | null
+          requirements?: Json | null
+          reviews_count?: number | null
+          screenshots?: string[] | null
+          short_description?: string | null
+          status?: string
+          tags?: string[] | null
+          trending?: boolean | null
+          updated_at?: string | null
+          verified?: boolean | null
+          version?: string
+        }
+        Update: {
+          category?: string
+          changelog?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          developer_id?: string
+          developer_name?: string
+          downloads_count?: number | null
+          featured?: boolean | null
+          files_data?: Json | null
+          icon_url?: string | null
+          id?: string
+          last_updated_at?: string | null
+          manifest_data?: Json | null
+          name?: string
+          price?: number | null
+          published_at?: string | null
+          rating?: number | null
+          requirements?: Json | null
+          reviews_count?: number | null
+          screenshots?: string[] | null
+          short_description?: string | null
+          status?: string
+          tags?: string[] | null
+          trending?: boolean | null
+          updated_at?: string | null
+          verified?: boolean | null
+          version?: string
         }
         Relationships: []
       }
@@ -5062,6 +5369,59 @@ export type Database = {
         }
         Relationships: []
       }
+      user_extensions: {
+        Row: {
+          auto_update: boolean | null
+          configuration: Json | null
+          created_at: string | null
+          extension_id: string
+          id: string
+          installed_at: string | null
+          last_used: string | null
+          status: string | null
+          updated_at: string | null
+          usage_count: number | null
+          user_id: string
+          version: string
+        }
+        Insert: {
+          auto_update?: boolean | null
+          configuration?: Json | null
+          created_at?: string | null
+          extension_id: string
+          id?: string
+          installed_at?: string | null
+          last_used?: string | null
+          status?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          user_id: string
+          version: string
+        }
+        Update: {
+          auto_update?: boolean | null
+          configuration?: Json | null
+          created_at?: string | null
+          extension_id?: string
+          id?: string
+          installed_at?: string | null
+          last_used?: string | null
+          status?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          user_id?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_extensions_extension_id_fkey"
+            columns: ["extension_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_extensions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_favorites: {
         Row: {
           catalog_product_id: string
@@ -5435,6 +5795,10 @@ export type Database = {
       configure_auth_security_settings: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      create_imported_reviews_table_if_not_exists: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       detect_suspicious_activity: {
         Args: Record<PropertyKey, never>
