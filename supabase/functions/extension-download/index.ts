@@ -381,59 +381,130 @@ function createZipEntry(filename: string, data: Uint8Array, offset: number) {
 }
 
 serve(async (req) => {
-  console.log('Extension download request:', req.method);
+  console.log('=== Extension Download Request ===');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  console.log('Headers:', Object.fromEntries(req.headers.entries()));
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    console.log('Handling CORS preflight request');
+    return new Response(null, { 
+      headers: {
+        ...corsHeaders,
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Max-Age': '86400',
+      }
+    });
   }
 
   try {
-    if (req.method === 'GET') {
+    if (req.method === 'GET' || req.method === 'POST') {
+      console.log('Processing extension download request...');
+      
+      // Validate extension files first
+      console.log('Validating extension files...');
+      const fileCount = Object.keys(extensionFiles).length;
+      console.log(`Extension files count: ${fileCount}`);
+      
+      if (fileCount === 0) {
+        throw new Error('No extension files available');
+      }
+      
       console.log('Generating ZIP file...');
+      const startTime = Date.now();
       
       // Generate ZIP file with extension
       const zipData = createZipFile(extensionFiles);
-      console.log('ZIP file generated, size:', zipData.length);
+      const generateTime = Date.now() - startTime;
+      
+      console.log(`ZIP file generated successfully in ${generateTime}ms`);
+      console.log('ZIP file size:', zipData.length, 'bytes');
+      
+      if (zipData.length === 0) {
+        throw new Error('Generated ZIP file is empty');
+      }
+      
+      console.log('Converting to base64...');
+      const base64StartTime = Date.now();
       
       // Convert to base64 for JSON response (supabase.functions.invoke expects JSON)
       const base64Data = btoa(String.fromCharCode(...zipData));
+      const base64Time = Date.now() - base64StartTime;
+      
+      console.log(`Base64 conversion completed in ${base64Time}ms`);
+      console.log('Base64 data length:', base64Data.length);
+      
+      const response = {
+        success: true,
+        data: base64Data,
+        filename: 'dropcraft-extension.zip',
+        size: zipData.length,
+        metadata: {
+          generatedAt: new Date().toISOString(),
+          processingTime: generateTime + base64Time,
+          fileCount: fileCount + 4 // +4 for icon files
+        }
+      };
+      
+      console.log('Sending successful response:', {
+        success: response.success,
+        filename: response.filename,
+        size: response.size,
+        dataLength: response.data.length
+      });
       
       return new Response(
-        JSON.stringify({ 
-          success: true,
-          data: base64Data,
-          filename: 'dropcraft-extension.zip',
-          size: zipData.length
-        }),
+        JSON.stringify(response),
         {
           headers: {
             ...corsHeaders,
             'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache',
           },
         }
       );
     }
 
+    console.log('Method not allowed:', req.method);
     return new Response(
-      JSON.stringify({ error: 'Method not allowed' }),
+      JSON.stringify({ 
+        error: 'Method not allowed',
+        allowedMethods: ['GET', 'POST']
+      }),
       { 
         status: 405, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'Allow': 'GET, POST, OPTIONS'
+        } 
       }
     );
 
   } catch (error) {
-    console.error('Extension download error:', error);
+    console.error('=== Extension Download Error ===');
+    console.error('Error type:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
+    const errorResponse = {
+      error: 'Failed to generate extension package',
+      details: error.message,
+      timestamp: new Date().toISOString(),
+      type: error.constructor.name
+    };
+    
+    console.log('Sending error response:', errorResponse);
     
     return new Response(
-      JSON.stringify({ 
-        error: 'Failed to generate extension package',
-        details: error.message 
-      }),
+      JSON.stringify(errorResponse),
       { 
         status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
       }
     );
   }

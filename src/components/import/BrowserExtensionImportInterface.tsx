@@ -97,20 +97,69 @@ export const BrowserExtensionImportInterface = () => {
     console.log('Starting extension download...');
     
     try {
-      const { data, error } = await supabase.functions.invoke('extension-download');
-      console.log('Download response:', { data, error });
+      // First, let's test if the edge function is accessible
+      console.log('Testing edge function accessibility...');
       
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw error;
+      // Try multiple approaches to diagnose the issue
+      const approaches = [
+        // Approach 1: Standard supabase.functions.invoke
+        async () => {
+          console.log('Trying supabase.functions.invoke...');
+          const { data, error } = await supabase.functions.invoke('extension-download');
+          console.log('Supabase invoke result:', { data, error });
+          return { data, error, method: 'supabase.functions.invoke' };
+        },
+        
+        // Approach 2: Direct fetch as fallback
+        async () => {
+          console.log('Trying direct fetch...');
+          const response = await fetch(`https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-download`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0b3p5cm1tZWtkbnZla2lzc3VoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MjMwODIsImV4cCI6MjA2OTk5OTA4Mn0.5glFIyN1_wR_6WFO7ieFiL93aWDz_os8P26DHw-E_dI'
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          console.log('Direct fetch result:', data);
+          return { data, error: null, method: 'direct fetch' };
+        }
+      ];
+      
+      let result = null;
+      let lastError = null;
+      
+      // Try each approach
+      for (const approach of approaches) {
+        try {
+          result = await approach();
+          if (result.data && !result.error) {
+            console.log(`Success with ${result.method}`);
+            break;
+          }
+        } catch (error) {
+          console.error(`Failed with ${result?.method || 'unknown method'}:`, error);
+          lastError = error;
+        }
       }
+      
+      if (!result || result.error) {
+        throw lastError || new Error('Toutes les méthodes de téléchargement ont échoué');
+      }
+      
+      const { data } = result;
       
       if (!data?.success || !data?.data) {
         console.error('Invalid response format:', data);
-        throw new Error('Format de réponse invalide');
+        throw new Error('Format de réponse invalide du serveur');
       }
       
-      console.log('Converting base64 to blob...');
+      console.log('Converting base64 to blob...', { size: data.data.length });
       
       // Convert base64 to binary
       const binaryString = atob(data.data);
@@ -119,23 +168,56 @@ export const BrowserExtensionImportInterface = () => {
         bytes[i] = binaryString.charCodeAt(i);
       }
       
+      console.log('Creating blob...', { byteLength: bytes.length });
+      
       // Create download link
       const blob = new Blob([bytes], { type: 'application/zip' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = data.filename || 'dropcraft-extension.zip';
+      
+      // Add link to body and trigger download
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
       console.log('Download completed successfully');
-      toast.success("Extension téléchargée ! Consultez le guide d'installation pour l'activer.");
+      toast.success("Extension téléchargée avec succès ! Consultez le guide d'installation pour l'activer.", {
+        duration: 5000
+      });
+      
     } catch (error) {
-      console.error('Download error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-      toast.error(`Impossible de télécharger l'extension: ${errorMessage}`);
+      console.error('Download error details:', {
+        error,
+        message: error instanceof Error ? error.message : 'Erreur inconnue',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
+      // More specific error messages
+      let errorMessage = 'Erreur inconnue';
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage = 'Problème de connexion réseau. Vérifiez votre connexion internet.';
+        } else if (error.message.includes('HTTP 404')) {
+          errorMessage = 'Service de téléchargement non disponible (404).';  
+        } else if (error.message.includes('HTTP 500')) {
+          errorMessage = 'Erreur du serveur (500). Réessayez dans quelques instants.';
+        } else if (error.message.includes('CORS')) {
+          errorMessage = 'Problème de sécurité CORS. Contactez le support.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast.error(`Impossible de télécharger l'extension: ${errorMessage}`, {
+        duration: 8000,
+        action: {
+          label: "Réessayer",
+          onClick: () => handleDownload()
+        }
+      });
     } finally {
       setIsDownloading(false);
     }
