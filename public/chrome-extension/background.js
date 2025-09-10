@@ -2,6 +2,7 @@
 
 class DropCraftBackground {
   constructor() {
+    this.reviewImporter = new ReviewImporter();
     this.init();
   }
 
@@ -136,6 +137,21 @@ class DropCraftBackground {
         case 'GET_STATS':
           const stats = await this.getStats();
           sendResponse(stats);
+          break;
+
+        case 'IMPORT_REVIEWS':
+          await this.importReviews(message.config);
+          sendResponse({ success: true });
+          break;
+
+        case 'GET_REVIEW_CONFIG':
+          const reviewConfig = await this.getReviewConfig();
+          sendResponse(reviewConfig);
+          break;
+
+        case 'UPDATE_REVIEW_CONFIG':
+          await this.updateReviewConfig(message.config);
+          sendResponse({ success: true });
           break;
 
         default:
