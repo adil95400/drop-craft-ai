@@ -35,6 +35,7 @@ export const BrowserExtensionImportInterface = () => {
   const [syncLogs, setSyncLogs] = useState<ExtensionSyncLog[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
   const [autoSync, setAutoSync] = useState(false)
 
   const extensionId = 'drop-craft-ai-extension' // Chrome extension ID would go here
@@ -91,11 +92,35 @@ export const BrowserExtensionImportInterface = () => {
     toast.success('Historique mis à jour')
   }
 
-  const downloadExtension = () => {
-    // In production, this would be the Chrome Web Store URL
-    const chromeStoreUrl = 'https://chrome.google.com/webstore/detail/drop-craft-ai'
-    window.open(chromeStoreUrl, '_blank')
-  }
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('extension-download');
+      
+      if (error) throw error;
+      
+      // Create download link
+      const blob = new Blob([data], { type: 'application/zip' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'dropcraft-extension.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("Extension téléchargée ! Consultez le guide d'installation pour l'activer.");
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error("Impossible de télécharger l'extension.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const downloadExtension = handleDownload;
 
   const installInstructions = () => {
     toast.info('Instructions d\'installation envoyées par email')
@@ -211,13 +236,21 @@ export const BrowserExtensionImportInterface = () => {
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <Button onClick={downloadExtension} className="flex-1">
+                  <Button 
+                    onClick={downloadExtension}
+                    disabled={isDownloading}
+                    className="flex-1"
+                  >
                     <Chrome className="h-4 w-4 mr-2" />
-                    Télécharger pour Chrome
+                    {isDownloading ? "Téléchargement..." : "Télécharger pour Chrome"}
                   </Button>
-                  <Button variant="outline" onClick={downloadExtension} className="flex-1">
-                    <Download className="h-4 w-4 mr-2" />
-                    Télécharger pour Firefox
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.open('/extension-download', '_blank')}
+                    className="flex-1"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Guide complet
                   </Button>
                 </div>
 

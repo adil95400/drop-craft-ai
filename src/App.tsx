@@ -120,6 +120,8 @@ import Status from '@/pages/Status';
 // Unified Pages
 import UnifiedDashboardPage from '@/pages/UnifiedDashboardPage';
 
+import { ExtensionDownloadPage } from "./pages/ExtensionDownloadPage";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -381,6 +383,8 @@ function App() {
                 <Route path="/extensions/cli" element={<AppLayout><CLIToolsPage /></AppLayout>} />
                 <Route path="/extensions/white-label" element={<AppLayout><WhiteLabelPage /></AppLayout>} />
                 <Route path="/extensions/sso" element={<AppLayout><SSOPage /></AppLayout>} />
+                
+                <Route path="/extension-download" element={<ExtensionDownloadPage />} />
                 
                 {/* Landing Pages */}
                 <Route path="/features" element={<Features />} />
