@@ -264,7 +264,7 @@ function createZipFile(files: Record<string, string>): Uint8Array {
   for (const [filename, content] of Object.entries(files)) {
     const fileData = encoder.encode(content);
     // Add basic ZIP file structure (simplified)
-    const header = encoder.encode(\`PK\\x03\\x04\${filename}\\x00\\x00\`);
+    const header = encoder.encode(`PK\u0003\u0004${filename}\u0000\u0000`);
     const newData = new Uint8Array(zipData.length + header.length + fileData.length);
     newData.set(zipData);
     newData.set(header, zipData.length);
