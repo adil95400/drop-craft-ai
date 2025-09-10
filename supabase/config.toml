@@ -117,3 +117,9 @@ verify_jwt = false
 
 [functions.extension-download]
 verify_jwt = false
+
+[functions.extension-operations]
+verify_jwt = true
+
+[functions.seed-extension-data]
+verify_jwt = false

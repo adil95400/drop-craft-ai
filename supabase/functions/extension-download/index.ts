@@ -251,7 +251,269 @@ chrome.action.onClicked.addListener((tab) => {
   
   <script src="popup.js"></script>
 </body>
-</html>`
+</html>`,
+  "popup.js": `// Popup script for Drop Craft AI Extension
+document.addEventListener('DOMContentLoaded', () => {
+  loadStoredData();
+  bindEvents();
+  updateUI();
+  checkConnection();
+});
+
+let scrapedProducts = [];
+let sessionData = {};
+
+function loadStoredData() {
+  chrome.storage.local.get(['scrapedProducts', 'sessionData'], (result) => {
+    scrapedProducts = result.scrapedProducts || [];
+    sessionData = result.sessionData || {};
+    updateUI();
+  });
+}
+
+function saveData() {
+  chrome.storage.local.set({
+    scrapedProducts: scrapedProducts,
+    sessionData: sessionData
+  });
+}
+
+function bindEvents() {
+  document.getElementById('scrapBtn').addEventListener('click', scrapCurrentPage);
+  document.getElementById('dashboardBtn').addEventListener('click', openDashboard);
+  document.getElementById('settingsBtn').addEventListener('click', openSettings);
+}
+
+function scrapCurrentPage() {
+  showLoading(true);
+  
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs[0];
+    
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      function: extractProductData
+    }, (results) => {
+      showLoading(false);
+      
+      if (results && results[0] && results[0].result) {
+        const products = results[0].result;
+        if (products.length > 0) {
+          scrapedProducts.push(...products);
+          saveData();
+          updateUI();
+          sendToApp(products);
+          showNotification('Produits scrapés avec succès!', 'success');
+        } else {
+          showNotification('Aucun produit trouvé sur cette page', 'warning');
+        }
+      } else {
+        showNotification('Erreur lors du scraping', 'error');
+      }
+    });
+  });
+}
+
+function extractProductData() {
+  const products = [];
+  
+  // Common product selectors
+  const productSelectors = [
+    '.product-item',
+    '.product-card', 
+    '.item',
+    '[data-product]',
+    '.product',
+    '.listing-item'
+  ];
+  
+  let productElements = [];
+  
+  for (const selector of productSelectors) {
+    productElements = document.querySelectorAll(selector);
+    if (productElements.length > 0) break;
+  }
+  
+  if (productElements.length === 0) {
+    // Fallback: extract single product
+    const singleProduct = extractSingleProduct();
+    if (singleProduct) return [singleProduct];
+    return [];
+  }
+  
+  productElements.forEach(element => {
+    const product = extractFromElement(element);
+    if (product.title || product.price) {
+      products.push(product);
+    }
+  });
+  
+  return products.slice(0, 50); // Limit to 50 products
+}
+
+function extractFromElement(element) {
+  const titleSelectors = [
+    'h1', 'h2', 'h3', '.title', '.name', '.product-title', '.product-name',
+    '[data-title]', '.item-title', '.listing-title'
+  ];
+  
+  const priceSelectors = [
+    '.price', '.cost', '.amount', '[data-price]', '.price-current',
+    '.sale-price', '.regular-price', '.final-price'
+  ];
+  
+  const imageSelectors = ['img'];
+  
+  return {
+    title: getTextContent(element, titleSelectors),
+    price: getPriceContent(element, priceSelectors),
+    image: getImageSrc(element, imageSelectors),
+    url: window.location.href,
+    scrapedAt: new Date().toISOString()
+  };
+}
+
+function extractSingleProduct() {
+  return {
+    title: getTextContent(document, ['h1', '.product-title', '.title']),
+    price: getPriceContent(document, ['.price', '.cost', '.amount']),
+    image: getImageSrc(document, ['.product-image img', '.main-image img', 'img']),
+    url: window.location.href,
+    scrapedAt: new Date().toISOString()
+  };
+}
+
+function getTextContent(element, selectors) {
+  for (const selector of selectors) {
+    const found = element.querySelector(selector);
+    if (found && found.textContent.trim()) {
+      return found.textContent.trim();
+    }
+  }
+  return '';
+}
+
+function getPriceContent(element, selectors) {
+  for (const selector of selectors) {
+    const found = element.querySelector(selector);
+    if (found) {
+      const text = found.textContent.trim();
+      const priceMatch = text.match(/[\\d,.]+(\\s*€|\\s*\\$|\\s*USD|\\s*EUR)?/);
+      if (priceMatch) return priceMatch[0];
+    }
+  }
+  return '';
+}
+
+function getImageSrc(element, selectors) {
+  for (const selector of selectors) {
+    const found = element.querySelector(selector);
+    if (found && found.src) {
+      return found.src;
+    }
+  }
+  return '';
+}
+
+function sendToApp(products) {
+  // Send scraped products to Drop Craft AI app
+  fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-operations', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      action: 'import_products',
+      products: products
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Products sent to app:', data);
+  })
+  .catch(error => {
+    console.error('Error sending to app:', error);
+  });
+}
+
+function openDashboard() {
+  chrome.tabs.create({
+    url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/dashboard'
+  });
+}
+
+function openSettings() {
+  chrome.tabs.create({
+    url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/settings'
+  });
+}
+
+function clearData() {
+  scrapedProducts = [];
+  sessionData = {};
+  saveData();
+  updateUI();
+  showNotification('Données effacées', 'info');
+}
+
+function updateUI() {
+  // Update scraped count
+  document.getElementById('scrapedCount').textContent = scrapedProducts.length;
+  
+  // Update today count
+  const today = new Date().toDateString();
+  const todayProducts = scrapedProducts.filter(p => 
+    new Date(p.scrapedAt).toDateString() === today
+  );
+  document.getElementById('todayCount').textContent = todayProducts.length;
+  
+  // Update recent products
+  const recentContainer = document.getElementById('recentProducts');
+  if (scrapedProducts.length === 0) {
+    recentContainer.innerHTML = 'Aucun produit scrapé';
+  } else {
+    const recent = scrapedProducts.slice(-3).reverse();
+    recentContainer.innerHTML = recent.map(product => 
+      '<div class="recent-item">' + 
+      (product.title || 'Produit sans titre') + 
+      (product.price ? ' - ' + product.price : '') +
+      '</div>'
+    ).join('');
+  }
+}
+
+function checkConnection() {
+  // Simple connection check to the app
+  fetch('https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/')
+    .then(() => {
+      document.querySelector('.status').className = 'status connected';
+      document.querySelector('.status').innerHTML = '✅ Connecté à l\\'application';
+    })
+    .catch(() => {
+      document.querySelector('.status').className = 'status disconnected';
+      document.querySelector('.status').innerHTML = '❌ Connexion impossible';
+    });
+}
+
+function showLoading(show) {
+  const btn = document.getElementById('scrapBtn');
+  if (show) {
+    btn.textContent = '🔄 Scraping...';
+    btn.disabled = true;
+  } else {
+    btn.textContent = '🔍 Scraper cette page';
+    btn.disabled = false;
+  }
+}
+
+function showNotification(message, type) {
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: 'icons/icon48.png',
+    title: 'Drop Craft AI',
+    message: message
+  });
+}`
 };
 
 function createZipFile(files: Record<string, string>): Uint8Array {

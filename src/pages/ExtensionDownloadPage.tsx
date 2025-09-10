@@ -16,16 +16,36 @@ export const ExtensionDownloadPage = () => {
     setDownloadStep(1);
     
     try {
-      const { data, error } = await supabase.functions.invoke('extension-download');
+      console.log('Starting extension download...');
       
-      if (error) throw error;
+      const { data, error } = await supabase.functions.invoke('extension-download', {
+        body: {}
+      });
+      
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+      
+      console.log('Function response received:', { success: data?.success, size: data?.size });
+      
+      if (!data || !data.success || !data.data) {
+        throw new Error('Invalid response from server');
+      }
+      
+      // Decode base64 data back to binary
+      const binaryString = atob(data.data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
       
       // Create download link
-      const blob = new Blob([data], { type: 'application/zip' });
+      const blob = new Blob([bytes], { type: 'application/zip' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'dropcraft-extension.zip';
+      link.download = data.filename || 'dropcraft-extension.zip';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -36,6 +56,8 @@ export const ExtensionDownloadPage = () => {
         title: "Extension téléchargée !",
         description: "Suivez les instructions ci-dessous pour l'installer.",
       });
+      
+      console.log('Download completed successfully');
     } catch (error) {
       console.error('Download error:', error);
       toast({
