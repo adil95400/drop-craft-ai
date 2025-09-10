@@ -15,7 +15,7 @@ import { ImportJobDialog } from '@/components/import/ImportJobDialog'
 import { 
   Upload, FileText, Globe, Database, 
   Zap, CheckCircle, XCircle, Clock,
-  Download, History, Settings
+  Download, History, Settings, Puzzle
 } from 'lucide-react'
 
 const ModernImportPage: React.FC = () => {
@@ -74,6 +74,15 @@ const ModernImportPage: React.FC = () => {
       icon: Database,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50'
+    },
+    {
+      id: 'extension',
+      title: 'Extension Navigateur',
+      description: 'Import en un clic depuis AliExpress, Amazon, eBay',
+      icon: Puzzle,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50',
+      premium: true
     }
   ]
 
@@ -150,7 +159,14 @@ const ModernImportPage: React.FC = () => {
               {importMethods.map((method) => {
                 const Icon = method.icon
                 return (
-                  <Card key={method.id} className="card-hover">
+                  <Card key={method.id} className="card-hover relative">
+                    {method.premium && (
+                      <div className="absolute -top-2 -right-2">
+                        <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
+                          Premium
+                        </Badge>
+                      </div>
+                    )}
                     <CardHeader>
                       <div className="flex items-center gap-3">
                         <div className={`p-3 rounded-lg ${method.bgColor}`}>

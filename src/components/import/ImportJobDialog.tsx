@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { useUnifiedSystem } from '@/hooks/useUnifiedSystem'
+import { BrowserExtensionImportInterface } from '@/components/import/BrowserExtensionImportInterface'
 
 interface ImportJobDialogProps {
   open: boolean
@@ -32,6 +33,7 @@ export function ImportJobDialog({ open, onOpenChange, sourceType, onJobCreated }
       case 'url': return 'URL / Scraping'
       case 'api': return 'API / EDI'
       case 'database': return 'Base de données'
+      case 'extension': return 'Extension Navigateur'
       default: return type.toUpperCase()
     }
   }
@@ -82,80 +84,99 @@ export function ImportJobDialog({ open, onOpenChange, sourceType, onJobCreated }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className={sourceType === 'extension' ? "max-w-7xl max-h-[90vh] overflow-y-auto" : "sm:max-w-[500px]"}>
         <DialogHeader>
           <DialogTitle>Nouvel Import {getSourceTypeLabel(sourceType)}</DialogTitle>
-          <DialogDescription>
-            Configurez votre import depuis {getSourceTypeLabel(sourceType).toLowerCase()}
-          </DialogDescription>
+          {sourceType !== 'extension' && (
+            <DialogDescription>
+              Configurez votre import depuis {getSourceTypeLabel(sourceType).toLowerCase()}
+            </DialogDescription>
+          )}
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {sourceType === 'url' && (
+        {sourceType === 'extension' ? (
+          <BrowserExtensionImportInterface />
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {sourceType === 'url' && (
+              <div className="space-y-2">
+                <Label htmlFor="source_url">URL Source *</Label>
+                <Input
+                  id="source_url"
+                  value={formData.source_url}
+                  onChange={(e) => setFormData(prev => ({ ...prev, source_url: e.target.value }))}
+                  placeholder="https://example.com/products"
+                  required
+                />
+              </div>
+            )}
+            
+            {sourceType === 'api' && (
+              <div className="space-y-2">
+                <Label htmlFor="source_url">Endpoint API *</Label>
+                <Input
+                  id="source_url"
+                  value={formData.source_url}
+                  onChange={(e) => setFormData(prev => ({ ...prev, source_url: e.target.value }))}
+                  placeholder="https://api.supplier.com/products"
+                  required
+                />
+              </div>
+            )}
+
+            {sourceType === 'csv' && (
+              <div className="space-y-2">
+                <Label htmlFor="file">Fichier CSV</Label>
+                <Input
+                  id="file"
+                  type="file"
+                  accept=".csv"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        file_data: { name: file.name, size: file.size } as any 
+                      }))
+                    }
+                  }}
+                />
+              </div>
+            )}
+
+            {sourceType === 'database' && (
+              <div className="space-y-2">
+                <Label htmlFor="source_url">Chaîne de connexion *</Label>
+                <Input
+                  id="source_url"
+                  value={formData.source_url}
+                  onChange={(e) => setFormData(prev => ({ ...prev, source_url: e.target.value }))}
+                  placeholder="postgresql://user:password@host:port/database"
+                  required
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
-              <Label htmlFor="source_url">URL Source *</Label>
+              <Label htmlFor="scheduled_at">Planification (optionnel)</Label>
               <Input
-                id="source_url"
-                value={formData.source_url}
-                onChange={(e) => setFormData(prev => ({ ...prev, source_url: e.target.value }))}
-                placeholder="https://example.com/products"
-                required
+                id="scheduled_at"
+                type="datetime-local"
+                value={formData.scheduled_at}
+                onChange={(e) => setFormData(prev => ({ ...prev, scheduled_at: e.target.value }))}
               />
             </div>
-          )}
-          
-          {sourceType === 'api' && (
-            <div className="space-y-2">
-              <Label htmlFor="source_url">Endpoint API *</Label>
-              <Input
-                id="source_url"
-                value={formData.source_url}
-                onChange={(e) => setFormData(prev => ({ ...prev, source_url: e.target.value }))}
-                placeholder="https://api.supplier.com/products"
-                required
-              />
-            </div>
-          )}
 
-          {sourceType === 'csv' && (
-            <div className="space-y-2">
-              <Label htmlFor="file">Fichier CSV</Label>
-              <Input
-                id="file"
-                type="file"
-                accept=".csv"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) {
-                    setFormData(prev => ({ 
-                      ...prev, 
-                      file_data: { name: file.name, size: file.size } as any 
-                    }))
-                  }
-                }}
-              />
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="scheduled_at">Planification (optionnel)</Label>
-            <Input
-              id="scheduled_at"
-              type="datetime-local"
-              value={formData.scheduled_at}
-              onChange={(e) => setFormData(prev => ({ ...prev, scheduled_at: e.target.value }))}
-            />
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Annuler
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Création...' : 'Créer le job'}
-            </Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Annuler
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Création...' : 'Créer le job'}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   )
