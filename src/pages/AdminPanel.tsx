@@ -9,6 +9,7 @@ import { AdvancedSettings } from '@/components/admin/AdvancedSettings'
 import { RealTimeMonitoring } from '@/components/admin/RealTimeMonitoring'
 import { FinalHealthCheck } from '@/components/admin/FinalHealthCheck'
 import { CommercializationQuickActions } from '@/components/admin/CommercializationQuickActions'
+import { AdminActionCards } from '@/components/admin/AdminActionCards'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -356,6 +357,7 @@ const AdminPanel = () => {
                 </Card>
                 
                 <CommercializationQuickActions />
+                <AdminActionCards />
               </div>
             </TabsContent>
 

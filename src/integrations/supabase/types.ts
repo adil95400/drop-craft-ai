@@ -5301,7 +5301,7 @@ export type Database = {
           last_login_at: string
           login_count: number
           plan: string
-          role: Database["public"]["Enums"]["user_role"]
+          role: string
           subscription_status: string
           updated_at: string
         }[]

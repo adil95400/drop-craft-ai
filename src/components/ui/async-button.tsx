@@ -1,72 +1,51 @@
-import { ReactNode, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { toast } from "@/hooks/use-toast";
+/**
+ * Bouton avec état de chargement asynchrone
+ */
+import React, { useState } from 'react';
+import { Button, ButtonProps } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
-interface AsyncButtonProps {
-  children: ReactNode;
+interface AsyncButtonProps extends Omit<ButtonProps, 'onClick'> {
   onClick: () => Promise<void> | void;
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
-  size?: "default" | "sm" | "lg" | "icon";
-  disabled?: boolean;
-  className?: string;
-  icon?: ReactNode;
   loadingText?: string;
-  successMessage?: string;
-  errorMessage?: string;
-  onSuccess?: () => void;
-  onError?: (error: any) => void;
-  type?: "button" | "submit" | "reset";
+  successText?: string;
+  successMessage?: string; // Alias pour successText pour compatibilité
+  showSuccessState?: boolean;
+  icon?: React.ReactNode;
 }
 
-export function AsyncButton({
-  children,
+export const AsyncButton: React.FC<AsyncButtonProps> = ({
   onClick,
-  variant = "default",
-  size = "default",
-  disabled = false,
-  className,
-  icon,
   loadingText = "Chargement...",
+  successText,
   successMessage,
-  errorMessage,
-  onSuccess,
-  onError,
-  type = "button",
+  showSuccessState = false,
+  disabled,
+  children,
+  icon,
   ...props
-}: AsyncButtonProps) {
+}) => {
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  // Utiliser successMessage si fourni, sinon successText, sinon "Terminé"
+  const finalSuccessText = successMessage || successText || "Terminé";
 
   const handleClick = async () => {
     if (loading || disabled) return;
     
-    setLoading(true);
-    
     try {
+      setLoading(true);
+      setSuccess(false);
       await onClick();
       
-      if (successMessage) {
-        toast({
-          title: "Succès",
-          description: successMessage,
-        });
+      if (showSuccessState || successMessage) {
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 2000);
       }
-      
-      onSuccess?.();
     } catch (error) {
-      console.error('Action failed:', error);
-      
-      const message = errorMessage || 
-        (error instanceof Error ? error.message : 'Une erreur est survenue');
-      
-      toast({
-        title: "Erreur",
-        description: message,
-        variant: "destructive",
-      });
-      
-      onError?.(error);
+      console.error('AsyncButton error:', error);
+      // L'erreur est gérée par le hook useAdminActions
     } finally {
       setLoading(false);
     }
@@ -74,24 +53,17 @@ export function AsyncButton({
 
   return (
     <Button
-      type={type}
-      variant={variant}
-      size={size}
-      onClick={handleClick}
-      disabled={loading || disabled}
-      className={cn(
-        "transition-all duration-200",
-        loading && "cursor-not-allowed",
-        className
-      )}
-      aria-busy={loading}
       {...props}
+      disabled={disabled || loading}
+      onClick={handleClick}
     >
       {loading ? (
         <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
           {loadingText}
         </>
+      ) : success ? (
+        finalSuccessText
       ) : (
         <>
           {icon && <span className="mr-2">{icon}</span>}
@@ -100,4 +72,4 @@ export function AsyncButton({
       )}
     </Button>
   );
-}
+};
