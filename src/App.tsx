@@ -159,7 +159,7 @@ function App() {
                 <Route path="/modern" element={<AppLayout><ModernNavigation /></AppLayout>} />
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
-                    <UnifiedDashboardPage />
+                    <AppLayout><UnifiedDashboardPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/dashboard-old" element={

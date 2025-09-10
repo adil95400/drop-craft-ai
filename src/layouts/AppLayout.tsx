@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/useResponsive';
 import { MobileHeader, MobileNav, MobileQuickActions } from '@/components/mobile/MobileNav';
-import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -64,9 +63,15 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { effectivePlan: plan, hasFeature } = useUnifiedPlan();
+  const { effectivePlan: plan, hasFeature, loadUserPlan } = useUnifiedPlan();
   const { isAdmin } = useEnhancedAuth();
   const location = useLocation();
+
+  useEffect(() => {
+    if (user?.id) {
+      loadUserPlan(user.id);
+    }
+  }, [user?.id, loadUserPlan]);
 
   const isActive = (path: string) => location.pathname === path;
 

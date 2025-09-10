@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEnhancedAuth } from "@/hooks/useEnhancedAuth";
+import { useUnifiedPlan } from '@/lib/unified-plan-system';
+import { useProfileRefresh } from '@/hooks/useProfileRefresh';
 import { 
   User, 
   Mail, 
@@ -27,6 +29,10 @@ import AvatarUpload from '@/components/common/AvatarUpload';
 const Profile = () => {
   const { user, profile, updateProfile } = useAuth();
   const { isAdmin, role } = useEnhancedAuth();
+  const { effectivePlan } = useUnifiedPlan();
+  
+  // Auto-refresh pour les changements de plan
+  useProfileRefresh();
 
   const [profileData, setProfileData] = useState({
     name: profile?.full_name || user?.email?.split('@')[0] || "Utilisateur",
@@ -127,8 +133,8 @@ const Profile = () => {
               />
             </div>
             <CardTitle className="text-xl">{profileData.name}</CardTitle>
-            <CardDescription className="space-y-2">
-              <div className="flex items-center justify-center gap-2">
+            <CardDescription>
+              <div className="flex items-center justify-center gap-2 mb-2">
                 <Mail className="h-3 w-3" />
                 {profileData.email}
               </div>
@@ -157,7 +163,7 @@ const Profile = () => {
               </div>
               <div className="space-y-1">
                 <div className="text-2xl font-bold text-primary">
-                  {isAdmin ? 'Illimité' : profile?.plan || 'Standard'}
+                  {isAdmin ? 'Illimité' : effectivePlan || 'Standard'}
                 </div>
                 <div className="text-xs text-muted-foreground">Plan actuel</div>
               </div>
@@ -331,7 +337,7 @@ const Profile = () => {
                 <div className="space-y-1">
                   <Label className="text-sm text-muted-foreground">Plan</Label>
                   <div className="font-medium">
-                    {isAdmin ? 'Ultra Pro (Admin)' : profile?.plan || 'Standard'}
+                    {isAdmin ? `${effectivePlan} (Admin)` : effectivePlan || 'Standard'}
                   </div>
                 </div>
                 <div className="space-y-1">

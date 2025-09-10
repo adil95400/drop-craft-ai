@@ -23,7 +23,8 @@ import {
   Clock,
   Settings
 } from 'lucide-react';
-import { useAdminActions } from '@/services/adminServices';
+import { useAdminActions } from '@/hooks/useAdminActions';
+import { AdminService } from '@/services/adminServices';
 import { AsyncButton } from '@/components/ui/async-button';
 
 interface AdminActionCardsProps {
@@ -31,7 +32,6 @@ interface AdminActionCardsProps {
 }
 
 export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
-  const adminActions = useAdminActions();
   const [lastResults, setLastResults] = useState({});
   const [isAutoRefresh, setIsAutoRefresh] = useState(false);
 
@@ -57,7 +57,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
     setIsAutoRefresh(true);
     const interval = setInterval(async () => {
       try {
-        await handleActionWithResult(adminActions.updateStatistics, 'updateStatistics');
+        await handleActionWithResult(AdminService.updateStatistics, 'updateStatistics');
       } catch (error) {
         console.error('Auto-refresh failed:', error);
       }
@@ -120,7 +120,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             </CardHeader>
             <CardContent>
               <AsyncButton
-                onClick={() => handleActionWithResult(adminActions.updateData, 'updateData')}
+                onClick={() => handleActionWithResult(AdminService.updateData, 'updateData')}
                 className="w-full"
                 loadingText="Actualisation..."
               >
@@ -143,7 +143,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             </CardHeader>
             <CardContent>
               <AsyncButton
-                onClick={() => handleActionWithResult(adminActions.backupDatabase, 'backupDatabase')}
+                onClick={() => handleActionWithResult(AdminService.backupDatabase, 'backupDatabase')}
                 className="w-full"
                 loadingText="Sauvegarde..."
               >
@@ -166,7 +166,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             </CardHeader>
             <CardContent>
               <AsyncButton
-                onClick={() => handleActionWithResult(adminActions.runSecurityScan, 'runSecurityScan')}
+                onClick={() => handleActionWithResult(AdminService.runSecurityScan, 'runSecurityScan')}
                 className="w-full"
                 loadingText="Scan en cours..."
               >
@@ -189,7 +189,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             </CardHeader>
             <CardContent>
               <AsyncButton
-                onClick={() => handleActionWithResult(adminActions.exportData, 'exportData')}
+                onClick={() => handleActionWithResult(AdminService.exportData, 'exportData')}
                 className="w-full"
                 loadingText="Export..."
               >
@@ -222,7 +222,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             </CardHeader>
             <CardContent>
               <AsyncButton
-                onClick={() => handleActionWithResult(adminActions.updateStatistics, 'updateStatistics')}
+                onClick={() => handleActionWithResult(AdminService.updateStatistics, 'updateStatistics')}
                 className="w-full"
                 loadingText="Calcul..."
               >
@@ -245,7 +245,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             </CardHeader>
             <CardContent>
               <AsyncButton
-                onClick={() => handleActionWithResult(adminActions.verifyIntegrity, 'verifyIntegrity')}
+                onClick={() => handleActionWithResult(AdminService.verifyIntegrity, 'verifyIntegrity')}
                 className="w-full"
                 loadingText="Vérification..."
               >
@@ -268,7 +268,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             </CardHeader>
             <CardContent>
               <AsyncButton
-                onClick={() => handleActionWithResult(adminActions.optimizeIndex, 'optimizeIndex')}
+                onClick={() => handleActionWithResult(AdminService.optimizeIndex, 'optimizeIndex')}
                 className="w-full"
                 loadingText="Optimisation..."
               >
@@ -291,7 +291,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             </CardHeader>
             <CardContent>
               <AsyncButton
-                onClick={() => handleActionWithResult(adminActions.cleanOldLogs, 'cleanOldLogs')}
+                onClick={() => handleActionWithResult(AdminService.cleanOldLogs, 'cleanOldLogs')}
                 className="w-full"
                 loadingText="Nettoyage..."
               >
@@ -324,7 +324,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             </CardHeader>
             <CardContent>
               <AsyncButton
-                onClick={() => handleActionWithResult(adminActions.restartServices, 'restartServices')}
+                onClick={() => handleActionWithResult(AdminService.restartServices, 'restartServices')}
                 className="w-full"
                 loadingText="Redémarrage..."
               >
@@ -347,7 +347,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             </CardHeader>
             <CardContent>
               <AsyncButton
-                onClick={() => handleActionWithResult(adminActions.clearCache, 'clearCache')}
+                onClick={() => handleActionWithResult(AdminService.clearCache, 'clearCache')}
                 className="w-full"
                 loadingText="Vidage..."
               >
@@ -370,7 +370,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             </CardHeader>
             <CardContent>
               <AsyncButton
-                onClick={() => handleActionWithResult(adminActions.optimizeSystem, 'optimizeSystem')}
+                onClick={() => handleActionWithResult(AdminService.optimizeSystem, 'optimizeSystem')}
                 className="w-full"
                 loadingText="Optimisation..."
               >
@@ -393,7 +393,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
             </CardHeader>
             <CardContent>
               <AsyncButton
-                onClick={() => handleActionWithResult(adminActions.runHealthCheck, 'runHealthCheck')}
+                onClick={() => handleActionWithResult(AdminService.runHealthCheck, 'runHealthCheck')}
                 className="w-full bg-green-600 hover:bg-green-700"
                 loadingText="Contrôle..."
               >
