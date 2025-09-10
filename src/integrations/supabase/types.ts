@@ -1692,6 +1692,48 @@ export type Database = {
           },
         ]
       }
+      extension_sync_logs: {
+        Row: {
+          created_at: string
+          error_count: number | null
+          errors: string[] | null
+          extension_version: string | null
+          id: string
+          metadata: Json | null
+          products_count: number | null
+          source: string
+          success_count: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_count?: number | null
+          errors?: string[] | null
+          extension_version?: string | null
+          id?: string
+          metadata?: Json | null
+          products_count?: number | null
+          source: string
+          success_count?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_count?: number | null
+          errors?: string[] | null
+          extension_version?: string | null
+          id?: string
+          metadata?: Json | null
+          products_count?: number | null
+          source?: string
+          success_count?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       extension_webhooks: {
         Row: {
           created_at: string
