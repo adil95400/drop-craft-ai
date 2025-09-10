@@ -223,7 +223,7 @@ export class AdminService {
         .limit(100);
       
       if (profiles) {
-        exportData.tables.profiles = {
+        (exportData.tables as any).profiles = {
           count: profiles.length,
           data: profiles.map(p => ({
             id: p.id,
@@ -277,8 +277,6 @@ export class AdminService {
     console.log('📊 Actualisation des statistiques...');
     
     try {
-      const stats = {};
-      
       // Statistiques utilisateurs
       const { data: profiles } = await supabase
         .from('profiles')
