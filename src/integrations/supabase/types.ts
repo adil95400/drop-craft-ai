@@ -5298,14 +5298,12 @@ export type Database = {
           email: string
           full_name: string
           id: string
-          is_admin: boolean
           last_login_at: string
-          last_sign_in_at: string
           login_count: number
           plan: string
-          role: string
-          role_updated_at: string
+          role: Database["public"]["Enums"]["user_role"]
           subscription_status: string
+          updated_at: string
         }[]
       }
       admin_set_role: {
