@@ -1960,6 +1960,39 @@ export type Database = {
           },
         ]
       }
+      import_configurations: {
+        Row: {
+          config_name: string
+          config_type: string
+          created_at: string
+          id: string
+          is_active: boolean
+          settings: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          config_name: string
+          config_type: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          settings?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          config_name?: string
+          config_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          settings?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       import_connectors: {
         Row: {
           config: Json

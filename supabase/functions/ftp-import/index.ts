@@ -1,4 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -6,36 +6,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface FTPImportRequest {
-  connectorId: string
-  immediate?: boolean
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     )
 
     const authHeader = req.headers.get('Authorization')!
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
-    
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: corsHeaders
-      })
+    const { data: { user } } = await supabaseClient.auth.getUser(token)
+
+    if (!user) {
+      throw new Error('Unauthorized')
     }
 
-    const { connectorId, immediate = false }: FTPImportRequest = await req.json()
+    const { connectorId } = await req.json()
 
-    console.log(`Processing FTP import for connector: ${connectorId}`)
+    console.log('Starting FTP import for connector:', connectorId)
 
     // Get connector details
     const { data: connector, error: connectorError } = await supabaseClient
@@ -46,139 +38,97 @@ serve(async (req) => {
       .single()
 
     if (connectorError || !connector) {
-      return new Response(JSON.stringify({ error: 'Connector not found' }), {
-        status: 404,
-        headers: corsHeaders
+      throw new Error('Connector not found or access denied')
+    }
+
+    // Simulate FTP import
+    const simulatedProducts = []
+    const productCount = Math.floor(Math.random() * 20) + 10
+
+    for (let i = 1; i <= productCount; i++) {
+      simulatedProducts.push({
+        name: `Produit FTP ${i}`,
+        description: `Description du produit importé depuis FTP ${connector.name}`,
+        price: (Math.random() * 100 + 10).toFixed(2),
+        cost_price: (Math.random() * 50 + 5).toFixed(2),
+        sku: `FTP-${connector.id.substring(0, 8)}-${String(i).padStart(3, '0')}`,
+        category: ['Electronics', 'Clothing', 'Home', 'Sports'][Math.floor(Math.random() * 4)],
+        brand: 'FTP Brand',
+        stock_quantity: Math.floor(Math.random() * 100),
+        external_id: `ftp_product_${i}`,
+        image_url: `https://via.placeholder.com/400x400?text=FTP+Product+${i}`
       })
     }
 
-    // Create import job
-    const { data: importJob, error: jobError } = await supabaseClient
-      .from('import_jobs')
-      .insert({
-        user_id: user.id,
-        source_type: 'ftp',
-        source_url: connector.config.url,
-        status: 'processing',
-        mapping_config: connector.config.mapping || {}
-      })
-      .select()
-      .single()
+    let successCount = 0
+    let errorCount = 0
+    const errors: string[] = []
 
-    if (jobError) {
-      console.error('Job creation error:', jobError)
-      return new Response(JSON.stringify({ error: 'Failed to create import job' }), {
-        status: 500,
-        headers: corsHeaders
-      })
-    }
+    for (const product of simulatedProducts) {
+      try {
+        const { error } = await supabaseClient
+          .from('imported_products')
+          .insert({
+            user_id: user.id,
+            name: product.name,
+            description: product.description || '',
+            price: parseFloat(product.price) || 0,
+            cost_price: parseFloat(product.cost_price) || 0,
+            sku: product.sku || '',
+            category: product.category || '',
+            brand: product.brand || '',
+            image_url: product.image_url || '',
+            stock_quantity: parseInt(product.stock_quantity) || 0,
+            status: 'draft',
+            review_status: 'pending',
+            source_url: connector.config?.url || 'ftp://unknown',
+            external_id: product.external_id || product.sku,
+            supplier_name: connector.name
+          })
 
-    // Simulate FTP file download and processing
-    console.log(`Connecting to FTP: ${connector.config.url}`)
-    
-    // Mock FTP processing - in production, use real FTP client
-    const mockProducts = [
-      {
-        name: `Produit FTP ${Date.now()}`,
-        description: 'Produit importé via FTP',
-        price: Math.floor(Math.random() * 100) + 10,
-        cost_price: Math.floor(Math.random() * 50) + 5,
-        currency: 'EUR',
-        sku: `FTP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        category: 'Import FTP',
-        supplier_name: 'FTP Source',
-        status: 'draft',
-        review_status: 'pending'
-      },
-      {
-        name: `Produit FTP ${Date.now() + 1}`,
-        description: 'Autre produit importé via FTP',
-        price: Math.floor(Math.random() * 200) + 20,
-        cost_price: Math.floor(Math.random() * 100) + 10,
-        currency: 'EUR',
-        sku: `FTP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        category: 'Import FTP',
-        supplier_name: 'FTP Source',
-        status: 'draft',
-        review_status: 'pending'
-      }
-    ]
-
-    // Insert imported products
-    const productsToInsert = mockProducts.map(product => ({
-      ...product,
-      user_id: user.id,
-      import_id: importJob.id
-    }))
-
-    const { error: insertError } = await supabaseClient
-      .from('imported_products')
-      .insert(productsToInsert)
-
-    if (insertError) {
-      console.error('Products insertion error:', insertError)
-      
-      // Update job as failed
-      await supabaseClient
-        .from('import_jobs')
-        .update({
-          status: 'failed',
-          error_rows: mockProducts.length,
-          errors: [insertError.message]
-        })
-        .eq('id', importJob.id)
-
-      return new Response(JSON.stringify({ error: 'Failed to insert products' }), {
-        status: 500,
-        headers: corsHeaders
-      })
-    }
-
-    // Update import job as completed
-    await supabaseClient
-      .from('import_jobs')
-      .update({
-        status: 'completed',
-        total_rows: mockProducts.length,
-        success_rows: mockProducts.length,
-        processed_rows: mockProducts.length,
-        error_rows: 0,
-        result_data: {
-          products_imported: mockProducts.length,
-          file_type: connector.config.file_type,
-          ftp_path: connector.config.file_path,
-          completed_at: new Date().toISOString()
+        if (error) {
+          errorCount++
+          errors.push(`Produit ${product.name}: ${error.message}`)
+        } else {
+          successCount++
         }
-      })
-      .eq('id', importJob.id)
+      } catch (error) {
+        errorCount++
+        errors.push(`Produit ${product.name}: ${error}`)
+      }
+    }
 
-    // Update connector last sync
-    await supabaseClient
-      .from('import_connectors')
-      .update({
-        last_sync_at: new Date().toISOString()
-      })
-      .eq('id', connectorId)
+    console.log('FTP import completed:', { successCount, errorCount })
 
-    console.log(`FTP import completed: ${mockProducts.length} products imported`)
-
-    return new Response(JSON.stringify({
-      success: true,
-      import_id: importJob.id,
-      products_imported: mockProducts.length,
-      message: `${mockProducts.length} produits importés avec succès depuis FTP`
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: 'Import FTP réussi',
+        data: {
+          products_imported: successCount,
+          total_processed: simulatedProducts.length,
+          errors: errorCount,
+          connector_id: connectorId,
+          error_details: errors
+        }
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    )
 
   } catch (error) {
     console.error('FTP import error:', error)
-    return new Response(JSON.stringify({
-      success: false,
-      error: error.message
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      }
+    )
   }
 })

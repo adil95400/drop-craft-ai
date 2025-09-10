@@ -311,7 +311,6 @@ export const ProductionImportInterface = () => {
             importMethod="all"
             onExtensionActivated={(ext) => {
               console.log('Extension activée:', ext)
-              // Ici on pourrait déclencher des actions spécifiques selon l'extension
             }}
           />
         </TabsContent>
