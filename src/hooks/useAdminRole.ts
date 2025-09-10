@@ -37,14 +37,31 @@ export const useAdminRole = () => {
       setLoading(true)
       const { data, error } = await supabase.rpc('admin_get_all_users')
       
-      if (error) throw error
+      if (error) {
+        console.error('RPC Error details:', error)
+        throw error
+      }
       
-      setUsers(data?.map((user: any) => ({
-        ...user,
-        last_login_at: user.last_sign_in_at,
-        email: user.email || `user-${user.id}@domain.com`
-      })) || [])
-      return { success: true, data }
+      console.log('Fetched users data:', data)
+      
+      const formattedUsers = data?.map((user: any) => ({
+        id: user.id,
+        email: user.email || `user-${user.id}@domain.com`,
+        full_name: user.full_name || 'Unknown User',
+        role: user.role || 'user',
+        is_admin: user.is_admin || false,
+        created_at: user.created_at,
+        last_sign_in_at: user.last_sign_in_at,
+        role_updated_at: user.role_updated_at,
+        plan: user.plan || 'free',
+        subscription_status: user.subscription_status || 'inactive',
+        last_login_at: user.last_login_at || user.last_sign_in_at,
+        login_count: user.login_count || 0
+      })) || []
+      
+      console.log('Formatted users:', formattedUsers)
+      setUsers(formattedUsers)
+      return { success: true, data: formattedUsers }
     } catch (error: any) {
       console.error('Error fetching users:', error)
       toast({

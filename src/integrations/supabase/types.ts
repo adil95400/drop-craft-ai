@@ -5295,18 +5295,28 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: {
           created_at: string
+          email: string
           full_name: string
           id: string
           is_admin: boolean
           last_login_at: string
+          last_sign_in_at: string
           login_count: number
           plan: string
           role: string
+          role_updated_at: string
           subscription_status: string
         }[]
       }
       admin_set_role: {
         Args: { new_role: string; target_user_id: string }
+        Returns: Json
+      }
+      admin_set_user_role: {
+        Args: {
+          new_role: Database["public"]["Enums"]["user_role"]
+          target_user_id: string
+        }
         Returns: Json
       }
       admin_update_user_plan: {
@@ -5585,7 +5595,7 @@ export type Database = {
         Returns: string
       }
       get_user_role: {
-        Args: { user_id_param?: string }
+        Args: { check_user_id?: string }
         Returns: string
       }
       get_user_role_secure: {
@@ -5644,7 +5654,7 @@ export type Database = {
         Returns: boolean
       }
       is_user_admin: {
-        Args: Record<PropertyKey, never>
+        Args: Record<PropertyKey, never> | { check_user_id?: string }
         Returns: boolean
       }
       log_credential_access: {
