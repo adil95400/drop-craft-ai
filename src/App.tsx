@@ -101,11 +101,13 @@ import Settings from '@/pages/Settings';
 
 // Extensions Pages
 import ExtensionsHub from '@/pages/ExtensionsHub';
-import MarketplacePage from '@/pages/extensions/MarketplacePage';
-import DeveloperPage from '@/pages/extensions/DeveloperPage';
-import CLIToolsPage from '@/pages/extensions/CLIToolsPage';
-import WhiteLabelPage from '@/pages/extensions/WhiteLabelPage';
-import SSOPage from '@/pages/extensions/SSOPage';
+import Extensions from '@/pages/Extensions';
+import ExtensionMarketplace from '@/pages/ExtensionMarketplace';
+import ExtensionDeveloper from '@/pages/ExtensionDeveloper';
+import ExtensionCLI from '@/pages/ExtensionCLI';
+import ExtensionWhiteLabel from '@/pages/ExtensionWhiteLabel';
+import ExtensionSSO from '@/pages/ExtensionSSO';
+import PrintManager from '@/components/print/PrintManager';
 
 // Landing Pages
 import Features from '@/pages/Features';
@@ -377,12 +379,52 @@ function App() {
                 <Route path="/quotas" element={<AppLayout><QuotaManagerPage /></AppLayout>} />
                 
                 {/* Extensions Routes */}
-                <Route path="/extensions" element={<AppLayout><ExtensionsHub /></AppLayout>} />
-                <Route path="/extensions/marketplace" element={<AppLayout><MarketplacePage /></AppLayout>} />
-                <Route path="/extensions/developer" element={<AppLayout><DeveloperPage /></AppLayout>} />
-                <Route path="/extensions/cli" element={<AppLayout><CLIToolsPage /></AppLayout>} />
-                <Route path="/extensions/white-label" element={<AppLayout><WhiteLabelPage /></AppLayout>} />
-                <Route path="/extensions/sso" element={<AppLayout><SSOPage /></AppLayout>} />
+                <Route path="/extensions" element={
+                  <ProtectedRoute>
+                    <AppLayout><Extensions /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/extensions/hub" element={
+                  <ProtectedRoute>
+                    <AppLayout><ExtensionsHub /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/extensions/marketplace" element={
+                  <ProtectedRoute>
+                    <AppLayout><ExtensionMarketplace /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/extensions/developer" element={
+                  <ProtectedRoute>
+                    <AppLayout><ExtensionDeveloper /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/extensions/cli" element={
+                  <ProtectedRoute>
+                    <RequirePlan minPlan="pro">
+                      <AppLayout><ExtensionCLI /></AppLayout>
+                    </RequirePlan>
+                  </ProtectedRoute>
+                } />
+                <Route path="/extensions/white-label" element={
+                  <ProtectedRoute>
+                    <RequirePlan minPlan="ultra_pro">
+                      <AppLayout><ExtensionWhiteLabel /></AppLayout>
+                    </RequirePlan>
+                  </ProtectedRoute>
+                } />
+                <Route path="/extensions/sso" element={
+                  <ProtectedRoute>
+                    <RequirePlan minPlan="ultra_pro">
+                      <AppLayout><ExtensionSSO /></AppLayout>
+                    </RequirePlan>
+                  </ProtectedRoute>
+                } />
+                <Route path="/print" element={
+                  <ProtectedRoute>
+                    <AppLayout><PrintManager /></AppLayout>
+                  </ProtectedRoute>
+                } />
                 
                 <Route path="/extension-download" element={<ExtensionDownloadPage />} />
                 

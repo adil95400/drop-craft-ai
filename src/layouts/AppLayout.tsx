@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { 
   Bell, Search, User, Settings, Menu, Home, Package, 
   ShoppingCart, TrendingUp, Users, FileText, Zap,
-  Brain, Shield, Plug, Crown, Upload, BarChart3, Truck
+  Brain, Shield, Plug, Crown, Upload, BarChart3, Truck, Puzzle
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -25,6 +25,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { useEnhancedAuth } from '@/hooks/useEnhancedAuth';
 import { NotificationBell } from '@/components/notifications/NotificationService';
+import { ExtensionMenu } from '@/components/navigation/ExtensionMenu';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -52,6 +53,7 @@ const navigation: NavItem[] = [
   { title: 'Marketing', url: '/marketing', icon: TrendingUp, requiredPlan: 'pro' },
   { title: 'Blog', url: '/blog', icon: FileText, requiredPlan: 'pro' },
   { title: 'SEO', url: '/seo', icon: Search, requiredPlan: 'pro' },
+  { title: 'Extensions', url: '/extensions', icon: Puzzle, badge: 'Nouveau' },
   { title: 'IA Assistant', url: '/ai', icon: Brain, badge: 'AI', requiredPlan: 'ultra_pro' },
   { title: 'Automation', url: '/automation', icon: Zap, requiredPlan: 'ultra_pro' },
   { title: 'Sécurité', url: '/security', icon: Shield, requiredPlan: 'ultra_pro' },
@@ -208,6 +210,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
             {/* Actions */}
             <div className="flex items-center gap-2">
+              <ExtensionMenu />
               <NotificationBell />
 
               <DropdownMenu>
