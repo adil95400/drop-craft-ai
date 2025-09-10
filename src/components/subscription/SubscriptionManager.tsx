@@ -1,256 +1,251 @@
-import React, { useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  CreditCard, 
-  Calendar, 
-  TrendingUp, 
-  Settings,
-  ExternalLink,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle,
-  Crown,
-  Zap
-} from 'lucide-react';
-import { useStripeSubscription } from '@/hooks/useStripeSubscription';
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { useStripeSubscription } from '@/hooks/useStripeSubscription'
+import { Crown, CreditCard, Calendar, RefreshCw, ExternalLink } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
-export const SubscriptionManager: React.FC = () => {
-  const { subscription, loading, checkSubscription, openCustomerPortal } = useStripeSubscription();
-  const { plan } = useUnifiedPlan();
-  const { user } = useAuth();
-  const { toast } = useToast();
+export const SubscriptionManager = () => {
+  const { 
+    subscription,
+    loading,
+    checkSubscription,
+    createCheckout,
+    openCustomerPortal
+  } = useStripeSubscription()
+  const { toast } = useToast()
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
-    if (user) {
-      checkSubscription();
-    }
-  }, [user, checkSubscription]);
+    checkSubscription()
+  }, [checkSubscription])
 
-  const handleRefresh = async () => {
+  const handleUpgrade = async (plan: 'pro' | 'ultra_pro') => {
     try {
-      await checkSubscription();
-      toast({
-        title: "Abonnement actualisé",
-        description: "Votre statut d'abonnement a été mis à jour."
-      });
+      await createCheckout(plan)
     } catch (error) {
       toast({
         title: "Erreur",
-        description: "Impossible d'actualiser l'abonnement.",
+        description: "Impossible de créer la session de paiement",
         variant: "destructive"
-      });
+      })
     }
-  };
+  }
 
-  const getPlanDetails = (planType: string) => {
-    switch (planType) {
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    try {
+      await checkSubscription()
+      toast({
+        title: "Statut mis à jour",
+        description: "Votre statut d'abonnement a été actualisé",
+      })
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le statut",
+        variant: "destructive"
+      })
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
+  const handleManageSubscription = async () => {
+    try {
+      await openCustomerPortal()
+    } catch (error) {
+      toast({
+        title: "Erreur", 
+        description: "Impossible d'ouvrir le portail de gestion",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
+  const getPlanBadge = (tier: string | null) => {
+    switch (tier) {
       case 'pro':
-        return {
-          name: 'Pro',
-          icon: <Crown className="w-5 h-5 text-blue-600" />,
-          color: 'text-blue-600',
-          bgColor: 'bg-blue-50 border-blue-200',
-          price: '49€/mois'
-        };
+        return <Badge className="bg-blue-100 text-blue-800">Pro</Badge>
       case 'ultra_pro':
-        return {
-          name: 'Ultra Pro',
-          icon: <Zap className="w-5 h-5 text-purple-600" />,
-          color: 'text-purple-600',
-          bgColor: 'bg-purple-50 border-purple-200',
-          price: '149€/mois'
-        };
+        return <Badge className="bg-purple-100 text-purple-800"><Crown className="w-3 h-3 mr-1" />Ultra Pro</Badge>
       default:
-        return {
-          name: 'Standard',
-          icon: <CheckCircle className="w-5 h-5 text-green-600" />,
-          color: 'text-green-600',
-          bgColor: 'bg-green-50 border-green-200',
-          price: 'Gratuit'
-        };
+        return <Badge variant="secondary">Standard</Badge>
     }
-  };
+  }
 
-  const planDetails = getPlanDetails(plan);
-  const isSubscribed = subscription?.subscribed || false;
-  const hasSubscriptionEnd = subscription?.subscription_end;
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-8">
+          <RefreshCw className="w-6 h-6 animate-spin mr-2" />
+          Chargement...
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <div className="space-y-6">
-      {/* Current Plan Card */}
-      <Card className={`${planDetails.bgColor}`}>
+      {/* Current Plan Status */}
+      <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {planDetails.icon}
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  Plan {planDetails.name}
-                  {isSubscribed && (
-                    <Badge className="bg-success text-success-foreground">
-                      Actif
-                    </Badge>
-                  )}
-                </CardTitle>
-                <CardDescription className={planDetails.color}>
-                  {planDetails.price}
-                </CardDescription>
-              </div>
-            </div>
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <CreditCard className="w-5 h-5" />
+              Mon Abonnement
+            </span>
             <Button
               variant="outline"
               size="sm"
               onClick={handleRefresh}
-              disabled={loading}
+              disabled={refreshing}
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              {refreshing ? (
+                <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              Actualiser
             </Button>
-          </div>
-        </CardHeader>
-
-        {hasSubscriptionEnd && (
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="w-4 h-4" />
-              <span>
-                Renouvellement dans {formatDistanceToNow(new Date(subscription.subscription_end), { 
-                  addSuffix: true, 
-                  locale: fr 
-                })}
-              </span>
-            </div>
-          </CardContent>
-        )}
-      </Card>
-
-      {/* Subscription Management */}
-      {isSubscribed && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5" />
-              Gestion de l'abonnement
-            </CardTitle>
-            <CardDescription>
-              Gérez votre facturation, moyens de paiement et abonnement
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button
-              onClick={openCustomerPortal}
-              disabled={loading}
-              className="w-full"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Ouvrir le portail client
-              <ExternalLink className="w-4 h-4 ml-2" />
-            </Button>
-            
-            <div className="text-xs text-muted-foreground text-center">
-              Le portail client vous permet de mettre à jour vos informations de facturation,
-              télécharger vos factures et gérer votre abonnement.
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Usage & Limits */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5" />
-            Utilisation du plan
           </CardTitle>
-          <CardDescription>
-            Votre utilisation des fonctionnalités du plan {planDetails.name}
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <UsageIndicator
-            label="Imports produits"
-            current={12}
-            limit={plan === 'standard' ? 10 : plan === 'pro' ? 100 : -1}
-            unit="/jour"
-          />
-          <UsageIndicator
-            label="Catalogue produits"
-            current={89}
-            limit={plan === 'standard' ? 100 : -1}
-            unit=" produits"
-          />
-          <UsageIndicator
-            label="Automatisations"
-            current={2}
-            limit={plan === 'standard' ? 0 : plan === 'pro' ? 5 : -1}
-            unit="/mois"
-          />
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Plan actuel</p>
+              <div className="flex items-center gap-2 mt-1">
+                {getPlanBadge(subscription?.subscription_tier)}
+                {subscription?.subscribed && (
+                  <Badge className="bg-green-100 text-green-800">Actif</Badge>
+                )}
+              </div>
+            </div>
+            {subscription?.subscribed && subscription?.subscription_end && (
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground">Renouvellement</p>
+                <div className="flex items-center gap-1 mt-1">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">{formatDate(subscription.subscription_end)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {subscription?.subscribed && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleManageSubscription}
+                className="flex items-center gap-2"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Gérer mon abonnement
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Upgrade Suggestion */}
-      {plan === 'standard' && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <AlertCircle className="w-5 h-5 text-primary mt-1" />
+      {/* Upgrade Options */}
+      {!subscription?.subscribed && (
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card className="relative">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <CreditCard className="w-4 h-4 text-blue-600" />
+                </div>
+                Plan Pro
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
-                <h3 className="font-semibold text-primary mb-2">
-                  Débloquez plus de fonctionnalités
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Passez au plan Pro pour obtenir plus d'imports, l'IA Analytics et l'automatisation.
-                </p>
-                <Button size="sm" className="bg-primary hover:bg-primary/90">
-                  <Crown className="w-4 h-4 mr-2" />
-                  Découvrir le plan Pro
-                </Button>
+                <div className="text-3xl font-bold">19,99€</div>
+                <div className="text-sm text-muted-foreground">par mois</div>
               </div>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                  Fonctionnalités avancées
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                  Support prioritaire
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                  Analytics détaillés
+                </li>
+              </ul>
+              <Button 
+                className="w-full" 
+                onClick={() => handleUpgrade('pro')}
+                disabled={loading}
+              >
+                Passer au Pro
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="relative border-purple-200">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+                <Crown className="w-3 h-3 mr-1" />
+                Populaire
+              </Badge>
             </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-};
-
-interface UsageIndicatorProps {
-  label: string;
-  current: number;
-  limit: number;
-  unit: string;
-}
-
-const UsageIndicator: React.FC<UsageIndicatorProps> = ({ label, current, limit, unit }) => {
-  const isUnlimited = limit === -1;
-  const percentage = isUnlimited ? 0 : Math.min((current / limit) * 100, 100);
-  const isNearLimit = percentage > 80;
-  const isAtLimit = percentage >= 100;
-
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm">
-        <span className="font-medium">{label}</span>
-        <span className={`${isAtLimit ? 'text-destructive' : isNearLimit ? 'text-warning' : 'text-muted-foreground'}`}>
-          {isUnlimited ? `${current}${unit} (illimité)` : `${current}/${limit}${unit}`}
-        </span>
-      </div>
-      {!isUnlimited && (
-        <div className="w-full bg-secondary rounded-full h-2">
-          <div
-            className={`h-2 rounded-full transition-all duration-300 ${
-              isAtLimit ? 'bg-destructive' : isNearLimit ? 'bg-warning' : 'bg-primary'
-            }`}
-            style={{ width: `${percentage}%` }}
-          />
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Crown className="w-4 h-4 text-white" />
+                </div>
+                Plan Ultra Pro
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="text-3xl font-bold">49,99€</div>
+                <div className="text-sm text-muted-foreground">par mois</div>
+              </div>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                  Toutes les fonctionnalités Pro
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                  IA avancée et automatisation
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                  Intégrations entreprise
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                  Support 24/7
+                </li>
+              </ul>
+              <Button 
+                className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700" 
+                onClick={() => handleUpgrade('ultra_pro')}
+                disabled={loading}
+              >
+                Passer à Ultra Pro
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>
-  );
-};
+  )
+}

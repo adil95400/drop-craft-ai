@@ -51,7 +51,7 @@ interface UserProfile {
 
 export default function AdminDashboard() {
   const { user } = useAuth()
-  const { isAdmin } = useUserRole()
+  const { isAdmin } = useAdminRole()
   const { toast } = useToast()
   
   const [users, setUsers] = useState<UserProfile[]>([])

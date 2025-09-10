@@ -61,7 +61,7 @@ export const useAdminRole = () => {
   const changeUserRole = async (targetUserId: string, newRole: 'admin' | 'user') => {
     try {
       setLoading(true)
-      const { data, error } = await supabase.rpc('admin_set_user_role', {
+      const { data, error } = await supabase.rpc('admin_update_user_role', {
         target_user_id: targetUserId,
         new_role: newRole
       })
