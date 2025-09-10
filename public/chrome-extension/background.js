@@ -468,7 +468,7 @@ class DropCraftBackground {
 
   async syncToApplication(products) {
     try {
-      const response = await fetch('https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/api/extension/sync', {
+      const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

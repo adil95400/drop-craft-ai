@@ -11,6 +11,8 @@ class DropCraftContentScript {
     this.setupMessageListener();
     this.injectStyles();
     this.setupAutoDetection();
+    this.injectScript();
+    this.setupInjectedScriptListener();
   }
 
   setupMessageListener() {
@@ -45,8 +47,13 @@ class DropCraftContentScript {
         sendResponse({ success: true });
         break;
         
-      case 'STOP_AUTO_SCRAPE':
+        case 'STOP_AUTO_SCRAPE':
         this.stopAutoScraping();
+        sendResponse({ success: true });
+        break;
+        
+      case 'INJECT_ONE_CLICK_BUTTONS':
+        this.injectOneClickButtons();
         sendResponse({ success: true });
         break;
     }
@@ -157,6 +164,115 @@ class DropCraftContentScript {
     
     // Deduplicate products
     return this.deduplicateProducts(products);
+  }
+
+  injectScript() {
+    // Inject the advanced detector script into the page
+    const script = document.createElement('script');
+    script.src = chrome.runtime.getURL('injected.js');
+    script.onload = function() {
+      this.remove();
+    };
+    (document.head || document.documentElement).appendChild(script);
+  }
+
+  setupInjectedScriptListener() {
+    window.addEventListener('message', (event) => {
+      if (event.source !== window || !event.data.type) return;
+      
+      switch (event.data.type) {
+        case 'IMPORT_PRODUCTS':
+          this.handleImportProducts(event.data.products);
+          break;
+          
+        case 'PRODUCTS_EXTRACTED':
+          this.handleExtractedProducts(event.data.products);
+          break;
+          
+        case 'SINGLE_PRODUCT_EXTRACTED':
+          if (event.data.product) {
+            this.handleImportProducts([event.data.product]);
+          }
+          break;
+      }
+    });
+  }
+
+  async handleImportProducts(products) {
+    if (!products || products.length === 0) return;
+    
+    this.showScrapingIndicator(`Importation de ${products.length} produit(s)...`);
+    
+    try {
+      // Send to background script for processing
+      chrome.runtime.sendMessage({
+        type: 'PRODUCTS_SCRAPED',
+        products: products
+      });
+      
+      this.showImportNotification(`${products.length} produit(s) importé(s) avec succès!`);
+      this.hideScrapingIndicator();
+    } catch (error) {
+      this.showImportNotification('Erreur lors de l\'importation', 'error');
+      this.hideScrapingIndicator();
+    }
+  }
+
+  handleExtractedProducts(products) {
+    this.handleImportProducts(products);
+  }
+
+  injectOneClickButtons() {
+    // Trigger the injected script to add one-click buttons
+    window.postMessage({
+      type: 'INJECT_ONE_CLICK_BUTTONS'
+    }, '*');
+  }
+
+  showImportNotification(message, type = 'success') {
+    // Create a toast notification
+    const toast = document.createElement('div');
+    toast.className = `dropcraft-toast dropcraft-toast-${type}`;
+    toast.textContent = message;
+    
+    toast.style.cssText = `
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background: ${type === 'success' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'};
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      z-index: 10002;
+      animation: slideIn 0.3s ease-out;
+      max-width: 300px;
+    `;
+    
+    // Add animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+      toast.style.animation = 'slideIn 0.3s ease-out reverse';
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    }, 3000);
   }
 
   extractFromStructuredData() {
