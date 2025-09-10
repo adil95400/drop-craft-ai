@@ -196,7 +196,7 @@ chrome.action.onClicked.addListener((tab) => {
     }, 2000);
   }
 })();`,
-  "popup.html": \`<!DOCTYPE html>
+  "popup.html": `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -251,7 +251,7 @@ chrome.action.onClicked.addListener((tab) => {
   
   <script src="popup.js"></script>
 </body>
-</html>\`
+</html>`
 };
 
 function createZipFile(files: Record<string, string>): Uint8Array {
