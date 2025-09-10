@@ -123,6 +123,7 @@ import Status from '@/pages/Status';
 import UnifiedDashboardPage from '@/pages/UnifiedDashboardPage';
 
 import { ExtensionDownloadPage } from "./pages/ExtensionDownloadPage";
+import { TestUnifiedFunctions } from "./components/TestUnifiedFunctions";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -427,6 +428,7 @@ function App() {
                 } />
                 
                 <Route path="/extension-download" element={<ExtensionDownloadPage />} />
+                <Route path="/test-functions" element={<TestUnifiedFunctions />} />
                 
                 {/* Landing Pages */}
                 <Route path="/features" element={<Features />} />
