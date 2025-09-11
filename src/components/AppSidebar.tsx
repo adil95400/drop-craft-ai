@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, Search, Bot, Sparkles, ShoppingCart, Package, BarChart3, Users, ShieldCheck, Zap, Settings, HelpCircle } from "lucide-react";
+import { ChevronDown, Search, Bot, Sparkles, ShoppingCart, Package, BarChart3, Users, ShieldCheck, Zap, Settings, HelpCircle, Store } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -62,6 +62,12 @@ const navigationGroups = [
     title: "Commerce",
     icon: ShoppingCart,
     items: [
+      {
+        title: "Boutiques",
+        url: "/stores",
+        icon: Store,
+        badge: "Stores"
+      },
       {
         title: "Import Produits",
         url: "/import",

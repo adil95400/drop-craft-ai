@@ -1,6 +1,7 @@
 import React from 'react';
 import { UnifiedHeader } from '@/components/unified/UnifiedHeader';
 import { SuppliersHub } from '@/components/suppliers/SuppliersHub';
+import { StoresOverview } from '@/components/dashboard/StoresOverview';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,24 +36,24 @@ const UnifiedDashboardPage: React.FC = () => {
 
   const quickActions = [
     {
+      title: "Connecter une boutique",
+      description: "Synchroniser avec vos plateformes e-commerce",
+      icon: Plus,
+      action: () => navigate('/stores'),
+      color: "bg-blue-500"
+    },
+    {
       title: "Connecter un fournisseur",
       description: "Ajouter une nouvelle source de produits",
       icon: Plus,
       action: () => navigate('/suppliers'),
-      color: "bg-blue-500"
+      color: "bg-green-500"
     },
     {
       title: "Importer des produits",
       description: "Synchroniser votre catalogue",
       icon: Package,
       action: () => navigate('/import'),
-      color: "bg-green-500"
-    },
-    {
-      title: "Voir les commandes",
-      description: "Gérer les commandes clients",
-      icon: ShoppingCart,
-      action: () => navigate('/orders'),
       color: "bg-orange-500"
     },
     {
@@ -132,6 +133,9 @@ const UnifiedDashboardPage: React.FC = () => {
           })}
         </div>
 
+        {/* Stores Overview */}
+        <StoresOverview />
+
         {/* Quick Actions */}
         <Card>
           <CardHeader>
@@ -167,13 +171,18 @@ const UnifiedDashboardPage: React.FC = () => {
         </Card>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="suppliers" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs defaultValue="stores" className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="stores">Boutiques</TabsTrigger>
             <TabsTrigger value="suppliers">Fournisseurs</TabsTrigger>
             <TabsTrigger value="products">Produits</TabsTrigger>
             <TabsTrigger value="orders">Commandes</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="stores" className="mt-6">
+            <StoresOverview />
+          </TabsContent>
 
           <TabsContent value="suppliers" className="mt-6">
             <SuppliersHub />

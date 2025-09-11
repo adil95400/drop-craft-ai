@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { 
   Bell, Search, User, Settings, Menu, Home, Package, 
   ShoppingCart, TrendingUp, Users, FileText, Zap,
-  Brain, Shield, Plug, Crown, Upload, BarChart3, Truck, Puzzle
+  Brain, Shield, Plug, Crown, Upload, BarChart3, Truck, Puzzle, Store
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -41,6 +41,7 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   { title: 'Dashboard', url: '/dashboard', icon: Home },
+  { title: 'Boutiques', url: '/stores', icon: Store, badge: 'Stores' },
   { title: 'Produits', url: '/products', icon: Package },
   { title: 'Catalogue', url: '/catalog', icon: Package, requiredPlan: 'pro' },
   { title: 'Commandes', url: '/orders', icon: ShoppingCart },
