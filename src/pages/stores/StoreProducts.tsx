@@ -26,8 +26,14 @@ import {
   Eye,
   Package,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  Download,
+  Upload
 } from 'lucide-react'
+import { ProductImportDialog } from '@/components/stores/ProductImportDialog'
+import { ProductExportDialog } from '@/components/stores/ProductExportDialog'
+import { useParams } from 'react-router-dom'
+import { useStores } from '@/hooks/useStores'
 
 interface Product {
   id: string
@@ -94,8 +100,12 @@ const statusLabels = {
 }
 
 export function StoreProducts() {
+  const { storeId } = useParams()
+  const { stores } = useStores()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  
+  const store = stores.find(s => s.id === storeId)
 
   const filteredProducts = mockProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -183,7 +193,23 @@ export function StoreProducts() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Produits</CardTitle>
-            <Button>Ajouter un produit</Button>
+            <div className="flex items-center space-x-2">
+              {store && (
+                <>
+                  <ProductImportDialog 
+                    storeId={store.id}
+                    storeName={store.name}
+                    platform={store.platform}
+                  />
+                  <ProductExportDialog 
+                    storeId={store.id}
+                    storeName={store.name}
+                    platform={store.platform}
+                  />
+                </>
+              )}
+              <Button>Ajouter un produit</Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
