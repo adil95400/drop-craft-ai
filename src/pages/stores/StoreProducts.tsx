@@ -32,6 +32,7 @@ import {
 } from 'lucide-react'
 import { ProductImportDialog } from '@/components/stores/ProductImportDialog'
 import { ProductExportDialog } from '@/components/stores/ProductExportDialog'
+import { StoreSettingsDialog } from '@/components/stores/StoreSettingsDialog'
 import { useParams } from 'react-router-dom'
 import { useStores } from '@/hooks/useStores'
 
@@ -101,7 +102,7 @@ const statusLabels = {
 
 export function StoreProducts() {
   const { storeId } = useParams()
-  const { stores } = useStores()
+  const { stores, refetch } = useStores()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   
@@ -196,6 +197,10 @@ export function StoreProducts() {
             <div className="flex items-center space-x-2">
               {store && (
                 <>
+                  <StoreSettingsDialog 
+                    store={store}
+                    onUpdate={refetch}
+                  />
                   <ProductImportDialog 
                     storeId={store.id}
                     storeName={store.name}

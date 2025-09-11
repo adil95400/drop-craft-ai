@@ -19,12 +19,18 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function fetchShopifyProducts(storeConfig: any) {
   try {
+    console.log('Store config received:', JSON.stringify(storeConfig, null, 2));
     const credentials = storeConfig.credentials || storeConfig;
+    console.log('Extracted credentials:', JSON.stringify(credentials, null, 2));
+    
     const { shop_domain, access_token } = credentials;
     
     if (!shop_domain || !access_token) {
+      console.error('Missing credentials - shop_domain:', shop_domain, 'access_token:', access_token);
       throw new Error('Missing Shopify credentials: shop_domain and access_token required');
     }
+    
+    console.log('Making API call to Shopify:', `https://${shop_domain}/admin/api/2023-10/products.json`);
 
     const response = await fetch(
       `https://${shop_domain}/admin/api/2023-10/products.json?limit=50`,
@@ -37,8 +43,13 @@ async function fetchShopifyProducts(storeConfig: any) {
     );
 
     if (!response.ok) {
-      throw new Error(`Shopify API error: ${response.statusText}`);
+      console.error('Shopify API Response:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('Error details:', errorText);
+      throw new Error(`Shopify API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
+    
+    console.log('Shopify API call successful');
 
     const data = await response.json();
     
@@ -56,7 +67,8 @@ async function fetchShopifyProducts(storeConfig: any) {
     }));
   } catch (error) {
     console.error('Error fetching Shopify products:', error);
-    throw error;
+    console.error('Error stack:', error.stack);
+    throw new Error(`Shopify connection failed: ${error.message}`);
   }
 }
 
@@ -118,6 +130,7 @@ serve(async (req) => {
     }
 
     // Récupérer la configuration du store
+    console.log('Fetching store configuration for ID:', storeId);
     const { data: store, error: storeError } = await supabase
       .from('store_integrations')
       .select('*')
@@ -125,8 +138,12 @@ serve(async (req) => {
       .single();
 
     if (storeError || !store) {
-      throw new Error('Store not found');
+      console.error('Store fetch error:', storeError);
+      throw new Error(`Store not found: ${storeError?.message || 'Unknown error'}`);
     }
+
+    console.log('Store found:', store.name, 'Platform:', platform);
+    console.log('Store credentials available:', !!store.credentials);
 
     let products = [];
 
@@ -180,10 +197,12 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Error in store-product-fetch:', error);
+    console.error('Request details - storeId:', storeId, 'platform:', platform);
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: error.message,
+        details: error.stack
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

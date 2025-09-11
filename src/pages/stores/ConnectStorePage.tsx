@@ -40,7 +40,7 @@ const ConnectStorePage = () => {
 
     // Validation des credentials selon la plateforme
     const requiredFields = {
-      shopify: ['apiKey', 'apiSecret'],
+      shopify: ['accessToken'],
       woocommerce: ['apiKey', 'apiSecret'],
       prestashop: ['apiKey'],
       magento: ['accessToken']
@@ -66,8 +66,7 @@ const ConnectStorePage = () => {
       if (selectedPlatform === 'shopify') {
         credentials = {
           shop_domain: formData.domain.replace(/^https?:\/\//, '').replace(/\/$/, ''),
-          access_token: formData.apiKey,
-          api_secret: formData.apiSecret
+          access_token: formData.accessToken
         }
       } else if (selectedPlatform === 'woocommerce') {
         credentials = {
@@ -114,15 +113,14 @@ const ConnectStorePage = () => {
   const renderPlatformForm = () => {
     if (!selectedPlatform) return null
 
-    const platformConfig = {
-      shopify: {
-        title: "Connecter Shopify",
-        description: "Connectez votre boutique Shopify en utilisant l'API",
-        fields: [
-          { key: 'apiKey', label: 'API Key', placeholder: 'Votre clé API Shopify', required: true },
-          { key: 'apiSecret', label: 'API Secret', placeholder: 'Votre secret API Shopify', required: true }
-        ]
-      },
+  const platformConfig = {
+    shopify: {
+      title: "Connecter Shopify",
+      description: "Connectez votre boutique Shopify en utilisant l'API Admin",
+      fields: [
+        { key: 'accessToken', label: 'Access Token', placeholder: 'Votre token d\'accès Shopify (Private App)', required: true }
+      ]
+    },
       woocommerce: {
         title: "Connecter WooCommerce",
         description: "Connectez votre boutique WooCommerce via l'API REST",
