@@ -122,6 +122,12 @@ import Status from '@/pages/Status';
 // Unified Pages
 import UnifiedDashboardPage from '@/pages/UnifiedDashboardPage';
 
+// Store Pages
+import StoresPage from '@/pages/stores/StoresPage';
+import ConnectStorePage from '@/pages/stores/ConnectStorePage';
+import StoreDashboardPage from '@/pages/stores/StoreDashboardPage';
+import StoreSettingsPage from '@/pages/stores/StoreSettingsPage';
+
 import { ExtensionDownloadPage } from "./pages/ExtensionDownloadPage";
 import { TestUnifiedFunctions } from "./components/TestUnifiedFunctions";
 
@@ -223,6 +229,28 @@ function App() {
                 <Route path="/marketing" element={
                   <ProtectedRoute>
                     <AppLayout><ModernMarketingPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Stores */}
+                <Route path="/stores" element={
+                  <ProtectedRoute>
+                    <AppLayout><StoresPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/stores/connect" element={
+                  <ProtectedRoute>
+                    <AppLayout><ConnectStorePage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/stores/:storeId" element={
+                  <ProtectedRoute>
+                    <AppLayout><StoreDashboardPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/stores/:storeId/settings" element={
+                  <ProtectedRoute>
+                    <AppLayout><StoreSettingsPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 
