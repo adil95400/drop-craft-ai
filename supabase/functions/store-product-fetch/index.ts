@@ -19,8 +19,13 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function fetchShopifyProducts(storeConfig: any) {
   try {
-    const { shop_domain, access_token } = storeConfig;
+    const credentials = storeConfig.credentials || storeConfig;
+    const { shop_domain, access_token } = credentials;
     
+    if (!shop_domain || !access_token) {
+      throw new Error('Missing Shopify credentials: shop_domain and access_token required');
+    }
+
     const response = await fetch(
       `https://${shop_domain}/admin/api/2023-10/products.json?limit=50`,
       {
@@ -57,15 +62,20 @@ async function fetchShopifyProducts(storeConfig: any) {
 
 async function fetchWooCommerceProducts(storeConfig: any) {
   try {
-    const { shop_domain, consumer_key, consumer_secret } = storeConfig;
+    const credentials = storeConfig.credentials || storeConfig;
+    const { shop_domain, consumer_key, consumer_secret } = credentials;
     
-    const credentials = btoa(`${consumer_key}:${consumer_secret}`);
+    if (!shop_domain || !consumer_key || !consumer_secret) {
+      throw new Error('Missing WooCommerce credentials: shop_domain, consumer_key and consumer_secret required');
+    }
+
+    const authHeader = btoa(`${consumer_key}:${consumer_secret}`);
     
     const response = await fetch(
       `${shop_domain}/wp-json/wc/v3/products?per_page=50`,
       {
         headers: {
-          'Authorization': `Basic ${credentials}`,
+          'Authorization': `Basic ${authHeader}`,
           'Content-Type': 'application/json',
         },
       }

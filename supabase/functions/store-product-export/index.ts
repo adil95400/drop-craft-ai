@@ -20,7 +20,12 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function exportToShopify(storeConfig: any, product: any) {
   try {
-    const { shop_domain, access_token } = storeConfig;
+    const credentials = storeConfig.credentials || storeConfig;
+    const { shop_domain, access_token } = credentials;
+    
+    if (!shop_domain || !access_token) {
+      throw new Error('Missing Shopify credentials: shop_domain and access_token required');
+    }
     
     const shopifyProduct = {
       product: {
@@ -66,9 +71,14 @@ async function exportToShopify(storeConfig: any, product: any) {
 
 async function exportToWooCommerce(storeConfig: any, product: any) {
   try {
-    const { shop_domain, consumer_key, consumer_secret } = storeConfig;
+    const credentials = storeConfig.credentials || storeConfig;
+    const { shop_domain, consumer_key, consumer_secret } = credentials;
     
-    const credentials = btoa(`${consumer_key}:${consumer_secret}`);
+    if (!shop_domain || !consumer_key || !consumer_secret) {
+      throw new Error('Missing WooCommerce credentials: shop_domain, consumer_key and consumer_secret required');
+    }
+
+    const authHeader = btoa(`${consumer_key}:${consumer_secret}`);
     
     const wooProduct = {
       name: product.name,
@@ -89,7 +99,7 @@ async function exportToWooCommerce(storeConfig: any, product: any) {
       {
         method: 'POST',
         headers: {
-          'Authorization': `Basic ${credentials}`,
+          'Authorization': `Basic ${authHeader}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(wooProduct),

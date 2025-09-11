@@ -38,12 +38,60 @@ const ConnectStorePage = () => {
       return
     }
 
+    // Validation des credentials selon la plateforme
+    const requiredFields = {
+      shopify: ['apiKey', 'apiSecret'],
+      woocommerce: ['apiKey', 'apiSecret'],
+      prestashop: ['apiKey'],
+      magento: ['accessToken']
+    }
+
+    const required = requiredFields[selectedPlatform as keyof typeof requiredFields] || []
+    const missingFields = required.filter(field => !formData[field as keyof typeof formData])
+    
+    if (missingFields.length > 0) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs API obligatoires",
+        variant: "destructive"
+      })
+      return
+    }
+
     setLoading(true)
     try {
+      // Préparer les credentials selon la plateforme
+      let credentials = {}
+      
+      if (selectedPlatform === 'shopify') {
+        credentials = {
+          shop_domain: formData.domain.replace(/^https?:\/\//, '').replace(/\/$/, ''),
+          access_token: formData.apiKey,
+          api_secret: formData.apiSecret
+        }
+      } else if (selectedPlatform === 'woocommerce') {
+        credentials = {
+          shop_domain: formData.domain.startsWith('http') ? formData.domain : `https://${formData.domain}`,
+          consumer_key: formData.apiKey,
+          consumer_secret: formData.apiSecret
+        }
+      } else if (selectedPlatform === 'prestashop') {
+        credentials = {
+          shop_domain: formData.domain.startsWith('http') ? formData.domain : `https://${formData.domain}`,
+          webservice_key: formData.apiKey
+        }
+      } else if (selectedPlatform === 'magento') {
+        credentials = {
+          shop_domain: formData.domain.startsWith('http') ? formData.domain : `https://${formData.domain}`,
+          access_token: formData.accessToken
+        }
+      }
+
       await connectStore({
         name: formData.name,
         platform: selectedPlatform as any,
-        domain: formData.domain
+        domain: formData.domain,
+        credentials
       })
 
       toast({

@@ -16,6 +16,7 @@ export interface Store {
   currency: string
   logo_url?: string
   created_at: string
+  credentials?: any
   settings: {
     auto_sync: boolean
     sync_frequency: 'hourly' | 'daily' | 'weekly'
@@ -92,6 +93,20 @@ export const useStores = () => {
     if (!user) throw new Error('User not authenticated')
     
     try {
+      // Test connection first with real API call
+      if (storeData.credentials && storeData.platform) {
+        const { data: testResult, error: testError } = await supabase.functions.invoke('store-connection-test', {
+          body: {
+            platform: storeData.platform,
+            credentials: storeData.credentials
+          }
+        })
+
+        if (testError || !testResult?.success) {
+          throw new Error(testResult?.error || 'Connection test failed')
+        }
+      }
+
       const { data, error } = await supabase
         .from('store_integrations')
         .insert([{
@@ -99,6 +114,7 @@ export const useStores = () => {
           store_name: storeData.name || '',
           platform: storeData.platform || 'shopify',
           store_url: storeData.domain || '',
+          credentials: storeData.credentials || {},
           connection_status: 'connected',
           sync_settings: {
             auto_sync: true,

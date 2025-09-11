@@ -99,3 +99,6 @@ verify_jwt = false
 
 [functions.store-product-export]
 verify_jwt = false
+
+[functions.store-connection-test]
+verify_jwt = false
