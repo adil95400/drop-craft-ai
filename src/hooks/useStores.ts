@@ -37,53 +37,45 @@ export const useStores = () => {
     try {
       setLoading(true)
       
-      // Mock data pour la démonstration
-      const mockStores: Store[] = [
-        {
-          id: '1',
-          name: 'Ma Boutique Shopify',
-          platform: 'shopify',
-          domain: 'ma-boutique.myshopify.com',
-          status: 'connected',
-          last_sync: new Date().toISOString(),
-          products_count: 245,
-          orders_count: 128,
-          revenue: 15420.50,
-          currency: 'EUR',
-          logo_url: 'https://via.placeholder.com/64x64/10b981/ffffff?text=SH',
-          created_at: '2024-01-15T10:30:00Z',
-          settings: {
-            auto_sync: true,
-            sync_frequency: 'hourly',
-            sync_products: true,
-            sync_orders: true,
-            sync_customers: true
-          }
-        },
-        {
-          id: '2',
-          name: 'WooCommerce Store',
-          platform: 'woocommerce',
-          domain: 'monsite.com',
-          status: 'syncing',
-          last_sync: '2024-01-09T14:20:00Z',
-          products_count: 89,
-          orders_count: 45,
-          revenue: 3280.00,
-          currency: 'EUR',
-          logo_url: 'https://via.placeholder.com/64x64/7c3aed/ffffff?text=WC',
-          created_at: '2024-01-10T09:15:00Z',
-          settings: {
-            auto_sync: false,
-            sync_frequency: 'daily',
-            sync_products: true,
-            sync_orders: false,
-            sync_customers: true
-          }
+      const { data, error } = await supabase
+        .from('store_integrations')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching stores:', error)
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger vos boutiques",
+          variant: "destructive"
+        })
+        return
+      }
+
+      const storeData = data?.map(store => ({
+        id: store.id,
+        name: store.store_name,
+        platform: store.platform as 'shopify' | 'woocommerce' | 'prestashop' | 'magento',
+        domain: store.store_url || '',
+        status: store.connection_status as 'connected' | 'disconnected' | 'syncing' | 'error',
+        last_sync: store.last_sync_at,
+        products_count: store.product_count || 0,
+        orders_count: store.order_count || 0,
+        revenue: 0, // Not stored in current schema
+        currency: 'EUR', // Default value
+        logo_url: undefined, // Not stored in current schema
+        created_at: store.created_at,
+        settings: (store.sync_settings as any) || {
+          auto_sync: true,
+          sync_frequency: 'hourly',
+          sync_products: true,
+          sync_orders: true,
+          sync_customers: true
         }
-      ]
+      })) || []
       
-      setStores(mockStores)
+      setStores(storeData)
     } catch (error) {
       console.error('Error fetching stores:', error)
       toast({
@@ -97,21 +89,52 @@ export const useStores = () => {
   }
 
   const connectStore = async (storeData: Partial<Store>) => {
+    if (!user) throw new Error('User not authenticated')
+    
     try {
-      // Simulation de connexion
+      const { data, error } = await supabase
+        .from('store_integrations')
+        .insert([{
+          user_id: user.id,
+          store_name: storeData.name || '',
+          platform: storeData.platform || 'shopify',
+          store_url: storeData.domain || '',
+          connection_status: 'connected',
+          sync_settings: {
+            auto_sync: true,
+            sync_frequency: 'hourly',
+            sync_products: true,
+            sync_orders: true,
+            sync_customers: true
+          }
+        }])
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error connecting store:', error)
+        toast({
+          title: "Erreur",
+          description: "Impossible de connecter la boutique",
+          variant: "destructive"
+        })
+        throw error
+      }
+
       const newStore: Store = {
-        id: Date.now().toString(),
-        name: storeData.name || '',
-        platform: storeData.platform || 'shopify',
-        domain: storeData.domain || '',
-        status: 'connected',
-        last_sync: new Date().toISOString(),
-        products_count: 0,
-        orders_count: 0,
+        id: data.id,
+        name: data.store_name,
+        platform: data.platform as 'shopify' | 'woocommerce' | 'prestashop' | 'magento',
+        domain: data.store_url || '',
+        status: data.connection_status as 'connected' | 'disconnected' | 'syncing' | 'error',
+        last_sync: data.last_sync_at,
+        products_count: data.product_count || 0,
+        orders_count: data.order_count || 0,
         revenue: 0,
         currency: 'EUR',
-        created_at: new Date().toISOString(),
-        settings: {
+        logo_url: undefined,
+        created_at: data.created_at,
+        settings: (data.sync_settings as any) || {
           auto_sync: true,
           sync_frequency: 'hourly',
           sync_products: true,
@@ -141,6 +164,22 @@ export const useStores = () => {
 
   const disconnectStore = async (storeId: string) => {
     try {
+      const { error } = await supabase
+        .from('store_integrations')
+        .delete()
+        .eq('id', storeId)
+        .eq('user_id', user?.id)
+
+      if (error) {
+        console.error('Error disconnecting store:', error)
+        toast({
+          title: "Erreur",
+          description: "Impossible de déconnecter la boutique",
+          variant: "destructive"
+        })
+        return
+      }
+
       setStores(prev => prev.filter(store => store.id !== storeId))
       
       toast({
@@ -165,8 +204,28 @@ export const useStores = () => {
           : store
       ))
       
-      // Simulation de sync
-      setTimeout(() => {
+      // Update database status to syncing
+      await supabase
+        .from('store_integrations')
+        .update({ 
+          connection_status: 'syncing',
+          last_sync_at: new Date().toISOString()
+        })
+        .eq('id', storeId)
+        .eq('user_id', user?.id)
+      
+      // Simulation de sync - dans un vrai cas, ici on appellerait l'API de la boutique
+      setTimeout(async () => {
+        // Update database status back to connected
+        await supabase
+          .from('store_integrations')
+          .update({ 
+            connection_status: 'connected',
+            last_sync_at: new Date().toISOString()
+          })
+          .eq('id', storeId)
+          .eq('user_id', user?.id)
+
         setStores(prev => prev.map(store => 
           store.id === storeId 
             ? { 
@@ -184,6 +243,20 @@ export const useStores = () => {
       }, 3000)
     } catch (error) {
       console.error('Error syncing store:', error)
+      
+      // Update status to error on failure
+      await supabase
+        .from('store_integrations')
+        .update({ connection_status: 'error' })
+        .eq('id', storeId)
+        .eq('user_id', user?.id)
+      
+      setStores(prev => prev.map(store => 
+        store.id === storeId 
+          ? { ...store, status: 'error' as const }
+          : store
+      ))
+      
       toast({
         title: "Erreur",
         description: "Erreur lors de la synchronisation",
@@ -194,6 +267,22 @@ export const useStores = () => {
 
   const updateStoreSettings = async (storeId: string, settings: Store['settings']) => {
     try {
+      const { error } = await supabase
+        .from('store_integrations')
+        .update({ sync_settings: settings })
+        .eq('id', storeId)
+        .eq('user_id', user?.id)
+
+      if (error) {
+        console.error('Error updating store settings:', error)
+        toast({
+          title: "Erreur",
+          description: "Impossible de mettre à jour les paramètres",
+          variant: "destructive"
+        })
+        return
+      }
+
       setStores(prev => prev.map(store => 
         store.id === storeId 
           ? { ...store, settings }
