@@ -254,6 +254,28 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                {/* Dashboard Stores Routes */}
+                <Route path="/dashboard/stores" element={
+                  <ProtectedRoute>
+                    <AppLayout><StoresPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/stores/connect" element={
+                  <ProtectedRoute>
+                    <AppLayout><ConnectStorePage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/stores/:storeId" element={
+                  <ProtectedRoute>
+                    <AppLayout><StoreDashboardPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/stores/:storeId/settings" element={
+                  <ProtectedRoute>
+                    <AppLayout><StoreSettingsPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
                 {/* Marketplace */}
                 <Route path="/marketplace" element={
                   <ProtectedRoute>
