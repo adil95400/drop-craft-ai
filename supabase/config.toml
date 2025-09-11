@@ -87,3 +87,6 @@ verify_jwt = false
 
 [functions.shopify-sync]
 verify_jwt = true
+
+[functions.store-webhooks]
+verify_jwt = false

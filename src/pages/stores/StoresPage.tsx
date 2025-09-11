@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useStores } from '@/hooks/useStores'
 import { StoreCard } from './components/StoreCard'
+import { ConnectStoreDialog } from './components/ConnectStoreDialog'
 
-const StoresPage = () => {
+export default function StoresPage() {
   const { stores, loading, syncStore, disconnectStore, refetch } = useStores()
+  const [showConnectDialog, setShowConnectDialog] = useState(false)
 
   const handleSync = async (storeId: string) => {
     await syncStore(storeId)
@@ -73,12 +75,10 @@ const StoresPage = () => {
             <RefreshCw className="w-4 h-4" />
             Actualiser
           </Button>
-          <Link to="/stores/connect">
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              Connecter une boutique
-            </Button>
-          </Link>
+          <Button onClick={() => setShowConnectDialog(true)} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Connecter une boutique
+          </Button>
         </div>
       </div>
 
@@ -134,12 +134,10 @@ const StoresPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link to="/stores/connect">
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" />
-                Connecter une boutique
-              </Button>
-            </Link>
+            <Button onClick={() => setShowConnectDialog(true)} className="gap-2">
+              <Plus className="w-4 h-4" />
+              Connecter une boutique
+            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -154,8 +152,11 @@ const StoresPage = () => {
           ))}
         </div>
       )}
+
+      <ConnectStoreDialog
+        open={showConnectDialog}
+        onOpenChange={setShowConnectDialog}
+      />
     </div>
   )
 }
-
-export default StoresPage
