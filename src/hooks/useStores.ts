@@ -204,43 +204,28 @@ export const useStores = () => {
           : store
       ))
       
-      // Update database status to syncing
-      await supabase
-        .from('store_integrations')
-        .update({ 
-          connection_status: 'syncing',
-          last_sync_at: new Date().toISOString()
-        })
-        .eq('id', storeId)
-        .eq('user_id', user?.id)
-      
-      // Simulation de sync - dans un vrai cas, ici on appellerait l'API de la boutique
-      setTimeout(async () => {
-        // Update database status back to connected
-        await supabase
-          .from('store_integrations')
-          .update({ 
-            connection_status: 'connected',
-            last_sync_at: new Date().toISOString()
-          })
-          .eq('id', storeId)
-          .eq('user_id', user?.id)
+      // Call the Edge Function for real synchronization
+      const { data, error } = await supabase.functions.invoke('shopify-sync', {
+        body: {
+          storeId,
+          action: 'full_sync'
+        }
+      })
 
-        setStores(prev => prev.map(store => 
-          store.id === storeId 
-            ? { 
-                ...store, 
-                status: 'connected' as const,
-                last_sync: new Date().toISOString()
-              }
-            : store
-        ))
-        
+      if (error) {
+        console.error('Sync function error:', error)
+        throw new Error(error.message)
+      }
+
+      if (data?.success) {
         toast({
           title: "Succès",
-          description: "Synchronisation terminée"
+          description: data.message || "Synchronisation terminée"
         })
-      }, 3000)
+      } else {
+        throw new Error(data?.error || 'Sync failed')
+      }
+      
     } catch (error) {
       console.error('Error syncing store:', error)
       
@@ -250,12 +235,6 @@ export const useStores = () => {
         .update({ connection_status: 'error' })
         .eq('id', storeId)
         .eq('user_id', user?.id)
-      
-      setStores(prev => prev.map(store => 
-        store.id === storeId 
-          ? { ...store, status: 'error' as const }
-          : store
-      ))
       
       toast({
         title: "Erreur",
@@ -305,6 +284,79 @@ export const useStores = () => {
 
   useEffect(() => {
     fetchStores()
+    
+    // Set up real-time subscription for store updates
+    const channel = supabase
+      .channel('store-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'store_integrations',
+          filter: `user_id=eq.${user?.id}`
+        },
+        (payload) => {
+          console.log('Store change received:', payload)
+          
+          if (payload.eventType === 'INSERT') {
+            const newStore = {
+              id: payload.new.id,
+              name: payload.new.store_name,
+              platform: payload.new.platform as 'shopify' | 'woocommerce' | 'prestashop' | 'magento',
+              domain: payload.new.store_url || '',
+              status: payload.new.connection_status as 'connected' | 'disconnected' | 'syncing' | 'error',
+              last_sync: payload.new.last_sync_at,
+              products_count: payload.new.product_count || 0,
+              orders_count: payload.new.order_count || 0,
+              revenue: 0,
+              currency: 'EUR',
+              logo_url: undefined,
+              created_at: payload.new.created_at,
+              settings: (payload.new.sync_settings as any) || {
+                auto_sync: true,
+                sync_frequency: 'hourly',
+                sync_products: true,
+                sync_orders: true,
+                sync_customers: true
+              }
+            }
+            setStores(prev => [...prev, newStore])
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedStore = {
+              id: payload.new.id,
+              name: payload.new.store_name,
+              platform: payload.new.platform as 'shopify' | 'woocommerce' | 'prestashop' | 'magento',
+              domain: payload.new.store_url || '',
+              status: payload.new.connection_status as 'connected' | 'disconnected' | 'syncing' | 'error',
+              last_sync: payload.new.last_sync_at,
+              products_count: payload.new.product_count || 0,
+              orders_count: payload.new.order_count || 0,
+              revenue: 0,
+              currency: 'EUR',
+              logo_url: undefined,
+              created_at: payload.new.created_at,
+              settings: (payload.new.sync_settings as any) || {
+                auto_sync: true,
+                sync_frequency: 'hourly',
+                sync_products: true,
+                sync_orders: true,
+                sync_customers: true
+              }
+            }
+            setStores(prev => prev.map(store => 
+              store.id === payload.new.id ? updatedStore : store
+            ))
+          } else if (payload.eventType === 'DELETE') {
+            setStores(prev => prev.filter(store => store.id !== payload.old.id))
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [user])
 
   return {

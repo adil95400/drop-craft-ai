@@ -84,3 +84,6 @@ verify_jwt = true
 
 [functions.seed-extension-data]
 verify_jwt = false
+
+[functions.shopify-sync]
+verify_jwt = true
