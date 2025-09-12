@@ -125,7 +125,7 @@ import UnifiedDashboardPage from '@/pages/UnifiedDashboardPage';
 // Store Pages
 import StoresPage from '@/pages/stores/StoresPage';
 import ConnectStorePage from '@/pages/stores/ConnectStorePage';
-import StoreDetailPage from '@/pages/stores/StoreDetailPage';
+import { StoreDetailPage } from '@/pages/stores/StoreDetailPage';
 import { StoreSettingsPage } from '@/pages/stores/StoreSettingsPage';
 
 import { ExtensionDownloadPage } from "./pages/ExtensionDownloadPage";
