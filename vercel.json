@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
@@ -11,8 +12,8 @@
     "VITE_SUPABASE_PROJECT_ID": "@vite_supabase_project_id"
   },
   "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18.x"
+    "api/**/*.{js,ts}": {
+      "runtime": "nodejs20.x"
     }
   },
   "headers": [
