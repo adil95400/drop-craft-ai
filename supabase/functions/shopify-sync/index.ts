@@ -19,9 +19,9 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Récupérer l'intégration et ses credentials
+    // Récupérer l'intégration depuis store_integrations
     const { data: integration, error: integrationError } = await supabaseClient
-      .from('integrations')
+      .from('store_integrations')
       .select('*')
       .eq('id', integrationId)
       .single()
@@ -30,15 +30,14 @@ serve(async (req) => {
       throw new Error('Intégration non trouvée')
     }
 
-    // Récupérer les credentials sécurisés
-    const { data: credentials, error: credError } = await supabaseClient
-      .rpc('get_secure_credentials', { integration_id: integrationId })
-
-    if (credError || !credentials) {
-      throw new Error('Credentials non trouvés')
+    // Les credentials sont stockés directement dans l'intégration
+    const credentials = integration.credentials || {}
+    
+    if (!credentials.access_token || !credentials.shop_domain) {
+      throw new Error('Credentials Shopify manquants')
     }
 
-    const shopifyDomain = integration.shop_domain || credentials.shop_domain
+    const shopifyDomain = credentials.shop_domain
     const accessToken = credentials.access_token
 
     if (!shopifyDomain || !accessToken) {
@@ -143,10 +142,11 @@ async function syncProducts(supabaseClient: any, integration: any, shopifyDomain
 
   // Mettre à jour le statut de l'intégration
   await supabaseClient
-    .from('integrations')
+    .from('store_integrations')
     .update({ 
       connection_status: 'connected',
-      last_sync_at: new Date().toISOString()
+      last_sync_at: new Date().toISOString(),
+      product_count: productsToInsert.length
     })
     .eq('id', integration.id)
 
