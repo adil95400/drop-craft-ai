@@ -55,7 +55,7 @@ const platformConfigs = {
         options: ['2023-10', '2023-07', '2023-04', '2023-01'] },
       
       // Configuration métier
-      { key: 'locationIds', label: 'Location IDs', type: 'text', required: true, category: 'business',
+      { key: 'locationIds', label: 'Location IDs', type: 'text', required: false, category: 'business',
         help: 'IDs des emplacements pour la gestion du stock (séparés par virgule)', placeholder: '12345,67890' },
       { key: 'currency', label: 'Devise principale', type: 'select', required: true, category: 'business',
         options: ['EUR', 'USD', 'GBP', 'CAD', 'AUD'], placeholder: 'EUR' },
