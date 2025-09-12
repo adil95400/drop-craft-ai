@@ -25,12 +25,18 @@ import {
   Eye,
   Play,
   TestTube,
-  Zap
+  Zap,
+  Wifi,
+  WifiOff,
+  Timer,
+  Activity
 } from 'lucide-react'
 import { StoreSettings } from './components/StoreSettings'
 import { SyncHistory } from './components/SyncHistory'
 import { QuickActions } from './components/QuickActions'
 import { AdvancedMetrics } from './components/AdvancedMetrics'
+import { LiveActivityFeed } from './components/LiveActivityFeed'
+import { PerformanceMonitor } from './components/PerformanceMonitor'
 
 export default function StoreDetailPage() {
   const { id } = useParams()
@@ -42,8 +48,89 @@ export default function StoreDetailPage() {
   const [syncStatus, setSyncStatus] = useState('')
   const [testingConnection, setTestingConnection] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<'unknown' | 'success' | 'error'>('unknown')
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
+  const [lastActivity, setLastActivity] = useState(Date.now())
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
 
   const store = stores.find(s => s.id === id)
+
+  // Surveillance de la connexion Internet
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true)
+      toast({
+        title: "Connexion rétablie",
+        description: "La synchronisation automatique va reprendre"
+      })
+    }
+    
+    const handleOffline = () => {
+      setIsOnline(false)
+      toast({
+        title: "Connexion perdue",
+        description: "Mode hors ligne activé",
+        variant: "destructive"
+      })
+    }
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [toast])
+
+  // Auto-refresh des données toutes les 30 secondes
+  useEffect(() => {
+    if (!autoRefreshEnabled || !isOnline) return
+
+    const interval = setInterval(() => {
+      setLastActivity(Date.now())
+      // Rafraîchissement silencieux des données sans recharger la page
+      if (store?.settings?.auto_sync && !syncing) {
+        // Check si une synchronisation est nécessaire
+        const lastSync = store.last_sync ? new Date(store.last_sync) : null
+        const now = new Date()
+        const hoursSinceLastSync = lastSync ? 
+          (now.getTime() - lastSync.getTime()) / (1000 * 60 * 60) : Infinity
+
+        // Auto-sync si plus de 1 heure depuis la dernière sync
+        if (hoursSinceLastSync > 1) {
+          handleSync('full', true) // true pour sync silencieuse
+        }
+      }
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [autoRefreshEnabled, isOnline, syncing, store])
+
+  // Surveillance des changements temps réel via Supabase
+  useEffect(() => {
+    if (!store?.id) return
+
+    const channel = supabase.channel('store-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'store_integrations',
+        filter: `id=eq.${store.id}`
+      }, (payload) => {
+        console.log('Store update received:', payload)
+        toast({
+          title: "Mise à jour détectée",
+          description: "Les données de votre boutique ont été mises à jour"
+        })
+        // Recharger les données du store
+        window.location.reload()
+      })
+      .subscribe()
+
+    return () => {
+      channel.unsubscribe()
+    }
+  }, [store?.id, toast])
 
   // Test de connexion Shopify
   const testConnection = async () => {
@@ -85,16 +172,18 @@ export default function StoreDetailPage() {
     }
   }
 
-  const handleSync = async (type: 'full' | 'products' | 'orders' = 'full') => {
+  const handleSync = async (type: 'full' | 'products' | 'orders' = 'full', silent = false) => {
     if (!store || syncing) return
     
     // Vérifier les credentials avant de synchroniser
     if (!store.credentials?.shop_domain || !store.credentials?.access_token) {
-      toast({
-        title: "Configuration incomplète",
-        description: "Veuillez configurer vos paramètres Shopify dans l'onglet \"Paramètres\" avant de synchroniser.",
-        variant: "destructive"
-      })
+      if (!silent) {
+        toast({
+          title: "Configuration incomplète",
+          description: "Veuillez configurer vos paramètres Shopify dans l'onglet \"Paramètres\" avant de synchroniser.",
+          variant: "destructive"
+        })
+      }
       return
     }
     
@@ -102,34 +191,48 @@ export default function StoreDetailPage() {
     setSyncProgress(0)
     setSyncStatus(`Initialisation de la synchronisation ${type === 'full' ? 'complète' : `des ${type}`}...`)
     
-    // Simulation de progression
+    // Simulation de progression plus réaliste
+    const progressSteps = [
+      { progress: 15, message: 'Connexion à Shopify...' },
+      { progress: 30, message: 'Authentification...' },
+      { progress: 45, message: 'Récupération des données...' },
+      { progress: 65, message: 'Traitement des produits...' },
+      { progress: 80, message: 'Mise à jour de la base de données...' },
+      { progress: 95, message: 'Finalisation...' }
+    ]
+    
+    let stepIndex = 0
     const progressInterval = setInterval(() => {
-      setSyncProgress(prev => {
-        const newProgress = Math.min(prev + Math.random() * 15, 90)
-        if (newProgress < 30) setSyncStatus('Connexion à Shopify...')
-        else if (newProgress < 60) setSyncStatus('Récupération des données...')
-        else if (newProgress < 85) setSyncStatus('Traitement des données...')
-        else setSyncStatus('Finalisation...')
-        return newProgress
-      })
-    }, 500)
+      if (stepIndex < progressSteps.length) {
+        const step = progressSteps[stepIndex]
+        setSyncProgress(step.progress)
+        setSyncStatus(step.message)
+        stepIndex++
+      }
+    }, 800)
     
     try {
       await syncStore(store.id, type)
       setSyncProgress(100)
       setSyncStatus('Synchronisation terminée !')
-      toast({
-        title: "Synchronisation réussie",
-        description: `${type === 'full' ? 'Synchronisation complète' : `Synchronisation des ${type}`} terminée avec succès.`
-      })
+      
+      if (!silent) {
+        toast({
+          title: "✅ Synchronisation réussie",
+          description: `${type === 'full' ? 'Synchronisation complète' : `Synchronisation des ${type}`} terminée avec succès.`
+        })
+      }
     } catch (error) {
       setSyncProgress(0)
-      setSyncStatus('Erreur lors de la synchronisation')
-      toast({
-        title: "Erreur de synchronisation", 
-        description: error instanceof Error ? error.message : "Une erreur est survenue",
-        variant: "destructive"
-      })
+      setSyncStatus('❌ Erreur lors de la synchronisation')
+      
+      if (!silent) {
+        toast({
+          title: "Erreur de synchronisation", 
+          description: error instanceof Error ? error.message : "Une erreur est survenue",
+          variant: "destructive"
+        })
+      }
     } finally {
       clearInterval(progressInterval)
       setSyncing(false)
@@ -175,15 +278,22 @@ export default function StoreDetailPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* En-tête */}
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-6 space-y-6 animate-fade-in">
+      {/* En-tête avec animations */}
+      <div className="flex items-center justify-between animate-scale-in">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/stores')}>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate('/dashboard/stores')}
+            className="hover-scale"
+          >
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10">
+            <div className={`flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 transition-all duration-300 ${
+              store.status === 'connected' ? 'ring-2 ring-green-500/30' : ''
+            }`}>
               <span className="text-xl font-bold text-primary">
                 {store.platform.charAt(0).toUpperCase()}
               </span>
@@ -191,7 +301,10 @@ export default function StoreDetailPage() {
             <div>
               <h1 className="text-2xl font-bold">{store.name}</h1>
               <div className="flex items-center gap-2">
-                <Badge variant={store.status === 'connected' ? 'default' : 'destructive'}>
+                <Badge 
+                  variant={store.status === 'connected' ? 'default' : 'destructive'}
+                  className="animate-pulse"
+                >
                   {store.status === 'connected' ? 'Connecté' : store.status === 'error' ? 'Erreur' : 'Déconnecté'}
                 </Badge>
                 <span className="text-sm text-muted-foreground capitalize">
@@ -202,9 +315,30 @@ export default function StoreDetailPage() {
           </div>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          {/* Indicateur de connexion Internet */}
+          <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
+            isOnline 
+              ? 'bg-green-100 text-green-700' 
+              : 'bg-red-100 text-red-700'
+          }`}>
+            {isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+            {isOnline ? 'En ligne' : 'Hors ligne'}
+          </div>
+
+          {/* Toggle Auto-refresh */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+            className={`gap-2 ${autoRefreshEnabled ? 'bg-green-50 text-green-700' : ''}`}
+          >
+            <Timer className={`w-4 h-4 ${autoRefreshEnabled ? 'animate-pulse' : ''}`} />
+            Auto-refresh {autoRefreshEnabled ? 'ON' : 'OFF'}
+          </Button>
+
           {store.domain && (
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" asChild className="hover-scale">
               <a href={store.domain} target="_blank" rel="noopener noreferrer" className="gap-2">
                 <Globe className="w-4 h-4" />
                 Voir boutique
@@ -500,7 +634,15 @@ export default function StoreDetailPage() {
         </TabsContent>
 
         <TabsContent value="metrics" className="space-y-6">
-          <AdvancedMetrics store={store} />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="space-y-6">
+              <AdvancedMetrics store={store} />
+            </div>
+            <div className="space-y-6">
+              <LiveActivityFeed storeId={store.id} />
+              <PerformanceMonitor store={store} />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="settings">
