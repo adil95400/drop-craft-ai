@@ -13,11 +13,19 @@ export default function StoresPage() {
   const [showConnectDialog, setShowConnectDialog] = useState(false)
 
   const handleSync = async (storeId: string) => {
-    await syncStore(storeId, 'full')
+    try {
+      await syncStore(storeId, 'full')
+    } catch (error) {
+      console.error('Error syncing store:', error)
+    }
   }
 
   const handleDisconnect = async (storeId: string) => {
-    await disconnectStore(storeId)
+    try {
+      await disconnectStore(storeId)
+    } catch (error) {
+      console.error('Error disconnecting store:', error)
+    }
   }
 
   const getTotalStats = () => {
