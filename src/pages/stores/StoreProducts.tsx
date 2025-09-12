@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Package, Plus, Import, Export } from 'lucide-react'
+import { Package, Plus, Import, Download } from 'lucide-react'
 
 export function StoreProducts() {
   return (
@@ -13,7 +13,7 @@ export function StoreProducts() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
-            <Export className="h-4 w-4 mr-2" />
+            <Download className="h-4 w-4 mr-2" />
             Exporter
           </Button>
           <Button variant="outline" size="sm">
