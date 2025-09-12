@@ -46,17 +46,28 @@ serve(async (req) => {
 })
 
 async function handleUnifiedOperation(supabaseClient: any, requestBody: any) {
-  const { operation, integrationId, credentials, platform = 'shopify' } = requestBody
+  const { operation, storeId, integrationId, credentials, platform = 'shopify', operation_data } = requestBody
+
+  // Support both storeId and integrationId for compatibility
+  const targetId = storeId || integrationId
 
   switch (operation) {
+    case 'test':
     case 'test_connection':
-      return await testShopifyConnection(supabaseClient, credentials, integrationId)
+      return await testShopifyConnection(supabaseClient, credentials, targetId)
+    case 'import-products':
     case 'sync_products':
-      return await syncShopifyData(supabaseClient, integrationId, 'products')
+      return await importShopifyProducts(supabaseClient, targetId, credentials)
+    case 'import-orders':
     case 'sync_orders':
-      return await syncShopifyData(supabaseClient, integrationId, 'orders')
+      return await importShopifyOrders(supabaseClient, targetId, credentials)
+    case 'import-customers':
+      return await importShopifyCustomers(supabaseClient, targetId, credentials)
+    case 'export-products':
+      return await exportProductsToShopify(supabaseClient, targetId, credentials, operation_data?.product_ids)
+    case 'full-sync':
     case 'sync_full':
-      return await syncShopifyData(supabaseClient, integrationId, 'full')
+      return await performFullSync(supabaseClient, targetId, credentials)
     default:
       throw new Error(`Opération non supportée: ${operation}`)
   }
@@ -164,79 +175,503 @@ async function testShopifyConnection(supabaseClient: any, credentials: any, inte
   }
 }
 
-async function syncShopifyData(supabaseClient: any, integrationId: string, type: 'products' | 'orders' | 'full') {
-  console.log(`Starting sync ${type} for integration ${integrationId}`)
-
-  // Get integration details
-  const { data: integration, error: integrationError } = await supabaseClient
-    .from('store_integrations')
-    .select('*')
-    .eq('id', integrationId)
-    .single()
-
-  if (integrationError || !integration) {
-    throw new Error('Intégration non trouvée')
-  }
-
-  const credentials = integration.credentials || {}
-  
-  if (!credentials.access_token || !credentials.shop_domain) {
-    throw new Error('Configuration Shopify manquante. Veuillez tester la connexion d\'abord.')
-  }
-
+// New import functions for better organization
+async function importShopifyProducts(supabaseClient: any, storeId: string, credentials: any) {
   const normalizedDomain = normalizeShopifyDomain(credentials.shop_domain)
   const accessToken = credentials.access_token
 
-  let results = { products: 0, orders: 0 }
+  console.log(`Starting product import for store: ${storeId}`)
+  
+  let allProducts = []
+  let nextPageInfo = null
+  let pageCount = 0
+  const maxPages = 50
 
   // Update status to syncing
   await supabaseClient
     .from('store_integrations')
     .update({ connection_status: 'syncing' })
-    .eq('id', integrationId)
+    .eq('id', storeId)
+  
+  do {
+    pageCount++
+    console.log(`Fetching products page ${pageCount}`)
+    
+    let url = `https://${normalizedDomain}/admin/api/2023-10/products.json?limit=250`
+    if (nextPageInfo) {
+      url += `&page_info=${nextPageInfo}`
+    }
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-Shopify-Access-Token': accessToken,
+        'Content-Type': 'application/json'
+      }
+    })
 
-  try {
-    if (type === 'full' || type === 'products') {
-      const productsResult = await syncProducts(supabaseClient, integration, normalizedDomain, accessToken)
-      results.products = productsResult.imported
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`)
     }
 
-    if (type === 'full' || type === 'orders') {
-      const ordersResult = await syncOrders(supabaseClient, integration, normalizedDomain, accessToken)
-      results.orders = ordersResult.imported
+    const data = await response.json()
+    allProducts.push(...(data.products || []))
+    
+    const linkHeader = response.headers.get('Link')
+    nextPageInfo = null
+    
+    if (linkHeader) {
+      const nextMatch = linkHeader.match(/<[^>]*page_info=([^&>]+)[^>]*>;\s*rel="next"/)
+      if (nextMatch) {
+        nextPageInfo = nextMatch[1]
+      }
+    }
+    
+    console.log(`Page ${pageCount}: ${data.products?.length || 0} products, total: ${allProducts.length}`)
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+  } while (nextPageInfo && pageCount < maxPages)
+  
+  console.log(`Total products fetched: ${allProducts.length}`)
+  
+  // Save to shopify_products table
+  const batchSize = 100
+  let importedCount = 0
+  
+  for (let i = 0; i < allProducts.length; i += batchSize) {
+    const batch = allProducts.slice(i, i + batchSize)
+    const productData = batch.map(product => ({
+      store_integration_id: storeId,
+      shopify_product_id: product.id,
+      title: product.title,
+      description: product.body_html,
+      vendor: product.vendor,
+      product_type: product.product_type,
+      handle: product.handle,
+      status: product.status,
+      price: product.variants?.[0]?.price ? parseFloat(product.variants[0].price) : 0,
+      compare_at_price: product.variants?.[0]?.compare_at_price ? parseFloat(product.variants[0].compare_at_price) : null,
+      sku: product.variants?.[0]?.sku,
+      inventory_quantity: product.variants?.[0]?.inventory_quantity || 0,
+      image_url: product.image?.src,
+      images: product.images?.map(img => img.src) || [],
+      variants: product.variants || [],
+      options: product.options || [],
+      tags: product.tags?.split(',').map(tag => tag.trim()) || [],
+      seo_title: product.title,
+      seo_description: product.body_html?.replace(/<[^>]*>/g, '').substring(0, 160),
+      created_at_shopify: product.created_at,
+      updated_at_shopify: product.updated_at
+    }))
+    
+    const { error: batchError } = await supabaseClient
+      .from('shopify_products')
+      .upsert(productData, { onConflict: 'store_integration_id,shopify_product_id' })
+    
+    if (batchError) {
+      console.error('Error upserting products batch:', batchError)
+      throw new Error(`Failed to save products: ${batchError.message}`)
+    }
+    
+    importedCount += batch.length
+    console.log(`Processed ${importedCount}/${allProducts.length} products`)
+  }
+  
+  await supabaseClient
+    .from('store_integrations')
+    .update({ 
+      product_count: allProducts.length,
+      last_sync_at: new Date().toISOString(),
+      connection_status: 'connected'
+    })
+    .eq('id', storeId)
+  
+  return new Response(
+    JSON.stringify({ 
+      success: true, 
+      message: `${allProducts.length} produits importés avec succès`,
+      imported_count: allProducts.length
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  )
+}
+
+async function importShopifyOrders(supabaseClient: any, storeId: string, credentials: any) {
+  const normalizedDomain = normalizeShopifyDomain(credentials.shop_domain)
+  const accessToken = credentials.access_token
+
+  console.log(`Starting orders import for store: ${storeId}`)
+  
+  let allOrders = []
+  let nextPageInfo = null
+  let pageCount = 0
+  const maxPages = 20
+  
+  do {
+    pageCount++
+    console.log(`Fetching orders page ${pageCount}`)
+    
+    let url = `https://${normalizedDomain}/admin/api/2023-10/orders.json?limit=250&status=any`
+    if (nextPageInfo) {
+      url += `&page_info=${nextPageInfo}`
+    }
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-Shopify-Access-Token': accessToken,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`)
     }
 
-    // Update final status
-    await supabaseClient
-      .from('store_integrations')
-      .update({
-        connection_status: 'connected',
-        last_sync_at: new Date().toISOString(),
-        product_count: type === 'products' || type === 'full' ? results.products : integration.product_count,
-        order_count: type === 'orders' || type === 'full' ? results.orders : integration.order_count
-      })
-      .eq('id', integrationId)
+    const data = await response.json()
+    allOrders.push(...(data.orders || []))
+    
+    const linkHeader = response.headers.get('Link')
+    nextPageInfo = null
+    
+    if (linkHeader) {
+      const nextMatch = linkHeader.match(/<[^>]*page_info=([^&>]+)[^>]*>;\s*rel="next"/)
+      if (nextMatch) {
+        nextPageInfo = nextMatch[1]
+      }
+    }
+    
+    console.log(`Page ${pageCount}: ${data.orders?.length || 0} orders, total: ${allOrders.length}`)
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+  } while (nextPageInfo && pageCount < maxPages)
+  
+  console.log(`Total orders fetched: ${allOrders.length}`)
+  
+  const batchSize = 50
+  let importedCount = 0
+  
+  for (let i = 0; i < allOrders.length; i += batchSize) {
+    const batch = allOrders.slice(i, i + batchSize)
+    const orderData = batch.map(order => ({
+      store_integration_id: storeId,
+      shopify_order_id: order.id,
+      order_number: order.order_number,
+      email: order.email,
+      total_price: parseFloat(order.total_price),
+      subtotal_price: parseFloat(order.subtotal_price || 0),
+      total_tax: parseFloat(order.total_tax || 0),
+      currency: order.currency,
+      financial_status: order.financial_status,
+      fulfillment_status: order.fulfillment_status,
+      customer_id: order.customer?.id,
+      billing_address: order.billing_address,
+      shipping_address: order.shipping_address,
+      line_items: order.line_items || [],
+      shipping_lines: order.shipping_lines || [],
+      tax_lines: order.tax_lines || [],
+      order_status_url: order.order_status_url,
+      created_at_shopify: order.created_at,
+      updated_at_shopify: order.updated_at,
+      processed_at_shopify: order.processed_at
+    }))
+    
+    const { error: batchError } = await supabaseClient
+      .from('shopify_orders')
+      .upsert(orderData, { onConflict: 'store_integration_id,shopify_order_id' })
+    
+    if (batchError) {
+      console.error('Error upserting orders batch:', batchError)
+      throw new Error(`Failed to save orders: ${batchError.message}`)
+    }
+    
+    importedCount += batch.length
+    console.log(`Processed ${importedCount}/${allOrders.length} orders`)
+  }
+  
+  await supabaseClient
+    .from('store_integrations')
+    .update({ 
+      order_count: allOrders.length,
+      last_sync_at: new Date().toISOString()
+    })
+    .eq('id', storeId)
+  
+  return new Response(
+    JSON.stringify({ 
+      success: true, 
+      message: `${allOrders.length} commandes importées avec succès`,
+      imported_count: allOrders.length
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  )
+}
 
+async function importShopifyCustomers(supabaseClient: any, storeId: string, credentials: any) {
+  const normalizedDomain = normalizeShopifyDomain(credentials.shop_domain)
+  const accessToken = credentials.access_token
+
+  console.log(`Starting customers import for store: ${storeId}`)
+  
+  let allCustomers = []
+  let nextPageInfo = null
+  let pageCount = 0
+  const maxPages = 20
+  
+  do {
+    pageCount++
+    console.log(`Fetching customers page ${pageCount}`)
+    
+    let url = `https://${normalizedDomain}/admin/api/2023-10/customers.json?limit=250`
+    if (nextPageInfo) {
+      url += `&page_info=${nextPageInfo}`
+    }
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-Shopify-Access-Token': accessToken,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    allCustomers.push(...(data.customers || []))
+    
+    const linkHeader = response.headers.get('Link')
+    nextPageInfo = null
+    
+    if (linkHeader) {
+      const nextMatch = linkHeader.match(/<[^>]*page_info=([^&>]+)[^>]*>;\s*rel="next"/)
+      if (nextMatch) {
+        nextPageInfo = nextMatch[1]
+      }
+    }
+    
+    console.log(`Page ${pageCount}: ${data.customers?.length || 0} customers, total: ${allCustomers.length}`)
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+  } while (nextPageInfo && pageCount < maxPages)
+  
+  console.log(`Total customers fetched: ${allCustomers.length}`)
+  
+  const batchSize = 50
+  let importedCount = 0
+  
+  for (let i = 0; i < allCustomers.length; i += batchSize) {
+    const batch = allCustomers.slice(i, i + batchSize)
+    const customerData = batch.map(customer => ({
+      store_integration_id: storeId,
+      shopify_customer_id: customer.id,
+      email: customer.email,
+      first_name: customer.first_name,
+      last_name: customer.last_name,
+      phone: customer.phone,
+      verified_email: customer.verified_email,
+      accepts_marketing: customer.accepts_marketing,
+      state: customer.state,
+      tags: customer.tags?.split(',').map(tag => tag.trim()) || [],
+      total_spent: parseFloat(customer.total_spent || 0),
+      orders_count: customer.orders_count || 0,
+      default_address: customer.default_address,
+      addresses: customer.addresses || [],
+      created_at_shopify: customer.created_at,
+      updated_at_shopify: customer.updated_at
+    }))
+    
+    const { error: batchError } = await supabaseClient
+      .from('shopify_customers')
+      .upsert(customerData, { onConflict: 'store_integration_id,shopify_customer_id' })
+    
+    if (batchError) {
+      console.error('Error upserting customers batch:', batchError)
+      throw new Error(`Failed to save customers: ${batchError.message}`)
+    }
+    
+    importedCount += batch.length
+    console.log(`Processed ${importedCount}/${allCustomers.length} customers`)
+  }
+  
+  return new Response(
+    JSON.stringify({ 
+      success: true, 
+      message: `${allCustomers.length} clients importés avec succès`,
+      imported_count: allCustomers.length
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  )
+}
+
+async function exportProductsToShopify(supabaseClient: any, storeId: string, credentials: any, productIds?: string[]) {
+  const normalizedDomain = normalizeShopifyDomain(credentials.shop_domain)
+  const accessToken = credentials.access_token
+
+  console.log(`Starting product export to Shopify for store: ${storeId}`)
+  
+  // Get store integration to find user_id
+  const { data: store, error: storeError } = await supabaseClient
+    .from('store_integrations')
+    .select('user_id')
+    .eq('id', storeId)
+    .single()
+
+  if (storeError || !store) {
+    throw new Error('Store not found')
+  }
+  
+  let query = supabaseClient
+    .from('products')
+    .select('*')
+    .eq('user_id', store.user_id)
+  
+  if (productIds && productIds.length > 0) {
+    query = query.in('id', productIds)
+  }
+  
+  const { data: products, error: fetchError } = await query
+  
+  if (fetchError) {
+    throw new Error(`Failed to fetch products: ${fetchError.message}`)
+  }
+  
+  if (!products || products.length === 0) {
     return new Response(
-      JSON.stringify({
-        success: true,
-        results,
-        message: `Synchronisation terminée: ${results.products} produits, ${results.orders} commandes`
+      JSON.stringify({ 
+        success: false, 
+        error: 'Aucun produit à exporter'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
-
-  } catch (error) {
-    console.error('Sync error:', error)
-    
-    // Update status to error
-    await supabaseClient
-      .from('store_integrations')
-      .update({ connection_status: 'error' })
-      .eq('id', integrationId)
-    
-    throw error
   }
+  
+  console.log(`Exporting ${products.length} products to Shopify`)
+  
+  let exportedCount = 0
+  let errors = []
+  
+  for (const product of products) {
+    try {
+      const shopifyProduct = {
+        title: product.name,
+        body_html: product.description,
+        vendor: product.brand || 'Default',
+        product_type: product.category || 'Default',
+        status: 'active',
+        variants: [{
+          price: product.price.toString(),
+          sku: product.sku,
+          inventory_quantity: product.stock_quantity || 0,
+          inventory_management: 'shopify'
+        }],
+        images: product.image_urls?.map(url => ({ src: url })) || []
+      }
+      
+      const response = await fetch(`https://${normalizedDomain}/admin/api/2023-10/products.json`, {
+        method: 'POST',
+        headers: {
+          'X-Shopify-Access-Token': accessToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ product: shopifyProduct })
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.text()
+        errors.push(`Produit ${product.name}: ${errorData}`)
+        continue
+      }
+      
+      const createdProduct = await response.json()
+      exportedCount++
+      
+      console.log(`Exported product: ${product.name} -> Shopify ID: ${createdProduct.product.id}`)
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+    } catch (error) {
+      errors.push(`Produit ${product.name}: ${error.message}`)
+    }
+  }
+  
+  return new Response(
+    JSON.stringify({ 
+      success: true, 
+      message: `${exportedCount}/${products.length} produits exportés vers Shopify`,
+      exported_count: exportedCount,
+      errors: errors
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  )
+}
+
+async function performFullSync(supabaseClient: any, storeId: string, credentials: any) {
+  console.log(`Starting full sync for store: ${storeId}`)
+  
+  const results = {
+    products: { success: false, count: 0, error: null },
+    orders: { success: false, count: 0, error: null },
+    customers: { success: false, count: 0, error: null }
+  }
+  
+  // Import products
+  try {
+    const productResponse = await importShopifyProducts(supabaseClient, storeId, credentials)
+    const productResult = await productResponse.json()
+    results.products.success = productResult.success
+    results.products.count = productResult.imported_count || 0
+    if (!productResult.success) {
+      results.products.error = productResult.error
+    }
+  } catch (error) {
+    results.products.error = error.message
+  }
+  
+  // Import orders
+  try {
+    const orderResponse = await importShopifyOrders(supabaseClient, storeId, credentials)
+    const orderResult = await orderResponse.json()
+    results.orders.success = orderResult.success
+    results.orders.count = orderResult.imported_count || 0
+    if (!orderResult.success) {
+      results.orders.error = orderResult.error
+    }
+  } catch (error) {
+    results.orders.error = error.message
+  }
+  
+  // Import customers
+  try {
+    const customerResponse = await importShopifyCustomers(supabaseClient, storeId, credentials)
+    const customerResult = await customerResponse.json()
+    results.customers.success = customerResult.success
+    results.customers.count = customerResult.imported_count || 0
+    if (!customerResult.success) {
+      results.customers.error = customerResult.error
+    }
+  } catch (error) {
+    results.customers.error = error.message
+  }
+  
+  const allSuccess = results.products.success && results.orders.success && results.customers.success
+  
+  await supabaseClient
+    .from('store_integrations')
+    .update({ 
+      connection_status: allSuccess ? 'connected' : 'error',
+      last_sync_at: new Date().toISOString(),
+      product_count: results.products.count,
+      order_count: results.orders.count
+    })
+    .eq('id', storeId)
+  
+  return new Response(
+    JSON.stringify({ 
+      success: allSuccess, 
+      message: allSuccess ? 'Synchronisation complète réussie' : 'Synchronisation partielle avec erreurs',
+      results: results
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  )
 }
 
 async function syncProducts(supabaseClient: any, integration: any, shopifyDomain: string, accessToken: string) {

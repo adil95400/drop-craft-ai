@@ -17,6 +17,7 @@ import { useStores } from '@/hooks/useStores'
 import { StoreProducts } from './StoreProducts'
 import { StoreOrders } from './StoreOrders'
 import { StoreAnalytics } from './StoreAnalytics'
+import { ShopifyImportExportManager } from '@/components/stores/ShopifyImportExportManager'
 
 export function StoreDashboardPage() {
   const { storeId } = useParams()
@@ -178,6 +179,16 @@ export function StoreDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Import/Export Manager for Shopify */}
+      {store.platform === 'shopify' && store.status === 'connected' && (
+        <ShopifyImportExportManager
+          storeId={store.id}
+          storeName={store.name}
+          shopDomain={store.domain}
+          accessToken={store.credentials?.access_token || ''}
+        />
+      )}
 
       {/* Tabs Navigation */}
       <Tabs defaultValue="analytics" className="space-y-6">
