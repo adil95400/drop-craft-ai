@@ -24,7 +24,16 @@ export function StoreSettingsPage() {
     sync_frequency: 'hourly' as 'hourly' | 'daily' | 'weekly',
     sync_products: true,
     sync_orders: true,
-    sync_customers: true
+    sync_customers: true,
+    notification_email: true,
+    webhook_enabled: true,
+    inventory_tracking: true,
+    price_sync: true,
+    stock_alerts: true,
+    low_stock_threshold: 10,
+    sync_timeout: 300,
+    error_retry_count: 3,
+    batch_size: 100
   })
   const [isSaving, setIsSaving] = useState(false)
 
@@ -193,6 +202,170 @@ export function StoreSettingsPage() {
                     }
                   />
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Paramètres avancés */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Paramètres avancés
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="notification-email">Notifications email</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Recevoir des emails lors des événements importants
+                  </p>
+                </div>
+                <Switch
+                  id="notification-email"
+                  checked={settings.notification_email || false}
+                  onCheckedChange={(checked) => 
+                    setSettings({ ...settings, notification_email: checked })
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="webhook-enabled">Webhooks temps réel</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Activer les mises à jour en temps réel via webhooks
+                  </p>
+                </div>
+                <Switch
+                  id="webhook-enabled"
+                  checked={settings.webhook_enabled || false}
+                  onCheckedChange={(checked) => 
+                    setSettings({ ...settings, webhook_enabled: checked })
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="inventory-tracking">Suivi des stocks</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Surveiller et alerter sur les niveaux de stock
+                  </p>
+                </div>
+                <Switch
+                  id="inventory-tracking"
+                  checked={settings.inventory_tracking || false}
+                  onCheckedChange={(checked) => 
+                    setSettings({ ...settings, inventory_tracking: checked })
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="price-sync">Synchronisation des prix</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Garder les prix synchronisés automatiquement
+                  </p>
+                </div>
+                <Switch
+                  id="price-sync"
+                  checked={settings.price_sync || false}
+                  onCheckedChange={(checked) => 
+                    setSettings({ ...settings, price_sync: checked })
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="stock-alerts">Alertes de stock</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Alertes quand le stock devient faible
+                  </p>
+                </div>
+                <Switch
+                  id="stock-alerts"
+                  checked={settings.stock_alerts || false}
+                  onCheckedChange={(checked) => 
+                    setSettings({ ...settings, stock_alerts: checked })
+                  }
+                />
+              </div>
+
+              {settings.stock_alerts && (
+                <div>
+                  <Label htmlFor="low-stock-threshold">Seuil de stock faible</Label>
+                  <Input
+                    id="low-stock-threshold"
+                    type="number"
+                    min="1"
+                    max="1000"
+                    value={settings.low_stock_threshold || 10}
+                    onChange={(e) => 
+                      setSettings({ ...settings, low_stock_threshold: parseInt(e.target.value) })
+                    }
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Nombre d'unités restantes pour déclencher l'alerte
+                  </p>
+                </div>
+              )}
+
+              <Separator />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="sync-timeout">Timeout sync (secondes)</Label>
+                  <Input
+                    id="sync-timeout"
+                    type="number"
+                    min="60"
+                    max="3600"
+                    value={settings.sync_timeout || 300}
+                    onChange={(e) => 
+                      setSettings({ ...settings, sync_timeout: parseInt(e.target.value) })
+                    }
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="batch-size">Taille des lots</Label>
+                  <Input
+                    id="batch-size"
+                    type="number"
+                    min="10"
+                    max="1000"
+                    value={settings.batch_size || 100}
+                    onChange={(e) => 
+                      setSettings({ ...settings, batch_size: parseInt(e.target.value) })
+                    }
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="error-retry-count">Tentatives en cas d'erreur</Label>
+                <Select
+                  value={String(settings.error_retry_count || 3)}
+                  onValueChange={(value) =>
+                    setSettings({ ...settings, error_retry_count: parseInt(value) })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 tentative</SelectItem>
+                    <SelectItem value="3">3 tentatives</SelectItem>
+                    <SelectItem value="5">5 tentatives</SelectItem>
+                    <SelectItem value="10">10 tentatives</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>

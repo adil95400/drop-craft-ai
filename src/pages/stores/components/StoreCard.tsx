@@ -8,16 +8,22 @@ import {
   TrendingUp, 
   Package, 
   ShoppingCart,
-  ExternalLink
+  ExternalLink,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  XCircle
 } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu'
 import { Store } from '@/hooks/useStores'
 import { Link } from 'react-router-dom'
+import { getPlatformLogo, platformColors, platformNames } from '@/utils/platformLogos'
 
 interface StoreCardProps {
   store: Store
@@ -25,25 +31,27 @@ interface StoreCardProps {
   onDisconnect: (storeId: string) => void
 }
 
-const platformColors = {
-  shopify: 'bg-green-500',
-  woocommerce: 'bg-purple-500',
-  prestashop: 'bg-blue-500',
-  magento: 'bg-orange-500'
-}
-
-const statusColors = {
-  connected: 'bg-success text-success-foreground',
-  disconnected: 'bg-destructive text-destructive-foreground',
-  syncing: 'bg-warning text-warning-foreground',
-  error: 'bg-destructive text-destructive-foreground'
-}
-
-const statusLabels = {
-  connected: 'Connectée',
-  disconnected: 'Déconnectée',
-  syncing: 'Synchronisation...',
-  error: 'Erreur'
+const statusConfig = {
+  connected: { 
+    color: 'bg-success text-success-foreground', 
+    label: 'Connectée', 
+    icon: CheckCircle 
+  },
+  disconnected: { 
+    color: 'bg-muted text-muted-foreground', 
+    label: 'Déconnectée', 
+    icon: XCircle 
+  },
+  syncing: { 
+    color: 'bg-warning text-warning-foreground', 
+    label: 'Synchronisation...', 
+    icon: Clock 
+  },
+  error: { 
+    color: 'bg-destructive text-destructive-foreground', 
+    label: 'Erreur', 
+    icon: AlertTriangle 
+  }
 }
 
 export function StoreCard({ store, onSync, onDisconnect }: StoreCardProps) {
@@ -65,29 +73,37 @@ export function StoreCard({ store, onSync, onDisconnect }: StoreCardProps) {
     }).format(new Date(dateString))
   }
 
+  const StatusIcon = statusConfig[store.status].icon
+  const platformLogo = getPlatformLogo(store.platform)
+
   return (
-    <Card className="hover:shadow-card transition-smooth">
+    <Card className="hover:shadow-elegant transition-smooth group">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <div className="flex items-center space-x-3">
-          {store.logo_url ? (
-            <img 
-              src={store.logo_url} 
-              alt={store.name}
-              className="w-12 h-12 rounded-lg object-cover"
-            />
+          {platformLogo ? (
+            <div className="w-12 h-12 rounded-lg bg-card border overflow-hidden flex items-center justify-center p-1">
+              <img 
+                src={platformLogo} 
+                alt={platformNames[store.platform]}
+                className="w-full h-full object-contain"
+              />
+            </div>
           ) : (
-            <div className={`w-12 h-12 rounded-lg ${platformColors[store.platform]} flex items-center justify-center text-white font-semibold text-lg`}>
+            <div className={`w-12 h-12 rounded-lg ${platformColors[store.platform]} flex items-center justify-center font-semibold text-lg`}>
               {store.name.charAt(0)}
             </div>
           )}
           <div>
-            <CardTitle className="text-lg">{store.name}</CardTitle>
+            <CardTitle className="text-lg group-hover:text-primary transition-colors">
+              {store.name}
+            </CardTitle>
             <div className="flex items-center space-x-2 mt-1">
               <Badge variant="outline" className="text-xs">
-                {store.platform}
+                {platformNames[store.platform]}
               </Badge>
-              <Badge className={statusColors[store.status]}>
-                {statusLabels[store.status]}
+              <Badge className={`${statusConfig[store.status].color} flex items-center gap-1`}>
+                <StatusIcon className="w-3 h-3" />
+                {statusConfig[store.status].label}
               </Badge>
             </div>
           </div>
@@ -99,15 +115,25 @@ export function StoreCard({ store, onSync, onDisconnect }: StoreCardProps) {
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onSync(store.id)}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Synchroniser
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem 
+              onClick={() => onSync(store.id)}
+              disabled={store.status === 'syncing'}
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${store.status === 'syncing' ? 'animate-spin' : ''}`} />
+              Synchroniser maintenant
             </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to={`/dashboard/stores/${store.id}`}>
+                <TrendingUp className="mr-2 h-4 w-4" />
+                Tableau de bord
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link to={`/dashboard/stores/${store.id}/settings`}>
                 <Settings className="mr-2 h-4 w-4" />
-                Paramètres
+                Paramètres avancés
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem 
@@ -116,10 +142,12 @@ export function StoreCard({ store, onSync, onDisconnect }: StoreCardProps) {
               <ExternalLink className="mr-2 h-4 w-4" />
               Voir la boutique
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem 
               onClick={() => onDisconnect(store.id)}
-              className="text-destructive"
+              className="text-destructive focus:text-destructive"
             >
+              <XCircle className="mr-2 h-4 w-4" />
               Déconnecter
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -157,12 +185,18 @@ export function StoreCard({ store, onSync, onDisconnect }: StoreCardProps) {
         
         <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
           <span>Dernière sync: {formatDate(store.last_sync)}</span>
+          {store.settings?.auto_sync && (
+            <Badge variant="secondary" className="text-xs">
+              Auto {store.settings.sync_frequency}
+            </Badge>
+          )}
         </div>
         
         <div className="flex gap-2">
           <Button asChild size="sm" className="flex-1">
             <Link to={`/dashboard/stores/${store.id}`}>
-              Gérer
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Dashboard
             </Link>
           </Button>
           <Button 
@@ -170,6 +204,7 @@ export function StoreCard({ store, onSync, onDisconnect }: StoreCardProps) {
             size="sm" 
             onClick={() => onSync(store.id)}
             disabled={store.status === 'syncing'}
+            className="px-3"
           >
             <RefreshCw className={`h-4 w-4 ${store.status === 'syncing' ? 'animate-spin' : ''}`} />
           </Button>
