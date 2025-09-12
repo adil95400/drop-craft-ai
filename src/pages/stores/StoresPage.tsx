@@ -13,7 +13,7 @@ export default function StoresPage() {
   const [showConnectDialog, setShowConnectDialog] = useState(false)
 
   const handleSync = async (storeId: string) => {
-    await syncStore(storeId)
+    await syncStore(storeId, 'full')
   }
 
   const handleDisconnect = async (storeId: string) => {

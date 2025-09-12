@@ -125,7 +125,7 @@ import UnifiedDashboardPage from '@/pages/UnifiedDashboardPage';
 // Store Pages
 import StoresPage from '@/pages/stores/StoresPage';
 import ConnectStorePage from '@/pages/stores/ConnectStorePage';
-import { StoreDashboardPage } from '@/pages/stores/StoreDashboardPage';
+import StoreDetailPage from '@/pages/stores/StoreDetailPage';
 import { StoreSettingsPage } from '@/pages/stores/StoreSettingsPage';
 
 import { ExtensionDownloadPage } from "./pages/ExtensionDownloadPage";
@@ -245,7 +245,7 @@ function App() {
                 } />
                 <Route path="/stores/:storeId" element={
                   <ProtectedRoute>
-                    <AppLayout><StoreDashboardPage /></AppLayout>
+                    <AppLayout><StoreDetailPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/stores/:storeId/settings" element={
@@ -267,7 +267,7 @@ function App() {
                 } />
                 <Route path="/dashboard/stores/:storeId" element={
                   <ProtectedRoute>
-                    <AppLayout><StoreDashboardPage /></AppLayout>
+                    <AppLayout><StoreDetailPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/dashboard/stores/:storeId/settings" element={

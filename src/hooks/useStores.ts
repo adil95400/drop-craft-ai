@@ -235,34 +235,92 @@ export const useStores = () => {
     }
   }
 
-  const syncStore = async (storeId: string) => {
+  const syncStore = async (storeId: string, type: 'products' | 'orders' | 'full' = 'full') => {
     try {
       setStores(prev => prev.map(store => 
         store.id === storeId 
           ? { ...store, status: 'syncing' as const }
           : store
       ))
-      
-      // Call the Edge Function for real synchronization
-      const { data, error } = await supabase.functions.invoke('shopify-sync', {
-        body: {
-          storeId,
-          action: 'full_sync'
-        }
-      })
 
-      if (error) {
-        console.error('Sync function error:', error)
-        throw new Error(error.message)
+      toast({
+        title: "Synchronisation démarrée",
+        description: type === 'full' ? "Synchronisation complète en cours..." : `Synchronisation des ${type === 'products' ? 'produits' : 'commandes'} en cours...`,
+      })
+      
+      if (type === 'full' || type === 'products') {
+        // Sync products
+        const { data: productsData, error: productsError } = await supabase.functions.invoke('shopify-sync', {
+          body: {
+            integrationId: storeId,
+            type: 'products'
+          }
+        })
+
+        if (productsError) {
+          console.error('Products sync error:', productsError)
+          throw new Error(`Erreur sync produits: ${productsError.message}`)
+        }
+
+        if (!productsData?.success) {
+          throw new Error(productsData?.error || 'Échec sync produits')
+        }
+
+        toast({
+          title: "Produits synchronisés",
+          description: productsData.message || `${productsData.imported || 0} produits importés`
+        })
       }
 
-      if (data?.success) {
-        toast({
-          title: "Succès",
-          description: data.message || "Synchronisation terminée"
+      if (type === 'full' || type === 'orders') {
+        // Sync orders (with delay if full sync)
+        if (type === 'full') {
+          await new Promise(resolve => setTimeout(resolve, 2000))
+        }
+
+        const { data: ordersData, error: ordersError } = await supabase.functions.invoke('shopify-sync', {
+          body: {
+            integrationId: storeId,
+            type: 'orders'
+          }
         })
-      } else {
-        throw new Error(data?.error || 'Sync failed')
+
+        if (ordersError) {
+          console.error('Orders sync error:', ordersError)
+          throw new Error(`Erreur sync commandes: ${ordersError.message}`)
+        }
+
+        if (!ordersData?.success) {
+          throw new Error(ordersData?.error || 'Échec sync commandes')
+        }
+
+        toast({
+          title: "Commandes synchronisées",
+          description: ordersData.message || `${ordersData.imported || 0} commandes importées`
+        })
+      }
+
+      // Update store status to connected after successful sync
+      await supabase
+        .from('store_integrations')
+        .update({ 
+          connection_status: 'connected',
+          last_sync_at: new Date().toISOString()
+        })
+        .eq('id', storeId)
+        .eq('user_id', user?.id)
+
+      setStores(prev => prev.map(store => 
+        store.id === storeId 
+          ? { ...store, status: 'connected' as const, last_sync: new Date().toISOString() }
+          : store
+      ))
+
+      if (type === 'full') {
+        toast({
+          title: "Synchronisation terminée",
+          description: "Tous vos données ont été synchronisées avec succès"
+        })
       }
       
     } catch (error) {
@@ -274,10 +332,16 @@ export const useStores = () => {
         .update({ connection_status: 'error' })
         .eq('id', storeId)
         .eq('user_id', user?.id)
+
+      setStores(prev => prev.map(store => 
+        store.id === storeId 
+          ? { ...store, status: 'error' as const }
+          : store
+      ))
       
       toast({
-        title: "Erreur",
-        description: "Erreur lors de la synchronisation",
+        title: "Erreur de synchronisation",
+        description: error instanceof Error ? error.message : "Erreur lors de la synchronisation",
         variant: "destructive"
       })
     }

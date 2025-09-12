@@ -62,10 +62,12 @@ export class CatalogService {
       const count = filteredData.length
 
       const result = {
-        products: filteredData.map(product => ({
+        products: filteredData.map((product: any) => ({
           ...product,
           supplier_id: product.external_id || 'unknown',
-          supplier_name: product.supplier_name || 'Unknown Supplier'
+          supplier_name: product.supplier_name || 'Unknown Supplier',
+          created_at: product.created_at || product.last_updated || new Date().toISOString(),
+          updated_at: product.updated_at || product.last_updated || new Date().toISOString()
         })) as CatalogProduct[],
         total: count
       }
@@ -102,14 +104,16 @@ export class CatalogService {
       }
 
       // Map to ensure all required fields are present
-      const mappedProduct = {
+      const mappedProduct: any = {
         ...product,
         supplier_id: product.external_id || 'unknown',
-        supplier_name: product.supplier_name || 'Unknown Supplier'
-      } as CatalogProduct
+        supplier_name: product.supplier_name || 'Unknown Supplier',
+        created_at: (product as any).created_at || (product as any).last_updated || new Date().toISOString(),
+        updated_at: (product as any).updated_at || (product as any).last_updated || new Date().toISOString()
+      }
       
       this.cache.set(cacheKey, { data: mappedProduct, timestamp: Date.now() })
-      return mappedProduct
+      return mappedProduct as CatalogProduct
     } catch (error) {
       console.error('Catalog product fetch failed:', error)
       throw error
