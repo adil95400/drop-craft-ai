@@ -34,7 +34,8 @@ serve(async (req) => {
     const credentials = integration.credentials || {}
     
     if (!credentials.access_token || !credentials.shop_domain) {
-      throw new Error('Credentials Shopify manquants')
+      console.error('Credentials manquants:', credentials)
+      throw new Error('Credentials Shopify manquants. Veuillez configurer votre boutique Shopify d\'abord.')
     }
 
     const shopifyDomain = credentials.shop_domain

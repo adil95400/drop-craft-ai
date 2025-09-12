@@ -5,13 +5,13 @@ import { Plus, Store, RefreshCw } from 'lucide-react'
 import { ConnectStoreDialog } from './components/ConnectStoreDialog'
 import { ShopifyStoreCard } from '@/components/stores/ShopifyStoreCard'
 import { useState } from 'react'
-import { useRealIntegrations } from '@/hooks/useRealIntegrations'
+import { useStoreIntegrations } from '@/hooks/useStoreIntegrations'
 import { useRealProducts } from '@/hooks/useRealProducts'
 import { useRealOrders } from '@/hooks/useRealOrders'
 
 export function StoreConnections() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const { integrations, isLoading, stats } = useRealIntegrations()
+  const { integrations, isLoading, stats } = useStoreIntegrations()
   const { stats: productStats } = useRealProducts()
   const { stats: orderStats } = useRealOrders()
 
@@ -115,7 +115,7 @@ export function StoreConnections() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {integrations.map((integration) => {
           // Utiliser le composant spécialisé pour Shopify
-          if (integration.platform_type === 'shopify') {
+          if (integration.platform === 'shopify') {
             return (
               <ShopifyStoreCard
                 key={integration.id}
@@ -136,7 +136,7 @@ export function StoreConnections() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Store className="w-5 h-5" />
-                    {integration.platform_name}
+                    {integration.platform}
                   </CardTitle>
                   <Badge 
                     variant={integration.connection_status === 'connected' ? 'default' : 'destructive'}
@@ -148,11 +148,11 @@ export function StoreConnections() {
               <CardContent>
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
-                    Plateforme: {integration.platform_type}
+                    Plateforme: {integration.platform}
                   </p>
-                  {integration.shop_domain && (
+                  {integration.store_url && (
                     <p className="text-sm text-muted-foreground">
-                      Domaine: {integration.shop_domain}
+                      URL: {integration.store_url}
                     </p>
                   )}
                   <p className="text-sm text-muted-foreground">
