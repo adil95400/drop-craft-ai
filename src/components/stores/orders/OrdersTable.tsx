@@ -34,7 +34,7 @@ export function OrdersTable() {
       order.order_number.toLowerCase().includes(search.toLowerCase()) ||
       order.id.toLowerCase().includes(search.toLowerCase())
     
-    const matchesStatus = !statusFilter || order.status === statusFilter
+    const matchesStatus = !statusFilter || statusFilter === 'all' || order.status === statusFilter
 
     return matchesSearch && matchesStatus
   })
@@ -144,7 +144,7 @@ export function OrdersTable() {
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tous les statuts</SelectItem>
+              <SelectItem value="all">Tous les statuts</SelectItem>
               <SelectItem value="pending">En attente</SelectItem>
               <SelectItem value="processing">En cours</SelectItem>
               <SelectItem value="shipped">Expédiée</SelectItem>

@@ -29,8 +29,8 @@ export function ProductsTable() {
 
   const filters = {
     search: search || undefined,
-    status: statusFilter || undefined,
-    category: categoryFilter || undefined,
+    status: statusFilter && statusFilter !== 'all' ? statusFilter : undefined,
+    category: categoryFilter && categoryFilter !== 'all' ? categoryFilter : undefined,
     low_stock: statusFilter === 'low_stock' || undefined
   }
 
@@ -120,7 +120,7 @@ export function ProductsTable() {
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tous</SelectItem>
+              <SelectItem value="all">Tous</SelectItem>
               <SelectItem value="active">Actif</SelectItem>
               <SelectItem value="inactive">Inactif</SelectItem>
               <SelectItem value="low_stock">Stock faible</SelectItem>
@@ -131,7 +131,7 @@ export function ProductsTable() {
               <SelectValue placeholder="Catégorie" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Toutes</SelectItem>
+              <SelectItem value="all">Toutes</SelectItem>
               {categories.map(category => (
                 <SelectItem key={category} value={category!}>
                   {category}
