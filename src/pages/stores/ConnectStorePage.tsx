@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { useStores } from '@/hooks/useStores'
 import { PlatformSelector } from './components/PlatformSelector'
+import { CredentialInput } from '@/components/common/CredentialInput'
 
 const ConnectStorePage = () => {
   const navigate = useNavigate()
@@ -203,13 +204,23 @@ const ConnectStorePage = () => {
               <Label htmlFor={field.key}>
                 {field.label} {field.required && '*'}
               </Label>
-              <Input
-                id={field.key}
-                type={field.key.includes('secret') || field.key.includes('Token') ? 'password' : 'text'}
-                placeholder={field.placeholder}
-                value={formData[field.key as keyof typeof formData]}
-                onChange={(e) => handleInputChange(field.key, e.target.value)}
-              />
+              {field.key.includes('Token') || field.key.includes('secret') || field.key.includes('Secret') ? (
+                <CredentialInput
+                  id={field.key}
+                  label=""
+                  value={formData[field.key as keyof typeof formData] as string}
+                  onChange={(value) => handleInputChange(field.key, value)}
+                  placeholder={field.placeholder}
+                  required={field.required}
+                />
+              ) : (
+                <Input
+                  id={field.key}
+                  placeholder={field.placeholder}
+                  value={formData[field.key as keyof typeof formData]}
+                  onChange={(e) => handleInputChange(field.key, e.target.value)}
+                />
+              )}
             </div>
           ))}
 
