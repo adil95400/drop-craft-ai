@@ -187,42 +187,45 @@ export const useRealIntegrations = () => {
 
   const syncProducts = useMutation({
     mutationFn: async (params: { integrationId: string; platform?: string }) => {
-      const { data, error } = await supabase.functions.invoke('sync-integration', {
+      const { data, error } = await supabase.functions.invoke('shopify-sync', {
         body: { 
           integrationId: params.integrationId, 
-          type: 'products',
-          platform: params.platform
+          type: 'products'
         }
       })
       
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['real-products'] })
+      queryClient.invalidateQueries({ queryKey: ['real-integrations'] })
       toast({
-        title: "Synchronisation des produits démarrée",
-        description: "Les produits sont en cours de synchronisation..."
+        title: "Synchronisation réussie",
+        description: data?.message || "Les produits ont été synchronisés avec succès"
       })
     }
   })
 
   const syncOrders = useMutation({
     mutationFn: async (params: { integrationId: string; platform?: string }) => {
-      const { data, error } = await supabase.functions.invoke('sync-integration', {
+      const { data, error } = await supabase.functions.invoke('shopify-sync', {
         body: { 
           integrationId: params.integrationId, 
-          type: 'orders',
-          platform: params.platform
+          type: 'orders'
         }
       })
       
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['order-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['real-integrations'] })
       toast({
-        title: "Synchronisation des commandes démarrée",
-        description: "Les commandes sont en cours de synchronisation..."
+        title: "Synchronisation réussie",
+        description: data?.message || "Les commandes ont été synchronisées avec succès"
       })
     }
   })

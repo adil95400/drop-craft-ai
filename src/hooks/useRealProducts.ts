@@ -26,7 +26,10 @@ export const useRealProducts = (filters?: any) => {
   const { data: products = [], isLoading, error } = useQuery({
     queryKey: ['real-products', filters],
     queryFn: async () => {
-      let query = supabase.from('products').select('*')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      
+      let query = supabase.from('products').select('*').eq('user_id', user.id)
       
       if (filters?.status) {
         query = query.eq('status', filters.status)

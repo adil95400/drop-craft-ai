@@ -42,9 +42,13 @@ export const useRealOrders = () => {
   const { data: orders = [], isLoading, error } = useQuery({
     queryKey: ['orders'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      
       const { data, error } = await supabase
         .from('orders')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -55,9 +59,13 @@ export const useRealOrders = () => {
   const { data: stats } = useQuery({
     queryKey: ['order-stats'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      
       const { data, error } = await supabase
         .from('orders')
         .select('status, total_amount')
+        .eq('user_id', user.id)
 
       if (error) throw error
 
