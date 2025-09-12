@@ -16,7 +16,10 @@ export interface Store {
   currency: string
   logo_url?: string
   created_at: string
-  credentials?: any
+  credentials?: {
+    shop_domain?: string
+    access_token?: string
+  }
   settings: {
     auto_sync: boolean
     sync_frequency: 'hourly' | 'daily' | 'weekly'
@@ -84,6 +87,7 @@ export const useStores = () => {
         currency: 'EUR',
         logo_url: undefined,
         created_at: store.created_at,
+        credentials: (store.credentials as { shop_domain?: string; access_token?: string }) || {},
         settings: (store.sync_settings as any) || {
           auto_sync: true,
           sync_frequency: 'hourly',

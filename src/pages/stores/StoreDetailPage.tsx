@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, RefreshCw, Settings, ExternalLink, Package, ShoppingCart, TrendingUp, Calendar, Activity } from 'lucide-react'
+import { ArrowLeft, RefreshCw, Settings, ExternalLink, Package, ShoppingCart, TrendingUp, Calendar, Activity, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useStores, Store } from '@/hooks/useStores'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
+import { StoreSettings } from './components/StoreSettings'
+import { SyncHistory } from './components/SyncHistory'
 
 export default function StoreDetailPage() {
   const { storeId } = useParams<{ storeId: string }>()
@@ -19,9 +22,27 @@ export default function StoreDetailPage() {
 
   const handleSync = async (type: 'products' | 'orders' | 'full' = 'full') => {
     if (!storeId) return
+    if (!store?.domain || !store?.credentials?.access_token) {
+      toast({
+        title: "Configuration requise",
+        description: "Veuillez d'abord configurer les paramètres de votre boutique Shopify.",
+        variant: "destructive"
+      })
+      return
+    }
     setSyncing(type)
     try {
       await syncStore(storeId, type)
+      toast({
+        title: "Synchronisation réussie",
+        description: `${type === 'full' ? 'Synchronisation complète' : type === 'products' ? 'Produits' : 'Commandes'} synchronisé(e)s avec succès.`
+      })
+    } catch (error) {
+      toast({
+        title: "Erreur de synchronisation",
+        description: error instanceof Error ? error.message : "Une erreur est survenue",
+        variant: "destructive"
+      })
     } finally {
       setSyncing(null)
     }
@@ -189,6 +210,25 @@ export default function StoreDetailPage() {
         </Card>
       </div>
 
+      {/* Alertes de configuration */}
+      {(!store.domain || !store.credentials?.access_token) && (
+        <Alert className="mb-6 border-orange-200 bg-orange-50">
+          <AlertCircle className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-800">
+            <strong>Configuration incomplète:</strong> Veuillez configurer vos paramètres Shopify dans l'onglet "Paramètres" avant de synchroniser.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {store.status === 'error' && (
+        <Alert className="mb-6 border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            <strong>Erreur de synchronisation:</strong> Impossible de synchroniser avec votre boutique. Vérifiez vos paramètres Shopify.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Actions de synchronisation */}
       <Card className="mb-6">
         <CardHeader>
@@ -201,7 +241,7 @@ export default function StoreDetailPage() {
           <div className="flex flex-wrap gap-3">
             <Button 
               onClick={() => handleSync('full')}
-              disabled={syncing !== null}
+              disabled={syncing !== null || !store.domain || !store.credentials?.access_token}
               className="gap-2"
             >
               <RefreshCw className={`w-4 h-4 ${syncing === 'full' ? 'animate-spin' : ''}`} />
@@ -210,7 +250,7 @@ export default function StoreDetailPage() {
             <Button 
               variant="outline"
               onClick={() => handleSync('products')}
-              disabled={syncing !== null}
+              disabled={syncing !== null || !store.domain || !store.credentials?.access_token}
               className="gap-2"
             >
               <Package className={`w-4 h-4 ${syncing === 'products' ? 'animate-spin' : ''}`} />
@@ -219,7 +259,7 @@ export default function StoreDetailPage() {
             <Button 
               variant="outline"
               onClick={() => handleSync('orders')}
-              disabled={syncing !== null}
+              disabled={syncing !== null || !store.domain || !store.credentials?.access_token}
               className="gap-2"
             >
               <ShoppingCart className={`w-4 h-4 ${syncing === 'orders' ? 'animate-spin' : ''}`} />
@@ -305,35 +345,11 @@ export default function StoreDetailPage() {
         </TabsContent>
         
         <TabsContent value="settings">
-          <Card>
-            <CardHeader>
-              <CardTitle>Paramètres avancés</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Configurez les options de synchronisation pour cette boutique
-              </p>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Fonctionnalité à venir - Paramètres de synchronisation avancés
-              </p>
-            </CardContent>
-          </Card>
+          <StoreSettings store={store} onUpdate={() => window.location.reload()} />
         </TabsContent>
         
         <TabsContent value="logs">
-          <Card>
-            <CardHeader>
-              <CardTitle>Historique des synchronisations</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Voir l'historique des synchronisations et les erreurs
-              </p>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Fonctionnalité à venir - Logs détaillés des synchronisations
-              </p>
-            </CardContent>
-          </Card>
+          <SyncHistory storeId={store.id} />
         </TabsContent>
       </Tabs>
     </div>
