@@ -5804,6 +5804,23 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_admin_catalog_intelligence: {
+        Args: { category_filter?: string; limit_count?: number }
+        Returns: {
+          availability_status: string
+          category: string
+          competition_score: number
+          cost_price: number
+          id: string
+          name: string
+          price: number
+          profit_margin: number
+          sales_count: number
+          supplier_name: string
+          supplier_url: string
+          trend_score: number
+        }[]
+      }
       get_business_intelligence: {
         Args: { limit_count?: number }
         Returns: {
@@ -5914,6 +5931,34 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_public_catalog_products: {
+        Args: {
+          category_filter?: string
+          limit_count?: number
+          search_term?: string
+        }
+        Returns: {
+          availability_status: string
+          brand: string
+          category: string
+          currency: string
+          delivery_time: string
+          description: string
+          external_id: string
+          id: string
+          image_url: string
+          image_urls: string[]
+          is_bestseller: boolean
+          is_trending: boolean
+          name: string
+          price: number
+          rating: number
+          reviews_count: number
+          sku: string
+          subcategory: string
+          tags: string[]
+        }[]
+      }
       get_safe_integrations: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -5954,7 +5999,6 @@ export type Database = {
           category: string
           competition_score: number
           cost_price: number
-          created_at: string
           currency: string
           delivery_time: string
           description: string
@@ -5975,7 +6019,6 @@ export type Database = {
           supplier_name: string
           supplier_url: string
           tags: string[]
-          updated_at: string
         }[]
       }
       get_secure_suppliers: {
