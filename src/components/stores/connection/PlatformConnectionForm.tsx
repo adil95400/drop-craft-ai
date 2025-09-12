@@ -47,7 +47,7 @@ export function PlatformConnectionForm({ platform, onConnect, onCancel }: Platfo
     
     if (!values.shop_domain || !values.access_token) {
       toast({
-        title: "Erreur",
+        title: "Informations manquantes",
         description: "Veuillez remplir le domaine et le token d'accès",
         variant: "destructive"
       })
@@ -58,8 +58,9 @@ export function PlatformConnectionForm({ platform, onConnect, onCancel }: Platfo
     setTestResult(null)
 
     try {
-      const { data, error } = await supabase.functions.invoke('store-connection-test', {
+      const { data, error } = await supabase.functions.invoke('shopify-operations', {
         body: {
+          operation: 'test_connection',
           platform: 'shopify',
           credentials: {
             shop_domain: values.shop_domain.replace('.myshopify.com', ''),
@@ -74,19 +75,21 @@ export function PlatformConnectionForm({ platform, onConnect, onCancel }: Platfo
 
       if (data?.success) {
         const shopName = data.shop?.name || 'Boutique Shopify'
-        const successMessage = `Connexion réussie à ${shopName}`
+        const successMessage = `✅ Connexion réussie à ${shopName}`
         setTestResult({ success: true, message: successMessage })
         toast({
-          title: "Test réussi",
-          description: successMessage
+          title: "✅ Test réussi",
+          description: successMessage,
+          duration: 5000
         })
       } else {
         const errorMessage = data?.error || 'Test de connexion échoué'
         setTestResult({ success: false, message: errorMessage })
         toast({
-          title: "Test échoué",
+          title: "❌ Test échoué",
           description: errorMessage,
-          variant: "destructive"
+          variant: "destructive",
+          duration: 8000
         })
       }
     } catch (error) {
@@ -96,9 +99,13 @@ export function PlatformConnectionForm({ platform, onConnect, onCancel }: Platfo
       let errorMessage = 'Une erreur inattendue s\'est produite'
       if (error instanceof Error) {
         if (error.message.includes('non-2xx status code')) {
-          errorMessage = 'Erreur de connexion au serveur. Vérifiez vos identifiants.'
+          errorMessage = '🔧 Erreur de serveur. Vérifiez le format de votre domaine (sans https://)'
         } else if (error.message.includes('Network')) {
-          errorMessage = 'Problème de réseau. Vérifiez votre connexion internet.'
+          errorMessage = '🌐 Problème de réseau. Vérifiez votre connexion internet.'
+        } else if (error.message.includes('Token d\'accès invalide')) {
+          errorMessage = '🔑 Token d\'accès invalide. Générez un nouveau token dans votre admin Shopify.'
+        } else if (error.message.includes('Boutique introuvable')) {
+          errorMessage = '🏪 Boutique introuvable. Vérifiez le domaine de votre boutique.'
         } else {
           errorMessage = error.message
         }
@@ -106,9 +113,10 @@ export function PlatformConnectionForm({ platform, onConnect, onCancel }: Platfo
       
       setTestResult({ success: false, message: errorMessage })
       toast({
-        title: "Erreur de test",
+        title: "❌ Erreur de test",
         description: errorMessage,
-        variant: "destructive"
+        variant: "destructive",
+        duration: 8000
       })
     } finally {
       setIsTesting(false)

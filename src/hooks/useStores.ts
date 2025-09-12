@@ -120,17 +120,18 @@ export const useStores = () => {
     if (!user) throw new Error('User not authenticated')
     
     try {
-      // Test connection first with real API call
+      // Test connection first with unified API call
       if (storeData.credentials && storeData.platform) {
-        const { data: testResult, error: testError } = await supabase.functions.invoke('store-connection-test', {
+        const { data: testResult, error: testError } = await supabase.functions.invoke('shopify-operations', {
           body: {
-            platform: storeData.platform,
-            credentials: storeData.credentials
+            operation: 'test_connection',
+            credentials: storeData.credentials,
+            platform: storeData.platform
           }
         })
 
         if (testError || !testResult?.success) {
-          throw new Error(testResult?.error || 'Connection test failed')
+          throw new Error(testResult?.error || 'Test de connexion échoué')
         }
       }
 
@@ -251,81 +252,44 @@ export const useStores = () => {
         title: "Synchronisation démarrée",
         description: type === 'full' ? "Synchronisation complète en cours..." : `Synchronisation des ${type === 'products' ? 'produits' : 'commandes'} en cours...`,
       })
+
+      // Use new unified shopify-operations function
+      const operation = type === 'full' ? 'sync_full' : type === 'products' ? 'sync_products' : 'sync_orders'
       
-      if (type === 'full' || type === 'products') {
-        // Sync products
-        const { data: productsData, error: productsError } = await supabase.functions.invoke('shopify-sync', {
-          body: {
-            integrationId: storeId,
-            type: 'products'
-          }
-        })
-
-        if (productsError) {
-          console.error('Products sync error:', productsError)
-          throw new Error(`Erreur sync produits: ${productsError.message}`)
+      const { data: syncData, error: syncError } = await supabase.functions.invoke('shopify-operations', {
+        body: {
+          operation,
+          integrationId: storeId
         }
+      })
 
-        if (!productsData?.success) {
-          throw new Error(productsData?.error || 'Échec sync produits')
-        }
-
-        toast({
-          title: "Produits synchronisés",
-          description: productsData.message || `${productsData.imported || 0} produits importés`
-        })
+      if (syncError) {
+        console.error('Sync error:', syncError)
+        throw new Error(`Erreur synchronisation: ${syncError.message}`)
       }
 
-      if (type === 'full' || type === 'orders') {
-        // Sync orders (with delay if full sync)
-        if (type === 'full') {
-          await new Promise(resolve => setTimeout(resolve, 2000))
-        }
-
-        const { data: ordersData, error: ordersError } = await supabase.functions.invoke('shopify-sync', {
-          body: {
-            integrationId: storeId,
-            type: 'orders'
-          }
-        })
-
-        if (ordersError) {
-          console.error('Orders sync error:', ordersError)
-          throw new Error(`Erreur sync commandes: ${ordersError.message}`)
-        }
-
-        if (!ordersData?.success) {
-          throw new Error(ordersData?.error || 'Échec sync commandes')
-        }
-
-        toast({
-          title: "Commandes synchronisées",
-          description: ordersData.message || `${ordersData.imported || 0} commandes importées`
-        })
+      if (!syncData?.success) {
+        throw new Error(syncData?.error || 'Échec de la synchronisation')
       }
 
       // Update store status to connected after successful sync
-      await supabase
-        .from('store_integrations')
-        .update({ 
-          connection_status: 'connected',
-          last_sync_at: new Date().toISOString()
-        })
-        .eq('id', storeId)
-        .eq('user_id', user?.id)
-
       setStores(prev => prev.map(store => 
         store.id === storeId 
-          ? { ...store, status: 'connected' as const, last_sync: new Date().toISOString() }
+          ? { 
+              ...store, 
+              status: 'connected' as const, 
+              last_sync: new Date().toISOString(),
+              products_count: syncData.results?.products ?? store.products_count,
+              orders_count: syncData.results?.orders ?? store.orders_count
+            }
           : store
       ))
 
-      if (type === 'full') {
-        toast({
-          title: "Synchronisation terminée",
-          description: "Tous vos données ont été synchronisées avec succès"
-        })
-      }
+      toast({
+        title: "Synchronisation terminée",
+        description: syncData.message || "Synchronisation réussie",
+        duration: 5000
+      })
       
     } catch (error) {
       console.error('Error syncing store:', error)
