@@ -21,7 +21,11 @@ const ConnectStorePage = () => {
     domain: '',
     apiKey: '',
     apiSecret: '',
-    accessToken: ''
+    accessToken: '',
+    // Fonctionnalités activées (stockées comme strings pour la compatibilité)
+    autoSync: 'true',
+    importProducts: 'true',
+    trackOrders: 'true'
   })
 
   const handleInputChange = (field: string, value: string) => {
@@ -66,7 +70,12 @@ const ConnectStorePage = () => {
       if (selectedPlatform === 'shopify') {
         credentials = {
           shop_domain: formData.domain.replace(/^https?:\/\//, '').replace(/\/$/, ''),
-          access_token: formData.accessToken
+          access_token: formData.accessToken,
+          features: {
+            auto_sync: formData.autoSync === 'true',
+            import_products: formData.importProducts === 'true',
+            track_orders: formData.trackOrders === 'true'
+          }
         }
       } else if (selectedPlatform === 'woocommerce') {
         credentials = {
@@ -116,9 +125,14 @@ const ConnectStorePage = () => {
   const platformConfig = {
     shopify: {
       title: "Connecter Shopify",
-      description: "Connectez votre boutique Shopify en utilisant l'API Admin",
+      description: "Ces informations nous permettront de nous connecter à votre boutique et de synchroniser vos données.",
       fields: [
-        { key: 'accessToken', label: 'Access Token', placeholder: 'Votre token d\'accès Shopify (Private App)', required: true }
+        { key: 'accessToken', label: 'Access Token Privé', placeholder: 'shpat_xxxxxxxxxxxxxxxxxxxxxxxxxx', required: true }
+      ],
+      features: [
+        { key: 'autoSync', label: 'Synchronisation automatique', description: 'Synchronise automatiquement vos données' },
+        { key: 'importProducts', label: 'Import des produits', description: 'Importe vos produits depuis Shopify' },
+        { key: 'trackOrders', label: 'Suivi des commandes', description: 'Suit vos commandes en temps réel' }
       ]
     },
       woocommerce: {
@@ -127,21 +141,24 @@ const ConnectStorePage = () => {
         fields: [
           { key: 'apiKey', label: 'Consumer Key', placeholder: 'Votre Consumer Key', required: true },
           { key: 'apiSecret', label: 'Consumer Secret', placeholder: 'Votre Consumer Secret', required: true }
-        ]
+        ],
+        features: []
       },
       prestashop: {
         title: "Connecter PrestaShop",
         description: "Connectez votre boutique PrestaShop via Webservice",
         fields: [
           { key: 'apiKey', label: 'Webservice Key', placeholder: 'Votre clé Webservice', required: true }
-        ]
+        ],
+        features: []
       },
       magento: {
         title: "Connecter Magento",
         description: "Connectez votre boutique Magento via l'API REST",
         fields: [
           { key: 'accessToken', label: 'Access Token', placeholder: 'Votre token d\'accès', required: true }
-        ]
+        ],
+        features: []
       }
     }
 
@@ -164,16 +181,16 @@ const ConnectStorePage = () => {
               <Label htmlFor="name">Nom de la boutique *</Label>
               <Input
                 id="name"
-                placeholder="Mon e-commerce"
+                placeholder="Ma boutique en ligne"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
               />
             </div>
             <div>
-              <Label htmlFor="domain">Domaine *</Label>
+              <Label htmlFor="domain">Domaine de la boutique *</Label>
               <Input
                 id="domain"
-                placeholder="mon-site.com"
+                placeholder="monsite.com ou monsite.myshopify.com"
                 value={formData.domain}
                 onChange={(e) => handleInputChange('domain', e.target.value)}
               />
@@ -188,13 +205,54 @@ const ConnectStorePage = () => {
               </Label>
               <Input
                 id={field.key}
-                type={field.key.includes('secret') ? 'password' : 'text'}
+                type={field.key.includes('secret') || field.key.includes('Token') ? 'password' : 'text'}
                 placeholder={field.placeholder}
                 value={formData[field.key as keyof typeof formData]}
                 onChange={(e) => handleInputChange(field.key, e.target.value)}
               />
             </div>
           ))}
+
+          {/* Fonctionnalités activées - seulement pour Shopify */}
+          {selectedPlatform === 'shopify' && config.features && config.features.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 flex items-center justify-center">⚡</div>
+                <h3 className="text-lg font-semibold">Fonctionnalités activées</h3>
+              </div>
+              <div className="grid gap-4">
+                {config.features.map((feature) => (
+                  <div key={feature.key} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <div className="font-medium">{feature.label}</div>
+                      <div className="text-sm text-muted-foreground">{feature.description}</div>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={feature.key}
+                        checked={Boolean(formData[feature.key as keyof typeof formData])}
+                        onChange={(e) => handleInputChange(feature.key, e.target.checked.toString())}
+                        className="sr-only"
+                      />
+                      <label
+                        htmlFor={feature.key}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer ${
+                          Boolean(formData[feature.key as keyof typeof formData]) ? 'bg-primary' : 'bg-gray-200'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            Boolean(formData[feature.key as keyof typeof formData]) ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-3 pt-4">
             <Button
