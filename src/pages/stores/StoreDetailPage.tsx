@@ -32,7 +32,7 @@ import { SyncHistory } from './components/SyncHistory'
 import { QuickActions } from './components/QuickActions'
 import { AdvancedMetrics } from './components/AdvancedMetrics'
 
-export function StoreDetailPage() {
+export default function StoreDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
