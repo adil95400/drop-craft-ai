@@ -506,7 +506,7 @@ export const CRMDashboard: React.FC = () => {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ range, count }) => `${range}: ${count}`}
+                      label={({ range, count }: any) => `${range}: ${count}`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="count"

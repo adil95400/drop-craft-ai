@@ -235,7 +235,7 @@ export default function UsagePage() {
                       cy="50%"
                       outerRadius={80}
                       dataKey="usage"
-                      label={({name, usage}) => `${name}: ${usage}%`}
+                      label={({name, usage}: any) => `${name}: ${usage}%`}
                     >
                       {extensionUsage.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />

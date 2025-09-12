@@ -460,7 +460,7 @@ export default function SuppliersUltraPro() {
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="volume"
-                    label={({ region, percent }) => `${region} ${(percent * 100).toFixed(0)}%`}
+                    label={({ region, percent }: any) => `${region} ${(percent * 100).toFixed(0)}%`}
                   >
                     {regionData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

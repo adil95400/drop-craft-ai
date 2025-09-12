@@ -396,7 +396,7 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="sales"
-                      label={({ country, percentage }) => `${country} (${percentage}%)`}
+                      label={({ country, percentage }: any) => `${country} (${percentage}%)`}
                     >
                       {geographicData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
