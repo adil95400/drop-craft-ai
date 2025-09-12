@@ -102,3 +102,6 @@ verify_jwt = false
 
 [functions.store-connection-test]
 verify_jwt = false
+
+[functions.shopify-locations]
+verify_jwt = false
