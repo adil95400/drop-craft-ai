@@ -1,9 +1,30 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Package, Plus, Import, Download } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Package, AlertTriangle, TrendingUp, ShoppingBag } from 'lucide-react'
+import { ProductsTable } from '@/components/stores/products/ProductsTable'
+import { useRealProducts } from '@/hooks/useRealProducts'
 
 export function StoreProducts() {
+  const { stats, isLoading } = useRealProducts()
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-muted rounded w-1/2 mb-2"></div>
+                  <div className="h-8 bg-muted rounded w-3/4"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -11,61 +32,43 @@ export function StoreProducts() {
           <h2 className="text-2xl font-bold">Produits</h2>
           <p className="text-muted-foreground">Gérez vos produits synchronisés</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Exporter
-          </Button>
-          <Button variant="outline" size="sm">
-            <Import className="h-4 w-4 mr-2" />
-            Importer
-          </Button>
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Nouveau produit
-          </Button>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
             <Package className="h-6 w-6 text-primary mx-auto mb-2" />
-            <div className="text-2xl font-bold">247</div>
+            <div className="text-2xl font-bold">{stats.active}</div>
             <div className="text-sm text-muted-foreground">Produits actifs</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">12</div>
+            <AlertTriangle className="h-6 w-6 text-warning mx-auto mb-2" />
+            <div className="text-2xl font-bold">{stats.lowStock}</div>
             <div className="text-sm text-muted-foreground">Stock faible</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">1,523</div>
-            <div className="text-sm text-muted-foreground">Ventes 30j</div>
+            <ShoppingBag className="h-6 w-6 text-success mx-auto mb-2" />
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-sm text-muted-foreground">Total produits</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">45.67€</div>
-            <div className="text-sm text-muted-foreground">Prix moyen</div>
+            <TrendingUp className="h-6 w-6 text-info mx-auto mb-2" />
+            <div className="text-2xl font-bold">{stats.totalValue.toFixed(0)}€</div>
+            <div className="text-sm text-muted-foreground">Valeur stock</div>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Liste des produits</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Interface de gestion des produits en cours de développement...</p>
-        </CardContent>
-      </Card>
+      <ProductsTable />
     </div>
   )
 }

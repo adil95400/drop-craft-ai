@@ -1,8 +1,37 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { ShoppingCart, Download, CheckCircle, Package } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { ShoppingCart, CheckCircle, Package, DollarSign, Clock } from 'lucide-react'
+import { OrdersTable } from '@/components/stores/orders/OrdersTable'
+import { useRealOrders } from '@/hooks/useRealOrders'
 
 export function StoreOrders() {
+  const { stats, isLoading } = useRealOrders()
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(amount)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-muted rounded w-1/2 mb-2"></div>
+                  <div className="h-8 bg-muted rounded w-3/4"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -10,17 +39,13 @@ export function StoreOrders() {
           <h2 className="text-2xl font-bold">Commandes</h2>
           <p className="text-muted-foreground">Historique et gestion des commandes</p>
         </div>
-        <Button variant="outline" size="sm">
-          <Download className="h-4 w-4 mr-2" />
-          Exporter commandes
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
             <ShoppingCart className="h-6 w-6 text-primary mx-auto mb-2" />
-            <div className="text-2xl font-bold">1,523</div>
+            <div className="text-2xl font-bold">{stats.total}</div>
             <div className="text-sm text-muted-foreground">Commandes totales</div>
           </CardContent>
         </Card>
@@ -28,35 +53,29 @@ export function StoreOrders() {
         <Card>
           <CardContent className="p-4 text-center">
             <CheckCircle className="h-6 w-6 text-success mx-auto mb-2" />
-            <div className="text-2xl font-bold">1,387</div>
+            <div className="text-2xl font-bold">{stats.delivered}</div>
             <div className="text-sm text-muted-foreground">Livrées</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4 text-center">
-            <Package className="h-6 w-6 text-warning mx-auto mb-2" />
-            <div className="text-2xl font-bold">89</div>
+            <Clock className="h-6 w-6 text-warning mx-auto mb-2" />
+            <div className="text-2xl font-bold">{stats.processing + stats.shipped}</div>
             <div className="text-sm text-muted-foreground">En cours</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold">85.50€</div>
+            <DollarSign className="h-6 w-6 text-info mx-auto mb-2" />
+            <div className="text-2xl font-bold">{formatCurrency(stats.averageOrderValue)}</div>
             <div className="text-sm text-muted-foreground">Panier moyen</div>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Commandes récentes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Interface de gestion des commandes en cours de développement...</p>
-        </CardContent>
-      </Card>
+      <OrdersTable />
     </div>
   )
 }
