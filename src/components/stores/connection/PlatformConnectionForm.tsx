@@ -73,28 +73,41 @@ export function PlatformConnectionForm({ platform, onConnect, onCancel }: Platfo
       }
 
       if (data?.success) {
-        setTestResult({ success: true, message: data.message || 'Connexion réussie' })
+        const shopName = data.shop?.name || 'Boutique Shopify'
+        const successMessage = `Connexion réussie à ${shopName}`
+        setTestResult({ success: true, message: successMessage })
         toast({
           title: "Test réussi",
-          description: data.message || 'La connexion fonctionne correctement'
+          description: successMessage
         })
       } else {
-        setTestResult({ success: false, message: data?.error || 'Test échoué' })
+        const errorMessage = data?.error || 'Test de connexion échoué'
+        setTestResult({ success: false, message: errorMessage })
         toast({
           title: "Test échoué",
-          description: data?.error || 'La connexion a échoué',
+          description: errorMessage,
           variant: "destructive"
         })
       }
     } catch (error) {
       console.error('Connection test failed:', error)
-      setTestResult({ 
-        success: false, 
-        message: error instanceof Error ? error.message : 'Erreur de connexion'
-      })
+      
+      // Enhanced error messages based on the error type
+      let errorMessage = 'Une erreur inattendue s\'est produite'
+      if (error instanceof Error) {
+        if (error.message.includes('non-2xx status code')) {
+          errorMessage = 'Erreur de connexion au serveur. Vérifiez vos identifiants.'
+        } else if (error.message.includes('Network')) {
+          errorMessage = 'Problème de réseau. Vérifiez votre connexion internet.'
+        } else {
+          errorMessage = error.message
+        }
+      }
+      
+      setTestResult({ success: false, message: errorMessage })
       toast({
         title: "Erreur de test",
-        description: error instanceof Error ? error.message : 'Une erreur inattendue s\'est produite',
+        description: errorMessage,
         variant: "destructive"
       })
     } finally {
