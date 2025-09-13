@@ -20,6 +20,36 @@ const platforms: Platform[] = [
     color: 'bg-green-500'
   },
   {
+    id: 'woocommerce',
+    name: 'WooCommerce',
+    color: 'bg-purple-600'
+  },
+  {
+    id: 'prestashop',
+    name: 'PrestaShop',
+    color: 'bg-blue-500'
+  },
+  {
+    id: 'magento',
+    name: 'Magento',
+    color: 'bg-orange-600'
+  },
+  {
+    id: 'bigcommerce',
+    name: 'BigCommerce',
+    color: 'bg-red-500'
+  },
+  {
+    id: 'opencart',
+    name: 'OpenCart',
+    color: 'bg-teal-500'
+  },
+  {
+    id: 'squarespace',
+    name: 'Squarespace',
+    color: 'bg-gray-900'
+  },
+  {
     id: 'ebay',
     name: 'eBay',
     color: 'bg-blue-600',
@@ -44,20 +74,9 @@ const platforms: Platform[] = [
     disabled: true
   },
   {
-    id: 'woocommerce',
-    name: 'WooCommerce',
-    color: 'bg-purple-600'
-  },
-  {
     id: 'etsy',
     name: 'Etsy',
     color: 'bg-orange-500',
-    disabled: true
-  },
-  {
-    id: 'tiktok',
-    name: 'TikTok',
-    color: 'bg-black',
     disabled: true
   }
 ]
@@ -117,13 +136,27 @@ export function PlatformGridSelector({ onSelect }: PlatformGridSelectorProps) {
                     <path d="M23.547 15.256c-.44 0-.793.354-.793.793 0 .44.354.793.793.793.44 0 .793-.354.793-.793 0-.44-.354-.793-.793-.793z"/>
                   </svg>
                 )}
+                {platform.id === 'prestashop' && (
+                  <div className="text-white font-bold text-xs">PS</div>
+                )}
+                {platform.id === 'magento' && (
+                  <svg viewBox="0 0 24 24" className="w-8 h-8 fill-white">
+                    <path d="M12 .007L8.6 2.73v4.355L12 4.36l3.4 2.725V2.73L12 .007zm-3.4 7.832v8.048L12 18.61l3.4-2.723V7.839L12 10.564 8.6 7.839zm0 9.322v4.355L12 23.993l3.4-2.477v-4.355L12 19.883l-3.4-2.722z"/>
+                  </svg>
+                )}
+                {platform.id === 'bigcommerce' && (
+                  <div className="text-white font-bold text-xs">BC</div>
+                )}
+                {platform.id === 'opencart' && (
+                  <svg viewBox="0 0 24 24" className="w-8 h-8 fill-white">
+                    <path d="M12 2L2 7v10l10 5 10-5V7l-10-5zM6.5 8.5L12 6l5.5 2.5L12 11 6.5 8.5zm0 7L12 18l5.5-2.5v-3L12 15l-5.5-2.5v3z"/>
+                  </svg>
+                )}
+                {platform.id === 'squarespace' && (
+                  <div className="text-white font-bold text-xs">SS</div>
+                )}
                 {platform.id === 'etsy' && (
                   <div className="text-white font-bold text-lg">Etsy</div>
-                )}
-                {platform.id === 'tiktok' && (
-                  <svg viewBox="0 0 24 24" className="w-8 h-8 fill-white">
-                    <path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
-                  </svg>
                 )}
               </div>
               

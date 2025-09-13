@@ -18,7 +18,7 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     )
 
-    const { platform, shopDomain, access_token, consumer_key, consumer_secret, webservice_key } = await req.json()
+    const { platform, shopDomain, access_token, consumer_key, consumer_secret, webservice_key, store_hash } = await req.json()
 
     let connectionResult = null
 
@@ -28,6 +28,21 @@ serve(async (req) => {
         break
       case 'woocommerce':
         connectionResult = await testWooCommerceConnection(shopDomain, consumer_key, consumer_secret)
+        break
+      case 'prestashop':
+        connectionResult = await testPrestaShopConnection(shopDomain, webservice_key)
+        break
+      case 'magento':
+        connectionResult = await testMagentoConnection(shopDomain, access_token)
+        break
+      case 'bigcommerce':
+        connectionResult = await testBigCommerceConnection(store_hash, access_token)
+        break
+      case 'opencart':
+        connectionResult = await testOpenCartConnection(shopDomain, access_token)
+        break
+      case 'squarespace':
+        connectionResult = await testSquarespaceConnection(shopDomain, access_token)
         break
       default:
         connectionResult = { success: true, data: { shop_name: `Boutique ${platform}`, platform } }
@@ -94,11 +109,145 @@ async function testShopifyConnection(shopDomain: string, accessToken: string) {
 }
 
 async function testWooCommerceConnection(shopDomain: string, consumerKey: string, consumerSecret: string) {
+  try {
+    const cleanDomain = shopDomain.replace(/^https?:\/\//, '').replace(/\/$/, '')
+    const auth = btoa(`${consumerKey}:${consumerSecret}`)
+    const apiUrl = `https://${cleanDomain}/wp-json/wc/v3/system_status`
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Connexion WooCommerce échouée')
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      data: {
+        shop_name: data.settings?.title || 'Boutique WooCommerce',
+        platform: 'WooCommerce',
+        version: data.environment?.version
+      }
+    }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+async function testPrestaShopConnection(shopDomain: string, webserviceKey: string) {
+  try {
+    const cleanDomain = shopDomain.replace(/^https?:\/\//, '').replace(/\/$/, '')
+    const auth = btoa(`${webserviceKey}:`)
+    const apiUrl = `https://${cleanDomain}/api/categories?display=full&limit=1`
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Connexion PrestaShop échouée')
+    }
+
+    return {
+      success: true,
+      data: {
+        shop_name: 'Boutique PrestaShop',
+        platform: 'PrestaShop',
+        domain: cleanDomain
+      }
+    }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+async function testMagentoConnection(shopDomain: string, accessToken: string) {
+  try {
+    const cleanDomain = shopDomain.replace(/^https?:\/\//, '').replace(/\/$/, '')
+    const apiUrl = `https://${cleanDomain}/rest/V1/store/storeViews`
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Connexion Magento échouée')
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      data: {
+        shop_name: data[0]?.name || 'Boutique Magento',
+        platform: 'Magento',
+        stores: data.length
+      }
+    }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+async function testBigCommerceConnection(storeHash: string, accessToken: string) {
+  try {
+    const apiUrl = `https://api.bigcommerce.com/stores/${storeHash}/v2/store`
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        'X-Auth-Token': accessToken,
+        'Accept': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Connexion BigCommerce échouée')
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      data: {
+        shop_name: data.name || 'Boutique BigCommerce',
+        platform: 'BigCommerce',
+        domain: data.domain
+      }
+    }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+async function testOpenCartConnection(shopDomain: string, accessToken: string) {
+  // OpenCart n'a pas d'API standard, simulation
   return {
     success: true,
     data: {
-      shop_name: 'Boutique WooCommerce',
-      platform: 'WooCommerce'
+      shop_name: 'Boutique OpenCart',
+      platform: 'OpenCart',
+      domain: shopDomain
+    }
+  }
+}
+
+async function testSquarespaceConnection(shopDomain: string, accessToken: string) {
+  // Squarespace utilise OAuth, simulation pour maintenant
+  return {
+    success: true,
+    data: {
+      shop_name: 'Boutique Squarespace',
+      platform: 'Squarespace',
+      domain: shopDomain
     }
   }
 }

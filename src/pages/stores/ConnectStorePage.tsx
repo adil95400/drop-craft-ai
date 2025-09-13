@@ -23,6 +23,7 @@ const ConnectStorePage = () => {
     apiKey: '',
     apiSecret: '',
     accessToken: '',
+    storeHash: '',
     // Fonctionnalités activées (stockées comme strings pour la compatibilité)
     autoSync: 'true',
     importProducts: 'true',
@@ -48,7 +49,10 @@ const ConnectStorePage = () => {
       shopify: ['accessToken'],
       woocommerce: ['apiKey', 'apiSecret'],
       prestashop: ['apiKey'],
-      magento: ['accessToken']
+      magento: ['accessToken'],
+      bigcommerce: ['storeHash', 'accessToken'],
+      opencart: ['accessToken'],
+      squarespace: ['accessToken']
     }
 
     const required = requiredFields[selectedPlatform as keyof typeof requiredFields] || []
@@ -91,6 +95,19 @@ const ConnectStorePage = () => {
         credentials = {
           access_token: formData.accessToken
         }
+      } else if (selectedPlatform === 'bigcommerce') {
+        credentials = {
+          store_hash: formData.storeHash,
+          access_token: formData.accessToken
+        }
+      } else if (selectedPlatform === 'opencart') {
+        credentials = {
+          access_token: formData.accessToken
+        }
+      } else if (selectedPlatform === 'squarespace') {
+        credentials = {
+          access_token: formData.accessToken
+        }
       }
 
       await connectStore({
@@ -111,25 +128,25 @@ const ConnectStorePage = () => {
   const renderPlatformForm = () => {
     if (!selectedPlatform) return null
 
-  const platformConfig = {
-    shopify: {
-      title: "Connecter Shopify",
-      description: "Ces informations nous permettront de nous connecter à votre boutique et de synchroniser vos données.",
-      fields: [
-        { key: 'accessToken', label: 'Access Token Privé', placeholder: 'shpat_xxxxxxxxxxxxxxxxxxxxxxxxxx', required: true }
-      ],
-      features: [
-        { key: 'autoSync', label: 'Synchronisation automatique', description: 'Synchronise automatiquement vos données' },
-        { key: 'importProducts', label: 'Import des produits', description: 'Importe vos produits depuis Shopify' },
-        { key: 'trackOrders', label: 'Suivi des commandes', description: 'Suit vos commandes en temps réel' }
-      ]
-    },
+    const platformConfig = {
+      shopify: {
+        title: "Connecter Shopify",
+        description: "Ces informations nous permettront de nous connecter à votre boutique et de synchroniser vos données.",
+        fields: [
+          { key: 'accessToken', label: 'Access Token Privé', placeholder: 'shpat_xxxxxxxxxxxxxxxxxxxxxxxxxx', required: true }
+        ],
+        features: [
+          { key: 'autoSync', label: 'Synchronisation automatique', description: 'Synchronise automatiquement vos données' },
+          { key: 'importProducts', label: 'Import des produits', description: 'Importe vos produits depuis Shopify' },
+          { key: 'trackOrders', label: 'Suivi des commandes', description: 'Suit vos commandes en temps réel' }
+        ]
+      },
       woocommerce: {
         title: "Connecter WooCommerce",
         description: "Connectez votre boutique WooCommerce via l'API REST",
         fields: [
-          { key: 'apiKey', label: 'Consumer Key', placeholder: 'Votre Consumer Key', required: true },
-          { key: 'apiSecret', label: 'Consumer Secret', placeholder: 'Votre Consumer Secret', required: true }
+          { key: 'apiKey', label: 'Consumer Key', placeholder: 'ck_xxxxxxxxxxxxxxxxxxxxxxxx', required: true },
+          { key: 'apiSecret', label: 'Consumer Secret', placeholder: 'cs_xxxxxxxxxxxxxxxxxxxxxxxx', required: true }
         ],
         features: []
       },
@@ -137,7 +154,7 @@ const ConnectStorePage = () => {
         title: "Connecter PrestaShop",
         description: "Connectez votre boutique PrestaShop via Webservice",
         fields: [
-          { key: 'apiKey', label: 'Webservice Key', placeholder: 'Votre clé Webservice', required: true }
+          { key: 'apiKey', label: 'Webservice Key', placeholder: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', required: true }
         ],
         features: []
       },
@@ -146,6 +163,31 @@ const ConnectStorePage = () => {
         description: "Connectez votre boutique Magento via l'API REST",
         fields: [
           { key: 'accessToken', label: 'Access Token', placeholder: 'Votre token d\'accès', required: true }
+        ],
+        features: []
+      },
+      bigcommerce: {
+        title: "Connecter BigCommerce",
+        description: "Connectez votre boutique BigCommerce via l'API REST",
+        fields: [
+          { key: 'storeHash', label: 'Store Hash', placeholder: 'abc123', required: true },
+          { key: 'accessToken', label: 'Access Token', placeholder: 'Votre token d\'accès', required: true }
+        ],
+        features: []
+      },
+      opencart: {
+        title: "Connecter OpenCart",
+        description: "Connectez votre boutique OpenCart",
+        fields: [
+          { key: 'accessToken', label: 'API Token', placeholder: 'Votre token API', required: true }
+        ],
+        features: []
+      },
+      squarespace: {
+        title: "Connecter Squarespace",
+        description: "Connectez votre boutique Squarespace via OAuth",
+        fields: [
+          { key: 'accessToken', label: 'Access Token', placeholder: 'Votre token OAuth', required: true }
         ],
         features: []
       }

@@ -1,208 +1,141 @@
-import { BaseConnector } from './BaseConnector'
-import { SupplierProduct, SupplierCredentials } from '@/types/suppliers'
-
-interface WooCommerceCredentials extends SupplierCredentials {
-  siteUrl: string
-  consumerKey: string
-  consumerSecret: string
-}
-
-interface WooCommerceProduct {
-  id: number
-  name: string
-  description: string
-  short_description: string
-  price: string
-  regular_price: string
-  sale_price: string
-  sku: string
-  stock_quantity: number
-  stock_status: 'instock' | 'outofstock'
-  categories: Array<{ id: number; name: string; slug: string }>
-  images: Array<{ id: number; src: string; alt: string }>
-  attributes: Array<{ id: number; name: string; options: string[] }>
-  variations: number[]
-  permalink: string
-  status: 'publish' | 'draft' | 'private'
-}
+import { BaseConnector, FetchOptions, SupplierProduct, SyncResult } from './BaseConnector';
 
 export class WooCommerceConnector extends BaseConnector {
-  constructor(credentials: WooCommerceCredentials) {
-    super(credentials, `${credentials.siteUrl}/wp-json/wc/v3`)
+  constructor(credentials: any) {
+    const baseUrl = credentials.domain?.replace(/\/$/, '') || credentials.shop_domain?.replace(/\/$/, '');
+    super(credentials, `${baseUrl}/wp-json/wc/v3`);
+  }
+
+  protected getAuthHeaders(): Record<string, string> {
+    const auth = btoa(`${this.credentials.consumer_key}:${this.credentials.consumer_secret}`);
+    return {
+      'Authorization': `Basic ${auth}`,
+    };
   }
 
   protected getSupplierName(): string {
     return 'WooCommerce';
   }
 
-  protected getAuthHeaders(): Record<string, string> {
-    const credentials = this.credentials as WooCommerceCredentials;
-    const auth = btoa(`${credentials.consumerKey}:${credentials.consumerSecret}`);
-    return {
-      'Authorization': `Basic ${auth}`,
-    };
-  }
-
   async validateCredentials(): Promise<boolean> {
     try {
-      await this.makeRequest('/products?per_page=1');
-      return true;
+      const response = await this.makeRequest('/system_status');
+      return !!response.environment;
     } catch (error) {
-      console.error('WooCommerce credentials validation failed:', error)
-      return false
+      this.handleError(error, 'credential validation');
+      return false;
     }
   }
 
-  async fetchProducts(options?: {
-    page?: number
-    limit?: number
-    lastSync?: Date
-    category?: string
-  }): Promise<SupplierProduct[]> {
-    const params = new URLSearchParams({
-      per_page: (options?.limit || 100).toString(),
-      page: (options?.page || 1).toString(),
-      status: 'publish'
-    })
+  async fetchProducts(options: FetchOptions = {}): Promise<SupplierProduct[]> {
+    try {
+      const params = new URLSearchParams({
+        per_page: (options.limit || 50).toString(),
+        page: (options.page || 1).toString(),
+        status: 'publish',
+        ...(options.category && { category: options.category }),
+      });
 
-    if (options?.category) {
-      params.append('category', options.category)
+      const response = await this.makeRequest(`/products?${params}`);
+      
+      return response.map((product: any) => this.normalizeWooProduct(product));
+    } catch (error) {
+      this.handleError(error, 'product fetching');
+      return [];
     }
-
-    if (options?.lastSync) {
-      params.append('modified_after', options.lastSync.toISOString())
-    }
-
-    const products: WooCommerceProduct[] = await this.makeRequest(`/products?${params}`)
-
-    return products.map(product => this.transformProduct(product))
   }
 
   async fetchProduct(sku: string): Promise<SupplierProduct | null> {
-    const products: WooCommerceProduct[] = await this.makeRequest(`/products?sku=${sku}`)
-
-    if (products.length === 0) return null
-    return this.transformProduct(products[0])
-  }
-
-  async updateInventory(products: SupplierProduct[]): Promise<import('./BaseConnector').SyncResult> {
     try {
-      const batchUpdates = products.map((product) => ({
-        method: 'PUT',
-        path: `/products/${product.sku}`,
-        body: {
-          stock_quantity: product.stock,
-          manage_stock: true,
-          stock_status: product.stock > 0 ? 'instock' : 'outofstock'
-        }
-      }))
-
-      await this.makeRequest('/products/batch', {
-        method: 'POST',
-        body: JSON.stringify({ update: batchUpdates })
-      });
-
-      return {
-        total: products.length,
-        imported: products.length,
-        duplicates: 0,
-        errors: [],
-      };
+      const response = await this.makeRequest(`/products?sku=${sku}`);
+      const product = response[0];
+      
+      if (!product) return null;
+      
+      return this.normalizeWooProduct(product);
     } catch (error) {
-      console.error('WooCommerce inventory update failed:', error)
-      return {
-        total: products.length,
-        imported: 0,
-        duplicates: 0,
-        errors: [error.message],
-      };
+      this.handleError(error, 'single product fetching');
+      return null;
     }
   }
 
-  async createOrder(order: any): Promise<string> {
-    const wooOrder = {
-      payment_method: 'cod',
-      payment_method_title: 'Cash on delivery',
-      set_paid: false,
-      billing: order.billing_address,
-      shipping: order.shipping_address,
-      line_items: order.items.map((item: any) => ({
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.price
-      })),
-      shipping_lines: [{
-        method_id: 'flat_rate',
-        method_title: 'Flat Rate',
-        total: order.shipping_cost?.toString() || '0'
-      }]
-    }
+  async updateInventory(products: SupplierProduct[]): Promise<SyncResult> {
+    const result: SyncResult = {
+      total: products.length,
+      imported: 0,
+      duplicates: 0,
+      errors: []
+    };
 
-    const createdOrder = await this.makeRequest('/orders', {
-      method: 'POST',
-      body: JSON.stringify(wooOrder)
-    })
-    return createdOrder.id.toString()
-  }
-
-  async getOrderStatus(orderId: string): Promise<string> {
-    const order = await this.makeRequest(`/orders/${orderId}`)
-    return order.status
-  }
-
-  async setupWebhooks(webhookUrl: string): Promise<boolean> {
-    try {
-      const webhooks = [
-        {
-          name: 'Product Updated',
-          topic: 'product.updated',
-          delivery_url: `${webhookUrl}/woocommerce`,
-          secret: 'dropship_webhook_secret'
-        },
-        {
-          name: 'Order Created',
-          topic: 'order.created',
-          delivery_url: `${webhookUrl}/woocommerce`,
-          secret: 'dropship_webhook_secret'
+    for (const product of products) {
+      try {
+        await this.delay();
+        
+        const existingProduct = await this.fetchProduct(product.sku);
+        
+        if (existingProduct) {
+          result.duplicates++;
+          continue;
         }
-      ]
 
-      for (const webhook of webhooks) {
-        await this.makeRequest('/webhooks', {
-          method: 'POST',
-          body: JSON.stringify(webhook)
-        })
+        await this.createWooProduct(product);
+        result.imported++;
+      } catch (error: any) {
+        result.errors.push(`Erreur pour ${product.sku}: ${error.message}`);
       }
-
-      return true
-    } catch (error) {
-      console.error('WooCommerce webhook setup failed:', error)
-      return false
     }
+
+    return result;
   }
 
-  protected transformProduct(product: WooCommerceProduct): SupplierProduct {
+  private normalizeWooProduct(wooProduct: any): SupplierProduct {
     return {
-      id: product.id.toString(),
-      sku: product.sku,
-      title: product.name,
-      description: product.description || product.short_description,
-      price: parseFloat(product.price) || 0,
-      currency: 'EUR', // Default, should be configured
-      category: product.categories[0]?.name || 'Uncategorized',
-      brand: '', // Extract from attributes if available
-      images: product.images.map(img => img.src),
-      stock: product.stock_quantity || 0,
-      attributes: product.attributes.reduce((acc, attr) => {
-        acc[attr.name] = attr.options.join(', ')
-        return acc
-      }, {} as Record<string, string>),
+      id: wooProduct.id.toString(),
+      sku: wooProduct.sku || wooProduct.slug,
+      title: wooProduct.name,
+      description: wooProduct.description || wooProduct.short_description || '',
+      price: parseFloat(wooProduct.price) || 0,
+      costPrice: parseFloat(wooProduct.regular_price) || undefined,
+      currency: 'EUR',
+      stock: wooProduct.stock_quantity || 0,
+      images: wooProduct.images?.map((img: any) => img.src) || [],
+      category: wooProduct.categories?.[0]?.name || 'General',
+      brand: wooProduct.attributes?.find((attr: any) => attr.name === 'Brand')?.options?.[0] || '',
       supplier: {
         id: 'woocommerce',
         name: 'WooCommerce',
-        sku: product.sku
+        sku: wooProduct.sku || wooProduct.slug
+      },
+      attributes: {
+        weight: wooProduct.weight,
+        dimensions: wooProduct.dimensions,
+        categories: wooProduct.categories?.map((cat: any) => cat.name) || [],
+        tags: wooProduct.tags?.map((tag: any) => tag.name) || []
       }
-    }
+    };
   }
 
+  private async createWooProduct(product: SupplierProduct): Promise<void> {
+    const wooProduct = {
+      name: product.title,
+      description: product.description,
+      short_description: product.description.substring(0, 120),
+      sku: product.sku,
+      regular_price: product.price.toString(),
+      manage_stock: true,
+      stock_quantity: product.stock,
+      images: product.images.map(src => ({ src })),
+      categories: [{ name: product.category }],
+      attributes: product.brand ? [{
+        name: 'Brand',
+        options: [product.brand],
+        visible: true
+      }] : []
+    };
+
+    await this.makeRequest('/products', {
+      method: 'POST',
+      body: JSON.stringify(wooProduct)
+    });
+  }
 }
