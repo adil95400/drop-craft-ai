@@ -122,8 +122,9 @@ import Status from '@/pages/Status';
 // Unified Pages
 import UnifiedDashboardPage from '@/pages/UnifiedDashboardPage';
 
-// Store Pages
-import StoresPage from '@/pages/stores/StoresPage';
+import { StoreDashboard } from '@/pages/stores/StoreDashboard';
+import { IntegrationsPage } from '@/pages/stores/IntegrationsPage';
+import { ManageIntegrationPage } from '@/pages/stores/ManageIntegrationPage';
 import ConnectStorePage from '@/pages/stores/ConnectStorePage';
 import StoreDetailPage from '@/pages/stores/StoreDetailPage';
 import { StoreSettingsPage } from '@/pages/stores/StoreSettingsPage';
@@ -237,12 +238,22 @@ function App() {
                 {/* Stores */}
                 <Route path="/stores" element={
                   <ProtectedRoute>
-                    <AppLayout><StoresPage /></AppLayout>
+                    <AppLayout><StoreDashboard /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/stores/connect" element={
                   <ProtectedRoute>
                     <AppLayout><ConnectStorePage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/stores/integrations" element={
+                  <ProtectedRoute>
+                    <AppLayout><IntegrationsPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/stores/integrations/:id" element={
+                  <ProtectedRoute>
+                    <AppLayout><ManageIntegrationPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/stores/:storeId" element={
@@ -259,7 +270,7 @@ function App() {
                 {/* Dashboard Stores Routes */}
                 <Route path="/dashboard/stores" element={
                   <ProtectedRoute>
-                    <AppLayout><StoresPage /></AppLayout>
+                    <AppLayout><StoreDashboard /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/dashboard/stores/connect" element={
