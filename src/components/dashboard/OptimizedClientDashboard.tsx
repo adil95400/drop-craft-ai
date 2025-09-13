@@ -7,18 +7,21 @@ import { useProductionData } from '@/hooks/useProductionData'
 import { useUnifiedSystem } from '@/hooks/useUnifiedSystem'
 import { DashboardMetric, MetricsGrid } from '@/components/dashboard/DashboardMetrics'
 import { AIInsightsSection } from '@/components/dashboard/AIInsightCard'
+import { ConnectedStores } from '@/components/dashboard/ConnectedStores'
 import { 
   Package, Users, ShoppingCart, DollarSign, TrendingUp,
   Activity, Target, Zap, RefreshCw, Crown, Bell,
   CheckCircle2, AlertTriangle, Star, Rocket, Brain,
   MessageSquare, PieChart as PieChartIcon, LineChart as LineChartIcon,
-  ArrowUpRight, Sparkles
+  ArrowUpRight, Sparkles, Store, Settings, HelpCircle
 } from 'lucide-react'
 import { AreaChart, Area, PieChart as RechartsPieChart, Cell, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { Link, useNavigate } from 'react-router-dom'
 
 export default function OptimizedClientDashboard() {
   const { dashboardStats, orders, customers, products, seedDatabase, isSeeding } = useProductionData()
   const { user, profile, isAdmin } = useUnifiedSystem()
+  const navigate = useNavigate()
   const [activeView, setActiveView] = useState('overview')
 
   const formatCurrency = (amount: number) => {
@@ -135,13 +138,44 @@ export default function OptimizedClientDashboard() {
     }
   ]
 
-  // Actions rapides optimisées
+  // Actions rapides optimisées avec navigation
   const quickActions = [
-    { title: "Nouveau Produit", icon: Package, color: "bg-gradient-to-r from-blue-500 to-blue-600", href: "/products/add" },
-    { title: "Gérer Commandes", icon: ShoppingCart, color: "bg-gradient-to-r from-green-500 to-green-600", href: "/orders" },
-    { title: "Analytics AI", icon: Brain, color: "bg-gradient-to-r from-purple-500 to-purple-600", href: "/analytics" },
-    { title: "Support Client", icon: MessageSquare, color: "bg-gradient-to-r from-orange-500 to-orange-600", href: "/support" }
+    { 
+      title: "Nouveau Produit", 
+      icon: Package, 
+      color: "bg-gradient-to-r from-blue-500 to-blue-600", 
+      action: () => navigate("/products?action=add")
+    },
+    { 
+      title: "Gérer Commandes", 
+      icon: ShoppingCart, 
+      color: "bg-gradient-to-r from-green-500 to-green-600", 
+      action: () => navigate("/orders")
+    },
+    { 
+      title: "Analytics AI", 
+      icon: Brain, 
+      color: "bg-gradient-to-r from-purple-500 to-purple-600", 
+      action: () => navigate("/analytics")
+    },
+    { 
+      title: "Support Client", 
+      icon: MessageSquare, 
+      color: "bg-gradient-to-r from-orange-500 to-orange-600", 
+      action: () => navigate("/customers")
+    }
   ]
+
+  // Navigation vers différentes sections
+  const handleAIInsightApply = (insight: any) => {
+    if (insight.title.includes('Prix')) {
+      navigate('/products?tab=pricing')
+    } else if (insight.title.includes('Stock')) {
+      navigate('/products?tab=inventory')
+    } else if (insight.title.includes('Recommandations')) {
+      navigate('/analytics?section=recommendations')
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 p-6">
@@ -166,6 +200,15 @@ export default function OptimizedClientDashboard() {
                   Ultra Pro
                 </Badge>
               )}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/settings')}
+                className="hover-scale"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Paramètres
+              </Button>
               <Button 
                 variant="outline" 
                 size="sm"
@@ -202,9 +245,12 @@ export default function OptimizedClientDashboard() {
             ...suggestion,
             type: suggestion.title.includes('Prix') ? 'optimization' : 
                   suggestion.title.includes('Stock') ? 'alert' : 'recommendation',
-            onApply: () => console.log(`Applying: ${suggestion.title}`)
+            onApply: () => handleAIInsightApply(suggestion)
           }))}
         />
+
+        {/* Boutiques Connectées */}
+        <ConnectedStores className="animate-fade-in" />
 
         {/* Graphiques et Analytics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -312,14 +358,12 @@ export default function OptimizedClientDashboard() {
                       key={index}
                       variant="outline"
                       className="w-full justify-start h-12 hover-scale"
-                      asChild
+                      onClick={action.action}
                     >
-                      <a href={action.href}>
-                        <div className={`w-8 h-8 rounded-lg ${action.color} flex items-center justify-center mr-3`}>
-                          <Icon className="h-4 w-4 text-white" />
-                        </div>
-                        {action.title}
-                      </a>
+                      <div className={`w-8 h-8 rounded-lg ${action.color} flex items-center justify-center mr-3`}>
+                        <Icon className="h-4 w-4 text-white" />
+                      </div>
+                      {action.title}
                     </Button>
                   )
                 })}
