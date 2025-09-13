@@ -17,14 +17,14 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { integrationId } = await req.json();
-    console.log('Testing integration:', integrationId);
+    const { integration_id } = await req.json();
+    console.log('Testing integration:', integration_id);
 
     // Get integration details
     const { data: integration, error: integrationError } = await supabase
       .from('integrations')
       .select('*')
-      .eq('id', integrationId)
+      .eq('id', integration_id)
       .single();
 
     if (integrationError) {
@@ -61,7 +61,7 @@ serve(async (req) => {
         connection_status: newStatus,
         last_sync_at: new Date().toISOString()
       })
-      .eq('id', integrationId);
+      .eq('id', integration_id);
 
     console.log('Test result:', testResult);
 

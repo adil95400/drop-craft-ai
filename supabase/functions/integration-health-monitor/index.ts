@@ -63,7 +63,7 @@ serve(async (req) => {
 
         healthResults.push({
           integration_id: integration.id,
-          platform: integration.platform,
+          platform: integration.platform_type,
           status: healthCheck.status,
           response_time: healthCheck.response_time
         })
@@ -82,12 +82,15 @@ serve(async (req) => {
 
         healthResults.push({
           integration_id: integration.id,
-          platform: integration.platform,
+          platform: integration.platform_type,
           status: 'error',
           error: error.message
         })
       }
     }
+
+    const healthy = healthResults.filter(r => r.status === 'healthy').length
+    const unhealthy = healthResults.filter(r => r.status !== 'healthy').length
 
     console.log(`Health monitoring completed. Checked ${healthResults.length} integrations`)
 
@@ -96,6 +99,9 @@ serve(async (req) => {
         success: true,
         timestamp: new Date().toISOString(),
         checked_integrations: healthResults.length,
+        healthy: healthy,
+        unhealthy: unhealthy,
+        total: integrations.length,
         results: healthResults
       }),
       {
@@ -127,7 +133,7 @@ async function checkIntegrationHealth(integration: any) {
     let healthStatus = 'healthy'
     let details = {}
 
-    switch (integration.platform) {
+    switch (integration.platform_type) {
       case 'shopify':
         details = await checkShopifyHealth(integration)
         break
@@ -190,8 +196,8 @@ async function checkIntegrationHealth(integration: any) {
 }
 
 async function checkShopifyHealth(integration: any) {
-  const shopDomain = integration.platform_data?.domain || integration.credentials?.shop_domain
-  const accessToken = integration.credentials?.access_token
+  const shopDomain = integration.store_config?.domain || integration.encrypted_credentials?.shop_domain
+  const accessToken = integration.encrypted_credentials?.access_token
 
   if (!shopDomain || !accessToken) {
     throw new Error('Missing Shopify credentials')
@@ -201,7 +207,7 @@ async function checkShopifyHealth(integration: any) {
   await new Promise(resolve => setTimeout(resolve, 300))
   
   return {
-    shop_name: integration.platform_data?.shop_name || 'Shopify Store',
+    shop_name: integration.store_config?.shop_name || 'Shopify Store',
     plan: 'basic',
     api_version: '2023-10'
   }
@@ -223,7 +229,7 @@ async function checkAmazonHealth(integration: any) {
   await new Promise(resolve => setTimeout(resolve, 500))
   
   return {
-    marketplace: integration.credentials?.marketplace || 'FR',
+    marketplace: integration.encrypted_credentials?.marketplace || 'FR',
     status: 'API accessible',
     last_sync: integration.last_sync_at
   }
@@ -314,7 +320,7 @@ async function checkGenericHealth(integration: any) {
   await new Promise(resolve => setTimeout(resolve, 200))
   
   return {
-    platform: integration.platform,
+    platform: integration.platform_type,
     status: 'Connection verified',
     last_activity: integration.last_sync_at || integration.created_at
   }

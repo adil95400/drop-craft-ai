@@ -129,6 +129,7 @@ export function IntegrationsPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
+      case 'connected':
       case 'active':
         return <CheckCircle className="h-4 w-4 text-green-500" />
       case 'error':
@@ -142,6 +143,7 @@ export function IntegrationsPage() {
 
   const getStatusBadge = (status: string) => {
     const variants = {
+      'connected': 'default',
       'active': 'default',
       'error': 'destructive',
       'syncing': 'secondary',

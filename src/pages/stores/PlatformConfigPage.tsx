@@ -163,7 +163,7 @@ export function PlatformConfigPage() {
 
       if (error) throw error
 
-      // Tester la connexion
+      // Test the connection
       const { data: testResult, error: testError } = await supabase.functions.invoke('store-connection-test', {
         body: {
           platform: config.platform,
@@ -173,20 +173,20 @@ export function PlatformConfigPage() {
 
       if (testError) throw testError
 
-      // Mettre à jour le statut
+      // Update the status
       await supabase
         .from('integrations')
         .update({
-          connection_status: testResult.success ? 'active' : 'error',
+          connection_status: testResult.success ? 'connected' : 'error',
           store_config: testResult.shop_info || {}
         })
         .eq('id', data.id)
 
       toast({
-        title: testResult.success ? "Connexion réussie" : "Connexion échouée",
+        title: testResult.success ? "Connection successful" : "Connection failed",
         description: testResult.success ? 
-          `${config.displayName} a été connecté avec succès` : 
-          "Vérifiez vos identifiants et réessayez",
+          `${config.displayName} has been connected successfully` : 
+          "Check your credentials and try again",
         variant: testResult.success ? "default" : "destructive"
       })
 
@@ -197,8 +197,8 @@ export function PlatformConfigPage() {
     } catch (error) {
       console.error('Connection error:', error)
       toast({
-        title: "Erreur de connexion",
-        description: "Impossible de connecter la plateforme",
+        title: "Connection error",
+        description: "Unable to connect the platform",
         variant: "destructive"
       })
     } finally {

@@ -51,7 +51,7 @@ serve(async (req) => {
 
     try {
       // Sync products based on platform
-      switch (integration.platform) {
+      switch (integration.platform_type) {
         case 'shopify':
           syncResult = await syncShopifyData(integration, sync_type)
           break
@@ -93,9 +93,8 @@ serve(async (req) => {
       await supabaseClient
         .from('integrations')
         .update({ 
-          sync_status: syncResult.success ? 'active' : 'error',
-          last_sync_at: new Date().toISOString(),
-          sync_errors: syncResult.errors.length > 0 ? syncResult.errors : null
+          connection_status: syncResult.success ? 'connected' : 'error',
+          last_sync_at: new Date().toISOString()
         })
         .eq('id', integration_id)
 
@@ -117,6 +116,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           success: true,
+          message: `Sync completed successfully. ${syncResult.products_synced} products, ${syncResult.orders_synced} orders synced`,
           integration_id,
           sync_result: syncResult
         }),
@@ -156,7 +156,7 @@ serve(async (req) => {
 })
 
 async function syncShopifyData(integration: any, syncType: string) {
-  console.log(`Syncing Shopify data for ${integration.platform_data.shop_name}`)
+  console.log(`Syncing Shopify data for ${integration.store_config?.shop_name || integration.platform_name}`)
   
   // Simulate product sync
   const productCount = Math.floor(Math.random() * 100) + 50
@@ -174,7 +174,7 @@ async function syncShopifyData(integration: any, syncType: string) {
 }
 
 async function syncWooCommerceData(integration: any, syncType: string) {
-  console.log(`Syncing WooCommerce data for ${integration.platform_data.shop_name}`)
+  console.log(`Syncing WooCommerce data for ${integration.store_config?.shop_name || integration.platform_name}`)
   
   const productCount = Math.floor(Math.random() * 80) + 30
   const orderCount = syncType === 'full' ? Math.floor(Math.random() * 30) + 5 : 0
@@ -190,7 +190,7 @@ async function syncWooCommerceData(integration: any, syncType: string) {
 }
 
 async function syncAmazonData(integration: any, syncType: string) {
-  console.log(`Syncing Amazon data for marketplace ${integration.credentials.marketplace}`)
+  console.log(`Syncing Amazon data for marketplace ${integration.encrypted_credentials?.marketplace || 'FR'}`)
   
   const productCount = Math.floor(Math.random() * 200) + 100
   const orderCount = syncType === 'full' ? Math.floor(Math.random() * 100) + 20 : 0
@@ -334,7 +334,7 @@ async function syncCdiscountData(integration: any, syncType: string) {
 }
 
 async function syncGenericData(integration: any, syncType: string) {
-  console.log(`Syncing ${integration.platform} data`)
+  console.log(`Syncing ${integration.platform_type} data`)
   
   const productCount = Math.floor(Math.random() * 60) + 20
   const orderCount = syncType === 'full' ? Math.floor(Math.random() * 20) + 5 : 0
