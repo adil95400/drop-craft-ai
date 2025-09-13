@@ -16,6 +16,7 @@ import {
 
 export default function ModernProductsPage() {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
+  // Force rebuild to clear cache
 
   return (
     <div className="min-h-screen bg-background">
