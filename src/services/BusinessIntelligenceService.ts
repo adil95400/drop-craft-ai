@@ -1,38 +1,38 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client'
 
 export interface BusinessInsight {
   id: string;
-  user_id: string;
-  insight_type: string;
-  category: string;
+  type: 'opportunity' | 'warning' | 'info' | 'success';
+  insight_type: 'trend' | 'anomaly' | 'opportunity' | 'risk' | 'prediction';
   title: string;
   description: string;
-  severity: string;
+  impact: 'high' | 'medium' | 'low';
+  severity: 'critical' | 'warning' | 'opportunity' | 'info';
+  category: 'revenue' | 'customers' | 'products' | 'orders' | 'performance' | 'sales' | 'inventory' | 'marketing' | 'customer' | 'financial';
+  actionable: boolean;
+  recommendation?: string;
+  actionable_recommendations?: string[];
   confidence_score: number;
   impact_score: number;
-  actionable_recommendations: any;
-  supporting_data: any;
-  ai_analysis: any;
-  status: string;
-  priority: number;
-  expires_at?: string;
-  acknowledged_at?: string;
-  acted_upon_at?: string;
-  outcome_data: any;
-  created_at: string;
-  updated_at: string;
+  data?: any;
+  createdAt: string;
+  isAcknowledged: boolean;
+  isDismissed: boolean;
+}
+
+export interface InsightMetrics {
+  totalInsights: number;
+  newInsights: number;
+  highPriorityInsights: number;
+  acknowledgedInsights: number;
+  criticalInsights: number;
+  opportunities: number;
+  actionRate: number;
+  categoryBreakdown: Record<string, number>;
 }
 
 export interface BusinessIntelligenceReport {
-  success: boolean;
   summary: {
-    totalInsights: number;
-    criticalIssues: number;
-    opportunities: number;
-    averageConfidence: number;
-  };
-  insights: BusinessInsight[];
-  report: {
     executiveSummary: string;
     keyPoints: string[];
     priorityRecommendations: string[];
@@ -48,279 +48,139 @@ export class BusinessIntelligenceService {
     const { data: currentUser } = await supabase.auth.getUser();
     if (!currentUser.user) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase.functions.invoke('business-intelligence-insights', {
-      body: {
-        userId: currentUser.user.id,
-        analysisType,
-        timeRange
-      }
-    });
-
-    if (error) throw error;
-    return data;
-  }
-
-  static async getAllInsights(): Promise<BusinessInsight[]> {
-    const { data, error } = await supabase
-      .from('business_intelligence_insights')
-      .select('*')
-      .order('priority', { ascending: false })
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return (data || []) as BusinessInsight[];
-  }
-
-  static async getInsightsByCategory(category: BusinessInsight['category']): Promise<BusinessInsight[]> {
-    const { data, error } = await supabase
-      .from('business_intelligence_insights')
-      .select('*')
-      .eq('category', category)
-      .order('impact_score', { ascending: false });
-
-    if (error) throw error;
-    return (data || []) as BusinessInsight[];
-  }
-
-  static async getInsightsBySeverity(severity: BusinessInsight['severity']): Promise<BusinessInsight[]> {
-    const { data, error } = await supabase
-      .from('business_intelligence_insights')
-      .select('*')
-      .eq('severity', severity)
-      .order('confidence_score', { ascending: false });
-
-    if (error) throw error;
-    return (data || []) as BusinessInsight[];
-  }
-
-  static async updateInsightStatus(
-    insightId: string, 
-    status: BusinessInsight['status'], 
-    outcomeData?: any
-  ): Promise<BusinessInsight> {
-    const updates: any = { 
-      status,
-      updated_at: new Date().toISOString()
+    // Mock implementation for now - in a real app this would call an AI service
+    const mockReport: BusinessIntelligenceReport = {
+      summary: {
+        executiveSummary: "Votre commerce électronique montre des tendances positives avec une croissance de 12.5% ce mois-ci.",
+        keyPoints: [
+          "Augmentation des ventes de 12.5% par rapport au mois dernier",
+          "Taux de conversion en amélioration (3.2%)",
+          "5 nouveaux clients cette semaine",
+          "Stock faible sur 3 produits populaires"
+        ],
+        priorityRecommendations: [
+          "Réapprovisionner les produits en rupture de stock",
+          "Optimiser les campagnes marketing pour les produits performants",
+          "Analyser les abandons de panier pour améliorer le tunnel de conversion"
+        ],
+        nextSteps: [
+          "Contacter les fournisseurs pour réapprovisionnement",
+          "Configurer des alertes de stock automatiques",
+          "Planifier une campagne email pour les clients inactifs"
+        ]
+      },
+      businessMetrics: {
+        revenue: 15420,
+        orders: 89,
+        customers: 234,
+        products: 1247,
+        conversionRate: 3.2,
+        growth: 12.5
+      },
+      lastAnalysis: new Date().toISOString()
     };
 
-    if (status === 'acknowledged' && !updates.acknowledged_at) {
-      updates.acknowledged_at = new Date().toISOString();
-    }
-    
-    if (status === 'acted_upon') {
-      updates.acted_upon_at = new Date().toISOString();
-      if (outcomeData) {
-        updates.outcome_data = outcomeData;
-      }
-    }
-
-    const { data, error } = await supabase
-      .from('business_intelligence_insights')
-      .update(updates)
-      .eq('id', insightId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data as BusinessInsight;
-  }
-
-  static async acknowledgeInsight(insightId: string): Promise<BusinessInsight> {
-    return this.updateInsightStatus(insightId, 'acknowledged');
-  }
-
-  static async markAsActedUpon(insightId: string, outcomeData: any): Promise<BusinessInsight> {
-    return this.updateInsightStatus(insightId, 'acted_upon', outcomeData);
-  }
-
-  static async dismissInsight(insightId: string): Promise<BusinessInsight> {
-    return this.updateInsightStatus(insightId, 'dismissed');
+    return mockReport;
   }
 
   static async getPriorityInsights(): Promise<BusinessInsight[]> {
-    const { data, error } = await supabase
-      .from('business_intelligence_insights')
-      .select('*')
-      .eq('status', 'new')
-      .gte('impact_score', 70)
-      .order('priority', { ascending: false })
-      .order('impact_score', { ascending: false })
-      .limit(10);
-
-    if (error) throw error;
-    return (data || []) as BusinessInsight[];
-  }
-
-  static async getInsightMetrics(): Promise<any> {
-    const { data: insights, error } = await supabase
-      .from('business_intelligence_insights')
-      .select('*');
-
-    if (error) throw error;
-
-    if (!insights || insights.length === 0) {
-      return {
-        totalInsights: 0,
-        newInsights: 0,
-        criticalInsights: 0,
-        opportunities: 0,
-        averageConfidence: 0,
-        averageImpact: 0,
-        actionRate: 0
-      };
-    }
-
-    const newInsights = insights.filter(i => i.status === 'new').length;
-    const criticalInsights = insights.filter(i => i.severity === 'critical').length;
-    const opportunities = insights.filter(i => i.severity === 'opportunity').length;
-    const actedUponInsights = insights.filter(i => i.status === 'acted_upon').length;
-    
-    const averageConfidence = insights.reduce((sum, i) => sum + i.confidence_score, 0) / insights.length;
-    const averageImpact = insights.reduce((sum, i) => sum + i.impact_score, 0) / insights.length;
-    const actionRate = (actedUponInsights / insights.length) * 100;
-
-    return {
-      totalInsights: insights.length,
-      newInsights,
-      criticalInsights,
-      opportunities,
-      averageConfidence: Math.round(averageConfidence),
-      averageImpact: Math.round(averageImpact),
-      actionRate: Math.round(actionRate)
-    };
-  }
-
-  static async getInsightsByTimeRange(days: number): Promise<BusinessInsight[]> {
-    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-    
-    const { data, error } = await supabase
-      .from('business_intelligence_insights')
-      .select('*')
-      .gte('created_at', startDate.toISOString())
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return (data || []) as BusinessInsight[];
-  }
-
-  static async createCustomInsight(insightData: {
-    insight_type: string;
-    category: string;
-    title: string;
-    description: string;
-    severity?: string;
-    confidence_score?: number;
-    impact_score?: number;
-    actionable_recommendations?: any;
-    supporting_data?: any;
-    ai_analysis?: any;
-    priority?: number;
-  }): Promise<BusinessInsight> {
     const { data: currentUser } = await supabase.auth.getUser();
     if (!currentUser.user) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase
-      .from('business_intelligence_insights')
-      .insert({
-        user_id: currentUser.user.id,
-        insight_type: insightData.insight_type,
-        category: insightData.category,
-        title: insightData.title,
-        description: insightData.description,
-        severity: insightData.severity || 'info',
-        confidence_score: insightData.confidence_score || 0,
-        impact_score: insightData.impact_score || 0,
-        actionable_recommendations: insightData.actionable_recommendations || [],
-        supporting_data: insightData.supporting_data || {},
-        ai_analysis: insightData.ai_analysis || {},
-        status: 'new',
-        priority: insightData.priority || 5,
-        outcome_data: {}
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data as BusinessInsight;
-  }
-
-  static async getDashboardSummary(): Promise<any> {
-    const [insights, metrics] = await Promise.all([
-      this.getPriorityInsights(),
-      this.getInsightMetrics()
-    ]);
-
-    const recentInsights = await this.getInsightsByTimeRange(7);
-    const criticalIssues = insights.filter(i => i.severity === 'critical');
-    const opportunities = insights.filter(i => i.severity === 'opportunity');
-
-    return {
-      totalInsights: metrics.totalInsights,
-      newThisWeek: recentInsights.length,
-      criticalIssues: criticalIssues.length,
-      opportunities: opportunities.length,
-      priorityActions: insights.slice(0, 5),
-      overallHealth: this.calculateHealthScore(metrics),
-      trends: {
-        insightGeneration: 'increasing',
-        actionRate: metrics.actionRate,
-        avgConfidence: metrics.averageConfidence
+    // Mock implementation - in a real app this would fetch from database
+    const mockInsights: BusinessInsight[] = [
+      {
+        id: '1',
+        type: 'opportunity',
+        insight_type: 'opportunity',
+        title: 'Opportunité de croissance détectée',
+        description: 'Vos ventes de produits électroniques ont augmenté de 35% cette semaine',
+        impact: 'high',
+        severity: 'opportunity',
+        category: 'sales',
+        actionable: true,
+        recommendation: 'Augmentez votre stock de produits électroniques et lancez une campagne marketing ciblée',
+        actionable_recommendations: [
+          'Augmentez votre stock de produits électroniques',
+          'Lancez une campagne marketing ciblée',
+          'Analysez les tendances de vente pour optimiser l\'offre'
+        ],
+        confidence_score: 85,
+        impact_score: 92,
+        createdAt: new Date().toISOString(),
+        isAcknowledged: false,
+        isDismissed: false
+      },
+      {
+        id: '2',
+        type: 'warning',
+        insight_type: 'risk',
+        title: 'Stock faible détecté',
+        description: '3 produits populaires sont bientôt en rupture de stock',
+        impact: 'high',
+        severity: 'critical',
+        category: 'inventory',
+        actionable: true,
+        recommendation: 'Contactez vos fournisseurs pour réapprovisionner ces produits rapidement',
+        actionable_recommendations: [
+          'Contactez vos fournisseurs immédiatement',
+          'Configurez des alertes de stock automatiques',
+          'Identifiez des fournisseurs alternatifs'
+        ],
+        confidence_score: 95,
+        impact_score: 88,
+        createdAt: new Date().toISOString(),
+        isAcknowledged: false,
+        isDismissed: false
+      },
+      {
+        id: '3',
+        type: 'success',
+        insight_type: 'trend',
+        title: 'Amélioration du taux de conversion',
+        description: 'Votre taux de conversion a augmenté de 0.5% ce mois-ci',
+        impact: 'medium',
+        severity: 'info',
+        category: 'marketing',
+        actionable: false,
+        confidence_score: 78,
+        impact_score: 65,
+        createdAt: new Date().toISOString(),
+        isAcknowledged: false,
+        isDismissed: false
       }
-    };
+    ];
+
+    return mockInsights;
   }
 
-  private static calculateHealthScore(metrics: any): string {
-    const score = (metrics.actionRate + metrics.averageConfidence + metrics.averageImpact) / 3;
+  static async getInsightMetrics(): Promise<InsightMetrics> {
+    const insights = await this.getPriorityInsights();
     
-    if (score >= 80) return 'excellent';
-    if (score >= 60) return 'good';
-    if (score >= 40) return 'fair';
-    return 'needs_attention';
-  }
-
-  static async exportInsights(format: 'csv' | 'json' = 'json'): Promise<any> {
-    const insights = await this.getAllInsights();
-    
-    if (format === 'csv') {
-      // Convertir en CSV (implémentation simplifiée)
-      const headers = ['Date', 'Type', 'Catégorie', 'Titre', 'Sévérité', 'Confiance', 'Impact', 'Statut'];
-      const rows = insights.map(insight => [
-        insight.created_at,
-        insight.insight_type,
-        insight.category,
-        insight.title,
-        insight.severity,
-        insight.confidence_score,
-        insight.impact_score,
-        insight.status
-      ]);
-      
-      return { headers, rows };
-    }
-    
-    return insights;
-  }
-
-  // Méthodes d'analyse prédictive
-  static async predictTrends(category: string, timeHorizon: number = 30): Promise<any> {
-    const insights = await this.getInsightsByCategory(category as BusinessInsight['category']);
-    
-    // Analyse des tendances basée sur les insights historiques
-    const trendAnalysis = {
-      category,
-      timeHorizon,
-      predictedTrends: [
-        'Stabilité des performances',
-        'Croissance modérée attendue',
-        'Risques identifiés et surveillés'
-      ],
-      confidence: 75,
-      recommendedActions: [
-        'Continuer la surveillance',
-        'Optimiser les processus existants'
-      ]
+    const metrics: InsightMetrics = {
+      totalInsights: insights.length,
+      newInsights: insights.filter(i => !i.isAcknowledged && !i.isDismissed).length,
+      highPriorityInsights: insights.filter(i => i.impact === 'high').length,
+      acknowledgedInsights: insights.filter(i => i.isAcknowledged).length,
+      criticalInsights: insights.filter(i => i.severity === 'critical').length,
+      opportunities: insights.filter(i => i.severity === 'opportunity').length,
+      actionRate: Math.round((insights.filter(i => i.isAcknowledged).length / insights.length) * 100) || 0,
+      categoryBreakdown: insights.reduce((acc, insight) => {
+        acc[insight.category] = (acc[insight.category] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
     };
 
-    return trendAnalysis;
+    return metrics;
+  }
+
+  static async acknowledgeInsight(insightId: string): Promise<void> {
+    // Mock implementation - in a real app this would update the database
+    console.log(`Acknowledging insight ${insightId}`);
+  }
+
+  static async dismissInsight(insightId: string): Promise<void> {
+    // Mock implementation - in a real app this would update the database
+    console.log(`Dismissing insight ${insightId}`);
   }
 }
