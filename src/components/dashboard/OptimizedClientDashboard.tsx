@@ -75,7 +75,7 @@ export default function OptimizedClientDashboard() {
       change: 15.3,
       icon: DollarSign,
       gradient: "from-green-500 to-emerald-600",
-      trend: "up",
+      trend: "up" as const,
       description: "Total des ventes"
     },
     {
@@ -84,7 +84,7 @@ export default function OptimizedClientDashboard() {
       change: 12.8,
       icon: ShoppingCart,
       gradient: "from-blue-500 to-cyan-600",
-      trend: "up",
+      trend: "up" as const,
       description: "Nouvelles commandes"
     },
     {
@@ -93,7 +93,7 @@ export default function OptimizedClientDashboard() {
       change: 8.4,
       icon: Users,
       gradient: "from-purple-500 to-pink-600",
-      trend: "up",
+      trend: "up" as const,
       description: "Base clients"
     },
     {
@@ -105,7 +105,7 @@ export default function OptimizedClientDashboard() {
       trend: "up" as const,
       description: "Performance conversion"
     }
-  ]
+  ] as const
 
   // Suggestions AI pour ShopOpti+
   const aiSuggestions = [
