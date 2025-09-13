@@ -6,17 +6,17 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { useStores } from '@/hooks/useStores'
-import { PlatformSelector } from './components/PlatformSelector'
+import { useStoreConnection } from '@/hooks/useStoreConnection'
+import { PlatformGridSelector } from './components/PlatformGridSelector'
 import { CredentialInput } from '@/components/common/CredentialInput'
 
 const ConnectStorePage = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { connectStore } = useStores()
+  const { connectStore, loading } = useStoreConnection()
   
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     domain: '',
@@ -63,7 +63,7 @@ const ConnectStorePage = () => {
       return
     }
 
-    setLoading(true)
+    setIsLoading(true)
     try {
       // Préparer les credentials selon la plateforme
       let credentials = {}
@@ -80,18 +80,15 @@ const ConnectStorePage = () => {
         }
       } else if (selectedPlatform === 'woocommerce') {
         credentials = {
-          shop_domain: formData.domain.startsWith('http') ? formData.domain : `https://${formData.domain}`,
           consumer_key: formData.apiKey,
           consumer_secret: formData.apiSecret
         }
       } else if (selectedPlatform === 'prestashop') {
         credentials = {
-          shop_domain: formData.domain.startsWith('http') ? formData.domain : `https://${formData.domain}`,
           webservice_key: formData.apiKey
         }
       } else if (selectedPlatform === 'magento') {
         credentials = {
-          shop_domain: formData.domain.startsWith('http') ? formData.domain : `https://${formData.domain}`,
           access_token: formData.accessToken
         }
       }
@@ -103,20 +100,11 @@ const ConnectStorePage = () => {
         credentials
       })
 
-      toast({
-        title: "Succès",
-        description: "Boutique connectée avec succès"
-      })
-
       navigate('/stores')
     } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de connecter la boutique",
-        variant: "destructive"
-      })
+      // Error handling is done in the hook
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -275,10 +263,10 @@ const ConnectStorePage = () => {
             </Button>
             <Button
               onClick={handleConnect}
-              disabled={loading}
+              disabled={isLoading || loading}
               className="flex-1"
             >
-              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {(isLoading || loading) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Connecter la boutique
             </Button>
           </div>
@@ -289,29 +277,22 @@ const ConnectStorePage = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <Button 
-          variant="outline" 
-          size="icon"
-          onClick={() => navigate('/stores')}
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Connecter une boutique</h1>
-          <p className="text-muted-foreground">
-            Choisissez votre plateforme e-commerce et configurez la connexion
-          </p>
-        </div>
-      </div>
-
       {/* Sélection de plateforme */}
-      {!selectedPlatform && (
-        <PlatformSelector
-          selectedPlatform={selectedPlatform}
+      {!selectedPlatform ? (
+        <PlatformGridSelector
           onSelect={setSelectedPlatform}
         />
+      ) : (
+        <div className="mb-6">
+          <Button 
+            variant="outline" 
+            onClick={() => setSelectedPlatform(null)}
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Retour à la sélection
+          </Button>
+        </div>
       )}
 
       {/* Formulaire de configuration */}

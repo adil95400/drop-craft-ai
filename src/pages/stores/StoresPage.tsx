@@ -1,39 +1,30 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Plus, Store, RefreshCw, Settings, Trash2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useStores } from '@/hooks/useStores'
-import { StoreCard } from './components/StoreCard'
-import { ConnectStoreDialog } from './components/ConnectStoreDialog'
+import { useIntegrationsData } from '@/hooks/useIntegrationsData'
+import { StoreConnectionStatus } from '@/components/stores/StoreConnectionStatus'
+import { Store, Plus, RefreshCw, Settings, Unplug, ExternalLink } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 export default function StoresPage() {
-  const { stores, loading, syncStore, disconnectStore, refetch } = useStores()
-  const [showConnectDialog, setShowConnectDialog] = useState(false)
+  const { integrations, loading, refetch, syncIntegration, disconnectIntegration } = useIntegrationsData()
 
-  const handleSync = async (storeId: string) => {
-    try {
-      await syncStore(storeId, 'full')
-    } catch (error) {
-      console.error('Error syncing store:', error)
-    }
+  const handleSync = async (integrationId: string) => {
+    await syncIntegration(integrationId)
   }
 
-  const handleDisconnect = async (storeId: string) => {
-    try {
-      await disconnectStore(storeId)
-    } catch (error) {
-      console.error('Error disconnecting store:', error)
+  const handleDisconnect = async (integrationId: string) => {
+    if (confirm('Êtes-vous sûr de vouloir déconnecter cette boutique ?')) {
+      await disconnectIntegration(integrationId)
     }
   }
 
   const getTotalStats = () => {
-    return stores.reduce((acc, store) => ({
-      products: acc.products + store.products_count,
-      orders: acc.orders + store.orders_count,
-      revenue: acc.revenue + store.revenue
-    }), { products: 0, orders: 0, revenue: 0 })
+    return {
+      stores: integrations.length,
+      connected: integrations.filter(i => i.connection_status === 'connected').length,
+      errors: integrations.filter(i => i.connection_status === 'error').length
+    }
   }
 
   const stats = getTotalStats()
@@ -83,56 +74,53 @@ export default function StoresPage() {
             <RefreshCw className="w-4 h-4" />
             Actualiser
           </Button>
-          <Button onClick={() => setShowConnectDialog(true)} className="gap-2">
-            <Plus className="w-4 h-4" />
-            Connecter une boutique
+          <Button asChild className="gap-2">
+            <Link to="/stores/connect">
+              <Plus className="w-4 h-4" />
+              Connecter une boutique
+            </Link>
           </Button>
         </div>
       </div>
 
       {/* Stats globales */}
-      {stores.length > 0 && (
+      {integrations.length > 0 && (
         <div className="grid gap-4 md:grid-cols-3 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total produits
+                Boutiques totales
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.products.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{stats.stores}</div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total commandes
+                Connectées
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.orders.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-green-600">{stats.connected}</div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Chiffre d'affaires
+                Erreurs
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.revenue.toLocaleString('fr-FR', { 
-                  style: 'currency', 
-                  currency: 'EUR' 
-                })}
-              </div>
+              <div className="text-2xl font-bold text-red-600">{stats.errors}</div>
             </CardContent>
           </Card>
         </div>
       )}
 
       {/* Liste des boutiques */}
-      {stores.length === 0 ? (
+      {integrations.length === 0 ? (
         <Card className="text-center py-12">
           <CardHeader>
             <Store className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
@@ -142,29 +130,79 @@ export default function StoresPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => setShowConnectDialog(true)} className="gap-2">
-              <Plus className="w-4 h-4" />
-              Connecter une boutique
+            <Button asChild className="gap-2">
+              <Link to="/stores/connect">
+                <Plus className="w-4 h-4" />
+                Connecter une boutique
+              </Link>
             </Button>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {stores.map((store) => (
-            <StoreCard
-              key={store.id}
-              store={store}
-              onSync={handleSync}
-              onDisconnect={handleDisconnect}
-            />
+          {integrations.map((integration) => (
+            <Card key={integration.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <Store className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base">
+                        {integration.store_config?.name || integration.platform_name}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        {integration.platform_name}
+                      </p>
+                    </div>
+                  </div>
+                  <StoreConnectionStatus status={integration.connection_status} />
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-3">
+                  {integration.shop_domain && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground truncate">
+                        {integration.shop_domain}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {integration.last_sync_at && (
+                    <div className="text-sm text-muted-foreground">
+                      Dernière sync: {new Date(integration.last_sync_at).toLocaleDateString('fr-FR')}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleSync(integration.id)}
+                      disabled={integration.connection_status === 'connecting'}
+                      className="flex-1"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-1" />
+                      Sync
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDisconnect(integration.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Unplug className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
-
-      <ConnectStoreDialog
-        open={showConnectDialog}
-        onOpenChange={setShowConnectDialog}
-      />
     </div>
   )
 }
