@@ -13,6 +13,8 @@ import { AddKeywordModal } from '@/components/seo/AddKeywordModal';
 import { SEOAnalysisModal } from '@/components/seo/SEOAnalysisModal';
 import { SEORecommendationsCard } from '@/components/seo/SEORecommendationsCard';
 import { SEOContentGenerator } from '@/components/seo/SEOContentGenerator';
+import { SEOTechnicalDetailsModal } from '@/components/seo/SEOTechnicalDetailsModal';
+import { SEOPageOptimizationModal } from '@/components/seo/SEOPageOptimizationModal';
 import { useToast } from '@/hooks/use-toast';
 
 export default function SEOManagerPage() {
@@ -20,6 +22,10 @@ export default function SEOManagerPage() {
   const [showAddKeywordModal, setShowAddKeywordModal] = useState(false);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [analysisUrl, setAnalysisUrl] = useState('');
+  const [showTechnicalModal, setShowTechnicalModal] = useState(false);
+  const [selectedTechnicalDetail, setSelectedTechnicalDetail] = useState(null);
+  const [showPageOptimizationModal, setShowPageOptimizationModal] = useState(false);
+  const [selectedPage, setSelectedPage] = useState(null);
   
   const { 
     analyses, 
@@ -85,6 +91,61 @@ export default function SEOManagerPage() {
   const filteredKeywords = keywords.filter(keyword => 
     keyword.keyword.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleTechnicalDetails = (detail: any) => {
+    setSelectedTechnicalDetail(detail);
+    setShowTechnicalModal(true);
+  };
+
+  const handlePageOptimization = (page: any) => {
+    setSelectedPage(page);
+    setShowPageOptimizationModal(true);
+  };
+
+  const technicalChecks = [
+    { 
+      check: 'Vitesse de chargement', 
+      status: 'success', 
+      details: '2.1s (Bon)',
+      score: 85,
+      impact: 'Une vitesse de chargement rapide améliore l\'expérience utilisateur et le classement SEO'
+    },
+    { 
+      check: 'Mobile-friendly', 
+      status: 'success', 
+      details: 'Compatible',
+      score: 95,
+      impact: 'La compatibilité mobile est essentielle pour le référencement Google'
+    },
+    { 
+      check: 'HTTPS', 
+      status: 'success', 
+      details: 'Sécurisé',
+      score: 100,
+      impact: 'HTTPS est un facteur de classement confirmé par Google'
+    },
+    { 
+      check: 'Sitemap XML', 
+      status: 'warning', 
+      details: 'À mettre à jour',
+      score: 70,
+      impact: 'Un sitemap à jour aide les moteurs de recherche à indexer vos pages'
+    },
+    { 
+      check: 'Robots.txt', 
+      status: 'success', 
+      details: 'Configuré',
+      score: 90,
+      impact: 'Le fichier robots.txt guide les crawlers des moteurs de recherche'
+    }
+  ];
+
+  const pagesData = [
+    { url: '/products', score: 85, issues: 2, status: 'good' as const },
+    { url: '/suppliers', score: 72, issues: 4, status: 'warning' as const },
+    { url: '/analytics', score: 91, issues: 1, status: 'good' as const },
+    { url: '/automation', score: 68, issues: 5, status: 'warning' as const }
+  ];
 
   return (
     <>
@@ -329,12 +390,7 @@ export default function SEOManagerPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[
-                    { url: '/products', score: 85, issues: 2, status: 'good' },
-                    { url: '/suppliers', score: 72, issues: 4, status: 'warning' },
-                    { url: '/analytics', score: 91, issues: 1, status: 'good' },
-                    { url: '/automation', score: 68, issues: 5, status: 'warning' }
-                  ].map((page, i) => (
+                  {pagesData.map((page, i) => (
                     <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-4">
                         <div className="flex-1">
@@ -351,7 +407,13 @@ export default function SEOManagerPage() {
                             {page.status === 'good' ? 'Bon' : 'À améliorer'}
                           </Badge>
                         </div>
-                        <Button variant="outline" size="sm">Optimiser</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handlePageOptimization(page)}
+                        >
+                          Optimiser
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -370,13 +432,7 @@ export default function SEOManagerPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[
-                    { check: 'Vitesse de chargement', status: 'success', details: '2.1s (Bon)' },
-                    { check: 'Mobile-friendly', status: 'success', details: 'Compatible' },
-                    { check: 'HTTPS', status: 'success', details: 'Sécurisé' },
-                    { check: 'Sitemap XML', status: 'warning', details: 'À mettre à jour' },
-                    { check: 'Robots.txt', status: 'success', details: 'Configuré' }
-                  ].map((item, i) => (
+                  {technicalChecks.map((item, i) => (
                     <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-3">
                         {item.status === 'success' ? (
@@ -389,7 +445,13 @@ export default function SEOManagerPage() {
                           <p className="text-sm text-muted-foreground">{item.details}</p>
                         </div>
                       </div>
-                      <Button variant="outline" size="sm">Détails</Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleTechnicalDetails(item)}
+                      >
+                        Détails
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -419,6 +481,18 @@ export default function SEOManagerPage() {
             await handleAnalyzeUrl();
           }}
           isAnalyzing={isAnalyzing}
+        />
+        
+        <SEOTechnicalDetailsModal
+          open={showTechnicalModal}
+          onOpenChange={setShowTechnicalModal}
+          detail={selectedTechnicalDetail}
+        />
+        
+        <SEOPageOptimizationModal
+          open={showPageOptimizationModal}
+          onOpenChange={setShowPageOptimizationModal}
+          page={selectedPage}
         />
       </div>
     </>
