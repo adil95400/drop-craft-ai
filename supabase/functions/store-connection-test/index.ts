@@ -62,6 +62,9 @@ serve(async (req) => {
       case 'lightspeed':
         connectionResult = await testLightspeedConnection(account_id, api_key, api_secret)
         break
+      case 'cdiscount':
+        connectionResult = await testCdiscountConnection(api_key, access_token)
+        break
       default:
         connectionResult = { success: true, data: { shop_name: `Boutique ${platform}`, platform } }
     }
@@ -416,6 +419,37 @@ async function testLightspeedConnection(accountId: string, apiKey: string, apiSe
         shop_name: data.Account?.name || 'Boutique Lightspeed',
         platform: 'Lightspeed',
         account_id: accountId
+      }
+    }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+async function testCdiscountConnection(apiKey: string, accessToken: string) {
+  try {
+    const response = await fetch('https://ws.cdiscount.com/FrontMarketPlace.svc/GetAllowedCategoryTree', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ApiKey: apiKey,
+        Token: accessToken
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error('Connexion Cdiscount Pro échouée')
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      data: {
+        shop_name: 'Boutique Cdiscount Pro',
+        platform: 'Cdiscount Pro',
+        categories: data.CategoryTree?.length || 0
       }
     }
   } catch (error) {

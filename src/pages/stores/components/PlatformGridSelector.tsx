@@ -80,6 +80,11 @@ const platforms: Platform[] = [
     color: 'bg-emerald-600'
   },
   {
+    id: 'cdiscount',
+    name: 'Cdiscount Pro',
+    color: 'bg-red-600'
+  },
+  {
     id: 'ebay',
     name: 'eBay',
     color: 'bg-blue-600',
@@ -178,6 +183,9 @@ export function PlatformGridSelector({ onSelect }: PlatformGridSelectorProps) {
                 )}
                 {platform.id === 'lightspeed' && (
                   <div className="text-white font-bold text-xs">LS</div>
+                )}
+                {platform.id === 'cdiscount' && (
+                  <div className="text-white font-bold text-xs">CD</div>
                 )}
               </div>
               

@@ -24,6 +24,10 @@ const ConnectStorePage = () => {
     apiSecret: '',
     accessToken: '',
     storeHash: '',
+    storeId: '',
+    accountId: '',
+    environment: 'sandbox',
+    marketplaceId: 'ATVPDKIKX0DER',
     // Fonctionnalités activées (stockées comme strings pour la compatibilité)
     autoSync: 'true',
     importProducts: 'true',
@@ -52,7 +56,14 @@ const ConnectStorePage = () => {
       magento: ['accessToken'],
       bigcommerce: ['storeHash', 'accessToken'],
       opencart: ['accessToken'],
-      squarespace: ['accessToken']
+      squarespace: ['accessToken'],
+      etsy: ['apiKey', 'accessToken'],
+      square: ['accessToken'],
+      ecwid: ['storeId', 'accessToken'],
+      wix: ['accessToken'],
+      amazon: ['accessToken'],
+      lightspeed: ['accountId', 'apiKey', 'apiSecret'],
+      cdiscount: ['apiKey', 'accessToken']
     }
 
     const required = requiredFields[selectedPlatform as keyof typeof requiredFields] || []
@@ -106,6 +117,41 @@ const ConnectStorePage = () => {
         }
       } else if (selectedPlatform === 'squarespace') {
         credentials = {
+          access_token: formData.accessToken
+        }
+      } else if (selectedPlatform === 'etsy') {
+        credentials = {
+          api_key: formData.apiKey,
+          access_token: formData.accessToken
+        }
+      } else if (selectedPlatform === 'square') {
+        credentials = {
+          access_token: formData.accessToken,
+          environment: formData.environment || 'sandbox'
+        }
+      } else if (selectedPlatform === 'ecwid') {
+        credentials = {
+          store_id: formData.storeId,
+          access_token: formData.accessToken
+        }
+      } else if (selectedPlatform === 'wix') {
+        credentials = {
+          access_token: formData.accessToken
+        }
+      } else if (selectedPlatform === 'amazon') {
+        credentials = {
+          access_token: formData.accessToken,
+          marketplace_id: formData.marketplaceId || 'ATVPDKIKX0DER'
+        }
+      } else if (selectedPlatform === 'lightspeed') {
+        credentials = {
+          account_id: formData.accountId,
+          api_key: formData.apiKey,
+          api_secret: formData.apiSecret
+        }
+      } else if (selectedPlatform === 'cdiscount') {
+        credentials = {
+          api_key: formData.apiKey,
           access_token: formData.accessToken
         }
       }
@@ -188,6 +234,67 @@ const ConnectStorePage = () => {
         description: "Connectez votre boutique Squarespace via OAuth",
         fields: [
           { key: 'accessToken', label: 'Access Token', placeholder: 'Votre token OAuth', required: true }
+        ],
+        features: []
+      },
+      etsy: {
+        title: "Connecter Etsy",
+        description: "Connectez votre boutique Etsy via l'API",
+        fields: [
+          { key: 'apiKey', label: 'API Key', placeholder: 'Votre clé API Etsy', required: true },
+          { key: 'accessToken', label: 'Access Token', placeholder: 'Votre token d\'accès', required: true }
+        ],
+        features: []
+      },
+      square: {
+        title: "Connecter Square Online",
+        description: "Connectez votre boutique Square via l'API",
+        fields: [
+          { key: 'accessToken', label: 'Access Token', placeholder: 'Votre token Square', required: true }
+        ],
+        features: []
+      },
+      ecwid: {
+        title: "Connecter Ecwid",
+        description: "Connectez votre boutique Ecwid via l'API",
+        fields: [
+          { key: 'storeId', label: 'Store ID', placeholder: '12345', required: true },
+          { key: 'accessToken', label: 'Access Token', placeholder: 'Votre token d\'accès', required: true }
+        ],
+        features: []
+      },
+      wix: {
+        title: "Connecter Wix eCommerce",
+        description: "Connectez votre boutique Wix via l'API",
+        fields: [
+          { key: 'accessToken', label: 'Access Token', placeholder: 'Votre token d\'accès Wix', required: true }
+        ],
+        features: []
+      },
+      amazon: {
+        title: "Connecter Amazon Seller",
+        description: "Connectez votre compte Amazon Seller via l'API",
+        fields: [
+          { key: 'accessToken', label: 'Access Token', placeholder: 'Votre token Amazon SP-API', required: true }
+        ],
+        features: []
+      },
+      lightspeed: {
+        title: "Connecter Lightspeed",
+        description: "Connectez votre POS Lightspeed via l'API",
+        fields: [
+          { key: 'accountId', label: 'Account ID', placeholder: '12345', required: true },
+          { key: 'apiKey', label: 'API Key', placeholder: 'Votre clé API', required: true },
+          { key: 'apiSecret', label: 'API Secret', placeholder: 'Votre secret API', required: true }
+        ],
+        features: []
+      },
+      cdiscount: {
+        title: "Connecter Cdiscount Pro",
+        description: "Connectez votre compte marchand Cdiscount via l'API",
+        fields: [
+          { key: 'apiKey', label: 'API Key', placeholder: 'Votre clé API Cdiscount', required: true },
+          { key: 'accessToken', label: 'Token', placeholder: 'Votre token d\'authentification', required: true }
         ],
         features: []
       }
