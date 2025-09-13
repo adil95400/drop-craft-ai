@@ -65,7 +65,7 @@ export default function ModernProductsPage() {
               SEO
             </TabsTrigger>
             <TabsTrigger value="templates" className="flex items-center gap-2">
-              <FileTemplate className="h-4 w-4" />
+              <FileText className="h-4 w-4" />
               Modèles
             </TabsTrigger>
             <TabsTrigger value="bulk" className="flex items-center gap-2">
@@ -94,7 +94,7 @@ export default function ModernProductsPage() {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
-            <ProductAnalytics />
+            <ProductAnalytics productId="" />
           </TabsContent>
 
           <TabsContent value="seo" className="space-y-6">
