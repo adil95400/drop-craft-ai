@@ -130,7 +130,8 @@ import { StoreSettingsPage } from '@/pages/stores/StoreSettingsPage';
 
 import { ExtensionDownloadPage } from "./pages/ExtensionDownloadPage";
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { ModernProfessionalDashboard } from '@/components/dashboard/ModernProfessionalDashboard';
+// Modern professional dashboard - v2.0
+import ModernProfessionalDashboard from '@/components/dashboard/ModernProfessionalDashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: {

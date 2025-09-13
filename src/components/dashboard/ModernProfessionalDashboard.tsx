@@ -16,7 +16,7 @@ import {
   ArrowUpRight, ArrowDownRight, AlertCircle, CheckCircle2
 } from 'lucide-react'
 
-export function ModernProfessionalDashboard() {
+export default function ModernProfessionalDashboard() {
   const { dashboardStats, isLoadingStats, orders, customers, products, seedDatabase, isSeeding } = useProductionData()
   const { user, profile, isAdmin } = useUnifiedSystem()
 
