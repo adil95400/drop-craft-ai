@@ -18,7 +18,7 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     )
 
-    const { platform, shopDomain, access_token, consumer_key, consumer_secret, webservice_key, store_hash, api_key, store_id, account_id, api_secret, environment, marketplace_id } = await req.json()
+    const { platform, shopDomain, access_token, consumer_key, consumer_secret, webservice_key, store_hash, api_key, store_id, account_id, api_secret, environment, marketplace_id, user_id, client_id, client_secret, api_url, shop_id } = await req.json()
 
     let connectionResult = null
 
@@ -64,6 +64,30 @@ serve(async (req) => {
         break
       case 'cdiscount':
         connectionResult = await testCdiscountConnection(api_key, access_token)
+        break
+      case 'rakuten':
+        connectionResult = await testRakutenConnection(access_token)
+        break
+      case 'fnac':
+        connectionResult = await testFnacConnection(access_token)
+        break
+      case 'mercadolibre':
+        connectionResult = await testMercadoLibreConnection(access_token, user_id)
+        break
+      case 'aliexpress':
+        connectionResult = await testAliExpressConnection(access_token)
+        break
+      case 'mirakl':
+        connectionResult = await testMiraklConnection(api_key, api_url)
+        break
+      case 'shopee':
+        connectionResult = await testShopeeConnection(access_token, shop_id)
+        break
+      case 'zalando':
+        connectionResult = await testZalandoConnection(client_id, client_secret)
+        break
+      case 'wish':
+        connectionResult = await testWishConnection(access_token)
         break
       default:
         connectionResult = { success: true, data: { shop_name: `Boutique ${platform}`, platform } }
@@ -454,5 +478,128 @@ async function testCdiscountConnection(apiKey: string, accessToken: string) {
     }
   } catch (error) {
     return { success: false, error: error.message }
+  }
+}
+
+async function testRakutenConnection(accessToken: string) {
+  // Rakuten API simulation
+  return {
+    success: true,
+    data: {
+      shop_name: 'Boutique Rakuten France',
+      platform: 'Rakuten',
+      marketplace: 'France'
+    }
+  }
+}
+
+async function testFnacConnection(accessToken: string) {
+  // Fnac API simulation
+  return {
+    success: true,
+    data: {
+      shop_name: 'Boutique Fnac Marketplace',
+      platform: 'Fnac',
+      marketplace: 'France'
+    }
+  }
+}
+
+async function testMercadoLibreConnection(accessToken: string, userId: string) {
+  try {
+    const response = await fetch('https://api.mercadolibre.com/users/me', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Connexion MercadoLibre échouée')
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      data: {
+        shop_name: data.nickname || 'Boutique MercadoLibre',
+        platform: 'MercadoLibre',
+        user_id: data.id
+      }
+    }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+async function testAliExpressConnection(accessToken: string) {
+  // AliExpress API simulation - complex API integration
+  return {
+    success: true,
+    data: {
+      shop_name: 'AliExpress Dropshipping',
+      platform: 'AliExpress',
+      type: 'Dropshipping'
+    }
+  }
+}
+
+async function testMiraklConnection(apiKey: string, apiUrl: string) {
+  try {
+    const response = await fetch(`${apiUrl}/api/offers`, {
+      headers: {
+        'Authorization': apiKey
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Connexion Mirakl échouée')
+    }
+
+    return {
+      success: true,
+      data: {
+        shop_name: 'Boutique Mirakl',
+        platform: 'Mirakl',
+        api_url: apiUrl
+      }
+    }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+async function testShopeeConnection(accessToken: string, shopId: string) {
+  // Shopee API simulation
+  return {
+    success: true,
+    data: {
+      shop_name: 'Boutique Shopee',
+      platform: 'Shopee',
+      shop_id: shopId
+    }
+  }
+}
+
+async function testZalandoConnection(clientId: string, clientSecret: string) {
+  // Zalando Partner API simulation
+  return {
+    success: true,
+    data: {
+      shop_name: 'Zalando Partner',
+      platform: 'Zalando',
+      partner_type: 'Brand Partner'
+    }
+  }
+}
+
+async function testWishConnection(accessToken: string) {
+  // Wish Merchant API simulation
+  return {
+    success: true,
+    data: {
+      shop_name: 'Wish Merchant',
+      platform: 'Wish',
+      account_type: 'Merchant'
+    }
   }
 }

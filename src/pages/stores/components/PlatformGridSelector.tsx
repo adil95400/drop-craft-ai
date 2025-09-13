@@ -95,6 +95,46 @@ const platforms: Platform[] = [
     name: 'Facebook Shop',
     color: 'bg-blue-500',
     disabled: true
+  },
+  {
+    id: 'rakuten',
+    name: 'Rakuten France',
+    color: 'bg-red-600'
+  },
+  {
+    id: 'fnac',
+    name: 'Fnac Marketplace',
+    color: 'bg-yellow-600'
+  },
+  {
+    id: 'mercadolibre',
+    name: 'MercadoLibre',
+    color: 'bg-yellow-500'
+  },
+  {
+    id: 'aliexpress',
+    name: 'AliExpress',
+    color: 'bg-orange-600'
+  },
+  {
+    id: 'mirakl',
+    name: 'Mirakl Marketplace',
+    color: 'bg-purple-700'
+  },
+  {
+    id: 'shopee',
+    name: 'Shopee',
+    color: 'bg-orange-500'
+  },
+  {
+    id: 'zalando',
+    name: 'Zalando Partner',
+    color: 'bg-orange-600'
+  },
+  {
+    id: 'wish',
+    name: 'Wish Merchant',
+    color: 'bg-blue-400'
   }
 ]
 
@@ -186,6 +226,30 @@ export function PlatformGridSelector({ onSelect }: PlatformGridSelectorProps) {
                 )}
                 {platform.id === 'cdiscount' && (
                   <div className="text-white font-bold text-xs">CD</div>
+                )}
+                {platform.id === 'rakuten' && (
+                  <div className="text-white font-bold text-xs">RK</div>
+                )}
+                {platform.id === 'fnac' && (
+                  <div className="text-white font-bold text-xs">FN</div>
+                )}
+                {platform.id === 'mercadolibre' && (
+                  <div className="text-white font-bold text-xs">ML</div>
+                )}
+                {platform.id === 'aliexpress' && (
+                  <div className="text-white font-bold text-xs">AE</div>
+                )}
+                {platform.id === 'mirakl' && (
+                  <div className="text-white font-bold text-xs">MK</div>
+                )}
+                {platform.id === 'shopee' && (
+                  <div className="text-white font-bold text-xs">SP</div>
+                )}
+                {platform.id === 'zalando' && (
+                  <div className="text-white font-bold text-xs">ZL</div>
+                )}
+                {platform.id === 'wish' && (
+                  <div className="text-white font-bold text-xs">WH</div>
                 )}
               </div>
               
