@@ -22,10 +22,10 @@ export function ShopifyStoreCard({ integration, stats }: ShopifyStoreCardProps) 
   const { toast } = useToast()
   const [isCredentialsDialogOpen, setIsCredentialsDialogOpen] = useState(false)
 
-  const hasCredentials = integration.credentials && 
-    Object.keys(integration.credentials).length > 0 &&
-    integration.credentials.access_token && 
-    integration.credentials.shop_domain
+  const hasCredentials = integration.encrypted_credentials && 
+    Object.keys(integration.encrypted_credentials).length > 0 &&
+    integration.encrypted_credentials.access_token && 
+    integration.encrypted_credentials.shop_domain
 
   const handleSyncProducts = () => {
     syncProducts({ integrationId: integration.id })
@@ -83,7 +83,7 @@ export function ShopifyStoreCard({ integration, stats }: ShopifyStoreCardProps) 
             <div>
               <CardTitle className="text-lg">Shopify</CardTitle>
               <p className="text-sm text-muted-foreground">
-                {integration.store_name || integration.store_url || 'Boutique connectée'}
+                {integration.store_config?.shop_name || integration.platform_name || 'Boutique connectée'}
               </p>
             </div>
           </div>
@@ -180,14 +180,14 @@ export function ShopifyStoreCard({ integration, stats }: ShopifyStoreCardProps) 
 
         {/* Liens utiles */}
         <div className="flex gap-2 pt-2 border-t">
-          {integration.store_url && (
+          {integration.platform_url && (
             <Button 
               variant="ghost" 
               size="sm"
               asChild
             >
               <a 
-                href={integration.store_url} 
+                href={integration.platform_url} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-1"

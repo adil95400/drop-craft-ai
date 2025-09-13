@@ -219,11 +219,11 @@ export function IntegrationsPage() {
                     {getStatusIcon(integration.connection_status)}
                     <div>
                       <CardTitle className="text-lg">
-                        {integration.platform_data?.shop_name || `Boutique ${integration.platform}`}
+                        {integration.store_config?.shop_name || `Boutique ${integration.platform_name}`}
                       </CardTitle>
                       <p className="text-sm text-gray-600 capitalize">
-                        {integration.platform}
-                        {integration.platform_data?.domain && ` • ${integration.platform_data.domain}`}
+                        {integration.platform_name}
+                        {integration.store_config?.domain && ` • ${integration.store_config.domain}`}
                       </p>
                     </div>
                   </div>

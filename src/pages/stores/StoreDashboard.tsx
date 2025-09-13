@@ -65,7 +65,7 @@ export function StoreDashboard() {
         .from('sync_logs')
         .select(`
           *,
-          integrations!inner(platform, platform_data)
+          integrations!inner(platform_name, store_config)
         `)
         .order('started_at', { ascending: false })
         .limit(10)
@@ -99,8 +99,8 @@ export function StoreDashboard() {
       const formattedSyncs = integrations?.slice(0, 5).map((integration: any, index) => ({
         id: integration.id + '_sync',
         integration_id: integration.id,
-        platform: integration.platform || 'unknown',
-        shop_name: integration.platform_data?.shop_name || `Boutique ${integration.platform || 'Inconnue'}`,
+        platform: integration.platform_name || 'unknown',
+        shop_name: integration.store_config?.shop_name || `Boutique ${integration.platform_name || 'Inconnue'}`,
         status: ['completed', 'failed', 'running'][index % 3],
         products_synced: Math.floor(Math.random() * 100) + 10,
         orders_synced: Math.floor(Math.random() * 50) + 5,

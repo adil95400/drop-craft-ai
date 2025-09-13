@@ -5,19 +5,18 @@ import { supabase } from '@/integrations/supabase/client'
 export interface StoreIntegration {
   id: string
   user_id: string
-  platform: string
-  store_name: string
-  store_url: string
-  credentials: Record<string, any>
-  sync_settings: Record<string, any>
-  webhook_config: Record<string, any>
-  is_active: boolean
-  connection_status: 'connected' | 'disconnected' | 'error'
-  last_sync_at?: string
-  sync_frequency: string
-  product_count: number
-  order_count: number
-  error_log: any[]
+  platform_name: string
+  platform_type: string
+  platform_url: string | null
+  shop_domain: string | null
+  store_config: Record<string, any> | null
+  encrypted_credentials: Record<string, any> | null
+  sync_settings: Record<string, any> | null
+  is_active: boolean | null
+  connection_status: string | null
+  last_sync_at: string | null
+  sync_frequency: string | null
+  last_error: string | null
   created_at: string
   updated_at: string
 }
@@ -33,7 +32,7 @@ export const useStoreIntegrations = () => {
       if (!user) throw new Error('Non authentifié')
 
       const { data, error } = await supabase
-        .from('store_integrations')
+        .from('integrations')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
@@ -109,7 +108,7 @@ export const useStoreIntegrations = () => {
   const stats = {
     total: integrations.length,
     active: integrations.filter(i => i.is_active).length,
-    connected: integrations.filter(i => i.connection_status === 'connected').length,
+    connected: integrations.filter(i => i.connection_status === 'active').length,
     disconnected: integrations.filter(i => i.connection_status === 'disconnected' || i.connection_status === 'error').length,
     lastSync: integrations.reduce((latest, integration) => {
       const syncDate = new Date(integration.last_sync_at || 0)
@@ -117,7 +116,7 @@ export const useStoreIntegrations = () => {
     }, new Date(0))
   }
 
-  const connectedIntegrations = integrations.filter(i => i.connection_status === 'connected')
+  const connectedIntegrations = integrations.filter(i => i.connection_status === 'active')
 
   return {
     integrations,

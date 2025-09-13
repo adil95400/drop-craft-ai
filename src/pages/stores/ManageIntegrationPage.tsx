@@ -156,10 +156,10 @@ export function ManageIntegrationPage() {
         </Button>
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            {integration.platform_data?.shop_name || `Boutique ${integration.platform}`}
+            {integration.store_config?.shop_name || `Boutique ${integration.platform_name}`}
           </h1>
           <p className="text-gray-600 capitalize">
-            Intégration {integration.platform}
+            Intégration {integration.platform_name}
           </p>
         </div>
       </div>
@@ -190,7 +190,7 @@ export function ManageIntegrationPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <p className="text-sm font-medium text-gray-700">Plateforme</p>
-                    <p className="text-lg font-semibold capitalize">{integration.platform}</p>
+                    <p className="text-lg font-semibold capitalize">{integration.platform_name}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-700">Créée le</p>
@@ -204,11 +204,11 @@ export function ManageIntegrationPage() {
                   </div>
                 </div>
 
-                {integration.platform_data && (
+                {integration.store_config && (
                   <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                     <h4 className="font-medium text-gray-900 mb-2">Informations de la boutique</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      {Object.entries(integration.platform_data).map(([key, value]) => (
+                      {Object.entries(integration.store_config).map(([key, value]) => (
                         <div key={key}>
                           <span className="font-medium text-gray-700 capitalize">
                             {key.replace('_', ' ')}:

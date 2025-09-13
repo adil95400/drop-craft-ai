@@ -115,7 +115,7 @@ export function StoreConnections() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {integrations.map((integration) => {
           // Utiliser le composant spécialisé pour Shopify
-          if (integration.platform === 'shopify') {
+          if (integration.platform_type === 'shopify') {
             return (
               <ShopifyStoreCard
                 key={integration.id}
@@ -136,23 +136,23 @@ export function StoreConnections() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Store className="w-5 h-5" />
-                    {integration.platform}
+                    {integration.platform_name}
                   </CardTitle>
                   <Badge 
-                    variant={integration.connection_status === 'connected' ? 'default' : 'destructive'}
+                    variant={integration.connection_status === 'active' ? 'default' : 'destructive'}
                   >
-                    {integration.connection_status === 'connected' ? 'Connecté' : 'Déconnecté'}
+                    {integration.connection_status === 'active' ? 'Connecté' : 'Déconnecté'}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
-                    Plateforme: {integration.platform}
+                    Plateforme: {integration.platform_name}
                   </p>
-                  {integration.store_url && (
+                  {integration.platform_url && (
                     <p className="text-sm text-muted-foreground">
-                      URL: {integration.store_url}
+                      URL: {integration.platform_url}
                     </p>
                   )}
                   <p className="text-sm text-muted-foreground">

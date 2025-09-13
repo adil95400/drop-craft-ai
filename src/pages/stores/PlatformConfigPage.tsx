@@ -146,12 +146,17 @@ export function PlatformConfigPage() {
       const { data, error } = await supabase
         .from('integrations')
         .insert({
-          platform_data: { 
+          platform_name: config.displayName,
+          platform_type: config.platform,
+          platform_url: formData.platform_url || null,
+          shop_domain: formData.shop_domain || null,
+          store_config: { 
             platform: config.platform,
             shop_name: formData.shop_domain || formData.platform_url || config.displayName 
           },
-          credentials: formData,
-          connection_status: 'disconnected'
+          encrypted_credentials: formData,
+          connection_status: 'disconnected',
+          user_id: (await supabase.auth.getUser()).data.user?.id
         })
         .select()
         .single()
@@ -173,7 +178,7 @@ export function PlatformConfigPage() {
         .from('integrations')
         .update({
           connection_status: testResult.success ? 'active' : 'error',
-          platform_data: testResult.shop_info || {}
+          store_config: testResult.shop_info || {}
         })
         .eq('id', data.id)
 
