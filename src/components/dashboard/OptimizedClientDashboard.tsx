@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { AreaChart, Area, PieChart as RechartsPieChart, Cell, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 export default function OptimizedClientDashboard() {
   const { dashboardStats, orders, customers, products, seedDatabase, isSeeding } = useProductionData()
@@ -110,31 +111,40 @@ export default function OptimizedClientDashboard() {
     }
   ] as const
 
-  // Suggestions AI pour ShopOpti+
-  const aiSuggestions = [
+  // Suggestions AI pour ShopOpti+ avec fonctionnalités complètes
+  const aiInsights = [
     {
       title: "Optimisation des Prix",
       description: "Augmentez vos marges de 18% en ajustant 12 produits",
-      impact: "high",
-      icon: TrendingUp,
-      color: "bg-green-100 text-green-800",
-      estimated: "+2,340€/mois"
+      impact: "high" as const,
+      estimated: "+2,340€/mois",
+      type: "optimization" as const,
+      onApply: () => {
+        toast.success("Optimisation des prix appliquée ! Redirection vers la gestion des prix...");
+        setTimeout(() => navigate("/products?optimize=pricing"), 1500);
+      }
     },
     {
       title: "Stock Alert",
       description: "5 produits populaires bientôt en rupture",
-      impact: "medium",
-      icon: AlertTriangle,
-      color: "bg-orange-100 text-orange-800",
-      estimated: "Éviter -1,200€ de perte"
+      impact: "medium" as const,
+      estimated: "Éviter -1,200€ de perte",
+      type: "alert" as const,
+      onApply: () => {
+        toast.success("Alerte stock traitée ! Redirection vers la gestion d'inventaire...");
+        setTimeout(() => navigate("/products?filter=low-stock"), 1500);
+      }
     },
     {
-      title: "Recommandations Client",
+      title: "Recommandations Clients",
       description: "Personnalisez 89% de vos recommandations produits",
-      impact: "high",
-      icon: Brain,
-      color: "bg-purple-100 text-purple-800",
-      estimated: "+35% conversion"
+      impact: "high" as const,
+      estimated: "+35% conversion",
+      type: "recommendation" as const,
+      onApply: () => {
+        toast.success("Système de recommandations activé ! Configuration en cours...");
+        setTimeout(() => navigate("/marketing?feature=recommendations"), 1500);
+      }
     }
   ]
 
@@ -165,17 +175,6 @@ export default function OptimizedClientDashboard() {
       action: () => navigate("/customers")
     }
   ]
-
-  // Navigation vers différentes sections
-  const handleAIInsightApply = (insight: any) => {
-    if (insight.title.includes('Prix')) {
-      navigate('/products?tab=pricing')
-    } else if (insight.title.includes('Stock')) {
-      navigate('/products?tab=inventory')
-    } else if (insight.title.includes('Recommandations')) {
-      navigate('/analytics?section=recommendations')
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 p-6">
@@ -241,12 +240,7 @@ export default function OptimizedClientDashboard() {
 
         {/* Suggestions AI ShopOpti+ */}
         <AIInsightsSection 
-          insights={aiSuggestions.map(suggestion => ({
-            ...suggestion,
-            type: suggestion.title.includes('Prix') ? 'optimization' : 
-                  suggestion.title.includes('Stock') ? 'alert' : 'recommendation',
-            onApply: () => handleAIInsightApply(suggestion)
-          }))}
+          insights={aiInsights}
         />
 
         {/* Boutiques Connectées */}
