@@ -130,7 +130,7 @@ import { StoreSettingsPage } from '@/pages/stores/StoreSettingsPage';
 
 import { ExtensionDownloadPage } from "./pages/ExtensionDownloadPage";
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { CommerceHubDashboard } from '@/components/dashboard/CommerceHubDashboard';
+import { ModernProfessionalDashboard } from '@/components/dashboard/ModernProfessionalDashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -172,7 +172,7 @@ function App() {
                 <Route element={<DashboardLayout />}>
                   <Route path="/dashboard" element={
                     <ProtectedRoute>
-                      <CommerceHubDashboard />
+                      <ModernProfessionalDashboard />
                     </ProtectedRoute>
                   } />
                 </Route>
