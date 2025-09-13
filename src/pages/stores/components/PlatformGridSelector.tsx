@@ -50,33 +50,45 @@ const platforms: Platform[] = [
     color: 'bg-gray-900'
   },
   {
+    id: 'etsy',
+    name: 'Etsy',
+    color: 'bg-orange-500'
+  },
+  {
+    id: 'square',
+    name: 'Square Online',
+    color: 'bg-indigo-600'
+  },
+  {
+    id: 'ecwid',
+    name: 'Ecwid',
+    color: 'bg-cyan-600'
+  },
+  {
+    id: 'wix',
+    name: 'Wix eCommerce',
+    color: 'bg-gray-800'
+  },
+  {
+    id: 'amazon',
+    name: 'Amazon Seller',
+    color: 'bg-orange-400'
+  },
+  {
+    id: 'lightspeed',
+    name: 'Lightspeed',
+    color: 'bg-emerald-600'
+  },
+  {
     id: 'ebay',
     name: 'eBay',
     color: 'bg-blue-600',
     disabled: true
   },
   {
-    id: 'amazon',
-    name: 'Amazon',
-    color: 'bg-orange-400',
-    disabled: true
-  },
-  {
     id: 'facebook',
-    name: 'Facebook',
+    name: 'Facebook Shop',
     color: 'bg-blue-500',
-    disabled: true
-  },
-  {
-    id: 'wix',
-    name: 'Wix',
-    color: 'bg-gray-800',
-    disabled: true
-  },
-  {
-    id: 'etsy',
-    name: 'Etsy',
-    color: 'bg-orange-500',
     disabled: true
   }
 ]
@@ -157,6 +169,15 @@ export function PlatformGridSelector({ onSelect }: PlatformGridSelectorProps) {
                 )}
                 {platform.id === 'etsy' && (
                   <div className="text-white font-bold text-lg">Etsy</div>
+                )}
+                {platform.id === 'square' && (
+                  <div className="text-white font-bold text-xs">SQ</div>
+                )}
+                {platform.id === 'ecwid' && (
+                  <div className="text-white font-bold text-xs">EC</div>
+                )}
+                {platform.id === 'lightspeed' && (
+                  <div className="text-white font-bold text-xs">LS</div>
                 )}
               </div>
               

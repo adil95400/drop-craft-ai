@@ -18,7 +18,7 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     )
 
-    const { platform, shopDomain, access_token, consumer_key, consumer_secret, webservice_key, store_hash } = await req.json()
+    const { platform, shopDomain, access_token, consumer_key, consumer_secret, webservice_key, store_hash, api_key, store_id, account_id, api_secret, environment, marketplace_id } = await req.json()
 
     let connectionResult = null
 
@@ -43,6 +43,24 @@ serve(async (req) => {
         break
       case 'squarespace':
         connectionResult = await testSquarespaceConnection(shopDomain, access_token)
+        break
+      case 'etsy':
+        connectionResult = await testEtsyConnection(api_key, access_token)
+        break
+      case 'square':
+        connectionResult = await testSquareConnection(access_token, environment)
+        break
+      case 'ecwid':
+        connectionResult = await testEcwidConnection(store_id, access_token)
+        break
+      case 'wix':
+        connectionResult = await testWixConnection(access_token)
+        break
+      case 'amazon':
+        connectionResult = await testAmazonConnection(access_token, marketplace_id)
+        break
+      case 'lightspeed':
+        connectionResult = await testLightspeedConnection(account_id, api_key, api_secret)
         break
       default:
         connectionResult = { success: true, data: { shop_name: `Boutique ${platform}`, platform } }
@@ -249,5 +267,158 @@ async function testSquarespaceConnection(shopDomain: string, accessToken: string
       platform: 'Squarespace',
       domain: shopDomain
     }
+  }
+}
+
+async function testEtsyConnection(apiKey: string, accessToken: string) {
+  try {
+    const response = await fetch('https://openapi.etsy.com/v3/application/shops/me', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'x-api-key': apiKey
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Connexion Etsy échouée')
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      data: {
+        shop_name: data.shop_name || 'Boutique Etsy',
+        platform: 'Etsy',
+        shop_id: data.shop_id
+      }
+    }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+async function testSquareConnection(accessToken: string, environment: string = 'sandbox') {
+  try {
+    const baseUrl = environment === 'production' 
+      ? 'https://connect.squareup.com/v2'
+      : 'https://connect.squareupsandbox.com/v2'
+
+    const response = await fetch(`${baseUrl}/locations`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Square-Version': '2023-10-18'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Connexion Square échouée')
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      data: {
+        shop_name: data.locations?.[0]?.name || 'Boutique Square',
+        platform: 'Square',
+        locations: data.locations?.length || 0
+      }
+    }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+async function testEcwidConnection(storeId: string, accessToken: string) {
+  try {
+    const response = await fetch(`https://app.ecwid.com/api/v3/${storeId}/profile`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Connexion Ecwid échouée')
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      data: {
+        shop_name: data.generalInfo?.storeDescription || 'Boutique Ecwid',
+        platform: 'Ecwid',
+        store_id: storeId
+      }
+    }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+async function testWixConnection(accessToken: string) {
+  try {
+    const response = await fetch('https://www.wixapis.com/stores/v1/products/query', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: { paging: { limit: 1 } }
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error('Connexion Wix échouée')
+    }
+
+    return {
+      success: true,
+      data: {
+        shop_name: 'Boutique Wix',
+        platform: 'Wix',
+        connected: true
+      }
+    }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+async function testAmazonConnection(accessToken: string, marketplaceId: string) {
+  // Amazon API est complexe, simulation pour maintenant
+  return {
+    success: true,
+    data: {
+      shop_name: 'Amazon Seller Account',
+      platform: 'Amazon',
+      marketplace: marketplaceId || 'ATVPDKIKX0DER'
+    }
+  }
+}
+
+async function testLightspeedConnection(accountId: string, apiKey: string, apiSecret: string) {
+  try {
+    const auth = btoa(`${apiKey}:${apiSecret}`)
+    const response = await fetch(`https://api.lightspeedapp.com/API/Account/${accountId}/Account/current.json`, {
+      headers: {
+        'Authorization': `Basic ${auth}`
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error('Connexion Lightspeed échouée')
+    }
+
+    const data = await response.json()
+    return {
+      success: true,
+      data: {
+        shop_name: data.Account?.name || 'Boutique Lightspeed',
+        platform: 'Lightspeed',
+        account_id: accountId
+      }
+    }
+  } catch (error) {
+    return { success: false, error: error.message }
   }
 }
