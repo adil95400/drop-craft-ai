@@ -481,7 +481,6 @@ function App() {
                 } />
                 
                 <Route path="/extension-download" element={<ExtensionDownloadPage />} />
-                {/* <Route path="/test-functions" element={<TestUnifiedFunctions />} /> */}
                 
                 {/* Landing Pages */}
                 <Route path="/features" element={<Features />} />
