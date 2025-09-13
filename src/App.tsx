@@ -129,7 +129,8 @@ import StoreDetailPage from '@/pages/stores/StoreDetailPage';
 import { StoreSettingsPage } from '@/pages/stores/StoreSettingsPage';
 
 import { ExtensionDownloadPage } from "./pages/ExtensionDownloadPage";
-import { TestUnifiedFunctions } from "./components/TestUnifiedFunctions";
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { CommerceHubDashboard } from '@/components/dashboard/CommerceHubDashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -168,11 +169,13 @@ function App() {
                   </ProtectedRoute>
                 } />
                 <Route path="/modern" element={<AppLayout><ModernNavigation /></AppLayout>} />
-                <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <AppLayout><UnifiedDashboardPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
+                <Route element={<DashboardLayout />}>
+                  <Route path="/dashboard" element={
+                    <ProtectedRoute>
+                      <CommerceHubDashboard />
+                    </ProtectedRoute>
+                  } />
+                </Route>
                 <Route path="/dashboard-old" element={
                   <ProtectedRoute>
                     <AppLayout><UnifiedDashboard /></AppLayout>
@@ -478,7 +481,7 @@ function App() {
                 } />
                 
                 <Route path="/extension-download" element={<ExtensionDownloadPage />} />
-                <Route path="/test-functions" element={<TestUnifiedFunctions />} />
+                {/* <Route path="/test-functions" element={<TestUnifiedFunctions />} /> */}
                 
                 {/* Landing Pages */}
                 <Route path="/features" element={<Features />} />
