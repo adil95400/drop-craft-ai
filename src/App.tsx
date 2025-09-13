@@ -130,8 +130,8 @@ import { StoreSettingsPage } from '@/pages/stores/StoreSettingsPage';
 
 import { ExtensionDownloadPage } from "./pages/ExtensionDownloadPage";
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-// Modern professional dashboard - v2.0
-import ModernProfessionalDashboard from '@/components/dashboard/ModernProfessionalDashboard';
+// Optimized client dashboard for ShopOpti+
+import OptimizedClientDashboard from '@/components/dashboard/OptimizedClientDashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -173,7 +173,7 @@ function App() {
                 <Route element={<DashboardLayout />}>
                   <Route path="/dashboard" element={
                     <ProtectedRoute>
-                      <ModernProfessionalDashboard />
+                      <OptimizedClientDashboard />
                     </ProtectedRoute>
                   } />
                 </Route>
