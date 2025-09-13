@@ -170,13 +170,11 @@ function App() {
                   </ProtectedRoute>
                 } />
                 <Route path="/modern" element={<AppLayout><ModernNavigation /></AppLayout>} />
-                <Route element={<DashboardLayout />}>
-                  <Route path="/dashboard" element={
-                    <ProtectedRoute>
-                      <OptimizedClientDashboard />
-                    </ProtectedRoute>
-                  } />
-                </Route>
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <AppLayout><OptimizedClientDashboard /></AppLayout>
+                  </ProtectedRoute>
+                } />
                 <Route path="/dashboard-old" element={
                   <ProtectedRoute>
                     <AppLayout><UnifiedDashboard /></AppLayout>
