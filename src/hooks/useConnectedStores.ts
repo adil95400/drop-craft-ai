@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 
@@ -22,32 +22,97 @@ export function useConnectedStores() {
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
 
-  const fetchStores = async () => {
+  const fetchStores = useCallback(async () => {
     try {
       setLoading(true)
+      setError(null)
+      
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('Non authentifié')
+      }
+
+      // Récupérer les intégrations actives
       const { data: integrations, error: integrationError } = await supabase
         .from('integrations')
         .select('*')
+        .eq('user_id', user.id)
         .eq('is_active', true)
-
+        .order('created_at', { ascending: false })
+      
       if (integrationError) throw integrationError
 
-      // Transform integrations to store format
-      const storeData: ConnectedStore[] = integrations?.map((integration: any) => ({
-        id: integration.id,
-        platform_name: integration.platform_name,
-        platform_type: integration.platform_type,
-        shop_domain: integration.shop_domain,
-        connection_status: integration.connection_status,
-        last_sync_at: integration.last_sync_at,
-        is_active: integration.is_active,
-        store_config: integration.store_config,
-        products_count: Math.floor(Math.random() * 1000) + 50,
-        orders_count: Math.floor(Math.random() * 500) + 20,
-        sales_volume: Math.floor(Math.random() * 50000) + 5000
-      })) || []
+      // Récupérer les statistiques réelles pour chaque intégration
+      const connectedStores: ConnectedStore[] = []
+      
+      for (const integration of integrations || []) {
+        try {
+          let stats = { products: 0, orders: 0, revenue: 0 }
+          
+          // Pour Shopify, récupérer les vraies statistiques
+          if (integration.platform_type === 'shopify' && integration.connection_status === 'active') {
+            try {
+              const { data: shopifyStats } = await supabase.functions.invoke('shopify-stats', {
+                body: { integration_id: integration.id }
+              })
+              
+              if (shopifyStats?.success) {
+                stats = {
+                  products: shopifyStats.products || 0,
+                  orders: shopifyStats.orders || 0,
+                  revenue: shopifyStats.revenue || 0
+                }
+              }
+            } catch (statsError) {
+              console.error('Erreur récupération stats Shopify:', statsError)
+            }
+          }
+          
+          // Mapper le statut de connexion
+          const mapConnectionStatus = (status: string): 'connected' | 'disconnected' | 'syncing' | 'error' => {
+            switch (status) {
+              case 'active': return 'connected'
+              case 'connected': return 'connected'
+              case 'syncing': return 'syncing'
+              case 'error': return 'error'
+              default: return 'disconnected'
+            }
+          }
+          
+          connectedStores.push({
+            id: integration.id,
+            platform_name: integration.platform_name,
+            platform_type: integration.platform_type,
+            shop_domain: integration.shop_domain,
+            connection_status: mapConnectionStatus(integration.connection_status),
+            last_sync_at: integration.last_sync_at,
+            is_active: integration.is_active,
+            store_config: integration.store_config,
+            products_count: stats.products,
+            orders_count: stats.orders,
+            sales_volume: stats.revenue
+          })
+        } catch (integrationError) {
+          console.error(`Erreur lors de la récupération des stats pour ${integration.platform_name}:`, integrationError)
+          
+          // En cas d'erreur, ajouter quand même l'intégration avec des stats à 0
+          connectedStores.push({
+            id: integration.id,
+            platform_name: integration.platform_name,
+            platform_type: integration.platform_type,
+            shop_domain: integration.shop_domain,
+            connection_status: 'error' as const,
+            last_sync_at: integration.last_sync_at,
+            is_active: integration.is_active,
+            store_config: integration.store_config,
+            products_count: 0,
+            orders_count: 0,
+            sales_volume: 0
+          })
+        }
+      }
 
-      setStores(storeData)
+      setStores(connectedStores)
       setError(null)
     } catch (err) {
       console.error('Error fetching stores:', err)
@@ -98,7 +163,7 @@ export function useConnectedStores() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const syncStore = async (storeId: string) => {
     try {
@@ -114,31 +179,42 @@ export function useConnectedStores() {
         description: "La synchronisation de la boutique est en cours...",
       })
 
-      // Simulate sync process
-      setTimeout(() => {
-        setStores(prev => prev.map(store => 
-          store.id === storeId 
-            ? { 
-                ...store, 
-                connection_status: 'connected' as const,
-                last_sync_at: new Date().toISOString(),
-                products_count: (store.products_count || 0) + Math.floor(Math.random() * 10),
-                orders_count: (store.orders_count || 0) + Math.floor(Math.random() * 5)
-              }
-            : store
-        ))
+      // Call the actual sync function
+      const { data, error } = await supabase.functions.invoke('sync-integration', {
+        body: { 
+          integration_id: storeId, 
+          sync_type: 'full'
+        }
+      })
 
-        toast({
-          title: "Synchronisation terminée",
-          description: "La boutique a été synchronisée avec succès.",
-        })
-      }, 3000)
+      if (error) throw error
+
+      // Update store with success status without calling fetchStores to avoid recursion
+      setStores(prev => prev.map(store => 
+        store.id === storeId 
+          ? { 
+              ...store, 
+              connection_status: 'connected' as const,
+              last_sync_at: new Date().toISOString()
+            }
+          : store
+      ))
+
+      toast({
+        title: "Synchronisation terminée",
+        description: data?.message || "La boutique a été synchronisée avec succès.",
+      })
+
+      // Optionally refresh data in the background
+      setTimeout(() => {
+        fetchStores()
+      }, 1000)
 
     } catch (err) {
       console.error('Error syncing store:', err)
       toast({
         title: "Erreur de synchronisation",
-        description: "Impossible de synchroniser la boutique.",
+        description: err instanceof Error ? err.message : "Impossible de synchroniser la boutique.",
         variant: "destructive"
       })
       
@@ -189,7 +265,7 @@ export function useConnectedStores() {
 
   useEffect(() => {
     fetchStores()
-  }, [])
+  }, [fetchStores])
 
   return {
     stores,

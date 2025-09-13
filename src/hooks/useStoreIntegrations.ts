@@ -44,10 +44,10 @@ export const useStoreIntegrations = () => {
 
   const syncProducts = useMutation({
     mutationFn: async (params: { integrationId: string }) => {
-      const { data, error } = await supabase.functions.invoke('shopify-sync', {
+      const { data, error } = await supabase.functions.invoke('sync-integration', {
         body: { 
-          integrationId: params.integrationId, 
-          type: 'products'
+          integration_id: params.integrationId, 
+          sync_type: 'products'
         }
       })
       
@@ -73,10 +73,10 @@ export const useStoreIntegrations = () => {
 
   const syncOrders = useMutation({
     mutationFn: async (params: { integrationId: string }) => {
-      const { data, error } = await supabase.functions.invoke('shopify-sync', {
+      const { data, error } = await supabase.functions.invoke('sync-integration', {
         body: { 
-          integrationId: params.integrationId, 
-          type: 'orders'
+          integration_id: params.integrationId, 
+          sync_type: 'orders'
         }
       })
       

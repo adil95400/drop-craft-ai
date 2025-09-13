@@ -20,7 +20,11 @@ serve(async (req) => {
 
     const { integration_id, sync_type = 'full' } = await req.json()
 
-    console.log(`Starting sync for integration ${integration_id}, type: ${sync_type}`)
+    if (!integration_id) {
+      throw new Error('Integration ID is required')
+    }
+
+    console.log(`Syncing integration: { integrationId: ${integration_id}, type: ${sync_type} }`)
 
     // Get integration details
     const { data: integration, error: integrationError } = await supabaseClient
@@ -53,7 +57,7 @@ serve(async (req) => {
       // Sync products based on platform
       switch (integration.platform_type) {
         case 'shopify':
-          syncResult = await syncShopifyData(integration, sync_type)
+          syncResult = await syncShopifyData(supabaseClient, integration, sync_type)
           break
         case 'woocommerce':
           syncResult = await syncWooCommerceData(integration, sync_type)
@@ -93,7 +97,8 @@ serve(async (req) => {
       await supabaseClient
         .from('integrations')
         .update({ 
-          connection_status: syncResult.success ? 'connected' : 'error',
+          connection_status: syncResult.success ? 'active' : 'error',
+          sync_status: 'idle',
           last_sync_at: new Date().toISOString()
         })
         .eq('id', integration_id)
@@ -132,7 +137,8 @@ serve(async (req) => {
         .from('integrations')
         .update({ 
           sync_status: 'error',
-          sync_errors: [syncError.message]
+          connection_status: 'error',
+          last_error: syncError.message
         })
         .eq('id', integration_id)
 
@@ -140,7 +146,7 @@ serve(async (req) => {
     }
 
   } catch (error) {
-    console.error('Sync error:', error)
+    console.error('Sync integration error:', error)
     
     return new Response(
       JSON.stringify({ 
@@ -155,22 +161,249 @@ serve(async (req) => {
   }
 })
 
-async function syncShopifyData(integration: any, syncType: string) {
-  console.log(`Syncing Shopify data for ${integration.store_config?.shop_name || integration.platform_name}`)
+async function syncShopifyData(supabaseClient: any, integration: any, syncType: string) {
+  console.log(`Syncing Shopify data for ${integration.shop_domain || integration.platform_name}`)
   
-  // Simulate product sync
-  const productCount = Math.floor(Math.random() * 100) + 50
-  const orderCount = syncType === 'full' ? Math.floor(Math.random() * 50) + 10 : 0
+  const credentials = integration.encrypted_credentials || {}
   
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 2000))
-  
-  return {
-    success: true,
-    products_synced: productCount,
-    orders_synced: orderCount,
-    errors: []
+  if (!credentials.access_token || !integration.shop_domain) {
+    throw new Error('Shopify credentials missing. Please configure your Shopify store first.')
   }
+
+  const shopifyDomain = integration.shop_domain
+  const accessToken = credentials.access_token
+
+  let productCount = 0
+  let orderCount = 0
+  const errors: string[] = []
+
+  try {
+    // Sync Products
+    if (syncType === 'full' || syncType === 'products') {
+      productCount = await syncShopifyProducts(supabaseClient, integration, shopifyDomain, accessToken)
+    }
+
+    // Sync Orders
+    if (syncType === 'full' || syncType === 'orders') {
+      orderCount = await syncShopifyOrders(supabaseClient, integration, shopifyDomain, accessToken)
+    }
+
+    return {
+      success: true,
+      products_synced: productCount,
+      orders_synced: orderCount,
+      errors
+    }
+  } catch (error) {
+    errors.push(`Shopify sync failed: ${error.message}`)
+    return {
+      success: false,
+      products_synced: productCount,
+      orders_synced: orderCount,
+      errors
+    }
+  }
+}
+
+async function syncShopifyProducts(supabaseClient: any, integration: any, shopifyDomain: string, accessToken: string): Promise<number> {
+  let allProducts: any[] = []
+  let nextPageInfo = null
+  let hasNextPage = true
+
+  // Fetch all products with pagination
+  while (hasNextPage) {
+    const url = `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=250${nextPageInfo ? `&page_info=${nextPageInfo}` : ''}`
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-Shopify-Access-Token': accessToken,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`Shopify API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    allProducts = allProducts.concat(data.products || [])
+
+    // Check for next page
+    const linkHeader = response.headers.get('Link')
+    if (linkHeader && linkHeader.includes('rel="next"')) {
+      const nextMatch = linkHeader.match(/<[^>]*[?&]page_info=([^&>]*).*?>;\s*rel="next"/)
+      nextPageInfo = nextMatch ? nextMatch[1] : null
+      hasNextPage = !!nextPageInfo
+    } else {
+      hasNextPage = false
+    }
+  }
+
+  console.log(`Fetched ${allProducts.length} products from Shopify`)
+
+  // Transform and upsert products
+  for (const product of allProducts) {
+    const productToUpsert = {
+      user_id: integration.user_id,
+      name: product.title,
+      description: product.body_html || '',
+      price: parseFloat(product.variants?.[0]?.price || '0'),
+      cost_price: parseFloat(product.variants?.[0]?.compare_at_price || '0'),
+      sku: product.variants?.[0]?.sku || '',
+      category: product.product_type || 'General',
+      image_url: product.images?.[0]?.src || null,
+      stock_quantity: product.variants?.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0) || 0,
+      status: product.status === 'active' ? 'active' as const : 'inactive' as const,
+      external_id: product.id.toString(),
+      external_platform: 'shopify',
+      tags: product.tags ? product.tags.split(',').map((t: string) => t.trim()) : [],
+      attributes: {
+        handle: product.handle,
+        vendor: product.vendor,
+        created_at: product.created_at,
+        updated_at: product.updated_at,
+        variants: product.variants
+      }
+    }
+
+    const { error } = await supabaseClient
+      .from('products')
+      .upsert(productToUpsert, { 
+        onConflict: 'external_id,user_id',
+        ignoreDuplicates: false 
+      })
+
+    if (error) {
+      console.error('Product upsert error:', error)
+    }
+  }
+
+  return allProducts.length
+}
+
+async function syncShopifyOrders(supabaseClient: any, integration: any, shopifyDomain: string, accessToken: string): Promise<number> {
+  let allOrders: any[] = []
+  let nextPageInfo = null
+  let hasNextPage = true
+
+  // Fetch orders from last 30 days
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+  while (hasNextPage) {
+    const url = `https://${shopifyDomain}/admin/api/2023-10/orders.json?limit=250&status=any&created_at_min=${thirtyDaysAgo.toISOString()}${nextPageInfo ? `&page_info=${nextPageInfo}` : ''}`
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-Shopify-Access-Token': accessToken,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`Shopify Orders API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    allOrders = allOrders.concat(data.orders || [])
+
+    // Pagination
+    const linkHeader = response.headers.get('Link')
+    if (linkHeader && linkHeader.includes('rel="next"')) {
+      const nextMatch = linkHeader.match(/<[^>]*[?&]page_info=([^&>]*).*?>;\s*rel="next"/)
+      nextPageInfo = nextMatch ? nextMatch[1] : null
+      hasNextPage = !!nextPageInfo
+    } else {
+      hasNextPage = false
+    }
+  }
+
+  console.log(`Fetched ${allOrders.length} orders from Shopify`)
+
+  // Transform and upsert orders
+  for (const order of allOrders) {
+    // Create or get customer
+    let customer_id = null
+    if (order.customer) {
+      const { data: existingCustomer } = await supabaseClient
+        .from('customers')
+        .select('id')
+        .eq('email', order.customer.email)
+        .eq('user_id', integration.user_id)
+        .single()
+
+      if (existingCustomer) {
+        customer_id = existingCustomer.id
+      } else {
+        const { data: newCustomer, error: customerError } = await supabaseClient
+          .from('customers')
+          .insert({
+            user_id: integration.user_id,
+            name: `${order.customer.first_name} ${order.customer.last_name}`,
+            email: order.customer.email,
+            phone: order.customer.phone,
+            country: order.shipping_address?.country
+          })
+          .select('id')
+          .single()
+
+        if (!customerError && newCustomer) {
+          customer_id = newCustomer.id
+        }
+      }
+    }
+
+    // Map Shopify status to our system
+    const mapShopifyStatus = (shopifyStatus: string, fulfillmentStatus: string) => {
+      if (shopifyStatus === 'cancelled') return 'cancelled'
+      if (fulfillmentStatus === 'fulfilled') return 'delivered'
+      if (fulfillmentStatus === 'partial') return 'shipped'
+      if (shopifyStatus === 'open') return 'processing'
+      return 'pending'
+    }
+
+    const orderToUpsert = {
+      user_id: integration.user_id,
+      customer_id,
+      order_number: order.order_number?.toString() || order.id.toString(),
+      status: mapShopifyStatus(order.financial_status, order.fulfillment_status),
+      total_amount: parseFloat(order.total_price || '0'),
+      currency: order.currency || 'EUR',
+      payment_status: order.financial_status === 'paid' ? 'paid' as const : 'pending' as const,
+      shipping_address: order.shipping_address,
+      billing_address: order.billing_address,
+      external_id: order.id.toString(),
+      external_platform: 'shopify',
+      order_items: order.line_items?.map((item: any) => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: parseFloat(item.price),
+        sku: item.sku,
+        variant_title: item.variant_title
+      })),
+      attributes: {
+        tags: order.tags,
+        note: order.note,
+        created_at: order.created_at,
+        processed_at: order.processed_at
+      },
+      created_at: order.created_at,
+      updated_at: order.updated_at
+    }
+
+    const { error } = await supabaseClient
+      .from('orders')
+      .upsert(orderToUpsert, { 
+        onConflict: 'external_id,user_id',
+        ignoreDuplicates: false 
+      })
+
+    if (error) {
+      console.error('Order upsert error:', error)
+    }
+  }
+
+  return allOrders.length
 }
 
 async function syncWooCommerceData(integration: any, syncType: string) {
