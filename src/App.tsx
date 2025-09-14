@@ -523,13 +523,6 @@ function App() {
                 
                 <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />
                 
-                {/* Admin Panel Simple */}
-                <Route path="/admin-panel" element={
-                  <ProtectedRoute>
-                    <AdminPanel />
-                  </ProtectedRoute>
-                } />
-                
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
               <Toaster />

@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { ModuleGuard } from '@/components/common/ModuleGuard';
+import { AdminRoute } from '@/components/auth/AdminRoute';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Lazy loading des modules pour optimiser le bundle
@@ -11,6 +12,7 @@ const SEOManagerPage = lazy(() => import('@/pages/SEOManagerPage'));
 const AIPage = lazy(() => import('@/pages/AIPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const IntegrationsPage = lazy(() => import('@/pages/IntegrationsPage'));
+const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 
 // Composant de chargement
 const ModuleLoadingSkeleton = () => (
@@ -85,6 +87,16 @@ export function ModuleRoutes() {
             <ModuleGuard moduleId="integrations">
               <IntegrationsPage />
             </ModuleGuard>
+          } 
+        />
+
+        {/* Admin Panel - Requires Admin Role */}
+        <Route 
+          path="/admin-panel" 
+          element={
+            <AdminRoute>
+              <AdminPanel />
+            </AdminRoute>
           } 
         />
       </Routes>
