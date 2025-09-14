@@ -91,6 +91,7 @@ import AuthPage from '@/pages/AuthPage';
 import AdminPanel from '@/pages/AdminPanel';
 import AIStudio from '@/pages/AIStudio';
 import AutomationStudio from '@/pages/AutomationStudio';
+import AnalyticsStudio from '@/pages/AnalyticsStudio';
 
 // Business Pages
 import CatalogPage from '@/pages/CatalogPage';
@@ -181,6 +182,16 @@ function App() {
                 <Route path="/ai-studio" element={
                   <ProtectedRoute>
                     <AppLayout><AIStudio /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/automation-studio" element={
+                  <ProtectedRoute>
+                    <AppLayout><AutomationStudio /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/analytics-studio" element={
+                  <ProtectedRoute>
+                    <AppLayout><AnalyticsStudio /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/dashboard-old" element={
