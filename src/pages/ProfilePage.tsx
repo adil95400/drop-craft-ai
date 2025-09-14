@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAdminRole } from '@/hooks/useAdminRole';
 import { useProfileActions } from '@/hooks/useProfileActions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,9 +13,11 @@ import { Helmet } from 'react-helmet-async';
 
 const ProfilePage = () => {
   const { user, profile } = useAuth();
-  const { isAdmin } = useAdminRole();
   const { updateProfile, uploadAvatar, loading } = useProfileActions();
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Check admin status directly from profile
+  const isAdmin = profile?.role === 'admin' || profile?.is_admin === true;
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
     bio: profile?.bio || '',
