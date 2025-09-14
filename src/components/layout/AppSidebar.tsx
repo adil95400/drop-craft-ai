@@ -15,7 +15,7 @@ import {
   Upload, Truck, BarChart3, Activity, Users, MessageSquare,
   Megaphone, FileText, Search, Puzzle, Bot, Crown, Shield
 } from "lucide-react"
-import { useEnhancedAuth } from "@/hooks/useEnhancedAuth"
+import { useAuth } from "@/contexts/AuthContext"
 
 const navigationItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -44,7 +44,10 @@ const adminNavigationItems = [
 export function AppSidebar() {
   const location = useLocation()
   const currentPath = location.pathname
-  const { isAdmin } = useEnhancedAuth()
+  const { user, profile } = useAuth()
+
+  // Determine if user is admin - check both role and is_admin flag
+  const isAdmin = profile?.role === 'admin' || profile?.is_admin === true
 
   const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/')
   const getNavCls = ({ isActive: active }: { isActive: boolean }) =>

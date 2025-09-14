@@ -51,6 +51,7 @@ import {
   FileText
 } from "lucide-react";
 import AvatarUpload from '@/components/common/AvatarUpload';
+import { RefreshProfileButton } from '@/components/auth/RefreshProfileButton';
 
 const Settings = () => {
   const { user, profile, updateProfile, signOut } = useAuth();
@@ -459,6 +460,13 @@ const Settings = () => {
           </Button>
         </div>
       </div>
+
+      {/* DEBUG: Admin Status - Add this temporarily */}
+      {profile && (
+        <div className="mb-6">
+          <RefreshProfileButton />
+        </div>
+      )}
 
       <Tabs defaultValue="profile" className="w-full">
         <div className="grid lg:grid-cols-4 gap-6">

@@ -27,14 +27,15 @@ import { Sidebar } from './Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/contexts/PlanContext';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useAdminRole } from '@/hooks/useAdminRole';
 
 export function Header() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, signOut, profile } = useAuth();
   const { plan, isPro, isUltraPro } = usePlan();
   const { t } = useLanguage();
-  const { isAdmin } = useAdminRole();
+  
+  // Check admin status directly from profile
+  const isAdmin = profile?.role === 'admin' || profile?.is_admin === true;
 
   const getPlanIcon = () => {
     if (isUltraPro) return <Crown className="h-4 w-4 text-yellow-500" />;
