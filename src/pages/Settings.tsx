@@ -48,7 +48,8 @@ import {
   Users,
   LogOut,
   ExternalLink,
-  FileText
+  FileText,
+  RefreshCw
 } from "lucide-react";
 import AvatarUpload from '@/components/common/AvatarUpload';
 import { RefreshProfileButton } from '@/components/auth/RefreshProfileButton';
@@ -461,11 +462,38 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* DEBUG: Admin Status - Add this temporarily */}
+      {/* Section de synchronisation du profil */}
       {profile && (
-        <div className="mb-6">
-          <RefreshProfileButton />
-        </div>
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <RefreshCw className="h-5 w-5" />
+              Synchronisation du Profil
+            </CardTitle>
+            <CardDescription>
+              Actualisez vos informations de profil et permissions depuis la base de données
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Rôle actuel:</span>
+                  <p className="font-medium">{profile?.role || 'user'}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Statut admin:</span>
+                  <p className="font-medium">{profile?.is_admin ? 'Oui' : 'Non'}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Mode admin:</span>
+                  <p className="font-medium">{profile?.admin_mode || 'Aucun'}</p>
+                </div>
+              </div>
+              <RefreshProfileButton />
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <Tabs defaultValue="profile" className="w-full">
