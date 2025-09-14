@@ -7,14 +7,17 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { AsyncButton } from '@/components/ui/async-button'
 import { useRealProducts } from '@/hooks/useRealProducts'
+import { useToast } from '@/hooks/use-toast'
 import { 
   Search, TrendingUp, Eye, Target, CheckCircle, 
-  AlertCircle, Lightbulb, Globe, BarChart3
+  AlertCircle, Lightbulb, Globe, BarChart3, Zap
 } from 'lucide-react'
 
 export function ProductSEO() {
-  const { products, isLoading } = useRealProducts()
+  const { products, isLoading, updateProduct } = useRealProducts()
+  const { toast } = useToast()
   const [selectedProduct, setSelectedProduct] = useState<string>('')
   const [seoData, setSeoData] = useState({
     title: '',
@@ -108,10 +111,20 @@ export function ProductSEO() {
             Optimisez vos produits pour les moteurs de recherche
           </p>
         </div>
-        <Button>
+        <AsyncButton onClick={async () => {
+          // Simuler la génération d'un rapport SEO
+          await new Promise(resolve => setTimeout(resolve, 2000))
+          toast({
+            title: "Rapport SEO généré",
+            description: "Le rapport SEO complet a été généré avec succès",
+          })
+        }}
+        loadingText="Génération du rapport..."
+        successMessage="Rapport généré !"
+        >
           <BarChart3 className="h-4 w-4 mr-2" />
           Rapport SEO
-        </Button>
+        </AsyncButton>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -324,9 +337,32 @@ export function ProductSEO() {
                       />
                     </div>
 
-                    <Button className="w-full">
+                    <AsyncButton 
+                      className="w-full"
+                      onClick={async () => {
+                        // Simuler la sauvegarde des optimisations SEO
+                        await new Promise(resolve => setTimeout(resolve, 1500))
+                        if (selectedProductData) {
+                          await updateProduct({
+                            id: selectedProductData.id,
+                            updates: {
+                              name: seoData.title || selectedProductData.name,
+                              description: seoData.description || selectedProductData.description
+                            }
+                          })
+                        }
+                        toast({
+                          title: "Optimisations sauvegardées",
+                          description: "Les paramètres SEO ont été mis à jour avec succès",
+                        })
+                      }}
+                      loadingText="Sauvegarde..."
+                      successMessage="Sauvegardé !"
+                      showSuccessState
+                      icon={<Zap className="h-4 w-4" />}
+                    >
                       Sauvegarder les optimisations
-                    </Button>
+                    </AsyncButton>
                   </CardContent>
                 </Card>
               </TabsContent>
