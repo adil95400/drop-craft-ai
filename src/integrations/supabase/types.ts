@@ -3323,6 +3323,30 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_limits: {
+        Row: {
+          created_at: string
+          id: string
+          limit_key: string
+          limit_value: number
+          plan_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          limit_key: string
+          limit_value?: number
+          plan_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          limit_key?: string
+          limit_value?: number
+          plan_type?: string
+        }
+        Relationships: []
+      }
       plans_limits: {
         Row: {
           created_at: string | null
@@ -6035,6 +6059,10 @@ export type Database = {
       check_security_configuration: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      check_user_quota: {
+        Args: { increment_by?: number; quota_key_param: string }
+        Returns: boolean
       }
       clean_expired_cache: {
         Args: Record<PropertyKey, never>

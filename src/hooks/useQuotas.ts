@@ -1,172 +1,113 @@
 import { useState, useEffect } from 'react'
-import { User } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
-import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/contexts/AuthContext'
 
-interface QuotaUsage {
-  quotaKey: string
-  currentCount: number
-  limit: number
-  resetDate: string
+export interface QuotaStatus {
+  quota_key: string
+  current_count: number
+  limit_value: number
+  percentage_used: number
+  reset_date: string
 }
 
-interface QuotaState {
-  quotas: Record<string, QuotaUsage>
-  loading: boolean
-  error: string | null
-}
+export function useQuotas() {
+  const { user } = useAuth()
+  const [quotas, setQuotas] = useState<QuotaStatus[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-export const useQuotas = (user?: User | null) => {
-  const [quotaState, setQuotaState] = useState<QuotaState>({
-    quotas: {},
-    loading: true,
-    error: null
-  })
-  const { toast } = useToast()
-
-  useEffect(() => {
+  const fetchQuotas = async () => {
     if (!user) {
-      setQuotaState({ quotas: {}, loading: false, error: null })
+      setLoading(false)
       return
     }
 
-    fetchQuotas(user.id)
-  }, [user])
-
-  const fetchQuotas = async (userId: string) => {
     try {
-      setQuotaState(prev => ({ ...prev, loading: true, error: null }))
+      setError(null)
       
-      // Récupérer les quotas utilisateur
-      const { data: userQuotas, error: quotasError } = await supabase
-        .from('user_quotas')
-        .select('*')
-        .eq('user_id', userId)
-
-      if (quotasError) throw quotasError
-
       // Récupérer le plan utilisateur
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('plan')
-        .eq('id', userId)
+        .eq('id', user.id)
         .single()
 
       if (profileError) throw profileError
 
+      const userPlan = profile?.plan || 'standard'
+      
       // Récupérer les limites du plan
       const { data: limits, error: limitsError } = await supabase
-        .from('plans_limits')
+        .from('plan_limits')
         .select('*')
-        .eq('plan', profile.plan)
+        .eq('plan_type', userPlan)
 
       if (limitsError) throw limitsError
 
-      // Construire l'objet quotas
-      const quotas: Record<string, QuotaUsage> = {}
-      
-      limits.forEach(limit => {
+      // Récupérer les quotas utilisateur actuels
+      const { data: userQuotas, error: quotasError } = await supabase
+        .from('user_quotas')
+        .select('*')
+        .eq('user_id', user.id)
+
+      if (quotasError) throw quotasError
+
+      // Construire la liste des quotas
+      const quotasList: QuotaStatus[] = (limits || []).map(limit => {
         const userQuota = userQuotas?.find(q => q.quota_key === limit.limit_key)
-        quotas[limit.limit_key] = {
-          quotaKey: limit.limit_key,
-          currentCount: userQuota?.current_count || 0,
-          limit: limit.limit_value,
-          resetDate: userQuota?.reset_date || new Date().toISOString()
+        const currentCount = userQuota?.current_count || 0
+        const limitValue = limit.limit_value
+        const percentageUsed = limitValue === -1 ? 0 : Math.round((currentCount / limitValue) * 100)
+        
+        return {
+          quota_key: limit.limit_key,
+          current_count: currentCount,
+          limit_value: limitValue,
+          percentage_used: percentageUsed,
+          reset_date: userQuota?.reset_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         }
       })
-
-      setQuotaState({ quotas, loading: false, error: null })
-    } catch (error: any) {
-      console.error('Error fetching quotas:', error)
-      setQuotaState({ 
-        quotas: {}, 
-        loading: false, 
-        error: error.message || 'Erreur lors de la récupération des quotas' 
-      })
+      
+      setQuotas(quotasList)
+    } catch (err) {
+      console.error('Error fetching quotas:', err)
+      setError(err instanceof Error ? err.message : 'Failed to fetch quotas')
+    } finally {
+      setLoading(false)
     }
   }
 
-  const checkQuota = async (quotaKey: string): Promise<boolean> => {
+  const checkQuota = async (quotaKey: string, incrementBy: number = 1): Promise<boolean> => {
     if (!user) return false
 
     try {
-      const { data, error } = await supabase.rpc('check_quota', {
-        user_id_param: user.id,
-        quota_key_param: quotaKey
-      })
-
-      if (error) throw error
-      return data || false
-    } catch (error: any) {
-      console.error('Error checking quota:', error)
-      return false
-    }
-  }
-
-  const incrementQuota = async (quotaKey: string, incrementBy: number = 1): Promise<boolean> => {
-    if (!user) return false
-
-    try {
-      const { data, error } = await supabase.rpc('increment_quota', {
-        user_id_param: user.id,
+      const { data, error: quotaError } = await supabase.rpc('check_user_quota', {
         quota_key_param: quotaKey,
         increment_by: incrementBy
       })
-
-      if (error) throw error
       
-      // Rafraîchir les quotas après incrémentation
-      await fetchQuotas(user.id)
+      if (quotaError) throw quotaError
+      
+      // Refresh quotas after check
+      await fetchQuotas()
+      
       return data || false
-    } catch (error: any) {
-      console.error('Error incrementing quota:', error)
-      toast({
-        title: "Quota dépassé",
-        description: `Vous avez atteint votre limite pour ${quotaKey}`,
-        variant: "destructive"
-      })
+    } catch (err) {
+      console.error('Error checking quota:', err)
+      setError(err instanceof Error ? err.message : 'Failed to check quota')
       return false
     }
   }
 
-  const getQuotaUsage = (quotaKey: string): QuotaUsage | null => {
-    return quotaState.quotas[quotaKey] || null
-  }
-
-  const isQuotaExceeded = (quotaKey: string): boolean => {
-    const quota = getQuotaUsage(quotaKey)
-    if (!quota) return false
-    if (quota.limit === -1) return false // illimité
-    return quota.currentCount >= quota.limit
-  }
-
-  const getQuotaPercentage = (quotaKey: string): number => {
-    const quota = getQuotaUsage(quotaKey)
-    if (!quota || quota.limit === -1) return 0
-    return Math.min((quota.currentCount / quota.limit) * 100, 100)
-  }
+  useEffect(() => {
+    fetchQuotas()
+  }, [user])
 
   return {
-    ...quotaState,
-    checkQuota,
-    incrementQuota,
-    getQuotaUsage,
-    isQuotaExceeded,
-    getQuotaPercentage,
-    refetch: () => user && fetchQuotas(user.id)
-  }
-}
-
-export const useQuota = (quotaKey: string, user?: User | null) => {
-  const { getQuotaUsage, checkQuota, incrementQuota, isQuotaExceeded, getQuotaPercentage, loading, error } = useQuotas(user)
-  
-  return {
-    quota: getQuotaUsage(quotaKey),
-    checkQuota: () => checkQuota(quotaKey),
-    incrementQuota: (incrementBy?: number) => incrementQuota(quotaKey, incrementBy),
-    isExceeded: isQuotaExceeded(quotaKey),
-    percentage: getQuotaPercentage(quotaKey),
+    quotas,
     loading,
-    error
+    error,
+    checkQuota,
+    refreshQuotas: fetchQuotas
   }
 }
