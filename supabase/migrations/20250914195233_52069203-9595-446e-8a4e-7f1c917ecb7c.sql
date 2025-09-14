@@ -1,0 +1,11 @@
+-- Insert sample products data
+INSERT INTO products (user_id, name, description, sku, price, cost_price, category, tags, stock_quantity, status, supplier, profit_margin) VALUES 
+-- Use a specific user ID that we know exists for demo purposes
+((SELECT id FROM auth.users LIMIT 1), 'MacBook Pro 14"', 'MacBook Pro 14 pouces avec puce M2 Pro et écran Liquid Retina XDR', 'MBP-14-M2-512', 2199.00, 1800.00, 'Électronique', ARRAY['ordinateur', 'laptop', 'apple', 'professionnel'], 15, 'active', 'Apple Store', 22.2),
+((SELECT id FROM auth.users LIMIT 1), 'iPhone 15 Pro', 'iPhone 15 Pro avec puce A17 Pro et système de caméras Pro', 'IPH-15-PRO-128', 1299.00, 950.00, 'Électronique', ARRAY['smartphone', 'apple', 'pro', 'camera'], 25, 'active', 'Apple Store', 36.7),
+((SELECT id FROM auth.users LIMIT 1), 'AirPods Pro 2', 'AirPods Pro de 2e génération avec réduction de bruit active', 'APP-2-USB-C', 279.00, 180.00, 'Électronique', ARRAY['écouteurs', 'apple', 'sans-fil', 'noise-cancelling'], 50, 'active', 'Apple Store', 55.0),
+((SELECT id FROM auth.users LIMIT 1), 'Samsung Galaxy S24 Ultra', 'Smartphone Samsung Galaxy S24 Ultra avec caméra 200MP', 'SGS24U-256-TI', 1399.00, 1050.00, 'Électronique', ARRAY['smartphone', 'samsung', 'android', 'camera', 'spen'], 8, 'active', 'Samsung Official', 33.2),
+((SELECT id FROM auth.users LIMIT 1), 'Sony WH-1000XM5', 'Casque audio sans fil avec réduction de bruit de pointe', 'WH1000XM5-B', 399.00, 250.00, 'Électronique', ARRAY['casque', 'sans-fil', 'noise-cancelling', 'sony'], 30, 'active', 'Sony Store', 59.6),
+((SELECT id FROM auth.users LIMIT 1), 'Chaise de Bureau Ergonomique', 'Chaise de bureau avec soutien lombaire et accoudoirs réglables', 'CHAIR-ERG-001', 249.99, 120.00, 'Mobilier', ARRAY['chaise', 'bureau', 'ergonomique'], 12, 'active', 'ErgoMax', 108.3),
+((SELECT id FROM auth.users LIMIT 1), 'Table Basse Scandinave', 'Table basse en chêne massif style scandinave', 'TABLE-SCAND-OAK', 349.00, 180.00, 'Mobilier', ARRAY['table', 'scandinave', 'chêne'], 6, 'active', 'NordicHome', 93.9),
+((SELECT id FROM auth.users LIMIT 1), 'Lampe LED Design', 'Lampe de bureau LED avec variateur et port USB', 'LAMP-LED-001', 89.99, 35.00, 'Éclairage', ARRAY['lampe', 'led', 'bureau', 'usb'], 45, 'active', 'LumiTech', 157.1)

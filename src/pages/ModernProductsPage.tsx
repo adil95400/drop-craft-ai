@@ -80,10 +80,7 @@ export default function ModernProductsPage() {
           </TabsList>
 
           <TabsContent value="products" className="space-y-6">
-            <ProductsList 
-              selectedProducts={selectedProducts}
-              onSelectionChange={setSelectedProducts}
-            />
+            <ProductsList />
           </TabsContent>
 
           <TabsContent value="categories" className="space-y-6">
