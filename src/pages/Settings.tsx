@@ -462,38 +462,40 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Section de synchronisation du profil */}
+      {/* Section de synchronisation du profil - déplacée en bas pour être moins intrusive */}
       {profile && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <RefreshCw className="h-5 w-5" />
-              Synchronisation du Profil
-            </CardTitle>
-            <CardDescription>
-              Actualisez vos informations de profil et permissions depuis la base de données
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Rôle actuel:</span>
-                  <p className="font-medium">{profile?.role || 'user'}</p>
+        <div className="mt-8">
+          <Card className="border-primary/20 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <RefreshCw className="h-5 w-5" />
+                Synchronisation du Profil
+              </CardTitle>
+              <CardDescription>
+                Actualisez vos informations de profil et permissions depuis la base de données
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Rôle actuel:</span>
+                    <p className="font-medium">{profile?.role || 'user'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Statut admin:</span>
+                    <p className="font-medium">{profile?.is_admin ? 'Oui' : 'Non'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Mode admin:</span>
+                    <p className="font-medium">{profile?.admin_mode || 'Aucun'}</p>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-muted-foreground">Statut admin:</span>
-                  <p className="font-medium">{profile?.is_admin ? 'Oui' : 'Non'}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Mode admin:</span>
-                  <p className="font-medium">{profile?.admin_mode || 'Aucun'}</p>
-                </div>
+                <RefreshProfileButton />
               </div>
-              <RefreshProfileButton />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       <Tabs defaultValue="profile" className="w-full">
@@ -636,6 +638,40 @@ const Settings = () => {
                   </Button>
                 </CardContent>
               </Card>
+
+              {/* Section de synchronisation du profil dans l'onglet Profil */}
+              {profile && (
+                <Card className="border-primary/20 bg-primary/5 mt-6">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-primary">
+                      <RefreshCw className="h-5 w-5" />
+                      Actualiser le Profil
+                    </CardTitle>
+                    <CardDescription>
+                      Synchronisez vos droits et permissions depuis la base de données
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm bg-muted/50 p-4 rounded-lg">
+                        <div>
+                          <span className="text-muted-foreground">Rôle actuel:</span>
+                          <p className="font-medium">{profile?.role || 'user'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Statut admin:</span>
+                          <p className="font-medium">{profile?.is_admin ? 'Oui' : 'Non'}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Mode admin:</span>
+                          <p className="font-medium">{profile?.admin_mode || 'Aucun'}</p>
+                        </div>
+                      </div>
+                      <RefreshProfileButton />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             {/* Notifications Tab */}
