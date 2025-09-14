@@ -26,6 +26,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useProducts } from '@/hooks/useProducts'
 import { ProductCreateDialog } from './ProductCreateDialog'
 import { ProductEditDialog } from './ProductEditDialog'
+import { ProductImportDialog } from './ProductImportDialog'
+import { ProductExportDialog } from './ProductExportDialog'
+import { ProductBulkOperations } from './ProductBulkOperations'
 import { useToast } from '@/hooks/use-toast'
 
 export function ProductsList() {
@@ -37,6 +40,8 @@ export function ProductsList() {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
+  const [showImportDialog, setShowImportDialog] = useState(false)
+  const [showExportDialog, setShowExportDialog] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
 
   const { products, stats, isLoading, updateProduct, deleteProduct } = useProducts()
@@ -159,11 +164,11 @@ export function ProductsList() {
               Tous les Produits ({filteredProducts.length})
             </CardTitle>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)}>
                 <Upload className="h-4 w-4 mr-2" />
                 Importer
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => setShowExportDialog(true)}>
                 <Download className="h-4 w-4 mr-2" />
                 Exporter
               </Button>
@@ -236,20 +241,10 @@ export function ProductsList() {
 
           {/* Actions en lot */}
           {selectedProducts.length > 0 && (
-            <div className="flex items-center gap-2 mb-4 p-3 bg-muted rounded-lg">
-              <span className="text-sm font-medium">
-                {selectedProducts.length} produit(s) sélectionné(s)
-              </span>
-              <Button variant="outline" size="sm">
-                Modifier en lot
-              </Button>
-              <Button variant="outline" size="sm">
-                Exporter sélection
-              </Button>
-              <Button variant="destructive" size="sm">
-                Supprimer sélection
-              </Button>
-            </div>
+            <ProductBulkOperations 
+              selectedProducts={selectedProducts}
+              onClearSelection={() => setSelectedProducts([])}
+            />
           )}
 
           {/* Tableau des produits */}
@@ -407,6 +402,16 @@ export function ProductsList() {
           setShowEditDialog(false)
           setEditingProduct(null)
         }}
+      />
+
+      <ProductImportDialog 
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+      />
+
+      <ProductExportDialog 
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
       />
     </>
   )
