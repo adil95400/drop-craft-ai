@@ -1,10 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Package, AlertTriangle, TrendingUp, ShoppingBag } from 'lucide-react'
 import { ProductsTable } from '@/components/stores/products/ProductsTable'
-import { useRealProducts } from '@/hooks/useRealProducts'
+import { useProducts } from '@/hooks/useProducts'
 
 export function StoreProducts() {
-  const { stats, isLoading } = useRealProducts()
+  const { stats, isLoading } = useProducts()
 
   if (isLoading) {
     return (

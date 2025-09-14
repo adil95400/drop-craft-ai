@@ -2,7 +2,7 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { useRealProducts } from '@/hooks/useRealProducts'
+import { useProducts } from '@/hooks/useProducts'
 import { 
   Package, TrendingUp, AlertTriangle, DollarSign, 
   ShoppingBag, Star, Eye, Plus, Download, Upload
@@ -13,7 +13,7 @@ import { ProductExportDialog } from './ProductExportDialog'
 import { useState } from 'react'
 
 export function ProductsOverview() {
-  const { stats, isLoading } = useRealProducts()
+  const { stats, isLoading } = useProducts()
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
