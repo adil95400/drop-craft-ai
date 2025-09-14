@@ -158,6 +158,7 @@ export function QuotaManager() {
   };
 
   const formatLimit = (limit) => {
+    if (limit === undefined || limit === null) return 'Non défini';
     if (limit === -1) return 'Illimité';
     if (limit >= 1000000) return `${(limit / 1000000).toFixed(1)}M`;
     if (limit >= 1000) return `${(limit / 1000).toFixed(1)}K`;
