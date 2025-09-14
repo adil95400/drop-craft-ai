@@ -89,6 +89,7 @@ import SupplierCatalogPage from '@/pages/marketplace/SupplierCatalogPage';
 // Auth Page
 import AuthPage from '@/pages/AuthPage';
 import AdminPanel from '@/pages/AdminPanel';
+import AIStudio from '@/pages/AIStudio';
 
 // Business Pages
 import CatalogPage from '@/pages/CatalogPage';
@@ -174,6 +175,11 @@ function App() {
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
                     <AppLayout><OptimizedClientDashboard /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/ai-studio" element={
+                  <ProtectedRoute>
+                    <AppLayout><AIStudio /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/dashboard-old" element={
