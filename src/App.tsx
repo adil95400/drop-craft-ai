@@ -90,6 +90,7 @@ import SupplierCatalogPage from '@/pages/marketplace/SupplierCatalogPage';
 import AuthPage from '@/pages/AuthPage';
 import AdminPanel from '@/pages/AdminPanel';
 import AIStudio from '@/pages/AIStudio';
+import AutomationStudio from '@/pages/AutomationStudio';
 
 // Business Pages
 import CatalogPage from '@/pages/CatalogPage';
