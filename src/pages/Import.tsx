@@ -5,6 +5,7 @@ import { QuickImportAccess } from '@/components/import/QuickImportAccess'
 import { ImportMethods } from '@/components/import/ImportMethods'
 import { ImportTemplates } from '@/components/import/ImportTemplates'
 import { ImportStatsRealTime } from '@/components/import/ImportStatsRealTime'
+import { ImportHub } from '@/components/import/ImportHub'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,15 +15,48 @@ export default function Import() {
   const { isUltraPro, isPro } = useUnifiedPlan()
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState('')
-  const [currentView, setCurrentView] = useState<'quick' | 'templates' | 'stats' | 'advanced'>('quick')
+  const [currentView, setCurrentView] = useState<'quick' | 'templates' | 'stats' | 'advanced' | 'hub'>('hub')
+  const [selectedCategory, setSelectedCategory] = useState('')
+
+  // Gérer les paramètres d'URL
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const view = urlParams.get('view')
+    const category = urlParams.get('category')
+    
+    if (view === 'advanced') {
+      setCurrentView('advanced')
+    } else if (view === 'templates') {
+      setCurrentView('templates')
+    } else if (view === 'stats') {
+      setCurrentView('stats')
+    } else if (category) {
+      setCurrentView('advanced')
+      setSelectedCategory(category)
+    }
+  }, [])
 
   const handleMethodSelect = (method: string) => {
-    if (method === 'all-methods') {
+    if (method === 'all-methods' || method === 'popular') {
       setCurrentView('advanced')
+    } else if (method.startsWith('category-')) {
+      setCurrentView('advanced')
+      // Pré-sélectionner la catégorie dans l'interface avancée
+      const category = method.replace('category-', '')
+      setSelectedMethod(category)
     } else {
       setSelectedMethod(method)
       setCurrentView('advanced')
     }
+  }
+
+  const handleViewChange = (view: 'quick' | 'templates' | 'stats' | 'advanced' | 'hub') => {
+    setCurrentView(view)
+  }
+
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category)
+    setCurrentView('advanced')
   }
 
   const handleTemplateSelect = (template: any, exampleUrl: string) => {
@@ -108,6 +142,24 @@ export default function Import() {
           </div>
         )
 
+      case 'hub':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Sparkles className="w-6 h-6 text-primary" />
+                  Hub d'Import Professionnel
+                </h2>
+                <p className="text-muted-foreground">
+                  Accédez rapidement aux 22+ méthodes d'import organisées par catégorie
+                </p>
+              </div>
+            </div>
+            <ImportHub onViewChange={handleViewChange} onCategorySelect={handleCategorySelect} />
+          </div>
+        )
+
       default:
         return (
           <div className="space-y-8">
@@ -163,9 +215,34 @@ export default function Import() {
             
             <div className="text-center">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-full text-sm text-muted-foreground">
-                <span>Ou utilisez les méthodes basiques ci-dessous</span>
+                <span>Ou accédez à toutes les 22+ méthodes d'import professionnelles</span>
               </div>
             </div>
+            
+            {/* Bouton proéminent pour accéder aux 22+ méthodes */}
+            <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+              <CardContent className="p-6 text-center">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="p-4 bg-gradient-to-r from-primary to-secondary rounded-full text-white">
+                    <Sparkles className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">Interface d'Import Professionnelle</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Accédez aux 22+ méthodes d'import organisées par catégorie avec configuration avancée
+                    </p>
+                    <Button 
+                      size="lg"
+                      onClick={() => setCurrentView('advanced')}
+                      className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
+                    >
+                      <TrendingUp className="w-5 h-5 mr-2" />
+                      Accéder aux 22+ Méthodes d'Import
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
             
             <ImportMethods 
               selectedMethod={selectedMethod} 

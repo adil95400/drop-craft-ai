@@ -22,6 +22,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+interface NavigationItem {
+  title: string;
+  url: string;
+  icon: React.ComponentType<any>;
+  badge: string;
+  premium?: boolean;
+  subItems?: NavigationItem[];
+}
+
+interface NavigationGroup {
+  title: string;
+  icon: React.ComponentType<any>;
+  items: NavigationItem[];
+}
 
 // Logo Shopopti
 const ShopoptiLogo = () => (
@@ -38,7 +52,7 @@ const ShopoptiLogo = () => (
   </div>
 );
 
-const navigationGroups = [
+const navigationGroups: NavigationGroup[] = [
   {
     title: "Dashboard",
     icon: BarChart3,
@@ -72,7 +86,46 @@ const navigationGroups = [
         title: "Import Produits",
         url: "/import",
         icon: Package,
-        badge: "Import"
+        badge: "Import",
+        subItems: [
+          {
+            title: "Import Rapide",
+            url: "/import",
+            icon: Package,
+            badge: "Quick"
+          },
+          {
+            title: "22+ Méthodes",
+            url: "/import?view=advanced",
+            icon: Package,
+            badge: "Pro",
+            premium: true
+          },
+          {
+            title: "E-commerce",
+            url: "/import?category=ecommerce",
+            icon: Package,
+            badge: "Shops"
+          },
+          {
+            title: "Fichiers & Flux",
+            url: "/import?category=files",
+            icon: Package,
+            badge: "Files"
+          },
+          {
+            title: "Templates",
+            url: "/import?view=templates",
+            icon: Package,
+            badge: "TPL"
+          },
+          {
+            title: "Statistiques",
+            url: "/import?view=stats",
+            icon: Package,
+            badge: "Stats"
+          }
+        ]
       },
       {
         title: "Catalogue",
@@ -394,6 +447,40 @@ export function AppSidebar() {
                             </div>
                           )}
                         </SidebarMenuButton>
+                        
+                        {/* Sub-items */}
+                        {item.subItems && state !== "collapsed" && (
+                          <SidebarMenuSub>
+                            {item.subItems.map((subItem) => (
+                              <SidebarMenuSubItem key={subItem.title}>
+                                <SidebarMenuSubButton
+                                  onClick={() => navigate(subItem.url)}
+                                  className={cn(
+                                    "transition-all duration-200",
+                                    isActive(subItem.url) 
+                                      ? "bg-primary/10 text-primary font-medium" 
+                                      : "hover:bg-accent/50"
+                                  )}
+                                >
+                                  <subItem.icon className={cn(
+                                    "h-3 w-3", 
+                                    subItem.premium ? "text-yellow-500" : ""
+                                  )} />
+                                  <span className="truncate">{subItem.title}</span>
+                                  <Badge 
+                                    variant="outline"
+                                    className={cn(
+                                      "text-xs h-4 px-1",
+                                      subItem.premium && "border-yellow-500 text-yellow-600"
+                                    )}
+                                  >
+                                    {subItem.badge}
+                                  </Badge>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            ))}
+                          </SidebarMenuSub>
+                        )}
                       </SidebarMenuItem>
                     ))}
                   </SidebarMenu>
