@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useIntegrations, IntegrationTemplate } from "@/hooks/useIntegrations";
+import { logError } from "@/utils/consoleCleanup";
 import { ShoppingBag, Key, Globe, Settings, CheckCircle } from "lucide-react";
 
 interface ShopifyConfigDialogProps {
