@@ -11,6 +11,8 @@ import { User, Building, Tag, Plus, X } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useQueryClient } from '@tanstack/react-query'
+import { toast } from "sonner";
+import { logError } from "@/utils/consoleCleanup";
 
 interface CreateContactModalProps {
   isOpen: boolean
@@ -117,7 +119,7 @@ export function CreateContactModal({ isOpen, onClose }: CreateContactModalProps)
       })
       setCustomFields([])
     } catch (error: any) {
-      console.error('Error creating contact:', error)
+      logError(error as Error, 'Error creating contact')
       toast({
         title: "Erreur",
         description: error.message || "Impossible de créer le contact",

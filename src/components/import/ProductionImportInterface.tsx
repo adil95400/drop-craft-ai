@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useProductionData } from '@/hooks/useProductionData'
 import { useImportUltraPro } from '@/hooks/useImportUltraPro'
+import { logAction } from '@/utils/consoleCleanup'
 import { BulkImportUltraPro } from '@/components/import/BulkImportUltraPro'
 import { AIImportUltraPro } from '@/components/import/AIImportUltraPro'
 import { ImportUltraProInterface } from '@/components/import/ImportUltraProInterface'
@@ -310,7 +311,7 @@ export const ProductionImportInterface = () => {
           <ExtensionsImportInterface 
             importMethod="all"
             onExtensionActivated={(ext) => {
-              console.log('Extension activée:', ext)
+              logAction('Extension activée', ext.name)
             }}
           />
         </TabsContent>

@@ -28,6 +28,7 @@ import {
   Eye,
   Sparkles
 } from 'lucide-react';
+import { logError } from '@/utils/consoleCleanup';
 
 interface BusinessInsight {
   id: string;
@@ -107,7 +108,7 @@ export function BusinessIntelligenceDashboard() {
       
       setInsights(transformedData);
     } catch (error) {
-      console.error('Error fetching insights:', error);
+      logError(error as Error, 'Error fetching insights');
     }
   };
 
@@ -136,7 +137,7 @@ export function BusinessIntelligenceDashboard() {
 
       await fetchInsights();
     } catch (error) {
-      console.error('Error generating insights:', error);
+      logError(error as Error, 'Error generating insights');
       toast({
         title: "Erreur",
         description: "Impossible de générer l'analyse",
@@ -160,7 +161,7 @@ export function BusinessIntelligenceDashboard() {
       if (error) throw error;
       await fetchInsights();
     } catch (error) {
-      console.error('Error acknowledging insight:', error);
+      logError(error as Error, 'Error acknowledging insight');
     }
   };
 

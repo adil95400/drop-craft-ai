@@ -12,6 +12,8 @@ import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
+import { toast } from "sonner";
+import { logError } from "@/utils/consoleCleanup";
 
 interface CreateSegmentModalProps {
   isOpen: boolean
@@ -116,7 +118,7 @@ export function CreateSegmentModal({ isOpen, onClose }: CreateSegmentModalProps)
       // Reset form
       setFormData({ name: '', description: '', criteria: [] })
     } catch (error: any) {
-      console.error('Error creating segment:', error)
+      logError(error as Error, 'Error creating segment')
       toast({
         title: "Erreur",
         description: error.message || "Impossible de créer le segment",

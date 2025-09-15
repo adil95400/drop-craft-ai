@@ -22,6 +22,7 @@ import { useImport } from '@/domains/commerce/hooks/useImport'
 import { ImportStatusCard } from './ImportStatusCard'
 import { ImportResultsPro } from './ImportResultsPro'
 import { toast } from 'sonner'
+import { logError } from '@/utils/consoleCleanup'
 
 export const SmartImportInterface = () => {
   const [url, setUrl] = useState('')
@@ -53,7 +54,7 @@ export const SmartImportInterface = () => {
       setImportResult(result)
       toast.success("Import intelligent lancé avec succès !")
     } catch (error: any) {
-      console.error('Smart import error:', error)
+      logError(error as Error, 'Smart import error')
       toast.error(`Erreur d'import: ${error.message || 'Une erreur est survenue'}`)
     }
   }, [url, importFromUrl, aiOptions])

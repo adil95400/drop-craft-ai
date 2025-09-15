@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { JobQueueManager } from '@/services/JobQueue';
 import { ImportJob } from '@/types/suppliers';
+import { logError } from '@/utils/consoleCleanup';
 import { useToast } from '@/hooks/use-toast';
 
 export const JobQueueDashboard: React.FC = () => {
@@ -50,7 +51,7 @@ export const JobQueueDashboard: React.FC = () => {
       });
       setStats(queueStats);
     } catch (error) {
-      console.error('Failed to load job data:', error);
+      logError(error as Error, 'Failed to load job data');
     }
   };
 

@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { toast } from "sonner";
+import { logError } from "@/utils/consoleCleanup";
 
 interface XMLFeedConfig {
   url: string
@@ -78,7 +80,7 @@ export const XMLFeedImporter = () => {
       })
 
     } catch (error) {
-      console.error('Error testing XML feed:', error)
+      logError(error as Error, 'Error testing XML feed')
       toast({
         title: "Erreur de test",
         description: "Impossible de lire le flux XML",
@@ -138,7 +140,7 @@ export const XMLFeedImporter = () => {
       }
 
     } catch (error) {
-      console.error('Error importing XML feed:', error)
+      logError(error as Error, 'Error importing XML feed')
       toast({
         title: "Erreur d'import",
         description: "Impossible d'importer le flux XML",

@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FileText, Upload, Settings, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from "sonner";
+import { logError } from "@/utils/consoleCleanup";
 
 interface XMLMapping {
   productPath: string;
@@ -152,7 +154,7 @@ export const XMLImportInterface: React.FC<XMLImportInterfaceProps> = ({
         samples
       };
     } catch (error) {
-      console.error('XML parsing error:', error);
+      logError(new Error(`XML parsing error: ${error}`), 'XMLImportInterface');
       return null;
     }
   };

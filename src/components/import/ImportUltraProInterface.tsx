@@ -25,6 +25,7 @@ import { useImportUltraPro } from '@/hooks/useImportUltraPro'
 import { useSupplierManagement } from '@/hooks/useSupplierManagement'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { logAction, logError, logWarning } from '@/utils/consoleCleanup'
 import { ImportMethodsGrid } from './ImportMethodsGrid'
 import { SmartImportInterface } from './SmartImportInterface'
 
@@ -232,12 +233,12 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
           .single()
 
         if (jobError) {
-          console.warn('Failed to create import job, proceeding without job tracking:', jobError)
+          logWarning('Failed to create import job, proceeding without job tracking', 'ImportUltraProInterface')
         } else {
           importJob = data
         }
       } catch (jobError) {
-        console.warn('Import job creation failed, continuing without job tracking:', jobError)
+        logWarning('Import job creation failed, continuing without job tracking', 'ImportUltraProInterface')
       }
 
       setImportProgress(60)
@@ -309,11 +310,11 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
 
           // Validate required fields with better error handling
           if (!product.name || product.name.length === 0) {
-            console.log(`Produit ligne ${index + 1}:`, { name: product.name, price: product.price, row })
+            logAction(`Produit ligne ${index + 1}`, { name: product.name, price: product.price })
             throw new Error(`Ligne ${index + 1}: Nom du produit requis (reçu: "${product.name}")`)
           }
           if (!product.price || product.price <= 0) {
-            console.log(`Prix invalide ligne ${index + 1}:`, { price: product.price, rawPrice: row[headers.indexOf('price')] })
+            logWarning(`Prix invalide ligne ${index + 1}`, `ImportUltraProInterface - price: ${product.price}`)
             throw new Error(`Ligne ${index + 1}: Prix valide requis (reçu: ${product.price})`)
           }
 
