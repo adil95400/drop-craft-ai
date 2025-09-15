@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { logAction, logError } from '@/utils/consoleCleanup';
 
 interface ReportData {
   id: string;
@@ -113,7 +114,7 @@ export function AdvancedReportsCenter() {
       console.log('Trend analysis:', data);
       
     } catch (error) {
-      console.error('Error analyzing trends:', error);
+      logError(error as Error, 'Error analyzing trends');
       toast.error('Erreur lors de l\'analyse des tendances');
     } finally {
       setGenerating(false);
@@ -134,7 +135,7 @@ export function AdvancedReportsCenter() {
       if (error) throw error;
       
       toast.success('Analyse ROI terminée !');
-      console.log('ROI analysis:', data);
+      logAction('ROI analysis', data);
       
     } catch (error) {
       console.error('Error calculating ROI:', error);

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { Loader2, CheckCircle, XCircle, Zap, ShoppingCart, Brain, Settings, Package } from 'lucide-react'
+import { logAction, logError } from '@/utils/consoleCleanup'
 
 export function TestUnifiedFunctions() {
   const [loading, setLoading] = useState<string | null>(null)
@@ -14,25 +15,23 @@ export function TestUnifiedFunctions() {
   const testFunction = async (functionName: string, endpoint: string, testData: any) => {
     setLoading(functionName)
     try {
-      console.log(`Testing ${functionName}/${endpoint}:`, testData)
+      logAction(`Testing ${functionName}/${endpoint}`, testData)
       
-      const { data, error } = await supabase.functions.invoke(functionName, {
-        body: testData
-      })
-
-      if (error) throw error
-
-      setResults(prev => ({
-        ...prev,
-        [`${functionName}-${endpoint}`]: { success: true, data }
-      }))
-
-      toast({
-        title: "Test réussi",
-        description: `${functionName}/${endpoint} fonctionne correctement`,
-      })
-    } catch (error: any) {
-      console.error(`Test failed for ${functionName}:`, error)
+      const response = await fetch(
+        `/.netlify/functions/${functionName}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(testData),
+        }
+      )
+      
+      const result = await response.json()
+      setResults(prev => ({ ...prev, [functionName]: result }))
+    } catch (error) {
+      logError(error as Error, `Test failed for ${functionName}`)
       
       setResults(prev => ({
         ...prev,

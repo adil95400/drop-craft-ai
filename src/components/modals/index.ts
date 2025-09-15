@@ -1,5 +1,5 @@
 export { CreateProductDialog } from './CreateProductDialog';
-export { CreateOrderDialog } from './CreateOrderDialog';
+export { CreateOrderDialog } from './CreateOrderDialog';  
 export { CreateCustomerDialog } from './CreateCustomerDialog';
 export { CreateIntegrationDialog } from './CreateIntegrationDialog';
 export { ImportDataDialog } from './ImportDataDialog';

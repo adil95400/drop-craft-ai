@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logError } from '@/utils/consoleCleanup';
 
 interface SecurityEvent {
   id: string;
@@ -59,7 +60,7 @@ export function SecurityDashboard() {
         .limit(50);
       
       if (error) {
-        console.warn('Could not fetch webhook events:', error);
+        logError(error as Error, 'Could not fetch webhook events');
         return [];
       }
       return (data || []).map(event => ({

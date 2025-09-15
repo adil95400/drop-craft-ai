@@ -48,6 +48,7 @@ import {
   RefreshCw,
   Link as LinkIcon
 } from "lucide-react"
+import { logError } from "@/utils/consoleCleanup"
 import { cn } from "@/lib/utils"
 import {
   Sidebar,
@@ -363,7 +364,7 @@ export function AppSidebarUltraPro() {
       try {
         setOpenGroups(JSON.parse(savedGroups))
       } catch (error) {
-        console.warn('Failed to load sidebar groups:', error)
+        logError(error, 'Failed to load sidebar groups')
       }
     }
   }, [])

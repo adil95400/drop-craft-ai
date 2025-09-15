@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useEnhancedAuth } from '@/hooks/useEnhancedAuth'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Shield, UserX, TestTube } from 'lucide-react'
+import { toast } from 'sonner'
 
 export const ForceDisconnectDemo = () => {
   const { user } = useAuth()
@@ -69,7 +70,7 @@ export const ForceDisconnectDemo = () => {
               userEmail={user?.email}
               userName={user?.user_metadata?.full_name}
               onSuccess={() => {
-                console.log('Déconnexion forcée réussie')
+                toast.success('Déconnexion forcée réussie')
                 setDemoUserId('')
               }}
             />
