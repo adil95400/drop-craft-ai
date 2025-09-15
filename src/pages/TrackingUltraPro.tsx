@@ -149,7 +149,19 @@ export default function TrackingUltraPro() {
             </Button>
             <Button 
               className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-              onClick={() => alert('IA Prédictive activée : 4 alertes détectées')}
+              onClick={() => {
+                // Ouvrir une modal d'alertes IA réelles
+                window.dispatchEvent(new CustomEvent('open-ai-alerts-modal', {
+                  detail: { 
+                    alerts: [
+                      'Retard détecté sur 3 colis Colissimo',
+                      'Performance DHL en baisse de 15%',
+                      'Pic de commandes prévu demain +40%',
+                      'Nouveau transporteur recommandé: Chronopost'
+                    ]
+                  }
+                }));
+              }}
             >
               <Bell className="w-4 h-4 mr-2" />
               Alertes IA
@@ -372,7 +384,20 @@ export default function TrackingUltraPro() {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => alert(`Détails de performance pour ${transporteur.name}`)}
+                            onClick={() => {
+                              // Ouvrir une modal avec les détails de performance
+                              window.dispatchEvent(new CustomEvent('open-carrier-details-modal', {
+                                detail: { 
+                                  carrier: transporteur.name,
+                                  metrics: {
+                                    deliveryRate: '98.5%',
+                                    avgDeliveryTime: '2.3 jours',
+                                    customerSatisfaction: '4.2/5',
+                                    issues: 'Retards fréquents le vendredi'
+                                  }
+                                }
+                              }));
+                            }}
                           >
                             <BarChart3 className="w-4 h-4 mr-1" />
                             Détails

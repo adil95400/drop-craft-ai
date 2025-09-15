@@ -136,6 +136,7 @@ import { ExtensionDownloadPage } from "./pages/ExtensionDownloadPage";
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 // Optimized client dashboard for ShopOpti+
 import OptimizedClientDashboard from '@/components/dashboard/OptimizedClientDashboard';
+import NotFoundPage from '@/pages/NotFoundPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {

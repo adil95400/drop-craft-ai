@@ -423,7 +423,11 @@ export const CreateIntegrationForm = () => {
               
               <div className="space-y-4">
                 <Button variant="outline" asChild>
-                  <a href="#" target="_blank" rel="noopener noreferrer">
+                  <a 
+                    href={`https://docs.dropcraft.ai/integrations/${formData.platform_name?.toLowerCase()}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
                     <ExternalLink className="w-4 h-4 mr-2" />
                     Documentation {formData.platform_name}
                   </a>

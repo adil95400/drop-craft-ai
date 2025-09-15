@@ -389,7 +389,11 @@ const ModernMarketingPage: React.FC = () => {
                       <ActionButton 
                         size="sm" 
                         variant="default"
-                        onClick={async () => console.log('Configure automation')}
+                        onClick={async () => {
+                          // Simuler la configuration d'une campagne d'automatisation
+                          await new Promise(resolve => setTimeout(resolve, 1000));
+                        }}
+                        loadingText="Configuration..."
                       >
                         Configurer
                       </ActionButton>
