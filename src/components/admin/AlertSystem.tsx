@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/utils/consoleCleanup';
 import { 
   AlertTriangle, 
   Shield, 
@@ -87,7 +88,7 @@ export const AlertSystem: React.FC = () => {
       
       setAlerts(formattedAlerts);
     } catch (error) {
-      console.error('Failed to load alerts:', error);
+      logError(error as Error, 'Failed to load alerts');
     } finally {
       setLoading(false);
     }

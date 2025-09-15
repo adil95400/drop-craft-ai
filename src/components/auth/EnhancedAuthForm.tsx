@@ -1,5 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext'
-import { logError } from '@/utils/consoleCleanup';
+import { logError, logWarning } from '@/utils/consoleCleanup';
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/integrations/supabase/client'
 import { useState } from 'react'
@@ -45,7 +45,7 @@ export const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
       try {
         await supabase.auth.signOut({ scope: 'global' })
       } catch (err) {
-        console.warn('Cleanup sign out failed:', err)
+        logWarning('Cleanup sign out failed', 'EnhancedAuthForm')
       }
 
       let result

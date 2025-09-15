@@ -16,6 +16,7 @@ import {
   Target,
   BarChart3
 } from 'lucide-react'
+import { logError } from '@/utils/consoleCleanup'
 import { useImport } from '@/domains/commerce/hooks/useImport'
 import { useAutoSync } from '@/hooks/useAutoSync'
 import { toast } from 'sonner'
@@ -212,7 +213,7 @@ export const SmartDataProcessor = () => {
       manualSync(['imports', 'products'])
       
     } catch (error) {
-      console.error('Processing error:', error)
+      logError(error as Error, 'Processing error');
       toast.error('Erreur pendant le traitement automatique')
     } finally {
       setIsProcessing(false)

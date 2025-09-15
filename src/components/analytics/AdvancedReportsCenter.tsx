@@ -67,7 +67,7 @@ export function AdvancedReportsCenter() {
       if (error) throw error;
       setReports(data || []);
     } catch (error) {
-      console.error('Error loading reports:', error);
+      logError(error as Error, 'Error loading reports');
       toast.error('Erreur lors du chargement des rapports');
     } finally {
       setLoading(false);
@@ -90,7 +90,7 @@ export function AdvancedReportsCenter() {
       loadReports();
       
     } catch (error) {
-      console.error('Error generating report:', error);
+      logError(error as Error, 'Error generating report');
       toast.error('Erreur lors de la génération du rapport');
     } finally {
       setGenerating(false);
@@ -111,7 +111,7 @@ export function AdvancedReportsCenter() {
       if (error) throw error;
       
       toast.success('Analyse des tendances terminée !');
-      console.log('Trend analysis:', data);
+      logAction('Trend analysis', data);
       
     } catch (error) {
       logError(error as Error, 'Error analyzing trends');
@@ -138,7 +138,7 @@ export function AdvancedReportsCenter() {
       logAction('ROI analysis', data);
       
     } catch (error) {
-      console.error('Error calculating ROI:', error);
+      logError(error as Error, 'Error calculating ROI');
       toast.error('Erreur lors du calcul du ROI');
     } finally {
       setGenerating(false);
@@ -161,10 +161,10 @@ export function AdvancedReportsCenter() {
       toast.success(`Export ${format.toUpperCase()} généré avec succès !`);
       
       // In a real implementation, you would download the file
-      console.log('Export data:', data);
+      logAction('Export data', data);
       
     } catch (error) {
-      console.error('Error exporting report:', error);
+      logError(error as Error, 'Error exporting report');
       toast.error('Erreur lors de l\'export');
     }
   };

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { logError } from '@/utils/consoleCleanup'
 import { Loader2, Crown, CreditCard, Calendar, ExternalLink, Sparkles } from 'lucide-react'
 
 interface SubscriptionData {
@@ -138,7 +139,7 @@ export const SubscriptionManager: React.FC = () => {
       
       setSubscription(data)
     } catch (error) {
-      console.error('Error checking subscription:', error)
+      logError(error as Error, 'Error checking subscription');
       toast({
         title: "Erreur",
         description: "Impossible de vérifier l'abonnement",
@@ -169,7 +170,7 @@ export const SubscriptionManager: React.FC = () => {
         window.open(data.url, '_blank')
       }
     } catch (error) {
-      console.error('Error creating checkout:', error)
+      logError(error as Error, 'Error creating checkout');
       toast({
         title: "Erreur",
         description: "Impossible de créer la session de paiement",
@@ -192,7 +193,7 @@ export const SubscriptionManager: React.FC = () => {
         window.open(data.url, '_blank')
       }
     } catch (error) {
-      console.error('Error opening customer portal:', error)
+      logError(error as Error, 'Error opening customer portal');
       toast({
         title: "Erreur",
         description: "Impossible d'accéder au portail de gestion",

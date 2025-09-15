@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePlan } from '@/contexts/PlanContext'
+import { logWarning } from '@/utils/consoleCleanup'
 
 interface AppFlowStep {
   id: string
@@ -214,7 +215,7 @@ export function AppFlowProvider({ children }: { children: React.ReactNode }) {
           setCompletedSteps(new Set(completed))
           setCurrentStepIndex(stepIndex)
         } catch (error) {
-          console.warn('Erreur lors du chargement du flux:', error)
+          logWarning('Erreur lors du chargement du flux', 'AppFlowManager')
         }
       }
     }

@@ -25,6 +25,7 @@ import {
   Workflow,
   CheckCircle
 } from 'lucide-react';
+import { logError } from '@/utils/consoleCleanup';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -197,7 +198,7 @@ export function WorkflowBuilder() {
       });
       
     } catch (error) {
-      console.error('Error saving workflow:', error);
+      logError(error as Error, 'Error saving workflow');
       toast.error('Erreur lors de la sauvegarde du workflow');
     } finally {
       setIsBuilding(false);
@@ -242,7 +243,7 @@ export function WorkflowBuilder() {
       toast.success(`Test réussi ! ${execResult.steps_executed} étapes exécutées`);
 
     } catch (error) {
-      console.error('Error testing workflow:', error);
+      logError(error as Error, 'Error testing workflow');
       toast.error('Erreur lors du test du workflow');
     } finally {
       setIsTesting(false);
