@@ -25,6 +25,11 @@ export function CarrierDetailsModal({
   metrics
 }: CarrierDetailsModalProps) {
   
+  // Debug logging to understand what's happening
+  console.log('CarrierDetailsModal - metrics received:', metrics);
+  console.log('CarrierDetailsModal - typeof metrics:', typeof metrics);
+  console.log('CarrierDetailsModal - metrics === null:', metrics === null);
+  
   // Use default metrics if metrics is null or undefined
   const defaultMetrics = {
     deliveryRate: "98.5%",
@@ -34,6 +39,7 @@ export function CarrierDetailsModal({
   };
   
   const actualMetrics = metrics || defaultMetrics;
+  console.log('CarrierDetailsModal - actualMetrics:', actualMetrics);
   
   const performanceScore = parseFloat(actualMetrics.deliveryRate.replace('%', ''));
   const satisfactionScore = parseFloat(actualMetrics.customerSatisfaction.split('/')[0]) * 20; // Convert to percentage
