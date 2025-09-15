@@ -25,7 +25,7 @@ import {
   RefreshCw
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useAuth } from '@/contexts/AuthContext'
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { useQuotaManager } from '@/hooks/useQuotaManager'
 import { usePlanSystem } from '@/lib/unified-plan-system'
 import { supabase } from '@/integrations/supabase/client'
@@ -33,7 +33,7 @@ import { useToast } from '@/hooks/use-toast'
 
 const AdminPanelContent = () => {
   const { t } = useTranslation(['common', 'settings', 'navigation'])
-  const { user } = useAuth()
+  const { user } = useUnifiedAuth()
   const { quotas, loading: quotasLoading, fetchQuotas } = useQuotaManager()
   const { currentPlan, effectivePlan } = usePlanSystem()
   const { toast } = useToast()
