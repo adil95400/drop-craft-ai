@@ -75,7 +75,11 @@ export const AmazonConfigDialog = ({ open, onOpenChange }: AmazonConfigDialogPro
         color: 'bg-orange-500',
         features: [],
         setupSteps: [],
-        status: 'available'
+        status: 'available',
+        icon: ShoppingCart,
+        premium: false,
+        rating: 4.2,
+        installs: 850
       } as IntegrationTemplate, {
         platform_url: `https://sellingpartnerapi-${formData.region.toLowerCase()}.amazon.com`,
         connection_status: 'connected',

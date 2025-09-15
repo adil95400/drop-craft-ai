@@ -45,9 +45,9 @@ export const BigBuyConfigDialog = ({ open, onOpenChange }: BigBuyConfigDialogPro
     try {
       await addIntegration({
         id: "bigbuy",
-        name: "BigBuy",
+        name: "BigBuy", 
         description: "Intégration BigBuy - Grossiste européen",
-        category: "supplier",
+        category: "ecommerce",
         logo: '🏪',
         color: 'bg-blue-500',
         features: [],

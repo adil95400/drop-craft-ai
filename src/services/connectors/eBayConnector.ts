@@ -44,7 +44,10 @@ export class eBayConnector extends BaseConnector {
       });
       
       if (options.page) {
-        params.append('offset', ((parseInt(options.page) - 1) * (options.limit || 50)).toString());
+        const pageNum = typeof options.page === 'string' ? parseInt(options.page) : options.page;
+        const limitNum = options.limit || 50;
+        const offset = (pageNum - 1) * limitNum;
+        params.append('offset', String(offset));
       }
 
       const response = await this.makeRequest(`/sell/inventory/v1/inventory_item?${params}`);
