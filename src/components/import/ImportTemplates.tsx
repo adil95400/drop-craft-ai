@@ -1,314 +1,277 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { 
-  FileText, 
-  Download, 
-  Upload, 
-  Plus, 
-  Eye, 
-  Edit, 
-  Trash2, 
-  Copy,
-  Search,
-  Star,
-  Clock,
-  Database
-} from 'lucide-react';
-import { toast } from 'sonner';
+  ShoppingBag, 
+  Smartphone, 
+  Home, 
+  Heart, 
+  Car, 
+  Book,
+  Gift,
+  Sparkles,
+  TrendingUp,
+  Star
+} from 'lucide-react'
 
-interface Template {
-  id: string;
-  name: string;
-  description: string;
-  type: 'csv' | 'xml' | 'json' | 'custom';
-  category: 'ecommerce' | 'catalog' | 'inventory' | 'custom';
-  fields: number;
-  downloads: number;
-  isPopular: boolean;
-  createdAt: Date;
-  preview?: string;
+interface ImportTemplate {
+  id: string
+  name: string
+  description: string
+  category: string
+  icon: React.ReactNode
+  color: string
+  popularity: number
+  examples: string[]
+  config: Record<string, any>
 }
 
-export const ImportTemplates = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [createDialog, setCreateDialog] = useState(false);
-  const [previewDialog, setPreviewDialog] = useState<{ open: boolean; template: Template | null }>({
-    open: false,
-    template: null
-  });
-  const [newTemplate, setNewTemplate] = useState({
-    name: '',
-    description: '',
-    type: 'csv' as const,
-    category: 'catalog' as const
-  });
+interface ImportTemplatesProps {
+  onSelectTemplate: (template: ImportTemplate, exampleUrl: string) => void
+}
 
-  // Mock templates data
-  const templates: Template[] = [
+export const ImportTemplates = ({ onSelectTemplate }: ImportTemplatesProps) => {
+  const templates: ImportTemplate[] = [
     {
-      id: '1',
-      name: 'E-commerce Standard',
-      description: 'Template standard pour produits e-commerce avec prix, stock, descriptions',
-      type: 'csv',
-      category: 'ecommerce',
-      fields: 25,
-      downloads: 1247,
-      isPopular: true,
-      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      preview: 'Name,SKU,Price,Description,Category,Stock,Weight,Image_URL'
+      id: 'fashion',
+      name: 'Mode & Vêtements',
+      description: 'Optimisé pour les vêtements, chaussures et accessoires',
+      category: 'Popular',
+      icon: <ShoppingBag className="w-6 h-6" />,
+      color: 'bg-pink-500',
+      popularity: 95,
+      examples: [
+        'https://www.zara.com/fr/fr/robe-midi-structuree-p08574043.html',
+        'https://www.hm.com/fr/productpage.0956262005.html',
+        'https://www.asos.com/fr/nike/nike-air-force-1-07-baskets-blanches/prd/21873901'
+      ],
+      config: {
+        extractSizes: true,
+        extractColors: true,
+        generateSizeChart: true,
+        extractMaterials: true
+      }
     },
     {
-      id: '2',
-      name: 'Catalogue Produits Simple',
-      description: 'Template basique pour import de catalogue avec informations essentielles',
-      type: 'csv',
-      category: 'catalog',
-      fields: 12,
-      downloads: 856,
-      isPopular: true,
-      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-      preview: 'Product_Name,SKU,Price,Category,Brand,Description'
+      id: 'electronics',
+      name: 'Électronique & Tech',
+      description: 'Spécialisé pour smartphones, ordinateurs et gadgets',
+      category: 'Popular',
+      icon: <Smartphone className="w-6 h-6" />,
+      color: 'bg-blue-500',
+      popularity: 92,
+      examples: [
+        'https://www.amazon.fr/dp/B08N5WRWNW',
+        'https://www.fnac.com/Apple-iPhone-14-128-Go-Minuit/a16832544',
+        'https://www.boulanger.com/ref/1151023'
+      ],
+      config: {
+        extractSpecs: true,
+        extractCompatibility: true,
+        generateComparison: true,
+        extractWarranty: true
+      }
     },
     {
-      id: '3',
-      name: 'Shopify Export Format',
-      description: 'Compatible avec le format d\'export Shopify pour migration facile',
-      type: 'csv',
-      category: 'ecommerce',
-      fields: 45,
-      downloads: 623,
-      isPopular: false,
-      createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-      preview: 'Handle,Title,Body,Vendor,Type,Tags,Published,Variant_SKU'
+      id: 'home',
+      name: 'Maison & Jardin',
+      description: 'Parfait pour meubles, décoration et jardinage',
+      category: 'Trending',
+      icon: <Home className="w-6 h-6" />,
+      color: 'bg-green-500',
+      popularity: 88,
+      examples: [
+        'https://www.ikea.com/fr/fr/p/malm-commode-6-tiroirs-blanc-00360455/',
+        'https://www.leroymerlin.fr/produits/jardin/mobilier-de-jardin/',
+        'https://www.maisonsdumonde.com/FR/fr/p/canape-3-places-en-tissu-gris-anthracite-chicago-166951.htm'
+      ],
+      config: {
+        extractDimensions: true,
+        extractMaterials: true,
+        extractAssembly: true,
+        generateRoomVisualization: true
+      }
     },
     {
-      id: '4',
-      name: 'Flux XML Alimentaire',
-      description: 'Template spécialisé pour produits alimentaires avec dates de péremption',
-      type: 'xml',
-      category: 'catalog',
-      fields: 18,
-      downloads: 234,
-      isPopular: false,
-      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
-      preview: '<product><name/><expiry_date/><nutritional_info/></product>'
+      id: 'beauty',
+      name: 'Beauté & Cosmétiques',
+      description: 'Optimisé pour produits de beauté et soins',
+      category: 'Trending',
+      icon: <Heart className="w-6 h-6" />,
+      color: 'bg-rose-500',
+      popularity: 85,
+      examples: [
+        'https://www.sephora.fr/p/fond-de-teint-longue-tenue-P3525017.html',
+        'https://www.nocibe.fr/estee-lauder-double-wear-stay-in-place-makeup/',
+        'https://www.marionnaud.fr/dior-rouge-dior-ultra-care-999.html'
+      ],
+      config: {
+        extractIngredients: true,
+        extractSkinType: true,
+        generateBeautyTips: true,
+        extractShades: true
+      }
     },
     {
-      id: '5',
-      name: 'API JSON Products',
-      description: 'Format JSON pour intégration API avec métadonnées avancées',
-      type: 'json',
-      category: 'custom',
-      fields: 30,
-      downloads: 189,
-      isPopular: false,
-      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-      preview: '{"products":[{"id":"","name":"","metadata":{},"variants":[]}]}'
+      id: 'automotive',
+      name: 'Auto & Moto',
+      description: 'Spécialisé pour pièces automobiles et accessoires',
+      category: 'Niche',
+      icon: <Car className="w-6 h-6" />,
+      color: 'bg-gray-700',
+      popularity: 75,
+      examples: [
+        'https://www.norauto.fr/p/filtre-a-huile-mann-filter-w712-93-1549734.html',
+        'https://www.feu-vert.fr/pneu-michelin-energy-saver-195-65-r15-91h.html',
+        'https://www.midas.fr/pieces-detachees/plaquettes-de-frein/'
+      ],
+      config: {
+        extractCompatibility: true,
+        extractPartNumber: true,
+        generateFitmentGuide: true,
+        extractBrand: true
+      }
     },
     {
-      id: '6',
-      name: 'Inventaire Warehouse',
-      description: 'Gestion d\'inventaire avec emplacements, lots et quantités',
-      type: 'csv',
-      category: 'inventory',
-      fields: 15,
-      downloads: 445,
-      isPopular: false,
-      createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000),
-      preview: 'SKU,Location,Lot_Number,Quantity,Reserved,Available'
+      id: 'books',
+      name: 'Livres & Médias',
+      description: 'Adapté pour livres, ebooks et contenus éducatifs',
+      category: 'Niche',
+      icon: <Book className="w-6 h-6" />,
+      color: 'bg-amber-600',
+      popularity: 70,
+      examples: [
+        'https://www.amazon.fr/Atomic-Habits-Proven-Build-Break/dp/0735211299',
+        'https://www.fnac.com/livre-numerique/a15149280/Tony-Robbins-MONEY-Master-the-Game',
+        'https://www.cultura.com/p-sapiens-une-breve-histoire-de-l-humanite-9782226257017.html'
+      ],
+      config: {
+        extractAuthor: true,
+        extractISBN: true,
+        extractPages: true,
+        generateSummary: true
+      }
+    },
+    {
+      id: 'gifts',
+      name: 'Cadeaux & Occasions',
+      description: 'Optimisé pour cadeaux personnalisés et événements',
+      category: 'Seasonal',
+      icon: <Gift className="w-6 h-6" />,
+      color: 'bg-purple-500',
+      popularity: 82,
+      examples: [
+        'https://www.etsy.com/fr/listing/personalized-gift-custom-photo/',
+        'https://www.amazon.fr/cadeau-personnalise-anniversaire/',
+        'https://www.fnac.com/idees-cadeaux/'
+      ],
+      config: {
+        extractPersonalization: true,
+        extractOccasion: true,
+        generateGiftGuide: true,
+        extractAgeGroup: true
+      }
     }
-  ];
+  ]
 
-  const filteredTemplates = templates.filter(template => {
-    const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         template.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  const categories = [
-    { value: 'all', label: 'Toutes catégories', count: templates.length },
-    { value: 'ecommerce', label: 'E-commerce', count: templates.filter(t => t.category === 'ecommerce').length },
-    { value: 'catalog', label: 'Catalogue', count: templates.filter(t => t.category === 'catalog').length },
-    { value: 'inventory', label: 'Inventaire', count: templates.filter(t => t.category === 'inventory').length },
-    { value: 'custom', label: 'Personnalisé', count: templates.filter(t => t.category === 'custom').length }
-  ];
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'csv': return '📊';
-      case 'xml': return '🗂️';
-      case 'json': return '📋';
-      default: return '📄';
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'Popular': return <TrendingUp className="w-4 h-4" />
+      case 'Trending': return <Sparkles className="w-4 h-4" />
+      case 'Seasonal': return <Star className="w-4 h-4" />
+      default: return <Star className="w-4 h-4" />
     }
-  };
+  }
 
-  const getTypeBadge = (type: string) => {
-    const colors = {
-      csv: 'bg-green-100 text-green-800',
-      xml: 'bg-blue-100 text-blue-800',
-      json: 'bg-purple-100 text-purple-800',
-      custom: 'bg-gray-100 text-gray-800'
-    };
-    return (
-      <Badge className={colors[type as keyof typeof colors] || colors.custom}>
-        {type.toUpperCase()}
-      </Badge>
-    );
-  };
-
-  const handleDownload = (template: Template) => {
-    toast.success(`Template "${template.name}" téléchargé avec succès`);
-  };
-
-  const handleDuplicate = (template: Template) => {
-    toast.success(`Template "${template.name}" dupliqué avec succès`);
-  };
-
-  const handlePreview = (template: Template) => {
-    setPreviewDialog({ open: true, template });
-  };
-
-  const handleCreateTemplate = async () => {
-    if (!newTemplate.name.trim()) {
-      toast.error('Veuillez saisir un nom pour le template');
-      return;
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'Popular': return 'bg-red-100 text-red-700 border-red-200'
+      case 'Trending': return 'bg-blue-100 text-blue-700 border-blue-200'
+      case 'Seasonal': return 'bg-purple-100 text-purple-700 border-purple-200'
+      case 'Niche': return 'bg-gray-100 text-gray-700 border-gray-200'
+      default: return 'bg-gray-100 text-gray-700 border-gray-200'
     }
+  }
 
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success(`Template "${newTemplate.name}" créé avec succès`);
-      setCreateDialog(false);
-      setNewTemplate({ name: '', description: '', type: 'csv', category: 'catalog' });
-    } catch (error) {
-      toast.error('Erreur lors de la création du template');
-    }
-  };
+  const sortedTemplates = templates.sort((a, b) => b.popularity - a.popularity)
 
   return (
     <div className="space-y-6">
-      {/* Header with Search and Create */}
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Templates d'Import</h2>
-          <p className="text-muted-foreground">
-            Utilisez nos templates prêts à l'emploi ou créez vos propres formats
-          </p>
-        </div>
-        <Button onClick={() => setCreateDialog(true)} className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Créer un template
-        </Button>
+      <div className="text-center">
+        <h2 className="text-2xl font-bold mb-2">Templates d'Import Intelligent</h2>
+        <p className="text-muted-foreground">
+          Utilisez nos templates pré-configurés pour des imports optimisés par catégorie de produits
+        </p>
       </div>
 
-      {/* Search and Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher un template..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            
-            <div className="flex gap-2 flex-wrap">
-              {categories.map((category) => (
-                <Button
-                  key={category.value}
-                  variant={selectedCategory === category.value ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category.value)}
-                  className="text-xs"
-                >
-                  {category.label} ({category.count})
-                </Button>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Templates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredTemplates.map((template) => (
-          <Card key={template.id} className="hover:shadow-lg transition-shadow">
+        {sortedTemplates.map((template) => (
+          <Card 
+            key={template.id}
+            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-primary/20"
+          >
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{getTypeIcon(template.type)}</span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="text-base">{template.name}</CardTitle>
-                      {template.isPopular && (
-                        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700">
-                          <Star className="w-3 h-3 mr-1" />
-                          Populaire
-                        </Badge>
-                      )}
+                <div className={`p-3 ${template.color} rounded-xl text-white group-hover:scale-110 transition-transform`}>
+                  {template.icon}
+                </div>
+                <div className="text-right">
+                  <Badge className={getCategoryColor(template.category)}>
+                    {getCategoryIcon(template.category)}
+                    {template.category}
+                  </Badge>
+                  <div className="flex items-center gap-1 mt-1">
+                    <div className="text-xs text-muted-foreground">
+                      {template.popularity}% popularité
                     </div>
-                    {getTypeBadge(template.type)}
+                    <div className="w-12 bg-gray-200 rounded-full h-1.5">
+                      <div 
+                        className={`${template.color} h-1.5 rounded-full`}
+                        style={{ width: `${template.popularity}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
+              <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                {template.name}
+              </CardTitle>
             </CardHeader>
-            
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground line-clamp-2">
+              <p className="text-sm text-muted-foreground">
                 {template.description}
               </p>
               
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Database className="w-3 h-3" />
-                  {template.fields} champs
-                </span>
-                <span className="flex items-center gap-1">
-                  <Download className="w-3 h-3" />
-                  {template.downloads}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {template.createdAt.toLocaleDateString('fr-FR')}
-                </span>
+              <div className="space-y-2">
+                <div className="text-xs font-medium text-muted-foreground">
+                  Exemples d'URLs compatibles :
+                </div>
+                <div className="space-y-1">
+                  {template.examples.slice(0, 2).map((example, index) => (
+                    <Button
+                      key={index}
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-xs h-auto p-2 hover:bg-primary/5"
+                      onClick={() => onSelectTemplate(template, example)}
+                    >
+                      <div className="truncate text-left">
+                        {new URL(example).hostname}
+                      </div>
+                    </Button>
+                  ))}
+                </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => handleDownload(template)}
-                  className="flex-1"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Télécharger
-                </Button>
-                
-                <Button
-                  size="sm"
+              <div className="pt-2 border-t">
+                <Button 
+                  className="w-full group-hover:bg-primary group-hover:text-white transition-colors"
                   variant="outline"
-                  onClick={() => handlePreview(template)}
+                  onClick={() => onSelectTemplate(template, template.examples[0])}
                 >
-                  <Eye className="w-4 h-4" />
-                </Button>
-                
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleDuplicate(template)}
-                >
-                  <Copy className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Utiliser ce Template
                 </Button>
               </div>
             </CardContent>
@@ -316,142 +279,22 @@ export const ImportTemplates = () => {
         ))}
       </div>
 
-      {filteredTemplates.length === 0 && (
-        <div className="text-center py-12">
-          <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-muted-foreground">Aucun template trouvé</h3>
-          <p className="text-sm text-muted-foreground">
-            Essayez de modifier vos critères de recherche ou créez un nouveau template
-          </p>
-        </div>
-      )}
-
-      {/* Create Template Dialog */}
-      <Dialog open={createDialog} onOpenChange={setCreateDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Créer un nouveau template</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="template-name">Nom du template</Label>
-              <Input
-                id="template-name"
-                value={newTemplate.name}
-                onChange={(e) => setNewTemplate(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="ex: Mon template personnalisé"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="template-description">Description</Label>
-              <Textarea
-                id="template-description"
-                value={newTemplate.description}
-                onChange={(e) => setNewTemplate(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Décrivez l'usage de ce template..."
-                rows={3}
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Type de fichier</Label>
-                <select
-                  value={newTemplate.type}
-                  onChange={(e) => setNewTemplate(prev => ({ ...prev, type: e.target.value as any }))}
-                  className="w-full mt-1 px-3 py-2 border border-input rounded-md"
-                >
-                  <option value="csv">CSV</option>
-                  <option value="xml">XML</option>
-                  <option value="json">JSON</option>
-                </select>
-              </div>
-              
-              <div>
-                <Label>Catégorie</Label>
-                <select
-                  value={newTemplate.category}
-                  onChange={(e) => setNewTemplate(prev => ({ ...prev, category: e.target.value as any }))}
-                  className="w-full mt-1 px-3 py-2 border border-input rounded-md"
-                >
-                  <option value="catalog">Catalogue</option>
-                  <option value="ecommerce">E-commerce</option>
-                  <option value="inventory">Inventaire</option>
-                  <option value="custom">Personnalisé</option>
-                </select>
-              </div>
-            </div>
+      <div className="text-center text-sm text-muted-foreground">
+        <div className="flex items-center justify-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-red-500 rounded"></div>
+            <span>Popular (90%+ utilisé)</span>
           </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateDialog(false)}>
-              Annuler
-            </Button>
-            <Button onClick={handleCreateTemplate}>
-              Créer le template
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Preview Dialog */}
-      <Dialog open={previewDialog.open} onOpenChange={(open) => setPreviewDialog({ open, template: null })}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <span className="text-2xl">{previewDialog.template && getTypeIcon(previewDialog.template.type)}</span>
-              Aperçu: {previewDialog.template?.name}
-            </DialogTitle>
-          </DialogHeader>
-          
-          {previewDialog.template && (
-            <div className="space-y-4">
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <Label className="text-sm font-medium">Description</Label>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {previewDialog.template.description}
-                </p>
-              </div>
-              
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <Label className="text-sm font-medium">Aperçu de la structure</Label>
-                <pre className="text-xs bg-white p-3 mt-2 rounded border overflow-x-auto">
-                  {previewDialog.template.preview}
-                </pre>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-lg font-semibold">{previewDialog.template.fields}</div>
-                  <div className="text-xs text-muted-foreground">Champs</div>
-                </div>
-                <div>
-                  <div className="text-lg font-semibold">{previewDialog.template.downloads}</div>
-                  <div className="text-xs text-muted-foreground">Téléchargements</div>
-                </div>
-                <div>
-                  <div className="text-lg font-semibold">{previewDialog.template.createdAt.toLocaleDateString('fr-FR')}</div>
-                  <div className="text-xs text-muted-foreground">Créé le</div>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPreviewDialog({ open: false, template: null })}>
-              Fermer
-            </Button>
-            {previewDialog.template && (
-              <Button onClick={() => handleDownload(previewDialog.template!)}>
-                <Download className="w-4 h-4 mr-2" />
-                Télécharger
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-blue-500 rounded"></div>
+            <span>Trending (80%+ utilisé)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-gray-500 rounded"></div>
+            <span>Spécialisé</span>
+          </div>
+        </div>
+      </div>
     </div>
-  );
-};
+  )
+}
