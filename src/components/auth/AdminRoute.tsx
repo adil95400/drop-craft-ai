@@ -1,4 +1,4 @@
-import { useAdminRole } from '@/hooks/useAdminRole';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { Loader2 } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 
@@ -7,7 +7,7 @@ interface AdminRouteProps {
 }
 
 export const AdminRoute = ({ children }: AdminRouteProps) => {
-  const { isAdmin, loading } = useAdminRole();
+  const { isAdmin, loading, user } = useUnifiedAuth();
 
   if (loading) {
     return (
@@ -18,6 +18,10 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
         </div>
       </div>
     );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
   }
 
   if (!isAdmin) {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 
@@ -19,7 +19,7 @@ export interface AdminUser {
 }
 
 export const useAdminRole = () => {
-  const { user, profile, refetchProfile } = useAuth()
+  const { user, profile, refetchProfile } = useUnifiedAuth()
   const [loading, setLoading] = useState(true)
   const [users, setUsers] = useState<AdminUser[]>([])
   const [isAdmin, setIsAdmin] = useState(false)

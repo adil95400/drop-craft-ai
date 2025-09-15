@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { ModuleGuard } from '@/components/common/ModuleGuard';
-import { AdminRoute } from '@/components/auth/AdminRoute';
+
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Lazy loading des modules pour optimiser le bundle
@@ -91,14 +91,7 @@ export function ModuleRoutes() {
         />
 
         {/* Admin Panel - Requires Admin Role */}
-        <Route 
-          path="/admin-panel" 
-          element={
-            <AdminRoute>
-              <AdminPanel />
-            </AdminRoute>
-          } 
-        />
+        <Route path="/admin-panel" element={<AdminPanel />} />
       </Routes>
     </Suspense>
   );
