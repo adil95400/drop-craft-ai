@@ -3,8 +3,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
-import { Download, Loader2 } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { Download, Loader2, FileText } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { importExportService } from '@/services/importExportService'
+import { useRealProducts } from '@/hooks/useRealProducts'
 
 interface ProductExportDialogProps {
   open: boolean
@@ -13,34 +17,61 @@ interface ProductExportDialogProps {
 
 export function ProductExportDialog({ open, onOpenChange }: ProductExportDialogProps) {
   const { toast } = useToast()
+  const { products } = useRealProducts()
   const [isExporting, setIsExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(0)
   const [exportFormat, setExportFormat] = useState('csv')
 
   const handleExport = async () => {
+    if (products.length === 0) {
+      toast({
+        title: "Aucun produit à exporter",
+        description: "Vous devez avoir des produits pour effectuer un export",
+        variant: "destructive"
+      })
+      return
+    }
+
     setIsExporting(true)
     setExportProgress(0)
 
-    for (let i = 0; i <= 100; i += 10) {
-      await new Promise(resolve => setTimeout(resolve, 100))
-      setExportProgress(i)
+    try {
+      for (let i = 0; i <= 90; i += 10) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+        setExportProgress(i)
+      }
+
+      const filename = `produits_export_${new Date().toISOString().split('T')[0]}`
+      
+      switch (exportFormat) {
+        case 'csv':
+          importExportService.exportToCSV(products, `${filename}.csv`)
+          break
+        case 'json':
+          importExportService.exportToJSON(products, `${filename}.json`)
+          break
+        case 'excel':
+          importExportService.exportToExcel(products, `${filename}.xlsx`)
+          break
+      }
+
+      setExportProgress(100)
+      toast({
+        title: "Export réussi !",
+        description: `${products.length} produits exportés en ${exportFormat.toUpperCase()}`
+      })
+      
+      setTimeout(() => onOpenChange(false), 1000)
+    } catch (error) {
+      toast({
+        title: "Erreur d'export",
+        description: "Une erreur est survenue",
+        variant: "destructive"
+      })
+    } finally {
+      setIsExporting(false)
+      setExportProgress(0)
     }
-
-    const csvContent = "data:text/csv;charset=utf-8,ID,Nom,Prix,Stock\n1,Produit 1,29.99,10"
-    const link = document.createElement("a")
-    link.setAttribute("href", encodeURI(csvContent))
-    link.setAttribute("download", `produits_export.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
-    toast({
-      title: "Export réussi !",
-      description: "Les produits ont été exportés"
-    })
-    
-    setIsExporting(false)
-    onOpenChange(false)
   }
 
   return (

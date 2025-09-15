@@ -32,8 +32,24 @@ export function ProductBulkOperations({ selectedProducts, onClearSelection }: Pr
 
   const handleBulkEdit = async () => {
     try {
-      // Simuler l'édition en masse des produits sélectionnés
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const { importExportService } = await import('@/services/importExportService')
+      
+      // Appliquer les modifications selon les champs remplis
+      if (bulkEditData.category) {
+        await importExportService.bulkUpdateCategory(selectedProducts, bulkEditData.category)
+      }
+      
+      if (bulkEditData.status) {
+        await importExportService.bulkUpdateStatus(selectedProducts, bulkEditData.status as 'active' | 'inactive')
+      }
+      
+      if (bulkEditData.priceAdjustment) {
+        const adjustment = parseFloat(bulkEditData.priceAdjustment)
+        const multiplier = bulkEditData.adjustmentType === 'percentage' 
+          ? 1 + (adjustment / 100) 
+          : adjustment
+        await importExportService.bulkUpdatePrices(selectedProducts, multiplier)
+      }
       
       toast({
         title: "Édition en masse réussie",
@@ -41,11 +57,12 @@ export function ProductBulkOperations({ selectedProducts, onClearSelection }: Pr
       })
       
       setShowBulkEditDialog(false)
+      setBulkEditData({ category: '', status: '', priceAdjustment: '', adjustmentType: 'percentage' })
       onClearSelection()
     } catch (error) {
       toast({
         title: "Erreur lors de l'édition",
-        description: "Une erreur est survenue lors de la mise à jour",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de la mise à jour",
         variant: "destructive"
       })
     }
@@ -73,20 +90,22 @@ export function ProductBulkOperations({ selectedProducts, onClearSelection }: Pr
 
   const handleBulkExport = async () => {
     try {
-      // Simuler l'export des produits sélectionnés
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const { importExportService } = await import('@/services/importExportService')
+      const { supabase } = await import('@/integrations/supabase/client')
       
-      // Créer un fichier CSV fictif
-      const csvContent = "data:text/csv;charset=utf-8,ID,Nom,Prix,Stock\n" + 
-        selectedProducts.map(id => `${id},Produit ${id},29.99,10`).join("\n")
+      // Récupérer les données réelles des produits sélectionnés
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('*')
+        .in('id', selectedProducts)
       
-      const encodedUri = encodeURI(csvContent)
-      const link = document.createElement("a")
-      link.setAttribute("href", encodedUri)
-      link.setAttribute("download", `produits_export_${new Date().toISOString().split('T')[0]}.csv`)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      if (error) throw error
+      
+      // Exporter en CSV avec les vraies données
+      importExportService.exportToCSV(
+        products, 
+        `produits_selection_${new Date().toISOString().split('T')[0]}.csv`
+      )
       
       toast({
         title: "Export réussi",
@@ -97,7 +116,7 @@ export function ProductBulkOperations({ selectedProducts, onClearSelection }: Pr
     } catch (error) {
       toast({
         title: "Erreur lors de l'export",
-        description: "Une erreur est survenue lors de l'export",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de l'export",
         variant: "destructive"
       })
     }
@@ -115,8 +134,10 @@ export function ProductBulkOperations({ selectedProducts, onClearSelection }: Pr
     if (!confirmed) return
 
     try {
-      // Simuler la suppression des produits
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const { importExportService } = await import('@/services/importExportService')
+      const success = await importExportService.bulkDelete(selectedProducts)
+      
+      if (!success) throw new Error('Échec de la suppression')
       
       toast({
         title: "Suppression réussie",
@@ -127,7 +148,7 @@ export function ProductBulkOperations({ selectedProducts, onClearSelection }: Pr
     } catch (error) {
       toast({
         title: "Erreur lors de la suppression",
-        description: "Une erreur est survenue lors de la suppression",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de la suppression",
         variant: "destructive"
       })
     }
@@ -135,7 +156,10 @@ export function ProductBulkOperations({ selectedProducts, onClearSelection }: Pr
 
   const handleBulkStatusChange = async (status: string) => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const { importExportService } = await import('@/services/importExportService')
+      const success = await importExportService.bulkUpdateStatus(selectedProducts, status as 'active' | 'inactive')
+      
+      if (!success) throw new Error('Échec de la mise à jour du statut')
       
       toast({
         title: "Statut mis à jour",
@@ -146,7 +170,7 @@ export function ProductBulkOperations({ selectedProducts, onClearSelection }: Pr
     } catch (error) {
       toast({
         title: "Erreur",
-        description: "Erreur lors de la mise à jour du statut",
+        description: error instanceof Error ? error.message : "Erreur lors de la mise à jour du statut",
         variant: "destructive"
       })
     }
