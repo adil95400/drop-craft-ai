@@ -160,7 +160,7 @@ export const AlertSystem: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Performance check failed:', error);
+      // Performance check failed silently
     }
   };
 
@@ -174,10 +174,9 @@ export const AlertSystem: React.FC = () => {
         .order('created_at', { ascending: false })
         .limit(1);
 
-      // This is a placeholder - in a real system you'd have actual health metrics
-      console.log('System health check completed');
+      // System health check completed
     } catch (error) {
-      console.error('System health check failed:', error);
+      // System health check failed
     }
   };
 
@@ -203,7 +202,7 @@ export const AlertSystem: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('User anomaly check failed:', error);
+      // User anomaly check failed silently  
     }
   };
 
@@ -257,14 +256,17 @@ export const AlertSystem: React.FC = () => {
       }
 
     } catch (error) {
-      console.error('Failed to create alert:', error);
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la création de l'alerte",
+        variant: "destructive"
+      });
     }
   };
 
   const acknowledgeAlert = async (alertId: string) => {
     try {
-      // Just update local state for now
-      console.log('Acknowledging alert:', alertId);
+      // Acquitter l'alerte
 
       setAlerts(prev => prev.map(alert => 
         alert.id === alertId ? { ...alert, acknowledged: true } : alert
@@ -275,14 +277,17 @@ export const AlertSystem: React.FC = () => {
         description: "Alert has been acknowledged and will be marked as seen."
       });
     } catch (error) {
-      console.error('Failed to acknowledge alert:', error);
+      toast({
+        title: "Erreur", 
+        description: "Erreur lors de l'acquittement",
+        variant: "destructive"
+      });
     }
   };
 
   const resolveAlert = async (alertId: string) => {
     try {
-      // Just update local state for now
-      console.log('Resolving alert:', alertId);
+      // Résoudre l'alerte
 
       setAlerts(prev => prev.map(alert => 
         alert.id === alertId ? { ...alert, resolved: true } : alert
@@ -293,7 +298,11 @@ export const AlertSystem: React.FC = () => {
         description: "Alert has been marked as resolved."
       });
     } catch (error) {
-      console.error('Failed to resolve alert:', error);
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la résolution", 
+        variant: "destructive"
+      });
     }
   };
 

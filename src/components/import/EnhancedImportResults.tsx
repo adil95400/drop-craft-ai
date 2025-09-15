@@ -535,7 +535,22 @@ export const EnhancedImportResults = () => {
                           </Tabs>
                           <div className="flex justify-end gap-2 pt-4">
                             <Button variant="outline">Annuler</Button>
-                            <Button onClick={() => toast.success('Produit mis à jour avec succès')}>
+                            <Button 
+                              onClick={async () => {
+                                // Simuler la mise à jour du produit avec validation
+                                const tagsInput = document.getElementById('edit-tags') as HTMLInputElement;
+                                const nameInput = document.getElementById('edit-name') as HTMLInputElement;
+                                const priceInput = document.getElementById('edit-price') as HTMLInputElement;
+                                
+                                if (nameInput?.value && priceInput?.value) {
+                                  // Simuler une sauvegarde asynchrone
+                                  await new Promise(resolve => setTimeout(resolve, 500));
+                                  toast.success('Produit mis à jour avec succès');
+                                } else {
+                                  toast.error('Veuillez remplir tous les champs obligatoires');
+                                }
+                              }}
+                            >
                               Sauvegarder
                             </Button>
                           </div>

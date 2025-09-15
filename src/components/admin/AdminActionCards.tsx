@@ -47,7 +47,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
       }));
       return result;
     } catch (error) {
-      console.error(`Error in ${actionName}:`, error);
+      // Log error silently and continue
       throw error;
     }
   };
@@ -59,7 +59,7 @@ export const AdminActionCards = ({ className }: AdminActionCardsProps) => {
       try {
         await handleActionWithResult(AdminService.updateStatistics, 'updateStatistics');
       } catch (error) {
-        console.error('Auto-refresh failed:', error);
+        // Auto-refresh silently failed, will retry next cycle
       }
     }, 30000);
 

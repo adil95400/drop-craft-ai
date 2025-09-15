@@ -13,3 +13,5 @@ export { SEOOptimizationDialog } from './SEOOptimizationDialog';
 export { BlogPostDialog } from './BlogPostDialog';
 export { SupportTicketDialog } from './SupportTicketDialog';
 export { BulkActionsDialog } from './BulkActionsDialog';
+export { AIAlertsModal } from './AIAlertsModal';
+export { CarrierDetailsModal } from './CarrierDetailsModal';

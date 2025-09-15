@@ -58,11 +58,10 @@ export const AdminPlanSwitcher = () => {
       });
 
     } catch (error) {
-      console.error('Error updating admin mode:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de changer le mode administrateur",
-        variant: "destructive",
+        description: "Impossible de mettre à jour le mode admin",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
