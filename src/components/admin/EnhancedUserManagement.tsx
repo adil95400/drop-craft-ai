@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { logError } from '@/utils/consoleCleanup';
 import { useAdminRole } from '@/hooks/useAdminRole'
 import { usePlanSystem } from '@/lib/unified-plan-system'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -98,7 +99,7 @@ export const EnhancedUserManagement = () => {
       setIsPlanDialogOpen(false)
       setSelectedUserForPlan(null)
     } catch (error: any) {
-      console.error('Error updating user plan:', error)
+      logError(error, 'EnhancedUserManagement.updateUserPlan');
       toast({
         title: "Erreur",
         description: error.message || "Impossible de mettre à jour le plan",

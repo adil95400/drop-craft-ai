@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logError } from '@/utils/consoleCleanup';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -92,7 +93,7 @@ export const RealTimeMonitoring = () => {
         activeUsers: users?.length || 0
       }));
     } catch (error) {
-      console.error('Error loading metrics:', error);
+      logError(error, 'RealTimeMonitoring.loadMetrics');
     }
   };
 

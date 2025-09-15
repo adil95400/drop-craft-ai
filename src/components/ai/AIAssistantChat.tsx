@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { logError } from '@/utils/consoleCleanup';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -145,7 +146,7 @@ export const AIAssistantChat = ({ context, className }: AIAssistantChatProps) =>
       });
 
     } catch (error: any) {
-      console.error('Error sending message:', error);
+      logError(error, 'AIAssistantChat.sendMessage');
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),

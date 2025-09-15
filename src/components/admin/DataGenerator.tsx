@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { logError } from '@/utils/consoleCleanup';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -54,7 +55,7 @@ export const DataGenerator: React.FC = () => {
       toast.success(`Données de test générées: ${action}`);
       
     } catch (error: any) {
-      console.error('Generation error:', error);
+      logError(error, 'DataGenerator.generateSampleData');
       toast.error('Erreur lors de la génération: ' + error.message);
     } finally {
       setLoading(false);
@@ -82,7 +83,7 @@ export const DataGenerator: React.FC = () => {
       toast.success(`Synchronisation marketplace terminée: ${data.data.products_synced} produits`);
       
     } catch (error: any) {
-      console.error('Marketplace sync error:', error);
+      logError(error, 'DataGenerator.syncMarketplace');
       toast.error('Erreur lors de la synchronisation: ' + error.message);
     } finally {
       setLoading(false);
@@ -126,7 +127,7 @@ export const DataGenerator: React.FC = () => {
       toast.success(`Génération complète: ${totalGenerated} éléments créés`);
       
     } catch (error: any) {
-      console.error('Full generation error:', error);
+      logError(error, 'DataGenerator.generateFullSampleData');
       toast.error('Erreur lors de la génération complète: ' + error.message);
     } finally {
       setLoading(false);

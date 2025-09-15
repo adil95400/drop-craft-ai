@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { logError } from '@/utils/consoleCleanup';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -132,7 +133,7 @@ export function AIOptimizer() {
       setStats(mockStats);
 
     } catch (error) {
-      console.error('Error fetching optimization data:', error);
+      logError(error, 'AIOptimizer.fetchOptimizationData');
       toast({
         title: "Erreur",
         description: "Impossible de charger les données d'optimisation",
@@ -188,7 +189,7 @@ export function AIOptimizer() {
       }
 
     } catch (error) {
-      console.error('Error running optimization:', error);
+      logError(error, 'AIOptimizer.runOptimization');
       setTasks(prev => prev.map(t => 
         t.id === taskId 
           ? { ...t, status: 'failed' as const }

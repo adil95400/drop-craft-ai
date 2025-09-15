@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { logError } from '@/utils/consoleCleanup';
 import { TrendingUp, TrendingDown, Eye, ShoppingCart, Calendar, Filter } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -138,7 +139,7 @@ export const PredictiveAIInterface = () => {
       setInsights(mockInsights);
       setSalesData(mockSalesData);
     } catch (error) {
-      console.error('Error loading predictive data:', error);
+      logError(error, 'PredictiveAIInterface.loadPredictiveData');
       toast({
         title: 'Erreur',
         description: 'Impossible de charger les données prédictives',

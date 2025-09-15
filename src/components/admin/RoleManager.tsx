@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { logError } from '@/utils/consoleCleanup';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -68,7 +69,7 @@ export const RoleManager = () => {
         setUsers(data || [])
       }
     } catch (error) {
-      console.error('Error loading users:', error)
+      logError(error, 'RoleManager.loadUsers');
     } finally {
       setLoading(false)
     }

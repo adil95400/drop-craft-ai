@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { logError } from '@/utils/consoleCleanup';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -165,7 +166,7 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
       setRecommendations(filteredRecommendations.slice(0, limit));
       
     } catch (error) {
-      console.error('Error fetching recommendations:', error);
+      logError(error, 'AIRecommendations.fetchRecommendations');
       toast({
         title: "Erreur",
         description: "Impossible de charger les recommandations IA",
@@ -197,7 +198,7 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
 
       await fetchRecommendations();
     } catch (error) {
-      console.error('Error generating recommendations:', error);
+      logError(error, 'AIRecommendations.generateRecommendations');
       toast({
         title: "Erreur",
         description: "Impossible de générer de nouvelles recommandations",
@@ -241,7 +242,7 @@ export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) 
       }, 2000);
 
     } catch (error) {
-      console.error('Error executing action:', error);
+      logError(error, 'AIRecommendations.executeAction');
       toast({
         title: "Erreur",
         description: "Impossible d'exécuter cette action",

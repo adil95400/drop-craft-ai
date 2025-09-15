@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { logError } from '@/utils/consoleCleanup';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -96,7 +97,7 @@ export const UserForceDisconnect = ({
       onSuccess?.()
 
     } catch (error) {
-      console.error('Error force disconnecting user:', error)
+      logError(error, 'UserForceDisconnect.forceDisconnectUser');
       toast({
         title: "Erreur",
         description: error instanceof Error ? error.message : "Erreur inconnue",
