@@ -9,6 +9,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AppLayout } from '@/layouts/AppLayout';
 import { NotificationProvider } from '@/components/notifications/NotificationService';
 import { ThemeProvider } from 'next-themes';
+import { GlobalModals } from '@/components/GlobalModals';
 import '@/lib/i18n';
 
 // Pages
@@ -524,10 +525,12 @@ function App() {
                 
                 <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />
                 
-                <Route path="*" element={<Navigate to="/" replace />} />
+                {/* 404 Not Found Page */}
+                <Route path="*" element={<NotFoundPage />} />
               </Routes>
               <Toaster />
               <SonnerToaster />
+              <GlobalModals />
             </NotificationProvider>
           </UnifiedPlanProvider>
         </UnifiedAuthProvider>

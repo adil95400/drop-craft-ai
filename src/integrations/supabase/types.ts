@@ -6371,7 +6371,7 @@ export type Database = {
         Returns: string
       }
       get_user_role_secure: {
-        Args: { user_id_param?: string }
+        Args: { check_user_id?: string }
         Returns: string
       }
       has_feature_flag: {
@@ -6414,6 +6414,10 @@ export type Database = {
         Returns: boolean
       }
       is_authenticated_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_authenticated_admin_secure: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
