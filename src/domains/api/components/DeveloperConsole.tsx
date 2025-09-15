@@ -151,7 +151,7 @@ export function DeveloperConsole() {
       }
     ]
 
-    setAPIKeys(mockAPIKeys)
+    setApiKeys(mockAPIKeys)
     setWebhooks(mockWebhooks)
     setLoading(false)
   }, [])
