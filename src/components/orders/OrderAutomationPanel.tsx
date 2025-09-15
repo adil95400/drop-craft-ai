@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { toast } from "sonner";
+import { logError, logWarning } from "@/utils/consoleCleanup";
 import { 
   Package, Send, Truck, CheckCircle, XCircle, Clock, 
   ExternalLink, RefreshCw, Eye, AlertTriangle 
@@ -92,7 +94,7 @@ export const OrderAutomationPanel: React.FC = () => {
       if (error) throw error
       setOrders(data as any || [])
     } catch (error) {
-      console.error('Error loading orders:', error)
+      logError(error as Error, 'Error loading orders')
       toast({
         title: "Erreur",
         description: "Impossible de charger les commandes fournisseurs",
@@ -129,7 +131,7 @@ export const OrderAutomationPanel: React.FC = () => {
 
       loadOrders() // Refresh
     } catch (error) {
-      console.error('Error sending order:', error)
+      logError(error as Error, 'Error sending order')
       toast({
         title: "Erreur",
         description: "Impossible d'envoyer la commande au fournisseur",
@@ -164,7 +166,7 @@ export const OrderAutomationPanel: React.FC = () => {
 
       loadOrders() // Refresh
     } catch (error) {
-      console.error('Error updating tracking:', error)
+      logError(error as Error, 'Error updating tracking')
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour le suivi",
@@ -194,7 +196,7 @@ export const OrderAutomationPanel: React.FC = () => {
 
       loadOrders() // Refresh
     } catch (error) {
-      console.error('Error bulk updating:', error)
+      logError(error as Error, 'Error bulk updating')
       toast({
         title: "Erreur",
         description: "Impossible de faire la mise à jour groupée",

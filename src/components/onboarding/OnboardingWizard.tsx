@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from "sonner";
+import { logError } from "@/utils/consoleCleanup";
 import { useAuth } from '@/contexts/AuthContext';
 
 interface OnboardingData {
@@ -116,7 +118,7 @@ export function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) 
 
       onComplete(data);
     } catch (error) {
-      console.error('Error saving onboarding data:', error);
+      logError(error as Error, 'Error saving onboarding data');
       toast({
         title: "Erreur",
         description: "Impossible de sauvegarder la configuration.",

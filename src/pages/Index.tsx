@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { OnboardingWizard } from '@/components/commercial/OnboardingWizard';
 import { QuotaDisplay } from '@/components/commercial/QuotaDisplay';
 import { SmartPlanSelector } from '@/components/plan/SmartPlanSelector';
+import { SidebarLayout } from '@/layouts/SidebarLayout';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Crown, Zap, Users, Star, ArrowRight } from "lucide-react";
@@ -174,30 +175,39 @@ const Index = () => {
         <meta name="description" content="Automatisez vos imports produits, trouvez les meilleurs fournisseurs et optimisez votre e-commerce avec l'IA. Solution complète pour les entrepreneurs." />
       </Helmet>
 
-      <main>
-        {user ? (
-          <div className="container mx-auto px-4 py-8">
-            <OnboardingWizard />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <Hero />
+      {user ? (
+        <SidebarLayout>
+          <div className="container mx-auto px-6 py-8">
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+              {/* Colonne principale avec onboarding */}
+              <div className="xl:col-span-3 space-y-6">
+                <OnboardingWizard />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <Hero />
+                  </div>
+                  <div>
+                    <Features />
+                  </div>
+                </div>
+                <Testimonials />
               </div>
-              <div>
+              
+              {/* Colonne sidebar avec quotas */}
+              <div className="xl:col-span-1 space-y-6">
                 <QuotaDisplay />
               </div>
             </div>
-            <Features />
-            <Testimonials />
           </div>
-        ) : (
-          <>
-            <Hero />
-            <Features />
-            <Testimonials />
-            <CTA />
-          </>
-        )}
-      </main>
+        </SidebarLayout>
+      ) : (
+        <main>
+          <Hero />
+          <Features />
+          <Testimonials />
+          <CTA />
+        </main>
+      )}
     </>
   );
 };
