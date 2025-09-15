@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { logAction, logError } from '@/utils/consoleCleanup'
 
 interface ExtensionSyncLog {
   id: string
@@ -81,7 +82,7 @@ export const BrowserExtensionImportInterface = () => {
       if (error) throw error
       setSyncLogs(data || [])
     } catch (error) {
-      console.error('Error loading sync logs:', error)
+      logError(error as Error, 'Loading sync logs')
     }
   }
 
@@ -94,25 +95,25 @@ export const BrowserExtensionImportInterface = () => {
 
   const handleDownload = async () => {
     setIsDownloading(true);
-    console.log('Starting extension download...');
+    logAction('Starting extension download');
     
     try {
       // First, let's test if the edge function is accessible
-      console.log('Testing edge function accessibility...');
+      logAction('Testing edge function accessibility');
       
       // Try multiple approaches to diagnose the issue
       const approaches = [
         // Approach 1: Standard supabase.functions.invoke
         async () => {
-          console.log('Trying supabase.functions.invoke...');
+          logAction('Trying supabase.functions.invoke');
           const { data, error } = await supabase.functions.invoke('extension-download');
-          console.log('Supabase invoke result:', { data, error });
+          logAction('Supabase invoke result', { data, error });
           return { data, error, method: 'supabase.functions.invoke' };
         },
         
         // Approach 2: Direct fetch as fallback
         async () => {
-          console.log('Trying direct fetch...');
+          logAction('Trying direct fetch');
           const response = await fetch(`https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-download`, {
             method: 'GET',
             headers: {
@@ -126,7 +127,7 @@ export const BrowserExtensionImportInterface = () => {
           }
           
           const data = await response.json();
-          console.log('Direct fetch result:', data);
+          logAction('Direct fetch result', data);
           return { data, error: null, method: 'direct fetch' };
         }
       ];
@@ -139,11 +140,11 @@ export const BrowserExtensionImportInterface = () => {
         try {
           result = await approach();
           if (result.data && !result.error) {
-            console.log(`Success with ${result.method}`);
+            logAction(`Success with ${result.method}`);
             break;
           }
         } catch (error) {
-          console.error(`Failed with ${result?.method || 'unknown method'}:`, error);
+          logError(error as Error, `Failed with ${result?.method || 'unknown method'}`);
           lastError = error;
         }
       }
@@ -155,11 +156,11 @@ export const BrowserExtensionImportInterface = () => {
       const { data } = result;
       
       if (!data?.success || !data?.data) {
-        console.error('Invalid response format:', data);
+        logError(new Error('Invalid response format'), 'Extension download');
         throw new Error('Format de réponse invalide du serveur');
       }
       
-      console.log('Converting base64 to blob...', { size: data.data.length });
+      logAction('Converting base64 to blob', { size: data.data.length });
       
       // Convert base64 to binary
       const binaryString = atob(data.data);
@@ -168,7 +169,7 @@ export const BrowserExtensionImportInterface = () => {
         bytes[i] = binaryString.charCodeAt(i);
       }
       
-      console.log('Creating blob...', { byteLength: bytes.length });
+      logAction('Creating blob', { byteLength: bytes.length });
       
       // Create download link
       const blob = new Blob([bytes], { type: 'application/zip' });
@@ -183,17 +184,13 @@ export const BrowserExtensionImportInterface = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      console.log('Download completed successfully');
+      logAction('Download completed successfully');
       toast.success("Extension téléchargée avec succès ! Consultez le guide d'installation pour l'activer.", {
         duration: 5000
       });
       
     } catch (error) {
-      console.error('Download error details:', {
-        error,
-        message: error instanceof Error ? error.message : 'Erreur inconnue',
-        stack: error instanceof Error ? error.stack : undefined
-      });
+      logError(error as Error, 'Extension download');
       
       // More specific error messages
       let errorMessage = 'Erreur inconnue';

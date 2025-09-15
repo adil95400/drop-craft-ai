@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { performSecureSignOut } from '@/utils/auth';
+import { logAction, logError } from '@/utils/consoleCleanup';
 
 export const DisconnectNotification = () => {
   const { user } = useAuth();
@@ -11,15 +12,15 @@ export const DisconnectNotification = () => {
   useEffect(() => {
     if (!user) return;
 
-    console.log('Setting up disconnect notification listener for user:', user.id);
+    logAction('Setting up disconnect notification listener', { userId: user.id });
 
     // Subscribe to real-time disconnect notifications
     const channel = supabase.channel('user-disconnections')
       .on('broadcast', { event: 'force_disconnect' }, (payload) => {
-        console.log('Received disconnect notification:', payload);
+        logAction('Received disconnect notification', payload);
         
         if (payload.payload.userId === user.id) {
-          console.log('User is being force disconnected');
+          logAction('User is being force disconnected');
           
           toast({
             title: 'Session terminée',
@@ -35,7 +36,7 @@ export const DisconnectNotification = () => {
         }
       })
       .subscribe((status) => {
-        console.log('Disconnect notification channel status:', status);
+        logAction('Disconnect notification channel status', status);
       });
 
     // Also check for token revocation periodically
@@ -46,12 +47,12 @@ export const DisconnectNotification = () => {
         });
 
         if (error) {
-          console.error('Error checking token revocation:', error);
+          logError(error, 'Token revocation check');
           return;
         }
 
         if (data === true) {
-          console.log('Token is revoked, signing out user');
+          logAction('Token is revoked, signing out user');
           
           toast({
             title: 'Session expirée',
@@ -64,7 +65,7 @@ export const DisconnectNotification = () => {
           }, 2000);
         }
       } catch (error) {
-        console.error('Error in token revocation check:', error);
+        logError(error as Error, 'Token revocation check');
       }
     };
 
@@ -75,7 +76,7 @@ export const DisconnectNotification = () => {
     checkTokenRevocation();
 
     return () => {
-      console.log('Cleaning up disconnect notification listener');
+      logAction('Cleaning up disconnect notification listener');
       supabase.removeChannel(channel);
       clearInterval(interval);
     };

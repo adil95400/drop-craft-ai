@@ -24,6 +24,7 @@ import {
   Zap
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { logAction } from '@/utils/consoleCleanup'
 
 // Mock developer data
 const DEVELOPER_DATA = {
@@ -517,13 +518,13 @@ const myExtension = createExtension({
   }
 }, {
   async onInstall() {
-    console.log('Extension installée !')
+    logAction('Extension installée');
   },
   
   async onActivate() {
     const sdk = this.sdk
     const products = await sdk.products.list({ limit: 10 })
-    console.log('Produits récupérés:', products.length)
+    logAction('Produits récupérés', { count: products.length });
   }
 })`}
                 </pre>

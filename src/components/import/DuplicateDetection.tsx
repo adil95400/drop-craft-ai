@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import { toast } from '@/hooks/use-toast'
 import { Search, AlertTriangle, Merge, Trash2, Eye } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
+import { logError } from '@/utils/consoleCleanup'
 
 interface DuplicateGroup {
   id: string
@@ -63,7 +64,7 @@ export function DuplicateDetection({ onDuplicatesResolved }: DuplicateDetectionP
       })
 
     } catch (error) {
-      console.error('Error scanning duplicates:', error)
+      logError(error as Error, 'Duplicate detection scan');
       toast({
         title: "Erreur de scan",
         description: "Impossible de détecter les doublons",

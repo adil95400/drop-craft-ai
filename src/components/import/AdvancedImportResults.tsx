@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { logAction } from '@/utils/consoleCleanup';
 import { 
   Table, 
   TableBody, 
@@ -454,7 +455,7 @@ export const AdvancedImportResults = () => {
           onClose={() => setEditingProduct(null)}
           onSave={(updatedProduct) => {
             // Handle product update
-            console.log('Updating product:', updatedProduct);
+            logAction('Updating product', updatedProduct);
             setEditingProduct(null);
           }}
         />
