@@ -20,6 +20,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { logError } from '@/utils/consoleCleanup';
 
 interface AutomationRule {
   id: string;
@@ -141,7 +142,7 @@ export function AutomationCenter() {
       setStats(mockStats);
 
     } catch (error) {
-      console.error('Error fetching automation data:', error);
+      logError(error as Error, 'Error fetching automation data');
       toast({
         title: "Erreur",
         description: "Impossible de charger les données d'automatisation",
@@ -165,7 +166,7 @@ export function AutomationCenter() {
         description: `La règle a été ${newStatus === 'active' ? 'activée' : 'mise en pause'} avec succès`,
       });
     } catch (error) {
-      console.error('Error toggling rule:', error);
+      logError(error as Error, 'Error toggling rule');
       toast({
         title: "Erreur",
         description: "Impossible de modifier le statut de la règle",
@@ -191,7 +192,7 @@ export function AutomationCenter() {
         description: "La règle d'automatisation a été exécutée avec succès",
       });
     } catch (error) {
-      console.error('Error executing rule:', error);
+      logError(error as Error, 'Error executing rule');
       toast({
         title: "Erreur d'exécution",
         description: "Impossible d'exécuter la règle d'automatisation",

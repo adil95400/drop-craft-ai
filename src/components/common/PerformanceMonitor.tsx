@@ -3,6 +3,7 @@ import React from 'react';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import { createSupabaseQuery } from '@/lib/fetcher';
 import { supabase } from '@/integrations/supabase/client';
+import { logAction, logWarning } from '@/utils/consoleCleanup';
 
 interface PerformanceMonitorProps {
   children: React.ReactNode;
@@ -31,7 +32,7 @@ export function PerformanceMonitor({ children }: PerformanceMonitorProps) {
         const lcp = entries[entries.length - 1] as PerformanceEntry;
         
         if (lcp.startTime > 2500) {
-          console.warn(`LCP slow: ${lcp.startTime}ms`);
+          logWarning(`LCP slow: ${lcp.startTime}ms`, 'PerformanceMonitor');
         }
       });
 
@@ -45,7 +46,7 @@ export function PerformanceMonitor({ children }: PerformanceMonitorProps) {
         }
         
         if (clsValue > 0.1) {
-          console.warn(`CLS high: ${clsValue}`);
+          logWarning(`CLS high: ${clsValue}`, 'PerformanceMonitor');
         }
       });
 
@@ -53,7 +54,7 @@ export function PerformanceMonitor({ children }: PerformanceMonitorProps) {
         lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
         clsObserver.observe({ entryTypes: ['layout-shift'] });
       } catch (error) {
-        console.warn('Performance observer not supported', error);
+        logWarning('Performance observer not supported', 'PerformanceMonitor');
       }
 
       return () => {
@@ -83,7 +84,7 @@ export function PerformanceMonitor({ children }: PerformanceMonitorProps) {
           Object.entries(metrics).forEach(([key, value]) => {
             if (value > 0) {
               const color = value > 1000 ? 'color: red' : value > 500 ? 'color: orange' : 'color: green';
-              console.log(`%c${key}: ${Math.round(value)}ms`, color);
+              logAction(`${key}: ${Math.round(value)}ms`);
             }
           });
           console.groupEnd();

@@ -26,6 +26,7 @@ import {
   MessageSquare,
   AlertCircle
 } from 'lucide-react';
+import { logError } from '@/utils/consoleCleanup';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -162,7 +163,7 @@ export const CRMDashboard: React.FC = () => {
       });
 
     } catch (error) {
-      console.error('Error fetching CRM data:', error);
+      logError(error as Error, 'Error fetching CRM data');
       toast({
         title: "Erreur",
         description: "Impossible de charger les données CRM",

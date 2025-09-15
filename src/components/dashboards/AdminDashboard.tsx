@@ -28,6 +28,7 @@ import {
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 import DataGenerator from '@/components/admin/DataGenerator';
+import { logError } from '@/utils/consoleCleanup';
 
 interface SystemStatus {
   database: 'operational' | 'degraded' | 'down';
@@ -149,7 +150,7 @@ export const AdminDashboard: React.FC = () => {
       checkSystemHealth();
 
     } catch (error) {
-      console.error('Error fetching admin dashboard data:', error);
+      logError(error as Error, 'Error fetching admin dashboard data');
     } finally {
       setLoading(false);
     }
@@ -167,7 +168,7 @@ export const AdminDashboard: React.FC = () => {
         auth: 'operational'
       });
     } catch (error) {
-      console.error('System health check failed:', error);
+      logError(error as Error, 'System health check failed');
     }
   };
 

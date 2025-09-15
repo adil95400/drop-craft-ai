@@ -18,6 +18,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { logError } from '@/utils/consoleCleanup';
 
 interface Competitor {
   id: string;
@@ -155,7 +156,7 @@ export function CompetitiveAnalyzer() {
       setInsights(mockInsights);
       
     } catch (error) {
-      console.error('Error fetching competitive data:', error);
+      logError(error as Error, 'Error fetching competitive data');
       toast({
         title: "Erreur",
         description: "Impossible de charger les données concurrentielles",
@@ -187,7 +188,7 @@ export function CompetitiveAnalyzer() {
 
       await fetchCompetitiveData();
     } catch (error) {
-      console.error('Error running competitive analysis:', error);
+      logError(error as Error, 'Error running competitive analysis');
       toast({
         title: "Erreur",
         description: "Impossible de lancer l'analyse concurrentielle",

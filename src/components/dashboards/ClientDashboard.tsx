@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/utils/consoleCleanup';
 
 interface DashboardMetrics {
   revenue: number;
@@ -150,7 +151,7 @@ export const ClientDashboard: React.FC = () => {
       }
 
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      logError(error as Error, 'Error fetching dashboard data');
     } finally {
       setLoading(false);
     }

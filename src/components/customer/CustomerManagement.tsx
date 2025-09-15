@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Plus, Mail, Phone, MapPin, User, Calendar, ShoppingBag } from 'lucide-react';
 import { useCustomerManagement } from '@/hooks/useCustomerManagement';
+import { logError } from '@/utils/consoleCleanup';
 
 export function CustomerManagement() {
   const { customers, segments, loading, createCustomer, updateCustomer, createSegment } = useCustomerManagement();
@@ -30,7 +31,7 @@ export function CustomerManagement() {
       await createCustomer(data);
       setIsNewCustomerOpen(false);
     } catch (error) {
-      console.error('Error creating customer:', error);
+      logError(error as Error, 'Error creating customer');
     }
   };
 
@@ -39,7 +40,7 @@ export function CustomerManagement() {
       await createSegment(data);
       setIsNewSegmentOpen(false);
     } catch (error) {
-      console.error('Error creating segment:', error);
+      logError(error as Error, 'Error creating segment');
     }
   };
 

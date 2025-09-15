@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
 import { useAuth } from '@/contexts/AuthContext';
+import { logError } from '@/utils/consoleCleanup';
 
 interface PerformanceMetric {
   id: string;
@@ -181,7 +182,7 @@ export function PerformanceDashboard() {
 
       setData(mockData);
     } catch (error) {
-      console.error('Error fetching performance data:', error);
+      logError(error as Error, 'Error fetching performance data');
     } finally {
       setLoading(false);
     }

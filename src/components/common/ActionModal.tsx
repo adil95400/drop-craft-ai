@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { logError } from '@/utils/consoleCleanup';
 
 interface ActionModalProps {
   open: boolean;
@@ -38,7 +39,7 @@ export function ActionModal({
     try {
       await onConfirm();
     } catch (error) {
-      console.error('Modal action failed:', error);
+      logError(error as Error, 'Modal action failed');
     }
   };
 
