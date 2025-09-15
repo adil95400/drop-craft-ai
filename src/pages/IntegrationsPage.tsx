@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Plug, CheckCircle, Settings, Plus, Search, Zap, Globe, ShoppingCart } from 'lucide-react';
+import { Plug, CheckCircle, Settings, Plus, Search, Zap, Globe, ShoppingCart, Palette } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { IntegrationsManager } from '@/components/integrations/IntegrationsManager';
 import { LiveAnalyticsDashboard } from '@/components/analytics/LiveAnalyticsDashboard';
@@ -15,6 +15,14 @@ export default function IntegrationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const integrations = [
+    {
+      name: 'Canva',
+      description: 'Création de designs professionnels et marketing',
+      category: 'Design',
+      status: 'available',
+      icon: Palette,
+      premium: false
+    },
     {
       name: 'Shopify',
       description: 'Synchronisation complète avec votre boutique Shopify',

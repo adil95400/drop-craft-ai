@@ -7,11 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertCircle, CheckCircle2, Clock, ShoppingCart, Globe, Package, Zap, Settings, Plus, Trash2, Eye, RefreshCw } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Clock, ShoppingCart, Globe, Package, Zap, Settings, Plus, Trash2, Eye, RefreshCw, Palette } from 'lucide-react';
 import { useRealIntegrations, type Integration } from '@/hooks/useRealIntegrations';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { CanvaIntegrationCard } from './CanvaIntegrationCard';
 
 export const IntegrationsManager = () => {
   const { toast } = useToast();
@@ -341,21 +342,24 @@ export const IntegrationsManager = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {integrations.length === 0 ? (
-            <div className="text-center py-8">
-              <Globe className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Aucune intégration configurée</h3>
-              <p className="text-muted-foreground mb-4">
-                Commencez par connecter votre première plateforme e-commerce
-              </p>
-              <Button onClick={() => setShowAddDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Ajouter une Intégration
-              </Button>
-            </div>
-          ) : (
-            <div className="grid gap-4">
-              {integrations.map((integration) => {
+          <div className="grid gap-4">
+            {/* Canva Integration - Always show */}
+            <CanvaIntegrationCard />
+            
+            {integrations.length === 0 ? (
+              <div className="text-center py-8">
+                <Globe className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">Aucune intégration e-commerce configurée</h3>
+                <p className="text-muted-foreground mb-4">
+                  Connectez vos plateformes e-commerce et fournisseurs
+                </p>
+                <Button onClick={() => setShowAddDialog(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter une Intégration
+                </Button>
+              </div>
+            ) : (
+              integrations.map((integration) => {
                 const PlatformIcon = getPlatformIcon(integration.platform_type);
                 const StatusIcon = getStatusIcon(integration.connection_status);
                 const statusColor = getStatusColor(integration.connection_status);
@@ -441,9 +445,9 @@ export const IntegrationsManager = () => {
                     </CardContent>
                   </Card>
                 );
-              })}
-            </div>
-          )}
+              })
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
