@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logError } from '@/utils/consoleCleanup';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -94,7 +95,7 @@ export function PredictiveInsights() {
       setConfidenceScore(data.model_accuracy * 100);
       
     } catch (error) {
-      console.error('Error loading predictive insights:', error);
+      logError(error, 'PredictiveInsights.loadPredictiveInsights');
       toast.error('Erreur lors du chargement des prédictions');
     } finally {
       setLoading(false);

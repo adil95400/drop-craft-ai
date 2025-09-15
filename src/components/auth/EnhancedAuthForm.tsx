@@ -1,4 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext'
+import { logError } from '@/utils/consoleCleanup';
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/integrations/supabase/client'
 import { useState } from 'react'
@@ -74,7 +75,7 @@ export const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
         }
       }
     } catch (error: any) {
-      console.error('Auth error:', error)
+      logError(error, 'EnhancedAuthForm.authAction');
       setMessage(error.message || 'Une erreur est survenue')
     } finally {
       setLoading(false)

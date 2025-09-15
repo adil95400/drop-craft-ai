@@ -58,20 +58,17 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
       <ImportDataDialog
         open={modalStates.importData}
         onOpenChange={(open) => !open && closeModal('importData')}
-        type={modalData.importType as any}
       />
       
       <ExportDataDialog
         open={modalStates.exportData}
         onOpenChange={(open) => !open && closeModal('exportData')}
-        type={modalData.exportType as any}
       />
       
       {/* Settings Modal */}
       <SettingsDialog
         open={modalStates.settings}
         onOpenChange={(open) => !open && closeModal('settings')}
-        module={modalData.module}
       />
       
       {/* Marketing Modals */}

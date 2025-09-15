@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { logError } from '@/utils/consoleCleanup';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -56,7 +57,7 @@ export const SessionManager = () => {
         setSessions(data || [])
       }
     } catch (error) {
-      console.error('Error loading sessions:', error)
+      logError(error, 'SessionManager.loadSessions');
     } finally {
       setLoading(false)
     }
@@ -70,7 +71,7 @@ export const SessionManager = () => {
         setSessions(sessions.filter(s => s.id !== sessionId))
       }
     } catch (error) {
-      console.error('Error revoking session:', error)
+      logError(error, 'SessionManager.revokeSession');
     } finally {
       setRevoking(null)
     }
@@ -91,7 +92,7 @@ export const SessionManager = () => {
         }, 2000)
       }
     } catch (error) {
-      console.error('Error revoking all sessions:', error)
+      logError(error, 'SessionManager.revokeAllSessions');
     } finally {
       setRevoking(null)
     }
