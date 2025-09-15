@@ -235,7 +235,7 @@ export const ProductionImportInterface = () => {
       {/* Import Interfaces */}
       <Tabs value={activeView} onValueChange={setActiveView} className="space-y-6">
         <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+          <TabsTrigger value="methods">🚀 Méthodes d'Import</TabsTrigger>
           <TabsTrigger value="interface">Interface Unifiée</TabsTrigger>
           <TabsTrigger value="extensions">Extensions IA</TabsTrigger>
           <TabsTrigger value="browser">Extension Navigateur</TabsTrigger>
@@ -243,64 +243,23 @@ export const ProductionImportInterface = () => {
           <TabsTrigger value="ai">IA Avancée</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">
-          <Card>
-            <CardHeader>
-              <CardTitle>Production Import Overview</CardTitle>
-              <CardDescription>
-                Vue d'ensemble complète de vos imports en production
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Status des Imports</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">Publiés</span>
-                      <Badge variant="default">{importStats.published}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">En attente</span>
-                      <Badge variant="secondary">{importStats.draft}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Échecs</span>
-                      <Badge variant="destructive">{importStats.failed}</Badge>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Optimisations IA</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">Optimisés IA</span>
-                      <Badge className="bg-purple-100 text-purple-800">{importStats.ai_optimized}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Standard</span>
-                      <Badge variant="outline">{importStats.total - importStats.ai_optimized}</Badge>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Métriques Qualité</h3>
-                  <div className="space-y-2">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">{qualityScore}</div>
-                      <div className="text-sm text-muted-foreground">Score Qualité Moyen</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">{conversionRate}%</div>
-                      <div className="text-sm text-muted-foreground">Taux de Conversion</div>
-                    </div>
-                  </div>
-                </div>
+        <TabsContent value="methods">
+          <div className="space-y-6">
+            <div className="text-center p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border">
+              <h2 className="text-2xl font-bold mb-2">🚀 22+ Méthodes d'Import Disponibles</h2>
+              <p className="text-muted-foreground mb-4">
+                Connectez-vous à vos sources de données préférées avec nos intégrations avancées
+              </p>
+              <div className="flex justify-center gap-2 text-sm text-muted-foreground">
+                <Badge variant="outline">E-commerce</Badge>
+                <Badge variant="outline">Feeds & Fichiers</Badge>
+                <Badge variant="outline">Spécialisés</Badge>
+                <Badge variant="outline">FTP/SFTP</Badge>
+                <Badge variant="outline">Régionaux</Badge>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+            <ImportUltraProInterface />
+          </div>
         </TabsContent>
 
         <TabsContent value="interface">

@@ -1,12 +1,25 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { ProductionImportInterface } from '@/components/import/ProductionImportInterface'
+import { QuickImportAccess } from '@/components/import/QuickImportAccess'
+import { ImportMethods } from '@/components/import/ImportMethods'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, Zap, TrendingUp } from 'lucide-react'
 
 export default function Import() {
   const { isUltraPro, isPro } = useUnifiedPlan()
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [selectedMethod, setSelectedMethod] = useState('')
+
+  const handleMethodSelect = (method: string) => {
+    if (method === 'all-methods') {
+      setShowAdvanced(true)
+    } else {
+      setSelectedMethod(method)
+      setShowAdvanced(true)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/80 to-background animate-fade-in">
@@ -52,7 +65,40 @@ export default function Import() {
       </div>
 
       <div className="container mx-auto p-6">
-        <ProductionImportInterface />
+        {!showAdvanced ? (
+          <div className="space-y-8">
+            <QuickImportAccess onMethodSelect={handleMethodSelect} />
+            
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-full text-sm text-muted-foreground">
+                <span>Ou utilisez les méthodes basiques ci-dessous</span>
+              </div>
+            </div>
+            
+            <ImportMethods 
+              selectedMethod={selectedMethod} 
+              onMethodSelect={setSelectedMethod} 
+            />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">Interface d'Import Avancée</h2>
+                <p className="text-muted-foreground">
+                  Accédez à toutes les méthodes d'import disponibles
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAdvanced(false)}
+                className="text-primary hover:text-primary/80 font-medium"
+              >
+                ← Retour à l'accès rapide
+              </button>
+            </div>
+            <ProductionImportInterface />
+          </div>
+        )}
       </div>
     </div>
   )
