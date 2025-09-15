@@ -15,7 +15,10 @@ import {
   Upload, Truck, BarChart3, Activity, Users, MessageSquare,
   Megaphone, FileText, Search, Puzzle, Bot, Crown, Shield
 } from "lucide-react"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuthOptimized } from "@/shared/hooks/useAuthOptimized"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 const navigationItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -44,12 +47,9 @@ const adminNavigationItems = [
 export function AppSidebar() {
   const location = useLocation()
   const currentPath = location.pathname
-  const { user, profile } = useAuth()
+  const { user, profile, isAdmin, canAccess } = useAuthOptimized()
 
-  // Determine if user is admin - check both role and is_admin flag
-  const isAdmin = profile?.role === 'admin' || profile?.is_admin === true
-
-  const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/')
+  const isActive = (path: string) => currentPath === path || currentPath.startsWith(path)
   const getNavCls = ({ isActive: active }: { isActive: boolean }) =>
     active 
       ? "bg-primary/10 text-primary font-medium border-r-2 border-primary" 

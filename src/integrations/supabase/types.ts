@@ -6413,6 +6413,10 @@ export type Database = {
         Args: { user_id?: string }
         Returns: boolean
       }
+      is_authenticated_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_current_user_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -6436,6 +6440,10 @@ export type Database = {
           ip_address_param?: string
           user_id_param?: string
         }
+        Returns: undefined
+      }
+      log_sensitive_access_secure: {
+        Args: { access_type: string; record_id?: string; table_name: string }
         Returns: undefined
       }
       log_sensitive_data_access: {

@@ -11,7 +11,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthOptimized } from '@/shared/hooks/useAuthOptimized';
 import { 
   Menu, 
   X, 
@@ -29,7 +29,7 @@ import { cn } from '@/lib/utils';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, signOut } = useAuthOptimized();
   const location = useLocation();
   const navigate = useNavigate();
 
