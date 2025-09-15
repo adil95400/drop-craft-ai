@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
+import { logError } from '@/utils/consoleCleanup'
 
 interface CreateCampaignModalProps {
   isOpen: boolean
@@ -104,7 +105,7 @@ export function CreateCampaignModal({ isOpen, onClose, initialType }: CreateCamp
       queryClient.invalidateQueries({ queryKey: ['marketing-campaigns-realtime'] })
       onClose()
     } catch (error: any) {
-      console.error('Error creating campaign:', error)
+      logError(error, 'Campaign creation');
       toast({
         title: "Erreur",
         description: error.message || "Impossible de créer la campagne",

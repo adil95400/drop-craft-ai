@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useRealTimeMarketing } from '@/hooks/useRealTimeMarketing'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { logError } from '@/utils/consoleCleanup'
 import { 
   Search, Download, MoreHorizontal, 
   Edit, Trash2, Eye, Mail, Phone,
@@ -79,7 +80,7 @@ export function ContactsTable({ onEdit, onView }: ContactsTableProps) {
         description: "Le contact a été supprimé avec succès.",
       })
     } catch (error) {
-      console.error('Error deleting contact:', error)
+      logError(error as Error, 'Contact deletion');
       toast({
         title: "Erreur",
         description: "Impossible de supprimer le contact.",

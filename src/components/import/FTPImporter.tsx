@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { logError } from '@/utils/consoleCleanup'
 
 interface FTPConfig {
   url: string
@@ -91,7 +92,7 @@ export const FTPImporter = () => {
       })
 
     } catch (error) {
-      console.error('Error testing FTP connection:', error)
+      logError(error as Error, 'FTP connection test');
       toast({
         title: "Erreur de connexion",
         description: "Impossible de se connecter au serveur FTP",
@@ -159,7 +160,7 @@ export const FTPImporter = () => {
       })
 
     } catch (error) {
-      console.error('Error starting FTP import:', error)
+      logError(error as Error, 'FTP import start');
       toast({
         title: "Erreur d'import",
         description: "Impossible de démarrer l'import FTP",

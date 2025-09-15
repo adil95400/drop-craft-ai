@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
 import { SecureCredentialForm } from '@/components/integrations/SecureCredentialForm'
 import { supabase } from '@/integrations/supabase/client'
+import { logError, logAction } from '@/utils/consoleCleanup'
 import { SUPPLIERS, SUPPLIER_CATEGORIES, getSuppliersByCategory, getPopularSuppliers, type Supplier } from '@/data/suppliers'
 
 interface SupplierConfigDialogProps {
@@ -96,7 +97,7 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
       })
       setCurrentStep('methods')
     } catch (error) {
-      console.error('Connection error:', error)
+      logError(error as Error, 'Supplier connection');
       toast({
         title: "Erreur de connexion",
         description: "Impossible de sauvegarder la configuration",
@@ -183,7 +184,7 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
       
       onClose()
     } catch (error) {
-      console.error('Save configuration error:', error)
+      logError(error as Error, 'Save supplier configuration');
       toast({
         title: "Erreur",
         description: "Impossible de sauvegarder la configuration finale",

@@ -16,6 +16,7 @@ import { ImageImportInterface } from './ImageImportInterface'
 import { DuplicateDetection } from './DuplicateDetection'
 import { CategoryMapping } from './CategoryMapping'
 import { SyncManager } from './SyncManager'
+import { logAction } from '@/utils/consoleCleanup'
 import { 
   Package, 
   Zap, 
@@ -244,7 +245,7 @@ export const ImportHub = () => {
         <TabsContent value="categories" className="mt-6">
           <CategoryMapping
             onRulesUpdated={(rules) => {
-              console.log('Category rules updated:', rules)
+              logAction('Category rules updated', rules);
             }}
           />
         </TabsContent>

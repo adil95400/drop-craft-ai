@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast'
 import { useUnifiedSystem } from '@/hooks/useUnifiedSystem'
 import { BrowserExtensionImportInterface } from '@/components/import/BrowserExtensionImportInterface'
+import { logError } from '@/utils/consoleCleanup'
 
 interface ImportJobDialogProps {
   open: boolean
@@ -71,7 +72,7 @@ export function ImportJobDialog({ open, onOpenChange, sourceType, onJobCreated }
       onJobCreated()
       onOpenChange(false)
     } catch (error) {
-      console.error('Error creating import job:', error)
+      logError(error as Error, 'Import job creation');
       toast({
         title: "Erreur",
         description: "Impossible de créer le job d'import",

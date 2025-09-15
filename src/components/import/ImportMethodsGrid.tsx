@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ImportMethodCard } from './ImportMethodCard';
 import { ImportConfigurationDialog } from './ImportConfigurationDialog';
+import { logAction } from '@/utils/consoleCleanup';
 import { 
   FileText, 
   Globe, 
@@ -297,7 +298,7 @@ export const ImportMethodsGrid = () => {
   };
 
   const handleSaveConfiguration = (config: any) => {
-    console.log('Configuration saved:', config);
+    logAction('Configuration saved', config);
     toast.success('Configuration sauvegardée avec succès !');
   };
 
