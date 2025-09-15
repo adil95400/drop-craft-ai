@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress'
 import { Wand2, Target, Mail, MessageSquare, Bot, Send, Zap } from 'lucide-react'
 import { useUnifiedMarketing } from '@/hooks/useUnifiedMarketing'
+import { toast } from "sonner";
+import { logError } from "@/utils/consoleCleanup";
 
 export function IntelligentCampaignBuilder() {
   const { createCampaign, isCreatingCampaign, segments } = useUnifiedMarketing()
@@ -38,7 +40,7 @@ export function IntelligentCampaignBuilder() {
       setCampaignData({ name: '', description: '', type: '', budget: '' })
       setStep(1)
     } catch (error) {
-      console.error('Error creating campaign:', error)
+      logError(error as Error, 'Error creating campaign')
     }
   }
 

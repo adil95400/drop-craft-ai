@@ -39,6 +39,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useAdminRole } from '@/hooks/useAdminRole'
+import { logError } from '@/utils/consoleCleanup';
 
 interface UserProfile {
   id: string
@@ -77,7 +78,7 @@ export default function AdminDashboard() {
       if (error) throw error
       setUsers(data || [])
     } catch (error) {
-      console.error('Error fetching users:', error)
+      logError(error as Error, 'Error fetching users')
       toast({
         title: "Erreur",
         description: "Impossible de charger les utilisateurs",
@@ -106,7 +107,7 @@ export default function AdminDashboard() {
         description: `Rôle mis à jour avec succès`
       })
     } catch (error) {
-      console.error('Error updating role:', error)
+      logError(error as Error, 'Error updating role')
       toast({
         title: "Erreur",
         description: "Erreur lors de la mise à jour du rôle",

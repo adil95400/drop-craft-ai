@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Bell, X, CheckCircle, AlertTriangle, Info } from 'lucide-react';
+import { logError } from '@/utils/consoleCleanup';
 
 interface Notification {
   id: string;
@@ -91,7 +92,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         type: item.type as 'info' | 'warning' | 'success' | 'error'
       })));
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      logError(error as Error, 'Error fetching notifications');
     }
   };
 
@@ -112,7 +113,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         prev.map(n => n.id === id ? { ...n, read: true } : n)
       );
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      logError(error as Error, 'Error marking notification as read');
     }
   };
 
@@ -133,7 +134,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         prev.map(n => ({ ...n, read: true }))
       );
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      logError(error as Error, 'Error marking all notifications as read');
     }
   };
 
@@ -149,7 +150,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
       setNotifications(prev => prev.filter(n => n.id !== id));
     } catch (error) {
-      console.error('Error deleting notification:', error);
+      logError(error as Error, 'Error deleting notification');
     }
   };
 

@@ -32,6 +32,7 @@ import {
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logError } from '@/utils/consoleCleanup';
 
 interface MarketingCampaign {
   id: string;
@@ -174,7 +175,7 @@ export const MarketingAutomation: React.FC = () => {
       });
 
     } catch (error) {
-      console.error('Error fetching marketing data:', error);
+      logError(error as Error, 'Error fetching marketing data');
       toast({
         title: "Erreur",
         description: "Impossible de charger les données marketing",

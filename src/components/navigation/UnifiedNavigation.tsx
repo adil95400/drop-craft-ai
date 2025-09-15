@@ -29,6 +29,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePlan } from '@/contexts/PlanContext'
 import { useAppFlow } from '../app-flow/AppFlowManager'
+import { logAction } from '@/utils/consoleCleanup';
 
 interface NavigationItem {
   id: string
@@ -225,7 +226,7 @@ export const UnifiedNavigation = () => {
     // Analytics de navigation
     if (user) {
       // Ici on pourrait logger l'utilisation
-      console.log('Navigation:', { userId: user.id, route: item.route, query: searchQuery })
+      logAction('Navigation', { userId: user.id, route: item.route, query: searchQuery })
     }
     
     toast.success(`Navigation vers ${item.title}`)

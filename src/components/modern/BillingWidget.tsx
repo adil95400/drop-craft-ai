@@ -16,6 +16,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { logError } from '@/utils/consoleCleanup';
 import { Link } from 'react-router-dom'
 
 interface Subscription {
@@ -43,7 +44,7 @@ export function BillingWidget() {
       
       setSubscription(data)
     } catch (error) {
-      console.error('Error checking subscription:', error)
+      logError(error as Error, 'Error checking subscription')
     } finally {
       setChecking(false)
     }

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/utils/consoleCleanup';
 
 interface SystemStats {
   total: number;
@@ -39,7 +40,7 @@ export function MonitoringDashboard() {
       if (error) throw error;
       setMetrics(data.data);
     } catch (error) {
-      console.error('Error loading metrics:', error);
+      logError(error as Error, 'Error loading metrics');
       toast({
         title: "Erreur",
         description: "Impossible de charger les métriques",
@@ -59,7 +60,7 @@ export function MonitoringDashboard() {
       if (error) throw error;
       setSystemHealth(data.health);
     } catch (error) {
-      console.error('Error loading system health:', error);
+      logError(error as Error, 'Error loading system health');
     }
   };
 
