@@ -22,16 +22,21 @@ export function CarrierDetailsModal({
   open, 
   onOpenChange, 
   carrier = "Transporteur", 
-  metrics = {
+  metrics
+}: CarrierDetailsModalProps) {
+  
+  // Use default metrics if metrics is null or undefined
+  const defaultMetrics = {
     deliveryRate: "98.5%",
     avgDeliveryTime: "2.3 jours",
     customerSatisfaction: "4.2/5",
     issues: "Retards fréquents le vendredi"
-  }
-}: CarrierDetailsModalProps) {
+  };
   
-  const performanceScore = parseFloat(metrics.deliveryRate.replace('%', ''));
-  const satisfactionScore = parseFloat(metrics.customerSatisfaction.split('/')[0]) * 20; // Convert to percentage
+  const actualMetrics = metrics || defaultMetrics;
+  
+  const performanceScore = parseFloat(actualMetrics.deliveryRate.replace('%', ''));
+  const satisfactionScore = parseFloat(actualMetrics.customerSatisfaction.split('/')[0]) * 20; // Convert to percentage
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -51,18 +56,18 @@ export function CarrierDetailsModal({
                 <TrendingUp className="h-4 w-4 text-green-600" />
                 <span className="text-sm font-medium">Taux de livraison</span>
               </div>
-              <div className="space-y-2">
-                <div className="text-2xl font-bold text-green-600">{metrics.deliveryRate}</div>
-                <Progress value={performanceScore} className="h-2" />
-              </div>
-            </div>
-            
-            <div className="p-4 border rounded-lg bg-card">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium">Temps moyen</span>
-              </div>
-              <div className="text-2xl font-bold text-blue-600">{metrics.avgDeliveryTime}</div>
+               <div className="space-y-2">
+                 <div className="text-2xl font-bold text-green-600">{actualMetrics.deliveryRate}</div>
+                 <Progress value={performanceScore} className="h-2" />
+               </div>
+             </div>
+             
+             <div className="p-4 border rounded-lg bg-card">
+               <div className="flex items-center gap-2 mb-2">
+                 <Clock className="h-4 w-4 text-blue-600" />
+                 <span className="text-sm font-medium">Temps moyen</span>
+               </div>
+               <div className="text-2xl font-bold text-blue-600">{actualMetrics.avgDeliveryTime}</div>
             </div>
           </div>
           
@@ -72,23 +77,23 @@ export function CarrierDetailsModal({
               <Star className="h-4 w-4 text-amber-500" />
               <span className="text-sm font-medium">Satisfaction client</span>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-xl font-bold text-amber-600">{metrics.customerSatisfaction}</div>
-              <Progress value={satisfactionScore} className="flex-1 h-2" />
-              <Badge variant={satisfactionScore >= 80 ? "default" : "secondary"}>
-                {satisfactionScore >= 80 ? "Excellent" : "Bon"}
-              </Badge>
-            </div>
-          </div>
-          
-          {/* Problèmes identifiés */}
-          <div className="p-4 border rounded-lg bg-card">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle className="h-4 w-4 text-amber-500" />
-              <span className="text-sm font-medium">Problèmes identifiés</span>
-            </div>
-            <div className="bg-amber-50 border border-amber-200 rounded p-3">
-              <p className="text-sm text-amber-800">{metrics.issues}</p>
+             <div className="flex items-center gap-4">
+               <div className="text-xl font-bold text-amber-600">{actualMetrics.customerSatisfaction}</div>
+               <Progress value={satisfactionScore} className="flex-1 h-2" />
+               <Badge variant={satisfactionScore >= 80 ? "default" : "secondary"}>
+                 {satisfactionScore >= 80 ? "Excellent" : "Bon"}
+               </Badge>
+             </div>
+           </div>
+           
+           {/* Problèmes identifiés */}
+           <div className="p-4 border rounded-lg bg-card">
+             <div className="flex items-center gap-2 mb-3">
+               <AlertTriangle className="h-4 w-4 text-amber-500" />
+               <span className="text-sm font-medium">Problèmes identifiés</span>
+             </div>
+             <div className="bg-amber-50 border border-amber-200 rounded p-3">
+               <p className="text-sm text-amber-800">{actualMetrics.issues}</p>
             </div>
           </div>
           
