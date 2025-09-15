@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useRealIntegrations } from "@/hooks/useRealIntegrations";
 import { supabase } from "@/integrations/supabase/client";
+import { logError } from '@/utils/consoleCleanup';
 
 interface CreateIntegrationDialogProps {
   open: boolean;
@@ -73,7 +74,7 @@ export const CreateIntegrationDialog = ({ open, onOpenChange }: CreateIntegratio
         enabled: true
       });
     } catch (error) {
-      console.error('Error creating integration:', error);
+      logError(error as Error, 'Failed to create integration');
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la création de l'intégration",

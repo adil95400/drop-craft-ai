@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
+import { logError } from '@/utils/consoleCleanup';
 import { 
   Activity,
   AlertTriangle,
@@ -75,7 +76,7 @@ export const AdvancedMonitoring = () => {
       ])
       
     } catch (error) {
-      console.error('Error fetching monitoring data:', error)
+      logError(error as Error, 'Failed to fetch monitoring data')
       toast({
         title: "Erreur de monitoring",
         description: "Impossible de récupérer les données de monitoring",

@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Truck, Clock, Star, AlertTriangle, TrendingUp, Calendar } from "lucide-react";
+import { logAction } from '@/utils/consoleCleanup';
 
 interface CarrierMetrics {
   deliveryRate: string;
@@ -26,9 +27,9 @@ export function CarrierDetailsModal({
 }: CarrierDetailsModalProps) {
   
   // Debug logging to understand what's happening
-  console.log('CarrierDetailsModal - metrics received:', metrics);
-  console.log('CarrierDetailsModal - typeof metrics:', typeof metrics);
-  console.log('CarrierDetailsModal - metrics === null:', metrics === null);
+  logAction('CarrierDetailsModal metrics received', metrics);
+  logAction('CarrierDetailsModal metrics type', typeof metrics);
+  logAction('CarrierDetailsModal metrics is null', metrics === null);
   
   // Use default metrics if metrics is null or undefined
   const defaultMetrics = {
@@ -39,7 +40,7 @@ export function CarrierDetailsModal({
   };
   
   const actualMetrics = metrics || defaultMetrics;
-  console.log('CarrierDetailsModal - actualMetrics:', actualMetrics);
+  logAction('CarrierDetailsModal actualMetrics', actualMetrics);
   
   const performanceScore = parseFloat(actualMetrics.deliveryRate.replace('%', ''));
   const satisfactionScore = parseFloat(actualMetrics.customerSatisfaction.split('/')[0]) * 20; // Convert to percentage

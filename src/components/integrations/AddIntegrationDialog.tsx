@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Plus, Store, ShoppingCart, CreditCard, Megaphone } from 'lucide-react';
 import { useIntegrations, Integration, IntegrationTemplate } from '@/hooks/useIntegrations';
+import { logError } from '@/utils/consoleCleanup';
 const platformCategories = {
   ecommerce: {
     title: 'E-commerce',
@@ -170,7 +171,7 @@ export const AddIntegrationDialog = () => {
         sync_frequency: 'daily'
       });
     } catch (error) {
-      console.error('Error creating integration:', error);
+      logError(error as Error, 'Failed to create integration');
     }
   };
   const selectedPlatformData = selectedPlatform ? platformCategories[selectedCategory].platforms.find(p => p.name === selectedPlatform) : null;

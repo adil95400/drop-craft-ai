@@ -129,7 +129,7 @@ export const PrestaShopConfigDialog = ({ open, onOpenChange }: PrestaShopConfigD
         });
       }, 2000);
     } catch (error) {
-      console.error('PrestaShop connection error:', error);
+      logError(error as Error, 'PrestaShop connection error');
     }
   };
 

@@ -38,6 +38,7 @@ import {
 import { Integration, useIntegrations } from '@/hooks/useIntegrations';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { logError } from '@/utils/consoleCleanup';
 
 interface IntegrationConfigState extends Integration {
   credentials?: Record<string, string>;
@@ -94,7 +95,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
         });
         
         if (credError) {
-          console.error('Failed to update credentials:', credError);
+          logError(credError, 'Failed to update credentials');
           toast({
             title: "Erreur de sécurité",
             description: "Impossible de sauvegarder les identifiants de manière sécurisée",
@@ -114,7 +115,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
         description: "Les paramètres ont été mis à jour avec succès",
       });
     } catch (error) {
-      console.error('Error updating integration:', error);
+      logError(error as Error, 'Failed to update integration');
       toast({
         title: "Erreur",
         description: "Impossible de sauvegarder la configuration",
@@ -141,7 +142,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
     try {
       await syncData(integration.id);
     } catch (error) {
-      console.error(`Error syncing ${syncType}:`, error);
+      logError(error as Error, `Failed to sync ${syncType}`);
     } finally {
       setIsSyncing('');
     }

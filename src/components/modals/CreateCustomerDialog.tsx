@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useRealCustomers } from "@/hooks/useRealCustomers";
 import { supabase } from "@/integrations/supabase/client";
+import { logError } from '@/utils/consoleCleanup';
 
 interface CreateCustomerDialogProps {
   open: boolean;
@@ -76,7 +77,7 @@ export const CreateCustomerDialog = ({ open, onOpenChange }: CreateCustomerDialo
         segment: "regular"
       });
     } catch (error) {
-      console.error('Error creating customer:', error);
+      logError(error as Error, 'Failed to create customer');
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la création du client",
