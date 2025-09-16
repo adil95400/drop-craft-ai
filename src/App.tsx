@@ -3,6 +3,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { UnifiedAuthProvider } from '@/contexts/UnifiedAuthContext';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UnifiedPlanProvider } from '@/components/plan/UnifiedPlanProvider';
 import { HelmetProvider } from 'react-helmet-async';

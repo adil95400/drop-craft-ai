@@ -66,7 +66,7 @@ export const SessionManager = () => {
   const handleRevokeSession = async (sessionId: string) => {
     setRevoking(sessionId)
     try {
-      const { error } = await revokeUserSessions(user?.id, [sessionId])
+      const { error } = await revokeUserSessions()
       if (!error) {
         setSessions(sessions.filter(s => s.id !== sessionId))
       }
@@ -80,7 +80,7 @@ export const SessionManager = () => {
   const handleRevokeAllSessions = async () => {
     setRevoking('all')
     try {
-      const { error } = await revokeUserSessions(user?.id)
+      const { error } = await revokeUserSessions()
       if (!error) {
         setSessions([])
         toast({

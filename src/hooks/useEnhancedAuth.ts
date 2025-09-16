@@ -13,7 +13,7 @@ export const useEnhancedAuth = () => {
   useEffect(() => {
     if (profile) {
       setRole(profile.role || 'user')
-      setAdminMode(profile.admin_mode || null)
+      setAdminMode((profile.admin_mode as AdminMode) || null)
       setLoading(false)
     } else if (!user) {
       setLoading(false)

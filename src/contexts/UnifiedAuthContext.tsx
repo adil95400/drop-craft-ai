@@ -12,6 +12,13 @@ export interface Profile {
   plan: 'standard' | 'pro' | 'ultra_pro';
   subscription_plan?: string;
   subscription_status?: string;
+  avatar_url?: string;
+  phone?: string;
+  company?: string;
+  website?: string;
+  bio?: string;
+  location?: string;
+  timezone?: string;
   created_at: string;
   updated_at: string;
 }
@@ -24,9 +31,12 @@ interface UnifiedAuthContextType {
   
   // Auth methods
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, metadata?: any) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
+  signInWithGoogle?: () => Promise<{ error: any }>;
+  getUserSessions?: () => Promise<any>;
+  revokeUserSessions?: () => Promise<any>;
   
   // Role & permissions
   isAdmin: boolean;
@@ -121,19 +131,19 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return { error };
   };
 
-  const signUp = async (email: string, password: string, fullName?: string) => {
+  const signUp = async (email: string, password: string, metadata?: any) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
+    let signUpData: any = { email, password };
+    
+    if (metadata) {
+      signUpData.options = {
         emailRedirectTo: redirectUrl,
-        data: {
-          full_name: fullName,
-        },
-      },
-    });
+        data: typeof metadata === 'string' ? { full_name: metadata } : metadata,
+      };
+    }
+    
+    const { error } = await supabase.auth.signUp(signUpData);
 
     if (error) {
       toast({
@@ -258,6 +268,19 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return profile.plan || 'standard';
   }, [profile]);
 
+  // Optional methods that can be implemented later
+  const signInWithGoogle = async () => {
+    return { error: new Error('Google sign-in not implemented yet') };
+  };
+
+  const getUserSessions = async () => {
+    return { data: [], error: null };
+  };
+
+  const revokeUserSessions = async () => {
+    return { error: null };
+  };
+
   const value: UnifiedAuthContextType = {
     user,
     session,
@@ -267,6 +290,9 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     signUp,
     signOut,
     resetPassword,
+    signInWithGoogle,
+    getUserSessions,
+    revokeUserSessions,
     isAdmin,
     hasRole,
     canAccess,

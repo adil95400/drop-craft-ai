@@ -26,7 +26,7 @@ export const AdminPlanSwitcher = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Only show for admins
-  if (!isAdmin(profile)) {
+  if (!profile?.is_admin && profile?.role !== 'admin') {
     return null;
   }
 
@@ -115,7 +115,7 @@ export const AdminPlanSwitcher = () => {
               variant={currentAdminMode === 'bypass' ? 'default' : 'outline'}
               className={currentAdminMode === 'bypass' ? 'bg-accent text-accent-foreground' : ''}
             >
-              {getAdminModeLabel(currentAdminMode)}
+              {getAdminModeLabel(currentAdminMode as AdminMode)}
             </Badge>
           )}
         </div>
