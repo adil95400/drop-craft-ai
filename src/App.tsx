@@ -158,7 +158,7 @@ function App() {
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
+          <ErrorBoundary>
             <UnifiedAuthProvider>
               <UnifiedPlanProvider>
                 <NotificationProvider>
@@ -534,10 +534,10 @@ function App() {
             </NotificationProvider>
           </UnifiedPlanProvider>
         </UnifiedAuthProvider>
-        </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </HelmetProvider>
+      </ErrorBoundary>
+    </ThemeProvider>
+  </QueryClientProvider>
+</HelmetProvider>
   );
 }
 

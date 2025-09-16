@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUnifiedAuth } from "@/contexts/UnifiedAuthContext";
 import { usePlan } from "@/hooks/usePlan";
 import { useEnhancedAuth } from "@/hooks/useEnhancedAuth";
 import { PlanBadge } from "@/components/plan/PlanBadge";
@@ -288,7 +288,7 @@ export function AppSidebar() {
   const collapsed = !sidebarOpen;
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useUnifiedAuth();
   const { hasPlan, plan } = usePlan(user);
   const { isAdmin } = useEnhancedAuth();
   const [searchQuery, setSearchQuery] = useState("");

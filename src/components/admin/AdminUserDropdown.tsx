@@ -5,10 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { User, Settings, Shield, CreditCard, HelpCircle, LogOut, Crown, Bell, Moon, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUnifiedAuth } from "@/contexts/UnifiedAuthContext";
 export function AdminUserDropdown() {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut } = useUnifiedAuth();
   const [darkMode, setDarkMode] = useState(false);
   const userInfo = {
     name: "Admin User",

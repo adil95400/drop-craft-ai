@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { 
   ADMIN_MODE_CONFIG, 
   getAdminModeLabel, 
@@ -21,7 +21,7 @@ import {
 } from '@/utils/adminUtils';
 
 export const AdminPlanSwitcher = () => {
-  const { user, profile, refetchProfile } = useAuth();
+  const { user, profile, refetchProfile } = useUnifiedAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
