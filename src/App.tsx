@@ -147,6 +147,10 @@ import { OrderAutomationCenter } from '@/components/automation/OrderAutomationCe
 import { StockManagementHub } from '@/components/automation/StockManagementHub';
 import { CreativeStudio } from '@/components/creative/CreativeStudio';
 import { MarketingHub } from '@/components/marketing/MarketingHub';
+import { MobileAppDashboard } from '@/components/mobile/MobileAppDashboard';
+import { TeamCollaboration } from '@/components/team/TeamCollaboration';
+import { WhiteLabelSolution } from '@/components/enterprise/WhiteLabelSolution';
+import { EnterpriseAPI } from '@/components/enterprise/EnterpriseAPI';
 
 const queryClient = new QueryClient({
   defaultOptions: {
