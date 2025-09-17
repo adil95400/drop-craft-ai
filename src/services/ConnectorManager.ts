@@ -95,71 +95,11 @@ export class ConnectorManager {
         },
         documentation_url: 'https://woocommerce.github.io/woocommerce-rest-api-docs/',
         setup_guide_url: 'https://woocommerce.com/document/woocommerce-rest-api/'
-      },
-      {
-        id: 'prestashop',
-        name: 'prestashop',
-        display_name: 'PrestaShop',
-        description: 'Solution e-commerce open source',
-        logo_url: '/platforms/prestashop.svg',
-        category: 'E-commerce Platform',
-        auth_type: 'api_key',
-        required_credentials: ['shop_url', 'apiKey'],
-        optional_credentials: ['language_id', 'shop_id'],
-        features: {
-          products: true,
-          orders: true,
-          customers: true,
-          inventory: true,
-          webhooks: false
-        },
-        documentation_url: 'https://devdocs.prestashop.com/1.7/webservice/',
-        setup_guide_url: 'https://devdocs.prestashop.com/1.7/webservice/getting-started/'
-      },
-      {
-        id: 'magento',
-        name: 'magento',
-        display_name: 'Magento',
-        description: 'Plateforme e-commerce Adobe Commerce',
-        logo_url: '/platforms/magento.svg',
-        category: 'E-commerce Platform',
-        auth_type: 'oauth',
-        required_credentials: ['shop_url', 'accessToken'],
-        optional_credentials: ['consumer_key', 'consumer_secret'],
-        features: {
-          products: true,
-          orders: true,
-          customers: true,
-          inventory: true,
-          webhooks: true
-        },
-        documentation_url: 'https://developer.adobe.com/commerce/webapi/',
-        setup_guide_url: 'https://developer.adobe.com/commerce/webapi/get-started/'
-      },
-      {
-        id: 'bigcommerce',
-        name: 'bigcommerce',
-        display_name: 'BigCommerce',
-        description: 'Plateforme e-commerce SaaS',
-        logo_url: '/platforms/bigcommerce.svg',
-        category: 'E-commerce Platform',
-        auth_type: 'api_key',
-        required_credentials: ['shop_url', 'accessToken'],
-        optional_credentials: ['client_id', 'client_secret'],
-        features: {
-          products: true,
-          orders: true,
-          customers: true,
-          inventory: true,
-          webhooks: true
-        },
-        documentation_url: 'https://developer.bigcommerce.com/api-docs',
-        setup_guide_url: 'https://developer.bigcommerce.com/api-docs/getting-started'
       }
     ];
   }
 
-  // Création d'un connecteur
+  // Création d'un connecteur (version mémoire pour test)
   async createConnector(
     userId: string,
     platform: string,
@@ -170,13 +110,13 @@ export class ConnectorManager {
       // Validation des credentials
       await this.validateCredentials(platform, credentials);
 
-      // Créer la configuration en base
+      // Créer la configuration en mémoire
       const connectorConfig: ConnectorConfig = {
         id: crypto.randomUUID(),
         user_id: userId,
         platform,
         credentials,
-        is_active: true,
+        is_active: config.is_active ?? true,
         sync_frequency: config.sync_frequency || 'manual',
         sync_entities: config.sync_entities || ['products', 'orders', 'customers'],
         error_count: 0,
@@ -185,38 +125,12 @@ export class ConnectorManager {
         ...config
       };
 
-      // Sauvegarder en base de données
-      const { data, error } = await supabase
-        .from('platform_connectors')
-        .insert([{
-          id: connectorConfig.id,
-          user_id: connectorConfig.user_id,
-          platform: connectorConfig.platform,
-          shop_id: connectorConfig.shop_id,
-          credentials: this.encryptCredentials(connectorConfig.credentials),
-          is_active: connectorConfig.is_active,
-          sync_frequency: connectorConfig.sync_frequency,
-          sync_entities: connectorConfig.sync_entities,
-          webhook_endpoints: connectorConfig.webhook_endpoints,
-          error_count: connectorConfig.error_count,
-          last_error: connectorConfig.last_error
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
       // Stocker en mémoire
       this.configs.set(connectorConfig.id, connectorConfig);
 
       // Créer l'instance du connecteur
       const connector = this.instantiateConnector(connectorConfig);
       this.connectors.set(connectorConfig.id, connector);
-
-      // Configurer les webhooks si demandé
-      if (config.sync_frequency === 'realtime') {
-        await this.setupWebhooksForConnector(connectorConfig.id);
-      }
 
       return connectorConfig.id;
     } catch (error) {
@@ -225,27 +139,12 @@ export class ConnectorManager {
     }
   }
 
-  // Récupération des connecteurs d'un utilisateur
+  // Récupération des connecteurs d'un utilisateur (version mémoire)
   async getUserConnectors(userId: string): Promise<ConnectorConfig[]> {
     try {
-      const { data, error } = await supabase
-        .from('platform_connectors')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('is_active', true);
-
-      if (error) throw error;
-
-      const configs = data.map(row => ({
-        ...row,
-        credentials: this.decryptCredentials(row.credentials)
-      }));
-
-      // Mettre à jour le cache
-      configs.forEach(config => {
-        this.configs.set(config.id, config);
-      });
-
+      const configs = Array.from(this.configs.values())
+        .filter(config => config.user_id === userId && config.is_active);
+      
       return configs;
     } catch (error) {
       console.error('Error fetching user connectors:', error);
@@ -253,28 +152,15 @@ export class ConnectorManager {
     }
   }
 
-  // Obtenir un connecteur par ID
+  // Obtenir un connecteur par ID (version mémoire)
   async getConnector(connectorId: string): Promise<AdvancedBaseConnector | null> {
     try {
       if (this.connectors.has(connectorId)) {
         return this.connectors.get(connectorId)!;
       }
 
-      // Charger depuis la base de données
-      const { data, error } = await supabase
-        .from('platform_connectors')
-        .select('*')
-        .eq('id', connectorId)
-        .single();
-
-      if (error || !data) return null;
-
-      const config: ConnectorConfig = {
-        ...data,
-        credentials: this.decryptCredentials(data.credentials)
-      };
-
-      this.configs.set(connectorId, config);
+      const config = this.configs.get(connectorId);
+      if (!config) return null;
 
       const connector = this.instantiateConnector(config);
       this.connectors.set(connectorId, connector);
@@ -294,13 +180,28 @@ export class ConnectorManager {
 
       const isValid = await connector.testConnection();
       
-      // Mettre à jour le statut
-      await this.updateConnectorStatus(connectorId, isValid);
+      // Mettre à jour le statut en mémoire
+      const config = this.configs.get(connectorId);
+      if (config) {
+        config.is_active = isValid;
+        config.updated_at = new Date().toISOString();
+        if (!isValid) {
+          config.error_count += 1;
+          config.last_error = 'Connection test failed';
+        }
+        this.configs.set(connectorId, config);
+      }
       
       return isValid;
     } catch (error) {
       console.error('Error testing connection:', error);
-      await this.updateConnectorStatus(connectorId, false, error.message);
+      const config = this.configs.get(connectorId);
+      if (config) {
+        config.is_active = false;
+        config.error_count += 1;
+        config.last_error = error.message || 'Unknown error';
+        this.configs.set(connectorId, config);
+      }
       return false;
     }
   }
@@ -332,17 +233,27 @@ export class ConnectorManager {
       }
 
       // Mettre à jour la date de dernière sync
-      await this.updateLastSync(connectorId);
+      const config = this.configs.get(connectorId);
+      if (config) {
+        config.last_sync_at = new Date().toISOString();
+        config.updated_at = new Date().toISOString();
+        this.configs.set(connectorId, config);
+      }
 
       return results;
     } catch (error) {
       console.error('Error syncing connector:', error);
-      await this.updateConnectorStatus(connectorId, false, error.message);
+      const config = this.configs.get(connectorId);
+      if (config) {
+        config.error_count += 1;
+        config.last_error = error.message || 'Sync failed';
+        this.configs.set(connectorId, config);
+      }
       throw error;
     }
   }
 
-  // Configuration des webhooks
+  // Configuration des webhooks (simulé)
   async setupWebhooksForConnector(connectorId: string): Promise<void> {
     try {
       const connector = await this.getConnector(connectorId);
@@ -350,29 +261,14 @@ export class ConnectorManager {
       
       if (!connector || !config) return;
 
-      const capabilities = connector.getPlatformCapabilities();
-      if (!capabilities.webhooks.supported) {
-        console.log(`Webhooks not supported for platform: ${config.platform}`);
-        return;
-      }
-
-      const events = capabilities.webhooks.events.filter(event => {
-        if (config.sync_entities.includes('products') && event.includes('product')) return true;
-        if (config.sync_entities.includes('orders') && event.includes('order')) return true;
-        if (config.sync_entities.includes('customers') && event.includes('customer')) return true;
-        return false;
-      });
-
+      // Simulation de la configuration des webhooks
+      const events = ['products/create', 'products/update', 'orders/create', 'orders/update'];
       const webhookIds = await connector.setupWebhooks(events);
 
-      // Sauvegarder les IDs des webhooks
-      await supabase
-        .from('platform_connectors')
-        .update({
-          webhook_endpoints: webhookIds,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', connectorId);
+      // Mettre à jour la configuration
+      config.webhook_endpoints = webhookIds;
+      config.updated_at = new Date().toISOString();
+      this.configs.set(connectorId, config);
 
     } catch (error) {
       console.error('Error setting up webhooks:', error);
@@ -380,14 +276,13 @@ export class ConnectorManager {
     }
   }
 
-  // Traitement des webhooks
+  // Traitement des webhooks (simulé)
   async processWebhook(
     platform: string,
     event: any,
     signature?: string
   ): Promise<void> {
     try {
-      // Trouver tous les connecteurs pour cette plateforme
       const configs = Array.from(this.configs.values())
         .filter(config => config.platform === platform && config.is_active);
 
@@ -395,13 +290,11 @@ export class ConnectorManager {
         const connector = await this.getConnector(config.id);
         if (!connector) continue;
 
-        // Vérifier la signature si fournie
         if (signature && !connector.verifyWebhook(JSON.stringify(event), signature)) {
           console.warn(`Invalid webhook signature for connector ${config.id}`);
           continue;
         }
 
-        // Traiter l'événement
         await connector.processWebhookEvent({
           id: crypto.randomUUID(),
           topic: event.topic || event.type,
@@ -412,8 +305,8 @@ export class ConnectorManager {
           retry_count: 0
         });
 
-        // Logger l'événement
-        await this.logWebhookEvent(config.id, event);
+        // Logger l'événement en mémoire
+        console.log(`Processed webhook for connector ${config.id}:`, event);
       }
     } catch (error) {
       console.error('Error processing webhook:', error);
@@ -429,7 +322,6 @@ export class ConnectorManager {
         return new ShopifyAdvancedConnector(config.credentials, config.user_id, config.shop_id);
       case 'woocommerce':
         return new WooCommerceConnector(config.credentials, config.user_id, config.shop_id);
-      // Ajouter d'autres plateformes ici
       default:
         throw new Error(`Unsupported platform: ${config.platform}`);
     }
@@ -448,63 +340,42 @@ export class ConnectorManager {
     }
   }
 
+  // Méthodes utilitaires pour l'encryption (simulées)
   private encryptCredentials(credentials: PlatformCredentials): string {
-    // En production, utiliser une vraie encryption
     return Buffer.from(JSON.stringify(credentials)).toString('base64');
   }
 
   private decryptCredentials(encrypted: string): PlatformCredentials {
-    // En production, utiliser le déchiffrement correspondant
     return JSON.parse(Buffer.from(encrypted, 'base64').toString());
   }
 
-  private async updateConnectorStatus(
-    connectorId: string,
-    isActive: boolean,
-    errorMessage?: string
-  ): Promise<void> {
-    try {
-      await supabase
-        .from('platform_connectors')
-        .update({
-          is_active: isActive,
-          last_error: errorMessage,
-          error_count: errorMessage ? 
-            supabase.sql`error_count + 1` : 0,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', connectorId);
-    } catch (error) {
-      console.error('Error updating connector status:', error);
-    }
+  // Méthodes pour la gestion des statistiques
+  getConnectorStats(userId: string): any {
+    const userConfigs = Array.from(this.configs.values())
+      .filter(config => config.user_id === userId);
+
+    return {
+      total: userConfigs.length,
+      active: userConfigs.filter(c => c.is_active).length,
+      inactive: userConfigs.filter(c => !c.is_active).length,
+      platforms: [...new Set(userConfigs.map(c => c.platform))],
+      lastSync: userConfigs.reduce((latest, config) => {
+        if (!latest || (config.last_sync_at && config.last_sync_at > latest)) {
+          return config.last_sync_at;
+        }
+        return latest;
+      }, null as string | null)
+    };
   }
 
-  private async updateLastSync(connectorId: string): Promise<void> {
-    try {
-      await supabase
-        .from('platform_connectors')
-        .update({
-          last_sync_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', connectorId);
-    } catch (error) {
-      console.error('Error updating last sync:', error);
-    }
-  }
+  // Nettoyage des ressources
+  clearConnectors(userId: string): void {
+    const userConfigs = Array.from(this.configs.entries())
+      .filter(([_, config]) => config.user_id === userId);
 
-  private async logWebhookEvent(connectorId: string, event: any): Promise<void> {
-    try {
-      await supabase
-        .from('webhook_events')
-        .insert([{
-          connector_id: connectorId,
-          event_type: event.topic || event.type,
-          payload: event,
-          processed_at: new Date().toISOString()
-        }]);
-    } catch (error) {
-      console.error('Error logging webhook event:', error);
-    }
+    userConfigs.forEach(([id, _]) => {
+      this.connectors.delete(id);
+      this.configs.delete(id);
+    });
   }
 }
