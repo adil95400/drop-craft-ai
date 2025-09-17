@@ -12,6 +12,9 @@ import { CommercializationQuickActions } from '@/components/admin/Commercializat
 import { AdminActionCards } from '@/components/admin/AdminActionCards'
 import { RealTimeStats } from '@/components/admin/RealTimeStats'
 import { QuickActionsPanel } from '@/components/admin/QuickActionsPanel'
+import { SystemAlertsPanel } from '@/components/admin/SystemAlertsPanel'
+import { MaintenanceDashboard } from '@/components/admin/MaintenanceDashboard'
+import { AdminNotificationsCenter } from '@/components/admin/AdminNotificationsCenter'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -318,8 +321,14 @@ const AdminPanelContent = () => {
               </Card>
             )}
 
+            {/* Alertes système */}
+            <SystemAlertsPanel />
+
             {/* Actions rapides améliorées */}
             <QuickActionsPanel />
+
+            {/* Dashboard de maintenance */}
+            <MaintenanceDashboard />
             
             <CommercializationQuickActions />
             <AdminActionCards />
@@ -402,7 +411,10 @@ const AdminPanelContent = () => {
         </TabsContent>
 
         <TabsContent value="monitoring">
-          <RealTimeMonitoring />
+          <div className="space-y-6">
+            <AdminNotificationsCenter />
+            <RealTimeMonitoring />
+          </div>
         </TabsContent>
 
         <TabsContent value="logs">
