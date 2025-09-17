@@ -64,6 +64,8 @@ import AdminBlog from '@/pages/admin/AdminBlog';
 import AdminAI from '@/pages/admin/AdminAI';
 import AdminAutomation from '@/pages/admin/AdminAutomation';
 import AdminSecurity from '@/pages/admin/AdminSecurity';
+import AdminImport from '@/pages/admin/AdminImport';
+import SyncManager from '@/pages/SyncManager';
 
 // Nouvelles pages de refonte
 import ModernDashboard from '@/pages/ModernDashboard';
@@ -604,6 +606,13 @@ function App() {
                 
                 <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />
                 
+                {/* Sync Manager Route */}
+                <Route path="/sync-manager" element={
+                  <ProtectedRoute>
+                    <AppLayout><SyncManager /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
                 {/* Admin Panel Route */}
                 <Route path="/admin-panel" element={
                   <AdminRoute>
@@ -621,6 +630,7 @@ function App() {
                   <Route path="products" element={<AdminProducts />} />
                   <Route path="orders" element={<AdminOrders />} />
                   <Route path="customers" element={<AdminCustomers />} />
+                  <Route path="import" element={<AdminImport />} />
                   <Route path="suppliers" element={<AdminSuppliers />} />
                   <Route path="analytics" element={<AdminAnalytics />} />
                   <Route path="crm" element={
