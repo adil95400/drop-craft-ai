@@ -105,3 +105,33 @@ verify_jwt = false
 
 [functions.shopify-locations]
 verify_jwt = false
+
+[functions.generate-realistic-data]
+verify_jwt = false
+
+[functions.creative-generation]
+verify_jwt = true
+
+[functions.stock-movement-processor]
+verify_jwt = true
+
+[functions.order-automation-processor]
+verify_jwt = true
+
+[functions.auto-reorder-executor]
+verify_jwt = true
+
+[functions.backup-supplier-finder]
+verify_jwt = true
+
+[functions.bulk-stock-updater] 
+verify_jwt = true
+
+[functions.stock-predictor]
+verify_jwt = true
+
+[functions.automation-stats]
+verify_jwt = true
+
+[functions.refund-automation-processor]
+verify_jwt = true
