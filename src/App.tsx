@@ -48,7 +48,7 @@ import ModernOrders from '@/pages/modern/ModernOrders';
 import ModernMarketing from '@/pages/modern/ModernMarketing';
 import { ModernNavigation } from '@/components/layout/ModernNavigation';
 import ModernBilling from '@/pages/modern/ModernBilling';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminLayout } from '@/layouts/AdminLayout';
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
 import { AdminProducts } from '@/pages/admin/AdminProducts';
 import { AdminOrders } from '@/pages/admin/AdminOrders';
@@ -621,7 +621,7 @@ function App() {
                   </AdminRoute>
                 } />
 
-                {/* Admin Routes avec AdminLayout et Outlet */}
+                {/* Admin Routes avec AdminLayout moderne et Outlet */}
                 <Route path="/admin" element={
                   <AdminRoute>
                     <AdminLayout />

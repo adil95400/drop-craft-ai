@@ -1,15 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
 export const AuthDebug: React.FC = () => {
   const { user, profile, isAdmin, loading, effectivePlan } = useUnifiedAuth();
+  const [isVisible, setIsVisible] = useState(true);
+
+  if (!isVisible) return null;
 
   return (
     <Card className="fixed bottom-4 right-4 w-96 z-50 bg-background/95 backdrop-blur">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <CardTitle className="text-sm">Debug Auth State</CardTitle>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsVisible(false)}
+          className="h-6 w-6 p-0"
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </CardHeader>
       <CardContent className="space-y-2 text-xs">
         <div>
