@@ -79,12 +79,10 @@ const CatalogPage = () => {
     try {
       setLoading(true)
       const { data, error } = await supabase.rpc('get_secure_catalog_products', {
-        category_filter: selectedCategory || null,
+        category_filter: selectedCategory === 'all' ? null : selectedCategory,
         search_term: searchTerm || null,
         limit_count: 100
       })
-        .order(sortBy, { ascending: false })
-        .limit(100)
 
       if (error) throw error
       
@@ -99,7 +97,24 @@ const CatalogPage = () => {
         image_urls: product.image_urls || (product.image_url ? [product.image_url] : [])
       }))
       
-      setProducts(mappedProducts)
+      // Sort products based on sortBy parameter
+      const sortedProducts = mappedProducts.sort((a, b) => {
+        switch (sortBy) {
+          case 'name':
+            return b.name.localeCompare(a.name)
+          case 'price':
+            return (b.price || 0) - (a.price || 0)
+          case 'profit_margin':
+            return (b.profit_margin || 0) - (a.profit_margin || 0)
+          case 'rating':
+            return (b.rating || 0) - (a.rating || 0)
+          case 'created_at':
+          default:
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        }
+      })
+      
+      setProducts(sortedProducts)
     } catch (error: any) {
       console.error('Error fetching products:', error)
       toast({
