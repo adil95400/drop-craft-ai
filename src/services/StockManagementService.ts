@@ -103,7 +103,6 @@ export class StockManagementService {
         })
         .select()
         .single()
-        .single()
 
       if (error) throw error
       return { id: data.id, ...rule }
@@ -192,7 +191,7 @@ export class StockManagementService {
         .order('created_at', { ascending: false })
 
       if (productId) {
-        query = query.eq('product_id', productId)
+        query = query.eq('entity_id', productId)
       }
 
       const { data, error } = await query.limit(100)
