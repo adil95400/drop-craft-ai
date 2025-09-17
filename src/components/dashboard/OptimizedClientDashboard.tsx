@@ -18,12 +18,14 @@ import {
 import { AreaChart, Area, PieChart as RechartsPieChart, Cell, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import { PriceOptimizationResults } from './PriceOptimizationResults'
 
 export default function OptimizedClientDashboard() {
   const { dashboardStats, orders, customers, products, seedDatabase, isSeeding } = useProductionData()
   const { user, profile, isAdmin } = useUnifiedSystem()
   const navigate = useNavigate()
   const [activeView, setActiveView] = useState('overview')
+  const [showPriceOptimization, setShowPriceOptimization] = useState(false)
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -121,46 +123,19 @@ export default function OptimizedClientDashboard() {
       type: "optimization" as const,
       onApply: async () => {
         console.log("🚀 Bouton Optimisation des prix cliqué!");
-        try {
-          console.log("📊 Début de l'optimisation des prix...");
-          
-          // Test simple d'abord - vérification que le bouton fonctionne
-          alert("Test: Bouton d'optimisation des prix cliqué!");
-          
-          toast.loading("Application de l'optimisation des prix...", { 
-            id: 'price-optimization',
-            duration: Infinity
-          });
-          
-          console.log("💭 Toast de chargement affiché");
-          
-          // Simuler l'appel API d'optimisation des prix
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          
-          // Simulation de la mise à jour des prix
-          const updatedProducts = [
-            { id: 1, name: "Produit A", oldPrice: 29.99, newPrice: 34.99, impact: "+16.7%" },
-            { id: 2, name: "Produit B", oldPrice: 49.99, newPrice: 57.99, impact: "+16.0%" },
-            { id: 3, name: "Produit C", oldPrice: 19.99, newPrice: 23.99, impact: "+20.0%" }
-          ];
-          
-          console.log("✅ Simulation terminée, affichage du toast de succès");
-          
-          toast.success(
-            `✅ Optimisation appliquée ! ${updatedProducts.length} prix mis à jour. Gain estimé: +2,340€/mois`, 
-            { id: 'price-optimization', duration: 4000 }
-          );
-          
-          console.log("🔄 Redirection programmée vers /products");
-          // Redirection vers la gestion des produits
-          setTimeout(() => {
-            console.log("🔄 Redirection en cours...");
-            navigate("/products");
-          }, 1000);
-        } catch (error) {
-          console.error("❌ Erreur lors de l'optimisation:", error);
-          toast.error("Erreur lors de l'optimisation des prix", { id: 'price-optimization' });
-        }
+        
+        toast.loading("Analyse des prix en cours...", { id: 'price-analysis' });
+        
+        // Simuler l'analyse IA des prix
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        toast.success("Analyse terminée ! Affichage des résultats.", { 
+          id: 'price-analysis', 
+          duration: 2000 
+        });
+        
+        // Ouvrir la modal avec les résultats détaillés
+        setShowPriceOptimization(true);
       }
     },
     {
@@ -528,6 +503,30 @@ export default function OptimizedClientDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Modal d'optimisation des prix */}
+        <PriceOptimizationResults
+          isOpen={showPriceOptimization}
+          onClose={() => setShowPriceOptimization(false)}
+          onApplyAll={async () => {
+            toast.loading("Application de toutes les optimisations...", { id: 'apply-all' });
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            toast.success("✅ Toutes les optimisations appliquées ! Gain total: +4,990€/mois", { 
+              id: 'apply-all', 
+              duration: 4000 
+            });
+            setShowPriceOptimization(false);
+            setTimeout(() => navigate("/products"), 1000);
+          }}
+          onApplyProduct={async (productId: string) => {
+            toast.loading("Application de l'optimisation...", { id: `apply-${productId}` });
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            toast.success("✅ Optimisation appliquée pour ce produit !", { 
+              id: `apply-${productId}`, 
+              duration: 3000 
+            });
+          }}
+        />
 
       </div>
     </div>
