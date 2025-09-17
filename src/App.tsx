@@ -140,6 +140,10 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import OptimizedClientDashboard from '@/components/dashboard/OptimizedClientDashboard';
 import NotFoundPage from '@/pages/NotFoundPage';
 
+// Competitive Intelligence Components
+import { WinningProductsMarketplace } from '@/components/intelligence/WinningProductsMarketplace';
+import { SocialTrendsAnalyzer } from '@/components/intelligence/SocialTrendsAnalyzer';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -512,6 +516,18 @@ function App() {
                 } />
                 
                 <Route path="/extension-download" element={<ExtensionDownloadPage />} />
+                
+                {/* Competitive Intelligence Routes */}
+                <Route path="/winning-products" element={
+                  <ProtectedRoute>
+                    <AppLayout><WinningProductsMarketplace /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/social-trends" element={
+                  <ProtectedRoute>
+                    <AppLayout><SocialTrendsAnalyzer /></AppLayout>
+                  </ProtectedRoute>
+                } />
                 
                 {/* Landing Pages */}
                 <Route path="/features" element={<Features />} />
