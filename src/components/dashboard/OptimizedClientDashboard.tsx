@@ -120,8 +120,19 @@ export default function OptimizedClientDashboard() {
       estimated: "+2,340€/mois",
       type: "optimization" as const,
       onApply: async () => {
+        console.log("🚀 Bouton Optimisation des prix cliqué!");
         try {
-          toast.loading("Application de l'optimisation des prix...", { id: 'price-optimization' });
+          console.log("📊 Début de l'optimisation des prix...");
+          
+          // Test simple d'abord - vérification que le bouton fonctionne
+          alert("Test: Bouton d'optimisation des prix cliqué!");
+          
+          toast.loading("Application de l'optimisation des prix...", { 
+            id: 'price-optimization',
+            duration: Infinity
+          });
+          
+          console.log("💭 Toast de chargement affiché");
           
           // Simuler l'appel API d'optimisation des prix
           await new Promise(resolve => setTimeout(resolve, 2000));
@@ -133,14 +144,21 @@ export default function OptimizedClientDashboard() {
             { id: 3, name: "Produit C", oldPrice: 19.99, newPrice: 23.99, impact: "+20.0%" }
           ];
           
+          console.log("✅ Simulation terminée, affichage du toast de succès");
+          
           toast.success(
             `✅ Optimisation appliquée ! ${updatedProducts.length} prix mis à jour. Gain estimé: +2,340€/mois`, 
             { id: 'price-optimization', duration: 4000 }
           );
           
+          console.log("🔄 Redirection programmée vers /products");
           // Redirection vers la gestion des produits
-          setTimeout(() => navigate("/products"), 1000);
+          setTimeout(() => {
+            console.log("🔄 Redirection en cours...");
+            navigate("/products");
+          }, 1000);
         } catch (error) {
+          console.error("❌ Erreur lors de l'optimisation:", error);
           toast.error("Erreur lors de l'optimisation des prix", { id: 'price-optimization' });
         }
       }
@@ -152,8 +170,14 @@ export default function OptimizedClientDashboard() {
       estimated: "Éviter -1,200€ de perte",
       type: "alert" as const,
       onApply: async () => {
+        console.log("📦 Bouton Alerte stock cliqué!");
         try {
-          toast.loading("Traitement des alertes de stock...", { id: 'stock-alert' });
+          alert("Test: Bouton d'alerte stock cliqué!");
+          
+          toast.loading("Traitement des alertes de stock...", { 
+            id: 'stock-alert',
+            duration: Infinity
+          });
           
           // Simuler le traitement des alertes stock
           await new Promise(resolve => setTimeout(resolve, 1500));
@@ -171,6 +195,7 @@ export default function OptimizedClientDashboard() {
           
           setTimeout(() => navigate("/products?view=inventory"), 1000);
         } catch (error) {
+          console.error("❌ Erreur alertes stock:", error);
           toast.error("Erreur lors du traitement des alertes", { id: 'stock-alert' });
         }
       }
@@ -182,8 +207,14 @@ export default function OptimizedClientDashboard() {
       estimated: "+35% conversion",
       type: "recommendation" as const,
       onApply: async () => {
+        console.log("🎯 Bouton Recommandations clients cliqué!");
         try {
-          toast.loading("Activation du système de recommandations...", { id: 'recommendations' });
+          alert("Test: Bouton de recommandations clients cliqué!");
+          
+          toast.loading("Activation du système de recommandations...", { 
+            id: 'recommendations',
+            duration: Infinity
+          });
           
           // Simuler l'activation du système de recommandations
           await new Promise(resolve => setTimeout(resolve, 2500));
@@ -203,6 +234,7 @@ export default function OptimizedClientDashboard() {
           
           setTimeout(() => navigate("/customers?view=segments"), 1000);
         } catch (error) {
+          console.error("❌ Erreur recommandations:", error);
           toast.error("Erreur lors de l'activation du système", { id: 'recommendations' });
         }
       }
