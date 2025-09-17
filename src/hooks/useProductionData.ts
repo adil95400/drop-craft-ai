@@ -49,11 +49,7 @@ export const useProductionData = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(`
-          *,
-          suppliers(name, slug),
-          inventory_levels(stock, warehouse)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -67,12 +63,7 @@ export const useProductionData = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('orders')
-        .select(`
-          *,
-          customers(name, email, country),
-          order_items(*, products(title, sku)),
-          shipments(tracking_number, carrier, status)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(100)
 
