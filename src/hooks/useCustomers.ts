@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useOptimizedQuery, useOptimizedMutation } from '@/hooks/useOptimizedQuery';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface Customer {
   id: string;
@@ -98,13 +100,35 @@ export function useCustomers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  // Simulating API call with mock data
+  // Real Supabase data fetch
   const { data: customers, isLoading, error, refetch } = useOptimizedQuery<Customer[]>(
     ['customers'],
     async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return { data: mockCustomers, error: null };
+      try {
+        const { data, error } = await supabase
+          .from('customers')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        return { data: (data || []).map(customer => ({
+          id: customer.id,
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone || undefined,
+          status: (customer.status === 'active' || customer.status === 'inactive') ? customer.status : 'active',
+          total_orders: customer.total_orders || 0,
+          total_spent: customer.total_spent || 0,
+          address: customer.address as Customer['address'],
+          user_id: customer.user_id,
+          created_at: customer.created_at || new Date().toISOString(),
+          updated_at: customer.updated_at || new Date().toISOString(),
+          country: customer.country || undefined
+        })), error: null };
+      } catch (err) {
+        console.warn('Error fetching customers:', err);
+        return { data: [], error: err };
+      }
     },
     {
       staleTime: 5 * 60 * 1000, // 5 minutes
@@ -112,24 +136,44 @@ export function useCustomers() {
     }
   );
 
+  const { user } = useAuth();
+
   // Create customer mutation
   const createCustomerMutation = useOptimizedMutation<Customer, Partial<Customer>>(
     async (customerData) => {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const newCustomer: Customer = {
-        id: Date.now().toString(),
-        name: customerData.name || '',
-        email: customerData.email || '',
-        phone: customerData.phone,
-        status: customerData.status || 'active',
-        total_orders: 0,
-        total_spent: 0,
-        user_id: 'mock-user-id',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        ...customerData
+      if (!user) throw new Error('User not authenticated');
+      
+      const { data, error } = await supabase
+        .from('customers')
+        .insert({
+          ...customerData,
+          user_id: user.id,
+          total_orders: 0,
+          total_spent: 0,
+          name: customerData.name || '',
+          email: customerData.email || ''
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return { 
+        data: {
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          phone: data.phone || undefined,
+          status: (data.status === 'active' || data.status === 'inactive') ? data.status : 'active',
+          total_orders: data.total_orders || 0,
+          total_spent: data.total_spent || 0,
+          address: data.address as Customer['address'],
+          user_id: data.user_id,
+          created_at: data.created_at || new Date().toISOString(),
+          updated_at: data.updated_at || new Date().toISOString(),
+          country: data.country || undefined
+        }, 
+        error: null 
       };
-      return { data: newCustomer, error: null };
     },
     {
       onSuccess: () => {
@@ -143,9 +187,31 @@ export function useCustomers() {
   // Update customer mutation
   const updateCustomerMutation = useOptimizedMutation<Customer, { id: string; data: Partial<Customer> }>(
     async ({ id, data }) => {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const updatedCustomer = { ...data, id, updated_at: new Date().toISOString() } as Customer;
-      return { data: updatedCustomer, error: null };
+      const { data: updatedData, error } = await supabase
+        .from('customers')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return { 
+        data: {
+          id: updatedData.id,
+          name: updatedData.name,
+          email: updatedData.email,
+          phone: updatedData.phone || undefined,
+          status: (updatedData.status === 'active' || updatedData.status === 'inactive') ? updatedData.status : 'active',
+          total_orders: updatedData.total_orders || 0,
+          total_spent: updatedData.total_spent || 0,
+          address: updatedData.address as Customer['address'],
+          user_id: updatedData.user_id,
+          created_at: updatedData.created_at || new Date().toISOString(),
+          updated_at: updatedData.updated_at || new Date().toISOString(),
+          country: updatedData.country || undefined
+        }, 
+        error: null 
+      };
     },
     {
       onSuccess: () => {
@@ -159,7 +225,12 @@ export function useCustomers() {
   // Delete customer mutation
   const deleteCustomerMutation = useOptimizedMutation<void, string>(
     async (customerId) => {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { error } = await supabase
+        .from('customers')
+        .delete()
+        .eq('id', customerId);
+      
+      if (error) throw error;
       return { data: undefined, error: null };
     },
     {

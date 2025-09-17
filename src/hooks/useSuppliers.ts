@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/integrations/supabase/client'
 
 export interface Supplier {
   id: string
@@ -81,50 +82,34 @@ export function useSuppliers() {
   const fetchSuppliers = async () => {
     try {
       setLoading(true)
-      // Utiliser des données mockées pour le moment car la table suppliers n'existe pas
-      const mockSuppliers = [
-        {
-          id: '1',
-          user_id: user?.id || '',
-          name: 'BigBuy',
-          display_name: 'BigBuy',
-          description: '300K+ produits européens, synchronisation temps réel',
-          category: 'Dropshipping Premium',
-          status: 'active',
-          connection_status: 'connected',
-          product_count: 1250,
-          tags: ['premium', 'europe'],
-          rating: 4.8,
-          success_rate: 98.5,
-          error_count: 2,
-          access_count: 145,
-          is_premium: true,
-          supplier_type: 'api',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          user_id: user?.id || '',
-          name: 'Printful',
-          display_name: 'Printful',
-          description: 'Print-on-demand leader mondial',
-          category: 'Print-on-Demand',
-          status: 'active',
-          connection_status: 'connected',
-          product_count: 850,
-          tags: ['print', 'demand'],
-          rating: 4.9,
-          success_rate: 99.2,
-          error_count: 1,
-          access_count: 89,
-          is_premium: false,
-          supplier_type: 'api',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ]
-      setSuppliers(mockSuppliers)
+      
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from('suppliers')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      const formattedSuppliers = (data || []).map(supplier => ({
+        ...supplier,
+        display_name: supplier.name,
+        category: supplier.sector || 'General',
+        sector: supplier.sector || 'General',
+        supplier_type: supplier.supplier_type || 'api',
+        connection_status: supplier.connection_status || 'disconnected',
+        product_count: supplier.product_count || 0,
+        tags: supplier.tags || [],
+        rating: supplier.rating || 0,
+        success_rate: 100,
+        error_count: 0,
+        access_count: supplier.access_count || 0,
+        is_premium: false
+      }));
+      
+      setSuppliers(formattedSuppliers);
     } catch (error) {
       console.error('Error fetching suppliers:', error)
       toast({
@@ -132,6 +117,7 @@ export function useSuppliers() {
         description: "Impossible de charger les fournisseurs",
         variant: "destructive"
       })
+      setSuppliers([]);
     } finally {
       setLoading(false)
     }

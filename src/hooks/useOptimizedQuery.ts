@@ -4,7 +4,7 @@ import { useApi } from '@/hooks/useApi';
 
 export function useOptimizedQuery<T>(
   key: string[],
-  queryFn: () => Promise<{ data: T | null; error: string | null }>,
+  queryFn: () => Promise<{ data: T | null; error: any }>,
   options?: {
     enabled?: boolean;
     staleTime?: number;
@@ -31,7 +31,7 @@ export function useOptimizedQuery<T>(
 }
 
 export function useOptimizedMutation<T, V = unknown>(
-  mutationFn: (variables: V) => Promise<{ data: T | null; error: string | null }>,
+  mutationFn: (variables: V) => Promise<{ data: T | null; error: any }>,
   options?: {
     onSuccess?: (data: T) => void;
     onError?: (error: string) => void;
@@ -83,7 +83,7 @@ export function usePrefetch() {
   return {
     prefetchQuery: <T>(
       key: string[],
-      queryFn: () => Promise<{ data: T | null; error: string | null }>,
+      queryFn: () => Promise<{ data: T | null; error: any }>,
       staleTime = 5 * 60 * 1000
     ) => {
       return queryClient.prefetchQuery({
