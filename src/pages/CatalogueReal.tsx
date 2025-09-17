@@ -69,11 +69,11 @@ export default function CatalogueReal() {
   const { data: marketplaceProducts = [], isLoading: isMarketplaceLoading } = useQuery({
     queryKey: ['marketplace-products', { search: searchQuery, category: selectedCategory }],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('catalog_products')
-        .select('*')
-        .limit(50)
-        .order('created_at', { ascending: false })
+      const { data, error } = await supabase.rpc('get_secure_catalog_products', {
+        category_filter: selectedCategory || null,
+        search_term: searchQuery || null,
+        limit_count: 50
+      })
       
       if (error) throw error
       return data || []

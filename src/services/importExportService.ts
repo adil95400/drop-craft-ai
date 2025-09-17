@@ -124,9 +124,11 @@ class ImportExportService {
       if (!user) throw new Error('Non authentifié')
 
       // Récupérer les produits du catalogue
-      const { data: catalogProducts, error: fetchError } = await supabase
-        .from('catalog_products')
-        .select('*')
+      const { data: catalogProducts, error: fetchError } = await supabase.rpc('get_secure_catalog_products', {
+        category_filter: null,
+        search_term: null,
+        limit_count: 10000
+      })
         .in('id', productIds)
 
       if (fetchError) throw fetchError

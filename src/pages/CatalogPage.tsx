@@ -78,14 +78,28 @@ const CatalogPage = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
-        .from('catalog_products')
-        .select('*')
+      const { data, error } = await supabase.rpc('get_secure_catalog_products', {
+        category_filter: selectedCategory || null,
+        search_term: searchTerm || null,
+        limit_count: 100
+      })
         .order(sortBy, { ascending: false })
         .limit(100)
 
       if (error) throw error
-      setProducts(data || [])
+      
+      // Map and ensure all required fields are present
+      const mappedProducts = (data || []).map((product: any) => ({
+        ...product,
+        stock_quantity: (product as any).stock_quantity || 0,
+        created_at: (product as any).created_at || new Date().toISOString(),
+        updated_at: (product as any).updated_at || new Date().toISOString(),
+        profit_margin: product.profit_margin || 0,
+        cost_price: product.cost_price || product.price * 0.7,
+        image_urls: product.image_urls || (product.image_url ? [product.image_url] : [])
+      }))
+      
+      setProducts(mappedProducts)
     } catch (error: any) {
       console.error('Error fetching products:', error)
       toast({
@@ -110,6 +124,16 @@ const CatalogPage = () => {
     if (!user || !editingProduct?.id) return
 
     try {
+      // Note: Updates to catalog products should be handled through admin interface
+      // For now, this functionality is disabled for security reasons
+      toast({
+        title: "Fonctionnalité désactivée",
+        description: "La modification des produits du catalogue nécessite des privilèges administrateur",
+        variant: "destructive"
+      })
+      return
+
+      /* Original functionality disabled - catalog_products should not be directly modified
       const { error } = await supabase
         .from('catalog_products')
         .update({
@@ -130,7 +154,8 @@ const CatalogPage = () => {
         title: "Produit mis à jour",
         description: "Les modifications ont été enregistrées avec succès"
       })
-
+      */
+      
       setIsEditDialogOpen(false)
       setEditingProduct(null)
       fetchProducts()

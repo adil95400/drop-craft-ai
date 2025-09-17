@@ -66,7 +66,7 @@ const AdminPanelContent = () => {
         supabase.from('profiles').select('*'),
         supabase.from('orders').select('*'),
         supabase.from('suppliers').select('*'),
-        supabase.from('catalog_products').select('*')
+        supabase.rpc('get_secure_catalog_products', { category_filter: null, search_term: null, limit_count: 1000 })
       ])
 
       const totalUsers = usersData.data?.length || 0

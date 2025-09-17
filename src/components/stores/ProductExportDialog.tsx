@@ -67,9 +67,11 @@ export function ProductExportDialog({ storeId, storeName, platform }: ProductExp
     setLoading(true)
     try {
       // Récupérer les produits du catalog ou des imports
-      const { data, error } = await supabase
-        .from('catalog_products')
-        .select('*')
+      const { data, error } = await supabase.rpc('get_secure_catalog_products', {
+        category_filter: null,
+        search_term: null,
+        limit_count: 1000
+      })
         .limit(100)
 
       if (error) throw error

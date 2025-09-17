@@ -55,7 +55,7 @@ export const RealisticDataButton = () => {
         supabase.from('suppliers').select('id', { count: 'exact', head: true }),
         supabase.from('customers').select('id', { count: 'exact', head: true }),
         supabase.from('orders').select('id', { count: 'exact', head: true }),
-        supabase.from('catalog_products').select('id', { count: 'exact', head: true })
+        supabase.rpc('get_secure_catalog_products', { category_filter: null, search_term: null, limit_count: 1 }).then(result => ({ data: result.data ? [{}] : [], count: result.data?.length || 0 }))
       ]);
 
       setStats({

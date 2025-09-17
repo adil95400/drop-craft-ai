@@ -136,9 +136,11 @@ export const ClientDashboard: React.FC = () => {
       }
 
       // Fetch top products
-      const { data: productsData } = await supabase
-        .from('catalog_products')
-        .select('id, name, sales_count, price, image_url, rating')
+      const { data: productsData } = await supabase.rpc('get_secure_catalog_products', {
+        category_filter: null,
+        search_term: null,
+        limit_count: 10
+      })
         .order('sales_count', { ascending: false })
         .limit(6);
 
