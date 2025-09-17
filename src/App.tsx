@@ -60,6 +60,10 @@ import AdminAnalytics from '@/pages/admin/AdminAnalytics';
 import AdminSEO from '@/pages/admin/AdminSEO';
 import AdminCRM from '@/pages/admin/AdminCRM';
 import AdminMarketing from '@/pages/admin/AdminMarketing';
+import AdminBlog from '@/pages/admin/AdminBlog';
+import AdminAI from '@/pages/admin/AdminAI';
+import AdminAutomation from '@/pages/admin/AdminAutomation';
+import AdminSecurity from '@/pages/admin/AdminSecurity';
 
 // Nouvelles pages de refonte
 import ModernDashboard from '@/pages/ModernDashboard';
@@ -600,6 +604,64 @@ function App() {
                 
                 <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />
                 
+                {/* Admin Panel Route */}
+                <Route path="/admin-panel" element={
+                  <AdminRoute>
+                    <AppLayout><AdminPanel /></AppLayout>
+                  </AdminRoute>
+                } />
+
+                {/* Admin Routes avec AdminLayout et Outlet */}
+                <Route path="/admin" element={
+                  <AdminRoute>
+                    <AdminLayout />
+                  </AdminRoute>
+                }>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="products" element={<AdminProducts />} />
+                  <Route path="orders" element={<AdminOrders />} />
+                  <Route path="customers" element={<AdminCustomers />} />
+                  <Route path="suppliers" element={<AdminSuppliers />} />
+                  <Route path="analytics" element={<AdminAnalytics />} />
+                  <Route path="crm" element={
+                    <RequirePlan minPlan="pro">
+                      <AdminCRM />
+                    </RequirePlan>
+                  } />
+                  <Route path="marketing" element={
+                    <RequirePlan minPlan="pro">
+                      <AdminMarketing />
+                    </RequirePlan>
+                  } />
+                  <Route path="seo" element={
+                    <RequirePlan minPlan="pro">
+                      <AdminSEO />
+                    </RequirePlan>
+                  } />
+                  <Route path="blog" element={
+                    <RequirePlan minPlan="pro">
+                      <AdminBlog />
+                    </RequirePlan>
+                  } />
+                  <Route path="ai" element={
+                    <RequirePlan minPlan="ultra_pro">
+                      <AdminAI />
+                    </RequirePlan>
+                  } />
+                  <Route path="automation" element={
+                    <RequirePlan minPlan="ultra_pro">
+                      <AdminAutomation />
+                    </RequirePlan>
+                  } />
+                  <Route path="security" element={
+                    <RequirePlan minPlan="ultra_pro">
+                      <AdminSecurity />
+                    </RequirePlan>
+                  } />
+                  <Route path="integrations" element={<AdminIntegrations />} />
+                  <Route path="subscriptions" element={<AdminSubscriptions />} />
+                </Route>
+
                 {/* 404 Not Found Page */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
