@@ -102,7 +102,7 @@ export class StockManagementService {
           is_active: rule.is_active
         })
         .select()
-        .single()
+        .maybeSingle()
 
       if (error) throw error
       return { id: data.id, ...rule }
@@ -183,7 +183,7 @@ export class StockManagementService {
       if (!user) throw new Error('User not authenticated')
 
       // Using activity_logs table as fallback for stock movements
-      let query = supabase
+      let queryBuilder = supabase
         .from('activity_logs')
         .select('*')
         .eq('user_id', user.id)
@@ -191,10 +191,10 @@ export class StockManagementService {
         .order('created_at', { ascending: false })
 
       if (productId) {
-        query = query.eq('entity_id', productId)
+        queryBuilder = queryBuilder.eq('entity_id', productId)
       }
 
-      const { data, error } = await query.limit(100)
+      const { data, error } = await queryBuilder.limit(100)
 
       if (error) throw error
       return (data || []).map((log: any) => ({
