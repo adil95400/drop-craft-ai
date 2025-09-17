@@ -145,6 +145,8 @@ import { WinningProductsMarketplace } from '@/components/intelligence/WinningPro
 import { SocialTrendsAnalyzer } from '@/components/intelligence/SocialTrendsAnalyzer';
 import { OrderAutomationCenter } from '@/components/automation/OrderAutomationCenter';
 import { StockManagementHub } from '@/components/automation/StockManagementHub';
+import { CreativeStudio } from '@/components/creative/CreativeStudio';
+import { MarketingHub } from '@/components/marketing/MarketingHub';
 
 const queryClient = new QueryClient({
   defaultOptions: {
