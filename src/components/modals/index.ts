@@ -14,3 +14,7 @@ export { SupportTicketDialog } from './SupportTicketDialog';
 export { BulkActionsDialog } from './BulkActionsDialog';
 export { AIAlertsModal } from './AIAlertsModal';
 export { CarrierDetailsModal } from './CarrierDetailsModal';
+export { NotificationDialog } from './NotificationDialog';
+export { GenerateReportDialog } from './GenerateReportDialog';
+export { CreateSupplierDialog } from './CreateSupplierDialog';
+export { SupplierFeedDialog } from './SupplierFeedDialog';

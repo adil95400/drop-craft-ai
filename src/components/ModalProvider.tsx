@@ -13,7 +13,12 @@ import {
   TrackingDialog,
   SEOOptimizationDialog,
   BlogPostDialog,
-  SupportTicketDialog
+  SupportTicketDialog,
+  BulkActionsDialog,
+  NotificationDialog,
+  GenerateReportDialog,
+  CreateSupplierDialog,
+  SupplierFeedDialog
 } from '@/components/modals';
 import { NewAutomationDialog } from '@/components/automation/NewAutomationDialog';
 import { AutomationConfigDialog } from '@/components/automation/AutomationConfigDialog';
@@ -132,6 +137,33 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
       <AIInsightsModal
         open={modalStates.aiInsights}
         onOpenChange={(open) => !open && closeModal('aiInsights')}
+      />
+
+      {/* Missing Modals */}
+      <BulkActionsDialog
+        open={modalStates.bulkActions}
+        onOpenChange={(open) => !open && closeModal('bulkActions')}
+        selectedItems={modalData.selectedItems || []}
+      />
+      
+      <NotificationDialog
+        open={modalStates.notification}
+        onOpenChange={(open) => !open && closeModal('notification')}
+      />
+      
+      <GenerateReportDialog
+        open={modalStates.generateReport}
+        onOpenChange={(open) => !open && closeModal('generateReport')}
+      />
+      
+      <CreateSupplierDialog
+        open={modalStates.createSupplier}
+        onOpenChange={(open) => !open && closeModal('createSupplier')}
+      />
+      
+      <SupplierFeedDialog
+        open={modalStates.supplierFeed}
+        onOpenChange={(open) => !open && closeModal('supplierFeed')}
       />
     </>
   );
