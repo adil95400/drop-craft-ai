@@ -143,6 +143,8 @@ import NotFoundPage from '@/pages/NotFoundPage';
 // Competitive Intelligence Components
 import { WinningProductsMarketplace } from '@/components/intelligence/WinningProductsMarketplace';
 import { SocialTrendsAnalyzer } from '@/components/intelligence/SocialTrendsAnalyzer';
+import { OrderAutomationCenter } from '@/components/automation/OrderAutomationCenter';
+import { StockManagementHub } from '@/components/automation/StockManagementHub';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -526,6 +528,16 @@ function App() {
                 <Route path="/social-trends" element={
                   <ProtectedRoute>
                     <AppLayout><SocialTrendsAnalyzer /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/automation-center" element={
+                  <ProtectedRoute>
+                    <AppLayout><OrderAutomationCenter /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/stock-management" element={
+                  <ProtectedRoute>
+                    <AppLayout><StockManagementHub /></AppLayout>
                   </ProtectedRoute>
                 } />
                 
