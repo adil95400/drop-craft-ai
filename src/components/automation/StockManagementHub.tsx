@@ -30,7 +30,7 @@ export function StockManagementHub() {
     top_moving_products: []
   })
   const [loading, setLoading] = useState(true)
-  const [urgencyFilter, setUrgencyFilter] = useState<string>('')
+  const [urgencyFilter, setUrgencyFilter] = useState<string>('all')
   const [showReorderDialog, setShowReorderDialog] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<StockAlert | null>(null)
   const { toast } = useToast()
@@ -116,7 +116,7 @@ export function StockManagementHub() {
               <SelectValue placeholder="Filtrer par urgence" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Toutes urgences</SelectItem>
+              <SelectItem value="all">Toutes urgences</SelectItem>
               <SelectItem value="critical">Critique</SelectItem>
               <SelectItem value="high">Élevée</SelectItem>
               <SelectItem value="medium">Moyenne</SelectItem>
