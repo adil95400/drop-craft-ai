@@ -97,20 +97,29 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching profile:', error);
+        setProfile(null);
         return;
       }
 
-      setProfile(data as Profile);
+      if (data) {
+        console.log('Profile loaded:', data);
+        setProfile(data as Profile);
+      } else {
+        console.log('No profile found, creating default');
+        setProfile(null);
+      }
     } catch (error) {
       console.error('Profile fetch error:', error);
+      setProfile(null);
     }
   };
 

@@ -43,9 +43,9 @@ import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 
 const mainItems = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
-  { title: 'Boutiques', url: '/stores', icon: Store, badge: 'Stores' },
+  { title: 'Boutiques', url: '/admin/stores', icon: Store, badge: 'Stores' },
   { title: 'Produits', url: '/admin/products', icon: Package },
-  { title: 'Catalogue', url: '/catalog', icon: BookOpen },
+  { title: 'Catalogue', url: '/admin/catalog', icon: BookOpen },
   { title: 'Commandes', url: '/admin/orders', icon: ShoppingCart },
   { title: 'Import', url: '/admin/import', icon: Upload },
   { title: 'Fournisseurs', url: '/admin/suppliers', icon: Users2 },
@@ -53,7 +53,7 @@ const mainItems = [
 
 const analyticsItems = [
   { title: 'Analytics', url: '/admin/analytics', icon: LineChart },
-  { title: 'Monitoring', url: '/monitoring', icon: Monitor },
+  { title: 'Monitoring', url: '/admin/monitoring', icon: Monitor },
 ];
 
 const crmItems = [
@@ -68,11 +68,11 @@ const marketingItems = [
 ];
 
 const toolsItems = [
-  { title: 'Extensions', url: '/extensions', icon: Puzzle, badge: 'Nouveau' },
+  { title: 'Extensions', url: '/admin/extensions', icon: Puzzle, badge: 'Nouveau' },
   { title: 'IA Assistant', url: '/admin/ai', icon: Bot, badge: 'AI' },
-  { title: 'AI Studio', url: '/ai-studio', icon: Palette, badge: 'Studio' },
-  { title: 'Automation Studio', url: '/automation-studio', icon: Zap, badge: 'Studio' },
-  { title: 'Analytics Studio', url: '/analytics-studio', icon: TrendingUp, badge: 'Studio' },
+  { title: 'AI Studio', url: '/admin/ai-studio', icon: Palette, badge: 'Studio' },
+  { title: 'Automation Studio', url: '/admin/automation-studio', icon: Zap, badge: 'Studio' },
+  { title: 'Analytics Studio', url: '/admin/analytics-studio', icon: TrendingUp, badge: 'Studio' },
 ];
 
 const adminItems = [
@@ -89,9 +89,15 @@ export function AdminSidebar() {
   const currentPath = location.pathname;
   const collapsed = !sidebarOpen;
 
-  const isActive = (path: string) => currentPath === path || currentPath.startsWith(path + '/');
+  const isActive = (path: string) => {
+    if (path === '/admin') return currentPath === '/admin';
+    return currentPath === path || currentPath.startsWith(path + '/');
+  };
+  
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive ? 'bg-primary/10 text-primary font-medium border-r-2 border-primary' : 'hover:bg-muted/50';
+    isActive 
+      ? 'bg-primary text-primary-foreground font-medium shadow-sm' 
+      : 'hover:bg-muted/50 text-muted-foreground hover:text-foreground';
 
   const renderMenuGroup = (items: typeof mainItems, groupLabel: string) => (
     <SidebarGroup key={groupLabel}>
@@ -105,8 +111,8 @@ export function AdminSidebar() {
               <SidebarMenuButton asChild className="h-10">
                 <NavLink 
                   to={item.url} 
-                  end={item.url === '/dashboard'}
-                  className={getNavCls}
+                  end={item.url === '/admin'}
+                  className={({ isActive: navIsActive }) => `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${getNavCls({ isActive: navIsActive || isActive(item.url) })}`}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
                   {!collapsed && (
