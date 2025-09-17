@@ -21,7 +21,7 @@ export const MobileAppDashboard = () => {
 
   const [newApp, setNewApp] = useState({
     name: '',
-    platform: 'hybrid' as const,
+    platform: 'hybrid' as 'ios' | 'android' | 'hybrid',
     package_name: '',
     description: '',
     category: '',
@@ -175,7 +175,7 @@ export const MobileAppDashboard = () => {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="platform">Platform</Label>
-                <Select value={newApp.platform} onValueChange={(value) => setNewApp({ ...newApp, platform: value as 'ios' | 'android' | 'hybrid' })}>
+                <Select value={newApp.platform} onValueChange={(value: string) => setNewApp({ ...newApp, platform: value as 'ios' | 'android' | 'hybrid' })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select platform" />
                   </SelectTrigger>

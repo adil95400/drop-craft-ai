@@ -146,7 +146,8 @@ import { SocialTrendsAnalyzer } from '@/components/intelligence/SocialTrendsAnal
 import { OrderAutomationCenter } from '@/components/automation/OrderAutomationCenter';
 import { StockManagementHub } from '@/components/automation/StockManagementHub';
 import { CreativeStudio } from '@/components/creative/CreativeStudio';
-import { MarketingHub } from '@/components/marketing/MarketingHub';
+import { CompetitiveAdvantageHub } from '@/components/dashboard/CompetitiveAdvantageHub';
+import { UnifiedDashboard as CommandCenter } from '@/components/dashboard/UnifiedDashboard';
 import { MobileAppDashboard } from '@/components/mobile/MobileAppDashboard';
 import { TeamCollaboration } from '@/components/team/TeamCollaboration';
 import { WhiteLabelSolution } from '@/components/enterprise/WhiteLabelSolution';

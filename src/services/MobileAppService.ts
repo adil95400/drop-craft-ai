@@ -189,13 +189,13 @@ class MobileAppService {
       return builds?.map(build => ({
         id: build.id,
         app_id: appId,
-        version: build.metadata?.version || '1.0.0',
-        build_number: build.metadata?.build_number || 1,
-        status: build.metadata?.status || 'building',
-        platform: build.metadata?.platform || 'android',
-        build_logs: build.metadata?.build_logs || [],
-        download_url: build.metadata?.download_url,
-        size_mb: build.metadata?.size_mb || 0,
+        version: (build.metadata as any)?.version || '1.0.0',
+        build_number: (build.metadata as any)?.build_number || 1,
+        status: (build.metadata as any)?.status || 'building',
+        platform: (build.metadata as any)?.platform || 'android',
+        build_logs: (build.metadata as any)?.build_logs || [],
+        download_url: (build.metadata as any)?.download_url,
+        size_mb: (build.metadata as any)?.size_mb || 0,
         created_at: build.created_at
       })) || [];
     } catch (error) {
@@ -206,9 +206,13 @@ class MobileAppService {
 
   async startBuild(appId: string, platform: 'ios' | 'android', version: string): Promise<void> {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
       const { error } = await supabase
         .from('activity_logs')
         .insert({
+          user_id: user.id,
           action: 'app_build_started',
           entity_id: appId,
           description: `Build started for ${platform} v${version}`,
@@ -242,13 +246,13 @@ class MobileAppService {
 
       return members?.map(member => ({
         id: member.id,
-        name: member.metadata?.name || 'Team Member',
-        email: member.metadata?.email || '',
-        role: member.metadata?.role || 'viewer',
-        avatar_url: member.metadata?.avatar_url,
-        permissions: member.metadata?.permissions || [],
-        last_active: member.metadata?.last_active || member.created_at,
-        status: member.metadata?.status || 'active'
+        name: (member.metadata as any)?.name || 'Team Member',
+        email: (member.metadata as any)?.email || '',
+        role: (member.metadata as any)?.role || 'viewer',
+        avatar_url: (member.metadata as any)?.avatar_url,
+        permissions: (member.metadata as any)?.permissions || [],
+        last_active: (member.metadata as any)?.last_active || member.created_at,
+        status: (member.metadata as any)?.status || 'active'
       })) || [];
     } catch (error) {
       console.error('Error fetching team members:', error);
@@ -284,9 +288,13 @@ class MobileAppService {
     permissions: string[];
   }): Promise<void> {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
       const { error } = await supabase
         .from('activity_logs')
         .insert({
+          user_id: user.id,
           action: 'team_member_added',
           description: `Team member ${memberData.name} invited`,
           metadata: {
@@ -319,9 +327,13 @@ class MobileAppService {
     custom_domain?: string;
   }): Promise<string> {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
       const { data, error } = await supabase
         .from('activity_logs')
         .insert({
+          user_id: user.id,
           action: 'white_label_generated',
           description: `White-label app generated for ${config.brand_name}`,
           metadata: config
@@ -359,10 +371,10 @@ class MobileAppService {
 
       return keys?.map(key => ({
         id: key.id,
-        name: key.metadata?.name || 'Enterprise API Key',
-        key: key.metadata?.key || 'sk_****',
-        permissions: key.metadata?.permissions || [],
-        last_used: key.metadata?.last_used || 'Never',
+        name: (key.metadata as any)?.name || 'Enterprise API Key',
+        key: (key.metadata as any)?.key || 'sk_****',
+        permissions: (key.metadata as any)?.permissions || [],
+        last_used: (key.metadata as any)?.last_used || 'Never',
         created_at: key.created_at
       })) || [];
     } catch (error) {
@@ -376,11 +388,15 @@ class MobileAppService {
     permissions: string[];
   }): Promise<void> {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
       const apiKey = `sk_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
       const { error } = await supabase
         .from('activity_logs')
         .insert({
+          user_id: user.id,
           action: 'api_key_created',
           description: `Enterprise API key "${keyData.name}" created`,
           metadata: {
