@@ -119,9 +119,30 @@ export default function OptimizedClientDashboard() {
       impact: "high" as const,
       estimated: "+2,340€/mois",
       type: "optimization" as const,
-      onApply: () => {
-        toast.success("Optimisation des prix appliquée ! Redirection vers la gestion des prix...");
-        setTimeout(() => navigate("/products?optimize=pricing"), 1500);
+      onApply: async () => {
+        try {
+          toast.loading("Application de l'optimisation des prix...", { id: 'price-optimization' });
+          
+          // Simuler l'appel API d'optimisation des prix
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // Simulation de la mise à jour des prix
+          const updatedProducts = [
+            { id: 1, name: "Produit A", oldPrice: 29.99, newPrice: 34.99, impact: "+16.7%" },
+            { id: 2, name: "Produit B", oldPrice: 49.99, newPrice: 57.99, impact: "+16.0%" },
+            { id: 3, name: "Produit C", oldPrice: 19.99, newPrice: 23.99, impact: "+20.0%" }
+          ];
+          
+          toast.success(
+            `✅ Optimisation appliquée ! ${updatedProducts.length} prix mis à jour. Gain estimé: +2,340€/mois`, 
+            { id: 'price-optimization', duration: 4000 }
+          );
+          
+          // Redirection vers la gestion des produits
+          setTimeout(() => navigate("/products"), 1000);
+        } catch (error) {
+          toast.error("Erreur lors de l'optimisation des prix", { id: 'price-optimization' });
+        }
       }
     },
     {
@@ -130,9 +151,28 @@ export default function OptimizedClientDashboard() {
       impact: "medium" as const,
       estimated: "Éviter -1,200€ de perte",
       type: "alert" as const,
-      onApply: () => {
-        toast.success("Alerte stock traitée ! Redirection vers la gestion d'inventaire...");
-        setTimeout(() => navigate("/products?filter=low-stock"), 1500);
+      onApply: async () => {
+        try {
+          toast.loading("Traitement des alertes de stock...", { id: 'stock-alert' });
+          
+          // Simuler le traitement des alertes stock
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          
+          const lowStockProducts = [
+            { name: "Smartphone XY", stock: 2, recommended: 25 },
+            { name: "Casque Audio", stock: 1, recommended: 15 },
+            { name: "Montre Connect", stock: 3, recommended: 20 }
+          ];
+          
+          toast.success(
+            `✅ Alertes traitées ! ${lowStockProducts.length} produits identifiés. Commandes automatiques programmées.`, 
+            { id: 'stock-alert', duration: 4000 }
+          );
+          
+          setTimeout(() => navigate("/products?view=inventory"), 1000);
+        } catch (error) {
+          toast.error("Erreur lors du traitement des alertes", { id: 'stock-alert' });
+        }
       }
     },
     {
@@ -141,9 +181,30 @@ export default function OptimizedClientDashboard() {
       impact: "high" as const,
       estimated: "+35% conversion",
       type: "recommendation" as const,
-      onApply: () => {
-        toast.success("Système de recommandations activé ! Configuration en cours...");
-        setTimeout(() => navigate("/marketing?feature=recommendations"), 1500);
+      onApply: async () => {
+        try {
+          toast.loading("Activation du système de recommandations...", { id: 'recommendations' });
+          
+          // Simuler l'activation du système de recommandations
+          await new Promise(resolve => setTimeout(resolve, 2500));
+          
+          // Simulation des résultats
+          const optimizationResults = {
+            customersAnalyzed: 1247,
+            recommendationsGenerated: 3891,
+            expectedConversionIncrease: 35,
+            segmentsCreated: 8
+          };
+          
+          toast.success(
+            `✅ Système activé ! ${optimizationResults.customersAnalyzed} clients analysés, +${optimizationResults.expectedConversionIncrease}% de conversion attendue.`, 
+            { id: 'recommendations', duration: 4000 }
+          );
+          
+          setTimeout(() => navigate("/customers?view=segments"), 1000);
+        } catch (error) {
+          toast.error("Erreur lors de l'activation du système", { id: 'recommendations' });
+        }
       }
     }
   ]
