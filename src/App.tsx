@@ -145,6 +145,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 // Optimized client dashboard for ShopOpti+
 import OptimizedClientDashboard from '@/components/dashboard/OptimizedClientDashboard';
 import NotFoundPage from '@/pages/NotFoundPage';
+import { AuthDebug } from '@/components/debug/AuthDebug';
 
 // Competitive Intelligence Components
 import { WinningProductsMarketplace } from '@/components/intelligence/WinningProductsMarketplace';
@@ -678,6 +679,7 @@ function App() {
               <Toaster />
               <SonnerToaster />
               <GlobalModals />
+              <AuthDebug />
             </NotificationProvider>
           </UnifiedPlanProvider>
         </UnifiedAuthProvider>
