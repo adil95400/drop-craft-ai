@@ -672,6 +672,62 @@ const Settings = () => {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Section Admin - uniquement visible pour les admins */}
+              {isAdmin && (
+                <Card className="border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800 mt-6">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-red-800 dark:text-red-200">
+                      <Shield className="h-5 w-5" />
+                      Administration Système
+                    </CardTitle>
+                    <CardDescription>
+                      Outils d'administration et gestion système
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-700 rounded-lg bg-red-100/50 dark:bg-red-900/30">
+                        <div>
+                          <div className="font-medium text-red-700 dark:text-red-300">Panneau d'administration</div>
+                          <div className="text-sm text-red-600 dark:text-red-400">Accès complet aux outils d'administration</div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate('/admin')}
+                          className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/50"
+                        >
+                          <Shield className="mr-2 h-4 w-4" />
+                          Ouvrir Admin
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Rôle système:</span>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="destructive" className="text-xs">
+                              {role?.toUpperCase()}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Mode admin:</span>
+                          <p className="font-medium mt-1 text-red-700 dark:text-red-300">
+                            {profile?.admin_mode || 'Mode normal'}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Privilèges:</span>
+                          <p className="font-medium mt-1 text-red-700 dark:text-red-300">
+                            Accès complet
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             {/* Notifications Tab */}
@@ -1111,44 +1167,6 @@ const Settings = () => {
                       </div>
                     </div>
                   </div>
-
-                  {/* Section Admin - uniquement visible pour les admins */}
-                  {isAdmin && (
-                    <div className="space-y-4 p-4 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900/20 dark:border-red-800">
-                      <h4 className="font-semibold text-red-800 dark:text-red-200 flex items-center gap-2">
-                        <Shield className="h-4 w-4" />
-                        Administration Système
-                      </h4>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium text-red-700 dark:text-red-300">Panneau d'administration</div>
-                            <div className="text-sm text-red-600 dark:text-red-400">Accès complet aux outils d'administration</div>
-                          </div>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => navigate('/admin')}
-                            className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/50"
-                          >
-                            <Shield className="mr-2 h-4 w-4" />
-                            Ouvrir Admin
-                          </Button>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium text-red-700 dark:text-red-300">Mode admin actuel</div>
-                            <div className="text-sm text-red-600 dark:text-red-400">
-                              {profile?.admin_mode || 'Mode normal'}
-                            </div>
-                          </div>
-                          <Badge variant="destructive" className="text-xs">
-                            {role?.toUpperCase()}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  )}
 
                   <Button variant="default" onClick={handleSaveAppearance} className="bg-primary hover:bg-primary/90">
                     <Save className="mr-2 h-4 w-4" />
