@@ -548,6 +548,45 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                {/* Phase 4: Mobile & Enterprise Routes */}
+                <Route path="/mobile-apps" element={
+                  <ProtectedRoute>
+                    <AppLayout><MobileAppDashboard /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/team-collaboration" element={
+                  <ProtectedRoute>
+                    <AppLayout><TeamCollaboration /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/white-label" element={
+                  <ProtectedRoute>
+                    <AppLayout><WhiteLabelSolution /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/enterprise-api" element={
+                  <ProtectedRoute>
+                    <AppLayout><EnterpriseAPI /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Phase 5: Final Integration & Polish Routes */}
+                <Route path="/creative-studio" element={
+                  <ProtectedRoute>
+                    <AppLayout><CreativeStudio /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/competitive-advantage" element={
+                  <ProtectedRoute>
+                    <AppLayout><CompetitiveAdvantageHub /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/command-center" element={
+                  <ProtectedRoute>
+                    <AppLayout><CommandCenter /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
                 {/* Landing Pages */}
                 <Route path="/features" element={<Features />} />
                 <Route path="/pricing" element={<Pricing />} />
