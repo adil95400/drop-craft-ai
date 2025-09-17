@@ -25,8 +25,10 @@ import {
   Menu,
   X,
   Bell,
-  RefreshCcw
+  RefreshCcw,
+  Plug
 } from 'lucide-react';
+import { AdminBreadcrumbs } from '@/components/admin/AdminBreadcrumbs';
 
 interface AdminSidebarItem {
   title: string;
@@ -42,6 +44,7 @@ const adminSidebarItems: AdminSidebarItem[] = [
   { title: 'Commandes', href: '/admin/orders', icon: ShoppingCart },
   { title: 'Import', href: '/admin/import', icon: Upload },
   { title: 'Fournisseurs', href: '/admin/suppliers', icon: Users },
+  { title: 'Connecteurs', href: '/sync-manager', icon: Plug, badge: 'NEW' },
   { title: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { title: 'Clients', href: '/admin/customers', icon: UserPlus },
   { title: 'CRM', href: '/admin/crm', icon: Mail, badge: 'PRO', planRequired: 'pro' },
@@ -258,6 +261,7 @@ export const AdminLayout = () => {
 
           {/* Page Content */}
           <div className="p-6">
+            <AdminBreadcrumbs />
             <Outlet />
           </div>
         </div>

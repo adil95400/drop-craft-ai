@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { EnhancedUserManagement } from '@/components/admin/EnhancedUserManagement'
 import { SupplierManagement } from '@/components/suppliers/SupplierManagement'
 import { SystemAnalytics } from '@/components/admin/SystemAnalytics'
@@ -9,9 +10,12 @@ import { RealTimeMonitoring } from '@/components/admin/RealTimeMonitoring'
 import { FinalHealthCheck } from '@/components/admin/FinalHealthCheck'
 import { CommercializationQuickActions } from '@/components/admin/CommercializationQuickActions'
 import { AdminActionCards } from '@/components/admin/AdminActionCards'
+import { RealTimeStats } from '@/components/admin/RealTimeStats'
+import { QuickActionsPanel } from '@/components/admin/QuickActionsPanel'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { 
   LayoutDashboard, 
   Users, 
@@ -37,6 +41,7 @@ const AdminPanelContent = () => {
   const { quotas, loading: quotasLoading, fetchQuotas } = useQuotaManager()
   const { currentPlan, effectivePlan } = usePlanSystem()
   const { toast } = useToast()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('dashboard')
   
   const [dashboardStats, setDashboardStats] = useState({
@@ -171,7 +176,7 @@ const AdminPanelContent = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-9">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <LayoutDashboard className="h-4 w-4" />
             {t('navigation:dashboard')}
@@ -183,6 +188,10 @@ const AdminPanelContent = () => {
           <TabsTrigger value="suppliers" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             Fournisseurs
+          </TabsTrigger>
+          <TabsTrigger value="connectors" className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Connecteurs
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
@@ -208,6 +217,9 @@ const AdminPanelContent = () => {
 
         <TabsContent value="dashboard">
           <div className="space-y-6">
+            {/* Métriques temps réel */}
+            <RealTimeStats />
+
             {/* Métriques principales avec vraies données */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
@@ -306,52 +318,8 @@ const AdminPanelContent = () => {
               </Card>
             )}
 
-            {/* Actions rapides fonctionnelles */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Actions Rapides d'Administration
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  <Button 
-                    variant="outline" 
-                    className="h-20 flex flex-col gap-2"
-                    onClick={() => handleQuickAction('refresh-data')}
-                    disabled={loading}
-                  >
-                    <Activity className={`h-6 w-6 ${loading ? 'animate-spin' : ''}`} />
-                    <span className="text-sm">Actualiser Données</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-20 flex flex-col gap-2"
-                    onClick={() => handleQuickAction('backup')}
-                  >
-                    <Database className="h-6 w-6" />
-                    <span className="text-sm">Backup BDD</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-20 flex flex-col gap-2"
-                    onClick={() => handleQuickAction('security-scan')}
-                  >
-                    <Shield className="h-6 w-6" />
-                    <span className="text-sm">Scan Sécurité</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-20 flex flex-col gap-2"
-                    onClick={() => handleQuickAction('export-data')}
-                  >
-                    <FileText className="h-6 w-6" />
-                    <span className="text-sm">Export Données</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Actions rapides améliorées */}
+            <QuickActionsPanel />
             
             <CommercializationQuickActions />
             <AdminActionCards />
@@ -364,6 +332,65 @@ const AdminPanelContent = () => {
 
         <TabsContent value="suppliers">
           <SupplierManagement />
+        </TabsContent>
+
+        <TabsContent value="connectors">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">Gestion des Connecteurs</h2>
+                <p className="text-muted-foreground">Configurez les intégrations e-commerce et les synchronisations</p>
+              </div>
+              <Button onClick={() => navigate('/sync-manager')} className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Gestionnaire de Sync
+              </Button>
+            </div>
+            
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <RefreshCw className="h-5 w-5" />
+                    WooCommerce
+                  </CardTitle>
+                  <CardDescription>Synchronisation produits, commandes et clients</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">État</span>
+                      <Badge variant="outline">Non configuré</Badge>
+                    </div>
+                    <Button variant="outline" className="w-full">
+                      Configurer
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <RefreshCw className="h-5 w-5" />
+                    Shopify
+                  </CardTitle>
+                  <CardDescription>Intégration complète avec Shopify</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">État</span>
+                      <Badge variant="secondary">Bientôt disponible</Badge>
+                    </div>
+                    <Button variant="outline" className="w-full" disabled>
+                      Prochainement
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="analytics">

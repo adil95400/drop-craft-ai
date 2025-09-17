@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -10,13 +10,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, Settings, User, LogOut, Shield, Crown } from 'lucide-react';
+import { Bell, Settings, User, LogOut, Shield, Crown, AlertTriangle } from 'lucide-react';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export const UnifiedHeader: React.FC = () => {
   const { user, profile, isAdmin, effectivePlan, signOut } = useUnifiedAuth();
   const navigate = useNavigate();
+
+  // Raccourci clavier Alt+A pour accès admin rapide
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.altKey && event.key === 'a' && isAdmin) {
+        event.preventDefault();
+        navigate('/admin-panel');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAdmin, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -56,13 +69,29 @@ export const UnifiedHeader: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-4">
+          {isAdmin && (
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={() => navigate('/admin-panel')}
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white"
+            >
+              <Shield className="h-4 w-4" />
+              ADMIN
+              <span className="text-xs opacity-75">Alt+A</span>
+            </Button>
+          )}
+          
           <Badge variant={getPlanBadgeVariant(effectivePlan)} className="flex items-center gap-1 capitalize">
             <PlanIcon className="h-3 w-3" />
             {effectivePlan.replace('_', ' ')}
           </Badge>
 
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
+            {isAdmin && (
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+            )}
           </Button>
 
           <DropdownMenu>
