@@ -1,11 +1,15 @@
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Store, Package, Code2, BarChart3, Palette } from 'lucide-react'
+import { Store, Package, Code2, BarChart3, Palette, Bug, Rocket, Shield, BookOpen } from 'lucide-react'
 import SimpleExtensionInstaller from './SimpleExtensionInstaller'
 import AdvancedMarketplace from './AdvancedMarketplace'
 import ExtensionTemplates from './ExtensionTemplates'
 import DeveloperAnalytics from './DeveloperAnalytics'
 import ExtensionEditor from './ExtensionEditor'
+import ExtensionSandbox from './ExtensionSandbox'
+import ExtensionDeployment from './ExtensionDeployment'
+import ExtensionSecurity from './ExtensionSecurity'
+import ExtensionDocumentation from './ExtensionDocumentation'
 
 export const ExtensionStore: React.FC = () => {
   return (
@@ -24,7 +28,7 @@ export const ExtensionStore: React.FC = () => {
       </div>
 
       <Tabs defaultValue="marketplace" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-9">
           <TabsTrigger value="marketplace" className="flex items-center gap-2">
             <Store className="w-4 h-4" />
             Marketplace
@@ -36,6 +40,22 @@ export const ExtensionStore: React.FC = () => {
           <TabsTrigger value="templates" className="flex items-center gap-2">
             <Palette className="w-4 h-4" />
             Templates
+          </TabsTrigger>
+          <TabsTrigger value="sandbox" className="flex items-center gap-2">
+            <Bug className="w-4 h-4" />
+            Sandbox
+          </TabsTrigger>
+          <TabsTrigger value="deployment" className="flex items-center gap-2">
+            <Rocket className="w-4 h-4" />
+            Déploiement
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="w-4 h-4" />
+            Sécurité
+          </TabsTrigger>
+          <TabsTrigger value="documentation" className="flex items-center gap-2">
+            <BookOpen className="w-4 h-4" />
+            Documentation
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
@@ -57,6 +77,22 @@ export const ExtensionStore: React.FC = () => {
 
         <TabsContent value="templates">
           <ExtensionTemplates />
+        </TabsContent>
+
+        <TabsContent value="sandbox">
+          <ExtensionSandbox />
+        </TabsContent>
+
+        <TabsContent value="deployment">
+          <ExtensionDeployment />
+        </TabsContent>
+
+        <TabsContent value="security">
+          <ExtensionSecurity />
+        </TabsContent>
+
+        <TabsContent value="documentation">
+          <ExtensionDocumentation />
         </TabsContent>
 
         <TabsContent value="analytics">
