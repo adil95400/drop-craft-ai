@@ -19,6 +19,14 @@ import { AreaChart, Area, PieChart as RechartsPieChart, Cell, Pie, XAxis, YAxis,
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { PriceOptimizationResults } from './PriceOptimizationResults'
+import { ImportJobProcessor } from '@/components/import/ImportJobProcessor'
+import { SystemHealthMonitor } from './SystemHealthMonitor'
+import { PerformanceOptimizer } from './PerformanceOptimizer'
+import { RealTimeMonitoring } from './RealTimeMonitoring'
+import { SecurityDashboard } from './SecurityDashboard'
+import { AdvancedAnalytics } from './AdvancedAnalytics'
+import { EnhancedDashboardTabs } from './EnhancedDashboardTabs'
+import { BusinessIntelligence } from './BusinessIntelligence'
 
 export default function OptimizedClientDashboard() {
   const { dashboardStats, orders, customers, products, seedDatabase, isSeeding } = useProductionData()
@@ -26,6 +34,9 @@ export default function OptimizedClientDashboard() {
   const navigate = useNavigate()
   const [activeView, setActiveView] = useState('overview')
   const [showPriceOptimization, setShowPriceOptimization] = useState(false)
+  const [showSystemMonitoring, setShowSystemMonitoring] = useState(false)
+  const [showSecurityDashboard, setShowSecurityDashboard] = useState(false)
+  const [showAdvancedAnalytics, setShowAdvancedAnalytics] = useState(false)
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -311,7 +322,10 @@ export default function OptimizedClientDashboard() {
           insights={aiInsights}
         />
 
-        {/* Boutiques Connectées */}
+        {/* Enhanced Dashboard avec onglets */}
+        <EnhancedDashboardTabs />
+
+        {/* Boutiques Connectées - Uniquement dans vue d'ensemble */}
         <ConnectedStores className="animate-fade-in" />
 
         {/* Graphiques et Analytics */}
