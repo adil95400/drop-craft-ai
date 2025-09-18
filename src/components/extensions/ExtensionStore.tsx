@@ -1,7 +1,11 @@
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Store, Package } from 'lucide-react'
+import { Store, Package, Code2, BarChart3, Palette } from 'lucide-react'
 import SimpleExtensionInstaller from './SimpleExtensionInstaller'
+import AdvancedMarketplace from './AdvancedMarketplace'
+import ExtensionTemplates from './ExtensionTemplates'
+import DeveloperAnalytics from './DeveloperAnalytics'
+import ExtensionEditor from './ExtensionEditor'
 
 export const ExtensionStore: React.FC = () => {
   return (
@@ -10,22 +14,54 @@ export const ExtensionStore: React.FC = () => {
       <div className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
           <Store className="w-5 h-5 text-primary" />
-          <span className="text-primary font-medium">Extension Store & Manager</span>
+          <span className="text-primary font-medium">Extension Store & Manager Complet</span>
         </div>
-        <h1 className="text-3xl font-bold">Centre d'Extensions Complet</h1>
+        <h1 className="text-3xl font-bold">Centre d'Extensions Professionnel</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Gérez vos extensions installées et découvrez de nouvelles extensions 
-          pour étendre les fonctionnalités de votre plateforme e-commerce
+          Plateforme complète pour découvrir, créer, gérer et monétiser vos extensions e-commerce 
+          avec des outils professionnels et des analytics avancées
         </p>
       </div>
 
-      <Tabs defaultValue="simple" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-1">
-          <TabsTrigger value="simple" className="flex items-center gap-2">
+      <Tabs defaultValue="marketplace" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="marketplace" className="flex items-center gap-2">
             <Store className="w-4 h-4" />
-            Extensions Simplifiées
+            Marketplace
+          </TabsTrigger>
+          <TabsTrigger value="editor" className="flex items-center gap-2">
+            <Code2 className="w-4 h-4" />
+            Éditeur
+          </TabsTrigger>
+          <TabsTrigger value="templates" className="flex items-center gap-2">
+            <Palette className="w-4 h-4" />
+            Templates
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Analytics
+          </TabsTrigger>
+          <TabsTrigger value="simple" className="flex items-center gap-2">
+            <Package className="w-4 h-4" />
+            Simple
           </TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="marketplace">
+          <AdvancedMarketplace />
+        </TabsContent>
+
+        <TabsContent value="editor">
+          <ExtensionEditor />
+        </TabsContent>
+
+        <TabsContent value="templates">
+          <ExtensionTemplates />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <DeveloperAnalytics />
+        </TabsContent>
         
         <TabsContent value="simple">
           <SimpleExtensionInstaller
