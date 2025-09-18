@@ -10,10 +10,14 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ActionButton } from '@/components/common/ActionButton'
 import { Helmet } from 'react-helmet-async'
+import { CampaignCreator } from '@/components/marketing/CampaignCreator'
+import { MarketingAnalytics } from '@/components/marketing/MarketingAnalytics'
+import { SmartAutomationBuilder } from '@/components/marketing/SmartAutomationBuilder'
 import { 
   Mail, MessageSquare, Users, TrendingUp,
   Play, Pause, Eye, Edit, BarChart3,
-  Target, Zap, Calendar, Settings
+  Target, Zap, Calendar, Settings, Sparkles,
+  Brain, Activity, Award
 } from 'lucide-react'
 
 interface Campaign {
@@ -35,6 +39,8 @@ interface Campaign {
 const ModernMarketingPage: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
+  const [showCampaignCreator, setShowCampaignCreator] = useState(false)
+  const [activeTab, setActiveTab] = useState('campaigns')
 
   useEffect(() => {
     loadCampaigns()
@@ -170,9 +176,12 @@ const ModernMarketingPage: React.FC = () => {
               <BarChart3 className="h-4 w-4 mr-2" />
               Analytics
             </Button>
-            <Button className="btn-gradient">
-              <Target className="h-4 w-4 mr-2" />
-              Nouvelle campagne
+            <Button 
+              className="btn-gradient"
+              onClick={() => setShowCampaignCreator(true)}
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              Nouvelle campagne IA
             </Button>
           </div>
         </div>
@@ -205,12 +214,28 @@ const ModernMarketingPage: React.FC = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="campaigns" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="campaigns">Campagnes</TabsTrigger>
-            <TabsTrigger value="automation">Automation</TabsTrigger>
-            <TabsTrigger value="segments">Segments</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid grid-cols-5 w-full">
+            <TabsTrigger value="campaigns" className="flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              Campagnes
+            </TabsTrigger>
+            <TabsTrigger value="automation" className="flex items-center gap-2">
+              <Brain className="h-4 w-4" />
+              Automation IA
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="segments" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Segments
+            </TabsTrigger>
+            <TabsTrigger value="templates" className="flex items-center gap-2">
+              <Award className="h-4 w-4" />
+              Templates
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="campaigns" className="space-y-6">
@@ -325,83 +350,11 @@ const ModernMarketingPage: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="automation" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Séquences d'Automation</CardTitle>
-                <CardDescription>
-                  Créez des workflows automatisés basés sur le comportement client
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Zap className="h-5 w-5 text-orange-600" />
-                      <h3 className="font-semibold">Abandon de Panier</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Séquence automatique pour récupérer les paniers abandonnés
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="default">Active</Badge>
-                      <span className="text-sm text-muted-foreground">280 conversions</span>
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Users className="h-5 w-5 text-blue-600" />
-                      <h3 className="font-semibold">Bienvenue Nouveaux Clients</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Séquence d'onboarding pour nouveaux inscrits
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="default">Active</Badge>
-                      <span className="text-sm text-muted-foreground">156 conversions</span>
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <TrendingUp className="h-5 w-5 text-green-600" />
-                      <h3 className="font-semibold">Recommandations Produits</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Suggestions basées sur l'historique d'achat
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="secondary">En pause</Badge>
-                      <span className="text-sm text-muted-foreground">89 conversions</span>
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="h-5 w-5 text-purple-600" />
-                      <h3 className="font-semibold">Réactivation Clients</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Campagne pour clients inactifs depuis 60 jours
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline">Brouillon</Badge>
-                      <ActionButton 
-                        size="sm" 
-                        variant="default"
-                        onClick={async () => {
-                          // Simuler la configuration d'une campagne d'automatisation
-                          await new Promise(resolve => setTimeout(resolve, 1000));
-                        }}
-                        loadingText="Configuration..."
-                      >
-                        Configurer
-                      </ActionButton>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <SmartAutomationBuilder />
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <MarketingAnalytics />
           </TabsContent>
 
           <TabsContent value="segments" className="space-y-6">
@@ -510,6 +463,16 @@ const ModernMarketingPage: React.FC = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Campaign Creator Modal */}
+        <CampaignCreator
+          isOpen={showCampaignCreator}
+          onClose={() => setShowCampaignCreator(false)}
+          onSave={(campaign) => {
+            setCampaigns(prev => [...prev, campaign])
+            console.log('Nouvelle campagne créée:', campaign)
+          }}
+        />
       </div>
     </>
   )
