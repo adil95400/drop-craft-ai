@@ -13,6 +13,7 @@ import {
 import { RealTimeMonitoring } from './RealTimeMonitoring'
 import { SecurityDashboard } from './SecurityDashboard'
 import { AdvancedAnalytics } from './AdvancedAnalytics'
+import { BusinessIntelligence } from './BusinessIntelligence'
 import { ImportJobProcessor } from '@/components/import/ImportJobProcessor'
 import { SystemHealthMonitor } from './SystemHealthMonitor'
 import { PerformanceOptimizer } from './PerformanceOptimizer'
