@@ -1,12 +1,7 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Store, 
-  Package, 
-  Users
-} from 'lucide-react'
-import ExtensionMarketplace from './ExtensionMarketplace'
-import RealExtensionManager from './RealExtensionManager'
+import { Store, Package } from 'lucide-react'
+import SimpleExtensionInstaller from './SimpleExtensionInstaller'
 
 export const ExtensionStore: React.FC = () => {
   return (
@@ -24,24 +19,26 @@ export const ExtensionStore: React.FC = () => {
         </p>
       </div>
 
-      <Tabs defaultValue="marketplace" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="marketplace" className="flex items-center gap-2">
+      <Tabs defaultValue="simple" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-1">
+          <TabsTrigger value="simple" className="flex items-center gap-2">
             <Store className="w-4 h-4" />
-            Marketplace
-          </TabsTrigger>
-          <TabsTrigger value="installed" className="flex items-center gap-2">
-            <Package className="w-4 h-4" />
-            Extensions installées
+            Extensions Simplifiées
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="marketplace">
-          <ExtensionMarketplace />
-        </TabsContent>
-        
-        <TabsContent value="installed">
-          <RealExtensionManager />
+        <TabsContent value="simple">
+          <SimpleExtensionInstaller
+            extension={{
+              id: 'test-ext-1',
+              name: 'Extension Test',
+              description: 'Une extension de test',
+              version: '1.0.0',
+              price: 0,
+              downloads_count: 0
+            }}
+            onClose={() => {}}
+          />
         </TabsContent>
       </Tabs>
     </div>

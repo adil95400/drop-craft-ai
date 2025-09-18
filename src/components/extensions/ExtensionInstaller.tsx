@@ -157,16 +157,16 @@ export const ExtensionInstaller: React.FC<ExtensionInstallerProps> = ({
 
       if (error) throw error
 
-      // Update download count (using extensions table instead)
+      // Update download count using marketplace_extensions table
       const { data: extensionData } = await supabase
-        .from('extensions')
+        .from('marketplace_extensions')
         .select('downloads_count')
         .eq('id', extension.id)
         .single()
 
       if (extensionData) {
         await supabase
-          .from('extensions')
+          .from('marketplace_extensions')
           .update({
             downloads_count: (extensionData.downloads_count || 0) + 1
           })

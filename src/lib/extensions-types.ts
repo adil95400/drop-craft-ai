@@ -1,25 +1,25 @@
 // Types for the Extensions system
 
 export interface ExtensionManifest {
-  name: string
-  version: string
-  description: string
-  author: string
-  homepage?: string
-  repository?: string
-  main: string
-  permissions: string[]
-  api?: {
-    endpoints: string[]
-    auth: 'none' | 'bearer' | 'api-key'
+  readonly name: string
+  readonly version: string
+  readonly description: string
+  readonly author: string
+  readonly homepage?: string
+  readonly repository?: string
+  readonly main: string
+  readonly permissions: readonly string[]
+  readonly api?: {
+    readonly endpoints: readonly string[]
+    readonly auth: 'none' | 'bearer' | 'api-key'
   }
-  secrets?: string[]
-  categories: string[]
-  tags: string[]
-  price?: number
-  currency?: string
-  screenshots?: string[]
-  changelog?: string
+  readonly secrets?: readonly string[]
+  readonly categories: readonly string[]
+  readonly tags: readonly string[]
+  readonly price?: number
+  readonly currency?: string
+  readonly screenshots?: readonly string[]
+  readonly changelog?: string
 }
 
 export interface MarketplaceExtension {
