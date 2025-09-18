@@ -1,558 +1,172 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
-  Search, 
-  Filter, 
-  Plus, 
-  Eye, 
-  Edit, 
-  Mail, 
-  Phone, 
-  MapPin,
-  User,
-  Users,
-  TrendingUp,
-  DollarSign,
-  ShoppingCart
-} from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useLegacyPlan } from '@/lib/migration-helper';
+  Users, Search, Plus, Filter, Download, Mail, Phone, 
+  MapPin, Calendar, TrendingUp, Eye, Edit, Trash2,
+  Star, ShoppingCart, DollarSign, Activity
+} from 'lucide-react'
+import { CustomerDetailsModal } from '@/components/modals/CustomerDetailsModal'
+import { CustomerEditModal } from '@/components/modals/CustomerEditModal'
+import { CustomerSegmentationModal } from '@/components/modals/CustomerSegmentationModal'
 
 interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  status: string;
-  total_spent: number;
-  total_orders: number;
-  address?: any;
-  created_at: string;
-  updated_at: string;
+  id: string
+  name: string
+  email: string
+  phone: string
+  avatar: string
+  status: 'active' | 'inactive' | 'vip' | 'new'
+  totalSpent: number
+  totalOrders: number
+  lastOrder: string
+  joinDate: string
+  location: string
+  segment: string
+  tags: string[]
+  lifetime_value: number
+  avg_order_value: number
 }
 
-const Customers = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const { isUltraPro, isPro } = useLegacyPlan(user);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newCustomer, setNewCustomer] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    status: 'active'
-  });
+const mockCustomers: Customer[] = [
+  {
+    id: '1',
+    name: 'Sophie Martin',
+    email: 'sophie.martin@email.com',
+    phone: '+33 1 23 45 67 89',
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150',
+    status: 'vip',
+    totalSpent: 4580.00,
+    totalOrders: 12,
+    lastOrder: '2024-01-15',
+    joinDate: '2023-08-10',
+    location: 'Paris, France',
+    segment: 'High Value',
+    tags: ['VIP', 'Frequent Buyer', 'Premium'],
+    lifetime_value: 6200,
+    avg_order_value: 381.67
+  },
+  {
+    id: '2',
+    name: 'Thomas Dubois',
+    email: 'thomas.dubois@email.com',
+    phone: '+33 6 98 76 54 32',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+    status: 'active',
+    totalSpent: 2340.50,
+    totalOrders: 8,
+    lastOrder: '2024-01-12',
+    joinDate: '2023-11-20',
+    location: 'Lyon, France',
+    segment: 'Regular',
+    tags: ['Loyal Customer', 'Tech Enthusiast'],
+    lifetime_value: 3100,
+    avg_order_value: 292.56
+  }
+]
 
-  useEffect(() => {
-    fetchCustomers();
-  }, [user]);
+export default function Customers() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showSegmentationModal, setShowSegmentationModal] = useState(false)
 
-  const fetchCustomers = async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('customers')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setCustomers(data || []);
-    } catch (error) {
-      console.error('Error fetching customers:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les clients",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createCustomer = async () => {
-    if (!user || !newCustomer.name || !newCustomer.email) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('customers')
-        .insert([{
-          ...newCustomer,
-          user_id: user.id,
-          total_spent: 0,
-          total_orders: 0
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setCustomers([data, ...customers]);
-      setNewCustomer({ name: '', email: '', phone: '', status: 'active' });
-      setShowCreateDialog(false);
-      
-      toast({
-        title: "Succès",
-        description: "Client créé avec succès",
-      });
-    } catch (error) {
-      console.error('Error creating customer:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer le client",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const updateCustomerStatus = async (customerId: string, newStatus: string) => {
-    try {
-      const { error } = await supabase
-        .from('customers')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', customerId)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
-      setCustomers(customers.map(customer => 
-        customer.id === customerId ? { ...customer, status: newStatus } : customer
-      ));
-
-      toast({
-        title: "Succès",
-        description: "Statut du client mis à jour",
-      });
-    } catch (error) {
-      console.error('Error updating customer status:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le statut",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount);
-  };
+  const filteredCustomers = mockCustomers.filter(customer =>
+    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.email.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'default';
-      case 'inactive': return 'secondary';
-      case 'blocked': return 'destructive';
-      default: return 'secondary';
+      case 'vip': return 'bg-gradient-to-r from-yellow-400 to-orange-500'
+      case 'active': return 'bg-gradient-to-r from-green-400 to-blue-500'
+      case 'new': return 'bg-gradient-to-r from-blue-400 to-purple-500'
+      case 'inactive': return 'bg-gradient-to-r from-gray-400 to-gray-600'
+      default: return 'bg-gradient-to-r from-gray-400 to-gray-600'
     }
-  };
+  }
 
-  const filteredCustomers = customers.filter(customer => {
-    const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         customer.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || customer.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  const customerStats = {
-    total: customers.length,
-    active: customers.filter(c => c.status === 'active').length,
-    inactive: customers.filter(c => c.status === 'inactive').length,
-    totalRevenue: customers.reduce((sum, customer) => sum + customer.total_spent, 0),
-    averageOrderValue: customers.length > 0 
-      ? customers.reduce((sum, customer) => sum + (customer.total_spent / Math.max(customer.total_orders, 1)), 0) / customers.length
-      : 0
-  };
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/80 to-background p-6">
+      <div className="container mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold tracking-tight">Clients</h2>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Gestion des Clients
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Gérez vos clients, analysez leur comportement et optimisez vos relations
+            </p>
+          </div>
+          <Button className="gap-2">
+            <Plus className="w-4 h-4" />
+            Nouveau Client
+          </Button>
         </div>
-        <div className="grid gap-4 md:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="h-4 bg-muted rounded w-3/4"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 bg-muted rounded w-1/2"></div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-lg bg-blue-500/10">
+                  <Users className="w-6 h-6 text-blue-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Clients</p>
+                  <p className="text-2xl font-bold">1,247</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher un client..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-4">
+          {filteredCustomers.map((customer) => (
+            <Card key={customer.id} className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={customer.avatar} alt={customer.name} />
+                      <AvatarFallback>{customer.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-semibold text-lg">{customer.name}</h3>
+                        <Badge className={`${getStatusColor(customer.status)} text-white border-0`}>
+                          {customer.status.toUpperCase()}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Clients</h2>
-          <p className="text-muted-foreground">
-            Gérez votre base de clients et suivez leurs achats
-          </p>
-        </div>
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Nouveau client
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Créer un nouveau client</DialogTitle>
-              <DialogDescription>
-                Ajoutez un nouveau client à votre base de données
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Nom complet *</Label>
-                <Input
-                  id="name"
-                  value={newCustomer.name}
-                  onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
-                  placeholder="Nom du client"
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={newCustomer.email}
-                  onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
-                  placeholder="email@exemple.com"
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Téléphone</Label>
-                <Input
-                  id="phone"
-                  value={newCustomer.phone}
-                  onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
-                  placeholder="+33 6 12 34 56 78"
-                />
-              </div>
-              <div>
-                <Label htmlFor="status">Statut</Label>
-                <Select value={newCustomer.status} onValueChange={(value: string) => setNewCustomer({ ...newCustomer, status: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border shadow-md z-50">
-                    <SelectItem value="active">Actif</SelectItem>
-                    <SelectItem value="inactive">Inactif</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                  Annuler
-                </Button>
-                <Button onClick={createCustomer} disabled={!newCustomer.name || !newCustomer.email}>
-                  Créer
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total clients</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{customerStats.total}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Clients actifs</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{customerStats.active}</div>
-            <p className="text-xs text-muted-foreground">
-              {((customerStats.active / Math.max(customerStats.total, 1)) * 100).toFixed(0)}% du total
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Chiffre d'affaires</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(customerStats.totalRevenue)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Panier moyen</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(customerStats.averageOrderValue)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Customers Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Liste des clients</CardTitle>
-              <CardDescription>
-                {filteredCustomers.length} client(s) trouvé(s)
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher un client..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-[300px]"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-background border shadow-md z-50">
-                  <SelectItem value="all">Tous les statuts</SelectItem>
-                  <SelectItem value="active">Actifs</SelectItem>
-                  <SelectItem value="inactive">Inactifs</SelectItem>
-                  <SelectItem value="blocked">Bloqués</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {filteredCustomers.map((customer) => (
-              <div key={customer.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium">{customer.name}</p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Mail className="h-3 w-3" />
-                        <span>{customer.email}</span>
-                      </div>
-                      {customer.phone && (
-                        <div className="flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          <span>{customer.phone}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="font-medium">{formatCurrency(customer.total_spent)}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {customer.total_orders} commande(s)
-                    </p>
-                  </div>
-                  
-                  <Badge variant={getStatusColor(customer.status)}>
-                    {customer.status}
-                  </Badge>
-                  
-                  <div className="flex items-center gap-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" onClick={() => setSelectedCustomer(customer)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Profil client - {customer.name}</DialogTitle>
-                          <DialogDescription>
-                            Informations détaillées du client
-                          </DialogDescription>
-                        </DialogHeader>
-                        
-                        {selectedCustomer && (
-                          <Tabs defaultValue="info" className="w-full">
-                            <TabsList className="grid w-full grid-cols-3">
-                              <TabsTrigger value="info">Informations</TabsTrigger>
-                              <TabsTrigger value="orders">Commandes</TabsTrigger>
-                              <TabsTrigger value="analytics">Analyse</TabsTrigger>
-                            </TabsList>
-                            
-                            <TabsContent value="info" className="space-y-4">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <Label>Nom</Label>
-                                  <p className="text-sm">{selectedCustomer.name}</p>
-                                </div>
-                                <div>
-                                  <Label>Email</Label>
-                                  <p className="text-sm">{selectedCustomer.email}</p>
-                                </div>
-                                <div>
-                                  <Label>Téléphone</Label>
-                                  <p className="text-sm">{selectedCustomer.phone || 'Non renseigné'}</p>
-                                </div>
-                                <div>
-                                  <Label>Statut</Label>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <Badge variant={getStatusColor(selectedCustomer.status)}>
-                                      {selectedCustomer.status}
-                                    </Badge>
-                                    <Select
-                                      value={selectedCustomer.status}
-                                      onValueChange={(value) => updateCustomerStatus(selectedCustomer.id, value)}
-                                    >
-                                      <SelectTrigger className="w-[120px]">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent className="bg-background border shadow-md z-50">
-                                        <SelectItem value="active">Actif</SelectItem>
-                                        <SelectItem value="inactive">Inactif</SelectItem>
-                                        <SelectItem value="blocked">Bloqué</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-                                </div>
-                                <div>
-                                  <Label>Client depuis</Label>
-                                  <p className="text-sm">{new Date(selectedCustomer.created_at).toLocaleDateString()}</p>
-                                </div>
-                                <div>
-                                  <Label>Dernière mise à jour</Label>
-                                  <p className="text-sm">{new Date(selectedCustomer.updated_at).toLocaleDateString()}</p>
-                                </div>
-                              </div>
-                            </TabsContent>
-                            
-                            <TabsContent value="orders" className="space-y-4">
-                              <div className="grid grid-cols-2 gap-4">
-                                <Card>
-                                  <CardHeader>
-                                    <CardTitle className="text-lg">Total dépensé</CardTitle>
-                                  </CardHeader>
-                                  <CardContent>
-                                    <div className="text-2xl font-bold">
-                                      {formatCurrency(selectedCustomer.total_spent)}
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                                <Card>
-                                  <CardHeader>
-                                    <CardTitle className="text-lg">Nombre de commandes</CardTitle>
-                                  </CardHeader>
-                                  <CardContent>
-                                    <div className="text-2xl font-bold">
-                                      {selectedCustomer.total_orders}
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </div>
-                              <div className="text-center text-muted-foreground py-4">
-                                Historique des commandes détaillé disponible dans la section Commandes
-                              </div>
-                            </TabsContent>
-                            
-                            <TabsContent value="analytics" className="space-y-4">
-                              {isPro ? (
-                                <div className="space-y-4">
-                                  <Card>
-                                    <CardHeader>
-                                      <CardTitle className="text-lg">Panier moyen</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                      <div className="text-2xl font-bold">
-                                        {formatCurrency(selectedCustomer.total_orders > 0 
-                                          ? selectedCustomer.total_spent / selectedCustomer.total_orders 
-                                          : 0
-                                        )}
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                  <div className="text-center text-muted-foreground py-4">
-                                    <TrendingUp className="mx-auto h-8 w-8 mb-2" />
-                                    Analyses avancées du comportement client
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="text-center text-muted-foreground py-8">
-                                  <TrendingUp className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                                  <p>Analyses avancées disponibles avec le plan Pro</p>
-                                </div>
-                              )}
-                            </TabsContent>
-                          </Tabs>
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            {filteredCustomers.length === 0 && (
-              <div className="text-center py-8">
-                <Users className="mx-auto h-12 w-12 text-muted-foreground" />
-                <p className="mt-2 text-muted-foreground">
-                  {searchTerm || statusFilter !== 'all' 
-                    ? 'Aucun client ne correspond aux critères de recherche'
-                    : 'Aucun client trouvé'
-                  }
-                </p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
     </div>
-  );
-};
-
-export default Customers;
+  )
+}
