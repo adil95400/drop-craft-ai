@@ -103,11 +103,18 @@ export const ExtensionInstaller: React.FC<ExtensionInstallerProps> = ({
   // Install extension mutation
   const installExtensionMutation = useMutation({
     mutationFn: async () => {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('Utilisateur non authentifié')
+      }
+
       // Check if extension is already installed
       const { data: existing } = await supabase
         .from('user_extensions')
         .select('id')
         .eq('extension_id', extension.id)
+        .eq('user_id', user.id)
         .single()
 
       if (existing) {
@@ -119,6 +126,7 @@ export const ExtensionInstaller: React.FC<ExtensionInstallerProps> = ({
         const { error: purchaseError } = await supabase
           .from('extension_purchases')
           .insert({
+            user_id: user.id,
             extension_id: extension.id,
             price: extension.price,
             currency: 'EUR',
@@ -136,6 +144,7 @@ export const ExtensionInstaller: React.FC<ExtensionInstallerProps> = ({
       const { data, error } = await supabase
         .from('user_extensions')
         .insert({
+          user_id: user.id,
           extension_id: extension.id,
           version: extension.version,
           status: 'active',
@@ -148,13 +157,21 @@ export const ExtensionInstaller: React.FC<ExtensionInstallerProps> = ({
 
       if (error) throw error
 
-      // Update download count
-      await supabase
-        .from('extension_marketplace')
-        .update({
-          downloads_count: extension.downloads_count + 1
-        })
+      // Update download count (using extensions table instead)
+      const { data: extensionData } = await supabase
+        .from('extensions')
+        .select('downloads_count')
         .eq('id', extension.id)
+        .single()
+
+      if (extensionData) {
+        await supabase
+          .from('extensions')
+          .update({
+            downloads_count: (extensionData.downloads_count || 0) + 1
+          })
+          .eq('id', extension.id)
+      }
 
       return data
     },
