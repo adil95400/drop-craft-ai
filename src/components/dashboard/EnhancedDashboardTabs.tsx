@@ -17,18 +17,29 @@ import { BusinessIntelligence } from './BusinessIntelligence'
 import { ImportJobProcessor } from '@/components/import/ImportJobProcessor'
 import { SystemHealthMonitor } from './SystemHealthMonitor'
 import { PerformanceOptimizer } from './PerformanceOptimizer'
+import { NotificationCenter } from './NotificationCenter'
+import { AutomationHub } from './AutomationHub'
+import { KPIWidgets } from './KPIWidgets'
 
 export function EnhancedDashboardTabs() {
   return (
     <Tabs defaultValue="overview" className="w-full">
-      <TabsList className="grid grid-cols-6 w-full">
+      <TabsList className="grid grid-cols-8 w-full">
         <TabsTrigger value="overview" className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4" />
           Vue d'ensemble
         </TabsTrigger>
+        <TabsTrigger value="kpi" className="flex items-center gap-2">
+          <Activity className="h-4 w-4" />
+          KPI
+        </TabsTrigger>
         <TabsTrigger value="analytics" className="flex items-center gap-2">
           <Brain className="h-4 w-4" />
           Analytics IA
+        </TabsTrigger>
+        <TabsTrigger value="automation" className="flex items-center gap-2">
+          <Zap className="h-4 w-4" />
+          Automation
         </TabsTrigger>
         <TabsTrigger value="monitoring" className="flex items-center gap-2">
           <Activity className="h-4 w-4" />
@@ -38,17 +49,13 @@ export function EnhancedDashboardTabs() {
           <Shield className="h-4 w-4" />
           Sécurité
         </TabsTrigger>
-        <TabsTrigger value="performance" className="flex items-center gap-2">
-          <Zap className="h-4 w-4" />
-          Performance
-        </TabsTrigger>
         <TabsTrigger value="business" className="flex items-center gap-2">
           <Brain className="h-4 w-4" />
           Business Intelligence
         </TabsTrigger>
-        <TabsTrigger value="imports" className="flex items-center gap-2">
-          <Package className="h-4 w-4" />
-          Imports
+        <TabsTrigger value="notifications" className="flex items-center gap-2">
+          <Settings className="h-4 w-4" />
+          Notifications
         </TabsTrigger>
       </TabsList>
 
@@ -56,8 +63,16 @@ export function EnhancedDashboardTabs() {
         {/* Contenu de la vue d'ensemble sera géré par le composant parent */}
       </TabsContent>
 
+      <TabsContent value="kpi" className="space-y-6 mt-6">
+        <KPIWidgets />
+      </TabsContent>
+
       <TabsContent value="analytics" className="space-y-6 mt-6">
         <AdvancedAnalytics />
+      </TabsContent>
+
+      <TabsContent value="automation" className="space-y-6 mt-6">
+        <AutomationHub />
       </TabsContent>
 
       <TabsContent value="business" className="space-y-6 mt-6">
@@ -73,11 +88,9 @@ export function EnhancedDashboardTabs() {
         <SecurityDashboard />
       </TabsContent>
 
-      <TabsContent value="performance" className="space-y-6 mt-6">
+      <TabsContent value="notifications" className="space-y-6 mt-6">
+        <NotificationCenter />
         <PerformanceOptimizer />
-      </TabsContent>
-
-      <TabsContent value="imports" className="space-y-6 mt-6">
         <ImportJobProcessor />
       </TabsContent>
     </Tabs>
