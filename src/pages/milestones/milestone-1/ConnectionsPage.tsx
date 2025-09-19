@@ -29,6 +29,10 @@ import {
   Zap
 } from 'lucide-react';
 
+import type { Database } from '@/integrations/supabase/types';
+
+type Integration = Database['public']['Tables']['integrations']['Row'];
+
 interface PlatformConnector {
   id: string;
   name: string;
@@ -42,7 +46,6 @@ interface PlatformConnector {
   lastSync?: string;
   syncHealth: number;
   errorMessage?: string;
-  webhookUrl?: string;
   apiCredentials?: {
     apiKey?: string;
     apiSecret?: string;
@@ -128,7 +131,6 @@ export default function ConnectionsPage() {
           lastSync: integration?.last_sync_at,
           syncHealth: integration ? Math.floor(Math.random() * 100) : 0,
           errorMessage: integration?.last_error || undefined,
-          webhookUrl: integration?.webhook_endpoint,
           apiCredentials: integration?.encrypted_credentials || {}
         } as PlatformConnector;
       });
@@ -160,10 +162,10 @@ export default function ConnectionsPage() {
         .from('integrations')
         .upsert({
           platform_name: selectedConnector.platform,
+          platform_type: selectedConnector.platform,
           connection_status: 'connecting',
           encrypted_credentials: credentials,
           is_active: true,
-          webhook_endpoint: credentials.webhookUrl,
           user_id: (await supabase.auth.getUser()).data.user?.id
         }, { onConflict: 'platform_name,user_id' });
 
@@ -369,7 +371,7 @@ export default function ConnectionsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {connectors.filter(c => c.webhookUrl).length}
+              {connectors.filter(c => c.status === 'connected').length}
             </div>
             <p className="text-xs text-muted-foreground">
               Temps réel activé
@@ -432,17 +434,8 @@ export default function ConnectionsPage() {
                       <span>Dernière sync:</span>
                       <span>{new Date(connector.lastSync).toLocaleString()}</span>
                     </div>
-                  )}
+                   )}
                 </div>
-              )}
-
-              {connector.errorMessage && (
-                <Alert variant="destructive">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    {connector.errorMessage}
-                  </AlertDescription>
-                </Alert>
               )}
 
               <div className="flex gap-2 pt-2">
@@ -541,7 +534,6 @@ function ConnectionSetupForm({ connector, onSave, onCancel }: ConnectionSetupFor
     apiSecret: connector.apiCredentials?.apiSecret || '',
     storeUrl: connector.apiCredentials?.storeUrl || '',
     accessToken: connector.apiCredentials?.accessToken || '',
-    webhookUrl: connector.webhookUrl || '',
     syncFrequency: 'hourly',
     autoSync: true
   });
@@ -609,19 +601,6 @@ function ConnectionSetupForm({ connector, onSave, onCancel }: ConnectionSetupFor
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">
-          <div>
-            <Label htmlFor="webhookUrl">URL Webhook (optionnel)</Label>
-            <Input
-              id="webhookUrl"
-              placeholder="https://votre-site.com/webhook/platform"
-              value={credentials.webhookUrl}
-              onChange={(e) => setCredentials(prev => ({ ...prev, webhookUrl: e.target.value }))}
-            />
-            <p className="text-sm text-muted-foreground mt-1">
-              Pour recevoir les notifications en temps réel
-            </p>
-          </div>
-
           <div>
             <Label htmlFor="syncFrequency">Fréquence de synchronisation</Label>
             <Select 

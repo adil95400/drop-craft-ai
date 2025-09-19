@@ -32,25 +32,11 @@ import {
   Plus
 } from 'lucide-react';
 
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  description?: string;
-  price: number;
-  cost_price?: number;
+import type { Database } from '@/integrations/supabase/types';
+
+type Product = Database['public']['Tables']['products']['Row'] & {
   currency: string;
-  stock_quantity: number;
-  category?: string;
-  brand?: string;
-  image_url?: string;
-  image_urls?: string[];
   variants?: ProductVariant[];
-  status: 'active' | 'draft' | 'archived';
-  supplier_id?: string;
-  supplier_name?: string;
-  created_at: string;
-  updated_at: string;
 }
 
 interface ProductVariant {
@@ -63,18 +49,12 @@ interface ProductVariant {
   attributes: Record<string, string>;
 }
 
-interface ImportJob {
-  id: string;
-  source_type: 'csv' | 'api' | 'manual';
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+type ImportJob = Database['public']['Tables']['import_jobs']['Row'] & {
   progress: number;
   total_items: number;
   processed_items: number;
   success_items: number;
   error_items: number;
-  created_at: string;
-  file_name?: string;
-  errors?: string[];
 }
 
 export default function CatalogPage() {
@@ -105,8 +85,8 @@ export default function CatalogPage() {
       if (error) throw error;
       const mappedProducts = data?.map(p => ({
         ...p,
-        currency: p.currency || 'EUR',
-        variants: []
+        currency: 'EUR', // Default currency since not in DB schema
+        variants: [] as ProductVariant[]
       })) || [];
       setProducts(mappedProducts);
     } catch (error) {
@@ -132,11 +112,11 @@ export default function CatalogPage() {
       if (error) throw error;
       const mappedJobs = data?.map(j => ({
         ...j,
-        progress: Math.floor((j.processed_rows / Math.max(j.total_rows, 1)) * 100),
-        total_items: j.total_rows,
-        processed_items: j.processed_rows,
-        success_items: j.success_rows,
-        error_items: j.error_rows
+        progress: Math.floor(((j.processed_rows || 0) / Math.max(j.total_rows || 1, 1)) * 100),
+        total_items: j.total_rows || 0,
+        processed_items: j.processed_rows || 0,
+        success_items: j.success_rows || 0,
+        error_items: j.error_rows || 0
       })) || [];
       setImportJobs(mappedJobs);
     } catch (error) {
@@ -551,7 +531,7 @@ export default function CatalogPage() {
                       </div>
                       <div>
                         <div className="font-medium">
-                          {job.file_name || `Import ${job.source_type.toUpperCase()}`}
+                          {`Import ${job.source_type.toUpperCase()}`}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {new Date(job.created_at).toLocaleString()}

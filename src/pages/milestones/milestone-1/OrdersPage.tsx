@@ -30,28 +30,19 @@ import {
   FileText,
   MessageSquare,
   User,
-  MapPin
+  MapPin,
+  Trash2
 } from 'lucide-react';
 
-interface Order {
-  id: string;
-  order_number: string;
+import type { Database } from '@/integrations/supabase/types';
+
+type Order = Database['public']['Tables']['orders']['Row'] & {
   customer_name: string;
   customer_email: string;
-  total_amount: number;
-  currency: string;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
   platform: string;
   platform_order_id: string;
-  shipping_address: any;
-  billing_address: any;
   items: OrderItem[];
-  notes?: string;
-  tracking_number?: string;
-  created_at: string;
-  updated_at: string;
-  shipped_at?: string;
-  delivered_at?: string;
+  order_items?: any[];
 }
 
 interface OrderItem {
@@ -111,10 +102,10 @@ export default function OrdersPage() {
 
       const mappedOrders = data?.map(order => ({
         ...order,
-        customer_name: order.customer_name || 'Client inconnu',
-        customer_email: order.customer_email || '',
-        platform: order.platform || 'unknown',
-        platform_order_id: order.external_id || order.id,
+        customer_name: 'Client inconnu', // Not in schema - would need join with customers
+        customer_email: '', // Not in schema - would need join with customers  
+        platform: 'Direct', // Not in schema - would need platform info
+        platform_order_id: order.id, // Use order ID as fallback
         items: order.order_items?.map((item: any) => ({
           ...item,
           quantity: item.quantity || 1
@@ -894,7 +885,7 @@ function CreateOrderForm({ onSubmit, onCancel }: CreateOrderFormProps) {
               onClick={() => removeItem(index)}
               disabled={formData.items.length === 1}
             >
-              <Trash className="w-3 h-3" />
+              <Trash2 className="w-3 h-3" />
             </Button>
           </div>
         ))}
