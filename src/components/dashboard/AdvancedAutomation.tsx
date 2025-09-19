@@ -16,7 +16,8 @@ import {
   Bot, Zap, Settings, Play, Pause, BarChart3, Users, 
   ShoppingCart, Mail, MessageSquare, Target, Clock,
   CheckCircle2, XCircle, AlertTriangle, TrendingUp,
-  Workflow, Sparkles, Brain, ArrowRight, Plus
+  Workflow, Sparkles, Brain, ArrowRight, Plus,
+  DollarSign, Package
 } from 'lucide-react'
 
 interface AutomationRule {

@@ -392,7 +392,7 @@ export const AIRecommendationsEngine: React.FC = () => {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">VIP (>€1000)</span>
+                    <span className="text-sm">VIP ({'>'}€1000)</span>
                     <Badge variant="secondary">23 clients</Badge>
                   </div>
                   <div className="flex justify-between items-center">

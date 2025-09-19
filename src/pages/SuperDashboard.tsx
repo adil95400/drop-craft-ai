@@ -11,14 +11,14 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { 
-  Dashboard, Brain, Shield, Bot, Zap, TrendingUp, 
+  LayoutDashboard, Brain, Shield, Bot, Zap, TrendingUp, 
   Users, ShoppingCart, DollarSign, Package, Globe,
   Activity, Star, Award, Target, Clock, Sparkles
 } from 'lucide-react'
 
 // Import des composants avancés
 import AIRecommendationsEngine from '@/components/dashboard/AIRecommendationsEngine'
-import RealTimeMetrics from '@/components/dashboard/RealTimeMetrics'
+import { RealTimeMetrics } from '@/components/dashboard/RealTimeMetrics'
 import CompetitiveIntelligence from '@/components/dashboard/CompetitiveIntelligence'
 import AdvancedAutomation from '@/components/dashboard/AdvancedAutomation'
 
@@ -223,7 +223,7 @@ const SuperDashboard: React.FC = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5 h-12">
             <TabsTrigger value="overview" className="flex items-center gap-2">
-              <Dashboard className="h-4 w-4" />
+              <LayoutDashboard className="h-4 w-4" />
               Overview
             </TabsTrigger>
             <TabsTrigger value="ai-recommendations" className="flex items-center gap-2">
