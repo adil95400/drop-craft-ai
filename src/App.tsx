@@ -361,7 +361,7 @@ function App() {
                  } />
                  
                  {/* Catalog Management */}
-                 <Route path="/catalog" element={
+                 <Route path="/catalog/*" element={
                    <ProtectedRoute>
                      <AppLayout><CatalogPage /></AppLayout>
                    </ProtectedRoute>
