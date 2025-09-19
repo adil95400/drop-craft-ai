@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { 
   Bell, Search, User, Settings, Menu, Home, Package, 
   ShoppingCart, TrendingUp, Users, FileText, Zap,
-  Brain, Shield, Plug, Crown, Upload, BarChart3, Truck, Puzzle, Store
+  Brain, Shield, Plug, Crown, Upload, BarChart3, Truck, Puzzle, Store, FileDown
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -100,65 +100,200 @@ export function AppLayout({ children }: AppLayoutProps) {
     );
   }
 
+  // Organiser la navigation par sections comme dans l'image
+  const navigationSections = [
+    {
+      title: "PRINCIPAL",
+      items: navigation.filter(item => 
+        ['Dashboard', 'Boutiques', 'Import'].includes(item.title)
+      )
+    },
+    {
+      title: "CATALOGUE", 
+      items: navigation.filter(item => 
+        ['Produits', 'Produits Ultra Pro', 'Catalogue', 'Fournisseurs', 'Fournisseurs Pro'].includes(item.title)
+      )
+    },
+    {
+      title: "COMMERCE",
+      items: navigation.filter(item => 
+        ['Commandes', 'Clients', 'CRM'].includes(item.title)
+      )
+    },
+    {
+      title: "ANALYTICS",
+      items: navigation.filter(item => 
+        ['Analytics', 'Monitoring'].includes(item.title)
+      )
+    },
+    {
+      title: "MARKETING", 
+      items: navigation.filter(item => 
+        ['Marketing', 'Blog', 'SEO'].includes(item.title)
+      )
+    },
+    {
+      title: "AVANCÉ",
+      items: navigation.filter(item => 
+        ['Modules Ultra Pro', 'Import Ultra Pro', 'Extensions', 'IA Assistant', 'AI Studio', 'Automation Studio', 'Analytics Studio', 'Automation', 'Sécurité', 'Intégrations', 'Abonnement'].includes(item.title)
+      )
+    }
+  ];
+
   const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-card">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 items-center border-b px-6 bg-background/50">
         <NavLink to="/dashboard" className="flex items-center space-x-2">
           <div className="flex h-8 w-8 items-center justify-center rounded bg-primary text-white">
             <Crown className="h-5 w-5" />
           </div>
-          <span className="font-bold text-xl">Shopopti+</span>
+          <span className="font-bold text-xl">Import Pro</span>
         </NavLink>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-4">
-        {navigation.map((item) => {
-          // Vérifier les permissions de plan (Admin a accès à tout)
-          if (item.requiredPlan && !isAdmin && !hasFeature('advanced-analytics') && item.requiredPlan !== 'standard') {
-            return (
-              <div key={item.title} className="relative">
-                <div className="flex items-center space-x-3 rounded-lg px-3 py-2 text-muted-foreground cursor-not-allowed opacity-50">
-                  <item.icon className="h-5 w-5" />
-                  <span>{item.title}</span>
-                  <Badge variant="outline" className="ml-auto text-xs">
-                    {item.requiredPlan === 'pro' ? 'PRO' : 'ULTRA'}
-                  </Badge>
-                </div>
+      {/* Navigation par sections */}
+      <div className="flex-1 overflow-y-auto py-4">
+        {navigationSections.map((section) => (
+          section.items.length > 0 && (
+            <div key={section.title} className="mb-6">
+              <h3 className="px-6 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                {section.title}
+              </h3>
+              <nav className="space-y-1 px-3">
+                {section.items.map((item) => {
+                  // Vérifier les permissions de plan (Admin a accès à tout)
+                  if (item.requiredPlan && !isAdmin && !hasFeature('advanced-analytics') && item.requiredPlan !== 'standard') {
+                    return (
+                      <div key={item.title} className="relative">
+                        <div className="flex items-center space-x-3 rounded-lg px-3 py-2 text-muted-foreground cursor-not-allowed opacity-50">
+                          <item.icon className="h-4 w-4" />
+                          <span className="text-sm">{item.title}</span>
+                          <Badge variant="outline" className="ml-auto text-xs">
+                            {item.requiredPlan === 'pro' ? 'PRO' : 'ULTRA'}
+                          </Badge>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <NavLink
+                      key={item.title}
+                      to={item.url}
+                      onClick={() => mobile && setSidebarOpen(false)}
+                      className={`flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
+                        isActive(item.url)
+                          ? 'bg-primary text-primary-foreground font-medium shadow-sm'
+                          : 'text-foreground hover:bg-muted hover:text-foreground'
+                      }`}
+                    >
+                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      <span className="flex-1">{item.title}</span>
+                      {item.badge && (
+                        <Badge 
+                          variant={item.badge === 'Ultra' ? 'default' : 'secondary'} 
+                          className="text-xs"
+                        >
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </NavLink>
+                  );
+                })}
+              </nav>
+            </div>
+          )
+        ))}
+      </div>
+
+      {/* Plan info et upgrade */}
+      <div className="border-t bg-background/50 p-4 space-y-4">
+        {/* Quotas d'utilisation */}
+        <div className="space-y-3">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Quotas d'utilisation
+          </h3>
+          
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Package className="h-3 w-3 text-blue-600" />
+                <span className="text-xs">Produits</span>
+                <Badge variant="outline" className="text-xs">Illimité</Badge>
               </div>
-            );
-          }
+              <span className="text-xs text-muted-foreground">∞</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Truck className="h-3 w-3 text-green-600" />
+                <span className="text-xs">Fournisseurs</span>
+                <Badge variant="outline" className="text-xs">Illimité</Badge>
+              </div>
+              <span className="text-xs text-muted-foreground">∞</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShoppingCart className="h-3 w-3 text-purple-600" />
+                <span className="text-xs">Commandes</span>
+                <Badge variant="outline" className="text-xs">Illimité</Badge>
+              </div>
+              <span className="text-xs text-muted-foreground">∞</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileDown className="h-3 w-3 text-orange-600" />
+                <span className="text-xs">Exports</span>
+                <Badge variant="outline" className="text-xs">Illimité</Badge>
+              </div>
+              <span className="text-xs text-muted-foreground">∞</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-3 w-3 text-indigo-600" />
+                <span className="text-xs">Analyses IA</span>
+                <Badge variant="outline" className="text-xs">Illimité</Badge>
+              </div>
+              <span className="text-xs text-muted-foreground">∞</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Zap className="h-3 w-3 text-yellow-600" />
+                <span className="text-xs">Automations</span>
+                <Badge variant="outline" className="text-xs">Illimité</Badge>
+              </div>
+              <span className="text-xs text-muted-foreground">∞</span>
+            </div>
+          </div>
+        </div>
 
-          return (
-            <NavLink
-              key={item.title}
-              to={item.url}
-              onClick={() => mobile && setSidebarOpen(false)}
-              className={`flex items-center space-x-3 rounded-lg px-3 py-2 transition-colors ${
-                isActive(item.url)
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              <item.icon className="h-5 w-5" />
-              <span>{item.title}</span>
-              {item.badge && (
-                <Badge variant="secondary" className="ml-auto text-xs">
-                  {item.badge}
-                </Badge>
-              )}
-            </NavLink>
-          );
-        })}
-      </nav>
-
-      {/* Plan info */}
-      <div className="border-t p-4">
-        <div className="rounded-lg bg-muted p-3">
+        {/* White Label */}
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Crown className="h-3 w-3 text-amber-600" />
+              <span className="text-xs">White Label</span>
+            </div>
+            <span className="text-xs text-muted-foreground">0 / 1</span>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Personnalisation de la marque
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Réinitialisation : 19/10/2025
+          </div>
+        </div>
+
+        {/* Plan upgrade */}
+        <div className="rounded-lg bg-muted/50 p-3">
+          <div className="flex items-center justify-between mb-2">
             <div>
-              <p className="text-sm font-medium">Plan {plan}</p>
+              <p className="text-sm font-medium">Plan {plan === 'ultra_pro' ? 'Ultra Pro' : plan === 'pro' ? 'Pro' : 'Standard'}</p>
               <p className="text-xs text-muted-foreground">
                 {plan === 'ultra_pro' ? 'Toutes les fonctionnalités' : 'Fonctionnalités limitées'}
               </p>
@@ -171,46 +306,52 @@ export function AppLayout({ children }: AppLayoutProps) {
               </Button>
             )}
           </div>
+          <Button size="sm" className="w-full mt-2" variant="default" asChild>
+            <NavLink to="/subscription">
+              Voir tous les plans →
+            </NavLink>
+          </Button>
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
-      <div className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
-        <div className="flex flex-col border-r bg-card">
+      <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 z-50">
+        <div className="flex flex-col h-full border-r bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
           <Sidebar />
         </div>
       </div>
 
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="p-0 w-64">
+        <SheetContent side="left" className="p-0 w-64 z-50">
           <Sidebar mobile />
         </SheetContent>
       </Sheet>
 
       {/* Main Content */}
-      <div className="md:pl-64">
+      <div className="flex flex-col flex-1 md:ml-64">
         {/* Header */}
         <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex h-16 items-center gap-4 px-6">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="md:hidden">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-            </Sheet>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="md:hidden" 
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
 
             {/* Search */}
             <div className="flex-1 max-w-md">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher..."
+                  placeholder="Rechercher dans Import Pro..."
                   className="pl-8"
                 />
               </div>
@@ -267,8 +408,10 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1">
-          {children}
+        <main className="flex-1 overflow-auto">
+          <div className="p-6">
+            {children}
+          </div>
         </main>
       </div>
     </div>
