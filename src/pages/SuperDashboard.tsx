@@ -1,6 +1,6 @@
 /**
  * Super Dashboard - Interface Ultra Compétitive
- * Dashboard next-gen avec toutes les fonctionnalités concurrentielles
+ * Dashboard next-gen avec toutes les fonctionnalités concurrentielles - v2
  */
 
 import React, { useState } from 'react'
