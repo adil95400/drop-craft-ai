@@ -8,6 +8,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { ConnectorSetupForm } from '@/components/connectors/ConnectorSetupForm';
 import { ConnectorManager, ConnectorConfig, PlatformInfo } from '@/services/ConnectorManager';
+import { SyncJobMonitor } from '@/components/sync/SyncJobMonitor';
+import { SyncConfiguration } from '@/components/sync/SyncConfiguration';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -22,7 +24,9 @@ import {
   TrendingUp,
   Users,
   Package,
-  ShoppingBag
+  ShoppingBag,
+  Monitor,
+  Cog
 } from 'lucide-react';
 
 const SyncManager: React.FC = () => {
@@ -283,111 +287,141 @@ const SyncManager: React.FC = () => {
         </Card>
       </div>
 
-      {/* Connecteurs configurés */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="w-5 h-5" />
-            Connecteurs configurés
-          </CardTitle>
-          <CardDescription>
-            Gérez vos connecteurs e-commerce et lancez des synchronisations
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : connectors.length === 0 ? (
-            <Alert>
-              <TrendingUp className="h-4 w-4" />
-              <AlertDescription>
-                Aucun connecteur configuré. Cliquez sur "Ajouter un connecteur" pour commencer.
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <div className="space-y-4">
-              {connectors.map((connector) => {
-                const platform = platforms.find(p => p.id === connector.platform);
-                const isSyncing = syncingConnectors.has(connector.id);
-                
-                return (
-                  <Card key={connector.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          {platform?.logo_url && (
-                            <img src={platform.logo_url} alt={platform.display_name} className="w-8 h-8" />
-                          )}
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">{platform?.display_name || connector.platform}</h3>
-                              {getStatusIcon(connector.is_active, connector.error_count)}
+      {/* Onglets principaux */}
+      <Tabs defaultValue="connectors" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="connectors" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Connecteurs
+          </TabsTrigger>
+          <TabsTrigger value="monitor" className="flex items-center gap-2">
+            <Monitor className="h-4 w-4" />
+            Monitoring
+          </TabsTrigger>
+          <TabsTrigger value="config" className="flex items-center gap-2">
+            <Cog className="h-4 w-4" />
+            Configuration
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Onglet Connecteurs */}
+        <TabsContent value="connectors" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Connecteurs configurés
+              </CardTitle>
+              <CardDescription>
+                Gérez vos connecteurs e-commerce et lancez des synchronisations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : connectors.length === 0 ? (
+                <Alert>
+                  <TrendingUp className="h-4 w-4" />
+                  <AlertDescription>
+                    Aucun connecteur configuré. Cliquez sur "Ajouter un connecteur" pour commencer.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <div className="space-y-4">
+                  {connectors.map((connector) => {
+                    const platform = platforms.find(p => p.id === connector.platform);
+                    const isSyncing = syncingConnectors.has(connector.id);
+                    
+                    return (
+                      <Card key={connector.id}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              {platform?.logo_url && (
+                                <img src={platform.logo_url} alt={platform.display_name} className="w-8 h-8" />
+                              )}
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-semibold">{platform?.display_name || connector.platform}</h3>
+                                  {getStatusIcon(connector.is_active, connector.error_count)}
+                                </div>
+                                <div className="flex items-center gap-2 mt-1">
+                                  {getStatusBadge(connector.is_active, connector.error_count)}
+                                  <Badge variant="outline" className="text-xs">
+                                    {connector.sync_frequency}
+                                  </Badge>
+                                  <span className="text-sm text-muted-foreground">
+                                    {connector.sync_entities.join(', ')}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              {getStatusBadge(connector.is_active, connector.error_count)}
-                              <Badge variant="outline" className="text-xs">
-                                {connector.sync_frequency}
-                              </Badge>
-                              <span className="text-sm text-muted-foreground">
-                                {connector.sync_entities.join(', ')}
-                              </span>
+
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleTestConnection(connector.id)}
+                              >
+                                Tester
+                              </Button>
+                              
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleSyncConnector(connector.id, connector.sync_entities)}
+                                disabled={isSyncing || !connector.is_active}
+                              >
+                                {isSyncing ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
+                                    Synchronisation...
+                                  </>
+                                ) : (
+                                  <>
+                                    <RotateCcw className="w-3 h-3 mr-2" />
+                                    Synchroniser
+                                  </>
+                                )}
+                              </Button>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleTestConnection(connector.id)}
-                          >
-                            Tester
-                          </Button>
-                          
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => handleSyncConnector(connector.id, connector.sync_entities)}
-                            disabled={isSyncing || !connector.is_active}
-                          >
-                            {isSyncing ? (
-                              <>
-                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
-                                Synchronisation...
-                              </>
-                            ) : (
-                              <>
-                                <RotateCcw className="w-3 h-3 mr-2" />
-                                Synchroniser
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
+                          {connector.last_sync_at && (
+                            <div className="mt-3 text-sm text-muted-foreground">
+                              Dernière synchronisation : {new Date(connector.last_sync_at).toLocaleString()}
+                            </div>
+                          )}
 
-                      {connector.last_sync_at && (
-                        <div className="mt-3 text-sm text-muted-foreground">
-                          Dernière synchronisation : {new Date(connector.last_sync_at).toLocaleString()}
-                        </div>
-                      )}
+                          {connector.last_error && (
+                            <Alert variant="destructive" className="mt-3">
+                              <AlertDescription>
+                                Dernière erreur : {connector.last_error}
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                      {connector.last_error && (
-                        <Alert variant="destructive" className="mt-3">
-                          <AlertDescription>
-                            Dernière erreur : {connector.last_error}
-                          </AlertDescription>
-                        </Alert>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        {/* Onglet Monitoring */}
+        <TabsContent value="monitor">
+          <SyncJobMonitor />
+        </TabsContent>
+
+        {/* Onglet Configuration */}
+        <TabsContent value="config">
+          <SyncConfiguration />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
