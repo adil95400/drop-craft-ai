@@ -1,363 +1,316 @@
-import { AdvancedBaseConnector, FetchOptions, SyncResult, PlatformLimits, PlatformCapabilities, PlatformCredentials } from './AdvancedBaseConnector';
-import { CompleteProduct, CompleteOrder, CompleteCustomer, WebhookEvent } from '@/types/ecommerce';
+import { BaseConnector, ConnectorProduct, ConnectorOrder, SyncResult, WooCommerceCredentials, ConnectorConfig } from '@/types/connectors';
 
-export class WooCommerceConnector extends AdvancedBaseConnector {
+const WOOCOMMERCE_CONFIG: ConnectorConfig = {
+  name: 'WooCommerce',
+  type: 'ecommerce',
+  auth_type: 'api_key',
+  supports_webhooks: true,
+  supports_realtime: false,
+  rate_limit: {
+    requests_per_second: 10,
+    requests_per_hour: 3600,
+  },
+  endpoints: {
+    products: '/wp-json/wc/v3/products',
+    orders: '/wp-json/wc/v3/orders',
+  },
+};
+
+export class WooCommerceConnector extends BaseConnector {
+  protected credentials: WooCommerceCredentials;
   
-  constructor(credentials: PlatformCredentials, userId: string, shopId?: string) {
-    super(credentials, 'woocommerce', userId, shopId);
+  constructor(credentials: WooCommerceCredentials) {
+    super(credentials, WOOCOMMERCE_CONFIG);
+    this.credentials = credentials;
   }
-
-  protected buildBaseUrl(): string {
-    const baseUrl = this.credentials.shop_url?.replace(/\/+$/, '');
-    return `${baseUrl}/wp-json/wc/v3/`;
+  
+  private get baseUrl(): string {
+    return this.credentials.site_url.replace(/\/$/, '');
   }
-
-  protected getAuthHeaders(): Record<string, string> {
-    if (!this.credentials.clientId || !this.credentials.clientSecret) {
-      throw new Error('Missing WooCommerce consumer key and secret');
-    }
-
-    const auth = Buffer.from(`${this.credentials.clientId}:${this.credentials.clientSecret}`).toString('base64');
-    return {
-      'Authorization': `Basic ${auth}`
-    };
+  
+  private get authParams(): string {
+    return `consumer_key=${this.credentials.consumer_key}&consumer_secret=${this.credentials.consumer_secret}`;
   }
-
-  protected getPlatformLimits(): PlatformLimits {
-    return {
-      requests_per_second: 10,
-      requests_per_minute: 600,
-      requests_per_hour: 3600,
-      requests_per_day: 50000,
-      max_results_per_page: 100,
-      webhook_timeout_seconds: 30
-    };
-  }
-
-  protected getPlatformCapabilities(): PlatformCapabilities {
-    return {
-      products: {
-        read: true,
-        write: true,
-        delete: true,
-        variants: true,
-        inventory: true,
-        images: true,
-        seo: true,
-        metafields: false
-      },
-      orders: {
-        read: true,
-        write: true,
-        fulfill: true,
-        cancel: true,
-        refund: true,
-        tracking: true
-      },
-      customers: {
-        read: true,
-        write: true,
-        delete: true,
-        addresses: true,
-        marketing_consent: false
-      },
-      webhooks: {
-        supported: true,
-        events: [
-          'product.created', 'product.updated', 'product.deleted',
-          'order.created', 'order.updated', 'order.deleted',
-          'customer.created', 'customer.updated', 'customer.deleted'
-        ],
-        verification: 'none'
-      },
-      inventory: {
-        locations: false,
-        tracking: true,
-        reservations: false
-      }
-    };
-  }
-
-  async testConnection(): Promise<boolean> {
+  
+  async validateCredentials(): Promise<boolean> {
     try {
-      await this.makeRequest('system_status');
-      return true;
+      const response = await this.makeRequest(
+        `${this.baseUrl}/wp-json/wc/v3/system_status?${this.authParams}`
+      );
+      return !!response.environment;
     } catch (error) {
-      console.error('WooCommerce connection test failed:', error);
+      console.error('WooCommerce credentials validation failed:', error);
       return false;
     }
   }
-
-  async fetchProducts(options: FetchOptions = {}): Promise<CompleteProduct[]> {
+  
+  async fetchProducts(options?: { 
+    limit?: number; 
+    page?: number; 
+    updated_since?: string; 
+  }): Promise<ConnectorProduct[]> {
     try {
       const params = new URLSearchParams();
+      params.append('consumer_key', this.credentials.consumer_key);
+      params.append('consumer_secret', this.credentials.consumer_secret);
       
-      if (options.page) params.append('page', options.page.toString());
-      if (options.limit) params.append('per_page', Math.min(options.limit, 100).toString());
-
-      const response = await this.makeRequest(`products?${params.toString()}`);
+      if (options?.limit) params.append('per_page', options.limit.toString());
+      if (options?.page) params.append('page', options.page.toString());
+      if (options?.updated_since) params.append('modified_after', options.updated_since);
       
-      return response.map((product: any) => this.normalizeProduct(product));
+      const response = await this.makeRequest(
+        `${this.baseUrl}${this.config.endpoints.products}?${params}`
+      );
+      
+      return response.map(this.mapWooCommerceProduct);
     } catch (error) {
-      console.error('Error fetching WooCommerce products:', error);
-      return [];
-    }
-  }
-
-  async fetchProduct(id: string): Promise<CompleteProduct | null> {
-    try {
-      const response = await this.makeRequest(`products/${id}`);
-      return this.normalizeProduct(response);
-    } catch (error) {
-      console.error(`Error fetching WooCommerce product ${id}:`, error);
-      return null;
-    }
-  }
-
-  async createProduct(product: Partial<CompleteProduct>): Promise<CompleteProduct> {
-    try {
-      const wooProduct = this.denormalizeProduct(product);
-      const response = await this.makeRequest('products', {
-        method: 'POST',
-        body: JSON.stringify(wooProduct)
-      });
-      return this.normalizeProduct(response);
-    } catch (error) {
-      console.error('Error creating WooCommerce product:', error);
+      console.error('Failed to fetch WooCommerce products:', error);
       throw error;
     }
   }
-
-  async updateProduct(id: string, product: Partial<CompleteProduct>): Promise<CompleteProduct> {
-    try {
-      const wooProduct = this.denormalizeProduct(product);
-      const response = await this.makeRequest(`products/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(wooProduct)
-      });
-      return this.normalizeProduct(response);
-    } catch (error) {
-      console.error(`Error updating WooCommerce product ${id}:`, error);
-      throw error;
-    }
-  }
-
-  async deleteProduct(id: string): Promise<boolean> {
-    try {
-      await this.makeRequest(`products/${id}`, { 
-        method: 'DELETE',
-        body: JSON.stringify({ force: true })
-      });
-      return true;
-    } catch (error) {
-      console.error(`Error deleting WooCommerce product ${id}:`, error);
-      return false;
-    }
-  }
-
-  async fetchOrders(options: FetchOptions = {}): Promise<CompleteOrder[]> {
+  
+  async fetchOrders(options?: { 
+    limit?: number; 
+    page?: number; 
+    status?: string;
+    updated_since?: string; 
+  }): Promise<ConnectorOrder[]> {
     try {
       const params = new URLSearchParams();
+      params.append('consumer_key', this.credentials.consumer_key);
+      params.append('consumer_secret', this.credentials.consumer_secret);
       
-      if (options.page) params.append('page', options.page.toString());
-      if (options.limit) params.append('per_page', Math.min(options.limit, 100).toString());
-
-      const response = await this.makeRequest(`orders?${params.toString()}`);
+      if (options?.limit) params.append('per_page', options.limit.toString());
+      if (options?.page) params.append('page', options.page.toString());
+      if (options?.status) params.append('status', options.status);
+      if (options?.updated_since) params.append('modified_after', options.updated_since);
       
-      return response.map((order: any) => this.normalizeOrder(order));
-    } catch (error) {
-      console.error('Error fetching WooCommerce orders:', error);
-      return [];
-    }
-  }
-
-  async fetchOrder(id: string): Promise<CompleteOrder | null> {
-    try {
-      const response = await this.makeRequest(`orders/${id}`);
-      return this.normalizeOrder(response);
-    } catch (error) {
-      console.error(`Error fetching WooCommerce order ${id}:`, error);
-      return null;
-    }
-  }
-
-  async updateOrderStatus(id: string, status: string): Promise<CompleteOrder> {
-    try {
-      const response = await this.makeRequest(`orders/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ status })
-      });
+      const response = await this.makeRequest(
+        `${this.baseUrl}${this.config.endpoints.orders}?${params}`
+      );
       
-      return this.normalizeOrder(response);
+      return response.map(this.mapWooCommerceOrder);
     } catch (error) {
-      console.error(`Error updating WooCommerce order ${id} status:`, error);
+      console.error('Failed to fetch WooCommerce orders:', error);
       throw error;
     }
   }
-
-  async fulfillOrder(id: string, trackingNumber?: string, trackingCompany?: string): Promise<CompleteOrder> {
-    try {
-      const updateData: any = { status: 'completed' };
-
-      if (trackingNumber || trackingCompany) {
-        updateData.meta_data = [
-          ...(trackingNumber ? [{ key: '_tracking_number', value: trackingNumber }] : []),
-          ...(trackingCompany ? [{ key: '_tracking_provider', value: trackingCompany }] : [])
-        ];
-      }
-
-      const response = await this.makeRequest(`orders/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(updateData)
-      });
-
-      return this.normalizeOrder(response);
-    } catch (error) {
-      console.error(`Error fulfilling WooCommerce order ${id}:`, error);
-      throw error;
-    }
-  }
-
-  async fetchCustomers(options: FetchOptions = {}): Promise<CompleteCustomer[]> {
-    try {
-      const params = new URLSearchParams();
-      
-      if (options.page) params.append('page', options.page.toString());
-      if (options.limit) params.append('per_page', Math.min(options.limit, 100).toString());
-
-      const response = await this.makeRequest(`customers?${params.toString()}`);
-      
-      return response.map((customer: any) => this.normalizeCustomer(customer));
-    } catch (error) {
-      console.error('Error fetching WooCommerce customers:', error);
-      return [];
-    }
-  }
-
-  async fetchCustomer(id: string): Promise<CompleteCustomer | null> {
-    try {
-      const response = await this.makeRequest(`customers/${id}`);
-      return this.normalizeCustomer(response);
-    } catch (error) {
-      console.error(`Error fetching WooCommerce customer ${id}:`, error);
-      return null;
-    }
-  }
-
-  async createCustomer(customer: Partial<CompleteCustomer>): Promise<CompleteCustomer> {
-    try {
-      const wooCustomer = this.denormalizeCustomer(customer);
-      const response = await this.makeRequest('customers', {
-        method: 'POST',
-        body: JSON.stringify(wooCustomer)
-      });
-      return this.normalizeCustomer(response);
-    } catch (error) {
-      console.error('Error creating WooCommerce customer:', error);
-      throw error;
-    }
-  }
-
-  async updateCustomer(id: string, customer: Partial<CompleteCustomer>): Promise<CompleteCustomer> {
-    try {
-      const wooCustomer = this.denormalizeCustomer(customer);
-      const response = await this.makeRequest(`customers/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(wooCustomer)
-      });
-      return this.normalizeCustomer(response);
-    } catch (error) {
-      console.error(`Error updating WooCommerce customer ${id}:`, error);
-      throw error;
-    }
-  }
-
-  async setupWebhooks(events: string[]): Promise<string[]> {
-    try {
-      const webhookIds: string[] = [];
-      const baseUrl = process.env.WEBHOOK_BASE_URL || 'https://your-app.com/webhooks';
-      
-      for (const event of events) {
-        const webhook = {
-          name: `DropCraft ${event}`,
-          topic: event,
-          delivery_url: `${baseUrl}/woocommerce/${event.replace('.', '_')}`,
-          secret: this.credentials.webhook_secret || ''
-        };
-
-        const response = await this.makeRequest('webhooks', {
-          method: 'POST',
-          body: JSON.stringify(webhook)
-        });
-
-        webhookIds.push(response.id.toString());
-      }
-
-      return webhookIds;
-    } catch (error) {
-      console.error('Error setting up WooCommerce webhooks:', error);
-      throw error;
-    }
-  }
-
-  verifyWebhook(payload: string, signature: string): boolean {
-    return true; // Simplified for now
-  }
-
-  async processWebhookEvent(event: WebhookEvent): Promise<void> {
-    console.log(`Processing WooCommerce webhook: ${event.topic}`);
-  }
-
-  async syncProducts(options: { incremental?: boolean; since?: Date } = {}): Promise<SyncResult> {
+  
+  async updateInventory(products: { sku: string; quantity: number }[]): Promise<SyncResult> {
+    const results = { success: true, total: products.length, imported: 0, updated: 0, errors: [], duration_ms: 0 };
     const startTime = Date.now();
-    const result: SyncResult = {
-      success: false,
-      total: 0,
-      imported: 0,
-      updated: 0,
-      skipped: 0,
-      errors: [],
-      execution_time_ms: 0
-    };
-
+    
+    for (const product of products) {
+      await this.delay(100);
+      
+      try {
+        const searchResponse = await this.makeRequest(
+          `${this.baseUrl}${this.config.endpoints.products}?sku=${product.sku}&${this.authParams}`
+        );
+        
+        if (searchResponse.length === 0) {
+          results.errors.push(`SKU not found: ${product.sku}`);
+          continue;
+        }
+        
+        const wooProduct = searchResponse[0];
+        
+        await this.makeRequest(
+          `${this.baseUrl}${this.config.endpoints.products}/${wooProduct.id}?${this.authParams}`,
+          {
+            method: 'PUT',
+            body: JSON.stringify({
+              stock_quantity: product.quantity,
+              manage_stock: true,
+              stock_status: product.quantity > 0 ? 'instock' : 'outofstock',
+            }),
+          }
+        );
+        
+        results.updated++;
+      } catch (error) {
+        results.errors.push(`Failed to update ${product.sku}: ${error}`);
+      }
+    }
+    
+    results.duration_ms = Date.now() - startTime;
+    return results;
+  }
+  
+  async updatePrices(products: { sku: string; price: number }[]): Promise<SyncResult> {
+    const results = { success: true, total: products.length, imported: 0, updated: 0, errors: [], duration_ms: 0 };
+    const startTime = Date.now();
+    
+    for (const product of products) {
+      await this.delay(100);
+      
+      try {
+        const searchResponse = await this.makeRequest(
+          `${this.baseUrl}${this.config.endpoints.products}?sku=${product.sku}&${this.authParams}`
+        );
+        
+        if (searchResponse.length === 0) {
+          results.errors.push(`SKU not found: ${product.sku}`);
+          continue;
+        }
+        
+        const wooProduct = searchResponse[0];
+        
+        await this.makeRequest(
+          `${this.baseUrl}${this.config.endpoints.products}/${wooProduct.id}?${this.authParams}`,
+          {
+            method: 'PUT',
+            body: JSON.stringify({
+              regular_price: product.price.toString(),
+            }),
+          }
+        );
+        
+        results.updated++;
+      } catch (error) {
+        results.errors.push(`Failed to update price for ${product.sku}: ${error}`);
+      }
+    }
+    
+    results.duration_ms = Date.now() - startTime;
+    return results;
+  }
+  
+  async createOrder(order: Partial<ConnectorOrder>): Promise<string> {
     try {
-      const products = await this.fetchProducts({ limit: 100 });
-      result.total = products.length;
-      result.imported = products.length;
-      result.success = true;
-      result.execution_time_ms = Date.now() - startTime;
-
-      return result;
+      const wooOrder = {
+        status: 'processing',
+        currency: order.currency || 'EUR',
+        customer_id: order.customer_id ? parseInt(order.customer_id) : 0,
+        billing: order.billing_address,
+        shipping: order.shipping_address,
+        line_items: order.line_items?.map(item => ({
+          product_id: parseInt(item.product_id),
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        total: order.total_amount?.toString(),
+      };
+      
+      const response = await this.makeRequest(
+        `${this.baseUrl}${this.config.endpoints.orders}?${this.authParams}`,
+        {
+          method: 'POST',
+          body: JSON.stringify(wooOrder),
+        }
+      );
+      
+      return response.id.toString();
     } catch (error) {
-      result.errors.push(this.logError('sync_products', error));
-      result.execution_time_ms = Date.now() - startTime;
-      return result;
+      console.error('Failed to create WooCommerce order:', error);
+      throw error;
     }
   }
-
-  async syncOrders(options: { incremental?: boolean; since?: Date } = {}): Promise<SyncResult> {
-    return this.syncProducts(options); // Simplified
+  
+  async updateOrderStatus(orderId: string, status: string): Promise<boolean> {
+    try {
+      await this.makeRequest(
+        `${this.baseUrl}${this.config.endpoints.orders}/${orderId}?${this.authParams}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({
+            status: this.mapToWooCommerceStatus(status),
+          }),
+        }
+      );
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to update WooCommerce order status:', error);
+      return false;
+    }
   }
-
-  async syncCustomers(options: { incremental?: boolean; since?: Date } = {}): Promise<SyncResult> {
-    return this.syncProducts(options); // Simplified
-  }
-
-  // Méthodes privées simplifiées
-
-  private denormalizeProduct(product: Partial<CompleteProduct>): any {
+  
+  private mapWooCommerceProduct = (wooProduct: any): ConnectorProduct => {
     return {
-      name: product.title,
-      description: product.body_html,
-      status: product.status === 'active' ? 'publish' : 'draft'
+      external_id: wooProduct.id.toString(),
+      sku: wooProduct.sku || wooProduct.slug,
+      title: wooProduct.name,
+      description: wooProduct.description || wooProduct.short_description || '',
+      price: parseFloat(wooProduct.price || wooProduct.regular_price || '0'),
+      compare_at_price: wooProduct.sale_price ? parseFloat(wooProduct.regular_price) : undefined,
+      currency: 'EUR',
+      inventory_quantity: wooProduct.stock_quantity || 0,
+      category: wooProduct.categories?.[0]?.name,
+      brand: wooProduct.attributes?.find((attr: any) => attr.name === 'Brand')?.options?.[0],
+      tags: wooProduct.tags?.map((tag: any) => tag.name) || [],
+      images: wooProduct.images?.map((img: any) => img.src) || [],
+      variants: [],
+      status: wooProduct.status === 'publish' ? 'active' : 'draft',
+      created_at: wooProduct.date_created,
+      updated_at: wooProduct.date_modified,
     };
-  }
-
-  private denormalizeCustomer(customer: Partial<CompleteCustomer>): any {
+  };
+  
+  private mapWooCommerceOrder = (wooOrder: any): ConnectorOrder => {
     return {
-      email: customer.email,
-      first_name: customer.first_name,
-      last_name: customer.last_name
+      external_id: wooOrder.id.toString(),
+      order_number: wooOrder.number || wooOrder.id.toString(),
+      status: this.mapWooCommerceOrderStatus(wooOrder.status),
+      total_amount: parseFloat(wooOrder.total),
+      currency: wooOrder.currency,
+      customer_id: wooOrder.customer_id?.toString(),
+      customer_name: `${wooOrder.billing?.first_name || ''} ${wooOrder.billing?.last_name || ''}`.trim(),
+      customer_email: wooOrder.billing?.email,
+      billing_address: {
+        name: `${wooOrder.billing?.first_name || ''} ${wooOrder.billing?.last_name || ''}`.trim(),
+        address1: wooOrder.billing?.address_1 || '',
+        address2: wooOrder.billing?.address_2,
+        city: wooOrder.billing?.city || '',
+        province: wooOrder.billing?.state,
+        country: wooOrder.billing?.country || '',
+        zip: wooOrder.billing?.postcode || '',
+        phone: wooOrder.billing?.phone,
+      },
+      shipping_address: {
+        name: `${wooOrder.shipping?.first_name || ''} ${wooOrder.shipping?.last_name || ''}`.trim(),
+        address1: wooOrder.shipping?.address_1 || '',
+        address2: wooOrder.shipping?.address_2,
+        city: wooOrder.shipping?.city || '',
+        province: wooOrder.shipping?.state,
+        country: wooOrder.shipping?.country || '',
+        zip: wooOrder.shipping?.postcode || '',
+      },
+      line_items: wooOrder.line_items?.map((item: any) => ({
+        product_id: item.product_id?.toString(),
+        variant_id: item.variation_id?.toString(),
+        sku: item.sku,
+        title: item.name,
+        quantity: item.quantity,
+        price: parseFloat(item.price),
+      })) || [],
+      created_at: wooOrder.date_created,
+      updated_at: wooOrder.date_modified,
     };
+  };
+  
+  private mapWooCommerceOrderStatus(status: string): ConnectorOrder['status'] {
+    const statusMap: Record<string, ConnectorOrder['status']> = {
+      'pending': 'pending',
+      'processing': 'processing',
+      'completed': 'delivered',
+      'cancelled': 'cancelled',
+      'refunded': 'refunded',
+    };
+    
+    return statusMap[status] || 'pending';
+  }
+  
+  private mapToWooCommerceStatus(status: string): string {
+    const statusMap: Record<string, string> = {
+      'pending': 'pending',
+      'processing': 'processing',
+      'shipped': 'completed',
+      'delivered': 'completed',
+      'cancelled': 'cancelled',
+      'refunded': 'refunded',
+    };
+    
+    return statusMap[status] || 'processing';
   }
 }
