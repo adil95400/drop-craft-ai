@@ -125,6 +125,7 @@ export function BlogDashboard({ onCreatePost, onEditPost }: BlogDashboardProps) 
         </Button>
       </div>
 
+      <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="posts">Articles</TabsTrigger>
@@ -335,8 +336,8 @@ export function BlogDashboard({ onCreatePost, onEditPost }: BlogDashboardProps) 
             totalShares={0}
             totalComments={0}
             totalSubscribers={0}
-            growthRate={0}
-            topCategories={[]}
+            articlesCount={stats.published + stats.drafts}
+            monthlyGrowth={15}
           />
         </TabsContent>
 
