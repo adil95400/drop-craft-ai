@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { RecommendedPosts } from '@/components/blog/RecommendedPosts';
 import { BlogNewsletter } from '@/components/blog/BlogNewsletter';
+import { BlogPostActions } from '@/components/blog/BlogPostActions';
 
 // Mock data for blog post
 const mockPost = {
@@ -257,6 +258,11 @@ export function BlogPostDetail() {
         </div>
 
         <Separator className="mb-12" />
+
+        {/* Article Actions */}
+        <div className="mb-12">
+          <BlogPostActions post={mockPost} />
+        </div>
 
         {/* Newsletter */}
         <div className="mb-12">
