@@ -132,7 +132,7 @@ import Pricing from '@/pages/Pricing';
 import Contact from '@/pages/Contact';
 import Testimonials from '@/pages/Testimonials';
 import About from '@/pages/About';
-import Blog from '@/pages/Blog';
+import ModernBlog from '@/pages/ModernBlog';
 import Legal from '@/pages/Legal';
 import Status from '@/pages/Status';
 
@@ -638,7 +638,11 @@ function App() {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/about" element={<About />} />
-                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernBlog /></AppLayout>
+                  </ProtectedRoute>
+                } />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/legal" element={<Legal />} />
                 <Route path="/status" element={<Status />} />
