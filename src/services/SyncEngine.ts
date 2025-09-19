@@ -1,6 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ShopifyConnector } from './connectors/ShopifyConnector';
-import { WooCommerceConnector } from './connectors/WooCommerceConnector';
 import { AmazonConnector } from './connectors/AmazonConnector';
 import { EBayConnector } from './connectors/eBayConnector';
 import type { BaseConnector, ConnectorProduct, ConnectorOrder } from '@/types/connectors';
@@ -15,9 +14,6 @@ export class SyncEngine {
       switch (platform.toLowerCase()) {
         case 'shopify':
           connector = new ShopifyConnector(credentials);
-          break;
-        case 'woocommerce':
-          connector = new WooCommerceConnector(credentials);
           break;
         case 'amazon':
           connector = new AmazonConnector(credentials);
