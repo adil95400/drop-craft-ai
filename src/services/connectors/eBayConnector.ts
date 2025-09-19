@@ -17,11 +17,9 @@ const EBAY_CONFIG: ConnectorConfig = {
 };
 
 export class EBayConnector extends BaseConnector {
-  protected credentials: EBayCredentials;
   
   constructor(credentials: EBayCredentials) {
     super(credentials, EBAY_CONFIG);
-    this.credentials = credentials;
   }
   
   async validateCredentials(): Promise<boolean> {

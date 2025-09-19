@@ -1,6 +1,6 @@
 import { AdvancedBaseConnector, PlatformCredentials } from './connectors/AdvancedBaseConnector';
 import { ShopifyAdvancedConnector } from './connectors/ShopifyAdvancedConnector';
-import { WooCommerceConnector } from './connectors/WooCommerceConnector';
+import { WooCommerceAdvancedConnector } from './connectors/WooCommerceAdvancedConnector';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ConnectorConfig {
@@ -321,7 +321,7 @@ export class ConnectorManager {
       case 'shopify':
         return new ShopifyAdvancedConnector(config.credentials, config.user_id, config.shop_id);
       case 'woocommerce':
-        return new WooCommerceConnector(config.credentials, config.user_id, config.shop_id);
+        return new WooCommerceAdvancedConnector(config.credentials, config.user_id, config.shop_id);
       default:
         throw new Error(`Unsupported platform: ${config.platform}`);
     }

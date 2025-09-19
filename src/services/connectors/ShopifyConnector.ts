@@ -18,20 +18,18 @@ const SHOPIFY_CONFIG: ConnectorConfig = {
 };
 
 export class ShopifyConnector extends BaseConnector {
-  protected credentials: ShopifyCredentials;
   
   constructor(credentials: ShopifyCredentials) {
     super(credentials, SHOPIFY_CONFIG);
-    this.credentials = credentials;
   }
   
   private get baseUrl(): string {
-    return `https://${this.credentials.shop_domain}.myshopify.com`;
+    return `https://${(this.credentials as ShopifyCredentials).shop_domain}.myshopify.com`;
   }
   
   private get headers(): Record<string, string> {
     return {
-      'X-Shopify-Access-Token': this.credentials.access_token,
+      'X-Shopify-Access-Token': (this.credentials as ShopifyCredentials).access_token,
       'Content-Type': 'application/json',
     };
   }

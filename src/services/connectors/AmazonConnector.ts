@@ -17,16 +17,15 @@ const AMAZON_CONFIG: ConnectorConfig = {
 };
 
 export class AmazonConnector extends BaseConnector {
-  protected credentials: AmazonCredentials;
   
   constructor(credentials: AmazonCredentials) {
     super(credentials, AMAZON_CONFIG);
-    this.credentials = credentials;
   }
   
   private get baseUrl(): string {
-    const region = this.credentials.region || 'eu-west-1';
-    const sandbox = this.credentials.sandbox ? '-sandbox' : '';
+    const creds = this.credentials as AmazonCredentials;
+    const region = creds.region || 'eu-west-1';
+    const sandbox = creds.sandbox ? '-sandbox' : '';
     return `https://sellingpartnerapi${sandbox}-${region}.amazon.com`;
   }
   
@@ -39,9 +38,9 @@ export class AmazonConnector extends BaseConnector {
         },
         body: new URLSearchParams({
           grant_type: 'refresh_token',
-          refresh_token: this.credentials.refresh_token,
-          client_id: this.credentials.access_key_id,
-          client_secret: this.credentials.secret_access_key,
+          refresh_token: (this.credentials as AmazonCredentials).refresh_token,
+          client_id: (this.credentials as AmazonCredentials).access_key_id,
+          client_secret: (this.credentials as AmazonCredentials).secret_access_key,
         }),
       });
       
@@ -84,7 +83,7 @@ export class AmazonConnector extends BaseConnector {
       const headers = await this.getHeaders();
       const params = new URLSearchParams();
       
-      params.append('marketplaceIds', this.credentials.marketplace_id);
+      params.append('marketplaceIds', (this.credentials as AmazonCredentials).marketplace_id);
       if (options?.limit) params.append('maxResults', Math.min(options.limit, 20).toString());
       if (options?.updated_since) params.append('lastUpdatedAfter', options.updated_since);
       
@@ -110,7 +109,7 @@ export class AmazonConnector extends BaseConnector {
       const headers = await this.getHeaders();
       const params = new URLSearchParams();
       
-      params.append('MarketplaceIds', this.credentials.marketplace_id);
+      params.append('MarketplaceIds', (this.credentials as AmazonCredentials).marketplace_id);
       if (options?.updated_since) {
         params.append('LastUpdatedAfter', options.updated_since);
       } else {
@@ -147,7 +146,7 @@ export class AmazonConnector extends BaseConnector {
           headers,
           body: JSON.stringify({
             feedType: 'POST_INVENTORY_AVAILABILITY_DATA',
-            marketplaceIds: [this.credentials.marketplace_id],
+            marketplaceIds: [(this.credentials as AmazonCredentials).marketplace_id],
             inputFeedDocumentId: `INV-${Date.now()}`,
           }),
         }
@@ -178,7 +177,7 @@ export class AmazonConnector extends BaseConnector {
           headers,
           body: JSON.stringify({
             feedType: 'POST_PRODUCT_PRICING_DATA',
-            marketplaceIds: [this.credentials.marketplace_id],
+            marketplaceIds: [(this.credentials as AmazonCredentials).marketplace_id],
             inputFeedDocumentId: `PRICE-${Date.now()}`,
           }),
         }
