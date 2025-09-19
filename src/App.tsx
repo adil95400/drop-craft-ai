@@ -133,6 +133,8 @@ import Contact from '@/pages/Contact';
 import Testimonials from '@/pages/Testimonials';
 import About from '@/pages/About';
 import ModernBlog from '@/pages/ModernBlog';
+import { BlogPostDetail } from '@/pages/BlogPostDetail';
+import { BlogCategories } from '@/pages/BlogCategories';
 import Legal from '@/pages/Legal';
 import Status from '@/pages/Status';
 
@@ -639,6 +641,21 @@ function App() {
                 <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/blog" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernBlog /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/blog/post/:id" element={
+                  <ProtectedRoute>
+                    <AppLayout><BlogPostDetail /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/blog/categories" element={
+                  <ProtectedRoute>
+                    <AppLayout><BlogCategories /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/blog/category/:category" element={
                   <ProtectedRoute>
                     <AppLayout><ModernBlog /></AppLayout>
                   </ProtectedRoute>
