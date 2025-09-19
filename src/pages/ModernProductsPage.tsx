@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
 import { ProductsOverview } from '@/components/products/ProductsOverview'
-import { ProductsList } from '@/components/products/ProductsList'
+import { ProductsListSimple } from '@/components/products/ProductsListSimple'
 import { ProductCategories } from '@/components/products/ProductCategories'
 import ProductAnalytics from '@/components/products/ProductAnalytics'
 import { ProductBulkOperations } from '@/components/products/ProductBulkOperations'
@@ -9,14 +10,26 @@ import { ProductSettings } from '@/components/products/ProductSettings'
 import { ProductTemplates } from '@/components/products/ProductTemplates'
 import { ProductInventory } from '@/components/products/ProductInventory'
 import { ProductSEO } from '@/components/products/ProductSEO'
+import { ProductDetails } from '@/components/products/ProductDetails'
+import { CreateProductDialog } from '@/components/modals/CreateProductDialog'
 import { 
   Package, BarChart3, Grid3X3, Settings, 
-  Tag, Warehouse, Search, FileText 
+  Tag, Warehouse, Search, FileText, Plus 
 } from 'lucide-react'
 
 export default function ModernProductsPage() {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
-  // Force rebuild to clear cache
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+
+  if (selectedProductId) {
+    return (
+      <ProductDetails 
+        productId={selectedProductId} 
+        onClose={() => setSelectedProductId(null)} 
+      />
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -28,6 +41,12 @@ export default function ModernProductsPage() {
             <p className="text-muted-foreground mt-1">
               Gérez votre catalogue produits avec des outils professionnels
             </p>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nouveau produit
+            </Button>
           </div>
         </div>
 
@@ -80,7 +99,11 @@ export default function ModernProductsPage() {
           </TabsList>
 
           <TabsContent value="products" className="space-y-6">
-            <ProductsList />
+            <ProductsListSimple 
+              selectedProducts={selectedProducts}
+              onSelectionChange={setSelectedProducts}
+              onProductSelect={setSelectedProductId}
+            />
           </TabsContent>
 
           <TabsContent value="categories" className="space-y-6">
@@ -115,6 +138,11 @@ export default function ModernProductsPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <CreateProductDialog 
+        open={createDialogOpen} 
+        onOpenChange={setCreateDialogOpen} 
+      />
     </div>
   )
 }
