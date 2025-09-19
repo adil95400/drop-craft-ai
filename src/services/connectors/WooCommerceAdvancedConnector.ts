@@ -591,9 +591,21 @@ export class WooCommerceAdvancedConnector extends AdvancedBaseConnector {
       order_number: wooOrder.number || wooOrder.id.toString(),
       name: wooOrder.number || wooOrder.id.toString(),
       total_price: wooOrder.total,
+      subtotal_price: (parseFloat(wooOrder.total) - parseFloat(wooOrder.total_tax || '0')).toString(),
+      total_tax: wooOrder.total_tax || '0',
+      taxes_included: false,
+      total_discounts: wooOrder.discount_total || '0',
+      total_line_items_price: wooOrder.total,
       currency: wooOrder.currency,
-      customer_email: wooOrder.billing?.email,
-      customer_id: wooOrder.customer_id?.toString(),
+      email: wooOrder.billing?.email,
+      financial_status: this.mapWooCommerceOrderStatus(wooOrder.status),
+      fulfillment_status: wooOrder.status === 'completed' ? 'fulfilled' : null,
+      test: false,
+      buyer_accepts_marketing: false,
+      created_at: wooOrder.date_created,
+      updated_at: wooOrder.date_modified,
+      shipping_lines: [],
+      tax_lines: [],
       billing_address: {
         first_name: wooOrder.billing?.first_name,
         last_name: wooOrder.billing?.last_name,
@@ -637,8 +649,6 @@ export class WooCommerceAdvancedConnector extends AdvancedBaseConnector {
         duties: [],
         properties: [],
       })) || [],
-      created_at: wooOrder.date_created,
-      updated_at: wooOrder.date_modified,
     };
   };
 
@@ -721,15 +731,15 @@ export class WooCommerceAdvancedConnector extends AdvancedBaseConnector {
     };
   }
 
-  private mapWooCommerceOrderStatus(status: string): string {
-    const statusMap: Record<string, string> = {
+  private mapWooCommerceOrderStatus(status: string): 'pending' | 'authorized' | 'paid' | 'partially_paid' | 'refunded' | 'voided' | 'partially_refunded' {
+    const statusMap: Record<string, 'pending' | 'authorized' | 'paid' | 'partially_paid' | 'refunded' | 'voided' | 'partially_refunded'> = {
       'pending': 'pending',
-      'processing': 'processing',
+      'processing': 'authorized', 
       'on-hold': 'pending',
-      'completed': 'delivered',
-      'cancelled': 'cancelled',
+      'completed': 'paid',
+      'cancelled': 'voided',
       'refunded': 'refunded',
-      'failed': 'cancelled',
+      'failed': 'voided',
     };
     
     return statusMap[status] || 'pending';

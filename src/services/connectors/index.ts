@@ -1,7 +1,7 @@
 export { BaseConnector } from './BaseConnector';
 export { AmazonConnector } from './AmazonConnector';
 export { ShopifyConnector } from './ShopifyConnector';
-export { WooCommerceConnector } from './WooCommerceConnector';
+export { WooCommerceAdvancedConnector } from './WooCommerceAdvancedConnector';
 export { PrestaShopConnector } from './PrestaShopConnector';
 export { MagentoConnector } from './MagentoConnector';
 export { BigCommerceConnector } from './BigCommerceConnector';
