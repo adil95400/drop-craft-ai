@@ -49,6 +49,12 @@ import ModernMarketing from '@/pages/modern/ModernMarketing';
 import { ModernNavigation } from '@/components/layout/ModernNavigation';
 import ModernBilling from '@/pages/modern/ModernBilling';
 import { AdminLayout } from '@/layouts/AdminLayout';
+
+// Nouvelles pages avancées
+import { AdvancedImportPage } from '@/pages/AdvancedImportPage';
+import { AdvancedProductsPage } from '@/pages/AdvancedProductsPage';
+import { AdvancedSuppliersPage } from '@/pages/AdvancedSuppliersPage';
+import { AdvancedModulesHub } from '@/pages/AdvancedModulesHub';
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
 import { AdminProducts } from '@/pages/admin/AdminProducts';
 import { AdminOrders } from '@/pages/admin/AdminOrders';
@@ -377,6 +383,38 @@ function App() {
                 <Route path="/import" element={
                   <ProtectedRoute>
                     <AppLayout><ModernImportPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Hub modules avancés */}
+                <Route path="/advanced" element={
+                  <ProtectedRoute>
+                    <AppLayout><AdvancedModulesHub /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Pages avancées inspirées des concurrents */}
+                <Route path="/import/advanced" element={
+                  <ProtectedRoute>
+                    <RequirePlan minPlan="ultra_pro">
+                      <AppLayout><AdvancedImportPage /></AppLayout>
+                    </RequirePlan>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/products/advanced" element={
+                  <ProtectedRoute>
+                    <RequirePlan minPlan="ultra_pro">
+                      <AppLayout><AdvancedProductsPage /></AppLayout>
+                    </RequirePlan>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/suppliers/advanced" element={
+                  <ProtectedRoute>
+                    <RequirePlan minPlan="ultra_pro">
+                      <AppLayout><AdvancedSuppliersPage /></AppLayout>
+                    </RequirePlan>
                   </ProtectedRoute>
                 } />
                 <Route path="/import/csv" element={

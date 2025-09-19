@@ -23,6 +23,7 @@ import {
   XCircle, Clock, Zap, Upload, Download,
   Star, Shield, Activity, ArrowRight, DollarSign
 } from 'lucide-react'
+import { SuppliersUpgradeBanner } from '@/components/suppliers/SuppliersUpgradeBanner'
 
 interface SupplierConnector {
   id: string
@@ -295,6 +296,9 @@ const ModernSuppliersHub: React.FC = () => {
       </Helmet>
 
       <div className="space-y-8 p-6">
+        {/* Banner de promotion Ultra Pro */}
+        <SuppliersUpgradeBanner />
+        
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>

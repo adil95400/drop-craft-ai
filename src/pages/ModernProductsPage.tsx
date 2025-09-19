@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { ProductsOverview } from '@/components/products/ProductsOverview'
+import { ProductsUpgradeBanner } from '@/components/products/ProductsUpgradeBanner'
 import { ProductsListSimple } from '@/components/products/ProductsListSimple'
 import { ProductCategories } from '@/components/products/ProductCategories'
 import ProductAnalytics from '@/components/products/ProductAnalytics'
@@ -34,6 +35,8 @@ export default function ModernProductsPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <ProductsUpgradeBanner />
+      
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

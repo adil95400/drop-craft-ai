@@ -12,6 +12,7 @@ import { useUnifiedSystem } from '@/hooks/useUnifiedSystem'
 import { ActionButton } from '@/components/common/ActionButton'
 import { Helmet } from 'react-helmet-async'
 import { ImportJobDialog } from '@/components/import/ImportJobDialog'
+import { UpgradePromoBanner } from '@/components/upgrade/UpgradePromoBanner'
 import { 
   Upload, FileText, Globe, Database, 
   Zap, CheckCircle, XCircle, Clock,
@@ -126,6 +127,9 @@ const ModernImportPage: React.FC = () => {
       </Helmet>
 
       <div className="space-y-6 p-6">
+        {/* Banner de promotion Ultra Pro */}
+        <UpgradePromoBanner currentPage="import" />
+        
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
