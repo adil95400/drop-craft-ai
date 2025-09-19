@@ -138,6 +138,9 @@ import { BlogCategories } from '@/pages/BlogCategories';
 import Legal from '@/pages/Legal';
 import Status from '@/pages/Status';
 
+// Super Dashboard Concurrentiel
+import SuperDashboard from '@/pages/SuperDashboard';
+
 // Unified Pages
 import UnifiedDashboardPage from '@/pages/UnifiedDashboardPage';
 
@@ -206,6 +209,11 @@ function App() {
                 } />
                 <Route path="/modern" element={<AppLayout><ModernNavigation /></AppLayout>} />
                 <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <AppLayout><SuperDashboard /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard-classic" element={
                   <ProtectedRoute>
                     <AppLayout><OptimizedClientDashboard /></AppLayout>
                   </ProtectedRoute>
