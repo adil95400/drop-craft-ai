@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useStoreConnection } from '@/hooks/useStoreConnection'
 import { PlatformGridSelector } from './components/PlatformGridSelector'
 import { CredentialInput } from '@/components/common/CredentialInput'
+import { ConnectionTestStatus } from '@/components/stores/connection/ConnectionTestStatus'
 
 const ConnectStorePage = () => {
   const navigate = useNavigate()
@@ -360,6 +361,31 @@ const ConnectStorePage = () => {
               )}
             </div>
           ))}
+
+          {/* Test de connexion */}
+          {selectedPlatform && formData.domain && (
+            <ConnectionTestStatus
+              platform={selectedPlatform}
+              domain={formData.domain}
+              credentials={(() => {
+                if (selectedPlatform === 'shopify') {
+                  return { access_token: formData.accessToken };
+                } else if (selectedPlatform === 'woocommerce') {
+                  return { consumer_key: formData.apiKey, consumer_secret: formData.apiSecret };
+                } else if (selectedPlatform === 'prestashop') {
+                  return { webservice_key: formData.apiKey };
+                } else if (selectedPlatform === 'magento') {
+                  return { access_token: formData.accessToken };
+                }
+                return {};
+              })()}
+              onTestComplete={(success, data) => {
+                if (success && data) {
+                  console.log('Connection test successful:', data);
+                }
+              }}
+            />
+          )}
 
           {/* Fonctionnalités activées - seulement pour Shopify */}
           {selectedPlatform === 'shopify' && config.features && config.features.length > 0 && (

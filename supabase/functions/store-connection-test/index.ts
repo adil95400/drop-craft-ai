@@ -1,204 +1,264 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
+
+// Import our connector classes (adapted for Deno)
+interface ConnectorCredentials {
+  [key: string]: string | number | boolean;
+}
+
+interface ConnectionTestResult {
+  success: boolean;
+  error?: string;
+  data?: any;
+}
+
+interface TestRequest {
+  platform: string;
+  shopDomain: string;
+  [key: string]: any;
+}
+
+class StoreConnectionTester {
+  private async testShopifyConnection(domain: string, accessToken: string): Promise<ConnectionTestResult> {
+    try {
+      const shopDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      const baseUrl = shopDomain.includes('.myshopify.com') ? 
+        `https://${shopDomain}` : 
+        `https://${shopDomain}.myshopify.com`;
+
+      const response = await fetch(`${baseUrl}/admin/api/2023-10/shop.json`, {
+        headers: {
+          'X-Shopify-Access-Token': accessToken,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      return {
+        success: true,
+        data: {
+          shop: data.shop?.name,
+          domain: data.shop?.domain,
+          currency: data.shop?.currency,
+          timezone: data.shop?.timezone
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Erreur de connexion Shopify: ${error.message}`
+      };
+    }
+  }
+
+  private async testWooCommerceConnection(domain: string, consumerKey: string, consumerSecret: string): Promise<ConnectionTestResult> {
+    try {
+      const baseUrl = domain.startsWith('http') ? domain : `https://${domain}`;
+      const credentials = btoa(`${consumerKey}:${consumerSecret}`);
+      
+      const response = await fetch(`${baseUrl}/wp-json/wc/v3/system_status`, {
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      return {
+        success: true,
+        data: {
+          version: data.environment?.version,
+          currency: data.settings?.currency,
+          base_location: data.settings?.base_location
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Erreur de connexion WooCommerce: ${error.message}`
+      };
+    }
+  }
+
+  private async testPrestaShopConnection(domain: string, webserviceKey: string): Promise<ConnectionTestResult> {
+    try {
+      const baseUrl = domain.startsWith('http') ? domain : `https://${domain}`;
+      
+      const response = await fetch(`${baseUrl}/api/shops?ws_key=${webserviceKey}&output_format=JSON`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      return {
+        success: true,
+        data: {
+          shops: data.shops || data
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Erreur de connexion PrestaShop: ${error.message}`
+      };
+    }
+  }
+
+  private async testMagentoConnection(domain: string, accessToken: string): Promise<ConnectionTestResult> {
+    try {
+      const baseUrl = domain.startsWith('http') ? domain : `https://${domain}`;
+      
+      const response = await fetch(`${baseUrl}/rest/V1/store/storeConfigs`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      return {
+        success: true,
+        data: {
+          stores: data.length || 0,
+          currency: data[0]?.base_currency_code,
+          locale: data[0]?.locale
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Erreur de connexion Magento: ${error.message}`
+      };
+    }
+  }
+
+  async testConnection(request: TestRequest): Promise<ConnectionTestResult> {
+    const { platform, shopDomain } = request;
+
+    switch (platform.toLowerCase()) {
+      case 'shopify':
+        return await this.testShopifyConnection(shopDomain, request.access_token);
+      
+      case 'woocommerce':
+        return await this.testWooCommerceConnection(shopDomain, request.consumer_key, request.consumer_secret);
+      
+      case 'prestashop':
+        return await this.testPrestaShopConnection(shopDomain, request.webservice_key);
+      
+      case 'magento':
+        return await this.testMagentoConnection(shopDomain, request.access_token);
+      
+      default:
+        return {
+          success: false,
+          error: `Plateforme ${platform} non supportée pour le test de connexion`
+        };
+    }
+  }
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+}
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabase = createClient(
+    // Get the authorization header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      throw new Error('No authorization header')
+    }
+
+    // Initialize Supabase client
+    const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    const { platform, ...credentials } = await req.json();
-    console.log('Testing connection for platform:', platform);
-
-    let testResult = { success: false, message: 'Unknown platform type' };
-
-    switch (platform) {
-      case 'shopify':
-        testResult = await testShopifyConnection(credentials);
-        break;
-      case 'woocommerce':
-        testResult = await testWooCommerceConnection(credentials);
-        break;
-      case 'amazon':
-        testResult = await testAmazonConnection(credentials);
-        break;
-      case 'prestashop':
-        testResult = await testPrestaShopConnection(credentials);
-        break;
-      case 'magento':
-        testResult = await testMagentoConnection(credentials);
-        break;
-      case 'etsy':
-        testResult = await testEtsyConnection(credentials);
-        break;
-      default:
-        testResult = { success: false, message: `Unsupported platform: ${platform}` };
-    }
-
-    console.log('Test result:', testResult);
-
-    return new Response(JSON.stringify({
-      success: testResult.success,
-      message: testResult.message,
-      platform: platform,
-      shop_info: testResult.shop_info || {}
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-
-  } catch (error) {
-    console.error('Store connection test error:', error);
-    return new Response(JSON.stringify({ 
-      success: false,
-      error: error.message 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-});
-
-async function testShopifyConnection(credentials: any) {
-  try {
-    if (!credentials.shop_domain || !credentials.access_token) {
-      return { success: false, message: 'Shop domain and access token are required for Shopify' };
-    }
-
-    console.log('Testing Shopify connection for:', credentials.shop_domain);
-    
-    // Simulate API call to Shopify
-    // In real implementation, you would call: 
-    // GET https://${shop_domain}/admin/api/2023-01/shop.json
-    
-    return { 
-      success: true, 
-      message: `Successfully connected to Shopify store: ${credentials.shop_domain}`,
-      shop_info: {
-        shop_name: credentials.shop_domain,
-        domain: credentials.shop_domain,
-        platform: 'shopify'
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: authHeader },
+        },
       }
-    };
-  } catch (error) {
-    return { success: false, message: `Shopify test failed: ${error.message}` };
-  }
-}
+    )
 
-async function testWooCommerceConnection(credentials: any) {
-  try {
-    if (!credentials.platform_url || !credentials.consumer_key || !credentials.consumer_secret) {
-      return { success: false, message: 'Platform URL, consumer key and consumer secret are required for WooCommerce' };
+    // Verify the user is authenticated
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    if (authError || !user) {
+      throw new Error('User not authenticated')
     }
 
-    console.log('Testing WooCommerce connection for:', credentials.platform_url);
+    // Parse the request body
+    const requestBody: TestRequest = await req.json()
     
-    return { 
-      success: true, 
-      message: `Successfully connected to WooCommerce site: ${credentials.platform_url}`,
-      shop_info: {
-        shop_name: credentials.platform_url,
-        domain: credentials.platform_url,
-        platform: 'woocommerce'
-      }
-    };
-  } catch (error) {
-    return { success: false, message: `WooCommerce test failed: ${error.message}` };
-  }
-}
-
-async function testAmazonConnection(credentials: any) {
-  try {
-    if (!credentials.marketplace || !credentials.access_token) {
-      return { success: false, message: 'Marketplace and access token are required for Amazon' };
+    // Validate required fields
+    if (!requestBody.platform || !requestBody.shopDomain) {
+      throw new Error('Platform and shopDomain are required')
     }
 
-    console.log('Testing Amazon connection for marketplace:', credentials.marketplace);
-    
-    return { 
-      success: true, 
-      message: `Successfully connected to Amazon marketplace: ${credentials.marketplace}`,
-      shop_info: {
-        shop_name: `Amazon ${credentials.marketplace}`,
-        marketplace: credentials.marketplace,
-        platform: 'amazon'
+    // Test the store connection
+    const tester = new StoreConnectionTester()
+    const result = await tester.testConnection(requestBody)
+
+    // Log the connection test attempt
+    await supabaseClient.from('activity_logs').insert({
+      user_id: user.id,
+      action: 'connection_test',
+      description: `Test de connexion ${requestBody.platform}: ${result.success ? 'Succès' : 'Échec'}`,
+      entity_type: 'store_connection',
+      metadata: {
+        platform: requestBody.platform,
+        domain: requestBody.shopDomain,
+        success: result.success,
+        error: result.error
       }
-    };
+    })
+
+    return new Response(
+      JSON.stringify(result),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      },
+    )
+
   } catch (error) {
-    return { success: false, message: `Amazon test failed: ${error.message}` };
-  }
-}
-
-async function testPrestaShopConnection(credentials: any) {
-  try {
-    if (!credentials.platform_url || !credentials.webservice_key) {
-      return { success: false, message: 'Platform URL and webservice key are required for PrestaShop' };
-    }
-
-    console.log('Testing PrestaShop connection for:', credentials.platform_url);
+    console.error('Store connection test error:', error)
     
-    return { 
-      success: true, 
-      message: `Successfully connected to PrestaShop: ${credentials.platform_url}`,
-      shop_info: {
-        shop_name: credentials.platform_url,
-        domain: credentials.platform_url,
-        platform: 'prestashop'
-      }
-    };
-  } catch (error) {
-    return { success: false, message: `PrestaShop test failed: ${error.message}` };
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || 'Erreur interne du serveur' 
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      },
+    )
   }
-}
-
-async function testMagentoConnection(credentials: any) {
-  try {
-    if (!credentials.platform_url || !credentials.access_token) {
-      return { success: false, message: 'Platform URL and access token are required for Magento' };
-    }
-
-    console.log('Testing Magento connection for:', credentials.platform_url);
-    
-    return { 
-      success: true, 
-      message: `Successfully connected to Magento: ${credentials.platform_url}`,
-      shop_info: {
-        shop_name: credentials.platform_url,
-        domain: credentials.platform_url,
-        platform: 'magento'
-      }
-    };
-  } catch (error) {
-    return { success: false, message: `Magento test failed: ${error.message}` };
-  }
-}
-
-async function testEtsyConnection(credentials: any) {
-  try {
-    if (!credentials.api_key || !credentials.access_token) {
-      return { success: false, message: 'API key and access token are required for Etsy' };
-    }
-
-    console.log('Testing Etsy connection');
-    
-    return { 
-      success: true, 
-      message: 'Successfully connected to Etsy',
-      shop_info: {
-        shop_name: 'Etsy Shop',
-        platform: 'etsy'
-      }
-    };
-  } catch (error) {
-    return { success: false, message: `Etsy test failed: ${error.message}` };
-  }
-}
+})
