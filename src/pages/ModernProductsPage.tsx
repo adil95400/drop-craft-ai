@@ -10,6 +10,7 @@ import { ProductSettings } from '@/components/products/ProductSettings'
 import { ProductTemplates } from '@/components/products/ProductTemplates'
 import { ProductInventory } from '@/components/products/ProductInventory'
 import { ProductActionsBar } from '@/components/products/ProductActionsBar'
+import { ProductSEO } from '@/components/products/ProductSEO'
 import { ProductDetails } from '@/components/products/ProductDetails'
 import { CreateProductDialog } from '@/components/modals/CreateProductDialog'
 import { 
