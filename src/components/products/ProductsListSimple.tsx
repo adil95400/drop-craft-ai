@@ -59,7 +59,16 @@ export function ProductsListSimple({ selectedProducts, onSelectionChange, onProd
           <TableHeader>
             <TableRow>
               <TableHead className="w-12">
-                <Checkbox />
+                <Checkbox 
+                  checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      onSelectionChange(filteredProducts.map(p => p.id))
+                    } else {
+                      onSelectionChange([])
+                    }
+                  }}
+                />
               </TableHead>
               <TableHead>Produit</TableHead>
               <TableHead>SKU</TableHead>
@@ -75,7 +84,16 @@ export function ProductsListSimple({ selectedProducts, onSelectionChange, onProd
               return (
                 <TableRow key={product.id}>
                   <TableCell>
-                    <Checkbox />
+                    <Checkbox 
+                      checked={selectedProducts.includes(product.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          onSelectionChange([...selectedProducts, product.id])
+                        } else {
+                          onSelectionChange(selectedProducts.filter(id => id !== product.id))
+                        }
+                      }}
+                    />
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">

@@ -7,9 +7,8 @@ import {
   Package, TrendingUp, AlertTriangle, DollarSign, 
   ShoppingBag, Star, Eye, Plus, Download, Upload
 } from 'lucide-react'
-import { ProductCreateDialog } from './ProductCreateDialog'
-import { ProductImportDialog } from './ProductImportDialog'
-import { ProductExportDialog } from './ProductExportDialog'
+import { ProductMetrics } from './ProductMetrics'
+import { ProductCategoriesSection } from './ProductCategoriesSection'
 import { useState } from 'react'
 
 export function ProductsOverview() {
@@ -111,94 +110,15 @@ export function ProductsOverview() {
           </Button>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {overviewStats.map((stat, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stat.trend}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Quick Insights */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Catégories Populaires</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Électronique</span>
-                <Badge variant="secondary">245 produits</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Mode</span>
-                <Badge variant="secondary">189 produits</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Maison</span>
-                <Badge variant="secondary">156 produits</Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Alertes Stock</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {stats.lowStock > 0 ? (
-                <>
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-orange-500" />
-                    <span className="text-sm">{stats.lowStock} produits en stock faible</span>
-                  </div>
-                  <Button variant="outline" size="sm" className="w-full">
-                    Voir les produits
-                  </Button>
-                </>
-              ) : (
-                <div className="text-sm text-muted-foreground">
-                  Aucune alerte stock
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Performance</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Ventes ce mois</span>
-                <Badge variant="secondary">+23%</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Taux de conversion</span>
-                <Badge variant="secondary">12.4%</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Panier moyen</span>
-                <Badge variant="secondary">89€</Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Métriques Principales */}
+        <ProductMetrics />
+        
+        {/* Sections détaillées */}
+        <ProductCategoriesSection />
       </div>
 
-      {/* Dialogs */}
+      {/* Dialogs - Gardés pour l'instant mais devront être implémentés */}
+      {/*
       <ProductCreateDialog 
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
@@ -212,6 +132,7 @@ export function ProductsOverview() {
         open={showExportDialog}
         onOpenChange={setShowExportDialog}
       />
+      */}
     </>
   )
 }

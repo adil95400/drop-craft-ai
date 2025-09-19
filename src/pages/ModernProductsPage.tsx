@@ -9,7 +9,7 @@ import { ProductBulkOperations } from '@/components/products/ProductBulkOperatio
 import { ProductSettings } from '@/components/products/ProductSettings'
 import { ProductTemplates } from '@/components/products/ProductTemplates'
 import { ProductInventory } from '@/components/products/ProductInventory'
-import { ProductSEO } from '@/components/products/ProductSEO'
+import { ProductActionsBar } from '@/components/products/ProductActionsBar'
 import { ProductDetails } from '@/components/products/ProductDetails'
 import { CreateProductDialog } from '@/components/modals/CreateProductDialog'
 import { 
@@ -50,8 +50,18 @@ export default function ModernProductsPage() {
           </div>
         </div>
 
-        {/* Quick Stats Overview */}
-        <ProductsOverview />
+        {/* Enhanced Actions Bar */}
+        <ProductActionsBar 
+          searchTerm=""
+          onSearchChange={() => {}}
+          selectedCount={selectedProducts.length}
+          totalCount={100}
+          viewMode="list"
+          onViewModeChange={() => {}}
+          onCreateNew={() => setCreateDialogOpen(true)}
+          onImport={() => {}}
+          onExport={() => {}}
+        />
 
         {/* Bulk Operations */}
         {selectedProducts.length > 0 && (
