@@ -109,6 +109,7 @@ import AdminPanel from '@/pages/AdminPanel';
 import AIStudio from '@/pages/AIStudio';
 import AutomationStudio from '@/pages/AutomationStudio';
 import AnalyticsStudio from '@/pages/AnalyticsStudio';
+import AIAssistant from '@/pages/AIAssistant';
 
 // Business Pages
 import CatalogPage from '@/pages/CatalogPage';
@@ -857,6 +858,13 @@ function App() {
                 <Route path="/orders-center" element={
                   <ProtectedRoute>
                     <AppLayout><OrdersCenter /></AppLayout>
+                  </ProtectedRoute>
+                } />
+
+                {/* AI Assistant Route */}
+                <Route path="/ai-assistant" element={
+                  <ProtectedRoute>
+                    <AppLayout><AIAssistant /></AppLayout>
                   </ProtectedRoute>
                 } />
                 

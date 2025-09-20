@@ -14,7 +14,7 @@ import {
   LayoutDashboard, Store, Package, BookOpen, ShoppingCart, 
   Upload, Truck, BarChart3, Activity, Users, MessageSquare,
   Megaphone, FileText, Search, Puzzle, Bot, Crown, Shield,
-  Building2, Network, Zap
+  Building2, Network, Zap, Brain
 } from "lucide-react"
 import { useAuthOptimized } from "@/shared/hooks/useAuthOptimized"
 import { cn } from "@/lib/utils"
@@ -28,6 +28,7 @@ const navigationItems = [
   { title: "Centre Commandes", url: "/orders-center", icon: Activity, badge: "Nouveau" },
   { title: "Clients", url: "/customers", icon: Users },
   { title: "Fournisseurs", url: "/suppliers", icon: Truck },
+  { title: "Import", url: "/import", icon: Upload },
   { title: "Import Avancé", url: "/import/advanced", icon: Upload, badge: "Pro" },
   { title: "Sync Manager", url: "/sync-manager", icon: Activity, badge: "Nouveau" },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
@@ -38,6 +39,12 @@ const navigationItems = [
   { title: "Monitoring", url: "/monitoring", icon: Activity },
   { title: "Extensions", url: "/extensions", icon: Puzzle, badge: "Nouveau" },
   { title: "IA Assistant", url: "/ai-assistant", icon: Bot, badge: "AI" },
+  { title: "IA Studio", url: "/ai-studio", icon: Brain, badge: "AI" },
+  { title: "Automation Studio", url: "/automation-studio", icon: Zap, badge: "Auto" },
+  { title: "Analytics Studio", url: "/analytics-studio", icon: BarChart3, badge: "Pro" },
+  { title: "Intégrations", url: "/integrations", icon: Network, badge: "Hub" },
+  { title: "Marketplace", url: "/marketplace", icon: Store },
+  { title: "Stores", url: "/stores", icon: Building2 },
   { title: "Centre d'aide", url: "/help", icon: BookOpen, badge: "Support" },
 ]
 
