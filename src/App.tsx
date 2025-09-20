@@ -211,6 +211,10 @@ import CRMCalendar from '@/pages/CRMCalendar';
 import StockManagement from '@/pages/StockManagement';
 import TeamCollaborationPage from '@/pages/TeamCollaboration';
 
+import ExtensionNavigatorPage from '@/pages/import/ExtensionNavigatorPage';
+import ImportConfigurationPage from '@/pages/import/ImportConfigurationPage';  
+import ImportHistoryPage from '@/pages/import/ImportHistoryPage';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -563,12 +567,27 @@ function App() {
                     <AppLayout><AIGenerationPage /></AppLayout>
                   </ProtectedRoute>
                 } />
-                <Route path="/import/scheduled" element={
-                  <ProtectedRoute>
-                    <AppLayout><ScheduledImportsPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/automation" element={
+                 <Route path="/import/scheduled" element={
+                   <ProtectedRoute>
+                     <AppLayout><ScheduledImportsPage /></AppLayout>
+                   </ProtectedRoute>
+                 } />
+                 <Route path="/import/extension-navigator" element={
+                   <ProtectedRoute>
+                     <AppLayout><ExtensionNavigatorPage /></AppLayout>
+                   </ProtectedRoute>
+                 } />
+                 <Route path="/import/configuration" element={
+                   <ProtectedRoute>
+                     <AppLayout><ImportConfigurationPage /></AppLayout>
+                   </ProtectedRoute>
+                 } />
+                 <Route path="/import/history" element={
+                   <ProtectedRoute>
+                     <AppLayout><ImportHistoryPage /></AppLayout>
+                   </ProtectedRoute>
+                 } />
+                 <Route path="/automation" element={
                   <ProtectedRoute>
                     <AppLayout><AutomationPage /></AppLayout>
                   </ProtectedRoute>

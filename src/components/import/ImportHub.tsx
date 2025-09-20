@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 import { 
   Package, 
   Sparkles, 
@@ -11,7 +12,9 @@ import {
   Globe,
   Database,
   ArrowRight,
-  Zap
+  Zap,
+  History,
+  Settings2
 } from 'lucide-react';
 
 interface ImportHubProps {
@@ -20,6 +23,7 @@ interface ImportHubProps {
 }
 
 export const ImportHub = ({ onViewChange, onCategorySelect }: ImportHubProps) => {
+  const navigate = useNavigate();
   const categories = [
     {
       id: 'ecommerce',
@@ -69,7 +73,35 @@ export const ImportHub = ({ onViewChange, onCategorySelect }: ImportHubProps) =>
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="space-y-6">
+      {/* Header avec boutons d'action */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Hub Import</h2>
+          <p className="text-muted-foreground">Importez vos produits depuis multiples sources en quelques clics</p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/import/history')}
+            className="flex items-center gap-2"
+          >
+            <History className="h-4 w-4" />
+            Historique
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/import/configuration')}
+            className="flex items-center gap-2"
+          >
+            <Settings2 className="h-4 w-4" />
+            Configuration
+          </Button>
+        </div>
+      </div>
+
+      {/* Grid des catégories */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {categories.map((category) => (
         <Card 
           key={category.id}
@@ -95,6 +127,7 @@ export const ImportHub = ({ onViewChange, onCategorySelect }: ImportHubProps) =>
           </CardContent>
         </Card>
       ))}
+      </div>
     </div>
   );
 };

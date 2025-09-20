@@ -20,7 +20,7 @@ import {
   GitBranch, Lock, Workflow, PieChart, LineChart, BarChart,
   Download, Filter, Bell, Star, Heart, ThumbsUp, Share,
   PlayCircle, PauseCircle, RefreshCw, AlertCircle, CheckCircle,
-  Sparkles
+  Sparkles, History
 } from "lucide-react"
 import { useAuthOptimized } from "@/shared/hooks/useAuthOptimized"
 import { cn } from "@/lib/utils"
@@ -52,6 +52,7 @@ const navigationGroups = [
   {
     title: "Import & Synchronisation",
     items: [
+      { title: "Hub Import", url: "/import-management", icon: Upload, badge: "Hub" },
       { title: "Import Standard", url: "/import", icon: Upload },
       { title: "Import Avancé", url: "/import/advanced", icon: Upload, badge: "Pro" },
       { title: "Import CSV", url: "/import/csv", icon: FileText },
@@ -59,7 +60,10 @@ const navigationGroups = [
       { title: "Import Database", url: "/import/database", icon: Database },
       { title: "Web Scraping", url: "/import/url", icon: Globe },
       { title: "IA Generation", url: "/import/ai-generation", icon: Brain, badge: "AI" },
+      { title: "Extension Navigator", url: "/import/extension-navigator", icon: Puzzle, badge: "Premium" },
       { title: "Imports Programmés", url: "/import/scheduled", icon: Clock },
+      { title: "Historique", url: "/import/history", icon: History },
+      { title: "Configuration Import", url: "/import/configuration", icon: Settings },
       { title: "Sync Manager", url: "/sync-manager", icon: Activity, badge: "Nouveau" },
     ]
   },
