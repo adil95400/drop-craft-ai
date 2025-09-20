@@ -6592,6 +6592,42 @@ export type Database = {
           trend_score: number
         }[]
       }
+      get_catalog_products_secure: {
+        Args: {
+          category_filter?: string
+          limit_count?: number
+          search_term?: string
+        }
+        Returns: {
+          availability_status: string
+          brand: string
+          category: string
+          competition_score: number
+          cost_price: number
+          created_at: string
+          currency: string
+          delivery_time: string
+          description: string
+          external_id: string
+          id: string
+          image_url: string
+          image_urls: string[]
+          is_bestseller: boolean
+          is_trending: boolean
+          name: string
+          price: number
+          profit_margin: number
+          rating: number
+          reviews_count: number
+          sales_count: number
+          sku: string
+          subcategory: string
+          supplier_name: string
+          supplier_url: string
+          tags: string[]
+          updated_at: string
+        }[]
+      }
       get_current_user_admin_mode: {
         Args: Record<PropertyKey, never>
         Returns: string

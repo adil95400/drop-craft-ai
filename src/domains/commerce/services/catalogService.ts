@@ -22,8 +22,8 @@ export class CatalogService {
     }
 
     try {
-      // Use the secure catalog products function instead of direct table access
-      const { data, error } = await supabase.rpc('get_secure_catalog_products', {
+      // Use the new secure catalog products function with role-based data masking
+      const { data, error } = await supabase.rpc('get_catalog_products_secure', {
         category_filter: filters?.category || null,
         search_term: filters?.search || null,
         limit_count: 50
@@ -89,8 +89,8 @@ export class CatalogService {
     }
 
     try {
-      // Use the secure function for single product access
-      const { data, error } = await supabase.rpc('get_secure_catalog_products', {
+      // Use the new secure function for single product access
+      const { data, error } = await supabase.rpc('get_catalog_products_secure', {
         category_filter: null,
         search_term: null,
         limit_count: 1000 // Get more to find specific product
