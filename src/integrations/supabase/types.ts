@@ -5329,6 +5329,57 @@ export type Database = {
         }
         Relationships: []
       }
+      sync_configurations: {
+        Row: {
+          auto_resolve_conflicts: boolean
+          conflict_resolution_rules: Json
+          connector_id: string
+          created_at: string
+          field_mappings: Json
+          filters: Json
+          id: string
+          is_active: boolean
+          last_sync_at: string | null
+          sync_direction: string
+          sync_entities: Json
+          sync_frequency: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_resolve_conflicts?: boolean
+          conflict_resolution_rules?: Json
+          connector_id: string
+          created_at?: string
+          field_mappings?: Json
+          filters?: Json
+          id?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          sync_direction?: string
+          sync_entities?: Json
+          sync_frequency?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_resolve_conflicts?: boolean
+          conflict_resolution_rules?: Json
+          connector_id?: string
+          created_at?: string
+          field_mappings?: Json
+          filters?: Json
+          id?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          sync_direction?: string
+          sync_entities?: Json
+          sync_frequency?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sync_history: {
         Row: {
           completed_at: string | null
@@ -5477,6 +5528,87 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sync_operations: {
+        Row: {
+          completed_at: string | null
+          configuration_id: string | null
+          conflict_count: number
+          conflicts: Json
+          connector_id: string
+          created_at: string
+          entities_to_sync: Json
+          error_count: number
+          errors: Json
+          execution_time_ms: number | null
+          id: string
+          job_type: string
+          metadata: Json
+          priority: string
+          processed_items: number
+          progress_percentage: number
+          scheduled_at: string
+          started_at: string | null
+          status: string
+          success_count: number
+          sync_direction: string
+          total_items: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          configuration_id?: string | null
+          conflict_count?: number
+          conflicts?: Json
+          connector_id: string
+          created_at?: string
+          entities_to_sync?: Json
+          error_count?: number
+          errors?: Json
+          execution_time_ms?: number | null
+          id?: string
+          job_type?: string
+          metadata?: Json
+          priority?: string
+          processed_items?: number
+          progress_percentage?: number
+          scheduled_at?: string
+          started_at?: string | null
+          status?: string
+          success_count?: number
+          sync_direction: string
+          total_items?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          configuration_id?: string | null
+          conflict_count?: number
+          conflicts?: Json
+          connector_id?: string
+          created_at?: string
+          entities_to_sync?: Json
+          error_count?: number
+          errors?: Json
+          execution_time_ms?: number | null
+          id?: string
+          job_type?: string
+          metadata?: Json
+          priority?: string
+          processed_items?: number
+          progress_percentage?: number
+          scheduled_at?: string
+          started_at?: string | null
+          status?: string
+          success_count?: number
+          sync_direction?: string
+          total_items?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       sync_schedules: {
         Row: {
