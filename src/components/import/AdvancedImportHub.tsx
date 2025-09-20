@@ -1,9 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
+import { ImportMethodModal } from './ImportMethodModal'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/hooks/use-toast'
 import { 
   Upload, 
   Globe, 
@@ -16,7 +20,8 @@ import {
   Clock,
   CheckCircle,
   AlertTriangle,
-  Settings
+  Settings,
+  RefreshCw
 } from 'lucide-react'
 
 interface ImportMethod {
@@ -124,6 +129,132 @@ const RECENT_IMPORTS = [
 export function AdvancedImportHub() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalMethod, setModalMethod] = useState<ImportMethod | null>(null)
+  const [recentImports, setRecentImports] = useState(RECENT_IMPORTS)
+  const [stats, setStats] = useState({
+    sources: 150,
+    productsThisMonth: 24571,
+    successRate: 96,
+    avgTime: 4
+  })
+  
+  const { user } = useAuth()
+  const { toast } = useToast()
+
+  // Load real-time import data
+  useEffect(() => {
+    if (!user) return
+
+    loadRecentImports()
+    loadStats()
+
+    // Set up real-time subscription for import_jobs
+    const channel = supabase
+      .channel('import-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'import_jobs',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          loadRecentImports()
+          loadStats()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user])
+
+  const loadRecentImports = async () => {
+    if (!user) return
+
+    try {
+      const { data, error } = await supabase
+        .from('import_jobs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (error) {
+        console.error('Error loading imports:', error)
+        return
+      }
+
+      const formattedImports = data.map((job, index) => ({
+        id: index + 1, // Use index as number ID
+        source: (job.file_data as any)?.sourceName || job.source_type || 'Source inconnue',
+        products: job.success_rows || 0,
+        status: job.status,
+        time: job.completed_at && job.started_at 
+          ? `${Math.round((new Date(job.completed_at).getTime() - new Date(job.started_at).getTime()) / (1000 * 60))} min`
+          : '-- min',
+        accuracy: job.total_rows > 0 ? Math.round((job.success_rows || 0) / job.total_rows * 100) : 0
+      }))
+
+      setRecentImports(formattedImports)
+    } catch (error) {
+      console.error('Error loading recent imports:', error)
+    }
+  }
+
+  const loadStats = async () => {
+    if (!user) return
+
+    try {
+      const { data, error } = await supabase
+        .from('import_jobs')
+        .select('*')
+        .eq('user_id', user.id)
+
+      if (error) {
+        console.error('Error loading stats:', error)
+        return
+      }
+
+      const thisMonth = new Date()
+      thisMonth.setDate(1)
+      
+      const thisMonthImports = data.filter(job => 
+        new Date(job.created_at) >= thisMonth
+      )
+
+      const totalProducts = thisMonthImports.reduce((sum, job) => sum + (job.success_rows || 0), 0)
+      const totalJobs = data.length
+      const successfulJobs = data.filter(job => job.status === 'completed').length
+      const successRate = totalJobs > 0 ? Math.round(successfulJobs / totalJobs * 100) : 0
+
+      setStats({
+        sources: 150, // Keep static for now
+        productsThisMonth: totalProducts,
+        successRate,
+        avgTime: 4 // Keep static for now
+      })
+    } catch (error) {
+      console.error('Error loading stats:', error)
+    }
+  }
+
+  const handleStartImport = (method: ImportMethod) => {
+    setModalMethod(method)
+    setIsModalOpen(true)
+  }
+
+  const handleImportCreated = (jobId: string) => {
+    toast({
+      title: "Import démarré",
+      description: "Votre import a été créé avec succès.",
+    })
+    loadRecentImports()
+    loadStats()
+  }
 
   const categories = [
     { id: 'all', label: 'Tous', count: IMPORT_METHODS.length },
@@ -164,7 +295,7 @@ export function AdvancedImportHub() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Sources Disponibles</p>
-                <p className="text-2xl font-bold">150+</p>
+                <p className="text-2xl font-bold">{stats.sources}+</p>
               </div>
               <Globe className="h-8 w-8 text-primary" />
             </div>
@@ -176,7 +307,7 @@ export function AdvancedImportHub() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Produits ce mois</p>
-                <p className="text-2xl font-bold">24,571</p>
+                <p className="text-2xl font-bold">{stats.productsThisMonth.toLocaleString()}</p>
               </div>
               <TrendingUp className="h-8 w-8 text-green-500" />
             </div>
@@ -188,7 +319,7 @@ export function AdvancedImportHub() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Taux de Réussite</p>
-                <p className="text-2xl font-bold">96%</p>
+                <p className="text-2xl font-bold">{stats.successRate}%</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
             </div>
@@ -200,7 +331,7 @@ export function AdvancedImportHub() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Temps Moyen</p>
-                <p className="text-2xl font-bold">4 min</p>
+                <p className="text-2xl font-bold">{stats.avgTime} min</p>
               </div>
               <Clock className="h-8 w-8 text-blue-500" />
             </div>
@@ -308,7 +439,11 @@ export function AdvancedImportHub() {
                       )}
                     </div>
                     
-                    <Button className="w-full" size="sm">
+                    <Button 
+                      className="w-full" 
+                      size="sm"
+                      onClick={() => handleStartImport(method)}
+                    >
                       Démarrer l'import
                     </Button>
                   </div>
@@ -409,6 +544,14 @@ export function AdvancedImportHub() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Import Method Modal */}
+      <ImportMethodModal
+        method={modalMethod}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onImportStart={handleImportCreated}
+      />
     </div>
   )
 }
