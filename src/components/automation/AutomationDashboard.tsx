@@ -1,211 +1,303 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { 
-  Bot, 
-  TrendingUp, 
-  Package, 
-  Mail, 
-  AlertTriangle,
-  CheckCircle,
-  Activity,
-  Settings
-} from 'lucide-react';
-import { useAutomation } from '@/hooks/useAutomation';
-import { Skeleton } from '@/components/ui/skeleton';
-import { AutomationRuleModal } from './AutomationRuleModal';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Plus, Play, Pause, Settings, Zap, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
+import { automationEngine, AutomationWorkflow, AutomationExecution } from "@/services/automation/AutomationEngine";
+import { WorkflowBuilder } from "./WorkflowBuilder";
+import { ExecutionHistory } from "./ExecutionHistory";
 
 export function AutomationDashboard() {
-  const { triggers, stats, isLoading, updateTrigger } = useAutomation();
-  const [showCreateModal, setShowCreateModal] = React.useState(false);
+  const [workflows, setWorkflows] = useState<AutomationWorkflow[]>([]);
+  const [executions, setExecutions] = useState<AutomationExecution[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<AutomationWorkflow | null>(null);
+  const [showBuilder, setShowBuilder] = useState(false);
 
-  const getRuleIcon = (type: string) => {
-    switch (type) {
-      case 'order_status': return <Activity className="h-4 w-4" />;
-      case 'customer_behavior': return <Mail className="h-4 w-4" />;
-      case 'inventory_level': return <Package className="h-4 w-4" />;
-      case 'price_change': return <TrendingUp className="h-4 w-4" />;
-      case 'scheduled': return <Bot className="h-4 w-4" />;
-      default: return <Bot className="h-4 w-4" />;
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const userId = "current-user"; // Get from auth context
+      
+      const [workflowsData, executionsData] = await Promise.all([
+        automationEngine.getWorkflows(userId),
+        automationEngine.getExecutions()
+      ]);
+
+      setWorkflows(workflowsData);
+      setExecutions(executionsData);
+    } catch (error) {
+      console.error("Failed to load automation data:", error);
+      toast.error("Failed to load automation data");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getRuleTypeLabel = (type: string) => {
-    switch (type) {
-      case 'order_status': return 'Statut Commande';
-      case 'customer_behavior': return 'Comportement Client';
-      case 'inventory_level': return 'Niveau Stock';
-      case 'price_change': return 'Prix Dynamique';
-      case 'scheduled': return 'Programmé';
-      default: return type;
+  const handleExecuteWorkflow = async (workflow: AutomationWorkflow) => {
+    try {
+      toast.info(`Executing workflow: ${workflow.name}`);
+      
+      await automationEngine.executeWorkflow(workflow.id, {
+        user_id: "current-user",
+        trigger: 'manual'
+      });
+      
+      toast.success(`Workflow executed successfully: ${workflow.name}`);
+      loadData(); // Refresh data
+    } catch (error) {
+      console.error("Failed to execute workflow:", error);
+      toast.error("Failed to execute workflow");
     }
   };
 
-  const getSeverityColor = (activeCount: number, totalCount: number) => {
-    if (totalCount === 0) return 'text-gray-500';
-    const rate = (activeCount / totalCount) * 100;
-    if (rate >= 80) return 'text-green-600';
-    if (rate >= 50) return 'text-yellow-600';
-    return 'text-red-600';
+  const handleToggleWorkflow = async (workflow: AutomationWorkflow) => {
+    try {
+      const newStatus = workflow.status === 'active' ? 'paused' : 'active';
+      
+      await automationEngine.updateWorkflow(workflow.id, { status: newStatus });
+      
+      toast.success(`Workflow ${newStatus === 'active' ? 'activated' : 'paused'}`);
+      loadData();
+    } catch (error) {
+      console.error("Failed to toggle workflow:", error);
+      toast.error("Failed to update workflow status");
+    }
   };
 
-  if (isLoading) {
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'paused': return <Pause className="h-4 w-4 text-yellow-500" />;
+      case 'error': return <XCircle className="h-4 w-4 text-red-500" />;
+      default: return <AlertCircle className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'default';
+      case 'paused': return 'secondary';
+      case 'error': return 'destructive';
+      default: return 'outline';
+    }
+  };
+
+  const getExecutionStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'failed': return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'running': return <Clock className="h-4 w-4 text-blue-500" />;
+      default: return <AlertCircle className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  const stats = {
+    totalWorkflows: workflows.length,
+    activeWorkflows: workflows.filter(w => w.status === 'active').length,
+    totalExecutions: executions.length,
+    successfulExecutions: executions.filter(e => e.status === 'completed').length,
+    successRate: executions.length > 0 
+      ? Math.round((executions.filter(e => e.status === 'completed').length / executions.length) * 100)
+      : 0
+  };
+
+  if (loading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-40 w-full" />
-        <Skeleton className="h-40 w-full" />
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <Zap className="h-8 w-8 animate-pulse mx-auto mb-2" />
+          <p>Loading automation dashboard...</p>
+        </div>
       </div>
     );
   }
 
-  const activeTriggers = triggers?.filter(trigger => trigger.is_active) || [];
-  const inactiveTriggers = triggers?.filter(trigger => !trigger.is_active) || [];
-
   return (
     <div className="space-y-6">
-      {/* Résumé des règles */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Automation Dashboard</h1>
+          <p className="text-muted-foreground">Create and manage intelligent automation workflows</p>
+        </div>
+        <Dialog open={showBuilder} onOpenChange={setShowBuilder}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              New Workflow
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-auto">
+            <DialogHeader>
+              <DialogTitle>Workflow Builder</DialogTitle>
+              <DialogDescription>Create a new automation workflow</DialogDescription>
+            </DialogHeader>
+            <WorkflowBuilder 
+              workflow={selectedWorkflow}
+              onSave={(workflow) => {
+                setShowBuilder(false);
+                loadData();
+                toast.success("Workflow saved successfully");
+              }}
+              onCancel={() => setShowBuilder(false)}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-5">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Règles Actives</p>
-                <p className="text-2xl font-bold">{stats.activeTriggers}</p>
-              </div>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Workflows</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalWorkflows}</div>
           </CardContent>
         </Card>
         
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Activity className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Exécutions Total</p>
-                <p className="text-2xl font-bold">{stats.totalExecutions}</p>
-              </div>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Workflows</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{stats.activeWorkflows}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Taux de Succès</p>
-                <p className="text-2xl font-bold">
-                  {stats.totalExecutions > 0 ? 
-                    Math.round((stats.successfulExecutions / stats.totalExecutions) * 100) 
-                    : 0}%
-                </p>
-              </div>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Executions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalExecutions}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Bot className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">IA Active</p>
-                <p className="text-2xl font-bold text-green-600">ON</p>
-              </div>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Successful Runs</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{stats.successfulExecutions}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.successRate}%</div>
+            <Progress value={stats.successRate} className="h-2 mt-2" />
           </CardContent>
         </Card>
       </div>
 
-      {/* Liste des règles actives */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bot className="h-5 w-5" />
-            Règles d'Automatisation
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!triggers || triggers.length === 0 ? (
-            <div className="text-center py-8">
-              <Bot className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Aucun déclencheur configuré</h3>
-              <p className="text-muted-foreground mb-4">
-                Créez des déclencheurs d'automatisation pour optimiser votre business
-              </p>
-              <Button onClick={() => setShowCreateModal(true)}>
-                <Settings className="h-4 w-4 mr-2" />
-                Créer un déclencheur
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {triggers.map((trigger) => (
-                <div key={trigger.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      {getRuleIcon(trigger.trigger_type)}
+      <Tabs defaultValue="workflows" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="workflows">Workflows</TabsTrigger>
+          <TabsTrigger value="executions">Execution History</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="workflows" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {workflows.map((workflow) => (
+              <Card key={workflow.id} className="relative">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(workflow.status)}
+                      <CardTitle className="text-lg">{workflow.name}</CardTitle>
+                    </div>
+                    <Badge variant={getStatusColor(workflow.status)}>
+                      {workflow.status}
+                    </Badge>
+                  </div>
+                  <CardDescription>{workflow.description || 'No description'}</CardDescription>
+                </CardHeader>
+                
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="font-medium">Executions</p>
+                      <p className="text-muted-foreground">{workflow.execution_count}</p>
                     </div>
                     <div>
-                      <h4 className="font-semibold">{trigger.name}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {trigger.description}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          {getRuleTypeLabel(trigger.trigger_type)}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          Créé le {new Date(trigger.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="text-sm font-medium">
-                        {trigger.is_active ? 'Actif' : 'Inactif'}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Modifié: {new Date(trigger.updated_at).toLocaleDateString()}
+                      <p className="font-medium">Success Rate</p>
+                      <p className="text-muted-foreground">
+                        {workflow.execution_count > 0 
+                          ? Math.round((workflow.success_count / workflow.execution_count) * 100)
+                          : 0}%
                       </p>
                     </div>
-                    
-                    <Switch
-                      checked={trigger.is_active}
-                      onCheckedChange={(checked) => {
-                        updateTrigger({ 
-                          id: trigger.id, 
-                          updates: { is_active: checked }
-                        });
-                      }}
-                    />
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Create Rule Modal */}
-      <AutomationRuleModal 
-        open={showCreateModal} 
-        onOpenChange={setShowCreateModal} 
-      />
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleExecuteWorkflow(workflow)}
+                      disabled={workflow.status !== 'active'}
+                    >
+                      <Play className="h-3 w-3 mr-1" />
+                      Execute
+                    </Button>
+                    
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleToggleWorkflow(workflow)}
+                    >
+                      {workflow.status === 'active' ? (
+                        <>
+                          <Pause className="h-3 w-3 mr-1" />
+                          Pause
+                        </>
+                      ) : (
+                        <>
+                          <Play className="h-3 w-3 mr-1" />
+                          Activate
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedWorkflow(workflow);
+                        setShowBuilder(true);
+                      }}
+                    >
+                      <Settings className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="executions">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Executions</CardTitle>
+              <CardDescription>View detailed execution history and results</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ExecutionHistory executions={executions} workflows={workflows} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
