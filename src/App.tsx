@@ -72,6 +72,7 @@ import AdminAutomation from '@/pages/admin/AdminAutomation';
 import AdminSecurity from '@/pages/admin/AdminSecurity';
 import AdminImport from '@/pages/admin/AdminImport';
 import SyncManager from '@/pages/SyncManager';
+import OrdersCenter from '@/pages/OrdersCenter';
 
 // Nouvelles pages de refonte
 import ModernDashboard from '@/pages/ModernDashboard';
@@ -678,6 +679,13 @@ function App() {
                 <Route path="/sync-manager" element={
                   <ProtectedRoute>
                     <AppLayout><SyncManager /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Orders Center Route */}
+                <Route path="/orders-center" element={
+                  <ProtectedRoute>
+                    <AppLayout><OrdersCenter /></AppLayout>
                   </ProtectedRoute>
                 } />
                 

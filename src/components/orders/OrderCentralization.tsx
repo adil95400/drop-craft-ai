@@ -207,13 +207,13 @@ export function OrderCentralization() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'confirmed': return 'bg-blue-100 text-blue-800'
-      case 'processing': return 'bg-orange-100 text-orange-800'
-      case 'shipped': return 'bg-purple-100 text-purple-800'
-      case 'delivered': return 'bg-green-100 text-green-800'
-      case 'cancelled': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'pending': return 'bg-warning/10 text-warning'
+      case 'confirmed': return 'bg-primary/10 text-primary'
+      case 'processing': return 'bg-orange-500/10 text-orange-500'
+      case 'shipped': return 'bg-purple-500/10 text-purple-500'
+      case 'delivered': return 'bg-success/10 text-success'
+      case 'cancelled': return 'bg-destructive/10 text-destructive'
+      default: return 'bg-muted text-muted-foreground'
     }
   }
 
@@ -401,12 +401,12 @@ export function OrderCentralization() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge 
-                        variant="outline" 
-                        className={order.fulfillment_status === 'fulfilled' ? 'bg-green-100 text-green-800' : 
-                                  order.fulfillment_status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-gray-100 text-gray-800'}
-                      >
+                       <Badge 
+                         variant="outline" 
+                         className={order.fulfillment_status === 'fulfilled' ? 'bg-success/10 text-success' : 
+                                   order.fulfillment_status === 'partial' ? 'bg-warning/10 text-warning' :
+                                   'bg-muted text-muted-foreground'}
+                       >
                         {order.fulfillment_status}
                       </Badge>
                     </TableCell>
@@ -459,15 +459,17 @@ function OrderDetailsView({ order, onUpdate }: { order: CentralizedOrder; onUpda
   
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'confirmed': return 'bg-blue-100 text-blue-800'
-      case 'processing': return 'bg-orange-100 text-orange-800'
-      case 'shipped': return 'bg-purple-100 text-purple-800'
-      case 'delivered': return 'bg-green-100 text-green-800'
-      case 'cancelled': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'pending': return 'bg-warning/10 text-warning'
+      case 'confirmed': return 'bg-primary/10 text-primary'
+      case 'processing': return 'bg-orange-500/10 text-orange-500'
+      case 'shipped': return 'bg-purple-500/10 text-purple-500'
+      case 'delivered': return 'bg-success/10 text-success'
+      case 'cancelled': return 'bg-destructive/10 text-destructive'
+      case 'ordered': return 'bg-primary/10 text-primary'
+      default: return 'bg-muted text-muted-foreground'
     }
   }
+  
   
   const handleSupplierAction = async (action: string, orderId?: string) => {
     toast({
