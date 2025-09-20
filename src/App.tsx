@@ -132,10 +132,12 @@ import ExtensionCLI from '@/pages/ExtensionCLI';
 import ExtensionWhiteLabel from '@/pages/ExtensionWhiteLabel';
 import ExtensionSSO from '@/pages/ExtensionSSO';
 
-// Phase 4 Pages
 import ExtensionMarketplacePage from '@/pages/ExtensionMarketplacePage';
 import AIAutomationPage from '@/pages/AIAutomationPage';
 import BusinessIntelligencePage from '@/pages/BusinessIntelligencePage';
+
+// Phase 5 Pages - Mobile & Enterprise  
+import MobileDashboardPage from '@/pages/MobileDashboardPage';
 import PrintManager from '@/components/print/PrintManager';
 
 // Landing Pages
@@ -641,6 +643,13 @@ function App() {
                 <Route path="/stock-management" element={
                   <ProtectedRoute>
                     <AppLayout><StockManagementHub /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Phase 5: Mobile & Performance Features */}
+                <Route path="/mobile-dashboard" element={
+                  <ProtectedRoute>
+                    <AppLayout><MobileDashboardPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 
