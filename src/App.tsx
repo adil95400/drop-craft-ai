@@ -138,6 +138,7 @@ import BusinessIntelligencePage from '@/pages/BusinessIntelligencePage';
 
 // Phase 5 Pages - Mobile & Enterprise  
 import MobileDashboardPage from '@/pages/MobileDashboardPage';
+import WhiteLabelPage from '@/pages/WhiteLabelPage';
 import PrintManager from '@/components/print/PrintManager';
 
 // Landing Pages
@@ -650,6 +651,13 @@ function App() {
                 <Route path="/mobile-dashboard" element={
                   <ProtectedRoute>
                     <AppLayout><MobileDashboardPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/white-label" element={
+                  <ProtectedRoute>
+                    <RequirePlan minPlan="ultra_pro">
+                      <AppLayout><WhiteLabelPage /></AppLayout>
+                    </RequirePlan>
                   </ProtectedRoute>
                 } />
                 
