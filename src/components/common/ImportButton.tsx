@@ -1,12 +1,14 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Upload, FileText, FileSpreadsheet, Link, Loader2 } from "lucide-react";
+import { Upload, FileText, FileSpreadsheet, Link, Loader2, Zap } from "lucide-react";
 import { ActionHelpers } from "@/utils/actionHelpers";
 import { toast } from "sonner";
 import { ActionModal } from "./ActionModal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CSVImportWizard } from "@/components/import/CSVImportWizard";
 
 interface ImportButtonProps {
   onImport?: (data: any[], source: 'file' | 'url') => void;
@@ -29,6 +31,7 @@ export function ImportButton({
 }: ImportButtonProps) {
   const [isImporting, setIsImporting] = useState(false);
   const [showUrlModal, setShowUrlModal] = useState(false);
+  const [showCSVWizard, setShowCSVWizard] = useState(false);
   const [importUrl, setImportUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -112,7 +115,11 @@ export function ImportButton({
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={handleFileImport}>
             <FileText className="w-4 h-4 mr-2" />
-            Fichier CSV
+            Import Simple CSV
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowCSVWizard(true)}>
+            <Zap className="w-4 h-4 mr-2" />
+            Assistant CSV Avancé
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleFileImport}>
             <FileSpreadsheet className="w-4 h-4 mr-2" />
@@ -157,6 +164,16 @@ export function ImportButton({
           </div>
         </div>
       </ActionModal>
+
+      {/* CSV Import Wizard */}
+      <Dialog open={showCSVWizard} onOpenChange={setShowCSVWizard}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Assistant d'Import CSV Avancé</DialogTitle>
+          </DialogHeader>
+          <CSVImportWizard />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
