@@ -154,6 +154,8 @@ import ExtensionAPIPage from '@/pages/ExtensionAPIPage';
 // QA & UX Phase Pages
 import QAPage from '@/pages/QAPage';
 import SupportPage from '@/pages/SupportPage';
+import HelpCenterPage from '@/pages/HelpCenterPage';
+import ApplicationStatusPage from '@/pages/ApplicationStatusPage';
 
 // Landing Pages
 import Features from '@/pages/Features';
@@ -808,6 +810,21 @@ function App() {
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/legal" element={<Legal />} />
                 <Route path="/status" element={<Status />} />
+                <Route path="/support" element={
+                  <ProtectedRoute>
+                    <AppLayout><SupportPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/help" element={
+                  <ProtectedRoute>
+                    <AppLayout><HelpCenterPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/app-status" element={
+                  <ProtectedRoute>
+                    <AppLayout><ApplicationStatusPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
                 
                 <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />
                 

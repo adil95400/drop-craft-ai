@@ -26,8 +26,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { useAuth } from '@/contexts/AuthContext'
-import { usePlan } from '@/contexts/PlanContext'
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { useAppFlow } from '../app-flow/AppFlowManager'
 import { logAction } from '@/utils/consoleCleanup';
 
@@ -169,8 +168,7 @@ export const UnifiedNavigation = () => {
   const [recentSearches, setRecentSearches] = useState<string[]>([])
   const location = useLocation()
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const { plan } = usePlan()
+  const { user, effectivePlan: plan } = useUnifiedAuth()
   const { getRecommendedNextSteps } = useAppFlow()
 
   // Gestion des raccourcis clavier
