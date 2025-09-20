@@ -141,6 +141,11 @@ import MobileDashboardPage from '@/pages/MobileDashboardPage';
 import WhiteLabelPage from '@/pages/WhiteLabelPage';
 import PrintManager from '@/components/print/PrintManager';
 
+// PR6, PR7, PR8 - Nouveaux modules
+import ReturnsPage from '@/pages/ReturnsPage';
+import AdsMarketingPage from '@/pages/AdsMarketingPage';
+import AffiliationPage from '@/pages/AffiliationPage';
+
 // QA & UX Phase Pages
 import QAPage from '@/pages/QAPage';
 import SupportPage from '@/pages/SupportPage';
@@ -411,6 +416,29 @@ function App() {
                  <Route path="/monitoring" element={
                    <ProtectedRoute>
                      <AppLayout><MonitoringPage /></AppLayout>
+                   </ProtectedRoute>
+                 } />
+                 
+                 {/* PR6, PR7, PR8 - Nouveaux modules */}
+                 <Route path="/returns" element={
+                   <ProtectedRoute>
+                     <RequirePlan minPlan="ultra_pro">
+                       <AppLayout><ReturnsPage /></AppLayout>
+                     </RequirePlan>
+                   </ProtectedRoute>
+                 } />
+                 <Route path="/ads-marketing" element={
+                   <ProtectedRoute>
+                     <RequirePlan minPlan="ultra_pro">
+                       <AppLayout><AdsMarketingPage /></AppLayout>
+                     </RequirePlan>
+                   </ProtectedRoute>
+                 } />
+                 <Route path="/affiliation" element={
+                   <ProtectedRoute>
+                     <RequirePlan minPlan="ultra_pro">
+                       <AppLayout><AffiliationPage /></AppLayout>
+                     </RequirePlan>
                    </ProtectedRoute>
                  } />
                  
