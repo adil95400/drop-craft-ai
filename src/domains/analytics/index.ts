@@ -1,2 +1,2 @@
-// Export central du domaine Analytics Phase 3
-export { PredictiveAnalytics } from './components/PredictiveAnalytics'
+// Export central du domaine Analytics Phase 4
+export { BusinessIntelligence } from './components/BusinessIntelligence'
