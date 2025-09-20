@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Heart, Star, TrendingUp, Filter, Search, Grid, List, SortAsc, Eye, ShoppingCart, Zap } from 'lucide-react'
 import { useCatalogProducts } from '@/hooks/useCatalogProducts'
 import { useRealTracking } from '@/hooks/useRealTracking'
+import { CatalogProduct } from '@/hooks/useCatalogProducts'
 
 export function CatalogUltraProInterface() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -80,7 +81,7 @@ export function CatalogUltraProInterface() {
     return badges
   }
 
-  const ProductCard = ({ product }: { product: any }) => (
+  const ProductCard = ({ product }: { product: CatalogProduct }) => (
     <Card className="group hover:shadow-lg transition-shadow">
       <CardHeader className="p-4">
         <div className="relative">
@@ -160,7 +161,7 @@ export function CatalogUltraProInterface() {
     </Card>
   )
 
-  const ProductListItem = ({ product }: { product: any }) => (
+  const ProductListItem = ({ product }: { product: CatalogProduct }) => (
     <Card>
       <CardContent className="p-4">
         <div className="flex items-center gap-4">

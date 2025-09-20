@@ -51,7 +51,10 @@ interface UserQuotaUsage {
   };
 }
 
-const QUOTA_DISPLAY_NAMES: { [key: string]: { name: string; description: string; icon: any } } = {
+import { QuotaDisplayNames } from '@/types/common'
+import { LucideIcon } from 'lucide-react'
+
+const QUOTA_DISPLAY_NAMES: QuotaDisplayNames = {
   products: {
     name: 'Produits',
     description: 'Nombre maximum de produits dans le catalogue',

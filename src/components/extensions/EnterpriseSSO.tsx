@@ -61,9 +61,16 @@ export const EnterpriseSSO = () => {
     }
   ])
 
-  const [newProvider, setNewProvider] = useState({
+  const [newProvider, setNewProvider] = useState<{
+    name: string
+    type: SSOProvider['type']
+    entityId: string
+    ssoUrl: string
+    certificate: string
+    enabled: boolean
+  }>({
     name: '',
-    type: 'saml' as const,
+    type: 'saml',
     entityId: '',
     ssoUrl: '',
     certificate: '',
@@ -368,7 +375,7 @@ export const EnterpriseSSO = () => {
                     id="provider-type"
                     className="w-full p-2 border rounded"
                     value={newProvider.type}
-                    onChange={(e) => setNewProvider(prev => ({ ...prev, type: e.target.value as any }))}
+                    onChange={(e) => setNewProvider(prev => ({ ...prev, type: e.target.value as 'saml' | 'oauth' | 'oidc' }))}
                   >
                     <option value="saml">SAML 2.0</option>
                     <option value="oauth">OAuth 2.0</option>

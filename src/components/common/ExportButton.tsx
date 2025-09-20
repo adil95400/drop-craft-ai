@@ -44,8 +44,8 @@ export function ExportButton({
       
       // Filtrer les colonnes si spécifiées
       if (columns && columns.length > 0) {
-        exportData = data.map(item => {
-          const filtered: any = {};
+        exportData = data.map((item: Record<string, any>) => {
+          const filtered: Record<string, any> = {};
           columns.forEach(col => {
             if (item[col] !== undefined) {
               filtered[col] = item[col];
