@@ -8,14 +8,16 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { ConnectorSetupForm } from '@/components/connectors/ConnectorSetupForm';
 import { ConnectorManager, ConnectorConfig, PlatformInfo } from '@/services/ConnectorManager';
-import { SyncJobMonitor } from '@/components/sync/SyncJobMonitor';
-import { SyncConfiguration } from '@/components/sync/SyncConfiguration';
+import { SyncJobMonitor } from '@/components/sync/SyncJobMonitor'
+import { SyncConfiguration } from '@/components/sync/SyncConfiguration'
+import { BiDirectionalSync } from '@/components/sync/BiDirectionalSync'
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Plus, 
   Settings, 
-  RotateCcw, 
+  RotateCcw,
+  RefreshCw,
   CheckCircle, 
   XCircle, 
   Clock, 
@@ -289,10 +291,14 @@ const SyncManager: React.FC = () => {
 
       {/* Onglets principaux */}
       <Tabs defaultValue="connectors" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="connectors" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Connecteurs
+          </TabsTrigger>
+          <TabsTrigger value="sync" className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Sync Bidirectionnelle
           </TabsTrigger>
           <TabsTrigger value="monitor" className="flex items-center gap-2">
             <Monitor className="h-4 w-4" />
@@ -410,6 +416,11 @@ const SyncManager: React.FC = () => {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Onglet Sync Bidirectionnelle */}
+        <TabsContent value="sync">
+          <BiDirectionalSync />
         </TabsContent>
 
         {/* Onglet Monitoring */}
