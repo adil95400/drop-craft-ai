@@ -73,6 +73,8 @@ import AdminSecurity from '@/pages/admin/AdminSecurity';
 import AdminImport from '@/pages/admin/AdminImport';
 import SyncManager from '@/pages/SyncManager';
 import OrdersCenter from '@/pages/OrdersCenter';
+import DashboardHome from '@/pages/DashboardHome';
+import ImportManagement from '@/pages/ImportManagement';
 
 // Nouvelles pages de refonte
 import ModernDashboard from '@/pages/ModernDashboard';
@@ -196,7 +198,13 @@ function App() {
               <UnifiedPlanProvider>
                 <NotificationProvider>
               <Routes>
-                <Route path="/" element={<Index />} />
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <AppLayout><DashboardHome /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/profile" element={
                   <ProtectedRoute>
@@ -686,6 +694,13 @@ function App() {
                 <Route path="/orders-center" element={
                   <ProtectedRoute>
                     <AppLayout><OrdersCenter /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Import Advanced Route */}
+                <Route path="/import/advanced" element={
+                  <ProtectedRoute>
+                    <AppLayout><ImportManagement /></AppLayout>
                   </ProtectedRoute>
                 } />
                 

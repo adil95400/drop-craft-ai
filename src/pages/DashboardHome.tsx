@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { RealTimeMonitor } from '@/components/dashboard/RealTimeMonitor'
+import { QuickActions } from '@/components/navigation/QuickActions'
 import { 
   TrendingUp, 
   Package, 
@@ -14,37 +15,6 @@ import {
   BarChart3
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-
-const quickActions = [
-  {
-    title: "Import Produits",
-    description: "Importer via CSV, API ou scraping",
-    href: "/import/advanced",
-    icon: Upload,
-    badge: "Pro"
-  },
-  {
-    title: "Sync Manager", 
-    description: "Synchronisation bidirectionnelle",
-    href: "/sync-manager",
-    icon: Activity,
-    badge: "Nouveau"
-  },
-  {
-    title: "Centre Commandes",
-    description: "Centraliser toutes les commandes",
-    href: "/orders-center", 
-    icon: ShoppingCart,
-    badge: "Nouveau"
-  },
-  {
-    title: "Analytics",
-    description: "Rapports et métriques avancés",
-    href: "/analytics",
-    icon: BarChart3,
-    badge: "Pro"
-  }
-]
 
 const statsData = [
   { label: "Produits", value: "1,247", change: "+12%", icon: Package, color: "text-blue-600" },
@@ -96,47 +66,7 @@ export default function DashboardHome() {
       </div>
 
       {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Actions Rapides</CardTitle>
-          <CardDescription>
-            Accédez rapidement aux fonctionnalités principales
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {quickActions.map((action) => {
-              const IconComponent = action.icon
-              return (
-                <Button
-                  key={action.href}
-                  variant="outline"
-                  asChild
-                  className="h-auto p-4 flex-col items-start gap-3 hover:bg-muted/50"
-                >
-                  <Link to={action.href}>
-                    <div className="flex items-center justify-between w-full">
-                      <IconComponent className="w-5 h-5 text-primary" />
-                      {action.badge && (
-                        <Badge variant="secondary" className="text-xs">
-                          {action.badge}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-left space-y-1">
-                      <h3 className="font-semibold text-sm">{action.title}</h3>
-                      <p className="text-xs text-muted-foreground">
-                        {action.description}
-                      </p>
-                    </div>
-                    <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground" />
-                  </Link>
-                </Button>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      <QuickActions />
 
       {/* Real-time Monitor */}
       <Card>

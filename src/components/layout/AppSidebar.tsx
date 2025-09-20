@@ -22,19 +22,17 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 
 const navigationItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Boutiques", url: "/stores", icon: Store },
   { title: "Produits", url: "/products", icon: Package },
-  { title: "Catalogue", url: "/catalog", icon: BookOpen },
   { title: "Commandes", url: "/orders", icon: ShoppingCart },
-  { title: "Import", url: "/import", icon: Upload },
-  { title: "Fournisseurs", url: "/suppliers", icon: Truck },
-  { title: "Analytics", url: "/analytics", icon: BarChart3 },
-  { title: "Monitoring", url: "/monitoring", icon: Activity },
+  { title: "Centre Commandes", url: "/orders-center", icon: Activity, badge: "Nouveau" },
   { title: "Clients", url: "/customers", icon: Users },
+  { title: "Fournisseurs", url: "/suppliers", icon: Truck },
+  { title: "Import Avancé", url: "/import/advanced", icon: Upload, badge: "Pro" },
+  { title: "Sync Manager", url: "/sync-manager", icon: Activity, badge: "Nouveau" },
+  { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "CRM", url: "/crm", icon: MessageSquare },
   { title: "Marketing", url: "/marketing", icon: Megaphone },
-  { title: "Blog", url: "/blog", icon: FileText },
-  { title: "SEO", url: "/seo", icon: Search },
+  { title: "Monitoring", url: "/monitoring", icon: Activity },
   { title: "Extensions", url: "/extensions", icon: Puzzle, badge: "Nouveau" },
   { title: "IA Assistant", url: "/ai-assistant", icon: Bot, badge: "AI" },
 ]
@@ -73,7 +71,7 @@ export function AppSidebar() {
             </div>
             <div>
               <h1 className="font-bold text-lg bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Shoplopti+
+                Drop Craft AI
               </h1>
             </div>
           </div>

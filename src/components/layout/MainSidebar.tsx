@@ -53,7 +53,8 @@ const navigationGroups = [
     items: [
       { title: "Dashboard", url: "/dashboard", icon: Home },
       { title: "Boutiques", url: "/stores", icon: Store, badge: "Stores" },
-      { title: "Import", url: "/import", icon: Upload },
+      { title: "Import Avancé", url: "/import/advanced", icon: Upload, badge: "Pro" },
+      { title: "Sync Manager", url: "/sync-manager", icon: Zap, badge: "Nouveau" }
     ] as NavigationItem[]
   },
   {
@@ -68,6 +69,7 @@ const navigationGroups = [
     title: "Commerce",
     items: [
       { title: "Commandes", url: "/orders", icon: ShoppingCart },
+      { title: "Centre Commandes", url: "/orders-center", icon: ShoppingCart, badge: "Nouveau" },
       { title: "Clients", url: "/customers", icon: Users },
       { title: "CRM", url: "/crm", icon: Users, requiredPlan: "pro" },
     ] as NavigationItem[]
@@ -138,7 +140,7 @@ export function MainSidebar() {
           {!collapsed && (
             <div>
               <h2 className="font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Import Pro
+                Drop Craft AI
               </h2>
               <p className="text-xs text-muted-foreground">v2.0</p>
             </div>
