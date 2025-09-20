@@ -135,3 +135,12 @@ verify_jwt = true
 
 [functions.refund-automation-processor]
 verify_jwt = true
+
+[functions.marketplace-hub]
+verify_jwt = true
+
+[functions.multi-tenant]
+verify_jwt = true
+
+[functions.observability]
+verify_jwt = true

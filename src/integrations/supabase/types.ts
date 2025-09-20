@@ -74,6 +74,50 @@ export type Database = {
         }
         Relationships: []
       }
+      active_alerts: {
+        Row: {
+          alert_rule_id: string
+          created_at: string
+          current_value: number | null
+          details: Json | null
+          id: string
+          resolved_at: string | null
+          status: string
+          triggered_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_rule_id: string
+          created_at?: string
+          current_value?: number | null
+          details?: Json | null
+          id?: string
+          resolved_at?: string | null
+          status?: string
+          triggered_at?: string
+          user_id: string
+        }
+        Update: {
+          alert_rule_id?: string
+          created_at?: string
+          current_value?: number | null
+          details?: Json | null
+          id?: string
+          resolved_at?: string | null
+          status?: string
+          triggered_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "active_alerts_alert_rule_id_fkey"
+            columns: ["alert_rule_id"]
+            isOneToOne: false
+            referencedRelation: "alert_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       activity_logs: {
         Row: {
           action: string
@@ -250,6 +294,48 @@ export type Database = {
           task_type?: string
           tokens_used?: number | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      alert_rules: {
+        Row: {
+          condition: string
+          created_at: string
+          duration_minutes: number
+          id: string
+          is_active: boolean | null
+          metric_name: string
+          name: string
+          notification_channels: string[] | null
+          threshold: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          condition: string
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean | null
+          metric_name: string
+          name: string
+          notification_channels?: string[] | null
+          threshold: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          condition?: string
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean | null
+          metric_name?: string
+          name?: string
+          notification_channels?: string[] | null
+          threshold?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -2889,6 +2975,48 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_connections: {
+        Row: {
+          created_at: string
+          credentials: Json
+          error_message: string | null
+          id: string
+          last_sync_at: string | null
+          platform: string
+          status: string
+          sync_settings: Json
+          sync_stats: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credentials?: Json
+          error_message?: string | null
+          id?: string
+          last_sync_at?: string | null
+          platform: string
+          status?: string
+          sync_settings?: Json
+          sync_stats?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credentials?: Json
+          error_message?: string | null
+          id?: string
+          last_sync_at?: string | null
+          platform?: string
+          status?: string
+          sync_settings?: Json
+          sync_stats?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketplace_extensions: {
         Row: {
           category: string
@@ -2979,6 +3107,83 @@ export type Database = {
           updated_at?: string | null
           verified?: boolean | null
           version?: string
+        }
+        Relationships: []
+      }
+      marketplace_sync_logs: {
+        Row: {
+          completed_at: string | null
+          connection_id: string
+          created_at: string
+          error_details: Json | null
+          id: string
+          started_at: string
+          stats: Json | null
+          status: string
+          sync_type: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          connection_id: string
+          created_at?: string
+          error_details?: Json | null
+          id?: string
+          started_at: string
+          stats?: Json | null
+          status: string
+          sync_type: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          connection_id?: string
+          created_at?: string
+          error_details?: Json | null
+          id?: string
+          started_at?: string
+          stats?: Json | null
+          status?: string
+          sync_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_sync_logs_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monitoring_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          metric_name: string
+          tags: Json | null
+          timestamp: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metric_name: string
+          tags?: Json | null
+          timestamp?: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metric_name?: string
+          tags?: Json | null
+          timestamp?: string
+          user_id?: string
+          value?: number
         }
         Relationships: []
       }
@@ -5747,6 +5952,134 @@ export type Database = {
         }
         Relationships: []
       }
+      system_logs: {
+        Row: {
+          created_at: string
+          id: string
+          level: string
+          message: string
+          metadata: Json | null
+          source: string | null
+          timestamp: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level: string
+          message: string
+          metadata?: Json | null
+          source?: string | null
+          timestamp?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: string
+          message?: string
+          metadata?: Json | null
+          source?: string | null
+          timestamp?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tenant_users: {
+        Row: {
+          created_at: string
+          id: string
+          invited_at: string | null
+          invited_by: string | null
+          joined_at: string | null
+          permissions: string[] | null
+          role: string
+          status: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          joined_at?: string | null
+          permissions?: string[] | null
+          role?: string
+          status?: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          joined_at?: string | null
+          permissions?: string[] | null
+          role?: string
+          status?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_users_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenants: {
+        Row: {
+          branding: Json
+          created_at: string
+          domain: string | null
+          features: string[] | null
+          id: string
+          name: string
+          owner_id: string
+          plan_type: string | null
+          settings: Json
+          slug: string | null
+          status: string
+          updated_at: string
+          usage_limits: Json | null
+        }
+        Insert: {
+          branding?: Json
+          created_at?: string
+          domain?: string | null
+          features?: string[] | null
+          id?: string
+          name: string
+          owner_id: string
+          plan_type?: string | null
+          settings?: Json
+          slug?: string | null
+          status?: string
+          updated_at?: string
+          usage_limits?: Json | null
+        }
+        Update: {
+          branding?: Json
+          created_at?: string
+          domain?: string | null
+          features?: string[] | null
+          id?: string
+          name?: string
+          owner_id?: string
+          plan_type?: string | null
+          settings?: Json
+          slug?: string | null
+          status?: string
+          updated_at?: string
+          usage_limits?: Json | null
+        }
+        Relationships: []
+      }
       user_api_keys: {
         Row: {
           created_at: string
@@ -6307,6 +6640,10 @@ export type Database = {
       }
       get_final_security_status: {
         Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_marketplace_analytics: {
+        Args: { user_id_param: string }
         Returns: Json
       }
       get_marketplace_products: {
