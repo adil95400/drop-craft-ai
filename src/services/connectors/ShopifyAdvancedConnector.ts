@@ -433,7 +433,7 @@ export class ShopifyAdvancedConnector extends AdvancedBaseConnector {
 
   async processWebhookEvent(event: WebhookEvent): Promise<void> {
     // Process webhook events - update local data based on Shopify changes
-    console.log(`Processing Shopify webhook: ${event.topic}`, event.data);
+    const webhookData = event.payload || event;
   }
 
   async syncProducts(options?: { incremental?: boolean; since?: Date }): Promise<SyncResult> {
