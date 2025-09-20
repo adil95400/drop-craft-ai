@@ -186,7 +186,17 @@ export default function AutomationStudio() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <WorkflowBuilder />
+              <WorkflowBuilder 
+                workflow={null}
+                onSave={(workflow) => {
+                  console.log('Workflow saved:', workflow);
+                  // Handle workflow save - could show toast, update state, etc.
+                }}
+                onCancel={() => {
+                  console.log('Workflow cancelled');
+                  // Handle workflow cancel - could reset form, show message, etc.
+                }}
+              />
             </CardContent>
           </Card>
         </TabsContent>
