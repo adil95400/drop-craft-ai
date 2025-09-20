@@ -177,8 +177,6 @@ export const ExtensionMarketplace: React.FC = () => {
         : [...prev, extensionId]
     )
   }
-
-export const ExtensionMarketplace: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}

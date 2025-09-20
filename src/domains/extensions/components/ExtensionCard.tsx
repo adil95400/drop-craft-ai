@@ -7,7 +7,7 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Star, Download, Shield, ExternalLink } from 'lucide-react'
+import { Star, Download, Shield, ExternalLink, Heart } from 'lucide-react'
 
 interface ExtensionCardProps {
   extension: {
@@ -25,12 +25,16 @@ interface ExtensionCardProps {
   }
   onInstall?: (extensionId: string) => void
   onViewDetails?: (extensionId: string) => void
+  isFavorite?: boolean
+  onToggleFavorite?: (extensionId: string) => void
 }
 
 export const ExtensionCard: React.FC<ExtensionCardProps> = ({
   extension,
   onInstall,
-  onViewDetails
+  onViewDetails,
+  isFavorite = false,
+  onToggleFavorite
 }) => {
   return (
     <Card className="hover:shadow-lg transition-shadow">
@@ -44,7 +48,25 @@ export const ExtensionCard: React.FC<ExtensionCardProps> = ({
               <Shield className="h-4 w-4 text-green-500" />
             )}
           </div>
-          <Badge variant="outline">{extension.category}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">{extension.category}</Badge>
+            {onToggleFavorite && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => onToggleFavorite(extension.id)}
+                className="p-1 h-auto"
+              >
+                <Heart 
+                  className={`h-4 w-4 ${
+                    isFavorite 
+                      ? 'fill-red-500 text-red-500' 
+                      : 'text-muted-foreground hover:text-red-500'
+                  }`} 
+                />
+              </Button>
+            )}
+          </div>
         </div>
         <CardTitle className="text-lg">{extension.name}</CardTitle>
         <CardDescription>{extension.description}</CardDescription>
