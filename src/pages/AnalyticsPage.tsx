@@ -1,13 +1,9 @@
-import React from 'react';
-import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
-import { RequirePlan } from '@/components/plan/RequirePlan';
+import { AIAnalyticsDashboard } from "@/components/analytics/AIAnalyticsDashboard";
 
 export default function AnalyticsPage() {
   return (
-    <RequirePlan minPlan="pro">
-      <div className="container mx-auto py-6">
-        <AnalyticsDashboard />
-      </div>
-    </RequirePlan>
+    <div className="container mx-auto p-6">
+      <AIAnalyticsDashboard />
+    </div>
   );
 }
