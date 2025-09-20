@@ -46,7 +46,7 @@ export function AutomationDashboard() {
     try {
       toast.info(`Executing workflow: ${workflow.name}`);
       
-      await automationEngine.executeWorkflow(workflow.id, {
+      const result = await automationEngine.executeWorkflow(workflow, {
         user_id: "current-user",
         trigger: 'manual'
       });
@@ -63,7 +63,8 @@ export function AutomationDashboard() {
     try {
       const newStatus = workflow.status === 'active' ? 'paused' : 'active';
       
-      await automationEngine.updateWorkflow(workflow.id, { status: newStatus });
+      const updatedWorkflow = { ...workflow, status: newStatus as 'active' | 'paused' | 'draft' };
+      await automationEngine.updateWorkflow(updatedWorkflow);
       
       toast.success(`Workflow ${newStatus === 'active' ? 'activated' : 'paused'}`);
       loadData();

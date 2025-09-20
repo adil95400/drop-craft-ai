@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, AlertTriangle, Target, Brain, Zap } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, Target, Brain, Zap, Minus } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { AIAnalyticsEngine, AnalyticsInsight, PredictiveAnalysis, PerformanceOptimization } from "@/services/analytics/AIAnalyticsEngine";
 
@@ -169,11 +169,13 @@ export function AIAnalyticsDashboard() {
                 <CardHeader>
                   <CardTitle className="text-base">{prediction.metric}</CardTitle>
                   <div className="flex items-center gap-2">
-                    {prediction.trend === 'up' ? (
+                    {prediction.trend === 'increasing' ? (
                       <TrendingUp className="h-4 w-4 text-green-500" />
-                    ) : prediction.trend === 'down' ? (
+                    ) : prediction.trend === 'decreasing' ? (
                       <TrendingDown className="h-4 w-4 text-red-500" />
-                    ) : null}
+                    ) : (
+                      <Minus className="h-4 w-4 text-gray-500" />
+                    )}
                     <span className="text-2xl font-bold">{prediction.predictedValue.toLocaleString()}</span>
                   </div>
                 </CardHeader>
@@ -198,7 +200,7 @@ export function AIAnalyticsDashboard() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>{opt.category}</CardTitle>
-                    <Badge className={getPriorityColor(opt.priority)}>{opt.priority} priority</Badge>
+                    <Badge className={getPriorityColor(opt.priority.toString())}>{opt.priority} priority</Badge>
                   </div>
                   <CardDescription>
                     Current: {opt.current}% → Potential: {opt.potential}% 
