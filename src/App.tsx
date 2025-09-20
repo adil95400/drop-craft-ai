@@ -141,6 +141,10 @@ import MobileDashboardPage from '@/pages/MobileDashboardPage';
 import WhiteLabelPage from '@/pages/WhiteLabelPage';
 import PrintManager from '@/components/print/PrintManager';
 
+// QA & UX Phase Pages
+import QAPage from '@/pages/QAPage';
+import SupportPage from '@/pages/SupportPage';
+
 // Landing Pages
 import Features from '@/pages/Features';
 import Pricing from '@/pages/Pricing';
