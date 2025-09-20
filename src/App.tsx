@@ -207,6 +207,10 @@ import { EnterpriseAPI } from '@/components/enterprise/EnterpriseAPI';
 import TrackingToday from '@/pages/TrackingToday';
 import CRMCalendar from '@/pages/CRMCalendar';
 
+// Team & Stock Management
+import StockManagement from '@/pages/StockManagement';
+import TeamCollaborationPage from '@/pages/TeamCollaboration';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -755,7 +759,7 @@ function App() {
                 } />
                 <Route path="/team-collaboration" element={
                   <ProtectedRoute>
-                    <AppLayout><TeamCollaboration /></AppLayout>
+                    <AppLayout><TeamCollaborationPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/white-label" element={
@@ -867,7 +871,14 @@ function App() {
                     <AppLayout><AIAssistant /></AppLayout>
                   </ProtectedRoute>
                 } />
-                
+
+                {/* Stock Management Route */}
+                <Route path="/stock-management" element={
+                  <ProtectedRoute>
+                    <AppLayout><StockManagement /></AppLayout>
+                  </ProtectedRoute>
+                } />
+
                 {/* Import Advanced Route */}
                 <Route path="/import/advanced" element={
                   <ProtectedRoute>
