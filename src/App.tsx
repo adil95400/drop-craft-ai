@@ -217,7 +217,7 @@ function App() {
                   </ProtectedRoute>
                 } />
                 <Route path="/modern" element={<AppLayout><ModernNavigation /></AppLayout>} />
-                <Route path="/dashboard" element={
+                <Route path="/dashboard-super" element={
                   <ProtectedRoute>
                     <AppLayout><SuperDashboard /></AppLayout>
                   </ProtectedRoute>
