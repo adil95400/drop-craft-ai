@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Upload, FileText, FileSpreadsheet, Link, Loader2, Zap } from "lucide-react";
+import { Upload, FileText, FileSpreadsheet, Link, Loader2, Zap, Code } from "lucide-react";
 import { ActionHelpers } from "@/utils/actionHelpers";
 import { toast } from "sonner";
 import { ActionModal } from "./ActionModal";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CSVImportWizard } from "@/components/import/CSVImportWizard";
+import { APIImportWizard } from "@/components/import/APIImportWizard";
 
 interface ImportButtonProps {
   onImport?: (data: any[], source: 'file' | 'url') => void;
@@ -32,6 +33,7 @@ export function ImportButton({
   const [isImporting, setIsImporting] = useState(false);
   const [showUrlModal, setShowUrlModal] = useState(false);
   const [showCSVWizard, setShowCSVWizard] = useState(false);
+  const [showAPIWizard, setShowAPIWizard] = useState(false);
   const [importUrl, setImportUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -121,6 +123,10 @@ export function ImportButton({
             <Zap className="w-4 h-4 mr-2" />
             Assistant CSV Avancé
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowAPIWizard(true)}>
+            <Code className="w-4 h-4 mr-2" />
+            Assistant Import API
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleFileImport}>
             <FileSpreadsheet className="w-4 h-4 mr-2" />
             Fichier Excel
@@ -172,6 +178,16 @@ export function ImportButton({
             <DialogTitle>Assistant d'Import CSV Avancé</DialogTitle>
           </DialogHeader>
           <CSVImportWizard />
+        </DialogContent>
+      </Dialog>
+
+      {/* API Import Wizard */}
+      <Dialog open={showAPIWizard} onOpenChange={setShowAPIWizard}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Assistant d'Import API</DialogTitle>
+          </DialogHeader>
+          <APIImportWizard />
         </DialogContent>
       </Dialog>
     </>
