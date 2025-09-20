@@ -131,6 +131,11 @@ import ExtensionDeveloper from '@/pages/ExtensionDeveloper';
 import ExtensionCLI from '@/pages/ExtensionCLI';
 import ExtensionWhiteLabel from '@/pages/ExtensionWhiteLabel';
 import ExtensionSSO from '@/pages/ExtensionSSO';
+
+// Phase 4 Pages
+import ExtensionMarketplacePage from '@/pages/ExtensionMarketplacePage';
+import AIAutomationPage from '@/pages/AIAutomationPage';
+import BusinessIntelligencePage from '@/pages/BusinessIntelligencePage';
 import PrintManager from '@/components/print/PrintManager';
 
 // Landing Pages
@@ -636,6 +641,29 @@ function App() {
                 <Route path="/stock-management" element={
                   <ProtectedRoute>
                     <AppLayout><StockManagementHub /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* Phase 4: Extension Marketplace & AI Features */}
+                <Route path="/extensions-marketplace" element={
+                  <ProtectedRoute>
+                    <RequirePlan minPlan="ultra_pro">
+                      <AppLayout><ExtensionMarketplacePage /></AppLayout>
+                    </RequirePlan>
+                  </ProtectedRoute>
+                } />
+                <Route path="/ai-automation" element={
+                  <ProtectedRoute>
+                    <RequirePlan minPlan="ultra_pro">
+                      <AppLayout><AIAutomationPage /></AppLayout>
+                    </RequirePlan>
+                  </ProtectedRoute>
+                } />
+                <Route path="/business-intelligence" element={
+                  <ProtectedRoute>
+                    <RequirePlan minPlan="ultra_pro">
+                      <AppLayout><BusinessIntelligencePage /></AppLayout>
+                    </RequirePlan>
                   </ProtectedRoute>
                 } />
                 
