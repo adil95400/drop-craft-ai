@@ -115,6 +115,10 @@ import CatalogPage from '@/pages/CatalogPage';
 import CrmPage from '@/pages/CrmPage';
 import MonitoringPage from '@/pages/MonitoringPage';
 
+// Phase 3 Pages - Différenciation
+import MarketplaceHubPage from '@/pages/MarketplaceHubPage';
+import MultiTenantPage from '@/pages/MultiTenantPage';
+
 // Profile & Settings Pages
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
@@ -395,6 +399,29 @@ function App() {
                  <Route path="/monitoring" element={
                    <ProtectedRoute>
                      <AppLayout><MonitoringPage /></AppLayout>
+                   </ProtectedRoute>
+                 } />
+                 
+                 {/* Phase 3 - Différenciation Routes */}
+                 <Route path="/marketplace-hub" element={
+                   <ProtectedRoute>
+                     <RequirePlan minPlan="ultra_pro">
+                       <AppLayout><MarketplaceHubPage /></AppLayout>
+                     </RequirePlan>
+                   </ProtectedRoute>
+                 } />
+                 <Route path="/multi-tenant" element={
+                   <ProtectedRoute>
+                     <RequirePlan minPlan="ultra_pro">
+                       <AppLayout><MultiTenantPage /></AppLayout>
+                     </RequirePlan>
+                   </ProtectedRoute>
+                 } />
+                 <Route path="/observability" element={
+                   <ProtectedRoute>
+                     <RequirePlan minPlan="ultra_pro">
+                       <AppLayout><MonitoringPage /></AppLayout>
+                     </RequirePlan>
                    </ProtectedRoute>
                  } />
                  

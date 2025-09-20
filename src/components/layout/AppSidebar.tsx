@@ -13,7 +13,8 @@ import { Badge } from "@/components/ui/badge"
 import { 
   LayoutDashboard, Store, Package, BookOpen, ShoppingCart, 
   Upload, Truck, BarChart3, Activity, Users, MessageSquare,
-  Megaphone, FileText, Search, Puzzle, Bot, Crown, Shield
+  Megaphone, FileText, Search, Puzzle, Bot, Crown, Shield,
+  Building2, Network, Zap
 } from "lucide-react"
 import { useAuthOptimized } from "@/shared/hooks/useAuthOptimized"
 import { cn } from "@/lib/utils"
@@ -37,6 +38,12 @@ const navigationItems = [
   { title: "IA Assistant", url: "/ai-assistant", icon: Bot, badge: "AI" },
 ]
 
+const phase3NavigationItems = [
+  { title: "Marketplace Hub", url: "/marketplace-hub", icon: Store, badge: "Phase 3", phase: 3 },
+  { title: "Multi-Tenant", url: "/multi-tenant", icon: Building2, badge: "Phase 3", phase: 3 },
+  { title: "Observability", url: "/observability", icon: Network, badge: "Phase 3", phase: 3 },
+]
+
 const adminNavigationItems = [
   { title: "Admin Panel", url: "/admin", icon: Shield, adminOnly: true },
   { title: "Gestion Utilisateurs", url: "/admin-panel", icon: Users, adminOnly: true },
@@ -53,9 +60,10 @@ export function AppSidebar() {
       ? "bg-primary/10 text-primary font-medium border-r-2 border-primary" 
       : "hover:bg-muted/50 transition-colors"
 
-  // Combine regular and admin navigation items
+  // Combine regular, phase 3, and admin navigation items
   const allNavigationItems = [
     ...navigationItems,
+    ...phase3NavigationItems,
     ...(isAdmin ? adminNavigationItems : [])
   ]
 
@@ -89,6 +97,7 @@ export function AppSidebar() {
                         ${getNavCls({ isActive: navLinkIsActive || isActive(item.url) })}
                         flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
                         ${item.adminOnly ? 'bg-gradient-to-r from-red-500/10 to-orange-500/10 border-l-2 border-red-500/30' : ''}
+                        ${item.phase === 3 ? 'bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-l-2 border-purple-500/30' : ''}
                       `}
                     >
                       <item.icon className="h-4 w-4 flex-shrink-0" />
@@ -96,8 +105,14 @@ export function AppSidebar() {
                         <span>{item.title}</span>
                         {item.badge && (
                           <Badge 
-                            variant={item.badge === "AI" ? "default" : "secondary"}
-                            className="text-xs"
+                            variant={
+                              item.badge === "AI" ? "default" : 
+                              item.badge === "Phase 3" ? "default" :
+                              "secondary"
+                            }
+                            className={`text-xs ${
+                              item.badge === "Phase 3" ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white" : ""
+                            }`}
                           >
                             {item.badge}
                           </Badge>
