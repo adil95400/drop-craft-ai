@@ -32,16 +32,22 @@ const navigationItems = [
   { title: "Sync Manager", url: "/sync-manager", icon: Activity, badge: "Nouveau" },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "CRM", url: "/crm", icon: MessageSquare },
+  { title: "CRM Calendrier", url: "/crm/calendar", icon: LayoutDashboard, badge: "Nouveau" },
+  { title: "Suivi Aujourd'hui", url: "/tracking/today", icon: Activity, badge: "Live" },
   { title: "Marketing", url: "/marketing", icon: Megaphone },
   { title: "Monitoring", url: "/monitoring", icon: Activity },
   { title: "Extensions", url: "/extensions", icon: Puzzle, badge: "Nouveau" },
   { title: "IA Assistant", url: "/ai-assistant", icon: Bot, badge: "AI" },
+  { title: "Centre d'aide", url: "/help", icon: BookOpen, badge: "Support" },
 ]
 
 const phase3NavigationItems = [
   { title: "Marketplace Hub", url: "/marketplace-hub", icon: Store, badge: "Phase 3", phase: 3 },
   { title: "Multi-Tenant", url: "/multi-tenant", icon: Building2, badge: "Phase 3", phase: 3 },
   { title: "Observability", url: "/observability", icon: Network, badge: "Phase 3", phase: 3 },
+  { title: "Business Intelligence", url: "/business-intelligence", icon: BarChart3, badge: "Phase 3", phase: 3 },
+  { title: "Enterprise API", url: "/enterprise-api", icon: Network, badge: "Phase 3", phase: 3 },
+  { title: "Extensions Marketplace", url: "/extensions-marketplace", icon: Store, badge: "Phase 3", phase: 3 },
 ]
 
 const adminNavigationItems = [

@@ -202,6 +202,10 @@ import { TeamCollaboration } from '@/components/team/TeamCollaboration';
 import { WhiteLabelSolution } from '@/components/enterprise/WhiteLabelSolution';
 import { EnterpriseAPI } from '@/components/enterprise/EnterpriseAPI';
 
+// Tracking Pages
+import TrackingToday from '@/pages/TrackingToday';
+import CRMCalendar from '@/pages/CRMCalendar';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -835,6 +839,20 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
+                {/* Tracking Routes */}
+                <Route path="/tracking/today" element={
+                  <ProtectedRoute>
+                    <AppLayout><TrackingToday /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* CRM Routes */}
+                <Route path="/crm/calendar" element={
+                  <ProtectedRoute>
+                    <AppLayout><CRMCalendar /></AppLayout>
+                  </ProtectedRoute>
+                } />
+
                 {/* Orders Center Route */}
                 <Route path="/orders-center" element={
                   <ProtectedRoute>
