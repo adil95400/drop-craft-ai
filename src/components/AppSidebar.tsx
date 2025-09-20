@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, Search, Bot, Sparkles, ShoppingCart, Package, BarChart3, Users, ShieldCheck, Zap, Settings, HelpCircle, Store } from "lucide-react";
+import { ChevronDown, Search, Bot, Sparkles, ShoppingCart, Package, BarChart3, Users, ShieldCheck, Zap, Settings, HelpCircle, Store, Smartphone, Download, Code } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -300,6 +300,31 @@ const navigationGroups: NavigationGroup[] = [
         url: "/faq",
         icon: HelpCircle,
         badge: "FAQ"
+      }
+    ]
+  },
+  {
+    title: "Mobile & Extensions",
+    icon: Smartphone,
+    items: [
+      {
+        title: "PWA Mobile",
+        url: "/pwa-install",
+        icon: Smartphone,
+        badge: "PWA"
+      },
+      {
+        title: "App Flutter",
+        url: "/flutter-mobile",
+        icon: Download,
+        badge: "Flutter"
+      },
+      {
+        title: "Extensions & API",
+        url: "/extensions-api",
+        icon: Code,
+        badge: "API",
+        premium: true
       }
     ]
   },

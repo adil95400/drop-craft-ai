@@ -146,6 +146,11 @@ import ReturnsPage from '@/pages/ReturnsPage';
 import AdsMarketingPage from '@/pages/AdsMarketingPage';
 import AffiliationPage from '@/pages/AffiliationPage';
 
+// Phase 4 - Mobile & Extensions
+import PWAInstallPage from '@/pages/PWAInstallPage';
+import FlutterMobilePage from '@/pages/FlutterMobilePage';
+import ExtensionAPIPage from '@/pages/ExtensionAPIPage';
+
 // QA & UX Phase Pages
 import QAPage from '@/pages/QAPage';
 import SupportPage from '@/pages/SupportPage';
@@ -440,9 +445,28 @@ function App() {
                        <AppLayout><AffiliationPage /></AppLayout>
                      </RequirePlan>
                    </ProtectedRoute>
-                 } />
-                 
-                 {/* Phase 3 - Différenciation Routes */}
+                  } />
+                  
+                  {/* Phase 4 - Mobile & Extensions Routes */}
+                  <Route path="/pwa-install" element={
+                    <ProtectedRoute>
+                      <AppLayout><PWAInstallPage /></AppLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/flutter-mobile" element={
+                    <ProtectedRoute>
+                      <AppLayout><FlutterMobilePage /></AppLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/extensions-api" element={
+                    <ProtectedRoute>
+                      <RequirePlan minPlan="pro">
+                        <AppLayout><ExtensionAPIPage /></AppLayout>
+                      </RequirePlan>
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Phase 3 - Différenciation Routes */}
                  <Route path="/marketplace-hub" element={
                    <ProtectedRoute>
                      <RequirePlan minPlan="ultra_pro">

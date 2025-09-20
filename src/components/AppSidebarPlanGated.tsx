@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { 
   ChevronDown, Search, Bot, Sparkles, ShoppingCart, Package, BarChart3, 
   Users, ShieldCheck, Zap, Settings, HelpCircle, Lock, Crown, Star, 
-  Database 
+  Database, Smartphone, Download, Code 
 } from "lucide-react";
 import {
   Sidebar,
@@ -278,6 +278,31 @@ const navigationGroups = [
         url: "/settings",
         icon: Settings,
         badge: "Standard"
+      }
+    ]
+  },
+  {
+    title: "Mobile & Extensions",
+    icon: Smartphone,
+    items: [
+      {
+        title: "PWA Mobile",
+        url: "/pwa-install",
+        icon: Smartphone,
+        badge: "PWA"
+      },
+      {
+        title: "App Flutter",
+        url: "/flutter-mobile",
+        icon: Download,
+        badge: "Flutter"
+      },
+      {
+        title: "Extensions & API",
+        url: "/extensions-api",
+        icon: Code,
+        badge: "API",
+        requiredPlan: "pro" as const
       }
     ]
   }
