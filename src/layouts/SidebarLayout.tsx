@@ -1,5 +1,5 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { MainSidebar } from "@/components/layout/MainSidebar";
+import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Search, Bell, User, Menu } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -28,7 +28,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   return (
     <SidebarProvider defaultOpen>
       <div className="min-h-screen w-full flex">
-        <MainSidebar />
+        <AppSidebar />
         
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">

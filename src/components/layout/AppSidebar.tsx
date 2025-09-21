@@ -201,7 +201,9 @@ export function AppSidebar() {
   ] : []
 
   return (
-    <Sidebar className="border-r bg-card"
+    <Sidebar 
+      className="border-r bg-card"
+      collapsible="icon"
     >
       <SidebarContent className="p-2">
         {/* Logo Section */}
