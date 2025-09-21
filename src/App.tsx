@@ -214,6 +214,9 @@ import TeamCollaborationPage from '@/pages/TeamCollaboration';
 import ExtensionNavigatorPage from '@/pages/import/ExtensionNavigatorPage';
 import ImportConfigurationPage from '@/pages/import/ImportConfigurationPage';  
 import ImportHistoryPage from '@/pages/import/ImportHistoryPage';
+import EnterpriseAPIPage from '@/pages/EnterpriseAPIPage';
+import ObservabilityPage from '@/pages/ObservabilityPage';
+import CreativeStudioPage from '@/pages/CreativeStudioPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -496,13 +499,25 @@ function App() {
                      </RequirePlan>
                    </ProtectedRoute>
                  } />
-                 <Route path="/observability" element={
-                   <ProtectedRoute>
-                     <RequirePlan minPlan="ultra_pro">
-                       <AppLayout><MonitoringPage /></AppLayout>
-                     </RequirePlan>
-                   </ProtectedRoute>
-                 } />
+                  <Route path="/observability" element={
+                    <ProtectedRoute>
+                      <RequirePlan minPlan="ultra_pro">
+                        <AppLayout><ObservabilityPage /></AppLayout>
+                      </RequirePlan>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/enterprise-api" element={
+                    <ProtectedRoute>
+                      <RequirePlan minPlan="ultra_pro">
+                        <AppLayout><EnterpriseAPIPage /></AppLayout>
+                      </RequirePlan>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/creative-studio" element={
+                    <ProtectedRoute>
+                      <AppLayout><CreativeStudioPage /></AppLayout>
+                    </ProtectedRoute>
+                  } />
                  
                  {/* Import moderne */}
                 <Route path="/import" element={
@@ -898,12 +913,12 @@ function App() {
                   </ProtectedRoute>
                 } />
 
-                {/* Import Advanced Route */}
-                <Route path="/import/advanced" element={
-                  <ProtectedRoute>
-                    <AppLayout><ImportManagement /></AppLayout>
-                  </ProtectedRoute>
-                } />
+                 {/* Import Advanced Route - Updated */}
+                 <Route path="/import-management" element={
+                   <ProtectedRoute>
+                     <AppLayout><ImportManagement /></AppLayout>
+                   </ProtectedRoute>
+                 } />
                 
                 {/* Admin Panel Route */}
                 <Route path="/admin-panel" element={
