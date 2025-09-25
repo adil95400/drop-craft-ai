@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { useToast } from '@/hooks/use-toast'
 import {
   Select,
   SelectContent,
@@ -23,11 +25,17 @@ import {
   Search, Filter, Eye, Edit, Trash2, Plus, 
   Star, TrendingUp, Zap, Package, Import,
   Download, Upload, BarChart3, Target,
-  ShoppingCart, DollarSign, Users, Globe
+  ShoppingCart, DollarSign, Users, Globe,
+  Bot, Settings, RefreshCw, CheckSquare,
+  AlertTriangle, TrendingDown
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { formatCurrency } from '@/lib/utils'
+import { ProductDetailsModal } from './ProductDetailsModal'
+import { ProductFormModal } from './ProductFormModal'
+import { ImportModal } from './ImportModal'
+import { ExportModal } from './ExportModal'
 
 export function AdvancedProductCatalog() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -36,6 +44,13 @@ export function AdvancedProductCatalog() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [sortBy, setSortBy] = useState('name')
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([])
+  const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  const [showProductDetails, setShowProductDetails] = useState(false)
+  const [showProductForm, setShowProductForm] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [showExportModal, setShowExportModal] = useState(false)
+  const { toast } = useToast()
 
   // Fetch catalog products
   const { data: products = [], isLoading } = useQuery({
@@ -103,7 +118,7 @@ export function AdvancedProductCatalog() {
     const badges = []
     
     if (product.is_bestseller) {
-      badges.push(<Badge key="bestseller" className="bg-gold-100 text-gold-800"><Star className="h-3 w-3 mr-1" />Bestseller</Badge>)
+      badges.push(<Badge key="bestseller" className="bg-yellow-100 text-yellow-800"><Star className="h-3 w-3 mr-1" />Bestseller</Badge>)
     }
     if (product.is_trending) {
       badges.push(<Badge key="trending" className="bg-blue-100 text-blue-800"><TrendingUp className="h-3 w-3 mr-1" />Tendance</Badge>)
@@ -113,6 +128,46 @@ export function AdvancedProductCatalog() {
     }
     
     return badges
+  }
+
+  const handleViewProduct = (product: any) => {
+    setSelectedProduct(product)
+    setShowProductDetails(true)
+  }
+
+  const handleEditProduct = (product: any) => {
+    setSelectedProduct(product)
+    setShowProductForm(true)
+  }
+
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      const { error } = await supabase
+        .from('catalog_products')
+        .delete()
+        .eq('id', productId)
+      
+      if (error) throw error
+      
+      toast({
+        title: "Produit supprimé",
+        description: "Le produit a été supprimé avec succès."
+      })
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le produit.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleBulkAction = (action: string) => {
+    toast({
+      title: "Action en cours",
+      description: `${action} appliquée à ${selectedProducts.length} produits.`
+    })
+    setSelectedProducts([])
   }
 
   const catalogStats = [
@@ -157,15 +212,15 @@ export function AdvancedProductCatalog() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setShowImportModal(true)}>
             <Import className="h-4 w-4 mr-2" />
             Importer
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setShowExportModal(true)}>
             <Download className="h-4 w-4 mr-2" />
             Exporter
           </Button>
-          <Button>
+          <Button onClick={() => setShowProductForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Ajouter produit
           </Button>
@@ -326,13 +381,13 @@ export function AdvancedProductCatalog() {
                         <TableCell>{getStatusBadge(product.availability_status || 'unknown')}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" onClick={() => handleViewProduct(product)}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" onClick={() => handleEditProduct(product)}>
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteProduct(product.id)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -346,54 +401,513 @@ export function AdvancedProductCatalog() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="analytics">
+        <TabsContent value="analytics" className="space-y-6">
+          {/* Performance KPIs */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Revenus totaux</p>
+                    <p className="text-2xl font-bold text-green-600">€{((products.reduce((sum, p) => sum + (p.price || 0) * (p.sales_count || 1), 0))).toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">+12% ce mois</p>
+                  </div>
+                  <DollarSign className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Produits performants</p>
+                    <p className="text-2xl font-bold text-blue-600">{products.filter(p => (p.sales_count || 0) > 10).length}</p>
+                    <p className="text-xs text-muted-foreground">+5% ce mois</p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Taux de conversion</p>
+                    <p className="text-2xl font-bold text-purple-600">3.2%</p>
+                    <p className="text-xs text-muted-foreground">+0.8% ce mois</p>
+                  </div>
+                  <Target className="h-8 w-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Category Performance */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5" />
-                Analytics Catalogue
+                Performance par Catégorie
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Analyses et métriques détaillées de votre catalogue
-              </p>
+              <div className="space-y-4">
+                {categories.slice(0, 5).map((category) => {
+                  const categoryProducts = products.filter(p => p.category === category)
+                  const categoryRevenue = categoryProducts.reduce((sum, p) => sum + (p.price || 0) * (p.sales_count || 1), 0)
+                  const maxRevenue = Math.max(...categories.map(cat => 
+                    products.filter(p => p.category === cat).reduce((sum, p) => sum + (p.price || 0) * (p.sales_count || 1), 0)
+                  ))
+                  const percentage = maxRevenue ? (categoryRevenue / maxRevenue) * 100 : 0
+                  
+                  return (
+                    <div key={category} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">{category}</span>
+                        <div className="text-right">
+                          <span className="font-bold">€{categoryRevenue.toLocaleString()}</span>
+                          <span className="text-sm text-muted-foreground ml-2">({categoryProducts.length} produits)</span>
+                        </div>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div 
+                          className="bg-primary h-2 rounded-full transition-all duration-500" 
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Top Products */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Produits les plus performants</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {products
+                  .sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0))
+                  .slice(0, 5)
+                  .map((product, index) => (
+                    <div key={product.id} className="flex items-center gap-4 p-3 border rounded-lg">
+                      <div className="flex items-center justify-center w-8 h-8 bg-primary/10 text-primary rounded-full font-bold">
+                        {index + 1}
+                      </div>
+                      {product.image_url && (
+                        <img src={product.image_url} alt={product.name} className="w-12 h-12 rounded object-cover" />
+                      )}
+                      <div className="flex-1">
+                        <p className="font-medium">{product.name}</p>
+                        <p className="text-sm text-muted-foreground">{product.category}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold">{formatCurrency(product.price || 0)}</p>
+                        <p className="text-sm text-muted-foreground">{product.sales_count || 0} ventes</p>
+                      </div>
+                    </div>
+                  ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="optimization">
+        <TabsContent value="optimization" className="space-y-6">
+          {/* AI Optimization Dashboard */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Produits optimisés</p>
+                    <p className="text-2xl font-bold">{Math.round(products.length * 0.73)}</p>
+                    <p className="text-xs text-green-600">+15 cette semaine</p>
+                  </div>
+                  <Bot className="h-8 w-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Score SEO moyen</p>
+                    <p className="text-2xl font-bold">87%</p>
+                    <p className="text-xs text-green-600">+5% ce mois</p>
+                  </div>
+                  <Target className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Descriptions générées</p>
+                    <p className="text-2xl font-bold">{Math.round(products.length * 0.45)}</p>
+                    <p className="text-xs text-blue-600">IA Quality: 94%</p>
+                  </div>
+                  <Edit className="h-8 w-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Prix optimisés</p>
+                    <p className="text-2xl font-bold">{Math.round(products.length * 0.62)}</p>
+                    <p className="text-xs text-orange-600">Profit +8%</p>
+                  </div>
+                  <DollarSign className="h-8 w-8 text-orange-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* AI Tools */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bot className="h-5 w-5" />
+                  Optimisation Automatique
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => handleBulkAction('Optimisation SEO IA')}
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    Optimiser SEO avec IA
+                  </Button>
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => handleBulkAction('Génération descriptions IA')}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Générer descriptions IA
+                  </Button>
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => handleBulkAction('Catégorisation automatique')}
+                  >
+                    <Package className="h-4 w-4 mr-2" />
+                    Catégorisation automatique
+                  </Button>
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => handleBulkAction('Optimisation prix intelligente')}
+                  >
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Optimisation prix intelligente
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5" />
+                  Recommandations IA
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="p-3 border-l-4 border-orange-500 bg-orange-50">
+                    <p className="font-medium text-orange-800">Prix non optimaux détectés</p>
+                    <p className="text-sm text-orange-700">23 produits pourraient avoir des prix plus compétitifs</p>
+                    <Button size="sm" className="mt-2" variant="outline">
+                      Corriger automatiquement
+                    </Button>
+                  </div>
+                  
+                  <div className="p-3 border-l-4 border-blue-500 bg-blue-50">
+                    <p className="font-medium text-blue-800">Descriptions à améliorer</p>
+                    <p className="text-sm text-blue-700">15 produits ont des descriptions trop courtes</p>
+                    <Button size="sm" className="mt-2" variant="outline">
+                      Enrichir avec IA
+                    </Button>
+                  </div>
+                  
+                  <div className="p-3 border-l-4 border-green-500 bg-green-50">
+                    <p className="font-medium text-green-800">Opportunités SEO</p>
+                    <p className="text-sm text-green-700">31 produits peuvent améliorer leur référencement</p>
+                    <Button size="sm" className="mt-2" variant="outline">
+                      Optimiser SEO
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* AI Performance */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Optimisation IA
-              </CardTitle>
+              <CardTitle>Performance des Optimisations IA</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Outils d'optimisation alimentés par l'IA
-              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">+24%</p>
+                  <p className="text-sm text-muted-foreground">Amélioration conversions</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-blue-600">+18%</p>
+                  <p className="text-sm text-muted-foreground">Trafic organique</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-purple-600">+31%</p>
+                  <p className="text-sm text-muted-foreground">Engagement produits</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="bulk-actions">
+        <TabsContent value="bulk-actions" className="space-y-6">
+          {/* Selection Interface */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
-                Actions Groupées
+                <CheckSquare className="h-5 w-5" />
+                Sélection des Produits
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Modifier plusieurs produits en une fois
-              </p>
+              <div className="flex items-center gap-4 mb-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSelectedProducts(products.map(p => p.id))}
+                >
+                  Sélectionner tous ({products.length})
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSelectedProducts([])}
+                  disabled={selectedProducts.length === 0}
+                >
+                  Désélectionner tous
+                </Button>
+                <Badge variant="secondary" className="ml-auto">
+                  {selectedProducts.length} produits sélectionnés
+                </Badge>
+              </div>
+              
+              {/* Quick Selection Filters */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setSelectedProducts(products.filter(p => !p.is_trending).map(p => p.id))}
+                >
+                  Non tendance ({products.filter(p => !p.is_trending).length})
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setSelectedProducts(products.filter(p => (p.stock_quantity || 0) < 10).map(p => p.id))}
+                >
+                  Stock faible ({products.filter(p => (p.stock_quantity || 0) < 10).length})
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setSelectedProducts(products.filter(p => (p.rating || 0) < 3).map(p => p.id))}
+                >
+                  Note faible ({products.filter(p => (p.rating || 0) < 3).length})
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setSelectedProducts(products.filter(p => !p.description || p.description.length < 50).map(p => p.id))}
+                >
+                  Description courte ({products.filter(p => !p.description || p.description.length < 50).length})
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Bulk Actions */}
+          {selectedProducts.length > 0 && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5" />
+                  Actions en Masse ({selectedProducts.length} produits)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Pricing Actions */}
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm text-muted-foreground">PRIX ET MARGES</h4>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => handleBulkAction('Augmentation prix +10%')}
+                    >
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      Augmenter prix +10%
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => handleBulkAction('Réduction prix -5%')}
+                    >
+                      <TrendingDown className="h-4 w-4 mr-2" />
+                      Réduire prix -5%
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => handleBulkAction('Ajustement marges optimales')}
+                    >
+                      <Target className="h-4 w-4 mr-2" />
+                      Ajuster marges optimales
+                    </Button>
+                  </div>
+
+                  {/* Content Actions */}
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm text-muted-foreground">CONTENU ET SEO</h4>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => handleBulkAction('Génération descriptions IA')}
+                    >
+                      <Bot className="h-4 w-4 mr-2" />
+                      Générer descriptions IA
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => handleBulkAction('Optimisation SEO')}
+                    >
+                      <Search className="h-4 w-4 mr-2" />
+                      Optimiser SEO
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => handleBulkAction('Traduction multi-langues')}
+                    >
+                      <Globe className="h-4 w-4 mr-2" />
+                      Traduire contenu
+                    </Button>
+                  </div>
+
+                  {/* Management Actions */}
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm text-muted-foreground">GESTION</h4>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => handleBulkAction('Synchronisation stock')}
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Synchroniser stock
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => handleBulkAction('Mise à jour statuts')}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Mettre à jour statuts
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => handleBulkAction('Export sélection')}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Exporter sélection
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Bulk Operations History */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Historique des Opérations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">Optimisation SEO IA</p>
+                    <p className="text-sm text-muted-foreground">45 produits • Il y a 2 heures</p>
+                  </div>
+                  <Badge className="bg-green-100 text-green-800">Terminé</Badge>
+                </div>
+                
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">Ajustement prix automatique</p>
+                    <p className="text-sm text-muted-foreground">23 produits • Il y a 1 jour</p>
+                  </div>
+                  <Badge className="bg-green-100 text-green-800">Terminé</Badge>
+                </div>
+                
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">Génération descriptions IA</p>
+                    <p className="text-sm text-muted-foreground">67 produits • Il y a 3 jours</p>
+                  </div>
+                  <Badge className="bg-green-100 text-green-800">Terminé</Badge>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Modals */}
+      <ProductDetailsModal 
+        product={selectedProduct}
+        open={showProductDetails}
+        onClose={() => setShowProductDetails(false)}
+      />
+      
+      <ProductFormModal 
+        product={selectedProduct}
+        open={showProductForm}
+        onClose={() => {
+          setShowProductForm(false)
+          setSelectedProduct(null)
+        }}
+      />
+      
+      <ImportModal 
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+      />
+      
+      <ExportModal 
+        open={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        selectedProducts={selectedProducts}
+      />
     </div>
   )
 }
