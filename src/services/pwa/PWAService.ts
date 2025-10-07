@@ -69,7 +69,7 @@ class PWAService {
         applicationServerKey: this.urlBase64ToUint8Array(
           // Clé publique VAPID (à configurer avec Firebase)
           'BEl62iUYgUivxIkv69yViEuiBIa40HI80NqIHHNiLqkxaaNXXJf4GJiN8JuHvBqQMZYFCFa2ezgWkGLLvJrTBWBqLPD_7A'
-        )
+        ) as BufferSource
       });
 
       // Envoyer l'abonnement au serveur

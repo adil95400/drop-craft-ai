@@ -6495,7 +6495,12 @@ export type Database = {
         }[]
       }
       admin_set_role: {
-        Args: { new_role: string; target_user_id: string }
+        Args:
+          | {
+              new_role: Database["public"]["Enums"]["app_role"]
+              target_user_id: string
+            }
+          | { new_role: string; target_user_id: string }
         Returns: Json
       }
       admin_set_user_role: {
@@ -6870,6 +6875,10 @@ export type Database = {
       get_user_plan: {
         Args: { user_id_param: string }
         Returns: string
+      }
+      get_user_primary_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
       }
       get_user_role: {
         Args: { check_user_id?: string }
