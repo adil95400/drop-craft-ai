@@ -749,6 +749,16 @@ function App() {
                     <AppLayout><OrderAutomationCenter /></AppLayout>
                   </ProtectedRoute>
                 } />
+                <Route path="/returns" element={
+                  <ProtectedRoute>
+                    <AppLayout><Returns /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/stock" element={
+                  <ProtectedRoute>
+                    <AppLayout><StockPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
                 <Route path="/stock-management" element={
                   <ProtectedRoute>
                     <AppLayout><StockManagementHub /></AppLayout>
