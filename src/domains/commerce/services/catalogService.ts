@@ -22,11 +22,13 @@ export class CatalogService {
     }
 
     try {
-      // Use the new secure catalog products function with role-based data masking
-      const { data, error } = await supabase.rpc('get_catalog_products_secure', {
+      // Use the new secure catalog products function with rate limiting and anti-scraping
+      const { data, error } = await supabase.rpc('get_catalog_products_with_ratelimit', {
         category_filter: filters?.category || null,
         search_term: filters?.search || null,
-        limit_count: 50
+        limit_count: 50,
+        user_ip: null, // Will be set by Supabase edge function if needed
+        user_agent_param: typeof navigator !== 'undefined' ? navigator.userAgent : null
       })
 
       if (error) throw error
@@ -89,11 +91,13 @@ export class CatalogService {
     }
 
     try {
-      // Use the new secure function for single product access
-      const { data, error } = await supabase.rpc('get_catalog_products_secure', {
+      // Use the new secure function with rate limiting for single product access
+      const { data, error } = await supabase.rpc('get_catalog_products_with_ratelimit', {
         category_filter: null,
         search_term: null,
-        limit_count: 1000 // Get more to find specific product
+        limit_count: 1000, // Get more to find specific product
+        user_ip: null,
+        user_agent_param: typeof navigator !== 'undefined' ? navigator.userAgent : null
       })
 
       if (error) throw error
