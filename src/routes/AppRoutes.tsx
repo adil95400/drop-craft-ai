@@ -4,6 +4,9 @@ import ConnectStorePage from '@/pages/stores/ConnectStorePage'
 import { IntegrationsPage } from '@/pages/stores/IntegrationsPage'
 import { ManageIntegrationPage } from '@/pages/stores/ManageIntegrationPage'
 import { StoreDashboard } from '@/pages/stores/StoreDashboard'
+import MarketplaceHubPage from '@/pages/MarketplaceHubPage'
+import MultiTenantPage from '@/pages/MultiTenantPage'
+import AdvancedMonitoringPage from '@/pages/AdvancedMonitoringPage'
 
 export function AppRoutes() {
   return (
@@ -14,6 +17,9 @@ export function AppRoutes() {
         <Route path="stores/connect" element={<ConnectStorePage />} />
         <Route path="stores/integrations" element={<IntegrationsPage />} />
         <Route path="stores/integrations/:id" element={<ManageIntegrationPage />} />
+        <Route path="marketplace-hub" element={<MarketplaceHubPage />} />
+        <Route path="multi-tenant" element={<MultiTenantPage />} />
+        <Route path="observability" element={<AdvancedMonitoringPage />} />
       </Route>
     </Routes>
   )
