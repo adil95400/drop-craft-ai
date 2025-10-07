@@ -195,7 +195,30 @@ export const MarketplaceHub = () => {
     { id: 'konga', name: 'Konga' },
     { id: 'bidorbuy', name: 'BidorBuy' },
     { id: 'coupang', name: 'Coupang' },
-    { id: 'gmarket', name: 'Gmarket' }
+    { id: 'gmarket', name: 'Gmarket' },
+    { id: 'target', name: 'Target' },
+    { id: 'bestbuy', name: 'Best Buy' },
+    { id: 'newegg', name: 'Newegg' },
+    { id: 'overstock', name: 'Overstock' },
+    { id: 'wayfair', name: 'Wayfair' },
+    { id: 'homedepot', name: 'Home Depot' },
+    { id: 'lowes', name: 'Lowe\'s' },
+    { id: 'costco', name: 'Costco' },
+    { id: 'sams', name: 'Sam\'s Club' },
+    { id: 'macys', name: 'Macy\'s' },
+    { id: 'nordstrom', name: 'Nordstrom' },
+    { id: 'sephora', name: 'Sephora' },
+    { id: 'ulta', name: 'Ulta' },
+    { id: 'kohls', name: 'Kohl\'s' },
+    { id: 'jcpenney', name: 'JCPenney' },
+    { id: 'carrefour', name: 'Carrefour' },
+    { id: 'auchan', name: 'Auchan' },
+    { id: 'leclerc', name: 'Leclerc' },
+    { id: 'intermarche', name: 'Intermarché' },
+    { id: 'leroy-merlin', name: 'Leroy Merlin' },
+    { id: 'castorama', name: 'Castorama' },
+    { id: 'bricomarche', name: 'Bricomarché' },
+    { id: 'brico-depot', name: 'Brico Dépôt' }
   ]
 
   if (loading) {
