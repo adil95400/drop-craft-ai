@@ -144,3 +144,6 @@ verify_jwt = true
 
 [functions.observability]
 verify_jwt = true
+
+[functions.stock-prediction]
+verify_jwt = true

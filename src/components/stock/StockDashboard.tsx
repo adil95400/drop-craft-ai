@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useStockManagement } from '@/hooks/useStockManagement'
+import { StockPredictions } from './StockPredictions'
 import { 
   Package, 
   Warehouse, 
@@ -12,7 +13,8 @@ import {
   TrendingUp,
   Activity,
   DollarSign,
-  RefreshCw
+  RefreshCw,
+  Brain
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
@@ -149,7 +151,10 @@ export const StockDashboard = () => {
             )}
           </TabsTrigger>
           <TabsTrigger value="levels">Niveaux de Stock</TabsTrigger>
-          <TabsTrigger value="predictions">Prédictions ML</TabsTrigger>
+          <TabsTrigger value="predictions">
+            <Brain className="h-4 w-4 mr-2" />
+            Prédictions ML
+          </TabsTrigger>
           <TabsTrigger value="movements">Mouvements</TabsTrigger>
         </TabsList>
 
@@ -353,19 +358,27 @@ export const StockDashboard = () => {
         </TabsContent>
 
         <TabsContent value="predictions">
-          <Card>
-            <CardHeader>
-              <CardTitle>Prédictions ML</CardTitle>
-              <CardDescription>
-                Prévisions de rupture de stock basées sur l'IA
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center text-muted-foreground py-8">
-                Fonctionnalité ML en cours de développement
-              </p>
-            </CardContent>
-          </Card>
+          {stockLevels.length > 0 && warehouses.length > 0 ? (
+            <StockPredictions 
+              productId={stockLevels[0]?.product_id || ''}
+              warehouseId={warehouses[0]?.id || ''}
+              currentStock={stockLevels[0]?.available_quantity || 0}
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Prédictions ML</CardTitle>
+                <CardDescription>
+                  Prévisions de rupture de stock basées sur l'IA
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center text-muted-foreground py-8">
+                  Aucun produit disponible pour les prédictions. Ajoutez des produits et des entrepôts pour commencer.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="movements">
