@@ -147,6 +147,7 @@ import PrintManager from '@/components/print/PrintManager';
 import ReturnsPage from '@/pages/ReturnsPage';
 import AdsMarketingPage from '@/pages/AdsMarketingPage';
 import AffiliationPage from '@/pages/AffiliationPage';
+import Returns from '@/pages/Returns';
 
 // Phase 4 - Mobile & Extensions
 import PWAInstallPage from '@/pages/PWAInstallPage';
