@@ -4959,6 +4959,362 @@ export type Database = {
           },
         ]
       }
+      stock_alert_configs: {
+        Row: {
+          alert_type: string
+          created_at: string
+          id: string
+          is_enabled: boolean
+          notification_channels: string[]
+          product_id: string | null
+          threshold: number
+          updated_at: string
+          user_id: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          notification_channels?: string[]
+          product_id?: string | null
+          threshold: number
+          updated_at?: string
+          user_id: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          notification_channels?: string[]
+          product_id?: string | null
+          threshold?: number
+          updated_at?: string
+          user_id?: string
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_alert_configs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_alert_configs_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          current_quantity: number
+          id: string
+          is_resolved: boolean
+          message: string
+          notification_channels: string[] | null
+          notification_sent: boolean
+          product_id: string
+          recommended_action: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          threshold_quantity: number
+          updated_at: string
+          user_id: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          current_quantity: number
+          id?: string
+          is_resolved?: boolean
+          message: string
+          notification_channels?: string[] | null
+          notification_sent?: boolean
+          product_id: string
+          recommended_action?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          threshold_quantity: number
+          updated_at?: string
+          user_id: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          current_quantity?: number
+          id?: string
+          is_resolved?: boolean
+          message?: string
+          notification_channels?: string[] | null
+          notification_sent?: boolean
+          product_id?: string
+          recommended_action?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          threshold_quantity?: number
+          updated_at?: string
+          user_id?: string
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_alerts_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_levels: {
+        Row: {
+          available_quantity: number | null
+          batch_number: string | null
+          cost_per_unit: number | null
+          created_at: string
+          expiry_date: string | null
+          id: string
+          last_count_date: string | null
+          last_restock_date: string | null
+          location_in_warehouse: string | null
+          max_stock_level: number
+          min_stock_level: number
+          product_id: string
+          quantity: number
+          reorder_point: number
+          reorder_quantity: number
+          reserved_quantity: number
+          updated_at: string
+          user_id: string
+          warehouse_id: string
+        }
+        Insert: {
+          available_quantity?: number | null
+          batch_number?: string | null
+          cost_per_unit?: number | null
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          last_count_date?: string | null
+          last_restock_date?: string | null
+          location_in_warehouse?: string | null
+          max_stock_level?: number
+          min_stock_level?: number
+          product_id: string
+          quantity?: number
+          reorder_point?: number
+          reorder_quantity?: number
+          reserved_quantity?: number
+          updated_at?: string
+          user_id: string
+          warehouse_id: string
+        }
+        Update: {
+          available_quantity?: number | null
+          batch_number?: string | null
+          cost_per_unit?: number | null
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          last_count_date?: string | null
+          last_restock_date?: string | null
+          location_in_warehouse?: string | null
+          max_stock_level?: number
+          min_stock_level?: number
+          product_id?: string
+          quantity?: number
+          reorder_point?: number
+          reorder_quantity?: number
+          reserved_quantity?: number
+          updated_at?: string
+          user_id?: string
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_levels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_levels_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          cost_impact: number | null
+          created_at: string
+          from_warehouse_id: string | null
+          id: string
+          movement_type: string
+          notes: string | null
+          performed_by: string | null
+          product_id: string
+          quantity: number
+          reason: string | null
+          reference_id: string | null
+          reference_type: string | null
+          to_warehouse_id: string | null
+          user_id: string
+          warehouse_id: string
+        }
+        Insert: {
+          cost_impact?: number | null
+          created_at?: string
+          from_warehouse_id?: string | null
+          id?: string
+          movement_type: string
+          notes?: string | null
+          performed_by?: string | null
+          product_id: string
+          quantity: number
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          to_warehouse_id?: string | null
+          user_id: string
+          warehouse_id: string
+        }
+        Update: {
+          cost_impact?: number | null
+          created_at?: string
+          from_warehouse_id?: string | null
+          id?: string
+          movement_type?: string
+          notes?: string | null
+          performed_by?: string | null
+          product_id?: string
+          quantity?: number
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          to_warehouse_id?: string | null
+          user_id?: string
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_from_warehouse_id_fkey"
+            columns: ["from_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_to_warehouse_id_fkey"
+            columns: ["to_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_predictions: {
+        Row: {
+          confidence_score: number
+          created_at: string
+          factors: Json
+          id: string
+          model_version: string
+          predicted_demand: number
+          predicted_stockout_date: string | null
+          prediction_date: string
+          product_id: string
+          recommended_reorder_date: string | null
+          recommended_reorder_quantity: number | null
+          user_id: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          confidence_score?: number
+          created_at?: string
+          factors?: Json
+          id?: string
+          model_version?: string
+          predicted_demand: number
+          predicted_stockout_date?: string | null
+          prediction_date: string
+          product_id: string
+          recommended_reorder_date?: string | null
+          recommended_reorder_quantity?: number | null
+          user_id: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          confidence_score?: number
+          created_at?: string
+          factors?: Json
+          id?: string
+          model_version?: string
+          predicted_demand?: number
+          predicted_stockout_date?: string | null
+          prediction_date?: string
+          product_id?: string
+          recommended_reorder_date?: string | null
+          recommended_reorder_quantity?: number | null
+          user_id?: string
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_predictions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_predictions_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_integrations: {
         Row: {
           connection_status: string | null
@@ -6420,6 +6776,60 @@ export type Database = {
           updated_at?: string | null
           user_agent?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      warehouses: {
+        Row: {
+          address: Json
+          capacity: number
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          current_utilization: number
+          id: string
+          is_active: boolean
+          location: string
+          manager_name: string | null
+          name: string
+          operating_hours: Json
+          updated_at: string
+          user_id: string
+          warehouse_type: string
+        }
+        Insert: {
+          address?: Json
+          capacity?: number
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          current_utilization?: number
+          id?: string
+          is_active?: boolean
+          location: string
+          manager_name?: string | null
+          name: string
+          operating_hours?: Json
+          updated_at?: string
+          user_id: string
+          warehouse_type?: string
+        }
+        Update: {
+          address?: Json
+          capacity?: number
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          current_utilization?: number
+          id?: string
+          is_active?: boolean
+          location?: string
+          manager_name?: string | null
+          name?: string
+          operating_hours?: Json
+          updated_at?: string
+          user_id?: string
+          warehouse_type?: string
         }
         Relationships: []
       }

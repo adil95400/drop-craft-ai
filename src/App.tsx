@@ -115,6 +115,7 @@ import AIAssistant from '@/pages/AIAssistant';
 import CatalogPage from '@/pages/CatalogPage';
 import CrmPage from '@/pages/CrmPage';
 import MonitoringPage from '@/pages/MonitoringPage';
+import StockPage from '@/pages/StockPage';
 
 // Phase 3 Pages - Différenciation
 import MarketplaceHubPage from '@/pages/MarketplaceHubPage';
@@ -610,6 +611,11 @@ function App() {
                 <Route path="/product-intelligence" element={
                   <ProtectedRoute>
                     <AppLayout><ProductIntelligencePage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/stock" element={
+                  <ProtectedRoute>
+                    <AppLayout><StockPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/import-old" element={<AppLayout><UnifiedImport /></AppLayout>} />
