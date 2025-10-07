@@ -150,7 +150,26 @@ export const MarketplaceHub = () => {
     { id: 'walmart', name: 'Walmart' },
     { id: 'google-shopping', name: 'Google Shopping' },
     { id: 'leboncoin', name: 'Leboncoin' },
-    { id: 'veepee', name: 'Veepee' }
+    { id: 'veepee', name: 'Veepee' },
+    { id: 'laredoute', name: 'La Redoute' },
+    { id: 'spartoo', name: 'Spartoo' },
+    { id: 'showroomprive', name: 'Showroom Privé' },
+    { id: 'vinted', name: 'Vinted' },
+    { id: 'vestiairecollective', name: 'Vestiaire Collective' },
+    { id: 'mercari', name: 'Mercari' },
+    { id: 'poshmark', name: 'Poshmark' },
+    { id: 'depop', name: 'Depop' },
+    { id: 'zalando', name: 'Zalando' },
+    { id: 'asos', name: 'ASOS' },
+    { id: 'faire', name: 'Faire (B2B)' },
+    { id: 'ankorstore', name: 'Ankorstore (B2B)' },
+    { id: 'chrono24', name: 'Chrono24' },
+    { id: 'reverb', name: 'Reverb' },
+    { id: 'discogs', name: 'Discogs' },
+    { id: 'allegro', name: 'Allegro' },
+    { id: 'bol', name: 'Bol.com' },
+    { id: 'kaufland', name: 'Kaufland' },
+    { id: 'otto', name: 'Otto' }
   ]
 
   if (loading) {
