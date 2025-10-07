@@ -130,6 +130,7 @@ const navigationGroups = [
     items: [
       { title: "Multi-Tenant", url: "/multi-tenant", icon: Building2, badge: "Phase 3" },
       { title: "Enterprise API", url: "/enterprise-api", icon: Network, badge: "Phase 3" },
+      { title: "Enterprise Scalability", url: "/enterprise-scalability", icon: Cloud, badge: "Phase 4" },
       { title: "White Label", url: "/white-label", icon: Crown, badge: "Ultra Pro" },
       { title: "Team Collaboration", url: "/team-collaboration", icon: Users },
       { title: "Observability", url: "/observability", icon: Eye, badge: "Phase 3" },
@@ -262,13 +263,14 @@ export function AppSidebar() {
                               item.badge === "Live" ? "destructive" :
                               "secondary"
                             }
-                            className={`text-xs ${
-                              item.badge === "Phase 3" ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white" : 
-                              item.badge === "Ultra Pro" ? "bg-gradient-to-r from-orange-500 to-red-500 text-white" :
-                              item.badge === "AI" ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white" :
-                              item.badge === "Auto" ? "bg-gradient-to-r from-green-500 to-teal-500 text-white" :
-                              ""
-                            }`}
+                             className={`text-xs ${
+                               item.badge === "Phase 4" ? "bg-gradient-to-r from-indigo-500 to-cyan-500 text-white" :
+                               item.badge === "Phase 3" ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white" : 
+                               item.badge === "Ultra Pro" ? "bg-gradient-to-r from-orange-500 to-red-500 text-white" :
+                               item.badge === "AI" ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white" :
+                               item.badge === "Auto" ? "bg-gradient-to-r from-green-500 to-teal-500 text-white" :
+                               ""
+                             }`}
                           >
                             {item.badge}
                           </Badge>

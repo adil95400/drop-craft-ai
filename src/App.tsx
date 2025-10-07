@@ -121,6 +121,9 @@ import StockPage from '@/pages/StockPage';
 import MarketplaceHubPage from '@/pages/MarketplaceHubPage';
 import MultiTenantPage from '@/pages/MultiTenantPage';
 
+// Phase 4 Pages - Enterprise Scalability
+import EnterpriseScalabilityPage from '@/pages/EnterpriseScalabilityPage';
+
 // Profile & Settings Pages
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
@@ -503,18 +506,28 @@ function App() {
                      </RequirePlan>
                    </ProtectedRoute>
                  } />
-                  <Route path="/observability" element={
-                    <ProtectedRoute>
-                      <RequirePlan minPlan="ultra_pro">
-                        <AppLayout><ObservabilityPage /></AppLayout>
-                      </RequirePlan>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/enterprise-api" element={
-                    <ProtectedRoute>
-                      <RequirePlan minPlan="ultra_pro">
-                        <AppLayout><EnterpriseAPIPage /></AppLayout>
-                      </RequirePlan>
+                   <Route path="/observability" element={
+                     <ProtectedRoute>
+                       <RequirePlan minPlan="ultra_pro">
+                         <AppLayout><ObservabilityPage /></AppLayout>
+                       </RequirePlan>
+                     </ProtectedRoute>
+                   } />
+                   
+                   {/* Phase 4 - Enterprise Scalability Routes */}
+                   <Route path="/enterprise-scalability" element={
+                     <ProtectedRoute>
+                       <RequirePlan minPlan="ultra_pro">
+                         <AppLayout><EnterpriseScalabilityPage /></AppLayout>
+                       </RequirePlan>
+                     </ProtectedRoute>
+                   } />
+                   
+                   <Route path="/enterprise-api" element={
+                     <ProtectedRoute>
+                       <RequirePlan minPlan="ultra_pro">
+                         <AppLayout><EnterpriseAPIPage /></AppLayout>
+                       </RequirePlan>
                     </ProtectedRoute>
                   } />
                   <Route path="/creative-studio" element={
