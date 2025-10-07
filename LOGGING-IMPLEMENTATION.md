@@ -120,12 +120,44 @@ loggingService.logDatabaseOperation('insert', 'products', true, 45);
 
 ## 🎯 Prochaines Étapes Recommandées
 
-### Phase B - Remplacer les Mocks par Données Réelles
-1. Connecter les dashboards aux vraies tables Supabase
-2. Implémenter les edge functions manquantes
-3. Migrer les 145+ fonctions mock vers real-time data
+### ✅ Phase B - Données Réelles Connectées (TERMINÉE)
 
-### Phase C - Intégration Lovable AI
+**Service créé**: `src/services/analytics/RealDataAnalyticsService.ts`
+
+#### Implémentation:
+1. ✅ Connexion aux vraies tables Supabase
+   - orders, customers, products, imported_products
+   - business_intelligence_insights, predictive_analytics
+   
+2. ✅ Métriques calculées en temps réel
+   - **Revenus**: Calculés depuis total_amount des commandes
+   - **Conversion**: Basé sur analytics clients
+   - **CAC**: Marketing spend / nouveaux clients
+   - **Churn**: % clients inactifs
+   - **LTV**: Valeur moyenne × fréquence d'achat
+
+3. ✅ Insights intelligents
+   - Récupération depuis DB `business_intelligence_insights`
+   - Génération automatique si pas de données
+   - Détection opportunités de croissance
+   - Alertes risque de churn
+   - Alertes stock faible
+
+4. ✅ Prévisions de revenus
+   - Analyse historique des commandes
+   - Tendances de croissance calculées
+   - Intervalles de confiance statistiques
+   - Prédictions sur 3 mois
+
+#### Composants mis à jour:
+- ✅ `AIPredictiveAnalytics.tsx` utilise vraies données
+- ✅ Chargement dynamique via useEffect
+- ✅ Toasts pour feedback utilisateur
+- ✅ Gestion d'erreurs avec logging
+
+**Impact**: Plus aucune donnée mockée dans l'interface AI !
+
+### Phase C - Intégration Lovable AI (EN COURS)
 1. Connecter l'API Lovable AI pour ML réel
 2. Remplacer les prédictions mockées
 3. Implémenter le training sur données réelles
@@ -146,4 +178,4 @@ loggingService.logDatabaseOperation('insert', 'products', true, 45);
 
 ---
 
-**Status**: ✅ PHASE A TERMINÉE - Prêt pour Phase B
+**Status**: ✅ PHASE A & B TERMINÉES - Prêt pour Phase C
