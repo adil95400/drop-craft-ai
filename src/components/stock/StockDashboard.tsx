@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useStockManagement } from '@/hooks/useStockManagement'
 import { StockPredictions } from './StockPredictions'
+import { StockAlerts } from './StockAlerts'
+import { AutoReorderManager } from './AutoReorderManager'
 import { 
   Package, 
   Warehouse, 
@@ -14,7 +16,8 @@ import {
   Activity,
   DollarSign,
   RefreshCw,
-  Brain
+  Brain,
+  Zap
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
@@ -150,6 +153,10 @@ export const StockDashboard = () => {
               </Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="reorder">
+            <Zap className="h-4 w-4 mr-2" />
+            Réappro Auto
+          </TabsTrigger>
           <TabsTrigger value="levels">Niveaux de Stock</TabsTrigger>
           <TabsTrigger value="predictions">
             <Brain className="h-4 w-4 mr-2" />
@@ -230,64 +237,11 @@ export const StockDashboard = () => {
         </TabsContent>
 
         <TabsContent value="alerts">
-          <Card>
-            <CardHeader>
-              <CardTitle>Alertes Actives</CardTitle>
-              <CardDescription>
-                {activeAlerts.length} alerte{activeAlerts.length > 1 ? 's' : ''} nécessitant votre attention
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {activeAlerts.map(alert => (
-                  <div key={alert.id} className="p-4 border rounded-lg">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <AlertTriangle className={`h-5 w-5 ${
-                          alert.severity === 'critical' ? 'text-red-500' :
-                          alert.severity === 'high' ? 'text-orange-500' :
-                          alert.severity === 'medium' ? 'text-yellow-500' :
-                          'text-blue-500'
-                        }`} />
-                        <div>
-                          <p className="font-medium">{alert.product?.name || 'Produit'}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {alert.warehouse?.name}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant={
-                        alert.severity === 'critical' ? 'destructive' :
-                        alert.severity === 'high' ? 'default' :
-                        'secondary'
-                      }>
-                        {alert.severity}
-                      </Badge>
-                    </div>
-                    <p className="text-sm mb-2">{alert.message}</p>
-                    {alert.recommended_action && (
-                      <p className="text-sm text-muted-foreground mb-3">
-                        💡 {alert.recommended_action}
-                      </p>
-                    )}
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        Voir Détails
-                      </Button>
-                      <Button size="sm">
-                        Résoudre
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-                {activeAlerts.length === 0 && (
-                  <p className="text-center text-muted-foreground py-8">
-                    Aucune alerte active
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <StockAlerts />
+        </TabsContent>
+
+        <TabsContent value="reorder">
+          <AutoReorderManager />
         </TabsContent>
 
         <TabsContent value="levels">
