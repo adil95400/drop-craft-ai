@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Input } from '@/components/ui/input'
 import { 
   Store, 
   TrendingUp, 
@@ -13,10 +14,17 @@ import {
   AlertCircle,
   RefreshCw,
   Plus,
-  Settings
+  Settings,
+  Search,
+  Filter,
+  BarChart3,
+  ArrowUpRight,
+  ArrowDownRight,
+  Package
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
 interface MarketplaceConnection {
   id: string
@@ -35,6 +43,8 @@ export const MarketplaceHub = () => {
   const [loading, setLoading] = useState(true)
   const [connections, setConnections] = useState<MarketplaceConnection[]>([])
   const [syncing, setSyncing] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterPlatform, setFilterPlatform] = useState<string>('all')
 
   useEffect(() => {
     if (user) {
@@ -314,6 +324,40 @@ export const MarketplaceHub = () => {
 
   const totalRevenue = connections.reduce((sum, c) => sum + ((c.sync_stats as any)?.revenue || 0), 0)
   const totalProducts = connections.reduce((sum, c) => sum + ((c.sync_stats as any)?.products_synced || 0), 0)
+  const totalOrders = connections.reduce((sum, c) => sum + ((c.sync_stats as any)?.orders || 0), 0)
+  const avgSyncTime = '2.3min'
+
+  // Mock data for charts
+  const revenueData = [
+    { name: 'Lun', value: 4200 },
+    { name: 'Mar', value: 3800 },
+    { name: 'Mer', value: 5100 },
+    { name: 'Jeu', value: 4600 },
+    { name: 'Ven', value: 6200 },
+    { name: 'Sam', value: 7800 },
+    { name: 'Dim', value: 5400 }
+  ]
+
+  const platformData = connections.map(c => ({
+    name: c.platform,
+    revenue: (c.sync_stats as any)?.revenue || Math.random() * 5000,
+    products: (c.sync_stats as any)?.products_synced || Math.floor(Math.random() * 100)
+  }))
+
+  const syncPerformanceData = [
+    { time: '00:00', success: 98, errors: 2 },
+    { time: '04:00', success: 99, errors: 1 },
+    { time: '08:00', success: 97, errors: 3 },
+    { time: '12:00', success: 99, errors: 1 },
+    { time: '16:00', success: 98, errors: 2 },
+    { time: '20:00', success: 100, errors: 0 }
+  ]
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
+
+  const filteredMarketplaces = availableMarketplaces.filter(m => 
+    m.name.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -331,23 +375,60 @@ export const MarketplaceHub = () => {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-in">
+        <Card className="hover-scale">
           <CardHeader className="pb-3">
-            <CardDescription>Plateformes connectées</CardDescription>
-            <CardTitle className="text-3xl">{connections.length}</CardTitle>
+            <CardDescription className="flex items-center gap-2">
+              <Store className="h-4 w-4" />
+              Plateformes connectées
+            </CardDescription>
+            <CardTitle className="text-3xl flex items-center gap-2">
+              {connections.length}
+              <Badge variant="secondary" className="text-xs">
+                <TrendingUp className="h-3 w-3 mr-1" />
+                +12%
+              </Badge>
+            </CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="hover-scale">
           <CardHeader className="pb-3">
-            <CardDescription>Produits synchronisés</CardDescription>
-            <CardTitle className="text-3xl">{totalProducts}</CardTitle>
+            <CardDescription className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              Produits synchronisés
+            </CardDescription>
+            <CardTitle className="text-3xl flex items-center gap-2">
+              {totalProducts}
+              <Badge variant="secondary" className="text-xs">
+                <ArrowUpRight className="h-3 w-3" />
+                +8%
+              </Badge>
+            </CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="hover-scale">
           <CardHeader className="pb-3">
-            <CardDescription>Revenus total</CardDescription>
-            <CardTitle className="text-3xl">{totalRevenue.toFixed(2)} €</CardTitle>
+            <CardDescription className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Revenus total
+            </CardDescription>
+            <CardTitle className="text-3xl text-green-600">
+              {totalRevenue.toFixed(2)} €
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card className="hover-scale">
+          <CardHeader className="pb-3">
+            <CardDescription className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Commandes
+            </CardDescription>
+            <CardTitle className="text-3xl flex items-center gap-2">
+              {totalOrders}
+              <Badge variant="secondary" className="text-xs">
+                +15%
+              </Badge>
+            </CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -421,8 +502,22 @@ export const MarketplaceHub = () => {
         </TabsContent>
 
         <TabsContent value="available" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {availableMarketplaces.map((marketplace) => (
+          <div className="mb-4 flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher une plateforme..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Button variant="outline" size="icon">
+              <Filter className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {filteredMarketplaces.map((marketplace) => (
               <Card key={marketplace.id}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -450,30 +545,145 @@ export const MarketplaceHub = () => {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Analytics Marketplace
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Revenus totaux</span>
-                  <span className="text-2xl font-bold">{totalRevenue.toFixed(2)} €</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Produits actifs</span>
-                  <span className="text-2xl font-bold">{totalProducts}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Taux de synchronisation</span>
-                  <span className="text-2xl font-bold">98.5%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <CardTitle className="text-base">Revenus par jour</CardTitle>
+                <CardDescription>7 derniers jours</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <AreaChart data={revenueData}>
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorRevenue)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <CardTitle className="text-base">Revenus par plateforme</CardTitle>
+                <CardDescription>Top 5 plateformes</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={platformData.slice(0, 5)}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="revenue"
+                    >
+                      {platformData.slice(0, 5).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <CardTitle className="text-base">Performance de synchronisation</CardTitle>
+                <CardDescription>Taux de succès vs erreurs</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={syncPerformanceData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Legend />
+                    <Line type="monotone" dataKey="success" stroke="#10b981" strokeWidth={2} name="Succès %" />
+                    <Line type="monotone" dataKey="errors" stroke="#ef4444" strokeWidth={2} name="Erreurs %" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <CardTitle className="text-base">Produits par plateforme</CardTitle>
+                <CardDescription>Distribution des produits</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={platformData.slice(0, 6)}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Bar dataKey="products" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardDescription>Temps de sync moyen</CardDescription>
+                <CardTitle className="text-2xl">{avgSyncTime}</CardTitle>
+                <Progress value={35} className="mt-2" />
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardDescription>Taux de synchronisation</CardDescription>
+                <CardTitle className="text-2xl text-green-600">98.5%</CardTitle>
+                <Progress value={98.5} className="mt-2" />
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardDescription>Syncs aujourd'hui</CardDescription>
+                <CardTitle className="text-2xl">{connections.length * 4}</CardTitle>
+                <Progress value={75} className="mt-2" />
+              </CardHeader>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

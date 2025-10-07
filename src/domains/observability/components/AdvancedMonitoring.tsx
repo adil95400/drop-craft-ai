@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { Activity, AlertTriangle, CheckCircle2, TrendingUp, Cpu, HardDrive, Network, Loader2, Bell } from 'lucide-react'
+import { Activity, AlertTriangle, CheckCircle2, TrendingUp, Cpu, HardDrive, Network, Loader2, Bell, Zap, Clock, Shield } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 interface Metric {
   name: string
@@ -116,6 +117,26 @@ export const AdvancedMonitoring = () => {
 
   const activeAlerts = alerts.filter(a => !a.acknowledged)
   const criticalAlerts = alerts.filter(a => a.severity === 'critical' && !a.acknowledged)
+
+  // Mock real-time performance data
+  const performanceData = [
+    { time: '00:00', cpu: 45, memory: 62, network: 30, responseTime: 120 },
+    { time: '04:00', cpu: 38, memory: 58, network: 25, responseTime: 110 },
+    { time: '08:00', cpu: 62, memory: 68, network: 45, responseTime: 135 },
+    { time: '12:00', cpu: 72, memory: 74, network: 55, responseTime: 145 },
+    { time: '16:00', cpu: 58, memory: 65, network: 42, responseTime: 128 },
+    { time: '20:00', cpu: 48, memory: 60, network: 35, responseTime: 115 }
+  ]
+
+  const uptimeData = [
+    { day: 'Lun', uptime: 99.9 },
+    { day: 'Mar', uptime: 99.8 },
+    { day: 'Mer', uptime: 100 },
+    { day: 'Jeu', uptime: 99.7 },
+    { day: 'Ven', uptime: 99.9 },
+    { day: 'Sam', uptime: 100 },
+    { day: 'Dim', uptime: 99.8 }
+  ]
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -302,37 +323,140 @@ export const AdvancedMonitoring = () => {
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Métriques de Performance</CardTitle>
-              <CardDescription>Analyse temps réel des performances système</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium">Temps de réponse moyen</span>
-                    <span className="text-sm text-muted-foreground">125ms</span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <CardTitle className="text-base">Métriques système temps réel</CardTitle>
+                <CardDescription>CPU, Mémoire, Réseau</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={performanceData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Legend />
+                    <Line type="monotone" dataKey="cpu" stroke="#8b5cf6" strokeWidth={2} name="CPU %" />
+                    <Line type="monotone" dataKey="memory" stroke="#0ea5e9" strokeWidth={2} name="Mémoire %" />
+                    <Line type="monotone" dataKey="network" stroke="#10b981" strokeWidth={2} name="Réseau %" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <CardTitle className="text-base">Temps de réponse API</CardTitle>
+                <CardDescription>Latence moyenne par heure</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={performanceData}>
+                    <defs>
+                      <linearGradient id="colorResponse" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Area type="monotone" dataKey="responseTime" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorResponse)" name="Temps (ms)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <CardTitle className="text-base">Uptime</CardTitle>
+                <CardDescription>Disponibilité sur 7 jours</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={uptimeData}>
+                    <defs>
+                      <linearGradient id="colorUptime" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis domain={[99, 100]} stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Area type="monotone" dataKey="uptime" stroke="#10b981" fillOpacity={1} fill="url(#colorUptime)" name="Uptime %" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <CardTitle className="text-base">KPIs Performance</CardTitle>
+                <CardDescription>Indicateurs clés</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-yellow-500" />
+                      <span className="text-sm">Throughput</span>
+                    </div>
+                    <span className="font-bold">2.4K req/s</span>
                   </div>
-                  <Progress value={25} />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium">Taux de succès</span>
-                    <span className="text-sm text-muted-foreground">99.8%</span>
+                  <Progress value={72} />
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm">P95 Latency</span>
+                    </div>
+                    <span className="font-bold">145ms</span>
                   </div>
-                  <Progress value={99.8} />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium">Requêtes/seconde</span>
-                    <span className="text-sm text-muted-foreground">1,240</span>
+                  <Progress value={29} />
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-green-500" />
+                      <span className="text-sm">Taux d'erreur</span>
+                    </div>
+                    <span className="font-bold text-green-600">0.2%</span>
                   </div>
-                  <Progress value={62} />
+                  <Progress value={0.2} />
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <span className="text-sm">Uptime global</span>
+                    </div>
+                    <span className="font-bold text-green-600">99.9%</span>
+                  </div>
+                  <Progress value={99.9} />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

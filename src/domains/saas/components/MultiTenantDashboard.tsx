@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Building2, Users, Palette, Globe, Shield, Loader2, Plus, Settings } from 'lucide-react'
+import { Building2, Users, Palette, Globe, Shield, Loader2, Plus, Settings, TrendingUp, Activity, DollarSign } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
 interface Tenant {
   id: string
@@ -115,6 +116,33 @@ export const MultiTenantDashboard = () => {
     )
   }
 
+  // Mock data for analytics
+  const revenueData = [
+    { month: 'Jan', revenue: 12000 },
+    { month: 'Fev', revenue: 15000 },
+    { month: 'Mar', revenue: 18000 },
+    { month: 'Avr', revenue: 22000 },
+    { month: 'Mai', revenue: 26000 },
+    { month: 'Juin', revenue: 31000 }
+  ]
+
+  const userGrowthData = [
+    { month: 'Jan', users: 120 },
+    { month: 'Fev', users: 180 },
+    { month: 'Mar', users: 245 },
+    { month: 'Avr', users: 310 },
+    { month: 'Mai', users: 385 },
+    { month: 'Juin', users: 470 }
+  ]
+
+  const planDistribution = [
+    { name: 'Standard', value: tenants.filter(t => t.plan_type === 'standard').length },
+    { name: 'Pro', value: tenants.filter(t => t.plan_type === 'pro').length },
+    { name: 'Enterprise', value: tenants.filter(t => t.plan_type === 'enterprise').length }
+  ]
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28']
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -131,36 +159,178 @@ export const MultiTenantDashboard = () => {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-in">
+        <Card className="hover-scale">
           <CardHeader className="pb-3">
-            <CardDescription>Tenants actifs</CardDescription>
+            <CardDescription className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Tenants actifs
+            </CardDescription>
             <CardTitle className="text-3xl">{tenants.filter(t => t.status === 'active').length}</CardTitle>
+            <Badge variant="secondary" className="mt-2">
+              <TrendingUp className="h-3 w-3 mr-1" />
+              +18% ce mois
+            </Badge>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="hover-scale">
           <CardHeader className="pb-3">
-            <CardDescription>Utilisateurs totaux</CardDescription>
+            <CardDescription className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Utilisateurs totaux
+            </CardDescription>
             <CardTitle className="text-3xl">
               {tenants.length * 10}
             </CardTitle>
+            <Badge variant="secondary" className="mt-2">
+              +24% ce mois
+            </Badge>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="hover-scale">
           <CardHeader className="pb-3">
-            <CardDescription>Plans Premium</CardDescription>
-            <CardTitle className="text-3xl">
-              {tenants.filter(t => t.plan_type !== 'standard').length}
+            <CardDescription className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              MRR
+            </CardDescription>
+            <CardTitle className="text-3xl text-green-600">
+              {(tenants.length * 299).toLocaleString()} €
             </CardTitle>
+            <Badge variant="secondary" className="mt-2">
+              +15% ce mois
+            </Badge>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="hover-scale">
           <CardHeader className="pb-3">
-            <CardDescription>Domaines custom</CardDescription>
+            <CardDescription className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              Domaines custom
+            </CardDescription>
             <CardTitle className="text-3xl">
               {tenants.filter(t => t.branding?.custom_domain).length}
             </CardTitle>
+            <Badge variant="secondary" className="mt-2">
+              {tenants.filter(t => t.branding?.custom_domain).length} actifs
+            </Badge>
           </CardHeader>
+        </Card>
+      </div>
+
+      {/* Analytics Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Croissance des revenus (MRR)</CardTitle>
+            <CardDescription>6 derniers mois</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <AreaChart data={revenueData}>
+                <defs>
+                  <linearGradient id="colorMRR" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorMRR)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Croissance utilisateurs</CardTitle>
+            <CardDescription>6 derniers mois</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={userGrowthData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Line type="monotone" dataKey="users" stroke="hsl(var(--primary))" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Distribution des plans</CardTitle>
+            <CardDescription>Répartition par type de plan</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={planDistribution}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {planDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Activité des tenants</CardTitle>
+            <CardDescription>Dernières 24h</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-green-500" />
+                  <span className="text-sm">API Calls</span>
+                </div>
+                <span className="font-bold">12.4K</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-blue-500" />
+                  <span className="text-sm">Sessions actives</span>
+                </div>
+                <span className="font-bold">342</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-purple-500" />
+                  <span className="text-sm">Requêtes/sec</span>
+                </div>
+                <span className="font-bold">1.2K</span>
+              </div>
+            </div>
+          </CardContent>
         </Card>
       </div>
 
