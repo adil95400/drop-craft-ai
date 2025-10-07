@@ -150,3 +150,6 @@ verify_jwt = true
 
 [functions.auto-stock-reorder]
 verify_jwt = true
+
+[functions.marketing-ai-generator]
+verify_jwt = true

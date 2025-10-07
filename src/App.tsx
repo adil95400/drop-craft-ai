@@ -148,6 +148,7 @@ import ReturnsPage from '@/pages/ReturnsPage';
 import AdsMarketingPage from '@/pages/AdsMarketingPage';
 import AffiliationPage from '@/pages/AffiliationPage';
 import Returns from '@/pages/Returns';
+import MarketingAutomation from '@/pages/MarketingAutomation';
 
 // Phase 4 - Mobile & Extensions
 import PWAInstallPage from '@/pages/PWAInstallPage';
@@ -752,6 +753,11 @@ function App() {
                 <Route path="/returns" element={
                   <ProtectedRoute>
                     <AppLayout><Returns /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/marketing-automation" element={
+                  <ProtectedRoute>
+                    <AppLayout><MarketingAutomation /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/stock" element={
