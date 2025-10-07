@@ -1060,6 +1060,45 @@ export type Database = {
         }
         Relationships: []
       }
+      catalog_access_log: {
+        Row: {
+          access_count: number | null
+          blocked_until: string | null
+          created_at: string
+          first_access_at: string
+          id: string
+          ip_address: string | null
+          is_suspicious: boolean | null
+          last_access_at: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_count?: number | null
+          blocked_until?: string | null
+          created_at?: string
+          first_access_at?: string
+          id?: string
+          ip_address?: string | null
+          is_suspicious?: boolean | null
+          last_access_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_count?: number | null
+          blocked_until?: string | null
+          created_at?: string
+          first_access_at?: string
+          id?: string
+          ip_address?: string | null
+          is_suspicious?: boolean | null
+          last_access_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       catalog_products: {
         Row: {
           attributes: Json | null
@@ -6602,6 +6641,44 @@ export type Database = {
           category_filter?: string
           limit_count?: number
           search_term?: string
+        }
+        Returns: {
+          availability_status: string
+          brand: string
+          category: string
+          competition_score: number
+          cost_price: number
+          created_at: string
+          currency: string
+          delivery_time: string
+          description: string
+          external_id: string
+          id: string
+          image_url: string
+          image_urls: string[]
+          is_bestseller: boolean
+          is_trending: boolean
+          name: string
+          price: number
+          profit_margin: number
+          rating: number
+          reviews_count: number
+          sales_count: number
+          sku: string
+          subcategory: string
+          supplier_name: string
+          supplier_url: string
+          tags: string[]
+          updated_at: string
+        }[]
+      }
+      get_catalog_products_with_ratelimit: {
+        Args: {
+          category_filter?: string
+          limit_count?: number
+          search_term?: string
+          user_agent_param?: string
+          user_ip?: string
         }
         Returns: {
           availability_status: string
