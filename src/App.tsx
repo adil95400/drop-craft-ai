@@ -7,6 +7,7 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UnifiedPlanProvider } from '@/components/plan/UnifiedPlanProvider';
 import { HelmetProvider } from 'react-helmet-async';
+import { PerformanceProvider } from '@/components/providers/PerformanceProvider';
 import { AppLayout } from '@/layouts/AppLayout';
 import { NotificationProvider } from '@/components/notifications/NotificationService';
 import { ThemeProvider } from 'next-themes';
@@ -241,16 +242,17 @@ function App() {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <ErrorBoundary>
-            <UnifiedAuthProvider>
-              <UnifiedPlanProvider>
-                <NotificationProvider>
+        <PerformanceProvider showWidget={false}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ErrorBoundary>
+              <UnifiedAuthProvider>
+                <UnifiedPlanProvider>
+                  <NotificationProvider>
               <Routes>
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
@@ -1045,8 +1047,9 @@ function App() {
         </UnifiedAuthProvider>
       </ErrorBoundary>
     </ThemeProvider>
-  </QueryClientProvider>
-</HelmetProvider>
+        </PerformanceProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 }
 
