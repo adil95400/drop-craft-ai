@@ -90,14 +90,32 @@ export const EnterpriseScalability = () => {
     }
   }
 
-  // Mock data for charts
+  // Enhanced mock data with real-time metrics
   const cpuUsageData = [
-    { time: '00:00', node1: 45, node2: 52, node3: 38, average: 45 },
-    { time: '04:00', node1: 38, node2: 45, node3: 42, average: 42 },
-    { time: '08:00', node1: 68, node2: 72, node3: 65, average: 68 },
-    { time: '12:00', node1: 82, node2: 78, node3: 85, average: 82 },
-    { time: '16:00', node1: 75, node2: 68, node3: 72, average: 72 },
-    { time: '20:00', node1: 55, node2: 58, node3: 52, average: 55 }
+    { time: '00:00', node1: 45, node2: 52, node3: 38, node4: 42, node5: 48, average: 45 },
+    { time: '04:00', node1: 38, node2: 45, node3: 42, node4: 40, node5: 44, average: 42 },
+    { time: '08:00', node1: 68, node2: 72, node3: 65, node4: 70, node5: 69, average: 68 },
+    { time: '12:00', node1: 82, node2: 78, node3: 85, node4: 80, node5: 83, average: 82 },
+    { time: '16:00', node1: 75, node2: 68, node3: 72, node4: 74, node5: 71, average: 72 },
+    { time: '20:00', node1: 55, node2: 58, node3: 52, node4: 56, node5: 54, average: 55 }
+  ]
+
+  const memoryUsageData = [
+    { time: '00:00', usage: 62, threshold: 80 },
+    { time: '04:00', usage: 58, threshold: 80 },
+    { time: '08:00', usage: 74, threshold: 80 },
+    { time: '12:00', usage: 85, threshold: 80 },
+    { time: '16:00', usage: 78, threshold: 80 },
+    { time: '20:00', usage: 68, threshold: 80 }
+  ]
+
+  const networkThroughputData = [
+    { time: '00:00', inbound: 450, outbound: 380 },
+    { time: '04:00', inbound: 320, outbound: 280 },
+    { time: '08:00', inbound: 680, outbound: 590 },
+    { time: '12:00', inbound: 920, outbound: 850 },
+    { time: '16:00', inbound: 780, outbound: 720 },
+    { time: '20:00', inbound: 540, outbound: 480 }
   ]
 
   const requestDistributionData = [
@@ -219,8 +237,8 @@ export const EnterpriseScalability = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card className="animate-fade-in">
               <CardHeader>
-                <CardTitle className="text-base">Utilisation CPU par node</CardTitle>
-                <CardDescription>Top 3 nodes - Dernières 24h</CardDescription>
+                <CardTitle className="text-base">Utilisation CPU Multi-Nodes</CardTitle>
+                <CardDescription>Top 5 nodes actifs - Temps réel 24h</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
@@ -239,7 +257,9 @@ export const EnterpriseScalability = () => {
                     <Line type="monotone" dataKey="node1" stroke="#8b5cf6" strokeWidth={2} name="Node 1" />
                     <Line type="monotone" dataKey="node2" stroke="#0ea5e9" strokeWidth={2} name="Node 2" />
                     <Line type="monotone" dataKey="node3" stroke="#10b981" strokeWidth={2} name="Node 3" />
-                    <Line type="monotone" dataKey="average" stroke="#f59e0b" strokeWidth={3} strokeDasharray="5 5" name="Moyenne" />
+                    <Line type="monotone" dataKey="node4" stroke="#f59e0b" strokeWidth={2} name="Node 4" />
+                    <Line type="monotone" dataKey="node5" stroke="#ec4899" strokeWidth={2} name="Node 5" />
+                    <Line type="monotone" dataKey="average" stroke="#ef4444" strokeWidth={3} strokeDasharray="5 5" name="Moyenne" />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -247,8 +267,76 @@ export const EnterpriseScalability = () => {
 
             <Card className="animate-fade-in">
               <CardHeader>
-                <CardTitle className="text-base">Distribution des requêtes</CardTitle>
-                <CardDescription>Par région géographique</CardDescription>
+                <CardTitle className="text-base">Utilisation Mémoire</CardTitle>
+                <CardDescription>RAM usage avec seuil d'alerte</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={memoryUsageData}>
+                    <defs>
+                      <linearGradient id="colorMemory" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Legend />
+                    <Area type="monotone" dataKey="usage" stroke="#0ea5e9" fillOpacity={1} fill="url(#colorMemory)" name="Usage %" />
+                    <Line type="monotone" dataKey="threshold" stroke="#ef4444" strokeWidth={2} strokeDasharray="5 5" name="Seuil alerte" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <CardTitle className="text-base">Débit Réseau en Temps Réel</CardTitle>
+                <CardDescription>Trafic entrant/sortant (Mbps)</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={networkThroughputData}>
+                    <defs>
+                      <linearGradient id="colorInbound" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                      </linearGradient>
+                      <linearGradient id="colorOutbound" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Legend />
+                    <Area type="monotone" dataKey="inbound" stroke="#10b981" fillOpacity={1} fill="url(#colorInbound)" name="Entrant (Mbps)" />
+                    <Area type="monotone" dataKey="outbound" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorOutbound)" name="Sortant (Mbps)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <CardTitle className="text-base">Distribution Globale des Requêtes</CardTitle>
+                <CardDescription>Performance par région géographique</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>

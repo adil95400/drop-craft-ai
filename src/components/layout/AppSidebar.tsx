@@ -131,6 +131,7 @@ const navigationGroups = [
       { title: "Multi-Tenant", url: "/multi-tenant", icon: Building2, badge: "Phase 3" },
       { title: "Enterprise API", url: "/enterprise-api", icon: Network, badge: "Phase 3" },
       { title: "Enterprise Scalability", url: "/enterprise-scalability", icon: Cloud, badge: "Phase 4" },
+      { title: "AI Predictive Analytics", url: "/ai-predictive-analytics", icon: Brain, badge: "Phase 5" },
       { title: "White Label", url: "/white-label", icon: Crown, badge: "Ultra Pro" },
       { title: "Team Collaboration", url: "/team-collaboration", icon: Users },
       { title: "Observability", url: "/observability", icon: Eye, badge: "Phase 3" },

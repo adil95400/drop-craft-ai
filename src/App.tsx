@@ -124,6 +124,9 @@ import MultiTenantPage from '@/pages/MultiTenantPage';
 // Phase 4 Pages - Enterprise Scalability
 import EnterpriseScalabilityPage from '@/pages/EnterpriseScalabilityPage';
 
+// Phase 5 Pages - AI Intelligence
+import AIPredictiveAnalyticsPage from '@/pages/AIPredictiveAnalyticsPage';
+
 // Profile & Settings Pages
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
@@ -514,14 +517,23 @@ function App() {
                      </ProtectedRoute>
                    } />
                    
-                   {/* Phase 4 - Enterprise Scalability Routes */}
-                   <Route path="/enterprise-scalability" element={
-                     <ProtectedRoute>
-                       <RequirePlan minPlan="ultra_pro">
-                         <AppLayout><EnterpriseScalabilityPage /></AppLayout>
-                       </RequirePlan>
-                     </ProtectedRoute>
-                   } />
+                    {/* Phase 4 - Enterprise Scalability Routes */}
+                    <Route path="/enterprise-scalability" element={
+                      <ProtectedRoute>
+                        <RequirePlan minPlan="ultra_pro">
+                          <AppLayout><EnterpriseScalabilityPage /></AppLayout>
+                        </RequirePlan>
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Phase 5 - AI Predictive Analytics */}
+                    <Route path="/ai-predictive-analytics" element={
+                      <ProtectedRoute>
+                        <RequirePlan minPlan="ultra_pro">
+                          <AppLayout><AIPredictiveAnalyticsPage /></AppLayout>
+                        </RequirePlan>
+                      </ProtectedRoute>
+                    } />
                    
                    <Route path="/enterprise-api" element={
                      <ProtectedRoute>
