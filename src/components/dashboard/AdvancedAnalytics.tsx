@@ -52,6 +52,7 @@ interface CustomerSegment {
   value: number
   growth: number
   color: string
+  [key: string]: any
 }
 
 interface ProductPerformance {
@@ -341,7 +342,7 @@ export function AdvancedAnalytics() {
                       cx="50%"
                       cy="50%"
                       outerRadius={80}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={(props: any) => `${props.name} ${((props.percent || 0) * 100).toFixed(0)}%`}
                     >
                       {customerSegments.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />

@@ -97,7 +97,7 @@ export function StockAnalytics() {
   const categoryDistribution = React.useMemo(() => {
     if (!stockLevels) return [];
     
-    const grouped = stockLevels.reduce((acc: any, level) => {
+    const grouped = stockLevels.reduce((acc: Record<string, any>, level) => {
       const category = level.product?.category || 'Sans catégorie';
       if (!acc[category]) {
         acc[category] = { name: category, value: 0, count: 0 };
