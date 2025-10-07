@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { useOptimizedRealtime } from './useOptimizedRealtime'
 
 interface UseRealTimeUpdatesProps {
   table: string
@@ -67,9 +68,9 @@ export function useRealTimeUpdates({
   return { isConnected }
 }
 
-// Hook for import jobs real-time updates
+// Hook for import jobs real-time updates (optimized)
 export function useImportJobUpdates(onJobUpdate?: (job: any) => void) {
-  return useRealTimeUpdates({
+  return useOptimizedRealtime({
     table: 'import_jobs',
     onUpdate: (payload) => {
       if (payload.new) {
@@ -79,9 +80,9 @@ export function useImportJobUpdates(onJobUpdate?: (job: any) => void) {
   })
 }
 
-// Hook for sync activity real-time updates
+// Hook for sync activity real-time updates (optimized)
 export function useSyncActivityUpdates(onSyncUpdate?: (activity: any) => void) {
-  return useRealTimeUpdates({
+  return useOptimizedRealtime({
     table: 'activity_logs',
     filter: 'action.like.sync_%',
     onUpdate: (payload) => {
@@ -92,9 +93,9 @@ export function useSyncActivityUpdates(onSyncUpdate?: (activity: any) => void) {
   })
 }
 
-// Hook for order updates
+// Hook for order updates (optimized)
 export function useOrderUpdates(onOrderUpdate?: (order: any) => void) {
-  return useRealTimeUpdates({
+  return useOptimizedRealtime({
     table: 'orders',
     onUpdate: (payload) => {
       if (payload.new) {
@@ -104,9 +105,9 @@ export function useOrderUpdates(onOrderUpdate?: (order: any) => void) {
   })
 }
 
-// Hook for product updates
+// Hook for product updates (optimized)
 export function useProductUpdates(onProductUpdate?: (product: any) => void) {
-  return useRealTimeUpdates({
+  return useOptimizedRealtime({
     table: 'imported_products',
     onUpdate: (payload) => {
       if (payload.new) {
