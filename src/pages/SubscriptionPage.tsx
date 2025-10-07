@@ -2,6 +2,7 @@ import React from 'react'
 import { Helmet } from 'react-helmet-async'
 import { CurrentSubscription } from '@/components/subscription/CurrentSubscription'
 import { SubscriptionPlans } from '@/components/subscription/SubscriptionPlans'
+import { PaymentHistory } from '@/components/subscription/PaymentHistory'
 
 const SubscriptionPage = () => {
   return (
@@ -30,6 +31,11 @@ const SubscriptionPage = () => {
           <div>
             <h2 className="text-2xl font-bold text-center mb-6">Nos plans</h2>
             <SubscriptionPlans />
+          </div>
+
+          {/* Payment History */}
+          <div className="max-w-4xl mx-auto">
+            <PaymentHistory />
           </div>
         </div>
       </div>

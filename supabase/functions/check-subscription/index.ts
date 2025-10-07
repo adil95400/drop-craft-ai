@@ -82,11 +82,48 @@ serve(async (req) => {
       logStep("Determined product ID", { productId });
       
       // Map product ID to plan type
-      if (productId === 'prod_T3RS5DA7XYPWBP') plan = 'standard';
-      else if (productId === 'prod_T3RTReiXnCg9hy') plan = 'pro';
-      else if (productId === 'prod_T3RTMipVwUA7Ud') plan = 'ultra_pro';
+      const planMap: Record<string, string> = {
+        "prod_T3RS5DA7XYPWBP": "standard",
+        "prod_T3RTReiXnCg9hy": "pro",
+        "prod_T3RTMipVwUA7Ud": "ultra_pro"
+      };
+      
+      plan = planMap[productId] || 'standard';
+      
+      // Sync with profiles table
+      logStep("Syncing plan with profiles", { plan, productId });
+      
+      const { error: updateError } = await supabaseClient
+        .from('profiles')
+        .update({ 
+          plan,
+          subscription_plan: plan,
+          subscription_status: 'active',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+      
+      if (updateError) {
+        logStep("Error syncing profile", { error: updateError.message });
+      } else {
+        logStep("Profile synced successfully");
+      }
     } else {
       logStep("No active subscription found");
+      
+      // Reset to standard if no active subscription
+      const { error: resetError } = await supabaseClient
+        .from('profiles')
+        .update({ 
+          plan: 'standard',
+          subscription_status: 'inactive',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+      
+      if (resetError) {
+        logStep("Error resetting profile", { error: resetError.message });
+      }
     }
 
     return new Response(JSON.stringify({

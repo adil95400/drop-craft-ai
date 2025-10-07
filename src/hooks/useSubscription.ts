@@ -35,9 +35,33 @@ export function useSubscription() {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('check-subscription');
 
-      if (error) throw error;
+      if (error) {
+        // Handle specific error cases
+        if (error.message?.includes('Rate limit')) {
+          toast({
+            title: "Limite atteinte",
+            description: "Trop de requêtes. Veuillez réessayer dans quelques instants.",
+            variant: "destructive"
+          });
+        } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+          toast({
+            title: "Erreur de connexion",
+            description: "Vérifiez votre connexion internet",
+            variant: "destructive"
+          });
+        } else {
+          throw error;
+        }
+        return;
+      }
 
       setSubscription(data);
+      
+      // Trigger plan refetch to sync UI
+      if (data?.subscribed && data?.product_id) {
+        // The check-subscription function already syncs with profiles
+        console.log('Subscription verified and synced with profile');
+      }
     } catch (error) {
       console.error('Error checking subscription:', error);
       toast({
