@@ -149,6 +149,7 @@ import AdsMarketingPage from '@/pages/AdsMarketingPage';
 import AffiliationPage from '@/pages/AffiliationPage';
 import Returns from '@/pages/Returns';
 import MarketingAutomation from '@/pages/MarketingAutomation';
+import AutomationHub from '@/pages/AutomationHub';
 
 // Phase 4 - Mobile & Extensions
 import PWAInstallPage from '@/pages/PWAInstallPage';
@@ -748,6 +749,11 @@ function App() {
                 <Route path="/automation-center" element={
                   <ProtectedRoute>
                     <AppLayout><OrderAutomationCenter /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/automation-hub" element={
+                  <ProtectedRoute>
+                    <AppLayout><AutomationHub /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/returns" element={
