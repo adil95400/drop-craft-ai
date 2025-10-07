@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import Stripe from "https://esm.sh/stripe@18.5.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,11 +18,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Use the service role key to perform writes (upsert) in Supabase
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false } }
+    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
   );
 
   try {
@@ -45,23 +43,15 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
     if (customers.data.length === 0) {
-      logStep("No customer found, updating unsubscribed state");
-      await supabaseClient.from("subscribers").upsert({
-        email: user.email,
-        user_id: user.id,
-        stripe_customer_id: null,
-        subscribed: false,
-        subscription_tier: null,
-        subscription_end: null,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'email' });
+      logStep("No customer found, returning free plan");
       return new Response(JSON.stringify({ 
         subscribed: false,
-        subscription_tier: 'standard',
+        product_id: null,
+        plan: 'free',
         subscription_end: null
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -77,54 +67,32 @@ serve(async (req) => {
       status: "active",
       limit: 1,
     });
+    
     const hasActiveSub = subscriptions.data.length > 0;
-    let subscriptionTier = 'standard'; // Default to standard for free users
+    let productId = null;
     let subscriptionEnd = null;
+    let plan = 'free';
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
       
-      // Determine subscription tier from price amount
-      const priceId = subscription.items.data[0].price.id;
-      const price = await stripe.prices.retrieve(priceId);
-      const amount = price.unit_amount || 0;
+      productId = subscription.items.data[0].price.product as string;
+      logStep("Determined product ID", { productId });
       
-      // Map prices to tiers (in cents)
-      if (amount >= 3999) {
-        subscriptionTier = "ultra_pro"; // €39.99+
-      } else if (amount >= 1999) {
-        subscriptionTier = "pro"; // €19.99+
-      } else if (amount >= 999) {
-        subscriptionTier = "standard"; // €9.99+
-      }
-      
-      logStep("Determined subscription tier", { priceId, amount, subscriptionTier });
+      // Map product ID to plan type
+      if (productId === 'prod_T3RS5DA7XYPWBP') plan = 'standard';
+      else if (productId === 'prod_T3RTReiXnCg9hy') plan = 'pro';
+      else if (productId === 'prod_T3RTMipVwUA7Ud') plan = 'ultra_pro';
     } else {
       logStep("No active subscription found");
     }
 
-    // Update Supabase with subscription info
-    const { error: upsertError } = await supabaseClient.from("subscribers").upsert({
-      email: user.email,
-      user_id: user.id,
-      stripe_customer_id: customerId,
-      subscribed: hasActiveSub,
-      subscription_tier: subscriptionTier,
-      subscription_end: subscriptionEnd,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'email' });
-
-    if (upsertError) {
-      logStep("Error updating subscriber", { error: upsertError });
-    } else {
-      logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
-    }
-
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
-      subscription_tier: subscriptionTier,
+      product_id: productId,
+      plan: plan,
       subscription_end: subscriptionEnd
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

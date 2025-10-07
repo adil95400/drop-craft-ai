@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import Stripe from "https://esm.sh/stripe@18.5.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -42,11 +42,11 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Get request body for plan selection
-    const { plan = "pro", mode = "subscription" } = await req.json();
-    logStep("Plan and mode received", { plan, mode });
+    const { priceId } = await req.json();
+    if (!priceId) throw new Error("Price ID is required");
+    logStep("Price ID received", { priceId });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     // Check if customer exists
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -56,52 +56,19 @@ serve(async (req) => {
       logStep("Found existing customer", { customerId });
     }
 
-    // Define pricing based on plan
-    const pricingConfig = {
-      standard: { amount: 999, name: "Standard Plan" }, // €9.99
-      pro: { amount: 1999, name: "Pro Plan" }, // €19.99
-      ultra_pro: { amount: 3999, name: "Ultra Pro Plan" } // €39.99
-    };
-
-    const selectedPricing = pricingConfig[plan as keyof typeof pricingConfig] || pricingConfig.pro;
-    logStep("Pricing selected", selectedPricing);
-
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price_data: {
-            currency: "eur",
-            product_data: { 
-              name: selectedPricing.name,
-              description: `Abonnement ${selectedPricing.name} - Drop Craft AI`
-            },
-            unit_amount: selectedPricing.amount,
-            ...(mode === "subscription" ? {
-              recurring: { interval: "month" }
-            } : {})
-          },
+          price: priceId,
           quantity: 1,
         },
       ],
-      mode: mode as "subscription" | "payment",
-      success_url: `${req.headers.get("origin")}/dashboard?checkout=success&plan=${plan}`,
-      cancel_url: `${req.headers.get("origin")}/dashboard?checkout=cancel`,
-      metadata: {
-        user_id: user.id,
-        plan: plan
-      },
-      // Add customer portal access for subscriptions
-      ...(mode === "subscription" ? {
-        subscription_data: {
-          metadata: {
-            user_id: user.id,
-            plan: plan
-          }
-        }
-      } : {})
+      mode: "subscription",
+      success_url: `${req.headers.get("origin")}/subscription?success=true`,
+      cancel_url: `${req.headers.get("origin")}/subscription?canceled=true`,
     });
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
