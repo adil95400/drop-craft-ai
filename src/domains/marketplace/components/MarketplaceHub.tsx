@@ -138,7 +138,19 @@ export const MarketplaceHub = () => {
     { id: 'amazon', name: 'Amazon' },
     { id: 'ebay', name: 'eBay' },
     { id: 'facebook', name: 'Facebook Marketplace' },
-    { id: 'shopify', name: 'Shopify' }
+    { id: 'shopify', name: 'Shopify' },
+    { id: 'cdiscount', name: 'Cdiscount' },
+    { id: 'rakuten', name: 'Rakuten' },
+    { id: 'manomano', name: 'ManoMano' },
+    { id: 'fnac', name: 'Fnac' },
+    { id: 'backmarket', name: 'Back Market' },
+    { id: 'wish', name: 'Wish' },
+    { id: 'aliexpress', name: 'AliExpress' },
+    { id: 'etsy', name: 'Etsy' },
+    { id: 'walmart', name: 'Walmart' },
+    { id: 'google-shopping', name: 'Google Shopping' },
+    { id: 'leboncoin', name: 'Leboncoin' },
+    { id: 'veepee', name: 'Veepee' }
   ]
 
   if (loading) {
