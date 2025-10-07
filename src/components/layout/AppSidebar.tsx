@@ -111,6 +111,7 @@ const navigationGroups = [
       { title: "Automation Studio", url: "/automation-studio", icon: Zap, badge: "Auto" },
       { title: "Automation", url: "/automation", icon: Workflow },
       { title: "Stock Management", url: "/stock-management", icon: Package },
+      { title: "Stock Avancé", url: "/stock", icon: Database, badge: "Pro" },
       { title: "Returns", url: "/returns", icon: RefreshCw, badge: "Ultra Pro" },
     ]
   },
