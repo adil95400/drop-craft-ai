@@ -7,6 +7,7 @@ import { useStockManagement } from '@/hooks/useStockManagement'
 import { StockPredictions } from './StockPredictions'
 import { StockAlerts } from './StockAlerts'
 import { AutoReorderManager } from './AutoReorderManager'
+import { StockAnalytics } from './StockAnalytics'
 import { 
   Package, 
   Warehouse, 
@@ -17,7 +18,8 @@ import {
   DollarSign,
   RefreshCw,
   Brain,
-  Zap
+  Zap,
+  BarChart3
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
@@ -157,6 +159,10 @@ export const StockDashboard = () => {
             <Zap className="h-4 w-4 mr-2" />
             Réappro Auto
           </TabsTrigger>
+          <TabsTrigger value="analytics">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Analytics
+          </TabsTrigger>
           <TabsTrigger value="levels">Niveaux de Stock</TabsTrigger>
           <TabsTrigger value="predictions">
             <Brain className="h-4 w-4 mr-2" />
@@ -242,6 +248,10 @@ export const StockDashboard = () => {
 
         <TabsContent value="reorder">
           <AutoReorderManager />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <StockAnalytics />
         </TabsContent>
 
         <TabsContent value="levels">
