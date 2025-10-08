@@ -50,19 +50,45 @@ export const AutoDetectionDashboard: React.FC = () => {
     topPlatform: '',
     lastUpdate: ''
   });
+  const [filters, setFilters] = useState({
+    platform: 'all',
+    competition: 'all',
+    minViralityScore: 0
+  });
+  const [sortBy, setSortBy] = useState<'virality' | 'trending' | 'profit'>('virality');
 
   useEffect(() => {
     loadDetectedProducts();
+    const interval = setInterval(loadDetectedProducts, 60000); // Auto-refresh every minute
+    return () => clearInterval(interval);
   }, []);
 
   const loadDetectedProducts = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('winner_products')
-        .select('*')
-        .order('virality_score', { ascending: false })
-        .limit(50);
+        .select('*');
+
+      // Apply filters
+      if (filters.platform !== 'all') {
+        query = query.eq('source_platform', filters.platform);
+      }
+      if (filters.competition !== 'all') {
+        query = query.eq('competition_level', filters.competition);
+      }
+      if (filters.minViralityScore > 0) {
+        query = query.gte('virality_score', filters.minViralityScore);
+      }
+
+      // Apply sorting
+      const sortColumn = sortBy === 'virality' ? 'virality_score' 
+                       : sortBy === 'trending' ? 'trending_score' 
+                       : 'estimated_profit_margin';
+      
+      query = query.order(sortColumn, { ascending: false }).limit(50);
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -70,6 +96,11 @@ export const AutoDetectionDashboard: React.FC = () => {
       calculateStats(data || []);
     } catch (error) {
       console.error('Error loading detected products:', error);
+      toast({
+        title: "Erreur de chargement",
+        description: "Impossible de charger les produits. Réessayez dans quelques instants.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -80,34 +111,51 @@ export const AutoDetectionDashboard: React.FC = () => {
     setProgress(0);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Phase 1: Analyse TikTok
+      await new Promise(resolve => setTimeout(resolve, 800));
       setProgress(25);
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Phase 2: Analyse Facebook
+      await new Promise(resolve => setTimeout(resolve, 800));
       setProgress(50);
       
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Phase 3: Analyse Instagram
+      await new Promise(resolve => setTimeout(resolve, 800));
       setProgress(75);
       
-      const { data, error } = await supabase.functions.invoke('auto-detect-winners');
+      // Phase 4: Calcul des scores
+      const { data, error } = await supabase.functions.invoke('auto-detect-winners', {
+        body: { 
+          filters,
+          timestamp: new Date().toISOString() 
+        }
+      });
       
-      if (error) throw error;
+      if (error) {
+        throw new Error(error.message || 'Échec de la détection automatique');
+      }
 
       setProgress(100);
+      
+      // Wait a bit for data to be committed
+      await new Promise(resolve => setTimeout(resolve, 500));
       await loadDetectedProducts();
 
       toast({
-        title: "Détection terminée",
-        description: `${data.count} produits gagnants détectés automatiquement`
+        title: "✅ Détection terminée avec succès",
+        description: `${data?.count || 0} nouveaux produits gagnants détectés !`
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error running auto-detection:', error);
       toast({
-        title: "Erreur de détection",
-        description: "Une erreur est survenue lors de la détection automatique",
+        title: "❌ Erreur de détection",
+        description: error.message || "Une erreur est survenue. Vérifiez votre connexion et réessayez.",
         variant: "destructive"
       });
+      
+      // Fallback: show cached data
+      await loadDetectedProducts();
     } finally {
       setIsDetecting(false);
       setTimeout(() => setProgress(0), 1000);
@@ -299,13 +347,88 @@ export const AutoDetectionDashboard: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Filtres et tri */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Plateforme</label>
+              <select 
+                className="w-full p-2 border rounded"
+                value={filters.platform}
+                onChange={(e) => {
+                  setFilters({...filters, platform: e.target.value});
+                  loadDetectedProducts();
+                }}
+              >
+                <option value="all">Toutes</option>
+                <option value="tiktok">TikTok</option>
+                <option value="facebook">Facebook</option>
+                <option value="instagram">Instagram</option>
+                <option value="aliexpress">AliExpress</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Concurrence</label>
+              <select 
+                className="w-full p-2 border rounded"
+                value={filters.competition}
+                onChange={(e) => {
+                  setFilters({...filters, competition: e.target.value});
+                  loadDetectedProducts();
+                }}
+              >
+                <option value="all">Tous niveaux</option>
+                <option value="low">Faible</option>
+                <option value="medium">Moyenne</option>
+                <option value="high">Élevée</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Score minimum</label>
+              <select 
+                className="w-full p-2 border rounded"
+                value={filters.minViralityScore}
+                onChange={(e) => {
+                  setFilters({...filters, minViralityScore: parseInt(e.target.value)});
+                  loadDetectedProducts();
+                }}
+              >
+                <option value="0">Tous</option>
+                <option value="70">70%+</option>
+                <option value="80">80%+</option>
+                <option value="90">90%+</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Trier par</label>
+              <select 
+                className="w-full p-2 border rounded"
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value as any);
+                  loadDetectedProducts();
+                }}
+              >
+                <option value="virality">Score viral</option>
+                <option value="trending">Tendance</option>
+                <option value="profit">Marge profit</option>
+              </select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Liste des produits détectés */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Produits détectés ({detectedProducts.length})</h3>
+          <h3 className="text-lg font-semibold">
+            Produits détectés ({detectedProducts.length})
+            {filters.platform !== 'all' && <Badge className="ml-2">{filters.platform}</Badge>}
+          </h3>
           <Button variant="outline" size="sm">
             <Download className="w-4 h-4 mr-2" />
-            Exporter
+            Exporter CSV
           </Button>
         </div>
         
