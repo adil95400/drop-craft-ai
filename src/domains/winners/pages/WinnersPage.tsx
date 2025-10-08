@@ -1,27 +1,37 @@
-import React, { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { TrendingUp, Target, GitCompare, BarChart3, Package } from 'lucide-react'
-import { WinnersSearchInterface } from '@/components/winners/WinnersSearchInterface'
-import { WinnersProductGrid } from '@/components/winners/WinnersProductGrid'
-import { WinnersAnalyticsDashboard } from '@/components/winners/WinnersAnalyticsDashboard'
-import { WinnersImportFlow } from '@/components/winners/WinnersImportFlow'
-import { WinnersAdvancedFilters } from '@/components/winners/WinnersAdvancedFilters'
-import { WinnersTrendChart } from '@/components/winners/WinnersTrendChart'
-import { WinnersComparison } from '@/components/winners/WinnersComparison'
-import { WinnersExportTools } from '@/components/winners/WinnersExportTools'
-import { WinnersSavedSearches } from '@/components/winners/WinnersSavedSearches'
-import { WinnersBatchImport } from '@/components/winners/WinnersBatchImport'
-import { WinnersAIRecommendations } from '@/components/winners/WinnersAIRecommendations'
-import { TrendingNichesCard } from '../components/TrendingNichesCard'
-import { useWinnersOptimized } from '@/hooks/useWinnersOptimized'
-import { useWinnersNotifications } from '../hooks/useWinnersNotifications'
-import { TrendingNiche, WinnerProduct } from '../types'
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TrendingUp, Target, GitCompare, Grid, Sparkles, Bell, Calculator } from 'lucide-react';
+import { WinnersSearchInterface } from '@/components/winners/WinnersSearchInterface';
+import { WinnersProductGrid } from '@/components/winners/WinnersProductGrid';
+import { WinnersAnalyticsDashboard } from '@/components/winners/WinnersAnalyticsDashboard';
+import { WinnersImportFlow } from '@/components/winners/WinnersImportFlow';
+import { WinnersAdvancedFilters } from '@/components/winners/WinnersAdvancedFilters';
+import { WinnersTrendChart } from '@/components/winners/WinnersTrendChart';
+import { WinnersComparison } from '@/components/winners/WinnersComparison';
+import { WinnersExportTools } from '@/components/winners/WinnersExportTools';
+import { WinnersSavedSearches } from '@/components/winners/WinnersSavedSearches';
+import { WinnersBatchImport } from '@/components/winners/WinnersBatchImport';
+import { WinnersAIRecommendations } from '@/components/winners/WinnersAIRecommendations';
+import { WinnersProductAnalysis } from '@/components/winners/WinnersProductAnalysis';
+import { WinnersProfitCalculator } from '@/components/winners/WinnersProfitCalculator';
+import { WinnersMarketIntelligence } from '@/components/winners/WinnersMarketIntelligence';
+import { WinnersAlertSystem } from '@/components/winners/WinnersAlertSystem';
+import { TrendingNichesCard } from '../components/TrendingNichesCard';
+import { useWinnersOptimized } from '@/hooks/useWinnersOptimized';
+import { useWinnersNotifications } from '../hooks/useWinnersNotifications';
+import { TrendingNiche, WinnerProduct } from '../types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const WinnersPage = () => {
-  const { 
-    products, 
+  const [activeTab, setActiveTab] = useState('grid');
+  const [selectedProducts, setSelectedProducts] = useState<WinnerProduct[]>([]);
+  const [analysisProduct, setAnalysisProduct] = useState<WinnerProduct | null>(null);
+  const [calculatorProduct, setCalculatorProduct] = useState<WinnerProduct | null>(null);
+  
+  const {
+    products,
     stats,
     searchParams,
     isLoading,
@@ -32,52 +42,41 @@ const WinnersPage = () => {
     setSearchParams,
     toggleFavorite,
     favorites
-  } = useWinnersOptimized()
+  } = useWinnersOptimized();
 
-  // Enable smart notifications
-  useWinnersNotifications(products)
+  useWinnersNotifications(products);
 
-  const [selectedProduct, setSelectedProduct] = useState<WinnerProduct | null>(null)
-  const [showImportFlow, setShowImportFlow] = useState(false)
-  const [showBatchImport, setShowBatchImport] = useState(false)
-  const [selectedForComparison, setSelectedForComparison] = useState<string[]>([])
+  const [selectedProduct, setSelectedProduct] = useState<WinnerProduct | null>(null);
+  const [showImportFlow, setShowImportFlow] = useState(false);
+  const [showBatchImport, setShowBatchImport] = useState(false);
 
   const handleNicheClick = (niche: TrendingNiche) => {
     search({
       query: niche.name,
       category: niche.category,
       limit: 20
-    })
-  }
+    });
+  };
 
   const handleAnalyzeTrends = () => {
-    analyzeTrends('trending products 2024')
-  }
+    analyzeTrends('trending products 2024');
+  };
 
   const handleImportClick = (product: WinnerProduct) => {
-    setSelectedProduct(product)
-    setShowImportFlow(true)
-  }
+    setSelectedProduct(product);
+    setShowImportFlow(true);
+  };
 
   const handleConfirmImport = async (product: WinnerProduct, customData: any) => {
-    await importProduct(product)
-    setShowImportFlow(false)
-  }
+    await importProduct(product);
+    setShowImportFlow(false);
+  };
 
   const handleBatchImport = async (products: WinnerProduct[]) => {
     for (const product of products) {
-      await importProduct(product)
+      await importProduct(product);
     }
-  }
-
-  const handleFilterChange = (filters: any) => {
-    setSearchParams((prev: any) => ({
-      ...prev,
-      minScore: filters.minScore,
-      maxPrice: filters.maxPrice,
-      sources: filters.sources
-    }))
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -92,7 +91,6 @@ const WinnersPage = () => {
         <div className="flex gap-2">
           <WinnersExportTools products={products} />
           <Button variant="outline" onClick={() => setShowBatchImport(true)}>
-            <Package className="h-4 w-4 mr-2" />
             Import Masse
           </Button>
           <Button variant="outline" onClick={handleAnalyzeTrends}>
@@ -105,44 +103,54 @@ const WinnersPage = () => {
       {/* Analytics Dashboard */}
       <WinnersAnalyticsDashboard stats={stats} isLoading={isLoading} />
 
-      {/* Trend Charts */}
-      <WinnersTrendChart products={products} />
-
       {/* Search Interface */}
       <WinnersSearchInterface />
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <Tabs defaultValue="grid" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <TabsList className="grid w-full grid-cols-6 lg:w-auto">
               <TabsTrigger value="grid">
-                <Target className="h-4 w-4 mr-2" />
-                Grille ({products.length})
+                <Grid className="w-4 h-4 mr-2" />
+                Grille
               </TabsTrigger>
               <TabsTrigger value="comparison">
-                <GitCompare className="h-4 w-4 mr-2" />
-                Comparer ({selectedForComparison.length})
+                <GitCompare className="w-4 h-4 mr-2" />
+                Comparateur
               </TabsTrigger>
               <TabsTrigger value="analytics">
-                <BarChart3 className="h-4 w-4 mr-2" />
+                <TrendingUp className="w-4 h-4 mr-2" />
                 Analytics
+              </TabsTrigger>
+              <TabsTrigger value="market">
+                <Target className="w-4 h-4 mr-2" />
+                Marché
+              </TabsTrigger>
+              <TabsTrigger value="alerts">
+                <Bell className="w-4 h-4 mr-2" />
+                Alertes
+              </TabsTrigger>
+              <TabsTrigger value="ai">
+                <Sparkles className="w-4 h-4 mr-2" />
+                IA
               </TabsTrigger>
             </TabsList>
 
+            {/* Grid Tab */}
             <TabsContent value="grid">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span className="flex items-center gap-2">
                       <Target className="h-5 w-5 text-primary" />
-                      Winners Détectés
+                      Winners Détectés ({products.length})
                     </span>
-                    {selectedForComparison.length > 0 && (
+                    {selectedProducts.length > 0 && (
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => setSelectedForComparison([])}
+                        onClick={() => setSelectedProducts([])}
                       >
                         Effacer sélection
                       </Button>
@@ -159,16 +167,33 @@ const WinnersPage = () => {
               </Card>
             </TabsContent>
 
+            {/* Comparison Tab */}
             <TabsContent value="comparison">
-              <WinnersComparison
+              <WinnersComparison 
                 products={products}
-                selectedIds={selectedForComparison}
-                onCompare={setSelectedForComparison}
+                selectedIds={selectedProducts.map(p => p.id)}
+                onCompare={(ids) => setSelectedProducts(products.filter(p => ids.includes(p.id)))}
               />
             </TabsContent>
 
-            <TabsContent value="analytics">
+            {/* Analytics Tab */}
+            <TabsContent value="analytics" className="space-y-4">
               <WinnersTrendChart products={products} />
+            </TabsContent>
+
+            {/* Market Intelligence Tab */}
+            <TabsContent value="market" className="space-y-4">
+              <WinnersMarketIntelligence />
+            </TabsContent>
+
+            {/* Alerts Tab */}
+            <TabsContent value="alerts" className="space-y-4">
+              <WinnersAlertSystem />
+            </TabsContent>
+
+            {/* AI Recommendations Tab */}
+            <TabsContent value="ai" className="space-y-4">
+              <WinnersAIRecommendations products={products} onSelectProduct={handleImportClick} />
             </TabsContent>
           </Tabs>
         </div>
@@ -176,13 +201,8 @@ const WinnersPage = () => {
         {/* Sidebar */}
         <div className="space-y-6">
           <WinnersAdvancedFilters 
-            onFilterChange={handleFilterChange}
-            isOpen={false}
-          />
-
-          <WinnersAIRecommendations
-            products={products}
-            onSelectProduct={handleImportClick}
+            filters={searchParams}
+            onFiltersChange={setSearchParams}
           />
 
           <WinnersSavedSearches
@@ -229,9 +249,29 @@ const WinnersPage = () => {
         onClose={() => setShowBatchImport(false)}
         onConfirm={handleBatchImport}
       />
-    </div>
-  )
-}
 
-export { WinnersPage }
-export default WinnersPage
+      {/* Product Analysis Dialog */}
+      <Dialog open={!!analysisProduct} onOpenChange={() => setAnalysisProduct(null)}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Analyse Complète du Produit</DialogTitle>
+          </DialogHeader>
+          {analysisProduct && <WinnersProductAnalysis product={analysisProduct} />}
+        </DialogContent>
+      </Dialog>
+
+      {/* Profit Calculator Dialog */}
+      <Dialog open={!!calculatorProduct} onOpenChange={() => setCalculatorProduct(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Calculateur de Rentabilité</DialogTitle>
+          </DialogHeader>
+          {calculatorProduct && <WinnersProfitCalculator product={calculatorProduct} />}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export { WinnersPage };
+export default WinnersPage;

@@ -1,199 +1,267 @@
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Filter, X, TrendingUp, DollarSign, Star } from "lucide-react";
-
-interface FilterState {
-  priceMin: number;
-  priceMax: number;
-  minScore: number;
-  minReviews: number;
-  sortBy: 'score' | 'price' | 'reviews' | 'trending';
-  sources: string[];
-}
+import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { X, Filter, TrendingUp } from 'lucide-react';
+import { WinnersSearchParams } from '@/domains/winners/types';
 
 interface WinnersAdvancedFiltersProps {
-  onFilterChange: (filters: FilterState) => void;
-  isOpen?: boolean;
+  filters: WinnersSearchParams;
+  onFiltersChange: (filters: WinnersSearchParams) => void;
 }
 
-export const WinnersAdvancedFilters = ({ onFilterChange, isOpen = false }: WinnersAdvancedFiltersProps) => {
-  const [filters, setFilters] = useState<FilterState>({
-    priceMin: 0,
-    priceMax: 500,
-    minScore: 60,
-    minReviews: 50,
-    sortBy: 'score',
-    sources: ['trends', 'amazon']
-  });
+export const WinnersAdvancedFilters = ({ filters, onFiltersChange }: WinnersAdvancedFiltersProps) => {
+  const [localFilters, setLocalFilters] = useState<WinnersSearchParams>(filters);
+  const [selectedMarketplaces, setSelectedMarketplaces] = useState<string[]>(filters.sources || []);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+  const [competitionLevel, setCompetitionLevel] = useState<string>('all');
+  const [trendPeriod, setTrendPeriod] = useState<string>('7d');
 
-  const [expanded, setExpanded] = useState(isOpen);
-
-  const sources = [
-    { id: 'trends', name: 'Google Trends', color: 'bg-blue-500' },
-    { id: 'amazon', name: 'Amazon', color: 'bg-orange-500' },
-    { id: 'ebay', name: 'eBay', color: 'bg-yellow-500' }
-  ];
-
-  const handleFilterUpdate = (key: keyof FilterState, value: any) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
+  const handleApply = () => {
+    onFiltersChange({
+      ...localFilters,
+      sources: selectedMarketplaces.length > 0 ? selectedMarketplaces : undefined,
+    });
   };
 
-  const toggleSource = (sourceId: string) => {
-    const newSources = filters.sources.includes(sourceId)
-      ? filters.sources.filter(s => s !== sourceId)
-      : [...filters.sources, sourceId];
-    handleFilterUpdate('sources', newSources);
+  const handleReset = () => {
+    const defaultFilters: WinnersSearchParams = { query: '', limit: 30 };
+    setLocalFilters(defaultFilters);
+    setSelectedMarketplaces([]);
+    setSelectedCountries([]);
+    setCompetitionLevel('all');
+    setTrendPeriod('7d');
+    onFiltersChange(defaultFilters);
   };
 
-  const resetFilters = () => {
-    const defaultFilters: FilterState = {
-      priceMin: 0,
-      priceMax: 500,
-      minScore: 60,
-      minReviews: 50,
-      sortBy: 'score',
-      sources: ['trends', 'amazon']
-    };
-    setFilters(defaultFilters);
-    onFilterChange(defaultFilters);
-  };
-
-  if (!expanded) {
-    return (
-      <Button 
-        variant="outline" 
-        onClick={() => setExpanded(true)}
-        className="w-full"
-      >
-        <Filter className="h-4 w-4 mr-2" />
-        Filtres Avancés
-      </Button>
+  const toggleMarketplace = (marketplace: string) => {
+    setSelectedMarketplaces(prev =>
+      prev.includes(marketplace)
+        ? prev.filter(m => m !== marketplace)
+        : [...prev, marketplace]
     );
-  }
+  };
+
+  const toggleCountry = (country: string) => {
+    setSelectedCountries(prev =>
+      prev.includes(country)
+        ? prev.filter(c => c !== country)
+        : [...prev, country]
+    );
+  };
 
   return (
-    <Card className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Filter className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold">Filtres Avancés</h3>
+    <Card>
+      <CardContent className="pt-6 space-y-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Filter className="w-5 h-5 text-primary" />
+          <h3 className="font-semibold text-lg">Filtres Avancés</h3>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => setExpanded(false)}>
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
 
-      {/* Price Range */}
-      <div className="space-y-3">
-        <Label className="flex items-center gap-2">
-          <DollarSign className="h-4 w-4" />
-          Fourchette de Prix: €{filters.priceMin} - €{filters.priceMax}
-        </Label>
-        <div className="flex gap-4">
-          <Input
-            type="number"
-            value={filters.priceMin}
-            onChange={(e) => handleFilterUpdate('priceMin', parseFloat(e.target.value))}
-            className="w-24"
-            placeholder="Min"
-          />
-          <div className="flex-1">
-            <Slider
-              value={[filters.priceMax]}
-              onValueChange={([value]) => handleFilterUpdate('priceMax', value)}
-              max={1000}
-              step={10}
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Prix Maximum (€)</Label>
+            <div className="flex items-center gap-4">
+              <Slider
+                value={[localFilters.maxPrice || 100]}
+                onValueChange={([value]) => setLocalFilters({ ...localFilters, maxPrice: value })}
+                max={500}
+                step={5}
+                className="flex-1"
+              />
+              <span className="text-sm font-medium w-16 text-right">{localFilters.maxPrice || 100}€</span>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Score Minimum</Label>
+            <div className="flex items-center gap-4">
+              <Slider
+                value={[localFilters.minScore || 60]}
+                onValueChange={([value]) => setLocalFilters({ ...localFilters, minScore: value })}
+                max={100}
+                step={5}
+                className="flex-1"
+              />
+              <span className="text-sm font-medium w-12 text-right">{localFilters.minScore || 60}</span>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Label>Marketplaces</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {['trends', 'amazon', 'ebay', 'aliexpress', 'etsy', 'shopify'].map((marketplace) => (
+                <div key={marketplace} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={marketplace}
+                    checked={selectedMarketplaces.includes(marketplace)}
+                    onCheckedChange={() => toggleMarketplace(marketplace)}
+                  />
+                  <label
+                    htmlFor={marketplace}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize"
+                  >
+                    {marketplace}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Label>Pays / Régions</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {['US', 'FR', 'UK', 'DE', 'ES', 'IT', 'CA', 'AU'].map((country) => (
+                <div key={country} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={country}
+                    checked={selectedCountries.includes(country)}
+                    onCheckedChange={() => toggleCountry(country)}
+                  />
+                  <label
+                    htmlFor={country}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {country}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Période de tendance</Label>
+            <Select value={trendPeriod} onValueChange={setTrendPeriod}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="24h">Dernières 24h</SelectItem>
+                <SelectItem value="7d">7 derniers jours</SelectItem>
+                <SelectItem value="30d">30 derniers jours</SelectItem>
+                <SelectItem value="90d">90 derniers jours</SelectItem>
+                <SelectItem value="1y">Dernière année</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Niveau de concurrence</Label>
+            <Select value={competitionLevel} onValueChange={setCompetitionLevel}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous niveaux</SelectItem>
+                <SelectItem value="low">Faible (meilleur)</SelectItem>
+                <SelectItem value="medium">Moyen</SelectItem>
+                <SelectItem value="high">Élevé</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Saisonnalité</Label>
+            <Select defaultValue="all">
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous</SelectItem>
+                <SelectItem value="evergreen">Toute l'année</SelectItem>
+                <SelectItem value="seasonal">Saisonnier</SelectItem>
+                <SelectItem value="trending">En tendance</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Catégorie</Label>
+            <Input
+              placeholder="Ex: Electronics, Fashion..."
+              value={localFilters.category || ''}
+              onChange={(e) => setLocalFilters({ ...localFilters, category: e.target.value })}
             />
           </div>
-          <Input
-            type="number"
-            value={filters.priceMax}
-            onChange={(e) => handleFilterUpdate('priceMax', parseFloat(e.target.value))}
-            className="w-24"
-            placeholder="Max"
-          />
         </div>
-      </div>
 
-      {/* Score Minimum */}
-      <div className="space-y-3">
-        <Label className="flex items-center gap-2">
-          <TrendingUp className="h-4 w-4" />
-          Score Minimum: {filters.minScore}/100
-        </Label>
-        <Slider
-          value={[filters.minScore]}
-          onValueChange={([value]) => handleFilterUpdate('minScore', value)}
-          max={100}
-          step={5}
-        />
-      </div>
+        {/* Active Filters */}
+        {(localFilters.minScore || localFilters.maxPrice || localFilters.category || selectedMarketplaces.length > 0 || selectedCountries.length > 0) && (
+          <div className="flex flex-wrap gap-2 pt-4 border-t">
+            {localFilters.minScore && (
+              <Badge variant="secondary">
+                Score min: {localFilters.minScore}
+                <X
+                  className="ml-1 w-3 h-3 cursor-pointer"
+                  onClick={() => setLocalFilters({ ...localFilters, minScore: undefined })}
+                />
+              </Badge>
+            )}
+            {localFilters.maxPrice && (
+              <Badge variant="secondary">
+                Prix max: {localFilters.maxPrice}€
+                <X
+                  className="ml-1 w-3 h-3 cursor-pointer"
+                  onClick={() => setLocalFilters({ ...localFilters, maxPrice: undefined })}
+                />
+              </Badge>
+            )}
+            {localFilters.category && (
+              <Badge variant="secondary">
+                {localFilters.category}
+                <X
+                  className="ml-1 w-3 h-3 cursor-pointer"
+                  onClick={() => setLocalFilters({ ...localFilters, category: undefined })}
+                />
+              </Badge>
+            )}
+            {selectedMarketplaces.map((marketplace) => (
+              <Badge key={marketplace} variant="secondary" className="capitalize">
+                {marketplace}
+                <X
+                  className="ml-1 w-3 h-3 cursor-pointer"
+                  onClick={() => toggleMarketplace(marketplace)}
+                />
+              </Badge>
+            ))}
+            {selectedCountries.map((country) => (
+              <Badge key={country} variant="secondary">
+                {country}
+                <X
+                  className="ml-1 w-3 h-3 cursor-pointer"
+                  onClick={() => toggleCountry(country)}
+                />
+              </Badge>
+            ))}
+            {trendPeriod !== '7d' && (
+              <Badge variant="secondary">
+                <TrendingUp className="w-3 h-3 mr-1" />
+                {trendPeriod}
+              </Badge>
+            )}
+            {competitionLevel !== 'all' && (
+              <Badge variant="secondary" className="capitalize">
+                Concurrence: {competitionLevel}
+              </Badge>
+            )}
+          </div>
+        )}
 
-      {/* Reviews Minimum */}
-      <div className="space-y-3">
-        <Label className="flex items-center gap-2">
-          <Star className="h-4 w-4" />
-          Avis Minimum: {filters.minReviews}
-        </Label>
-        <Slider
-          value={[filters.minReviews]}
-          onValueChange={([value]) => handleFilterUpdate('minReviews', value)}
-          max={500}
-          step={10}
-        />
-      </div>
-
-      {/* Sort By */}
-      <div className="space-y-2">
-        <Label>Trier par</Label>
-        <Select value={filters.sortBy} onValueChange={(value: any) => handleFilterUpdate('sortBy', value)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="score">Score le plus élevé</SelectItem>
-            <SelectItem value="price">Prix croissant</SelectItem>
-            <SelectItem value="reviews">Plus d'avis</SelectItem>
-            <SelectItem value="trending">Plus tendance</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Sources */}
-      <div className="space-y-2">
-        <Label>Sources de données</Label>
-        <div className="flex flex-wrap gap-2">
-          {sources.map(source => (
-            <Badge
-              key={source.id}
-              variant={filters.sources.includes(source.id) ? "default" : "outline"}
-              className="cursor-pointer"
-              onClick={() => toggleSource(source.id)}
-            >
-              <div className={`h-2 w-2 rounded-full mr-2 ${filters.sources.includes(source.id) ? source.color : 'bg-muted'}`} />
-              {source.name}
-            </Badge>
-          ))}
+        {/* Action Buttons */}
+        <div className="flex gap-2 pt-4 border-t">
+          <Button variant="outline" onClick={handleReset} className="flex-1">
+            Réinitialiser
+          </Button>
+          <Button onClick={handleApply} className="flex-1">
+            Appliquer
+          </Button>
         </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex gap-2 pt-4 border-t">
-        <Button variant="outline" onClick={resetFilters} className="flex-1">
-          Réinitialiser
-        </Button>
-        <Button onClick={() => setExpanded(false)} className="flex-1">
-          Appliquer
-        </Button>
-      </div>
+      </CardContent>
     </Card>
   );
 };
