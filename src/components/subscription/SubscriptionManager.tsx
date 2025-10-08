@@ -124,7 +124,7 @@ export const SubscriptionManager = () => {
             <div>
               <p className="text-sm text-muted-foreground">Plan actuel</p>
               <div className="flex items-center gap-2 mt-1">
-                {getPlanBadge(subscription?.subscription_tier)}
+                {getPlanBadge(subscription?.plan)}
                 {subscription?.subscribed && (
                   <Badge className="bg-green-100 text-green-800">Actif</Badge>
                 )}

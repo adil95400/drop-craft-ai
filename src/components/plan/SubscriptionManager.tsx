@@ -57,9 +57,9 @@ export const SubscriptionManager = () => {
     )
   }
 
-  const currentPlan = subscription.subscribed && subscription.subscription_tier 
-    ? subscription.subscription_tier 
-    : 'free'
+  const currentPlan = subscription.subscribed && subscription.plan 
+    ? subscription.plan 
+    : 'standard'
   
   const PlanIcon = planIcons[currentPlan as keyof typeof planIcons]
   const planName = planNames[currentPlan as keyof typeof planNames]

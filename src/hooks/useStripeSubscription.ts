@@ -1,167 +1,163 @@
-import { useState, useCallback, useRef } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/integrations/supabase/client'
-import { useToast } from '@/hooks/use-toast'
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
-interface StripeSubscription {
-  subscribed: boolean
-  subscription_tier: string | null
-  subscription_end: string | null
+export type PlanType = 'free' | 'standard' | 'pro' | 'ultra_pro';
+
+interface SubscriptionData {
+  subscribed: boolean;
+  product_id: string | null;
+  plan: PlanType;
+  subscription_end: string | null;
 }
 
-export const useStripeSubscription = () => {
-  const [loading, setLoading] = useState(false)
-  const [subscription, setSubscription] = useState<StripeSubscription | null>(null)
-  const { user } = useAuth()
-  const { toast } = useToast()
-  
-  // Cache pour éviter les appels répétés
-  const lastCheckRef = useRef<number>(0)
-  const cacheRef = useRef<StripeSubscription | null>(null)
-  const isCheckingRef = useRef(false)
+const PLAN_PRICES = {
+  standard: 'price_1S7KZaFdyZLEbAYa8kA9hCUb',
+  pro: 'price_1S7Ka5FdyZLEbAYaszKu4XDM',
+  ultra_pro: 'price_1S7KaNFdyZLEbAYaovKWFgc4',
+};
 
-  const checkSubscription = useCallback(async (): Promise<StripeSubscription | null> => {
-    if (!user) return null
-    
-    // Éviter les appels multiples simultanés
-    if (isCheckingRef.current) {
-      console.log('Check subscription already in progress, skipping...')
-      return cacheRef.current
-    }
-    
-    // Cache pendant 30 secondes
-    const now = Date.now()
-    if (cacheRef.current && (now - lastCheckRef.current) < 30000) {
-      console.log('Using cached subscription data')
-      setSubscription(cacheRef.current)
-      return cacheRef.current
+export function useStripeSubscription() {
+  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  const checkSubscription = useCallback(async () => {
+    if (!user) {
+      setSubscription(null);
+      setLoading(false);
+      return;
     }
 
     try {
-      setLoading(true)
-      isCheckingRef.current = true
-      
-      const { data, error } = await supabase.functions.invoke('check-subscription', {
-        headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-      })
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('check-subscription');
 
       if (error) {
-        // Gestion spéciale des rate limits
-        if (error.message?.includes('rate limit')) {
-          console.warn('Stripe rate limit reached, using cached data')
-          if (cacheRef.current) {
-            setSubscription(cacheRef.current)
-            return cacheRef.current
-          }
+        // Handle specific error cases
+        if (error.message?.includes('Rate limit')) {
+          toast({
+            title: "Limite atteinte",
+            description: "Trop de requêtes. Veuillez réessayer dans quelques instants.",
+            variant: "destructive"
+          });
+        } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+          toast({
+            title: "Erreur de connexion",
+            description: "Vérifiez votre connexion internet",
+            variant: "destructive"
+          });
+        } else {
+          throw error;
         }
-        throw error
+        return;
       }
 
-      const subscriptionData: StripeSubscription = {
-        subscribed: data.subscribed || false,
-        subscription_tier: data.subscription_tier || null,
-        subscription_end: data.subscription_end || null
+      setSubscription(data);
+      
+      // Trigger plan refetch to sync UI
+      if (data?.subscribed && data?.product_id) {
+        console.log('Subscription verified and synced with profile');
       }
-
-      // Mise à jour du cache
-      cacheRef.current = subscriptionData
-      lastCheckRef.current = now
-      setSubscription(subscriptionData)
-      
-      return subscriptionData
-    } catch (error: any) {
-      console.error('Error checking subscription:', error)
-      
-      // En cas d'erreur, utiliser le cache si disponible
-      if (cacheRef.current) {
-        setSubscription(cacheRef.current)
-        return cacheRef.current
-      }
-      
-      // Seulement afficher le toast si ce n'est pas un rate limit
-      if (!error.message?.includes('rate limit')) {
-        toast({
-          title: "Erreur de vérification",
-          description: "Impossible de vérifier l'abonnement. Veuillez réessayer plus tard.",
-          variant: "destructive"
-        })
-      }
-      
-      return null
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de vérifier l'abonnement",
+        variant: "destructive"
+      });
     } finally {
-      setLoading(false)
-      isCheckingRef.current = false
+      setLoading(false);
     }
-  }, [user, toast])
+  }, [user, toast]);
 
-  const createCheckout = async (plan: 'pro' | 'ultra_pro') => {
-    if (!user) return null
+  const createCheckout = useCallback(async (plan: Exclude<PlanType, 'free'>) => {
+    if (!user) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
-      setLoading(true)
-      const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-        body: { plan },
-        headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-        }
-      })
+      const priceId = PLAN_PRICES[plan];
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId }
+      });
 
-      if (error) throw error
+      if (error) throw error;
 
-      // Open Stripe checkout in new tab
-      if (data.url) {
-        window.open(data.url, '_blank')
+      if (data?.url) {
+        window.open(data.url, '_blank');
       }
-      return data.url
-    } catch (error: any) {
-      console.error('Error creating checkout:', error)
+    } catch (error) {
+      console.error('Error creating checkout:', error);
       toast({
         title: "Erreur",
         description: "Impossible de créer la session de paiement",
         variant: "destructive"
-      })
-      return null
-    } finally {
-      setLoading(false)
+      });
     }
-  }
+  }, [user, toast]);
 
-  const openCustomerPortal = async () => {
-    if (!user) return null
+  const openCustomerPortal = useCallback(async () => {
+    if (!user) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
-      setLoading(true)
-      const { data, error } = await supabase.functions.invoke('customer-portal', {
-        headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-        }
-      })
+      const { data, error } = await supabase.functions.invoke('stripe-portal');
 
-      if (error) throw error
+      if (error) throw error;
 
-      // Open Stripe customer portal in new tab
-      window.open(data.url, '_blank')
-      return data.url
-    } catch (error: any) {
-      console.error('Error opening customer portal:', error)
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
       toast({
         title: "Erreur",
         description: "Impossible d'ouvrir le portail client",
         variant: "destructive"
-      })
-      return null
-    } finally {
-      setLoading(false)
+      });
     }
-  }
+  }, [user, toast]);
+
+  useEffect(() => {
+    checkSubscription();
+    
+    // Refresh every minute
+    const interval = setInterval(checkSubscription, 60000);
+    
+    return () => clearInterval(interval);
+  }, [checkSubscription]);
 
   return {
     subscription,
     loading,
     checkSubscription,
     createCheckout,
-    openCustomerPortal
-  }
+    openCustomerPortal,
+    hasFeature: (feature: string) => {
+      if (!subscription) return false;
+      
+      const featureAccess = {
+        free: [],
+        standard: ['basic_import', 'basic_analytics'],
+        pro: ['basic_import', 'basic_analytics', 'ai_import', 'advanced_analytics', 'unlimited_integrations'],
+        ultra_pro: ['basic_import', 'basic_analytics', 'ai_import', 'advanced_analytics', 'unlimited_integrations', 'white_label', 'priority_support']
+      };
+      
+      return featureAccess[subscription.plan]?.includes(feature) || false;
+    }
+  };
 }

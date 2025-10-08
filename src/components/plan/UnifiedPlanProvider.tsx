@@ -81,12 +81,19 @@ export function UnifiedPlanProvider({ children }: { children: ReactNode }) {
   const { plan, hasPlan, isUltraPro, isPro, loading, error, updatePlan, refetch } = useSupabasePlan(user)
   const planStore = usePlanStore()
 
-  // Sync plan with store
+  // Sync plan with store and Stripe subscription
   useEffect(() => {
     if (plan && plan !== planStore.currentPlan) {
       planStore.setPlan(plan)
     }
   }, [plan, planStore])
+  
+  // Refetch plan when user changes to ensure Stripe sync
+  useEffect(() => {
+    if (user) {
+      refetch()
+    }
+  }, [user])
 
   const hasFeature = (feature: string): boolean => {
     return PLAN_FEATURES[plan].includes(feature as any) || planStore.hasFeature(feature)

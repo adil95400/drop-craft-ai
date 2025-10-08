@@ -2,12 +2,12 @@ import { Calendar, CreditCard, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useStripeSubscription } from '@/hooks/useStripeSubscription';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export function CurrentSubscription() {
-  const { subscription, loading, checkSubscription, openCustomerPortal } = useSubscription();
+  const { subscription, loading, checkSubscription, openCustomerPortal } = useStripeSubscription();
 
   if (loading) {
     return (

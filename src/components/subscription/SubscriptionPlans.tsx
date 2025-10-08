@@ -2,7 +2,7 @@ import { Check, Zap, Crown, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useSubscription, type PlanType } from '@/hooks/useSubscription';
+import { useStripeSubscription, type PlanType } from '@/hooks/useStripeSubscription';
 import { cn } from '@/lib/utils';
 
 const plans = [
@@ -57,7 +57,7 @@ const plans = [
 ];
 
 export function SubscriptionPlans() {
-  const { subscription, createCheckout, loading } = useSubscription();
+  const { subscription, createCheckout, loading } = useStripeSubscription();
 
   const isCurrentPlan = (planType: Exclude<PlanType, 'free'>) => {
     return subscription?.plan === planType;

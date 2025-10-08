@@ -77,6 +77,43 @@ export default function SubscriptionDashboard() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Upgrade Card */}
+            {plan !== 'ultra_pro' && (
+              <Card className="border-primary/20 bg-gradient-to-b from-primary/5 to-background">
+                <CardContent className="pt-6">
+                  <div className="text-center space-y-4">
+                    {plan === 'standard' ? (
+                      <>
+                        <Crown className="w-12 h-12 text-primary mx-auto" />
+                        <h3 className="font-semibold">Passez au plan Pro</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Débloquez l'IA Analytics et plus d'automatisations
+                        </p>
+                        <Link to="/pricing">
+                          <Button className="w-full">
+                            Voir les plans
+                          </Button>
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-12 h-12 text-purple-600 mx-auto" />
+                        <h3 className="font-semibold">Découvrez Ultra Pro</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Automatisation illimitée et IA prédictive
+                        </p>
+                        <Link to="/pricing">
+                          <Button className="w-full">
+                            Découvrir Ultra Pro
+                          </Button>
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
             {/* Plan Features */}
             <Card>
               <CardHeader>
@@ -124,42 +161,6 @@ export default function SubscriptionDashboard() {
               </CardContent>
             </Card>
 
-            {/* Upgrade CTA */}
-            {plan !== 'ultra_pro' && (
-              <Card className="border-primary/20 bg-gradient-to-b from-primary/5 to-background">
-                <CardContent className="pt-6">
-                  <div className="text-center space-y-4">
-                    {plan === 'standard' ? (
-                      <>
-                        <Crown className="w-12 h-12 text-primary mx-auto" />
-                        <h3 className="font-semibold">Passez au plan Pro</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Débloquez l'IA Analytics et plus d'automatisations
-                        </p>
-                        <Link to="/pricing">
-                          <Button className="w-full">
-                            Voir les plans
-                          </Button>
-                        </Link>
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="w-12 h-12 text-purple-600 mx-auto" />
-                        <h3 className="font-semibold">Découvrez Ultra Pro</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Automatisation illimitée et IA prédictive
-                        </p>
-                        <Link to="/pricing">
-                          <Button className="w-full">
-                            Découvrir Ultra Pro
-                          </Button>
-                        </Link>
-                      </>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Help & Support */}
             <Card>
