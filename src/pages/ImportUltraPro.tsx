@@ -13,6 +13,9 @@ import { AdvancedMapping } from '@/components/import/AdvancedMapping'
 import { ImportAnalytics } from '@/components/import/ImportAnalytics'
 import { AutomationRules } from '@/components/import/AutomationRules'
 import { RequirePlan } from '@/components/plan/RequirePlan'
+import { ProductOptimizer } from '@/components/import/ProductOptimizer'
+import { QuickUrlImport } from '@/components/import/QuickUrlImport'
+import { VariantManager } from '@/components/import/VariantManager'
 
 const ImportUltraPro = () => {
   const { enableAutoSync, isSyncing } = useAutoSync()
@@ -44,23 +47,48 @@ const ImportUltraPro = () => {
         <SyncStatusIndicator />
 
         <Tabs defaultValue="import" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
-            <TabsTrigger value="import">Import Avancé</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-11">
+            <TabsTrigger value="import">Import</TabsTrigger>
+            <TabsTrigger value="quick-url">URL Rapide</TabsTrigger>
             <TabsTrigger value="results">Produits</TabsTrigger>
-            <TabsTrigger value="ai">IA Optimization</TabsTrigger>
-            <TabsTrigger value="bulk">Bulk Operations</TabsTrigger>
-            <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
+            <TabsTrigger value="optimizer">Optimisation</TabsTrigger>
+            <TabsTrigger value="variants">Variantes</TabsTrigger>
+            <TabsTrigger value="ai">IA</TabsTrigger>
+            <TabsTrigger value="bulk">Bulk</TabsTrigger>
+            <TabsTrigger value="monitoring">Monitor</TabsTrigger>
             <TabsTrigger value="mapping">Mapping</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="automation">Automation</TabsTrigger>
+            <TabsTrigger value="automation">Auto</TabsTrigger>
           </TabsList>
 
           <TabsContent value="import">
             <ImportUltraProInterface />
           </TabsContent>
 
+          <TabsContent value="quick-url">
+            <QuickUrlImport />
+          </TabsContent>
+
           <TabsContent value="results">
             <AdvancedImportResults />
+          </TabsContent>
+
+          <TabsContent value="optimizer">
+            <ProductOptimizer 
+              product={{
+                id: 'demo',
+                name: 'Produit exemple',
+                description: 'Description du produit',
+                price: 29.99,
+                cost_price: 15.00,
+                currency: 'EUR',
+                user_id: ''
+              } as any}
+            />
+          </TabsContent>
+
+          <TabsContent value="variants">
+            <VariantManager />
           </TabsContent>
 
           <TabsContent value="ai">
