@@ -2,19 +2,21 @@ import React from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Star, TrendingUp, ShoppingCart, ExternalLink, Import } from 'lucide-react'
+import { Star, TrendingUp, ShoppingCart, ExternalLink, Import, Megaphone } from 'lucide-react'
 import { WinnerProduct } from '@/hooks/useRealWinnersAPI'
 import { cn } from '@/lib/utils'
 
 interface WinnersProductGridProps {
   products: WinnerProduct[]
   onImportProduct: (product: WinnerProduct) => void
+  onPublishProduct?: (product: WinnerProduct) => void
   isImporting?: boolean
 }
 
 export const WinnersProductGrid = ({ 
   products, 
-  onImportProduct, 
+  onImportProduct,
+  onPublishProduct,
   isImporting = false 
 }: WinnersProductGridProps) => {
   const getScoreColor = (score: number) => {
@@ -136,24 +138,38 @@ export const WinnersProductGrid = ({
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 size="sm"
                 onClick={() => onImportProduct(product)}
                 disabled={isImporting}
-                className="flex-1"
+                className="w-full"
               >
                 <Import className="h-3 w-3 mr-1" />
                 Importer
               </Button>
+              
+              {onPublishProduct && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onPublishProduct(product)}
+                  className="w-full"
+                >
+                  <Megaphone className="h-3 w-3 mr-1" />
+                  Publier
+                </Button>
+              )}
               
               {product.url && (
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => window.open(product.url, '_blank')}
+                  className="col-span-2"
                 >
-                  <ExternalLink className="h-3 w-3" />
+                  <ExternalLink className="h-3 w-3 mr-1" />
+                  Voir la source
                 </Button>
               )}
             </div>

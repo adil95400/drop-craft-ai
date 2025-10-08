@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, Target, GitCompare, Grid, Sparkles, Bell, Calculator } from 'lucide-react';
+import { TrendingUp, Target, GitCompare, Grid, Sparkles, Bell, Calculator, Megaphone } from 'lucide-react';
 import { WinnersSearchInterface } from '@/components/winners/WinnersSearchInterface';
 import { WinnersProductGrid } from '@/components/winners/WinnersProductGrid';
 import { WinnersAnalyticsDashboard } from '@/components/winners/WinnersAnalyticsDashboard';
@@ -16,6 +16,7 @@ import { WinnersBatchImport } from '@/components/winners/WinnersBatchImport';
 import { WinnersAIRecommendations } from '@/components/winners/WinnersAIRecommendations';
 import { WinnersProductAnalysis } from '@/components/winners/WinnersProductAnalysis';
 import { WinnersProfitCalculator } from '@/components/winners/WinnersProfitCalculator';
+import { WinnersPublishOptions } from '@/components/winners/WinnersPublishOptions';
 import { WinnersMarketIntelligence } from '@/components/winners/WinnersMarketIntelligence';
 import { WinnersAlertSystem } from '@/components/winners/WinnersAlertSystem';
 import { TrendingNichesCard } from '../components/TrendingNichesCard';
@@ -29,6 +30,7 @@ const WinnersPage = () => {
   const [selectedProducts, setSelectedProducts] = useState<WinnerProduct[]>([]);
   const [analysisProduct, setAnalysisProduct] = useState<WinnerProduct | null>(null);
   const [calculatorProduct, setCalculatorProduct] = useState<WinnerProduct | null>(null);
+  const [publishProduct, setPublishProduct] = useState<WinnerProduct | null>(null);
   
   const {
     products,
@@ -161,6 +163,7 @@ const WinnersPage = () => {
                   <WinnersProductGrid
                     products={products}
                     onImportProduct={handleImportClick}
+                    onPublishProduct={(product) => setPublishProduct(product)}
                     isImporting={isImporting}
                   />
                 </CardContent>
@@ -269,6 +272,13 @@ const WinnersPage = () => {
           {calculatorProduct && <WinnersProfitCalculator product={calculatorProduct} />}
         </DialogContent>
       </Dialog>
+
+      {/* Publish Options Modal */}
+      <WinnersPublishOptions
+        product={publishProduct}
+        open={!!publishProduct}
+        onOpenChange={(open) => !open && setPublishProduct(null)}
+      />
     </div>
   );
 };

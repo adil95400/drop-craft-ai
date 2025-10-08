@@ -54,6 +54,16 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['basic-import', 'bulk-import', 'url-scraping'],
     description: 'Import de données produits'
   },
+  winners: {
+    id: 'winners',
+    name: 'Winning Products',
+    icon: 'Trophy',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/winners',
+    features: ['product-research', 'trend-analysis', 'competitor-analysis'],
+    description: 'Découvrez les produits gagnants'
+  },
 
   // Modules Pro
   analytics: {

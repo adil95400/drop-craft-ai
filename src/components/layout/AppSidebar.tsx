@@ -20,7 +20,7 @@ import {
   GitBranch, Lock, Workflow, PieChart, LineChart, BarChart,
   Download, Filter, Bell, Star, Heart, ThumbsUp, Share,
   PlayCircle, PauseCircle, RefreshCw, AlertCircle, CheckCircle,
-  Sparkles, History
+  Sparkles, History, Trophy
 } from "lucide-react"
 import { useAuthOptimized } from "@/shared/hooks/useAuthOptimized"
 import { cn } from "@/lib/utils"
@@ -47,6 +47,7 @@ const navigationGroups = [
       { title: "Centre Commandes", url: "/orders-center", icon: Activity, badge: "Nouveau" },
       { title: "Clients", url: "/customers", icon: Users },
       { title: "Fournisseurs", url: "/suppliers", icon: Truck },
+      { title: "Winning Products", url: "/winners", icon: Trophy, badge: "AI" },
     ]
   },
   {
