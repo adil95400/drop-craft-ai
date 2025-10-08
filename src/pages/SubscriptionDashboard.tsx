@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
+import { StripeSetupGuide } from '@/components/subscription/StripeSetupGuide';
 import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
 
 export default function SubscriptionDashboard() {
@@ -73,6 +74,9 @@ export default function SubscriptionDashboard() {
           {/* Main Subscription Management */}
           <div className="lg:col-span-2 space-y-8">
             <SubscriptionManager />
+            
+            {/* Stripe Setup Guide for Admins */}
+            <StripeSetupGuide />
           </div>
 
           {/* Sidebar */}

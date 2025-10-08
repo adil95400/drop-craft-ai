@@ -113,6 +113,23 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
       if (data) {
         console.log('Profile loaded:', data);
         setProfile(data as Profile);
+        
+        // Also check Stripe subscription status to ensure sync
+        try {
+          const { data: subData } = await supabase.functions.invoke('check-subscription');
+          if (subData && subData.plan && subData.plan !== data.plan) {
+            // Update profile if Stripe plan is different
+            console.log('Syncing plan from Stripe:', subData.plan);
+            await supabase
+              .from('profiles')
+              .update({ plan: subData.plan })
+              .eq('id', userId);
+            setProfile({ ...data, plan: subData.plan } as Profile);
+          }
+        } catch (subError) {
+          console.log('Could not verify Stripe subscription:', subError);
+          // Not critical, continue with profile data
+        }
       } else {
         console.log('No profile found, creating default');
         setProfile(null);

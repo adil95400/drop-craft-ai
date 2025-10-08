@@ -168,6 +168,8 @@ import QAPage from '@/pages/QAPage';
 import SupportPage from '@/pages/SupportPage';
 import HelpCenterPage from '@/pages/HelpCenterPage';
 import ApplicationStatusPage from '@/pages/ApplicationStatusPage';
+import PaymentSuccess from '@/pages/PaymentSuccess';
+import PaymentCancelled from '@/pages/PaymentCancelled';
 
 // Landing Pages
 import Features from '@/pages/Features';
@@ -262,6 +264,11 @@ function App() {
                 
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/auth" element={<AuthPage />} />
+                
+                {/* Payment Routes */}
+                <Route path="/payment/success" element={<PaymentSuccess />} />
+                <Route path="/payment/cancelled" element={<PaymentCancelled />} />
+                
                 <Route path="/profile" element={
                   <ProtectedRoute>
                     <AppLayout><Profile /></AppLayout>

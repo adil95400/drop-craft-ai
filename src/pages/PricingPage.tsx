@@ -1,8 +1,11 @@
 import { Helmet } from 'react-helmet-async'
 import { SmartPlanSelector } from '@/components/plan/SmartPlanSelector'
 import { FeatureComparison } from '@/components/commercial/FeatureComparison'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function PricingPage() {
+  const { user } = useAuth()
+  
   return (
     <>
       <Helmet>
@@ -17,7 +20,7 @@ export default function PricingPage() {
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Choisissez le plan qui correspond à vos besoins. 
-            Démarrez gratuitement et évoluez selon votre croissance.
+            {!user && 'Démarrez gratuitement et '}évoluez selon votre croissance.
           </p>
         </div>
 
