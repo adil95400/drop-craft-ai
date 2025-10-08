@@ -11,12 +11,17 @@ const CLIENT_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 export const useWinnersOptimized = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [searchParams, setSearchParams] = useState<WinnersSearchParams>({
-    query: 'trending products',
-    limit: 30
+  const [searchParams, setSearchParams] = useState<WinnersSearchParams>(() => {
+    const saved = localStorage.getItem('winners-last-search');
+    return saved ? JSON.parse(saved) : { query: 'trending products', limit: 30 };
   });
   const [filteredProducts, setFilteredProducts] = useState<WinnerProduct[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+
+  // Save search params to localStorage
+  useEffect(() => {
+    localStorage.setItem('winners-last-search', JSON.stringify(searchParams));
+  }, [searchParams]);
 
   // Load favorites from localStorage
   useEffect(() => {
@@ -154,6 +159,7 @@ export const useWinnersOptimized = () => {
     products: filteredProducts,
     response,
     stats,
+    searchParams,
     isLoading: isLoading || searchMutation.isPending,
     isImporting: importMutation.isPending,
     favorites,

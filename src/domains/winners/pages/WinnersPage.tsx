@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { TrendingUp, Target, GitCompare, BarChart3 } from 'lucide-react'
+import { TrendingUp, Target, GitCompare, BarChart3, Package } from 'lucide-react'
 import { WinnersSearchInterface } from '@/components/winners/WinnersSearchInterface'
 import { WinnersProductGrid } from '@/components/winners/WinnersProductGrid'
 import { WinnersAnalyticsDashboard } from '@/components/winners/WinnersAnalyticsDashboard'
@@ -10,14 +10,20 @@ import { WinnersImportFlow } from '@/components/winners/WinnersImportFlow'
 import { WinnersAdvancedFilters } from '@/components/winners/WinnersAdvancedFilters'
 import { WinnersTrendChart } from '@/components/winners/WinnersTrendChart'
 import { WinnersComparison } from '@/components/winners/WinnersComparison'
+import { WinnersExportTools } from '@/components/winners/WinnersExportTools'
+import { WinnersSavedSearches } from '@/components/winners/WinnersSavedSearches'
+import { WinnersBatchImport } from '@/components/winners/WinnersBatchImport'
+import { WinnersAIRecommendations } from '@/components/winners/WinnersAIRecommendations'
 import { TrendingNichesCard } from '../components/TrendingNichesCard'
 import { useWinnersOptimized } from '@/hooks/useWinnersOptimized'
+import { useWinnersNotifications } from '../hooks/useWinnersNotifications'
 import { TrendingNiche, WinnerProduct } from '../types'
 
 const WinnersPage = () => {
   const { 
     products, 
     stats,
+    searchParams,
     isLoading,
     importProduct,
     isImporting,
@@ -28,8 +34,12 @@ const WinnersPage = () => {
     favorites
   } = useWinnersOptimized()
 
+  // Enable smart notifications
+  useWinnersNotifications(products)
+
   const [selectedProduct, setSelectedProduct] = useState<WinnerProduct | null>(null)
   const [showImportFlow, setShowImportFlow] = useState(false)
+  const [showBatchImport, setShowBatchImport] = useState(false)
   const [selectedForComparison, setSelectedForComparison] = useState<string[]>([])
 
   const handleNicheClick = (niche: TrendingNiche) => {
@@ -54,6 +64,12 @@ const WinnersPage = () => {
     setShowImportFlow(false)
   }
 
+  const handleBatchImport = async (products: WinnerProduct[]) => {
+    for (const product of products) {
+      await importProduct(product)
+    }
+  }
+
   const handleFilterChange = (filters: any) => {
     setSearchParams((prev: any) => ({
       ...prev,
@@ -73,10 +89,17 @@ const WinnersPage = () => {
             Découvrez les produits les plus performants avec l'IA
           </p>
         </div>
-        <Button variant="outline" onClick={handleAnalyzeTrends}>
-          <Target className="h-4 w-4 mr-2" />
-          Analyser Tendances
-        </Button>
+        <div className="flex gap-2">
+          <WinnersExportTools products={products} />
+          <Button variant="outline" onClick={() => setShowBatchImport(true)}>
+            <Package className="h-4 w-4 mr-2" />
+            Import Masse
+          </Button>
+          <Button variant="outline" onClick={handleAnalyzeTrends}>
+            <Target className="h-4 w-4 mr-2" />
+            Analyser
+          </Button>
+        </div>
       </div>
 
       {/* Analytics Dashboard */}
@@ -156,6 +179,16 @@ const WinnersPage = () => {
             onFilterChange={handleFilterChange}
             isOpen={false}
           />
+
+          <WinnersAIRecommendations
+            products={products}
+            onSelectProduct={handleImportClick}
+          />
+
+          <WinnersSavedSearches
+            currentParams={searchParams}
+            onLoadSearch={(params) => search(params)}
+          />
           
           <TrendingNichesCard onNicheClick={handleNicheClick} />
           
@@ -187,6 +220,14 @@ const WinnersPage = () => {
         isOpen={showImportFlow}
         onClose={() => setShowImportFlow(false)}
         onConfirm={handleConfirmImport}
+      />
+
+      {/* Batch Import */}
+      <WinnersBatchImport
+        products={products}
+        isOpen={showBatchImport}
+        onClose={() => setShowBatchImport(false)}
+        onConfirm={handleBatchImport}
       />
     </div>
   )
