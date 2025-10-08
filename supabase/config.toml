@@ -178,4 +178,5 @@ verify_jwt = true
 [functions.get-invoices]
 verify_jwt = true
 
-
+[functions.auto-detect-winners]
+verify_jwt = true

@@ -19,6 +19,7 @@ import { WinnersProfitCalculator } from '@/components/winners/WinnersProfitCalcu
 import { WinnersPublishOptions } from '@/components/winners/WinnersPublishOptions';
 import { WinnersMarketIntelligence } from '@/components/winners/WinnersMarketIntelligence';
 import { WinnersAlertSystem } from '@/components/winners/WinnersAlertSystem';
+import { AutoDetectionDashboard } from '@/components/winners/AutoDetectionDashboard';
 import { TrendingNichesCard } from '../components/TrendingNichesCard';
 import { useWinnersOptimized } from '@/hooks/useWinnersOptimized';
 import { useWinnersNotifications } from '../hooks/useWinnersNotifications';
@@ -112,7 +113,11 @@ const WinnersPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-6 lg:w-auto">
+            <TabsList className="grid w-full grid-cols-7 lg:w-auto">
+              <TabsTrigger value="auto-detect">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Auto
+              </TabsTrigger>
               <TabsTrigger value="grid">
                 <Grid className="w-4 h-4 mr-2" />
                 Grille
@@ -138,6 +143,11 @@ const WinnersPage = () => {
                 IA
               </TabsTrigger>
             </TabsList>
+
+            {/* Auto Detection Tab */}
+            <TabsContent value="auto-detect">
+              <AutoDetectionDashboard />
+            </TabsContent>
 
             {/* Grid Tab */}
             <TabsContent value="grid">

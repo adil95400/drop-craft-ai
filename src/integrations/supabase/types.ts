@@ -6919,6 +6919,78 @@ export type Database = {
           },
         ]
       }
+      winner_products: {
+        Row: {
+          competition_level: string | null
+          competitor_analysis: Json | null
+          created_at: string | null
+          detected_at: string | null
+          detection_signals: string[] | null
+          engagement_count: number | null
+          estimated_profit_margin: number | null
+          id: string
+          last_updated: string | null
+          metadata: Json | null
+          orders_count: number | null
+          price: number | null
+          product_name: string
+          product_url: string
+          rating: number | null
+          social_proof: Json | null
+          source_platform: string
+          trend_analysis: Json | null
+          trending_score: number
+          user_id: string
+          virality_score: number
+        }
+        Insert: {
+          competition_level?: string | null
+          competitor_analysis?: Json | null
+          created_at?: string | null
+          detected_at?: string | null
+          detection_signals?: string[] | null
+          engagement_count?: number | null
+          estimated_profit_margin?: number | null
+          id?: string
+          last_updated?: string | null
+          metadata?: Json | null
+          orders_count?: number | null
+          price?: number | null
+          product_name: string
+          product_url: string
+          rating?: number | null
+          social_proof?: Json | null
+          source_platform: string
+          trend_analysis?: Json | null
+          trending_score?: number
+          user_id: string
+          virality_score?: number
+        }
+        Update: {
+          competition_level?: string | null
+          competitor_analysis?: Json | null
+          created_at?: string | null
+          detected_at?: string | null
+          detection_signals?: string[] | null
+          engagement_count?: number | null
+          estimated_profit_margin?: number | null
+          id?: string
+          last_updated?: string | null
+          metadata?: Json | null
+          orders_count?: number | null
+          price?: number | null
+          product_name?: string
+          product_url?: string
+          rating?: number | null
+          social_proof?: Json | null
+          source_platform?: string
+          trend_analysis?: Json | null
+          trending_score?: number
+          user_id?: string
+          virality_score?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
