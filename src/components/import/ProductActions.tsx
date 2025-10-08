@@ -27,7 +27,8 @@ import {
   MoreHorizontal,
   Globe,
   Zap,
-  Copy
+  Copy,
+  Send
 } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -37,10 +38,11 @@ import { ImportedProduct } from '@/hooks/useImportUltraPro';
 interface ProductActionsProps {
   product: ImportedProduct;
   onEdit: (product: ImportedProduct) => void;
+  onPublish?: (product: ImportedProduct) => void;
   onRefresh?: () => void;
 }
 
-export const ProductActions = ({ product, onEdit, onRefresh }: ProductActionsProps) => {
+export const ProductActions = ({ product, onEdit, onPublish, onRefresh }: ProductActionsProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
@@ -207,6 +209,17 @@ export const ProductActions = ({ product, onEdit, onRefresh }: ProductActionsPro
           </Button>
         )}
 
+        {onPublish && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onPublish(product)}
+            className="h-8 w-8 p-0 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        )}
+
         <Button
           variant="ghost"
           size="sm"
@@ -233,6 +246,13 @@ export const ProductActions = ({ product, onEdit, onRefresh }: ProductActionsPro
               <Copy className="mr-2 h-4 w-4" />
               Dupliquer
             </DropdownMenuItem>
+
+            {onPublish && (
+              <DropdownMenuItem onClick={() => onPublish(product)}>
+                <Send className="mr-2 h-4 w-4" />
+                Publication multi-canal
+              </DropdownMenuItem>
+            )}
 
             <DropdownMenuSeparator />
 

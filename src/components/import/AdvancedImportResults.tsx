@@ -40,6 +40,7 @@ import { BulkActionsPanel } from './BulkActionsPanel';
 import { ProductQuickEdit } from './ProductQuickEdit';
 import { ProductActions } from './ProductActions';
 import { ImportFilters } from './ImportFilters';
+import { ImportPublishOptions } from './ImportPublishOptions';
 
 export const AdvancedImportResults = () => {
   const { importedProducts, isLoadingProducts } = useImportUltraPro();
@@ -54,6 +55,7 @@ export const AdvancedImportResults = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [editingProduct, setEditingProduct] = useState<ImportedProduct | null>(null);
+  const [publishProduct, setPublishProduct] = useState<ImportedProduct | null>(null);
 
   // Filtered and sorted products
   const filteredAndSortedProducts = useMemo(() => {
@@ -397,6 +399,7 @@ export const AdvancedImportResults = () => {
                      <ProductActions
                        product={product}
                        onEdit={setEditingProduct}
+                       onPublish={setPublishProduct}
                        onRefresh={() => window.location.reload()}
                      />
                    </TableCell>
@@ -458,6 +461,15 @@ export const AdvancedImportResults = () => {
             logAction('Updating product', updatedProduct);
             setEditingProduct(null);
           }}
+        />
+      )}
+      
+      {/* Multi-Channel Publishing Modal */}
+      {publishProduct && (
+        <ImportPublishOptions
+          product={publishProduct}
+          isOpen={!!publishProduct}
+          onClose={() => setPublishProduct(null)}
         />
       )}
     </div>
