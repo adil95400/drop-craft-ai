@@ -157,3 +157,25 @@ verify_jwt = true
 [functions.enterprise-scalability]
 verify_jwt = true
 
+[functions.winners-aggregator]
+verify_jwt = true
+
+[functions.winners-amazon]
+verify_jwt = true
+
+[functions.winners-trends]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.check-subscription]
+verify_jwt = true
+
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.get-invoices]
+verify_jwt = true
+
+

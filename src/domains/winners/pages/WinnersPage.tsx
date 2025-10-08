@@ -1,13 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TrendingUp, Target } from 'lucide-react'
 import { WinnersSearchInterface } from '@/components/winners/WinnersSearchInterface'
 import { WinnersProductGrid } from '@/components/winners/WinnersProductGrid'
 import { WinnersStatsCards } from '../components/WinnersStatsCards'
+import { WinnersAnalyticsDashboard } from '@/components/winners/WinnersAnalyticsDashboard'
+import { WinnersImportFlow } from '@/components/winners/WinnersImportFlow'
 import { TrendingNichesCard } from '../components/TrendingNichesCard'
 import { useWinners } from '../hooks/useWinners'
-import { TrendingNiche } from '../types'
+import { TrendingNiche, WinnerProduct } from '../types'
 
 const WinnersPage = () => {
   const { 
@@ -21,6 +23,9 @@ const WinnersPage = () => {
     search
   } = useWinners()
 
+  const [selectedProduct, setSelectedProduct] = useState<WinnerProduct | null>(null)
+  const [showImportFlow, setShowImportFlow] = useState(false)
+
   const handleNicheClick = (niche: TrendingNiche) => {
     search({
       query: niche.name,
@@ -31,6 +36,16 @@ const WinnersPage = () => {
 
   const handleAnalyzeTrends = () => {
     analyzeTrends('trending products 2024')
+  }
+
+  const handleImportClick = (product: WinnerProduct) => {
+    setSelectedProduct(product)
+    setShowImportFlow(true)
+  }
+
+  const handleConfirmImport = async (product: WinnerProduct, customData: any) => {
+    await importProduct(product)
+    setShowImportFlow(false)
   }
 
   return (
@@ -54,12 +69,8 @@ const WinnersPage = () => {
         </div>
       </div>
 
-      {/* Stats Section */}
-      <WinnersStatsCards 
-        stats={stats}
-        totalSources={response?.stats?.total_sources || 0}
-        isLoading={isLoading}
-      />
+      {/* Analytics Dashboard */}
+      <WinnersAnalyticsDashboard stats={stats} isLoading={isLoading} />
 
       {/* Search Interface */}
       <WinnersSearchInterface />
@@ -81,7 +92,7 @@ const WinnersPage = () => {
             <CardContent>
               <WinnersProductGrid
                 products={products}
-                onImportProduct={importProduct}
+                onImportProduct={handleImportClick}
                 isImporting={isImporting}
               />
             </CardContent>
@@ -114,8 +125,17 @@ const WinnersPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* Import Flow Modal */}
+      <WinnersImportFlow
+        product={selectedProduct}
+        isOpen={showImportFlow}
+        onClose={() => setShowImportFlow(false)}
+        onConfirm={handleConfirmImport}
+      />
     </div>
   )
 }
 
+export { WinnersPage }
 export default WinnersPage

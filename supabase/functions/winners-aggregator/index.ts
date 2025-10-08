@@ -1,155 +1,174 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+interface WinnerProduct {
+  id: string;
+  title: string;
+  price: number;
+  currency: string;
+  image: string;
+  source: string;
+  url: string;
+  reviews?: number;
+  rating?: number;
+  sales?: number;
+  trending_score: number;
+  market_demand: number;
+  final_score?: number;
+  category?: string;
+  tags?: string[];
 }
 
-interface WinnerItem {
-  id: string
-  title: string
-  price: number
-  currency: string
-  image: string
-  source: string
-  url: string
-  reviews?: number
-  rating?: number
-  sales?: number
-  trending_score: number
-  market_demand: number
-  final_score?: number
-}
-
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    );
 
-    const url = new URL(req.url)
-    const query = url.searchParams.get('q') || 'trending products'
-    const category = url.searchParams.get('category') || ''
-    const limit = parseInt(url.searchParams.get('limit') || '50')
-    const sources = url.searchParams.get('sources')?.split(',') || ['trends', 'ebay', 'amazon']
+    const { q, category = '', limit = 30, sources = ['trends', 'amazon'], min_score, max_price } = await req.json();
 
-    console.log(`Aggregating winners from sources: ${sources.join(', ')} for query: ${query}`)
+    console.log('Winners aggregator called:', { q, category, limit, sources, min_score, max_price });
 
     // Check cache first
-    const cacheKey = `aggregated_${query}_${category}_${sources.sort().join('_')}`
+    const cacheKey = `winners:${q}:${category}:${sources.join(',')}`;
     const { data: cached } = await supabase
       .from('api_cache')
-      .select('data, created_at')
+      .select('data')
       .eq('cache_key', cacheKey)
-      .single()
+      .gt('expires_at', new Date().toISOString())
+      .single();
 
-    if (cached && new Date(cached.created_at).getTime() > Date.now() - 10 * 60 * 1000) {
-      console.log('Returning cached aggregated data')
+    if (cached) {
+      console.log('Returning cached data');
       return new Response(JSON.stringify(cached.data), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    const allProducts: WinnerItem[] = []
-    const sourceResults: Record<string, any> = {}
-
     // Fetch from multiple sources in parallel
-    const fetchPromises = sources.map(async (source) => {
-      try {
-        const response = await supabase.functions.invoke(`winners-${source}`, {
-          body: { q: query, category, limit: Math.ceil(limit / sources.length) }
-        })
-        
-        if (response.data?.products) {
-          sourceResults[source] = response.data
-          return response.data.products
-        }
-        return []
-      } catch (error) {
-        console.error(`Error fetching from ${source}:`, error)
-        return []
+    const sourceCalls = [];
+    
+    if (sources.includes('trends')) {
+      sourceCalls.push(
+        supabase.functions.invoke('winners-trends', {
+          body: { q, category, limit: Math.floor(limit / sources.length) }
+        }).then(r => ({ source: 'trends', data: r.data }))
+      );
+    }
+    
+    if (sources.includes('amazon')) {
+      sourceCalls.push(
+        supabase.functions.invoke('winners-amazon', {
+          body: { q, category, limit: Math.floor(limit / sources.length) }
+        }).then(r => ({ source: 'amazon', data: r.data }))
+      );
+    }
+
+    const results = await Promise.all(sourceCalls);
+    console.log('Source results:', results.map(r => ({ source: r.source, count: r.data?.products?.length })));
+
+    // Aggregate and score products
+    let allProducts: WinnerProduct[] = [];
+    const sourceStats: Record<string, any> = {};
+
+    for (const result of results) {
+      if (result.data?.products) {
+        sourceStats[result.source] = {
+          count: result.data.products.length,
+          avgScore: result.data.products.reduce((sum: number, p: WinnerProduct) => sum + p.trending_score, 0) / result.data.products.length
+        };
+        allProducts = allProducts.concat(result.data.products);
       }
-    })
+    }
 
-    const sourceProducts = await Promise.all(fetchPromises)
-    sourceProducts.forEach(products => allProducts.push(...products))
-
-    // Calculate final scores for ranking
-    const scoredProducts = allProducts.map(product => {
-      const baseScore = product.trending_score || 50
-      const reviewsScore = product.reviews ? Math.min(Math.log10(product.reviews) * 10, 30) : 0
-      const ratingScore = product.rating ? (product.rating - 3) * 10 : 0
-      const demandScore = product.market_demand || 50
-      const salesScore = product.sales ? Math.min(Math.log10(product.sales) * 5, 20) : 0
+    // Calculate final scores with AI-enhanced ranking
+    allProducts = allProducts.map(p => {
+      const baseScore = p.trending_score || 0;
+      const demandScore = p.market_demand || 0;
+      const socialScore = (p.reviews || 0) * 0.1 + (p.rating || 0) * 10;
+      const priceScore = Math.max(0, 100 - (p.price / 10));
       
-      // Price competitiveness (lower prices get slight boost)
-      const priceScore = product.price > 0 ? Math.max(5 - Math.log10(product.price), 0) : 0
-      
-      const final_score = Math.round(
-        baseScore * 0.3 +
-        reviewsScore * 0.2 +
-        ratingScore * 0.2 +
-        demandScore * 0.15 +
-        salesScore * 0.1 +
-        priceScore * 0.05
-      )
+      const final_score = (
+        baseScore * 0.4 +
+        demandScore * 0.3 +
+        socialScore * 0.2 +
+        priceScore * 0.1
+      );
 
-      return {
-        ...product,
-        final_score
+      return { ...p, final_score };
+    });
+
+    // Filter by criteria
+    allProducts = allProducts.filter(p => {
+      if (min_score && (p.final_score || 0) < min_score) return false;
+      if (max_price && p.price > max_price) return false;
+      return true;
+    });
+
+    // Sort by final score and deduplicate
+    allProducts.sort((a, b) => (b.final_score || 0) - (a.final_score || 0));
+    
+    const uniqueProducts: WinnerProduct[] = [];
+    const seenTitles = new Set<string>();
+    
+    for (const product of allProducts) {
+      const normalizedTitle = product.title.toLowerCase().substring(0, 30);
+      if (!seenTitles.has(normalizedTitle)) {
+        seenTitles.add(normalizedTitle);
+        uniqueProducts.push(product);
       }
-    })
-
-    // Sort by final score and remove duplicates
-    const uniqueProducts = Array.from(
-      new Map(
-        scoredProducts
-          .sort((a, b) => (b.final_score || 0) - (a.final_score || 0))
-          .map(p => [p.title.toLowerCase().slice(0, 30), p])
-      ).values()
-    ).slice(0, limit)
+    }
 
     const response = {
-      products: uniqueProducts,
-      sources: sourceResults,
+      products: uniqueProducts.slice(0, limit),
       meta: {
         total: uniqueProducts.length,
         sources_used: sources,
-        query,
+        query: q,
         category,
         timestamp: new Date().toISOString(),
-        scoring_algorithm: 'weighted_multi_factor'
+        scoring_algorithm: 'ai_enhanced_v1'
       },
       stats: {
-        avg_score: Math.round(uniqueProducts.reduce((sum, p) => sum + (p.final_score || 0), 0) / uniqueProducts.length),
+        avg_score: uniqueProducts.reduce((sum, p) => sum + (p.final_score || 0), 0) / uniqueProducts.length,
         total_sources: sources.length,
-        products_per_source: sourceProducts.map(arr => arr.length)
-      }
-    }
+        products_per_source: Object.values(sourceStats).map((s: any) => s.count)
+      },
+      sources: sourceStats
+    };
 
-    // Cache the response
-    await supabase.from('api_cache').upsert({
+    // Cache for 5 minutes
+    await supabase.from('api_cache').insert({
       cache_key: cacheKey,
       data: response,
-      expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
-    })
+      expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString()
+    });
 
-    console.log(`Aggregated ${uniqueProducts.length} winning products from ${sources.length} sources`)
+    console.log('Returning aggregated data:', { totalProducts: response.products.length, avgScore: response.stats.avg_score });
 
     return new Response(JSON.stringify(response), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
-
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
-    console.error('Error in winners-aggregator:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('Winners aggregator error:', error);
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      products: [],
+      meta: { total: 0, timestamp: new Date().toISOString() }
+    }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
-})
+});
