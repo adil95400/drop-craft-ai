@@ -180,3 +180,6 @@ verify_jwt = true
 
 [functions.auto-detect-winners]
 verify_jwt = true
+
+[functions.winning-products-aggregator]
+verify_jwt = true

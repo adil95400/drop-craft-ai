@@ -9,7 +9,7 @@ import { useRealWinnersAPI } from '@/hooks/useRealWinnersAPI'
 
 export const WinnersSearchInterface = () => {
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedSources, setSelectedSources] = useState(['trends', 'ebay', 'amazon'])
   
   const { searchWinners, isSearching, winnersData } = useRealWinnersAPI()
@@ -19,7 +19,7 @@ export const WinnersSearchInterface = () => {
     
     searchWinners({
       query: searchQuery,
-      category: selectedCategory,
+      category: selectedCategory === 'all' ? undefined : selectedCategory,
       sources: selectedSources,
       limit: 50
     })
@@ -86,7 +86,7 @@ export const WinnersSearchInterface = () => {
                 <SelectValue placeholder="Toutes catégories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Toutes catégories</SelectItem>
+                <SelectItem value="all">Toutes catégories</SelectItem>
                 {categories.map(cat => (
                   <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                 ))}

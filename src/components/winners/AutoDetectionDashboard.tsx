@@ -61,7 +61,7 @@ export const AutoDetectionDashboard: React.FC = () => {
     loadDetectedProducts();
     const interval = setInterval(loadDetectedProducts, 60000); // Auto-refresh every minute
     return () => clearInterval(interval);
-  }, []);
+  }, [filters, sortBy]); // Re-run when filters or sort change
 
   const loadDetectedProducts = async () => {
     setIsLoading(true);
@@ -357,8 +357,8 @@ export const AutoDetectionDashboard: React.FC = () => {
                 className="w-full p-2 border rounded"
                 value={filters.platform}
                 onChange={(e) => {
-                  setFilters({...filters, platform: e.target.value});
-                  loadDetectedProducts();
+                  const newFilters = {...filters, platform: e.target.value};
+                  setFilters(newFilters);
                 }}
               >
                 <option value="all">Toutes</option>
@@ -374,8 +374,8 @@ export const AutoDetectionDashboard: React.FC = () => {
                 className="w-full p-2 border rounded"
                 value={filters.competition}
                 onChange={(e) => {
-                  setFilters({...filters, competition: e.target.value});
-                  loadDetectedProducts();
+                  const newFilters = {...filters, competition: e.target.value};
+                  setFilters(newFilters);
                 }}
               >
                 <option value="all">Tous niveaux</option>
@@ -390,8 +390,8 @@ export const AutoDetectionDashboard: React.FC = () => {
                 className="w-full p-2 border rounded"
                 value={filters.minViralityScore}
                 onChange={(e) => {
-                  setFilters({...filters, minViralityScore: parseInt(e.target.value)});
-                  loadDetectedProducts();
+                  const newFilters = {...filters, minViralityScore: parseInt(e.target.value)};
+                  setFilters(newFilters);
                 }}
               >
                 <option value="0">Tous</option>
@@ -407,7 +407,6 @@ export const AutoDetectionDashboard: React.FC = () => {
                 value={sortBy}
                 onChange={(e) => {
                   setSortBy(e.target.value as any);
-                  loadDetectedProducts();
                 }}
               >
                 <option value="virality">Score viral</option>
