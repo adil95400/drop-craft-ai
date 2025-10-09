@@ -119,13 +119,6 @@ export type Database = {
             referencedRelation: "ad_campaigns"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "ab_test_variants_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       active_alerts: {
@@ -169,13 +162,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "alert_rules"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "active_alerts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -288,15 +274,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "ad_campaigns_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       ads_platform_connections: {
         Row: {
@@ -347,15 +325,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "ads_platform_connections_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       advanced_reports: {
         Row: {
@@ -490,15 +460,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "ai_tasks_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       alert_rules: {
         Row: {
@@ -540,15 +502,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "alert_rules_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       api_cache: {
         Row: {
@@ -858,13 +812,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "automation_executions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "automation_executions_workflow_id_fkey"
             columns: ["workflow_id"]
             isOneToOne: false
@@ -1015,15 +962,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "automation_workflows_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       blog_posts: {
         Row: {
@@ -1322,15 +1261,7 @@ export type Database = {
           user_agent?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "catalog_access_log_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       catalog_products: {
         Row: {
@@ -1488,13 +1419,6 @@ export type Database = {
             referencedRelation: "categories"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "categories_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       category_mapping_rules: {
@@ -1531,15 +1455,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "category_mapping_rules_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       competitive_intelligence: {
         Row: {
@@ -1734,15 +1650,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "crm_contacts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       currencies: {
         Row: {
@@ -1907,15 +1815,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "customers_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       deduplication_results: {
         Row: {
@@ -2673,15 +2573,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "generated_content_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       geo_targeting_rules: {
         Row: {
@@ -2866,15 +2758,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "import_connectors_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       import_jobs: {
         Row: {
@@ -3152,13 +3036,6 @@ export type Database = {
             referencedRelation: "import_jobs"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "imported_products_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       imported_reviews: {
@@ -3292,13 +3169,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "suppliers"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ingestion_jobs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -3555,15 +3425,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "marketing_campaigns_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       marketing_intelligence: {
         Row: {
@@ -3644,15 +3506,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "marketing_segments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       marketplace_connections: {
         Row: {
@@ -3694,15 +3548,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "marketplace_connections_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       marketplace_extensions: {
         Row: {
@@ -3842,13 +3688,6 @@ export type Database = {
             referencedRelation: "marketplace_connections"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "marketplace_sync_logs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       monitoring_metrics: {
@@ -3879,15 +3718,7 @@ export type Database = {
           user_id?: string
           value?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "monitoring_metrics_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       newsletters: {
         Row: {
@@ -3956,15 +3787,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       order_fulfillment_logs: {
         Row: {
@@ -4202,13 +4025,6 @@ export type Database = {
             referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "order_routing_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
         ]
       }
       order_routing_logs: {
@@ -4312,13 +4128,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "customers"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "orders_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -4455,15 +4264,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "platform_integrations_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       predictive_analytics: {
         Row: {
@@ -4835,15 +4636,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "product_imports_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       product_translations: {
         Row: {
@@ -5050,13 +4843,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "suppliers"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "products_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -5341,15 +5127,7 @@ export type Database = {
           user_id?: string
           voice_preference?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "realtime_chat_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       realtime_presence: {
         Row: {
@@ -5379,15 +5157,7 @@ export type Database = {
           presence_data?: Json
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "realtime_presence_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       reviews: {
         Row: {
@@ -5681,15 +5451,7 @@ export type Database = {
           user_agent?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "security_audit_log_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       security_events: {
         Row: {
@@ -5791,15 +5553,7 @@ export type Database = {
           url?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "seo_analyses_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       seo_keywords: {
         Row: {
@@ -5850,15 +5604,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "seo_keywords_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       shipments: {
         Row: {
@@ -6324,13 +6070,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "stock_alert_configs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "stock_alert_configs_warehouse_id_fkey"
             columns: ["warehouse_id"]
             isOneToOne: false
@@ -6404,20 +6143,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "stock_alerts_resolved_by_fkey"
-            columns: ["resolved_by"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "stock_alerts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "stock_alerts_warehouse_id_fkey"
@@ -6501,13 +6226,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "stock_levels_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "stock_levels_warehouse_id_fkey"
             columns: ["warehouse_id"]
             isOneToOne: false
@@ -6577,13 +6295,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "stock_movements_performed_by_fkey"
-            columns: ["performed_by"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "stock_movements_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -6596,13 +6307,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "warehouses"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "stock_movements_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "stock_movements_warehouse_id_fkey"
@@ -6666,13 +6370,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "stock_predictions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "stock_predictions_warehouse_id_fkey"
@@ -6741,15 +6438,7 @@ export type Database = {
           user_id?: string
           webhook_config?: Json | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "store_integrations_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       stripe_webhooks: {
         Row: {
@@ -6815,15 +6504,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "subscribers_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       subscriptions: {
         Row: {
@@ -6868,15 +6549,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "subscriptions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       supplier_catalog: {
         Row: {
@@ -7484,15 +7157,7 @@ export type Database = {
           user_id?: string
           website?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "suppliers_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       sync_configurations: {
         Row: {
@@ -7591,15 +7256,7 @@ export type Database = {
           sync_type?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "sync_history_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       sync_jobs: {
         Row: {
@@ -7650,15 +7307,7 @@ export type Database = {
           updated_count?: number
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "sync_jobs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       sync_logs: {
         Row: {
@@ -7959,15 +7608,7 @@ export type Database = {
           timestamp?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "system_logs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       tenant_users: {
         Row: {
@@ -8008,25 +7649,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "tenant_users_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-          {
             foreignKeyName: "tenant_users_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tenant_users_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -8076,15 +7703,7 @@ export type Database = {
           updated_at?: string
           usage_limits?: Json | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "tenants_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       translation_jobs: {
         Row: {
@@ -8252,15 +7871,7 @@ export type Database = {
           usage_count?: number | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_api_keys_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       user_extensions: {
         Row: {
@@ -8453,15 +8064,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_quotas_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -8485,15 +8088,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       user_sessions: {
         Row: {
@@ -8538,15 +8133,7 @@ export type Database = {
           user_agent?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       warehouses: {
         Row: {
@@ -8600,15 +8187,7 @@ export type Database = {
           user_id?: string
           warehouse_type?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "warehouses_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       webhook_configurations: {
         Row: {
@@ -8766,15 +8345,7 @@ export type Database = {
           user_id?: string
           virality_score?: number
         }
-        Relationships: [
-          {
-            foreignKeyName: "winner_products_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_analytics"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
@@ -8845,6 +8416,14 @@ export type Database = {
       check_security_configuration: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      check_security_definer_functions: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          function_name: string
+          has_search_path: boolean
+          is_secure: boolean
+        }[]
       }
       check_user_quota: {
         Args: { increment_by?: number; quota_key_param: string }
