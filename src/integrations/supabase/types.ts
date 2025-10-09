@@ -1634,6 +1634,42 @@ export type Database = {
         }
         Relationships: []
       }
+      conversion_events: {
+        Row: {
+          conversion_value: number | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          event_type: string
+          id: string
+          metadata: Json
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          conversion_value?: number | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          conversion_value?: number | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       crm_contacts: {
         Row: {
           attribution: Json | null
@@ -1905,6 +1941,66 @@ export type Database = {
           user_id?: string
           verified?: boolean | null
           website?: string | null
+        }
+        Relationships: []
+      }
+      dynamic_discounts: {
+        Row: {
+          conditions: Json
+          created_at: string
+          discount_name: string
+          discount_type: string
+          discount_value: number
+          end_date: string | null
+          id: string
+          is_active: boolean
+          performance_metrics: Json
+          priority: number
+          product_filters: Json | null
+          start_date: string | null
+          target_audience: Json | null
+          time_constraints: Json | null
+          updated_at: string
+          usage_limits: Json | null
+          user_id: string
+        }
+        Insert: {
+          conditions?: Json
+          created_at?: string
+          discount_name: string
+          discount_type: string
+          discount_value?: number
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          performance_metrics?: Json
+          priority?: number
+          product_filters?: Json | null
+          start_date?: string | null
+          target_audience?: Json | null
+          time_constraints?: Json | null
+          updated_at?: string
+          usage_limits?: Json | null
+          user_id: string
+        }
+        Update: {
+          conditions?: Json
+          created_at?: string
+          discount_name?: string
+          discount_type?: string
+          discount_value?: number
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          performance_metrics?: Json
+          priority?: number
+          product_filters?: Json | null
+          start_date?: string | null
+          target_audience?: Json | null
+          time_constraints?: Json | null
+          updated_at?: string
+          usage_limits?: Json | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -4205,6 +4301,63 @@ export type Database = {
         }
         Relationships: []
       }
+      product_bundles: {
+        Row: {
+          bundle_name: string
+          bundle_price: number
+          conditions: Json
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean
+          original_price: number
+          performance_metrics: Json
+          priority: number
+          product_ids: string[]
+          savings: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bundle_name: string
+          bundle_price?: number
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean
+          original_price?: number
+          performance_metrics?: Json
+          priority?: number
+          product_ids?: string[]
+          savings?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bundle_name?: string
+          bundle_price?: number
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean
+          original_price?: number
+          performance_metrics?: Json
+          priority?: number
+          product_ids?: string[]
+          savings?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       product_imports: {
         Row: {
           ai_optimization_results: Json | null
@@ -4887,6 +5040,60 @@ export type Database = {
         }
         Relationships: []
       }
+      scarcity_timers: {
+        Row: {
+          created_at: string
+          display_config: Json
+          end_date: string | null
+          id: string
+          is_active: boolean
+          performance_metrics: Json
+          start_date: string
+          target_entity_ids: string[] | null
+          target_entity_type: string
+          timer_config: Json
+          timer_name: string
+          timer_type: string
+          updated_at: string
+          urgency_level: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_config?: Json
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          performance_metrics?: Json
+          start_date?: string
+          target_entity_ids?: string[] | null
+          target_entity_type: string
+          timer_config?: Json
+          timer_name: string
+          timer_type: string
+          updated_at?: string
+          urgency_level?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_config?: Json
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          performance_metrics?: Json
+          start_date?: string
+          target_entity_ids?: string[] | null
+          target_entity_type?: string
+          timer_config?: Json
+          timer_name?: string
+          timer_type?: string
+          updated_at?: string
+          urgency_level?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       scheduled_imports: {
         Row: {
           created_at: string | null
@@ -5480,6 +5687,54 @@ export type Database = {
           supplier_performance?: Json
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      social_proof_widgets: {
+        Row: {
+          created_at: string
+          data_source: Json
+          display_config: Json
+          id: string
+          is_active: boolean
+          performance_metrics: Json
+          position: string
+          refresh_interval: number
+          target_pages: string[]
+          updated_at: string
+          user_id: string
+          widget_name: string
+          widget_type: string
+        }
+        Insert: {
+          created_at?: string
+          data_source?: Json
+          display_config?: Json
+          id?: string
+          is_active?: boolean
+          performance_metrics?: Json
+          position?: string
+          refresh_interval?: number
+          target_pages?: string[]
+          updated_at?: string
+          user_id: string
+          widget_name: string
+          widget_type: string
+        }
+        Update: {
+          created_at?: string
+          data_source?: Json
+          display_config?: Json
+          id?: string
+          is_active?: boolean
+          performance_metrics?: Json
+          position?: string
+          refresh_interval?: number
+          target_pages?: string[]
+          updated_at?: string
+          user_id?: string
+          widget_name?: string
+          widget_type?: string
         }
         Relationships: []
       }
@@ -7208,6 +7463,63 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      upsell_rules: {
+        Row: {
+          ai_generated: boolean
+          created_at: string
+          discount_offer: Json | null
+          display_config: Json
+          display_timing: string
+          id: string
+          is_active: boolean
+          performance_metrics: Json
+          priority: number
+          rule_name: string
+          rule_type: string
+          suggested_product_ids: string[]
+          trigger_conditions: Json
+          trigger_product_ids: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_generated?: boolean
+          created_at?: string
+          discount_offer?: Json | null
+          display_config?: Json
+          display_timing?: string
+          id?: string
+          is_active?: boolean
+          performance_metrics?: Json
+          priority?: number
+          rule_name: string
+          rule_type: string
+          suggested_product_ids?: string[]
+          trigger_conditions?: Json
+          trigger_product_ids?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_generated?: boolean
+          created_at?: string
+          discount_offer?: Json | null
+          display_config?: Json
+          display_timing?: string
+          id?: string
+          is_active?: boolean
+          performance_metrics?: Json
+          priority?: number
+          rule_name?: string
+          rule_type?: string
+          suggested_product_ids?: string[]
+          trigger_conditions?: Json
+          trigger_product_ids?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_api_keys: {
         Row: {

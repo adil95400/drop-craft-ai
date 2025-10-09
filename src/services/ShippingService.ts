@@ -1,15 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
 
-type ShippingZone = any;
-type Warehouse = any;
-type ShippingRate = any;
-type ShipmentTracking = any;
-
 export class ShippingService {
   // Shipping Zones
   static async getShippingZones() {
     const { data, error } = await supabase
-      .from('shipping_zones')
+      .from('shipping_zones' as any)
       .select('*')
       .order('priority', { ascending: true });
     
@@ -17,9 +12,9 @@ export class ShippingService {
     return data;
   }
 
-  static async createShippingZone(zone: Partial<ShippingZone>) {
+  static async createShippingZone(zone: any) {
     const { data, error } = await supabase
-      .from('shipping_zones')
+      .from('shipping_zones' as any)
       .insert(zone)
       .select()
       .single();
@@ -28,9 +23,9 @@ export class ShippingService {
     return data;
   }
 
-  static async updateShippingZone(id: string, updates: Partial<ShippingZone>) {
+  static async updateShippingZone(id: string, updates: any) {
     const { data, error } = await supabase
-      .from('shipping_zones')
+      .from('shipping_zones' as any)
       .update(updates)
       .eq('id', id)
       .select()
@@ -42,7 +37,7 @@ export class ShippingService {
 
   static async deleteShippingZone(id: string) {
     const { error } = await supabase
-      .from('shipping_zones')
+      .from('shipping_zones' as any)
       .delete()
       .eq('id', id);
     
@@ -52,17 +47,17 @@ export class ShippingService {
   // Warehouses
   static async getWarehouses() {
     const { data, error } = await supabase
-      .from('warehouses')
+      .from('warehouses' as any)
       .select('*')
-      .order('is_primary', { ascending: false });
+      .order('is_active', { ascending: false });
     
     if (error) throw error;
     return data;
   }
 
-  static async createWarehouse(warehouse: Partial<Warehouse>) {
+  static async createWarehouse(warehouse: any) {
     const { data, error } = await supabase
-      .from('warehouses')
+      .from('warehouses' as any)
       .insert(warehouse)
       .select()
       .single();
@@ -71,9 +66,9 @@ export class ShippingService {
     return data;
   }
 
-  static async updateWarehouse(id: string, updates: Partial<Warehouse>) {
+  static async updateWarehouse(id: string, updates: any) {
     const { data, error } = await supabase
-      .from('warehouses')
+      .from('warehouses' as any)
       .update(updates)
       .eq('id', id)
       .select()
@@ -85,7 +80,7 @@ export class ShippingService {
 
   static async deleteWarehouse(id: string) {
     const { error } = await supabase
-      .from('warehouses')
+      .from('warehouses' as any)
       .delete()
       .eq('id', id);
     
@@ -94,7 +89,7 @@ export class ShippingService {
 
   // Shipping Rates
   static async getShippingRates(zoneId?: string) {
-    let query = supabase.from('shipping_rates').select('*, shipping_zones(zone_name), warehouses(warehouse_name)');
+    let query = supabase.from('shipping_rates' as any).select('*');
     
     if (zoneId) {
       query = query.eq('zone_id', zoneId);
@@ -105,9 +100,9 @@ export class ShippingService {
     return data;
   }
 
-  static async createShippingRate(rate: Partial<ShippingRate>) {
+  static async createShippingRate(rate: any) {
     const { data, error } = await supabase
-      .from('shipping_rates')
+      .from('shipping_rates' as any)
       .insert(rate)
       .select()
       .single();
@@ -116,9 +111,9 @@ export class ShippingService {
     return data;
   }
 
-  static async updateShippingRate(id: string, updates: Partial<ShippingRate>) {
+  static async updateShippingRate(id: string, updates: any) {
     const { data, error } = await supabase
-      .from('shipping_rates')
+      .from('shipping_rates' as any)
       .update(updates)
       .eq('id', id)
       .select()
@@ -130,7 +125,7 @@ export class ShippingService {
 
   static async deleteShippingRate(id: string) {
     const { error } = await supabase
-      .from('shipping_rates')
+      .from('shipping_rates' as any)
       .delete()
       .eq('id', id);
     
@@ -138,13 +133,7 @@ export class ShippingService {
   }
 
   // Calculate Shipping
-  static async calculateShipping(params: {
-    destination_country: string;
-    destination_postal_code?: string;
-    weight?: number;
-    order_value?: number;
-    warehouse_id?: string;
-  }) {
+  static async calculateShipping(params: any) {
     const { data, error } = await supabase.functions.invoke('shipping-rate-calculator', {
       body: params
     });
@@ -154,9 +143,9 @@ export class ShippingService {
   }
 
   // Shipment Tracking
-  static async getShipments(filters?: { status?: string; order_id?: string }) {
+  static async getShipments(filters?: any) {
     let query = supabase
-      .from('shipment_tracking')
+      .from('shipment_tracking' as any)
       .select('*')
       .order('created_at', { ascending: false });
     
@@ -172,11 +161,7 @@ export class ShippingService {
     return data;
   }
 
-  static async generateTracking(params: {
-    order_id: string;
-    carrier: string;
-    warehouse_id?: string;
-  }) {
+  static async generateTracking(params: any) {
     const { data, error } = await supabase.functions.invoke('tracking-automation', {
       body: {
         action: 'generate_tracking',
@@ -188,12 +173,7 @@ export class ShippingService {
     return data;
   }
 
-  static async updateTracking(params: {
-    tracking_number: string;
-    status: string;
-    location: string;
-    description: string;
-  }) {
+  static async updateTracking(params: any) {
     const { data, error } = await supabase.functions.invoke('tracking-automation', {
       body: {
         action: 'update_tracking',
@@ -205,11 +185,7 @@ export class ShippingService {
     return data;
   }
 
-  static async bulkGenerateTracking(params: {
-    order_ids: string[];
-    carrier: string;
-    warehouse_id?: string;
-  }) {
+  static async bulkGenerateTracking(params: any) {
     const { data, error } = await supabase.functions.invoke('tracking-automation', {
       body: {
         action: 'bulk_generate',
@@ -224,7 +200,7 @@ export class ShippingService {
   // Analytics
   static async getShippingAnalytics() {
     const { data: shipments } = await supabase
-      .from('shipment_tracking')
+      .from('shipment_tracking' as any)
       .select('*');
 
     const total = shipments?.length || 0;
