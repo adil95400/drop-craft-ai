@@ -240,6 +240,14 @@ import PixelTracking from '@/pages/PixelTracking';
 import EmailMarketing from '@/pages/EmailMarketing';
 import UpsellManager from '@/pages/UpsellManager';
 import MultiStoreManager from '@/pages/MultiStoreManager';
+import ProductFinder from '@/pages/ProductFinder';
+import LiveChatSupport from '@/pages/LiveChatSupport';
+import ReturnsManagement from '@/pages/ReturnsManagement';
+import WarehouseManagement from '@/pages/WarehouseManagement';
+import AffiliateProgram from '@/pages/AffiliateProgram';
+import DynamicPricing from '@/pages/DynamicPricing';
+import AdvancedMonitoringPage from '@/pages/AdvancedMonitoringPage';
+import ImportSourcesPage from '@/pages/ImportSourcesPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -975,6 +983,71 @@ function App() {
                 <Route path="/product-sourcing" element={
                   <ProtectedRoute>
                     <AppLayout><ProductSourcingHub /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/inventory-management" element={
+                  <ProtectedRoute>
+                    <AppLayout><InventoryManagement /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/pixel-tracking" element={
+                  <ProtectedRoute>
+                    <AppLayout><PixelTracking /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/email-marketing" element={
+                  <ProtectedRoute>
+                    <AppLayout><EmailMarketing /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/upsell-manager" element={
+                  <ProtectedRoute>
+                    <AppLayout><UpsellManager /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/multi-store" element={
+                  <ProtectedRoute>
+                    <AppLayout><MultiStoreManager /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/product-finder" element={
+                  <ProtectedRoute>
+                    <AppLayout><ProductFinder /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/live-chat" element={
+                  <ProtectedRoute>
+                    <AppLayout><LiveChatSupport /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/returns-management" element={
+                  <ProtectedRoute>
+                    <AppLayout><ReturnsManagement /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/warehouse-management" element={
+                  <ProtectedRoute>
+                    <AppLayout><WarehouseManagement /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/affiliate-program" element={
+                  <ProtectedRoute>
+                    <AppLayout><AffiliateProgram /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dynamic-pricing" element={
+                  <ProtectedRoute>
+                    <AppLayout><DynamicPricing /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/observability" element={
+                  <ProtectedRoute>
+                    <AppLayout><AdvancedMonitoringPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import-sources" element={
+                  <ProtectedRoute>
+                    <AppLayout><ImportSourcesPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 
