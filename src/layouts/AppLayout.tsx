@@ -10,7 +10,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { NotificationBell } from '@/components/notifications/NotificationService';
 import { ExtensionMenu } from '@/components/navigation/ExtensionMenu';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -42,7 +42,7 @@ export function AppLayout({
       <div className="min-h-screen w-full flex bg-background">
         <AppSidebar />
         
-        <div className="flex flex-col flex-1">
+        <SidebarInset>
           {/* Header */}
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-16 items-center gap-4 px-6">
@@ -110,12 +110,12 @@ export function AppLayout({
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto">
             <div className="p-6">
               {children}
             </div>
-          </main>
-        </div>
+          </div>
+        </SidebarInset>
       </div>
     </SidebarProvider>
   );
