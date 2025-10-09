@@ -3,7 +3,7 @@
 
 import { memo, Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/AppSidebar'
 import { LoadingSpinner, useAuthOptimized } from '@/shared'
 import { cn } from '@/lib/utils'
@@ -28,7 +28,7 @@ const OptimizedLayoutComponent = ({ className }: OptimizedLayoutProps) => {
       <div className={cn("min-h-screen flex w-full bg-background", className)}>
         <AppSidebar />
         
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <SidebarInset>
           {/* Header with sidebar trigger */}
           <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-14 items-center gap-4 px-4">
@@ -43,7 +43,7 @@ const OptimizedLayoutComponent = ({ className }: OptimizedLayoutProps) => {
               <Outlet />
             </Suspense>
           </div>
-        </main>
+        </SidebarInset>
       </div>
     </SidebarProvider>
   )

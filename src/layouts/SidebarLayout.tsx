@@ -1,4 +1,4 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Search, Bell, User, Menu } from "lucide-react";
@@ -30,8 +30,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
       <div className="min-h-screen w-full flex">
         <AppSidebar />
         
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
+        <SidebarInset>
           {/* Header */}
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-16 items-center gap-4 px-6">
@@ -101,10 +100,10 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto">
             {children}
-          </main>
-        </div>
+          </div>
+        </SidebarInset>
       </div>
     </SidebarProvider>
   );
