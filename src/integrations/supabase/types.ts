@@ -74,6 +74,53 @@ export type Database = {
         }
         Relationships: []
       }
+      ab_test_variants: {
+        Row: {
+          ad_creative: Json
+          campaign_id: string
+          created_at: string | null
+          id: string
+          is_winner: boolean | null
+          performance_data: Json | null
+          traffic_allocation: number | null
+          updated_at: string | null
+          user_id: string
+          variant_name: string
+        }
+        Insert: {
+          ad_creative: Json
+          campaign_id: string
+          created_at?: string | null
+          id?: string
+          is_winner?: boolean | null
+          performance_data?: Json | null
+          traffic_allocation?: number | null
+          updated_at?: string | null
+          user_id: string
+          variant_name: string
+        }
+        Update: {
+          ad_creative?: Json
+          campaign_id?: string
+          created_at?: string | null
+          id?: string
+          is_winner?: boolean | null
+          performance_data?: Json | null
+          traffic_allocation?: number | null
+          updated_at?: string | null
+          user_id?: string
+          variant_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ab_test_variants_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "ad_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       active_alerts: {
         Row: {
           alert_rule_id: string
@@ -159,6 +206,123 @@ export type Database = {
           severity?: string | null
           source?: string | null
           user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ad_campaigns: {
+        Row: {
+          ab_test_config: Json | null
+          ad_creative: Json | null
+          ai_generated: boolean | null
+          budget_daily: number | null
+          budget_spent: number | null
+          budget_total: number | null
+          campaign_name: string
+          campaign_type: string
+          created_at: string | null
+          ended_at: string | null
+          external_campaign_id: string | null
+          id: string
+          performance_metrics: Json | null
+          platform: string
+          started_at: string | null
+          status: string
+          target_audience: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ab_test_config?: Json | null
+          ad_creative?: Json | null
+          ai_generated?: boolean | null
+          budget_daily?: number | null
+          budget_spent?: number | null
+          budget_total?: number | null
+          campaign_name: string
+          campaign_type: string
+          created_at?: string | null
+          ended_at?: string | null
+          external_campaign_id?: string | null
+          id?: string
+          performance_metrics?: Json | null
+          platform: string
+          started_at?: string | null
+          status?: string
+          target_audience?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ab_test_config?: Json | null
+          ad_creative?: Json | null
+          ai_generated?: boolean | null
+          budget_daily?: number | null
+          budget_spent?: number | null
+          budget_total?: number | null
+          campaign_name?: string
+          campaign_type?: string
+          created_at?: string | null
+          ended_at?: string | null
+          external_campaign_id?: string | null
+          id?: string
+          performance_metrics?: Json | null
+          platform?: string
+          started_at?: string | null
+          status?: string
+          target_audience?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ads_platform_connections: {
+        Row: {
+          access_token: string
+          account_id: string
+          account_name: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          metadata: Json | null
+          platform: string
+          refresh_token: string | null
+          sync_status: string | null
+          token_expires_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          account_id: string
+          account_name?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          metadata?: Json | null
+          platform: string
+          refresh_token?: string | null
+          sync_status?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          account_id?: string
+          account_name?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          metadata?: Json | null
+          platform?: string
+          refresh_token?: string | null
+          sync_status?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []

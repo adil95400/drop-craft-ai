@@ -183,3 +183,9 @@ verify_jwt = true
 
 [functions.winning-products-aggregator]
 verify_jwt = true
+
+[functions.ads-manager]
+verify_jwt = true
+
+[functions.ai-ad-creator]
+verify_jwt = true
