@@ -290,7 +290,10 @@ export function AdvancedImportHub() {
     <div className="space-y-6">
       {/* Header avec statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => window.location.href = '/import/sources'}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>

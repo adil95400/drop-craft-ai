@@ -7,6 +7,7 @@ import { StoreDashboard } from '@/pages/stores/StoreDashboard'
 import MarketplaceHubPage from '@/pages/MarketplaceHubPage'
 import MultiTenantPage from '@/pages/MultiTenantPage'
 import AdvancedMonitoringPage from '@/pages/AdvancedMonitoringPage'
+import ImportSourcesPage from '@/pages/ImportSourcesPage'
 
 export function AppRoutes() {
   return (
@@ -20,6 +21,7 @@ export function AppRoutes() {
         <Route path="marketplace-hub" element={<MarketplaceHubPage />} />
         <Route path="multi-tenant" element={<MultiTenantPage />} />
         <Route path="observability" element={<AdvancedMonitoringPage />} />
+        <Route path="import/sources" element={<ImportSourcesPage />} />
       </Route>
     </Routes>
   )
