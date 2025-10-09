@@ -7,22 +7,28 @@ import {
   Package, Search, Plus, Filter, Download, Eye, Edit, 
   Truck, CreditCard, Clock, CheckCircle, DollarSign
 } from 'lucide-react'
-
-const mockOrders = [
-  {
-    id: '1',
-    orderNumber: 'ORD-2024-001',
-    customerName: 'Sophie Martin',
-    status: 'delivered',
-    total: 450.00,
-    orderDate: '2024-01-15',
-    items: 3,
-    paymentStatus: 'paid'
-  }
-]
+import { useOrdersDemo } from '@/hooks/useOrdersDemo'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function Orders() {
   const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string | undefined>()
+  
+  const { orders, stats, isLoading } = useOrdersDemo({
+    status: statusFilter,
+    search: searchTerm
+  })
+
+  const getStatusBadge = (status: string) => {
+    const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+      pending: { label: 'En attente', variant: 'secondary' },
+      processing: { label: 'En cours', variant: 'default' },
+      shipped: { label: 'Expédiée', variant: 'default' },
+      delivered: { label: 'Livrée', variant: 'default' },
+      cancelled: { label: 'Annulée', variant: 'destructive' }
+    }
+    return statusMap[status] || { label: status, variant: 'default' }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/80 to-background p-6">
@@ -43,19 +49,70 @@ export default function Orders() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-blue-500/10">
-                  <Package className="w-6 h-6 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Commandes</p>
-                  <p className="text-2xl font-bold">2,847</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <Skeleton className="h-16 w-full" />
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-lg bg-blue-500/10">
+                      <Package className="w-6 h-6 text-blue-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Total</p>
+                      <p className="text-2xl font-bold">{stats.total}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-lg bg-green-500/10">
+                      <CheckCircle className="w-6 h-6 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Livrées</p>
+                      <p className="text-2xl font-bold">{stats.delivered}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-lg bg-orange-500/10">
+                      <Clock className="w-6 h-6 text-orange-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">En cours</p>
+                      <p className="text-2xl font-bold">{stats.processing}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-lg bg-purple-500/10">
+                      <DollarSign className="w-6 h-6 text-purple-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">CA Total</p>
+                      <p className="text-2xl font-bold">€{stats.revenue.toFixed(2)}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
 
         <Card>
@@ -79,32 +136,69 @@ export default function Orders() {
         </Card>
 
         <div className="grid gap-4">
-          {mockOrders.map((order) => (
-            <Card key={order.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-lg bg-green-500/10">
-                      <CheckCircle className="w-6 h-6 text-green-500" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">{order.orderNumber}</h3>
-                      <p className="text-muted-foreground">{order.customerName}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-center">
-                      <p className="text-xl font-bold text-green-600">{order.total.toFixed(2)}€</p>
-                    </div>
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Eye className="w-4 h-4" />
-                      Détails
-                    </Button>
-                  </div>
-                </div>
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
+              </Card>
+            ))
+          ) : orders.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Package className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">Aucune commande</h3>
+                <p className="text-muted-foreground">Vous n'avez pas encore de commandes.</p>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            orders.map((order) => {
+              const statusInfo = getStatusBadge(order.status)
+              return (
+                <Card key={order.id} className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={`p-3 rounded-lg ${
+                          order.status === 'delivered' ? 'bg-green-500/10' :
+                          order.status === 'processing' ? 'bg-blue-500/10' :
+                          order.status === 'shipped' ? 'bg-purple-500/10' :
+                          'bg-gray-500/10'
+                        }`}>
+                          {order.status === 'delivered' ? (
+                            <CheckCircle className="w-6 h-6 text-green-500" />
+                          ) : order.status === 'shipped' ? (
+                            <Truck className="w-6 h-6 text-purple-500" />
+                          ) : (
+                            <Clock className="w-6 h-6 text-blue-500" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-lg">{order.order_number}</h3>
+                            <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
+                          </div>
+                          <p className="text-muted-foreground">
+                            {new Date(order.created_at).toLocaleDateString('fr-FR')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-xl font-bold">{order.total_amount?.toFixed(2) || 0}€</p>
+                        </div>
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <Eye className="w-4 h-4" />
+                          Détails
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })
+          )}
         </div>
       </div>
     </div>
