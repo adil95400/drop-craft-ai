@@ -94,6 +94,15 @@ verify_jwt = false
 [functions.store-product-fetch]
 verify_jwt = false
 
+[functions.profit-calculator]
+verify_jwt = false
+
+[functions.competitor-tracker]
+verify_jwt = false
+
+[functions.pricing-rules-engine]
+verify_jwt = false
+
 [functions.store-product-import]
 verify_jwt = false
 
