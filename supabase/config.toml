@@ -213,3 +213,9 @@ verify_jwt = true
 
 [functions.canva-design-optimizer]
 verify_jwt = true
+
+[functions.shipping-rate-calculator]
+verify_jwt = true
+
+[functions.tracking-automation]
+verify_jwt = true
