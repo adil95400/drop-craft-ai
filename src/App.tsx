@@ -235,6 +235,11 @@ import ShippingManager from '@/pages/ShippingManager';
 import ReviewsManager from '@/pages/ReviewsManager';
 import AutoOrderSystem from '@/pages/AutoOrderSystem';
 import ProductSourcingHub from '@/pages/ProductSourcingHub';
+import InventoryManagement from '@/pages/InventoryManagement';
+import PixelTracking from '@/pages/PixelTracking';
+import EmailMarketing from '@/pages/EmailMarketing';
+import UpsellManager from '@/pages/UpsellManager';
+import MultiStoreManager from '@/pages/MultiStoreManager';
 
 const queryClient = new QueryClient({
   defaultOptions: {
