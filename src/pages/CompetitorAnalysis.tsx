@@ -52,7 +52,7 @@ const CompetitorAnalysis = () => {
     }
   }
 
-  // Données simulées d'analyse concurrentielle
+  // Analyze competitor using edge function
   const analyzeCompetitor = async () => {
     if (!domain.trim()) {
       toast({
@@ -63,77 +63,85 @@ const CompetitorAnalysis = () => {
       return;
     }
 
+    if (!user?.id) {
+      toast({
+        title: "Authentification requise",
+        description: "Veuillez vous connecter pour analyser un concurrent",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsAnalyzing(true);
     
     try {
-      // Simulation d'analyse
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
+      const url = domain.startsWith('http') ? domain : `https://${domain}`
+      const competitorName = new URL(url).hostname.replace('www.', '')
+
+      const { data, error } = await supabase.functions.invoke('analyze-competitor', {
+        body: { 
+          url,
+          userId: user.id,
+          competitorName
+        }
+      })
+
+      if (error) throw error
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to analyze competitor')
+      }
+
+      // Transform the data for display
+      const intelligence = data.intelligence
+      const summary = data.summary
+
       const mockData = {
-        domain: domain,
+        domain: competitorName,
         overview: {
-          authorityScore: 65,
-          organicKeywords: 12450,
-          organicTraffic: 45600,
-          paidKeywords: 234,
-          paidTraffic: 8900,
-          backlinks: 15600
+          authorityScore: intelligence.market_position?.seoScore || 0,
+          organicKeywords: summary.productCount || 0,
+          organicTraffic: Math.round(summary.productCount * 150),
+          paidKeywords: 0,
+          paidTraffic: 0,
+          backlinks: 0
         },
-        topKeywords: [
-          { keyword: "coque iphone 15", position: 3, volume: 22000, trend: "up" },
-          { keyword: "protection écran iphone", position: 7, volume: 18000, trend: "stable" },
-          { keyword: "accessoires iphone", position: 12, volume: 15000, trend: "down" },
-          { keyword: "chargeur sans fil", position: 5, volume: 8900, trend: "up" },
-          { keyword: "airpods pro case", position: 15, volume: 6700, trend: "up" }
-        ],
-        contentGaps: [
-          { keyword: "coque iphone 15 pro max", theirPos: null, opportunity: "High", volume: 19000 },
-          { keyword: "protection iphone transparente", theirPos: null, opportunity: "Medium", volume: 12000 },
-          { keyword: "magsafe compatible", theirPos: null, opportunity: "High", volume: 8500 }
-        ],
+        topKeywords: [],
+        contentGaps: intelligence.gap_opportunities?.map((gap: any) => ({
+          keyword: gap.opportunity,
+          theirPos: null,
+          opportunity: gap.impact,
+          volume: 0
+        })) || [],
         techSEO: {
-          pageSpeed: 78,
-          mobileOptimization: 92,
-          coreWebVitals: 65,
+          pageSpeed: intelligence.market_position?.seoScore || 0,
+          mobileOptimization: intelligence.competitive_data?.seoAnalysis?.hasH1 ? 100 : 50,
+          coreWebVitals: intelligence.competitive_data?.seoAnalysis?.hasStructuredData ? 100 : 50,
           httpsUsage: 100,
-          structuredData: 45
+          structuredData: intelligence.competitive_data?.seoAnalysis?.hasStructuredData ? 100 : 0
         },
-        topPages: [
-          { url: "/coque-iphone-15", traffic: 5600, keywords: 89 },
-          { url: "/protection-ecran", traffic: 4200, keywords: 67 },
-          { url: "/accessoires-apple", traffic: 3800, keywords: 156 },
-          { url: "/chargeurs", traffic: 2900, keywords: 34 }
-        ]
-      };
+        pricing: {
+          averagePrice: parseFloat(summary.avgPrice) || 0,
+          lowestPrice: parseFloat(intelligence.competitive_data?.priceAnalysis?.minPrice) || 0,
+          highestPrice: parseFloat(intelligence.competitive_data?.priceAnalysis?.maxPrice) || 0,
+          priceRange: intelligence.competitive_data?.priceAnalysis?.priceRange || 'N/A'
+        },
+        threatLevel: intelligence.threat_level || 'low',
+        opportunities: intelligence.gap_opportunities?.length || 0
+      }
       
       setAnalysisData(mockData);
-
-      // Sauvegarder dans Supabase
-      if (user) {
-        await supabase
-          .from('competitive_intelligence')
-          .insert({
-            user_id: user.id,
-            competitor_name: domain,
-            competitive_data: mockData,
-            price_analysis: { average: mockData.overview.organicTraffic / 100 },
-            market_position: { authority: mockData.overview.authorityScore },
-            gap_opportunities: mockData.contentGaps,
-            threat_level: mockData.overview.authorityScore > 70 ? 'high' : 'medium'
-          })
-        
-        await loadSavedAnalyses()
-      }
+      await loadSavedAnalyses()
       
       toast({
         title: "Analyse terminée",
-        description: `Analyse complète de ${domain} disponible`,
+        description: `${competitorName} a été analysé avec succès`,
       });
-      
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Analysis error:', error)
       toast({
-        title: "Erreur",
-        description: "Impossible d'analyser le concurrent",
+        title: "Erreur d'analyse",
+        description: error.message || "Impossible d'analyser ce concurrent",
         variant: "destructive"
       });
     } finally {

@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, CheckCircle, Globe, Sparkles, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ScrapedProduct {
   title: string;
@@ -71,6 +73,7 @@ export const URLImportInterface: React.FC<URLImportInterfaceProps> = ({
   onCancel
 }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -94,50 +97,48 @@ export const URLImportInterface: React.FC<URLImportInterfaceProps> = ({
   };
 
   const scrapeProduct = async (url: string): Promise<ScrapedProduct> => {
-    // Simulate API call to scraping service
+    if (!user?.id) throw new Error('User not authenticated')
+
     setProgress(10);
     
-    // Mock scraping logic for demo
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setProgress(30);
-    
-    const platform = detectPlatform(url);
-    const domain = new URL(url).hostname;
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setProgress(70);
-    
-    // Mock product data based on platform
-    const mockProduct: ScrapedProduct = {
-      title: `Produit scrapé depuis ${domain}`,
-      description: `Description détaillée du produit récupérée automatiquement depuis ${domain}. Ce produit a été analysé par notre système d'IA pour extraire toutes les informations pertinentes.`,
-      price: Math.floor(Math.random() * 100) + 10,
-      originalPrice: Math.floor(Math.random() * 50) + 100,
-      currency: 'EUR',
-      images: [
-        'https://via.placeholder.com/400x400/3B82F6/FFFFFF?text=Image+1',
-        'https://via.placeholder.com/400x400/10B981/FFFFFF?text=Image+2',
-        'https://via.placeholder.com/400x400/F59E0B/FFFFFF?text=Image+3'
-      ],
-      brand: 'Marque Example',
-      category: 'Électronique',
-      specifications: {
-        'Couleur': 'Noir',
-        'Matériau': 'Plastique',
-        'Dimensions': '15 x 10 x 5 cm',
-        'Poids': '200g',
-        'Garantie': '2 ans'
-      },
-      availability: 'En stock',
-      rating: 4.5,
-      reviewCount: 128,
-      seller: platform?.name || 'Vendeur inconnu',
-      url,
-      confidence: Math.floor(Math.random() * 20) + 80
-    };
-    
-    setProgress(100);
-    return mockProduct;
+    try {
+      // Call the edge function
+      const { data, error } = await supabase.functions.invoke('scrape-product', {
+        body: { url, userId: user.id }
+      })
+
+      if (error) throw error
+
+      setProgress(50);
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to scrape product')
+      }
+
+      const product = data.product
+
+      setProgress(90);
+
+      // Transform to ScrapedProduct format
+      const scrapedProduct: ScrapedProduct = {
+        title: product.name || 'Produit sans titre',
+        description: product.description || '',
+        price: product.price || 0,
+        currency: product.currency || 'EUR',
+        images: product.image_urls || [],
+        specifications: {},
+        availability: 'En stock',
+        url: product.source_url || url,
+        confidence: 85
+      }
+
+      setProgress(100);
+      return scrapedProduct
+
+    } catch (err) {
+      console.error('Scrape error:', err)
+      throw err
+    }
   };
 
   const handleScrape = async () => {

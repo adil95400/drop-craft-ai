@@ -246,3 +246,9 @@ verify_jwt = true
 
 [functions.api-import-execute]
 verify_jwt = true
+
+[functions.scrape-product]
+verify_jwt = false
+
+[functions.analyze-competitor]
+verify_jwt = false
