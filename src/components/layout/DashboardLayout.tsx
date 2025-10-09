@@ -16,7 +16,7 @@ export function DashboardLayout() {
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         
-        <SidebarInset>
+        <SidebarInset className="md:ml-[--sidebar-width] md:peer-data-[state=collapsed]:ml-[--sidebar-width-icon] transition-[margin] duration-200 ease-linear">
           {/* Header */}
           <header className="h-16 border-b bg-card flex items-center justify-between px-6 sticky top-0 z-50">
             <div className="flex items-center gap-4">

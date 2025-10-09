@@ -14,7 +14,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         
-        <SidebarInset>
+        <SidebarInset className="md:ml-[--sidebar-width] md:peer-data-[state=collapsed]:ml-[--sidebar-width-icon] transition-[margin] duration-200 ease-linear">
           <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-14 items-center justify-between px-4">
               <div className="flex items-center space-x-4">

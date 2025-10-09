@@ -28,7 +28,7 @@ const OptimizedLayoutComponent = ({ className }: OptimizedLayoutProps) => {
       <div className={cn("min-h-screen flex w-full bg-background", className)}>
         <AppSidebar />
         
-        <SidebarInset>
+        <SidebarInset className="md:ml-[--sidebar-width] md:peer-data-[state=collapsed]:ml-[--sidebar-width-icon] transition-[margin] duration-200 ease-linear">
           {/* Header with sidebar trigger */}
           <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-14 items-center gap-4 px-4">
