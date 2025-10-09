@@ -48,7 +48,7 @@ export const usePlan = (user?: User | null) => {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('plan, role, admin_mode')
+        .select('plan, is_admin, admin_mode')
         .eq('id', userId)
         .maybeSingle()
 
@@ -56,7 +56,7 @@ export const usePlan = (user?: User | null) => {
 
       const profile: UserProfile = {
         plan: (data?.plan as PlanType) || 'standard',
-        role: (data?.role as UserRole) || 'user',
+        role: data?.is_admin ? 'admin' : 'user',
         admin_mode: (data?.admin_mode as AdminMode) || null,
       }
 
@@ -67,7 +67,7 @@ export const usePlan = (user?: User | null) => {
         role: profile.role,
         admin_mode: profile.admin_mode,
         effectivePlan,
-        loading: false, 
+        loading: false,
         error: null 
       })
     } catch (error: any) {

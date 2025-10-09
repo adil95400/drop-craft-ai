@@ -36,7 +36,7 @@ export const AuthGuard = ({
       }
       
       // Role-based access control - simplifiée
-      if (requireAuth && user && requireRole === 'admin' && profile && profile.role !== 'admin') {
+      if (requireAuth && user && requireRole === 'admin' && profile && !profile.is_admin) {
         window.location.href = '/dashboard';
         return;
       }
@@ -60,7 +60,7 @@ export const AuthGuard = ({
     return null; // Will redirect
   }
 
-  if (requireAuth && user && requireRole === 'admin' && profile && profile.role !== 'admin') {
+  if (requireAuth && user && requireRole === 'admin' && profile && !profile.is_admin) {
     return null; // Will redirect
   }
 

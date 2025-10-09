@@ -33,9 +33,9 @@ export const useAuthOptimized = (): AuthState => {
   
   // Calculs memoizés pour éviter les re-renders
   const authState = useMemo(() => {
-    const role = (profile?.role || 'user') as UserRole
-    const isAdmin = role === 'admin'
-    const isManager = role === 'manager' || role === 'admin'
+    const isAdmin = profile?.is_admin === true
+    const role = isAdmin ? 'admin' : 'user' as UserRole
+    const isManager = isAdmin // For now, admin includes manager permissions
     const isAuthenticated = !!user
     
     return {

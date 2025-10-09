@@ -27,7 +27,7 @@ export const useAdminRole = () => {
 
   useEffect(() => {
     if (profile) {
-      setIsAdmin(profile.role === 'admin' || profile.is_admin === true)
+      setIsAdmin(profile.is_admin === true)
       setLoading(false)
     }
   }, [profile])

@@ -40,9 +40,6 @@ export const AuthDebug: React.FC = () => {
         {profile && (
           <>
             <div>
-              <strong>Role:</strong> <Badge variant="outline">{profile.role}</Badge>
-            </div>
-            <div>
               <strong>is_admin:</strong> <Badge variant={profile.is_admin ? "default" : "secondary"}>{profile.is_admin ? "true" : "false"}</Badge>
             </div>
             <div>

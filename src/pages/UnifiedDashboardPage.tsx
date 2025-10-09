@@ -92,9 +92,6 @@ const UnifiedDashboardPage: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="capitalize">
-              {profile?.role}
-            </Badge>
             <Badge variant="default" className="capitalize">
               Plan {effectivePlan.replace('_', ' ')}
             </Badge>

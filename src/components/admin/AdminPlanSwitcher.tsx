@@ -26,7 +26,7 @@ export const AdminPlanSwitcher = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Only show for admins
-  if (!profile?.is_admin && profile?.role !== 'admin') {
+  if (!profile?.is_admin) {
     return null;
   }
 

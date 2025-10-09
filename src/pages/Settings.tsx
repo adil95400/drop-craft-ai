@@ -477,11 +477,7 @@ const Settings = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Rôle actuel:</span>
-                    <p className="font-medium">{profile?.role || 'user'}</p>
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Statut admin:</span>
                     <p className="font-medium">{profile?.is_admin ? 'Oui' : 'Non'}</p>
@@ -653,11 +649,7 @@ const Settings = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm bg-muted/50 p-4 rounded-lg">
-                        <div>
-                          <span className="text-muted-foreground">Rôle actuel:</span>
-                          <p className="font-medium">{profile?.role || 'user'}</p>
-                        </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm bg-muted/50 p-4 rounded-lg">
                         <div>
                           <span className="text-muted-foreground">Statut admin:</span>
                           <p className="font-medium">{profile?.is_admin ? 'Oui' : 'Non'}</p>

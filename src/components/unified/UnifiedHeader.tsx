@@ -116,7 +116,7 @@ export const UnifiedHeader: React.FC = () => {
                   </p>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant="outline" className="text-xs capitalize">
-                      {profile.role}
+                      {isAdmin ? 'Admin' : 'Utilisateur'}
                     </Badge>
                     {isAdmin && (
                       <Badge variant="secondary" className="text-xs">

@@ -35,7 +35,7 @@ export function Header() {
   const { t } = useLanguage();
   
   // Check admin status directly from profile
-  const isAdmin = profile?.role === 'admin' || profile?.is_admin === true;
+  const isAdmin = profile?.is_admin === true;
 
   const getPlanIcon = () => {
     if (isUltraPro) return <Crown className="h-4 w-4 text-yellow-500" />;

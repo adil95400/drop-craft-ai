@@ -87,7 +87,7 @@ const UserProfile = () => {
             <CardTitle>{profile?.full_name || 'Nom non défini'}</CardTitle>
             <CardDescription>{user?.email}</CardDescription>
             <Badge variant="secondary" className="w-fit mx-auto">
-              {profile?.role || 'Utilisateur'}
+              {profile?.is_admin ? 'Administrateur' : 'Utilisateur'}
             </Badge>
           </CardHeader>
           <CardContent className="space-y-4">

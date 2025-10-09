@@ -21,14 +21,13 @@ export const RefreshProfileButton = () => {
   }
 
   // Show current profile info for debugging
-  const isAdmin = profile?.role === 'admin' || profile?.is_admin === true
+  const isAdmin = profile?.is_admin === true
 
   return (
     <div className="flex flex-col gap-2">
       <div className="text-sm text-muted-foreground mb-2">
         <strong>Informations actuelles:</strong><br />
         Email: {profile?.id || 'N/A'}<br />
-        Rôle: {profile?.role || 'user'}<br />
         Admin: {isAdmin ? 'Oui' : 'Non'}<br />
         Mode admin: {profile?.admin_mode || 'Aucun'}
       </div>

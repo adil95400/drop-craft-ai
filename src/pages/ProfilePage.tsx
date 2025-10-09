@@ -17,7 +17,7 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   
   // Check admin status directly from profile
-  const isAdmin = profile?.role === 'admin' || profile?.is_admin === true;
+  const isAdmin = profile?.is_admin === true;
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
     bio: profile?.bio || '',

@@ -211,7 +211,7 @@ export const useUnifiedPlan = create<UnifiedPlanState>()(
         
         const profile: UserProfile = {
           plan: (data?.plan as PlanType) || 'standard',
-          role: (data?.role as UserRole) || 'user',
+          role: data?.is_admin ? 'admin' : 'user',
           admin_mode: (data?.admin_mode as AdminMode) || null
         }
         

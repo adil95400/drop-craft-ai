@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 export interface Profile {
   id: string;
   full_name?: string;
-  role: 'user' | 'admin' | 'manager';
   admin_mode?: string | null;
   is_admin: boolean;
   plan: 'standard' | 'pro' | 'ultra_pro';
@@ -98,6 +97,8 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const fetchUserProfile = async (userId: string) => {
     try {
       console.log('Fetching profile for user:', userId);
+      
+      // Fetch profile directly (the role column was removed, use is_admin instead)
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -120,10 +121,6 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
           if (subData && subData.plan && subData.plan !== data.plan) {
             // Update profile if Stripe plan is different
             console.log('Syncing plan from Stripe:', subData.plan);
-            await supabase
-              .from('profiles')
-              .update({ plan: subData.plan })
-              .eq('id', userId);
             setProfile({ ...data, plan: subData.plan } as Profile);
           }
         } catch (subError) {
@@ -255,11 +252,14 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
   };
 
   // Role and permission helpers
-  const isAdmin = profile?.role === 'admin' || profile?.is_admin === true;
+  const isAdmin = profile?.is_admin === true;
   
   const hasRole = (role: string): boolean => {
     if (!profile) return false;
-    return profile.role === role || (role === 'admin' && profile.is_admin);
+    // Use is_admin flag which is synced from user_roles
+    if (role === 'admin') return profile.is_admin === true;
+    // For other roles, we would need to query user_roles separately
+    return false;
   };
 
   const canAccess = (permission: string): boolean => {
@@ -268,15 +268,9 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     // Admin has access to everything
     if (isAdmin) return true;
     
-    // Define permission mappings based on roles
-    const rolePermissions: Record<string, string[]> = {
-      user: ['dashboard', 'products', 'orders', 'profile'],
-      manager: ['dashboard', 'products', 'orders', 'customers', 'analytics', 'profile'],
-      admin: ['*'], // All permissions
-    };
-
-    const userPermissions = rolePermissions[profile.role] || [];
-    return userPermissions.includes('*') || userPermissions.includes(permission);
+    // Basic authenticated user permissions
+    const basicPermissions = ['dashboard', 'products', 'orders', 'profile'];
+    return basicPermissions.includes(permission);
   };
 
   // Calculate effective plan considering admin modes

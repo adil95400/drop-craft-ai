@@ -70,7 +70,7 @@ export const RequirePlan = ({
     return null;
   }
 
-  const isAdminInPreview = profile?.role === 'admin' && profile?.admin_mode?.startsWith('preview:');
+  const isAdminInPreview = profile?.is_admin && profile?.admin_mode?.startsWith('preview:');
 
   return (
     <Card className="border-dashed border-2 border-muted bg-muted/20">
