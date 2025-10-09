@@ -167,7 +167,7 @@ export function PredictiveInsights() {
       </Card>
 
       {/* Revenue Predictions */}
-      {predictions && (
+      {predictions?.revenue_forecast && (
         <div className="grid gap-6">
           <Card>
             <CardHeader>
@@ -212,135 +212,141 @@ export function PredictiveInsights() {
           </Card>
 
           {/* Customer Predictions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Prédictions Clients
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium mb-4">Risque de Désabonnement</h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Risque élevé</span>
-                      <Badge className="text-red-600 bg-red-100">
-                        {predictions.customer_predictions.churn_probability.high_risk} clients
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Risque moyen</span>
-                      <Badge className="text-yellow-600 bg-yellow-100">
-                        {predictions.customer_predictions.churn_probability.medium_risk} clients
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Risque faible</span>
-                      <Badge className="text-green-600 bg-green-100">
-                        {predictions.customer_predictions.churn_probability.low_risk} clients
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium mb-4">Valeur Vie Client</h4>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-primary">
-                      {formatCurrency(predictions.customer_predictions.lifetime_value_forecast)}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Prédiction LTV</div>
-                    <Badge className="mt-2" variant="outline">
-                      Coût d'acquisition: {predictions.customer_predictions.acquisition_cost_trend}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Product Demand Forecast */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                Prédictions Produits
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <h4 className="font-medium">Prévisions de Demande</h4>
-                {predictions.product_predictions.demand_forecast.map((product, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      {getGrowthIcon(product.growth_potential)}
-                      <div>
-                        <div className="font-medium">{product.product}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Potentiel: {product.growth_potential}
-                        </div>
+          {predictions.customer_predictions && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Prédictions Clients
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-medium mb-4">Risque de Désabonnement</h4>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Risque élevé</span>
+                        <Badge className="text-red-600 bg-red-100">
+                          {predictions.customer_predictions.churn_probability.high_risk} clients
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Risque moyen</span>
+                        <Badge className="text-yellow-600 bg-yellow-100">
+                          {predictions.customer_predictions.churn_probability.medium_risk} clients
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm">Risque faible</span>
+                        <Badge className="text-green-600 bg-green-100">
+                          {predictions.customer_predictions.churn_probability.low_risk} clients
+                        </Badge>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-green-600">
-                      +{product.demand_increase}%
-                    </Badge>
                   </div>
-                ))}
-              </div>
-              
-              <div className="mt-6">
-                <h4 className="font-medium mb-3">Opportunités d'Innovation</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {predictions.product_predictions.innovation_opportunities.map((opportunity, index) => (
-                    <div key={index} className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg">
-                      <Lightbulb className="h-4 w-4 text-primary" />
-                      <span className="text-sm">{opportunity}</span>
+                  
+                  <div>
+                    <h4 className="font-medium mb-4">Valeur Vie Client</h4>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-primary">
+                        {formatCurrency(predictions.customer_predictions.lifetime_value_forecast)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Prédiction LTV</div>
+                      <Badge className="mt-2" variant="outline">
+                        Coût d'acquisition: {predictions.customer_predictions.acquisition_cost_trend}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Product Demand Forecast */}
+          {predictions.product_predictions && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Prédictions Produits
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <h4 className="font-medium">Prévisions de Demande</h4>
+                  {predictions.product_predictions.demand_forecast.map((product, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        {getGrowthIcon(product.growth_potential)}
+                        <div>
+                          <div className="font-medium">{product.product}</div>
+                          <div className="text-sm text-muted-foreground">
+                            Potentiel: {product.growth_potential}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-green-600">
+                        +{product.demand_increase}%
+                      </Badge>
                     </div>
                   ))}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                
+                <div className="mt-6">
+                  <h4 className="font-medium mb-3">Opportunités d'Innovation</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {predictions.product_predictions.innovation_opportunities.map((opportunity, index) => (
+                      <div key={index} className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg">
+                        <Lightbulb className="h-4 w-4 text-primary" />
+                        <span className="text-sm">{opportunity}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Market Predictions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Prédictions Marché
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
-                    +{predictions.market_predictions.market_size_growth}%
+          {predictions.market_predictions && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Prédictions Marché
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      +{predictions.market_predictions.market_size_growth}%
+                    </div>
+                    <div className="text-sm text-muted-foreground">Croissance marché</div>
                   </div>
-                  <div className="text-sm text-muted-foreground">Croissance marché</div>
+                  <div className="text-center">
+                    <Badge variant="outline" className="mb-2">
+                      {predictions.market_predictions.competitive_intensity}
+                    </Badge>
+                    <div className="text-sm text-muted-foreground">Intensité concurrentielle</div>
+                  </div>
+                  <div className="text-center">
+                    <Badge variant="outline" className="mb-2">
+                      {predictions.market_predictions.technology_disruption}
+                    </Badge>
+                    <div className="text-sm text-muted-foreground">Disruption tech</div>
+                  </div>
+                  <div className="text-center">
+                    <Badge variant="outline" className="mb-2">
+                      {predictions.market_predictions.regulatory_impact}
+                    </Badge>
+                    <div className="text-sm text-muted-foreground">Impact réglementaire</div>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <Badge variant="outline" className="mb-2">
-                    {predictions.market_predictions.competitive_intensity}
-                  </Badge>
-                  <div className="text-sm text-muted-foreground">Intensité concurrentielle</div>
-                </div>
-                <div className="text-center">
-                  <Badge variant="outline" className="mb-2">
-                    {predictions.market_predictions.technology_disruption}
-                  </Badge>
-                  <div className="text-sm text-muted-foreground">Disruption tech</div>
-                </div>
-                <div className="text-center">
-                  <Badge variant="outline" className="mb-2">
-                    {predictions.market_predictions.regulatory_impact}
-                  </Badge>
-                  <div className="text-sm text-muted-foreground">Impact réglementaire</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Risk Analysis */}
           {riskAnalysis && (
