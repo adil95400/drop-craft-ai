@@ -33,74 +33,21 @@ import {
 const Automation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { automations, stats, isLoading } = useRealAutomation();
+  const { workflows, stats, isLoading, updateWorkflow } = useRealAutomation();
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [newAutomationDialogOpen, setNewAutomationDialogOpen] = useState(false);
   const [selectedAutomation, setSelectedAutomation] = useState<any>(null);
   
-  // Fallback to mock data if real data not available
-  const automationList = automations.length > 0 ? automations : [
-    {
-      id: 1,
-      name: "Synchronisation Prix Automatique",
-      description: "Met à jour les prix des produits en fonction des fournisseurs",
-      status: "active",
-      trigger: "Chaque heure",
-      lastRun: "Il y a 5 min",
-      success: 98
-    },
-    {
-      id: 2,
-      name: "Import Produits Gagnants",
-      description: "Importe automatiquement les produits tendances d'AliExpress",
-      status: "active",
-      trigger: "Quotidien à 08:00",
-      lastRun: "Il y a 2h",
-      success: 95
-    },
-    {
-      id: 3,
-      name: "Mise à jour Stock",
-      description: "Vérifie et met à jour le stock disponible chez les fournisseurs",
-      status: "paused",
-      trigger: "Toutes les 2h",
-      lastRun: "Il y a 6h",
-      success: 92
-    },
-    {
-      id: 4,
-      name: "Email Abandon Panier",
-      description: "Envoie des emails aux clients qui ont abandonné leur panier",
-      status: "active",
-      trigger: "Après 1h d'inactivité",
-      lastRun: "Il y a 15 min",
-      success: 87
-    }
-  ];
+  
+  const toggleAutomation = async (id: string) => {
+    const workflow = workflows.find(w => w.id === id);
+    if (!workflow) return;
 
-  const workflows = [
-    {
-      name: "Nouveau Produit Importé",
-      steps: ["Import produit", "Optimisation SEO", "Création variations", "Publication"],
-      active: true
-    },
-    {
-      name: "Commande Reçue",
-      steps: ["Validation commande", "Transmission fournisseur", "Email confirmation", "Suivi colis"],
-      active: true
-    },
-    {
-      name: "Produit en Rupture",
-      steps: ["Détection rupture", "Masquer produit", "Email notification", "Recherche alternative"],
-      active: false
-    }
-  ];
-
-  const toggleAutomation = (id: number) => {
-    // Handle automation toggle
-    toast({
-      title: "Automation mise à jour",
-      description: "Le statut de l'automation a été modifié",
+    const newStatus = workflow.status === 'active' ? 'paused' : 'active';
+    
+    updateWorkflow({ 
+      id, 
+      updates: { status: newStatus } 
     });
   };
 
@@ -108,8 +55,8 @@ const Automation = () => {
     setNewAutomationDialogOpen(true);
   };
 
-  const handleConfigure = (automationId: number) => {
-    const automation = automationList.find(a => a.id === automationId);
+  const handleConfigure = (automationId: string) => {
+    const automation = workflows.find(a => a.id === automationId);
     if (automation) {
       setSelectedAutomation(automation);
       setConfigDialogOpen(true);
@@ -200,74 +147,100 @@ const Automation = () => {
         </TabsList>
 
         <TabsContent value="automations" className="space-y-6">
-          <div className="grid gap-6">
-            {automationList.map((automation) => (
-              <Card key={automation.id} className="border-border bg-card shadow-card">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <Bot className="h-5 w-5 text-primary" />
+          {isLoading ? (
+            <div className="flex items-center justify-center p-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : workflows.length === 0 ? (
+            <Card className="border-border bg-card shadow-card">
+              <CardContent className="p-12 text-center">
+                <Bot className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Aucune automation</h3>
+                <p className="text-muted-foreground mb-4">Créez votre première automation pour commencer</p>
+                <Button onClick={handleNewAutomation}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nouvelle Automation
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6">
+              {workflows.map((workflow) => (
+                <Card key={workflow.id} className="border-border bg-card shadow-card">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <Bot className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">{workflow.name}</CardTitle>
+                          <CardDescription>{workflow.description || 'Workflow d\'automatisation'}</CardDescription>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Badge variant={workflow.status === "active" ? "default" : "secondary"}>
+                          {workflow.status === "active" ? "Actif" : workflow.status === "paused" ? "Pausé" : "Brouillon"}
+                        </Badge>
+                        <Switch 
+                          checked={workflow.status === "active"}
+                          onCheckedChange={() => toggleAutomation(workflow.id)}
+                        />
+                        <Button variant="ghost" size="icon" onClick={() => handleConfigure(workflow.id)}>
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <div className="text-sm text-muted-foreground">Déclencheur</div>
+                        <div className="font-medium">{workflow.trigger_type || 'Manuel'}</div>
                       </div>
                       <div>
-                        <CardTitle className="text-lg">{automation.name}</CardTitle>
-                        <CardDescription>{automation.description}</CardDescription>
+                        <div className="text-sm text-muted-foreground">Dernière exécution</div>
+                        <div className="font-medium">
+                          {workflow.last_executed_at 
+                            ? new Date(workflow.last_executed_at).toLocaleString('fr-FR')
+                            : 'Jamais'
+                          }
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Taux de réussite</div>
+                        <div className="font-medium">
+                          {workflow.execution_count > 0 
+                            ? Math.round((workflow.success_count / workflow.execution_count) * 100)
+                            : 0
+                          }%
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <Badge variant={automation.status === "active" ? "default" : "secondary"}>
-                        {automation.status === "active" ? "Actif" : "Pausé"}
-                      </Badge>
-                      <Switch 
-                        checked={automation.status === "active"}
-                        onCheckedChange={() => toggleAutomation(automation.id)}
-                      />
-                      <AutomationOptionsMenu 
-                        automation={automation}
-                        onToggle={toggleAutomation}
-                        onConfigure={handleConfigure}
-                      />
+                    <div className="flex justify-end space-x-2 mt-4">
+                      <Button variant="outline" size="sm" onClick={() => handleConfigure(workflow.id)}>
+                        <Settings className="mr-2 h-4 w-4" />
+                        Configurer
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => toggleAutomation(workflow.id)}>
+                        {workflow.status === "active" ? (
+                          <>
+                            <Pause className="mr-2 h-4 w-4" />
+                            Pause
+                          </>
+                        ) : (
+                          <>
+                            <Play className="mr-2 h-4 w-4" />
+                            Démarrer
+                          </>
+                        )}
+                      </Button>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <div className="text-sm text-muted-foreground">Déclencheur</div>
-                      <div className="font-medium">{automation.trigger}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Dernière exécution</div>
-                      <div className="font-medium">{automation.lastRun}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Taux de réussite</div>
-                      <div className="font-medium">{automation.success}%</div>
-                    </div>
-                  </div>
-                  <div className="flex justify-end space-x-2 mt-4">
-                    <Button variant="outline" size="sm" onClick={() => handleConfigure(automation.id)}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Configurer
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => toggleAutomation(automation.id)}>
-                      {automation.status === "active" ? (
-                        <>
-                          <Pause className="mr-2 h-4 w-4" />
-                          Pause
-                        </>
-                      ) : (
-                        <>
-                          <Play className="mr-2 h-4 w-4" />
-                          Démarrer
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="workflows" className="space-y-6">
