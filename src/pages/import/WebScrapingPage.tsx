@@ -52,33 +52,49 @@ const WebScrapingPage: React.FC = () => {
       return;
     }
 
+    if (!user) {
+      toast.error('Vous devez être connecté');
+      return;
+    }
+
     setScraping(true);
     setStep('scraping');
     
-    // Simulation de scraping
-    setTimeout(() => {
-      const mockData = [
-        {
-          name: 'Smartphone Galaxy S24',
-          price: 899.99,
-          description: 'Dernier smartphone Samsung avec caméra 200MP',
-          image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400',
-          category: 'Électronique'
-        },
-        {
-          name: 'MacBook Pro 16"',
-          price: 2499.99,
-          description: 'Ordinateur portable professionnel Apple',
-          image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca4?w=400',
-          category: 'Informatique'
-        }
-      ];
+    try {
+      const { data, error } = await supabase.functions.invoke('scrape-product', {
+        body: { url, user_id: user.id }
+      });
+
+      if (error) throw error;
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Échec du scraping');
+      }
+
+      // Récupérer les produits scrapés depuis le job d'import
+      const { data: jobData, error: jobError } = await supabase
+        .from('import_jobs')
+        .select('*')
+        .eq('id', data.jobId)
+        .single();
+
+      if (jobError) throw jobError;
+
+      // Extraire les données des produits
+      const fileData = jobData.file_data as any;
+      const products = fileData?.scrapedProducts || [];
       
-      setScrapedData(mockData);
+      setScrapedData(products);
       setScraping(false);
       setStep('preview');
-      toast.success('Scraping terminé avec succès!');
-    }, 3000);
+      toast.success(`${products.length} produits scrapés avec succès!`);
+      await loadRecentScrapings();
+    } catch (error: any) {
+      console.error('Scraping error:', error);
+      setScraping(false);
+      setStep('config');
+      toast.error(error.message || 'Erreur lors du scraping');
+    }
   };
 
   const handleImportData = async () => {

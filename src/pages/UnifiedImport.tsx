@@ -11,6 +11,7 @@ import { ImportDashboard } from '@/components/import/ImportDashboard';
 import { RealTimeImportProcessor } from '@/components/import/RealTimeImportProcessor';
 import { SmartImportRecommendations } from '@/components/import/SmartImportRecommendations';
 import { ImportPerformanceMonitor } from '@/components/import/ImportPerformanceMonitor';
+import { toast } from 'sonner';
 
 // Lazy load the actual import components
 const ImportBasic = React.lazy(() => import('./Import'));
@@ -213,22 +214,25 @@ const UnifiedImport: React.FC = () => {
                     Formats supportés: CSV, TSV (max 10MB)
                   </p>
                 </div>
-                <button
-                  onClick={() => {
-                    // Mock CSV data for demo
-                    const mockData = {
-                      headers: ['Nom', 'Prix', 'Description', 'SKU', 'Stock', 'Marque', 'Catégorie'],
-                      rows: [
-                        ['Produit 1', '29.99', 'Description du produit 1', 'SKU001', '100', 'BrandA', 'Électronique'],
-                        ['Produit 2', '39.99', 'Description du produit 2', 'SKU002', '50', 'BrandB', 'Maison'],
-                      ]
-                    };
-                    handleCSVUpload(mockData);
-                  }}
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                <label
+                  htmlFor="csv-upload"
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 cursor-pointer"
                 >
-                  Télécharger un fichier (Demo)
-                </button>
+                  Télécharger un fichier CSV
+                  <input
+                    id="csv-upload"
+                    type="file"
+                    accept=".csv,.tsv"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        // TODO: Implement real CSV parsing
+                        toast.error('Importation CSV à implémenter');
+                      }
+                    }}
+                  />
+                </label>
               </div>
             </div>
           </div>

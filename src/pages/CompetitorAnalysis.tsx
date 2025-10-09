@@ -96,7 +96,7 @@ const CompetitorAnalysis = () => {
       const intelligence = data.intelligence
       const summary = data.summary
 
-      const mockData = {
+      const analysisResult = {
         domain: competitorName,
         overview: {
           authorityScore: intelligence.market_position?.seoScore || 0,
@@ -130,7 +130,7 @@ const CompetitorAnalysis = () => {
         opportunities: intelligence.gap_opportunities?.length || 0
       }
       
-      setAnalysisData(mockData);
+      setAnalysisData(analysisResult);
       await loadSavedAnalyses()
       
       toast({
