@@ -240,3 +240,9 @@ verify_jwt = true
 
 [functions.price-stock-monitor]
 verify_jwt = true
+
+[functions.api-import-test]
+verify_jwt = true
+
+[functions.api-import-execute]
+verify_jwt = true
