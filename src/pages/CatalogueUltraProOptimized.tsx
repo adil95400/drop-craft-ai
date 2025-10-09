@@ -16,46 +16,12 @@ import { FilterPanel } from "@/components/common/FilterPanel"
 import { ExportButton } from "@/components/common/ExportButton"
 import { ImportButton } from "@/components/common/ImportButton"
 import { useModalHelpers } from "@/hooks/useModalHelpers"
-
-// Enhanced mock data
-const iaAnalyses = {
-  trending: [
-    { produit: 'Montre Connectée Sport', score: 98, tendance: '+156%', raison: 'Pic saisonnier fitness', potential: '€12.4k/mois' },
-    { produit: 'Écouteurs ANC Pro', score: 94, tendance: '+89%', raison: 'Nouvelles fonctionnalités', potential: '€8.9k/mois' },
-    { produit: 'Chargeur MagSafe', score: 91, tendance: '+67%', raison: 'Compatibilité iPhone 15', potential: '€6.7k/mois' },
-    { produit: 'Webcam 4K', score: 87, tendance: '+45%', raison: 'Télétravail en hausse', potential: '€4.5k/mois' }
-  ],
-  opportunities: [
-    { categorie: 'Accessoires Gaming', potentiel: '2.3M€', croissance: '+234%', difficulte: 'Facile', saturation: 23 },
-    { categorie: 'Gadgets Cuisine', potentiel: '1.8M€', croissance: '+189%', difficulte: 'Moyen', saturation: 45 },
-    { categorie: 'Décoration LED', potentiel: '1.2M€', croissance: '+156%', difficulte: 'Facile', saturation: 31 },
-    { categorie: 'Fitness Tech', potentiel: '987k€', croissance: '+98%', difficulte: 'Difficile', saturation: 67 }
-  ],
-  predictionsVentes: [
-    { mois: 'Jan', prevision: 2400, actuel: 2200, confiance: 94 },
-    { mois: 'Fév', prevision: 2600, actuel: null, confiance: 89 },
-    { mois: 'Mar', prevision: 2800, actuel: null, confiance: 87 },
-    { mois: 'Avr', prevision: 3200, actuel: null, confiance: 85 },
-    { mois: 'Mai', prevision: 3500, actuel: null, confiance: 82 },
-    { mois: 'Juin', prevision: 3800, actuel: null, confiance: 79 }
-  ]
-}
-
-const margesOptimales = [
-  { produit: 'Coque iPhone', margeActuelle: 45, margeOptimale: 67, potentielCA: '+890€/mois', competition: 'Faible' },
-  { produit: 'Support Voiture', margeActuelle: 38, margeOptimale: 58, potentielCA: '+650€/mois', competition: 'Moyenne' },
-  { produit: 'Câble USB-C', margeActuelle: 52, margeOptimale: 71, potentielCA: '+1.2k€/mois', competition: 'Forte' },
-  { produit: 'Powerbank 20000mAh', margeActuelle: 29, margeOptimale: 48, potentielCA: '+2.1k€/mois', competition: 'Moyenne' }
-]
-
-const concurrentAnalysis = [
-  { concurrent: 'TechMart', partMarche: 23, prixMoyen: 45, forces: 'Logistique', faiblesses: 'Service client', tendance: '+5%' },
-  { concurrent: 'GadgetStore', partMarche: 18, prixMoyen: 38, forces: 'Prix bas', faiblesses: 'Qualité', tendance: '-2%' },
-  { concurrent: 'ElectroPlus', partMarche: 15, prixMoyen: 52, forces: 'Qualité', faiblesses: 'Prix élevés', tendance: '+8%' },
-  { concurrent: 'QuickTech', partMarche: 12, prixMoyen: 41, forces: 'Innovation', faiblesses: 'Stock limité', tendance: '+12%' }
-]
+import { AIAnalyticsService, TrendingProduct, MarketOpportunity, OptimalMargin, SalesPrediction } from "@/services/AIAnalyticsService"
+import { useAuth } from "@/contexts/AuthContext"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function CatalogueUltraProOptimized() {
+  const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedSupplier, setSelectedSupplier] = useState("all")
@@ -67,6 +33,19 @@ export default function CatalogueUltraProOptimized() {
   const [currentFilters, setCurrentFilters] = useState({})
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [autoRefresh, setAutoRefresh] = useState(false)
+  
+  // Real AI Analytics data
+  const [iaAnalyses, setIaAnalyses] = useState<{
+    trending: TrendingProduct[]
+    opportunities: MarketOpportunity[]
+    predictionsVentes: SalesPrediction[]
+  }>({
+    trending: [],
+    opportunities: [],
+    predictionsVentes: []
+  })
+  const [margesOptimales, setMargesOptimales] = useState<OptimalMargin[]>([])
+  const [loadingAnalytics, setLoadingAnalytics] = useState(true)
   
   const { addProduct } = useRealProducts()
   const modalHelpers = useModalHelpers()
@@ -104,6 +83,37 @@ export default function CatalogueUltraProOptimized() {
       return () => clearInterval(interval)
     }
   }, [autoRefresh])
+
+  // Load real AI analytics
+  useEffect(() => {
+    if (!user?.id) return
+
+    const loadAnalytics = async () => {
+      setLoadingAnalytics(true)
+      try {
+        const [trending, opportunities, margins, predictions] = await Promise.all([
+          AIAnalyticsService.getTrendingProducts(user.id, 4),
+          AIAnalyticsService.getMarketOpportunities(user.id),
+          AIAnalyticsService.getOptimalMargins(user.id, 4),
+          AIAnalyticsService.getSalesPredictions(user.id, 6)
+        ])
+
+        setIaAnalyses({
+          trending,
+          opportunities,
+          predictionsVentes: predictions
+        })
+        setMargesOptimales(margins)
+      } catch (error) {
+        console.error('Error loading AI analytics:', error)
+        toast.error('Erreur lors du chargement des analyses IA')
+      } finally {
+        setLoadingAnalytics(false)
+      }
+    }
+
+    loadAnalytics()
+  }, [user?.id])
 
   const handleToggleFavorite = useCallback((productId: string, isFavorite: boolean) => {
     if (isFavorite) {

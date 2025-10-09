@@ -79,11 +79,61 @@ const CrmPage = () => {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false)
 
-  // Mock data - In real app, this would come from API
+  // Load real contacts and campaigns from Supabase
   useEffect(() => {
-    if (user) {
-      // Mock contacts data
-      const mockContacts: Contact[] = [
+    if (!user?.id) return
+
+    const loadData = async () => {
+      setLoading(true)
+      try {
+        // Load contacts
+        const { data: contactsData, error: contactsError } = await supabase
+          .from('crm_contacts')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('lead_score', { ascending: false })
+
+        if (contactsError) throw contactsError
+
+        setContacts(contactsData || [])
+
+        // Load campaigns
+        const { data: campaignsData, error: campaignsError } = await supabase
+          .from('automated_campaigns')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+
+        if (campaignsError) throw campaignsError
+
+        // Map automated_campaigns to Campaign format
+        const mappedCampaigns = (campaignsData || []).map(camp => ({
+          id: camp.id,
+          name: camp.campaign_name,
+          type: camp.campaign_type as 'email' | 'sms' | 'push',
+          status: camp.status as 'draft' | 'active' | 'paused' | 'completed',
+          sent_count: (camp.current_metrics as any)?.sent || 0,
+          open_rate: (camp.current_metrics as any)?.open_rate || 0,
+          click_rate: (camp.current_metrics as any)?.click_rate || 0,
+          conversion_rate: (camp.current_metrics as any)?.conversion_rate || 0,
+          created_at: camp.created_at
+        }))
+
+        setCampaigns(mappedCampaigns)
+      } catch (error) {
+        console.error('Error loading CRM data:', error)
+        toast({
+          title: 'Erreur',
+          description: 'Impossible de charger les données CRM',
+          variant: 'destructive'
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [user?.id, toast])
         {
           id: '1',
           name: 'Sophie Martin',
