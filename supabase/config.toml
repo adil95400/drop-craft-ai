@@ -231,3 +231,12 @@ verify_jwt = true
 
 [functions.translation-service]
 verify_jwt = true
+
+[functions.supplier-catalog-sync]
+verify_jwt = true
+
+[functions.order-fulfillment-auto]
+verify_jwt = true
+
+[functions.price-stock-monitor]
+verify_jwt = true

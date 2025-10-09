@@ -3966,6 +3966,115 @@ export type Database = {
           },
         ]
       }
+      order_fulfillment_logs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          fulfillment_data: Json | null
+          id: string
+          order_id: string | null
+          rule_id: string | null
+          started_at: string | null
+          status: string
+          supplier_order_id: string | null
+          tracking_number: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          fulfillment_data?: Json | null
+          id?: string
+          order_id?: string | null
+          rule_id?: string | null
+          started_at?: string | null
+          status?: string
+          supplier_order_id?: string | null
+          tracking_number?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          fulfillment_data?: Json | null
+          id?: string
+          order_id?: string | null
+          rule_id?: string | null
+          started_at?: string | null
+          status?: string
+          supplier_order_id?: string | null
+          tracking_number?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_fulfillment_logs_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "order_fulfillment_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_fulfillment_rules: {
+        Row: {
+          auto_place_order: boolean | null
+          created_at: string | null
+          execution_count: number | null
+          fulfillment_actions: Json
+          id: string
+          is_active: boolean | null
+          last_executed_at: string | null
+          notification_settings: Json | null
+          rule_name: string
+          supplier_network_id: string | null
+          trigger_conditions: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_place_order?: boolean | null
+          created_at?: string | null
+          execution_count?: number | null
+          fulfillment_actions?: Json
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          notification_settings?: Json | null
+          rule_name: string
+          supplier_network_id?: string | null
+          trigger_conditions?: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_place_order?: boolean | null
+          created_at?: string | null
+          execution_count?: number | null
+          fulfillment_actions?: Json
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          notification_settings?: Json | null
+          rule_name?: string
+          supplier_network_id?: string | null
+          trigger_conditions?: Json
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_fulfillment_rules_supplier_network_id_fkey"
+            columns: ["supplier_network_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_networks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string | null
@@ -4441,6 +4550,124 @@ export type Database = {
             columns: ["catalog_product_id"]
             isOneToOne: false
             referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      price_stock_alerts: {
+        Row: {
+          alert_data: Json
+          alert_type: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          is_resolved: boolean | null
+          monitoring_id: string | null
+          resolved_at: string | null
+          severity: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_data?: Json
+          alert_type: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          monitoring_id?: string | null
+          resolved_at?: string | null
+          severity?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_data?: Json
+          alert_type?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          monitoring_id?: string | null
+          resolved_at?: string | null
+          severity?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_stock_alerts_monitoring_id_fkey"
+            columns: ["monitoring_id"]
+            isOneToOne: false
+            referencedRelation: "price_stock_monitoring"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      price_stock_monitoring: {
+        Row: {
+          alert_sent: boolean | null
+          auto_adjust_price: boolean | null
+          catalog_product_id: string | null
+          check_frequency_minutes: number | null
+          created_at: string | null
+          current_supplier_price: number | null
+          current_supplier_stock: number | null
+          id: string
+          last_checked_at: string | null
+          last_supplier_price: number | null
+          last_supplier_stock: number | null
+          monitoring_enabled: boolean | null
+          price_adjustment_rules: Json | null
+          price_change_threshold: number | null
+          product_id: string | null
+          stock_alert_threshold: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_sent?: boolean | null
+          auto_adjust_price?: boolean | null
+          catalog_product_id?: string | null
+          check_frequency_minutes?: number | null
+          created_at?: string | null
+          current_supplier_price?: number | null
+          current_supplier_stock?: number | null
+          id?: string
+          last_checked_at?: string | null
+          last_supplier_price?: number | null
+          last_supplier_stock?: number | null
+          monitoring_enabled?: boolean | null
+          price_adjustment_rules?: Json | null
+          price_change_threshold?: number | null
+          product_id?: string | null
+          stock_alert_threshold?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_sent?: boolean | null
+          auto_adjust_price?: boolean | null
+          catalog_product_id?: string | null
+          check_frequency_minutes?: number | null
+          created_at?: string | null
+          current_supplier_price?: number | null
+          current_supplier_stock?: number | null
+          id?: string
+          last_checked_at?: string | null
+          last_supplier_price?: number | null
+          last_supplier_stock?: number | null
+          monitoring_enabled?: boolean | null
+          price_adjustment_rules?: Json | null
+          price_change_threshold?: number | null
+          product_id?: string | null
+          stock_alert_threshold?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_stock_monitoring_catalog_product_id_fkey"
+            columns: ["catalog_product_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_catalog"
             referencedColumns: ["id"]
           },
         ]
@@ -4988,6 +5215,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      quick_import_history: {
+        Row: {
+          catalog_product_id: string | null
+          created_at: string | null
+          id: string
+          import_config: Json | null
+          import_status: string | null
+          imported_product_id: string | null
+          user_id: string
+        }
+        Insert: {
+          catalog_product_id?: string | null
+          created_at?: string | null
+          id?: string
+          import_config?: Json | null
+          import_status?: string | null
+          imported_product_id?: string | null
+          user_id: string
+        }
+        Update: {
+          catalog_product_id?: string | null
+          created_at?: string | null
+          id?: string
+          import_config?: Json | null
+          import_status?: string | null
+          imported_product_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quick_import_history_catalog_product_id_fkey"
+            columns: ["catalog_product_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       realtime_chat_messages: {
         Row: {
@@ -6613,6 +6878,78 @@ export type Database = {
           },
         ]
       }
+      supplier_catalog: {
+        Row: {
+          category: string | null
+          cost_price: number
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          external_product_id: string
+          id: string
+          images: Json | null
+          is_bestseller: boolean | null
+          is_trending: boolean | null
+          last_updated: string | null
+          network_id: string
+          price: number
+          rating: number | null
+          reviews_count: number | null
+          shipping_info: Json | null
+          stock_quantity: number | null
+          stock_status: string | null
+          supplier_info: Json | null
+          tags: string[] | null
+          title: string
+        }
+        Insert: {
+          category?: string | null
+          cost_price?: number
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          external_product_id: string
+          id?: string
+          images?: Json | null
+          is_bestseller?: boolean | null
+          is_trending?: boolean | null
+          last_updated?: string | null
+          network_id: string
+          price?: number
+          rating?: number | null
+          reviews_count?: number | null
+          shipping_info?: Json | null
+          stock_quantity?: number | null
+          stock_status?: string | null
+          supplier_info?: Json | null
+          tags?: string[] | null
+          title: string
+        }
+        Update: {
+          category?: string | null
+          cost_price?: number
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          external_product_id?: string
+          id?: string
+          images?: Json | null
+          is_bestseller?: boolean | null
+          is_trending?: boolean | null
+          last_updated?: string | null
+          network_id?: string
+          price?: number
+          rating?: number | null
+          reviews_count?: number | null
+          shipping_info?: Json | null
+          stock_quantity?: number | null
+          stock_status?: string | null
+          supplier_info?: Json | null
+          tags?: string[] | null
+          title?: string
+        }
+        Relationships: []
+      }
       supplier_costs: {
         Row: {
           cost_price: number
@@ -6775,6 +7112,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      supplier_networks: {
+        Row: {
+          api_credentials: Json | null
+          connection_status: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          network_id: string
+          network_name: string
+          sync_config: Json | null
+          total_products: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          api_credentials?: Json | null
+          connection_status?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          network_id: string
+          network_name: string
+          sync_config?: Json | null
+          total_products?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          api_credentials?: Json | null
+          connection_status?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          network_id?: string
+          network_name?: string
+          sync_config?: Json | null
+          total_products?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       supplier_products: {
         Row: {
