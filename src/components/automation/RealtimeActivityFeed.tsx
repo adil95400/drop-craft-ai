@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -12,101 +12,14 @@ import {
   RefreshCw,
   TrendingUp,
   ShoppingCart,
-  Mail,
   Database
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-
-interface ActivityItem {
-  id: string
-  type: 'automation' | 'workflow' | 'optimization' | 'import' | 'sync' | 'error'
-  title: string
-  description: string
-  status: 'success' | 'error' | 'processing' | 'info'
-  timestamp: Date
-  metadata?: Record<string, any>
-}
+import { useRealtimeActivity } from '@/hooks/useRealtimeActivity'
 
 export const RealtimeActivityFeed = () => {
-  const [activities, setActivities] = useState<ActivityItem[]>([])
-  const [isLive, setIsLive] = useState(true)
-
-  // Simuler des activités en temps réel
-  useEffect(() => {
-    if (!isLive) return
-
-    const generateActivity = (): ActivityItem => {
-      const types = ['automation', 'workflow', 'optimization', 'import', 'sync'] as const
-      const type = types[Math.floor(Math.random() * types.length)]
-      
-      const activities: Record<typeof type, Omit<ActivityItem, 'id' | 'timestamp'>> = {
-        automation: {
-          type: 'automation',
-          title: 'Synchronisation prix automatique',
-          description: '127 produits mis à jour avec succès',
-          status: 'success',
-          metadata: { products: 127, priceChanges: 23 }
-        },
-        workflow: {
-          type: 'workflow',
-          title: 'Workflow nouveau produit',
-          description: 'Produit optimisé et publié automatiquement',
-          status: 'success',
-          metadata: { productName: 'Chaise Design Moderne', category: 'Mobilier' }
-        },
-        optimization: {
-          type: 'optimization',
-          title: 'Optimisation IA terminée',
-          description: '45 suggestions générées, 12 appliquées',
-          status: 'success',
-          metadata: { suggestions: 45, applied: 12 }
-        },
-        import: {
-          type: 'import',
-          title: 'Import produits gagnants',
-          description: '8 nouveaux produits importés depuis AliExpress',
-          status: 'success',
-          metadata: { source: 'AliExpress', count: 8 }
-        },
-        sync: {
-          type: 'sync',
-          title: 'Synchronisation stock',
-          description: 'Stock mis à jour pour 234 produits',
-          status: 'success',
-          metadata: { products: 234, outOfStock: 5 }
-        }
-      }
-
-      return {
-        ...activities[type],
-        id: Math.random().toString(36).substr(2, 9),
-        timestamp: new Date()
-      }
-    }
-
-    const addRandomActivity = () => {
-      if (Math.random() > 0.3) { // 70% de chance d'ajouter une activité
-        const newActivity = generateActivity()
-        setActivities(prev => [newActivity, ...prev.slice(0, 49)]) // Garde les 50 dernières
-      }
-    }
-
-    // Ajouter une activité initiale
-    const initialActivities = Array.from({ length: 10 }, () => ({
-      ...generateActivity(),
-      timestamp: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000) // 24h passées
-    })).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-
-    setActivities(initialActivities)
-
-    // Ajouter des activités toutes les 3-8 secondes
-    const interval = setInterval(() => {
-      addRandomActivity()
-    }, Math.random() * 5000 + 3000)
-
-    return () => clearInterval(interval)
-  }, [isLive])
+  const { activities, isLoading } = useRealtimeActivity()
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -160,17 +73,20 @@ export const RealtimeActivityFeed = () => {
             Activité Temps Réel
           </CardTitle>
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
-            <span className="text-sm text-gray-600">
-              {isLive ? 'En direct' : 'Pause'}
-            </span>
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-sm text-gray-600">En direct</span>
           </div>
         </div>
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="h-96">
           <div className="p-4 space-y-3">
-            {activities.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-8">
+                <RefreshCw className="w-8 h-8 mx-auto mb-2 animate-spin text-primary" />
+                <p className="text-gray-500">Chargement de l'activité...</p>
+              </div>
+            ) : activities.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p>Aucune activité récente</p>
