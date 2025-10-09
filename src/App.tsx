@@ -248,6 +248,7 @@ import AffiliateProgram from '@/pages/AffiliateProgram';
 import DynamicPricing from '@/pages/DynamicPricing';
 import AdvancedMonitoringPage from '@/pages/AdvancedMonitoringPage';
 import ImportSourcesPage from '@/pages/ImportSourcesPage';
+import { PagePlaceholder } from '@/pages/PagePlaceholder';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -1152,6 +1153,73 @@ function App() {
                   <Route path="subscriptions" element={<AdminSubscriptions />} />
                 </Route>
 
+                {/* Routes du nouveau sidebar - 16 catégories, 85 pages */}
+                <Route path="/catalog" element={
+                  <ProtectedRoute>
+                    <AppLayout><CatalogPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import/csv" element={
+                  <ProtectedRoute>
+                    <AppLayout><CSVImportPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import/api" element={
+                  <ProtectedRoute>
+                    <AppLayout><APIImportPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import/scraping" element={
+                  <ProtectedRoute>
+                    <AppLayout><WebScrapingPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import/ai" element={
+                  <ProtectedRoute>
+                    <AppLayout><AIGenerationPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/crm" element={
+                  <ProtectedRoute>
+                    <AppLayout><CrmPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/finance" element={
+                  <ProtectedRoute>
+                    <AppLayout><PagePlaceholder title="Finance" badge="PRO" /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/pricing-page" element={
+                  <ProtectedRoute>
+                    <AppLayout><Pricing /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/seo" element={
+                  <ProtectedRoute>
+                    <AppLayout><PagePlaceholder title="SEO" badge="PRO" /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/marketplace-connector" element={
+                  <ProtectedRoute>
+                    <AppLayout><PagePlaceholder title="Marketplace Connector" /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/ab-testing" element={
+                  <ProtectedRoute>
+                    <AppLayout><PagePlaceholder title="A/B Testing" badge="A/B" /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/automation-optimization" element={
+                  <ProtectedRoute>
+                    <AppLayout><PagePlaceholder title="Workflow Automation" badge="FLOW" /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/quota-manager" element={
+                  <ProtectedRoute>
+                    <AppLayout><QuotaManagerPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
                 {/* 404 Not Found Page */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
