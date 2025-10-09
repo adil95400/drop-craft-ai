@@ -39,7 +39,11 @@ interface ImportMethodModalProps {
 
 export function ImportMethodModal({ method, isOpen, onClose, onImportStart }: ImportMethodModalProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const [importConfig, setImportConfig] = useState({
+  const [importConfig, setImportConfig] = useState<{
+    sourceName: string
+    sourceUrl: string
+    configuration: Record<string, any>
+  }>({
     sourceName: '',
     sourceUrl: '',
     configuration: {}
@@ -71,11 +75,21 @@ export function ImportMethodModal({ method, isOpen, onClose, onImportStart }: Im
     setIsLoading(true)
     
     try {
+      // Map method.id to valid source_type
+      const sourceTypeMap: Record<string, string> = {
+        'api-connector': 'api',
+        'bulk-csv': 'csv',
+        'one-click': 'shopify',
+        'chrome-extension': 'shopify',
+        'ai-scraper': 'shopify',
+        'marketplace-feeds': 'shopify'
+      }
+      
       const { data, error } = await supabase
         .from('import_jobs')
         .insert({
           user_id: user.id,
-          source_type: method.id,
+          source_type: sourceTypeMap[method.id] || 'csv',
           source_url: importConfig.sourceUrl || null,
           file_data: { sourceName: importConfig.sourceName, ...importConfig.configuration },
           status: 'pending'
@@ -240,6 +254,7 @@ export function ImportMethodModal({ method, isOpen, onClose, onImportStart }: Im
         )
 
       case 'api-connector':
+        const authType = importConfig.configuration.authType
         return (
           <div className="space-y-4">
             <div>
@@ -277,6 +292,91 @@ export function ImportMethodModal({ method, isOpen, onClose, onImportStart }: Im
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Conditional auth fields */}
+            {authType === 'api_key' && (
+              <>
+                <div>
+                  <Label htmlFor="api-key-header">Nom du header (optionnel)</Label>
+                  <Input
+                    id="api-key-header"
+                    placeholder="X-API-Key"
+                    value={importConfig.configuration.apiKeyHeader || ''}
+                    onChange={(e) => setImportConfig(prev => ({ 
+                      ...prev, 
+                      configuration: { ...prev.configuration, apiKeyHeader: e.target.value }
+                    }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="api-key-value">Clé API *</Label>
+                  <Input
+                    id="api-key-value"
+                    type="password"
+                    placeholder="Votre clé API"
+                    value={importConfig.configuration.apiKeyValue || ''}
+                    onChange={(e) => setImportConfig(prev => ({ 
+                      ...prev, 
+                      configuration: { ...prev.configuration, apiKeyValue: e.target.value }
+                    }))}
+                  />
+                </div>
+              </>
+            )}
+
+            {authType === 'bearer' && (
+              <div>
+                <Label htmlFor="bearer-token">Bearer Token *</Label>
+                <Input
+                  id="bearer-token"
+                  type="password"
+                  placeholder="Votre token"
+                  value={importConfig.configuration.bearerToken || ''}
+                  onChange={(e) => setImportConfig(prev => ({ 
+                    ...prev, 
+                    configuration: { ...prev.configuration, bearerToken: e.target.value }
+                  }))}
+                />
+              </div>
+            )}
+
+            {authType === 'basic' && (
+              <>
+                <div>
+                  <Label htmlFor="basic-username">Nom d'utilisateur *</Label>
+                  <Input
+                    id="basic-username"
+                    placeholder="username"
+                    value={importConfig.configuration.basicUsername || ''}
+                    onChange={(e) => setImportConfig(prev => ({ 
+                      ...prev, 
+                      configuration: { ...prev.configuration, basicUsername: e.target.value }
+                    }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="basic-password">Mot de passe *</Label>
+                  <Input
+                    id="basic-password"
+                    type="password"
+                    placeholder="password"
+                    value={importConfig.configuration.basicPassword || ''}
+                    onChange={(e) => setImportConfig(prev => ({ 
+                      ...prev, 
+                      configuration: { ...prev.configuration, basicPassword: e.target.value }
+                    }))}
+                  />
+                </div>
+              </>
+            )}
+
+            {authType === 'oauth' && (
+              <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  OAuth 2.0 nécessite une configuration avancée. Contactez le support pour l'activer.
+                </p>
+              </div>
+            )}
           </div>
         )
 
