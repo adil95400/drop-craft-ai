@@ -27,6 +27,8 @@ import {
   ThumbsDown
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/integrations/supabase/client'
 
 interface ChatMessage {
   id: string
@@ -59,6 +61,7 @@ interface AITask {
 }
 
 export default function AIAssistant() {
+  const { user } = useAuth()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [currentMessage, setCurrentMessage] = useState('')
   const [isRecording, setIsRecording] = useState(false)
@@ -129,38 +132,34 @@ export default function AIAssistant() {
   }, [messages])
 
   const fetchAITasks = async () => {
-    // Mock AI tasks data
-    const mockTasks: AITask[] = [
-      {
-        id: '1',
-        type: 'text-generation',
-        title: 'Génération de contenu blog',
-        description: 'Article sur les tendances e-commerce 2024',
-        status: 'completed',
-        progress: 100,
-        result: { word_count: 1250, readability_score: 85 },
-        created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-      },
-      {
-        id: '2',
-        type: 'data-analysis',
-        title: 'Analyse des ventes Q4',
-        description: 'Insights et prédictions basées sur les données',
-        status: 'processing',
-        progress: 65,
-        created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString()
-      },
-      {
-        id: '3',
-        type: 'code-optimization',
-        title: 'Optimisation algorithme recommandation',
-        description: 'Amélioration des performances de 35%',
-        status: 'pending',
-        progress: 0,
-        created_at: new Date().toISOString()
-      }
-    ]
-    setAITasks(mockTasks)
+    if (!user?.id) return
+
+    try {
+      const { data, error } = await supabase
+        .from('ai_tasks')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (error) throw error
+
+      // Map ai_tasks to AITask format
+      const mappedTasks: AITask[] = (data || []).map(task => ({
+        id: task.id,
+        type: task.task_type,
+        title: `${task.task_type} - ${task.status}`,
+        description: task.error_message || 'Tâche IA en cours',
+        status: task.status as 'pending' | 'processing' | 'completed' | 'failed',
+        progress: task.status === 'completed' ? 100 : task.status === 'processing' ? 50 : 0,
+        result: task.output_data,
+        created_at: task.created_at
+      }))
+
+      setAITasks(mappedTasks)
+    } catch (error) {
+      console.error('Error loading AI tasks:', error)
+    }
   }
 
   const scrollToBottom = () => {
