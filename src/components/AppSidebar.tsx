@@ -69,6 +69,13 @@ const navigationGroups: NavigationGroup[] = [
         icon: Zap,
         badge: "Ultra Pro",
         premium: true
+      },
+      {
+        title: "Super Dashboard",
+        url: "/dashboard-super",
+        icon: Sparkles,
+        badge: "Super",
+        premium: true
       }
     ]
   },
@@ -83,61 +90,68 @@ const navigationGroups: NavigationGroup[] = [
         badge: "Stores"
       },
       {
-        title: "Import Produits",
+        title: "Produits",
+        url: "/products",
+        icon: Package,
+        badge: "Produits"
+      },
+      {
+        title: "Import",
         url: "/import",
         icon: Package,
         badge: "Import",
         subItems: [
           {
-            title: "Import Rapide",
+            title: "Import Management",
             url: "/import",
             icon: Package,
-            badge: "Quick"
+            badge: "Manage"
           },
           {
-            title: "22+ Méthodes",
-            url: "/import?view=advanced",
+            title: "CSV Import",
+            url: "/import/csv",
             icon: Package,
-            badge: "Pro",
+            badge: "CSV"
+          },
+          {
+            title: "API Import",
+            url: "/import/api",
+            icon: Package,
+            badge: "API"
+          },
+          {
+            title: "Web Scraping",
+            url: "/import/scraping",
+            icon: Package,
+            badge: "Scrape"
+          },
+          {
+            title: "AI Import",
+            url: "/import/ai",
+            icon: Bot,
+            badge: "AI",
             premium: true
-          },
-          {
-            title: "E-commerce",
-            url: "/import?category=ecommerce",
-            icon: Package,
-            badge: "Shops"
-          },
-          {
-            title: "Fichiers & Flux",
-            url: "/import?category=files",
-            icon: Package,
-            badge: "Files"
-          },
-          {
-            title: "Templates",
-            url: "/import?view=templates",
-            icon: Package,
-            badge: "TPL"
-          },
-          {
-            title: "Statistiques",
-            url: "/import?view=stats",
-            icon: Package,
-            badge: "Stats"
           }
         ]
       },
       {
         title: "Catalogue",
-        url: "/catalogue",
+        url: "/catalog",
         icon: Package,
-        badge: "Standard"
+        badge: "Catalog"
       },
       {
         title: "Marketplace",
         url: "/marketplace",
         icon: ShoppingCart,
-        badge: "Marché"
+        badge: "Market"
+      },
+      {
+        title: "Intelligence Produit",
+        url: "/product-intelligence",
+        icon: Bot,
+        badge: "Intel",
+        premium: true
       }
     ]
   },
@@ -149,13 +163,25 @@ const navigationGroups: NavigationGroup[] = [
         title: "Commandes",
         url: "/orders",
         icon: ShoppingCart,
-        badge: "Standard"
+        badge: "Orders"
       },
       {
-        title: "CRM Clients",
+        title: "Clients",
+        url: "/customers",
+        icon: Users,
+        badge: "Clients"
+      },
+      {
+        title: "CRM",
         url: "/crm",
         icon: Users,
         badge: "CRM"
+      },
+      {
+        title: "Gestion Clients",
+        url: "/customer-management",
+        icon: Users,
+        badge: "Manage"
       }
     ]
   },
@@ -164,10 +190,10 @@ const navigationGroups: NavigationGroup[] = [
     icon: Package,
     items: [
       {
-        title: "Suivi Colis",
-        url: "/tracking",
+        title: "Fournisseurs",
+        url: "/suppliers",
         icon: Package,
-        badge: "Tracking"
+        badge: "Suppliers"
       },
       {
         title: "Inventaire",
@@ -176,10 +202,16 @@ const navigationGroups: NavigationGroup[] = [
         badge: "Stock"
       },
       {
-        title: "Fournisseurs",
-        url: "/suppliers",
+        title: "Stock",
+        url: "/stock",
         icon: Package,
-        badge: "Suppliers"
+        badge: "Stock"
+      },
+      {
+        title: "Suivi Colis",
+        url: "/tracking",
+        icon: Package,
+        badge: "Track"
       }
     ]
   },
@@ -188,16 +220,16 @@ const navigationGroups: NavigationGroup[] = [
     icon: BarChart3,
     items: [
       {
-        title: "SEO Optimizer",
-        url: "/seo",
-        icon: BarChart3,
-        badge: "SEO"
-      },
-      {
         title: "Marketing",
         url: "/marketing",
         icon: BarChart3,
         badge: "Marketing"
+      },
+      {
+        title: "SEO Manager",
+        url: "/seo-manager",
+        icon: BarChart3,
+        badge: "SEO"
       },
       {
         title: "Blog",
@@ -206,10 +238,72 @@ const navigationGroups: NavigationGroup[] = [
         badge: "Blog"
       },
       {
-        title: "Reviews",
-        url: "/reviews",
+        title: "Calendrier Marketing",
+        url: "/marketing-calendar",
         icon: BarChart3,
-        badge: "Reviews"
+        badge: "Calendar"
+      },
+      {
+        title: "Génération Contenu",
+        url: "/content-generation",
+        icon: Bot,
+        badge: "Content",
+        premium: true
+      },
+      {
+        title: "Publicités",
+        url: "/ads-automation",
+        icon: BarChart3,
+        badge: "Ads",
+        premium: true
+      },
+      {
+        title: "A/B Testing",
+        url: "/ab-testing",
+        icon: BarChart3,
+        badge: "A/B",
+        premium: true
+      }
+    ]
+  },
+  {
+    title: "Intelligence & IA",
+    icon: Bot,
+    items: [
+      {
+        title: "IA Assistant",
+        url: "/ai-assistant",
+        icon: Bot,
+        badge: "AI",
+        premium: true
+      },
+      {
+        title: "AI Studio",
+        url: "/ai-studio",
+        icon: Bot,
+        badge: "Studio",
+        premium: true
+      },
+      {
+        title: "Intelligence Avancée",
+        url: "/advanced-intelligence",
+        icon: Bot,
+        badge: "Intel",
+        premium: true
+      },
+      {
+        title: "Business Intelligence",
+        url: "/business-intelligence",
+        icon: Bot,
+        badge: "BI",
+        premium: true
+      },
+      {
+        title: "Creative Studio",
+        url: "/creative-studio",
+        icon: Bot,
+        badge: "Creative",
+        premium: true
       }
     ]
   },
@@ -224,21 +318,37 @@ const navigationGroups: NavigationGroup[] = [
         badge: "Auto"
       },
       {
-        title: "Plugins",
-        url: "/plugins",
-        icon: Bot,
-        badge: "Plugins"
+        title: "Automation Studio",
+        url: "/automation-studio",
+        icon: Zap,
+        badge: "Studio",
+        premium: true
       },
       {
-        title: "Extensions Hub",
-        url: "/extensions",
+        title: "Optimisation Auto",
+        url: "/automation-optimization",
+        icon: Zap,
+        badge: "Opti",
+        premium: true
+      },
+      {
+        title: "Automation IA",
+        url: "/ai-automation",
         icon: Bot,
-        badge: "Hub"
+        badge: "AI Auto",
+        premium: true
+      },
+      {
+        title: "Automation Prix",
+        url: "/pricing-automation",
+        icon: Zap,
+        badge: "Price",
+        premium: true
       }
     ]
   },
   {
-    title: "Analytics & Data",
+    title: "Analytics & Monitoring",
     icon: BarChart3,
     items: [
       {
@@ -248,10 +358,31 @@ const navigationGroups: NavigationGroup[] = [
         badge: "Analytics"
       },
       {
-        title: "Winners",
-        url: "/winners",
+        title: "Analytics Studio",
+        url: "/analytics-studio",
         icon: BarChart3,
-        badge: "Hot"
+        badge: "Studio",
+        premium: true
+      },
+      {
+        title: "Analytics Enterprise",
+        url: "/advanced-analytics-enterprise",
+        icon: BarChart3,
+        badge: "Enterprise",
+        premium: true
+      },
+      {
+        title: "Monitoring",
+        url: "/monitoring",
+        icon: BarChart3,
+        badge: "Monitor"
+      },
+      {
+        title: "Observability",
+        url: "/observability",
+        icon: BarChart3,
+        badge: "Observe",
+        premium: true
       }
     ]
   },
@@ -260,7 +391,7 @@ const navigationGroups: NavigationGroup[] = [
     icon: ShieldCheck,
     items: [
       {
-        title: "Admin",
+        title: "Admin Panel",
         url: "/admin",
         icon: ShieldCheck,
         badge: "Admin"
@@ -276,11 +407,61 @@ const navigationGroups: NavigationGroup[] = [
         url: "/integrations",
         icon: Bot,
         badge: "API"
+      },
+      {
+        title: "Enterprise API",
+        url: "/enterprise-api",
+        icon: Code,
+        badge: "API",
+        premium: true
+      },
+      {
+        title: "Quotas Manager",
+        url: "/quota-manager",
+        icon: Settings,
+        badge: "Quotas"
       }
     ]
   },
   {
-    title: "Support & Mobile",
+    title: "Outils Avancés",
+    icon: Zap,
+    items: [
+      {
+        title: "Outils Avancés",
+        url: "/advanced-tools",
+        icon: Zap,
+        badge: "Tools",
+        premium: true
+      },
+      {
+        title: "Finance",
+        url: "/finance",
+        icon: BarChart3,
+        badge: "Finance"
+      },
+      {
+        title: "Pricing",
+        url: "/pricing-page",
+        icon: BarChart3,
+        badge: "Price"
+      },
+      {
+        title: "Extensions Hub",
+        url: "/extensions",
+        icon: Bot,
+        badge: "Hub"
+      },
+      {
+        title: "Marketplace Connector",
+        url: "/marketplace-connector",
+        icon: Bot,
+        badge: "Connect"
+      }
+    ]
+  },
+  {
+    title: "Support & Aide",
     icon: HelpCircle,
     items: [
       {
@@ -290,25 +471,31 @@ const navigationGroups: NavigationGroup[] = [
         badge: "Help"
       },
       {
-        title: "Mobile App",
-        url: "/mobile",
-        icon: Bot,
-        badge: "Mobile"
+        title: "Centre d'aide",
+        url: "/help-center",
+        icon: HelpCircle,
+        badge: "Center"
       },
       {
-        title: "FAQ",
-        url: "/faq",
+        title: "QA",
+        url: "/qa",
         icon: HelpCircle,
-        badge: "FAQ"
+        badge: "QA"
+      },
+      {
+        title: "Status Application",
+        url: "/application-status",
+        icon: HelpCircle,
+        badge: "Status"
       }
     ]
   },
   {
-    title: "Mobile & Extensions",
+    title: "Mobile & PWA",
     icon: Smartphone,
     items: [
       {
-        title: "PWA Mobile",
+        title: "PWA Install",
         url: "/pwa-install",
         icon: Smartphone,
         badge: "PWA"
@@ -320,10 +507,10 @@ const navigationGroups: NavigationGroup[] = [
         badge: "Flutter"
       },
       {
-        title: "Extensions & API",
-        url: "/extensions-api",
-        icon: Code,
-        badge: "API",
+        title: "Mobile Dashboard",
+        url: "/mobile-dashboard",
+        icon: Smartphone,
+        badge: "Mobile",
         premium: true
       }
     ]
@@ -339,10 +526,23 @@ const navigationGroups: NavigationGroup[] = [
         badge: "Config"
       },
       {
-        title: "Notifications",
-        url: "/notifications",
-        icon: Settings,
-        badge: "Notifs"
+        title: "Profil",
+        url: "/profile",
+        icon: Users,
+        badge: "Profile"
+      },
+      {
+        title: "Abonnement",
+        url: "/subscription",
+        icon: ShieldCheck,
+        badge: "Plan"
+      },
+      {
+        title: "White Label",
+        url: "/white-label",
+        icon: Sparkles,
+        badge: "Label",
+        premium: true
       }
     ]
   }
