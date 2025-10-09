@@ -4,7 +4,7 @@
 import { memo, Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import { AppSidebar } from './AppSidebar'
+import { AppSidebar } from '@/components/AppSidebar'
 import { LoadingSpinner, useAuthOptimized } from '@/shared'
 import { cn } from '@/lib/utils'
 

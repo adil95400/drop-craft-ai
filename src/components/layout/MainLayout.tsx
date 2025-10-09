@@ -1,6 +1,6 @@
 import React from 'react'
 import { SidebarProvider } from '@/components/ui/sidebar'
-import { AppSidebar } from './AppSidebar'
+import { AppSidebar } from '@/components/AppSidebar'
 import { RealTimeNotifications } from '@/components/notifications/RealTimeNotifications'
 import { InteractiveOnboarding } from '@/components/onboarding/InteractiveOnboarding'
 
