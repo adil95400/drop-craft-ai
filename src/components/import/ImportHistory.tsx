@@ -21,6 +21,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useImportUltraPro } from '@/hooks/useImportUltraPro';
+import { useImportJobs } from '@/hooks/useImportJobs';
 
 interface ImportHistoryProps {
   onViewDetails?: (importId: string) => void;
@@ -29,85 +30,10 @@ interface ImportHistoryProps {
 
 export const ImportHistory = ({ onViewDetails, onRetryImport }: ImportHistoryProps) => {
   const { importedProducts } = useImportUltraPro();
+  const { jobs, stats: jobStats, retryJob, isRetrying } = useImportJobs();
   const [filter, setFilter] = useState('all');
-  const [retryingImport, setRetryingImport] = useState<string | null>(null);
 
-  // Mock import history data
-  const importHistory = [
-    {
-      id: '1',
-      name: 'Import produits Shopify',
-      type: 'shopify',
-      status: 'completed',
-      totalItems: 156,
-      successItems: 143,
-      failedItems: 13,
-      startedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      completedAt: new Date(Date.now() - 1.5 * 60 * 60 * 1000),
-      duration: '30 minutes',
-      source: 'boutique.myshopify.com',
-      progress: 100
-    },
-    {
-      id: '2',
-      name: 'Import CSV - Catalogue Été',
-      type: 'csv',
-      status: 'completed',
-      totalItems: 89,
-      successItems: 89,
-      failedItems: 0,
-      startedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-      completedAt: new Date(Date.now() - 5.5 * 60 * 60 * 1000),
-      duration: '15 minutes',
-      source: 'catalogue_ete_2024.csv',
-      progress: 100
-    },
-    {
-      id: '3',
-      name: 'Import WooCommerce',
-      type: 'woocommerce',
-      status: 'failed',
-      totalItems: 0,
-      successItems: 0,
-      failedItems: 0,
-      startedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
-      completedAt: null,
-      duration: '-',
-      source: 'monsite.com',
-      progress: 0,
-      error: 'Erreur d\'authentification API'
-    },
-    {
-      id: '4',
-      name: 'Import en cours - Aliexpress',
-      type: 'aliexpress',
-      status: 'running',
-      totalItems: 200,
-      successItems: 127,
-      failedItems: 3,
-      startedAt: new Date(Date.now() - 20 * 60 * 1000),
-      completedAt: null,
-      duration: '-',
-      source: 'fr.aliexpress.com',
-      progress: 65
-    },
-    {
-      id: '5',
-      name: 'Import XML - Fournisseur Principal',
-      type: 'xml',
-      status: 'completed',
-      totalItems: 342,
-      successItems: 298,
-      failedItems: 44,
-      startedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      completedAt: new Date(Date.now() - 23 * 60 * 60 * 1000),
-      duration: '45 minutes',
-      source: 'fournisseur.com/feed.xml',
-      progress: 100
-    }
-  ];
-
-  const filteredHistory = importHistory.filter(item => {
+  const filteredHistory = jobs.filter(item => {
     if (filter === 'all') return true;
     return item.status === filter;
   });
@@ -115,13 +41,13 @@ export const ImportHistory = ({ onViewDetails, onRetryImport }: ImportHistoryPro
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge className="bg-green-100 text-green-800">Terminé</Badge>;
-      case 'running':
-        return <Badge className="bg-blue-100 text-blue-800">En cours</Badge>;
+        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Terminé</Badge>;
+      case 'processing':
+        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">En cours</Badge>;
       case 'failed':
         return <Badge variant="destructive">Échec</Badge>;
-      case 'paused':
-        return <Badge className="bg-yellow-100 text-yellow-800">En pause</Badge>;
+      case 'pending':
+        return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">En attente</Badge>;
       default:
         return <Badge variant="outline">Inconnu</Badge>;
     }
@@ -131,12 +57,12 @@ export const ImportHistory = ({ onViewDetails, onRetryImport }: ImportHistoryPro
     switch (status) {
       case 'completed':
         return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case 'running':
+      case 'processing':
         return <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />;
       case 'failed':
         return <XCircle className="w-5 h-5 text-red-600" />;
-      case 'paused':
-        return <Pause className="w-5 h-5 text-yellow-600" />;
+      case 'pending':
+        return <Clock className="w-5 h-5 text-yellow-600" />;
       default:
         return <Clock className="w-5 h-5 text-gray-600" />;
     }
@@ -148,32 +74,29 @@ export const ImportHistory = ({ onViewDetails, onRetryImport }: ImportHistoryPro
         return '📊';
       case 'xml':
         return '🗂️';
+      case 'url':
+        return '🌐';
+      case 'api':
+        return '🔌';
       case 'shopify':
         return '🟢';
       case 'woocommerce':
         return '🟣';
-      case 'aliexpress':
-        return '🟠';
       default:
         return '📄';
     }
   };
 
-  const handleRetry = async (importId: string) => {
-    setRetryingImport(importId);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      onRetryImport?.(importId);
-    } finally {
-      setRetryingImport(null);
-    }
+  const handleRetry = (importId: string) => {
+    retryJob(importId);
+    onRetryImport?.(importId);
   };
 
   const stats = {
-    total: importHistory.length,
-    completed: importHistory.filter(h => h.status === 'completed').length,
-    running: importHistory.filter(h => h.status === 'running').length,
-    failed: importHistory.filter(h => h.status === 'failed').length
+    total: jobStats.total,
+    completed: jobStats.completed,
+    running: jobStats.processing + jobStats.pending,
+    failed: jobStats.failed
   };
 
   return (
@@ -244,7 +167,8 @@ export const ImportHistory = ({ onViewDetails, onRetryImport }: ImportHistoryPro
               <SelectContent>
                 <SelectItem value="all">Tous les imports</SelectItem>
                 <SelectItem value="completed">Terminés</SelectItem>
-                <SelectItem value="running">En cours</SelectItem>
+                <SelectItem value="processing">En cours</SelectItem>
+                <SelectItem value="pending">En attente</SelectItem>
                 <SelectItem value="failed">Échecs</SelectItem>
               </SelectContent>
             </Select>
@@ -252,127 +176,131 @@ export const ImportHistory = ({ onViewDetails, onRetryImport }: ImportHistoryPro
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {filteredHistory.map((item) => (
-              <Card key={item.id} className="border-l-4 border-l-blue-500">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="text-2xl">{getTypeIcon(item.type)}</div>
-                      <div>
-                        <h3 className="font-medium flex items-center gap-2">
-                          {item.name}
-                          {getStatusBadge(item.status)}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          Source: {item.source}
+            {filteredHistory.map((item) => {
+              const progress = item.total_rows && item.processed_rows 
+                ? Math.round((item.processed_rows / item.total_rows) * 100)
+                : 0;
+              const duration = item.started_at && item.completed_at
+                ? Math.round((new Date(item.completed_at).getTime() - new Date(item.started_at).getTime()) / 60000) + ' min'
+                : '-';
+
+              return (
+                <Card key={item.id} className="border-l-4 border-l-blue-500">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="text-2xl">{getTypeIcon(item.source_type)}</div>
+                        <div>
+                          <h3 className="font-medium flex items-center gap-2">
+                            {item.file_name || `Import ${item.source_type}`}
+                            {getStatusBadge(item.status)}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            Source: {item.source_url || item.file_name || item.source_type}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(item.status)}
+                      </div>
+                    </div>
+
+                    {/* Progress bar for processing imports */}
+                    {item.status === 'processing' && item.total_rows && (
+                      <div className="mb-4">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Progression</span>
+                          <span>{progress}%</span>
+                        </div>
+                        <Progress value={progress} className="h-2" />
+                      </div>
+                    )}
+
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                      <div className="text-center">
+                        <div className="text-lg font-semibold">{item.total_rows || 0}</div>
+                        <div className="text-xs text-muted-foreground">Total</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-green-600">{item.processed_rows || 0}</div>
+                        <div className="text-xs text-muted-foreground">Traités</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-red-600">{item.failed_rows || 0}</div>
+                        <div className="text-xs text-muted-foreground">Échecs</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold">{duration}</div>
+                        <div className="text-xs text-muted-foreground">Durée</div>
+                      </div>
+                    </div>
+
+                    {/* Timestamps */}
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        Créé: {new Date(item.created_at).toLocaleString('fr-FR')}
+                      </span>
+                      {item.completed_at && (
+                        <span className="flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" />
+                          Terminé: {new Date(item.completed_at).toLocaleString('fr-FR')}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Error message */}
+                    {item.errors && item.errors.length > 0 && (
+                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-3 mb-4">
+                        <div className="flex items-center gap-2 text-red-800 dark:text-red-400">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span className="font-medium">Erreur:</span>
+                        </div>
+                        <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                          {Array.isArray(item.errors) ? item.errors[0] : item.errors}
                         </p>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {getStatusIcon(item.status)}
-                    </div>
-                  </div>
-
-                  {/* Progress bar for running imports */}
-                  {item.status === 'running' && (
-                    <div className="mb-4">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Progression</span>
-                        <span>{item.progress}%</span>
-                      </div>
-                      <Progress value={item.progress} className="h-2" />
-                    </div>
-                  )}
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <div className="text-center">
-                      <div className="text-lg font-semibold">{item.totalItems}</div>
-                      <div className="text-xs text-muted-foreground">Total</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-semibold text-green-600">{item.successItems}</div>
-                      <div className="text-xs text-muted-foreground">Réussis</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-semibold text-red-600">{item.failedItems}</div>
-                      <div className="text-xs text-muted-foreground">Échecs</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-semibold">{item.duration}</div>
-                      <div className="text-xs text-muted-foreground">Durée</div>
-                    </div>
-                  </div>
-
-                  {/* Timestamps */}
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      Démarré: {item.startedAt.toLocaleString('fr-FR')}
-                    </span>
-                    {item.completedAt && (
-                      <span className="flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" />
-                        Terminé: {item.completedAt.toLocaleString('fr-FR')}
-                      </span>
                     )}
-                  </div>
 
-                  {/* Error message */}
-                  {item.error && (
-                    <div className="bg-red-50 border border-red-200 rounded p-3 mb-4">
-                      <div className="flex items-center gap-2 text-red-800">
-                        <AlertTriangle className="w-4 h-4" />
-                        <span className="font-medium">Erreur:</span>
-                      </div>
-                      <p className="text-sm text-red-700 mt-1">{item.error}</p>
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onViewDetails?.(item.id)}
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Détails
-                    </Button>
-
-                    {item.status === 'failed' && (
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleRetry(item.id)}
-                        disabled={retryingImport === item.id}
+                        onClick={() => onViewDetails?.(item.id)}
                       >
-                        {retryingImport === item.id ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : (
-                          <RotateCcw className="w-4 h-4 mr-2" />
-                        )}
-                        Relancer
+                        <Eye className="w-4 h-4 mr-2" />
+                        Détails
                       </Button>
-                    )}
 
-                    {item.status === 'completed' && (
-                      <Button variant="outline" size="sm">
-                        <Download className="w-4 h-4 mr-2" />
-                        Rapport
-                      </Button>
-                    )}
+                      {item.status === 'failed' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRetry(item.id)}
+                          disabled={isRetrying}
+                        >
+                          {isRetrying ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                          )}
+                          Relancer
+                        </Button>
+                      )}
 
-                    {item.status === 'running' && (
-                      <Button variant="outline" size="sm">
-                        <Pause className="w-4 h-4 mr-2" />
-                        Pause
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                      {item.status === 'completed' && (
+                        <Button variant="outline" size="sm">
+                          <Download className="w-4 h-4 mr-2" />
+                          Rapport
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
 
             {filteredHistory.length === 0 && (
               <div className="text-center py-12">

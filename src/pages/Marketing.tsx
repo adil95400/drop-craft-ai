@@ -25,6 +25,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLegacyPlan } from '@/lib/migration-helper';
 import { CanvaIntegrationPanel } from '@/components/marketing/CanvaIntegrationPanel';
+import { useMarketingStats } from '@/hooks/useMarketingStats';
 
 interface Campaign {
   id: string;
@@ -46,6 +47,7 @@ const Marketing = () => {
   const [selectedStores, setSelectedStores] = useState<string[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const { data: marketingStats } = useMarketingStats();
 
   useEffect(() => {
     fetchCampaigns();
@@ -353,23 +355,28 @@ const Marketing = () => {
                   <div>
                     <div className="flex justify-between text-sm">
                       <span>Taux d'ouverture email</span>
-                      <span>24.5%</span>
+                      <span>{marketingStats?.emailOpenRate.toFixed(1) || 0}%</span>
                     </div>
-                    <Progress value={24.5} className="mt-2" />
+                    <Progress value={marketingStats?.emailOpenRate || 0} className="mt-2" />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm">
                       <span>Taux de clic</span>
-                      <span>3.2%</span>
+                      <span>{marketingStats?.emailClickRate.toFixed(1) || 0}%</span>
                     </div>
-                    <Progress value={3.2} className="mt-2" />
+                    <Progress value={marketingStats?.emailClickRate || 0} className="mt-2" />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm">
                       <span>Conversion</span>
-                      <span>1.8%</span>
+                      <span>{marketingStats?.conversionRate.toFixed(1) || 0}%</span>
                     </div>
-                    <Progress value={1.8} className="mt-2" />
+                    <Progress value={marketingStats?.conversionRate || 0} className="mt-2" />
+                  </div>
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="text-xs text-muted-foreground">
+                      {marketingStats?.totalConversions || 0} conversions sur {marketingStats?.totalEvents || 0} événements
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -383,19 +390,19 @@ const Marketing = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Likes</span>
-                    <span className="font-medium">1,234</span>
+                    <span className="font-medium">{marketingStats?.socialMetrics.likes.toLocaleString() || 0}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Partages</span>
-                    <span className="font-medium">567</span>
+                    <span className="font-medium">{marketingStats?.socialMetrics.shares.toLocaleString() || 0}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Commentaires</span>
-                    <span className="font-medium">89</span>
+                    <span className="font-medium">{marketingStats?.socialMetrics.comments.toLocaleString() || 0}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Portée organique</span>
-                    <span className="font-medium">12,456</span>
+                    <span className="font-medium">{marketingStats?.socialMetrics.organicReach.toLocaleString() || 0}</span>
                   </div>
                 </div>
               </CardContent>
