@@ -59,182 +59,129 @@ const ShopoptiLogo = () => (
 );
 
 const navigationGroups: NavigationGroup[] = [
+  // ============= PRINCIPAL =============
   {
-    title: "Tableau de bord",
+    title: "PRINCIPAL",
     icon: BarChart3,
     items: [
-      { title: "Dashboard Principal", url: "/dashboard", icon: BarChart3, badge: "Home" },
-      { title: "Super Dashboard", url: "/dashboard-super", icon: Sparkles, badge: "Pro", premium: true },
-      { title: "Analytics", url: "/analytics", icon: PieChart, badge: "Data" }
-    ]
-  },
-  {
-    title: "E-commerce",
-    icon: ShoppingCart,
-    items: [
-      { title: "Boutiques", url: "/stores", icon: Store, badge: "Stores" },
-      { title: "Produits", url: "/products", icon: Package, badge: "Products" },
-      { title: "Commandes", url: "/orders", icon: ShoppingBag, badge: "Orders" },
-      { title: "Catalogue", url: "/catalog", icon: BookOpen, badge: "Catalog" },
-      { title: "Marketplace", url: "/marketplace", icon: Globe, badge: "Market" }
-    ]
-  },
-  {
-    title: "Sourcing & Import",
-    icon: Target,
-    items: [
-      { title: "Product Finder AI", url: "/product-finder", icon: Target, badge: "AI", premium: true },
-      { title: "Product Sourcing", url: "/product-sourcing", icon: Search, badge: "Source" },
+      { title: "Dashboard", url: "/dashboard", icon: BarChart3 },
+      { title: "Boutiques", url: "/stores", icon: Store },
       { 
         title: "Import", 
         url: "/import", 
-        icon: Upload, 
-        badge: "Import",
+        icon: Upload,
         subItems: [
-          { title: "Import Management", url: "/import", icon: Database, badge: "Manage" },
-          { title: "CSV Import", url: "/import/csv", icon: FileText, badge: "CSV" },
-          { title: "API Import", url: "/import/api", icon: Code, badge: "API" },
-          { title: "Web Scraping", url: "/import/scraping", icon: Globe, badge: "Scrape" },
-          { title: "AI Import", url: "/import/ai", icon: Bot, badge: "AI", premium: true }
+          { title: "Import Management", url: "/import", icon: Database },
+          { title: "CSV Import", url: "/import/csv", icon: FileText },
+          { title: "API Import", url: "/import/api", icon: Code },
+          { title: "Web Scraping", url: "/import/scraping", icon: Globe },
+          { title: "Import History", url: "/import/history", icon: Clock },
+          { title: "Import Sources", url: "/import-sources", icon: Database }
         ]
-      },
-      { title: "Import History", url: "/import/history", icon: Clock, badge: "History" },
-      { title: "Import Sources", url: "/import-sources", icon: Database, badge: "Sources" }
+      }
     ]
   },
+  
+  // ============= CATALOGUE =============
   {
-    title: "Logistique & Stock",
+    title: "CATALOGUE",
+    icon: Package,
+    items: [
+      { title: "Produits", url: "/products", icon: Package },
+      { title: "Produits Ultra", url: "/products-ultra", icon: Sparkles, badge: "Ultra", premium: true },
+      { title: "Catalogue", url: "/catalog", icon: BookOpen },
+      { title: "Fournisseurs", url: "/suppliers", icon: Truck },
+      { title: "Product Finder", url: "/product-finder", icon: Target, badge: "AI", premium: true },
+      { title: "Product Sourcing", url: "/product-sourcing", icon: Search }
+    ]
+  },
+  
+  // ============= STOCK & LOGISTIQUE =============
+  {
+    title: "STOCK & LOGISTIQUE",
     icon: Warehouse,
     items: [
-      { title: "Inventory Management", url: "/inventory-management", icon: Boxes, badge: "Stock" },
-      { title: "Warehouse Management", url: "/warehouse-management", icon: Warehouse, badge: "Warehouses", premium: true },
-      { title: "Shipping Manager", url: "/shipping-manager", icon: Truck, badge: "Shipping" },
-      { title: "Returns Management", url: "/returns-management", icon: RotateCcw, badge: "Returns" },
-      { title: "Auto Orders", url: "/auto-order", icon: Zap, badge: "Auto", premium: true },
-      { title: "Suppliers", url: "/suppliers", icon: Package, badge: "Suppliers" }
+      { title: "Inventory", url: "/inventory-management", icon: Boxes },
+      { title: "Warehouse", url: "/warehouse-management", icon: Warehouse, badge: "Ultra", premium: true },
+      { title: "Shipping", url: "/shipping-manager", icon: Truck },
+      { title: "Retours", url: "/returns-management", icon: RotateCcw },
+      { title: "Auto-Orders", url: "/auto-order", icon: Zap, badge: "Ultra", premium: true }
     ]
   },
+  
+  // ============= COMMERCE =============
   {
-    title: "Marketing & Ventes",
-    icon: Megaphone,
+    title: "COMMERCE",
+    icon: ShoppingBag,
     items: [
-      { title: "Marketing Hub", url: "/marketing", icon: Megaphone, badge: "Hub" },
-      { title: "Email Marketing", url: "/email-marketing", icon: Mail, badge: "Email" },
-      { title: "Pixel Tracking", url: "/pixel-tracking", icon: Eye, badge: "Pixels" },
-      { title: "Upsell Manager", url: "/upsell-manager", icon: TrendingUp, badge: "Upsells" },
-      { title: "Affiliate Program", url: "/affiliate-program", icon: Share2, badge: "Affiliates" },
-      { title: "Ads Automation", url: "/ads-automation", icon: Target, badge: "Ads", premium: true },
-      { title: "A/B Testing", url: "/ab-testing", icon: GitBranch, badge: "A/B", premium: true },
-      { title: "Blog", url: "/blog", icon: FileText, badge: "Blog" }
+      { title: "Commandes", url: "/orders", icon: ShoppingBag },
+      { title: "Clients", url: "/customers", icon: Users },
+      { title: "CRM", url: "/crm", icon: Users },
+      { title: "Reviews", url: "/reviews-manager", icon: Star },
+      { title: "Live Chat", url: "/live-chat", icon: MessageSquare, badge: "Ultra", premium: true }
     ]
   },
+  
+  // ============= ANALYTICS =============
   {
-    title: "Clients & Support",
-    icon: Users,
-    items: [
-      { title: "Clients", url: "/customers", icon: Users, badge: "Clients" },
-      { title: "CRM", url: "/crm", icon: Users, badge: "CRM" },
-      { title: "Live Chat", url: "/live-chat", icon: MessageSquare, badge: "Chat", premium: true },
-      { title: "Reviews Manager", url: "/reviews-manager", icon: Star, badge: "Reviews" },
-      { title: "CRM Calendar", url: "/crm/calendar", icon: Calendar, badge: "Calendar" }
-    ]
-  },
-  {
-    title: "Pricing & Finance",
-    icon: DollarSign,
-    items: [
-      { title: "Profit Calculator", url: "/profit-calculator", icon: Calculator, badge: "Profit" },
-      { title: "Dynamic Pricing", url: "/dynamic-pricing", icon: Tag, badge: "Dynamic", premium: true },
-      { title: "Finance", url: "/finance", icon: CreditCard, badge: "Finance" },
-      { title: "Pricing", url: "/pricing-page", icon: DollarSign, badge: "Price" }
-    ]
-  },
-  {
-    title: "Automatisation",
-    icon: Zap,
-    items: [
-      { title: "Automation", url: "/automation", icon: Zap, badge: "Auto" },
-      { title: "Automation Studio", url: "/automation-studio", icon: Bot, badge: "Studio", premium: true },
-      { title: "AI Automation", url: "/ai-automation", icon: Bot, badge: "AI Auto", premium: true },
-      { title: "Workflow Automation", url: "/automation-optimization", icon: GitBranch, badge: "Flow", premium: true }
-    ]
-  },
-  {
-    title: "Intelligence & IA",
-    icon: Bot,
-    items: [
-      { title: "AI Assistant", url: "/ai-assistant", icon: Bot, badge: "AI", premium: true },
-      { title: "AI Studio", url: "/ai-studio", icon: Sparkles, badge: "Studio", premium: true },
-      { title: "Business Intelligence", url: "/business-intelligence", icon: BarChart3, badge: "BI", premium: true },
-      { title: "Product Intelligence", url: "/product-intelligence", icon: Target, badge: "Intel", premium: true },
-      { title: "Creative Studio", url: "/creative-studio", icon: Sparkles, badge: "Creative", premium: true }
-    ]
-  },
-  {
-    title: "Analytics & Monitoring",
+    title: "ANALYTICS",
     icon: Activity,
     items: [
-      { title: "Analytics Studio", url: "/analytics-studio", icon: BarChart3, badge: "Studio", premium: true },
-      { title: "Monitoring", url: "/monitoring", icon: Activity, badge: "Monitor" },
-      { title: "Observability", url: "/observability", icon: Eye, badge: "Observe", premium: true },
-      { title: "Advanced Analytics", url: "/advanced-analytics-enterprise", icon: PieChart, badge: "Advanced", premium: true }
+      { title: "Analytics", url: "/analytics", icon: PieChart },
+      { title: "Monitoring", url: "/monitoring", icon: Activity },
+      { title: "Analytics Studio", url: "/analytics-studio", icon: BarChart3, badge: "Ultra", premium: true },
+      { title: "Business Intelligence", url: "/business-intelligence", icon: TrendingUp, badge: "Ultra", premium: true },
+      { title: "Observability", url: "/observability", icon: Eye, badge: "Ultra", premium: true },
+      { title: "Super Dashboard", url: "/dashboard-super", icon: Sparkles, badge: "Pro", premium: true }
     ]
   },
+  
+  // ============= MARKETING =============
   {
-    title: "Multi-Store & Enterprise",
-    icon: Globe,
+    title: "MARKETING",
+    icon: Megaphone,
     items: [
-      { title: "Multi-Store Manager", url: "/multi-store", icon: Store, badge: "Multi", premium: true },
-      { title: "Multi-Tenant", url: "/multi-tenant", icon: Building2, badge: "Tenant", premium: true },
-      { title: "White Label", url: "/white-label", icon: Tag, badge: "Label", premium: true },
-      { title: "Enterprise API", url: "/enterprise-api", icon: Code, badge: "API", premium: true }
+      { title: "Marketing Hub", url: "/marketing", icon: Megaphone },
+      { title: "Email Marketing", url: "/email-marketing", icon: Mail },
+      { title: "Blog", url: "/blog", icon: FileText },
+      { title: "SEO", url: "/seo", icon: Search },
+      { title: "Pixels", url: "/pixel-tracking", icon: Eye },
+      { title: "Ads Automation", url: "/ads-automation", icon: Target, badge: "Ultra", premium: true },
+      { title: "A/B Testing", url: "/ab-testing", icon: GitBranch, badge: "Ultra", premium: true },
+      { title: "Affiliates", url: "/affiliate-program", icon: Share2 },
+      { title: "Upsell Manager", url: "/upsell-manager", icon: TrendingUp }
     ]
   },
+  
+  // ============= AVANCÉ =============
   {
-    title: "Intégrations",
-    icon: Link2,
+    title: "AVANCÉ",
+    icon: Zap,
     items: [
-      { title: "Intégrations Hub", url: "/integrations", icon: Link2, badge: "Hub" },
-      { title: "Marketplace Connector", url: "/marketplace-connector", icon: Globe, badge: "Connect" },
-      { title: "Extensions", url: "/extensions", icon: Boxes, badge: "Extensions" }
-    ]
-  },
-  {
-    title: "Administration",
-    icon: ShieldCheck,
-    items: [
-      { title: "Admin Panel", url: "/admin", icon: ShieldCheck, badge: "Admin" },
-      { title: "Security", url: "/security", icon: ShieldCheck, badge: "Security" },
-      { title: "Quota Manager", url: "/quota-manager", icon: Settings, badge: "Quotas" },
-      { title: "Team Collaboration", url: "/team-collaboration", icon: Users, badge: "Team" }
-    ]
-  },
-  {
-    title: "Mobile & PWA",
-    icon: Smartphone,
-    items: [
-      { title: "PWA Install", url: "/pwa-install", icon: Smartphone, badge: "PWA" },
-      { title: "Flutter App", url: "/flutter-mobile", icon: Download, badge: "Flutter" },
-      { title: "Mobile Dashboard", url: "/mobile-dashboard", icon: Smartphone, badge: "Mobile", premium: true }
-    ]
-  },
-  {
-    title: "Support & Aide",
-    icon: HelpCircle,
-    items: [
-      { title: "Support", url: "/support", icon: HelpCircle, badge: "Help" },
-      { title: "Help Center", url: "/help-center", icon: BookOpen, badge: "Center" },
-      { title: "QA", url: "/qa", icon: HelpCircle, badge: "QA" },
-      { title: "App Status", url: "/application-status", icon: Activity, badge: "Status" }
-    ]
-  },
-  {
-    title: "Configuration",
-    icon: Settings,
-    items: [
-      { title: "Settings", url: "/settings", icon: Settings, badge: "Config" },
-      { title: "Profile", url: "/profile", icon: Users, badge: "Profile" },
-      { title: "Subscription", url: "/subscription", icon: CreditCard, badge: "Plan" }
+      { title: "Extensions", url: "/extensions", icon: Boxes, badge: "Nouveau" },
+      { title: "AI Assistant", url: "/ai-assistant", icon: Bot, badge: "AI", premium: true },
+      { title: "AI Studio", url: "/ai-studio", icon: Sparkles, badge: "Studio", premium: true },
+      { title: "Automation", url: "/automation", icon: Zap, badge: "Auto" },
+      { title: "Automation Studio", url: "/automation-studio", icon: Bot, badge: "Studio", premium: true },
+      { title: "Creative Studio", url: "/creative-studio", icon: Sparkles, badge: "Studio", premium: true },
+      { title: "Finance", url: "/finance", icon: CreditCard },
+      { title: "Profit Calculator", url: "/profit-calculator", icon: Calculator },
+      { title: "Dynamic Pricing", url: "/dynamic-pricing", icon: Tag, badge: "Ultra", premium: true },
+      { title: "Multi-Store", url: "/multi-store", icon: Store, badge: "Ultra", premium: true },
+      { title: "Multi-Tenant", url: "/multi-tenant", icon: Building2, badge: "Ultra", premium: true },
+      { title: "White Label", url: "/white-label", icon: Tag, badge: "Ultra", premium: true },
+      { title: "Enterprise API", url: "/enterprise-api", icon: Code, badge: "Ultra", premium: true },
+      { title: "Intégrations", url: "/integrations", icon: Link2 },
+      { title: "Marketplace", url: "/marketplace", icon: Globe },
+      { title: "Security", url: "/security", icon: ShieldCheck },
+      { title: "Admin Panel", url: "/admin", icon: ShieldCheck },
+      { title: "Mobile & PWA", url: "/pwa-install", icon: Smartphone },
+      { title: "Mobile Dashboard", url: "/mobile-dashboard", icon: Smartphone, badge: "Ultra", premium: true },
+      { title: "Support", url: "/support", icon: HelpCircle },
+      { title: "Help Center", url: "/help-center", icon: BookOpen },
+      { title: "Settings", url: "/settings", icon: Settings },
+      { title: "Profile", url: "/profile", icon: Users },
+      { title: "Abonnement", url: "/subscription", icon: CreditCard, badge: "Plan" }
     ]
   }
 ];
@@ -360,10 +307,15 @@ export function AppSidebar() {
                               <span className="truncate">{item.title}</span>
                               {item.badge && (
                                 <Badge 
-                                  variant={item.premium ? "default" : "secondary"}
+                                  variant="secondary"
                                   className={cn(
-                                    "text-xs h-5 px-1.5",
-                                    item.premium && "bg-gradient-to-r from-yellow-500 to-orange-500 text-white"
+                                    "text-xs h-5 px-2 font-medium",
+                                    item.badge === "Ultra" && "bg-purple-500 text-white hover:bg-purple-600",
+                                    item.badge === "Pro" && "bg-gray-500 text-white hover:bg-gray-600",
+                                    item.badge === "AI" && "bg-blue-500 text-white hover:bg-blue-600",
+                                    item.badge === "Studio" && "bg-pink-500 text-white hover:bg-pink-600",
+                                    item.badge === "Auto" && "bg-orange-500 text-white hover:bg-orange-600",
+                                    item.badge === "Nouveau" && "bg-green-500 text-white hover:bg-green-600"
                                   )}
                                 >
                                   {item.badge}
@@ -392,17 +344,22 @@ export function AppSidebar() {
                                     subItem.premium ? "text-yellow-500" : ""
                                   )} />
                                   <span className="truncate">{subItem.title}</span>
-                                  {subItem.badge && (
+                                   {subItem.badge && (
                                     <Badge 
                                       variant="outline"
                                       className={cn(
-                                        "text-xs h-4 px-1",
-                                        subItem.premium && "border-yellow-500 text-yellow-600"
+                                        "text-xs h-4 px-1.5 font-medium",
+                                        subItem.badge === "Ultra" && "border-purple-500 text-purple-600",
+                                        subItem.badge === "Pro" && "border-gray-500 text-gray-600",
+                                        subItem.badge === "AI" && "border-blue-500 text-blue-600",
+                                        subItem.badge === "Studio" && "border-pink-500 text-pink-600",
+                                        subItem.badge === "Auto" && "border-orange-500 text-orange-600",
+                                        subItem.badge === "Nouveau" && "border-green-500 text-green-600"
                                       )}
                                     >
                                       {subItem.badge}
                                     </Badge>
-                                  )}
+                                   )}
                                 </SidebarMenuSubButton>
                               </SidebarMenuSubItem>
                             ))}
