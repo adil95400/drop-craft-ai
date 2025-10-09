@@ -8872,6 +8872,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_own_profile: {
+        Args: { profile_id: string }
+        Returns: boolean
+      }
       is_supplier_owner: {
         Args: { _supplier_id: string; _user_id: string }
         Returns: boolean
@@ -8882,6 +8886,10 @@ export type Database = {
       }
       is_user_admin: {
         Args: Record<PropertyKey, never> | { check_user_id?: string }
+        Returns: boolean
+      }
+      is_user_admin_secure: {
+        Args: { check_user_id: string }
         Returns: boolean
       }
       log_credential_access: {
