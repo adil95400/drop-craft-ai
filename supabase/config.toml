@@ -193,5 +193,14 @@ verify_jwt = true
 [functions.ai-ad-creator-complete]
 verify_jwt = true
 
+[functions.ai-video-generator]
+verify_jwt = true
+
+[functions.ai-social-posts]
+verify_jwt = true
+
+[functions.ai-image-enhancer]
+verify_jwt = true
+
 [functions.canva-design-optimizer]
 verify_jwt = true
