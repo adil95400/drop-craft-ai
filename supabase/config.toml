@@ -220,5 +220,8 @@ verify_jwt = true
 [functions.tracking-automation]
 verify_jwt = true
 
+[functions.review-moderator]
+verify_jwt = true
+
 [functions.conversion-optimizer]
 verify_jwt = true
