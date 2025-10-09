@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,13 +11,40 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const WebScrapingPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [url, setUrl] = useState('');
   const [scraping, setScraping] = useState(false);
   const [step, setStep] = useState<'config' | 'preview' | 'scraping' | 'complete'>('config');
   const [scrapedData, setScrapedData] = useState<any[]>([]);
+  const [recentScrapings, setRecentScrapings] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      loadRecentScrapings();
+    }
+  }, [user]);
+
+  const loadRecentScrapings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('import_jobs')
+        .select('*')
+        .eq('user_id', user?.id)
+        .eq('source_type', 'url')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      setRecentScrapings(data || []);
+    } catch (error) {
+      console.error('Error loading recent scrapings:', error);
+    }
+  };
 
   const handleStartScraping = async () => {
     if (!url) {
@@ -54,9 +81,36 @@ const WebScrapingPage: React.FC = () => {
     }, 3000);
   };
 
-  const handleImportData = () => {
-    setStep('complete');
-    toast.success('Données importées avec succès!');
+  const handleImportData = async () => {
+    if (!user) return;
+
+    try {
+      // Créer un job d'import dans Supabase
+      const { data: job, error } = await supabase
+        .from('import_jobs')
+        .insert({
+          user_id: user.id,
+          source_type: 'url',
+          source_url: url,
+          file_data: { scrapedProducts: scrapedData },
+          status: 'completed',
+          total_rows: scrapedData.length,
+          success_rows: scrapedData.length,
+          started_at: new Date().toISOString(),
+          completed_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setStep('complete');
+      toast.success('Données importées avec succès!');
+      await loadRecentScrapings();
+    } catch (error) {
+      console.error('Error importing data:', error);
+      toast.error('Erreur lors de l\'importation');
+    }
   };
 
   const supportedSites = [

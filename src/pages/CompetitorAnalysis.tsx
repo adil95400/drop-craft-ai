@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,12 +19,38 @@ import {
 import { Helmet } from "react-helmet-async";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/contexts/AuthContext'
 
 const CompetitorAnalysis = () => {
+  const { user } = useAuth()
   const [domain, setDomain] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisData, setAnalysisData] = useState<any>(null);
+  const [savedAnalyses, setSavedAnalyses] = useState<any[]>([])
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (user) {
+      loadSavedAnalyses()
+    }
+  }, [user])
+
+  const loadSavedAnalyses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('competitive_intelligence')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (error) throw error
+      setSavedAnalyses(data || [])
+    } catch (error) {
+      console.error('Error loading analyses:', error)
+    }
+  }
 
   // Données simulées d'analyse concurrentielle
   const analyzeCompetitor = async () => {
@@ -81,6 +107,23 @@ const CompetitorAnalysis = () => {
       };
       
       setAnalysisData(mockData);
+
+      // Sauvegarder dans Supabase
+      if (user) {
+        await supabase
+          .from('competitive_intelligence')
+          .insert({
+            user_id: user.id,
+            competitor_name: domain,
+            competitive_data: mockData,
+            price_analysis: { average: mockData.overview.organicTraffic / 100 },
+            market_position: { authority: mockData.overview.authorityScore },
+            gap_opportunities: mockData.contentGaps,
+            threat_level: mockData.overview.authorityScore > 70 ? 'high' : 'medium'
+          })
+        
+        await loadSavedAnalyses()
+      }
       
       toast({
         title: "Analyse terminée",
