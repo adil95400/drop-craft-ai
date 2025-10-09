@@ -230,6 +230,11 @@ import ImportHistoryPage from '@/pages/import/ImportHistoryPage';
 import EnterpriseAPIPage from '@/pages/EnterpriseAPIPage';
 import ObservabilityPage from '@/pages/ObservabilityPage';
 import CreativeStudioPage from '@/pages/CreativeStudioPage';
+import ProfitCalculator from '@/pages/ProfitCalculator';
+import ShippingManager from '@/pages/ShippingManager';
+import ReviewsManager from '@/pages/ReviewsManager';
+import AutoOrderSystem from '@/pages/AutoOrderSystem';
+import ProductSourcingHub from '@/pages/ProductSourcingHub';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -938,6 +943,33 @@ function App() {
                 <Route path="/sync-manager" element={
                   <ProtectedRoute>
                     <AppLayout><SyncManager /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* New Business Tools */}
+                <Route path="/profit-calculator" element={
+                  <ProtectedRoute>
+                    <AppLayout><ProfitCalculator /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/shipping-manager" element={
+                  <ProtectedRoute>
+                    <AppLayout><ShippingManager /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/reviews-manager" element={
+                  <ProtectedRoute>
+                    <AppLayout><ReviewsManager /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/auto-order" element={
+                  <ProtectedRoute>
+                    <AppLayout><AutoOrderSystem /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/product-sourcing" element={
+                  <ProtectedRoute>
+                    <AppLayout><ProductSourcingHub /></AppLayout>
                   </ProtectedRoute>
                 } />
                 
