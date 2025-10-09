@@ -225,3 +225,9 @@ verify_jwt = true
 
 [functions.conversion-optimizer]
 verify_jwt = true
+
+[functions.i18n-manager]
+verify_jwt = true
+
+[functions.translation-service]
+verify_jwt = true

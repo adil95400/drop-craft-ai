@@ -1744,6 +1744,84 @@ export type Database = {
           },
         ]
       }
+      currencies: {
+        Row: {
+          created_at: string | null
+          currency_code: string
+          currency_name: string
+          currency_symbol: string
+          decimal_places: number | null
+          display_format: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          rounding_method: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          currency_code: string
+          currency_name: string
+          currency_symbol: string
+          decimal_places?: number | null
+          display_format?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          rounding_method?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          currency_code?: string
+          currency_name?: string
+          currency_symbol?: string
+          decimal_places?: number | null
+          display_format?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          rounding_method?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      currency_rates: {
+        Row: {
+          created_at: string | null
+          from_currency: string
+          id: string
+          last_updated: string | null
+          rate: number
+          source: string | null
+          to_currency: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          from_currency: string
+          id?: string
+          last_updated?: string | null
+          rate: number
+          source?: string | null
+          to_currency: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          from_currency?: string
+          id?: string
+          last_updated?: string | null
+          rate?: number
+          source?: string | null
+          to_currency?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       customer_behavior_analytics: {
         Row: {
           analysis_data: Json
@@ -2605,6 +2683,60 @@ export type Database = {
           },
         ]
       }
+      geo_targeting_rules: {
+        Row: {
+          content_variations: Json | null
+          countries: string[] | null
+          created_at: string | null
+          default_currency: string | null
+          default_locale: string | null
+          id: string
+          is_active: boolean | null
+          locales: string[] | null
+          pricing_adjustments: Json | null
+          priority: number | null
+          regions: string[] | null
+          rule_name: string
+          shipping_rules: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content_variations?: Json | null
+          countries?: string[] | null
+          created_at?: string | null
+          default_currency?: string | null
+          default_locale?: string | null
+          id?: string
+          is_active?: boolean | null
+          locales?: string[] | null
+          pricing_adjustments?: Json | null
+          priority?: number | null
+          regions?: string[] | null
+          rule_name: string
+          shipping_rules?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content_variations?: Json | null
+          countries?: string[] | null
+          created_at?: string | null
+          default_currency?: string | null
+          default_locale?: string | null
+          id?: string
+          is_active?: boolean | null
+          locales?: string[] | null
+          pricing_adjustments?: Json | null
+          priority?: number | null
+          regions?: string[] | null
+          rule_name?: string
+          shipping_rules?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       import_batches: {
         Row: {
           batch_type: string
@@ -3313,6 +3445,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      locale_settings: {
+        Row: {
+          auto_detect_currency: boolean | null
+          auto_detect_locale: boolean | null
+          auto_translate: boolean | null
+          created_at: string | null
+          currency_rate_provider: string | null
+          default_currency: string | null
+          default_locale: string | null
+          id: string
+          settings: Json | null
+          supported_currencies: string[] | null
+          supported_locales: string[] | null
+          translation_provider: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_detect_currency?: boolean | null
+          auto_detect_locale?: boolean | null
+          auto_translate?: boolean | null
+          created_at?: string | null
+          currency_rate_provider?: string | null
+          default_currency?: string | null
+          default_locale?: string | null
+          id?: string
+          settings?: Json | null
+          supported_currencies?: string[] | null
+          supported_locales?: string[] | null
+          translation_provider?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_detect_currency?: boolean | null
+          auto_detect_locale?: boolean | null
+          auto_translate?: boolean | null
+          created_at?: string | null
+          currency_rate_provider?: string | null
+          default_currency?: string | null
+          default_locale?: string | null
+          id?: string
+          settings?: Json | null
+          supported_currencies?: string[] | null
+          supported_locales?: string[] | null
+          translation_provider?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       marketing_campaigns: {
         Row: {
@@ -4434,6 +4617,63 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      product_translations: {
+        Row: {
+          ai_translation_metadata: Json | null
+          attributes: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          locale: string
+          name: string
+          product_id: string
+          seo_description: string | null
+          seo_keywords: string[] | null
+          seo_title: string | null
+          short_description: string | null
+          translation_quality_score: number | null
+          translation_status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_translation_metadata?: Json | null
+          attributes?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          locale: string
+          name: string
+          product_id: string
+          seo_description?: string | null
+          seo_keywords?: string[] | null
+          seo_title?: string | null
+          short_description?: string | null
+          translation_quality_score?: number | null
+          translation_status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_translation_metadata?: Json | null
+          attributes?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          locale?: string
+          name?: string
+          product_id?: string
+          seo_description?: string | null
+          seo_keywords?: string[] | null
+          seo_title?: string | null
+          short_description?: string | null
+          translation_quality_score?: number | null
+          translation_status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       product_variants: {
         Row: {
@@ -7463,6 +7703,75 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      translation_jobs: {
+        Row: {
+          completed_at: string | null
+          completed_items: number | null
+          cost: number | null
+          created_at: string | null
+          entity_ids: string[] | null
+          entity_type: string
+          error_message: string | null
+          failed_items: number | null
+          id: string
+          job_name: string
+          progress: number | null
+          results: Json | null
+          source_locale: string
+          started_at: string | null
+          status: string | null
+          target_locales: string[]
+          total_items: number | null
+          translation_provider: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_items?: number | null
+          cost?: number | null
+          created_at?: string | null
+          entity_ids?: string[] | null
+          entity_type: string
+          error_message?: string | null
+          failed_items?: number | null
+          id?: string
+          job_name: string
+          progress?: number | null
+          results?: Json | null
+          source_locale: string
+          started_at?: string | null
+          status?: string | null
+          target_locales: string[]
+          total_items?: number | null
+          translation_provider?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_items?: number | null
+          cost?: number | null
+          created_at?: string | null
+          entity_ids?: string[] | null
+          entity_type?: string
+          error_message?: string | null
+          failed_items?: number | null
+          id?: string
+          job_name?: string
+          progress?: number | null
+          results?: Json | null
+          source_locale?: string
+          started_at?: string | null
+          status?: string | null
+          target_locales?: string[]
+          total_items?: number | null
+          translation_provider?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       upsell_rules: {
         Row: {
