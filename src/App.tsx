@@ -249,6 +249,8 @@ import DynamicPricing from '@/pages/DynamicPricing';
 import AdvancedMonitoringPage from '@/pages/AdvancedMonitoringPage';
 import ImportSourcesPage from '@/pages/ImportSourcesPage';
 import { PagePlaceholder } from '@/pages/PagePlaceholder';
+import SEOPage from '@/pages/SEOPage';
+import FinancePage from '@/pages/FinancePage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -1267,6 +1269,11 @@ function App() {
                     <AppLayout><ModernBlog /></AppLayout>
                   </ProtectedRoute>
                 } />
+                <Route path="/seo" element={
+                  <ProtectedRoute>
+                    <AppLayout><SEOPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
                 
                 {/* 👥 CLIENTS & SUPPORT */}
                 <Route path="/live-chat" element={
@@ -1298,7 +1305,7 @@ function App() {
                 } />
                 <Route path="/finance" element={
                   <ProtectedRoute>
-                    <AppLayout><PagePlaceholder title="Finance" badge="PRO" description="Gestion financière et comptabilité" /></AppLayout>
+                    <AppLayout><FinancePage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/pricing-page" element={
