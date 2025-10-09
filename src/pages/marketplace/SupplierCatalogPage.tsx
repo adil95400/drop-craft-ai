@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Helmet } from 'react-helmet-async';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   ArrowLeft, Star, MapPin, Clock, 
   Package, Award, ShoppingCart, Heart, Eye 
@@ -11,6 +13,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 
 const SupplierCatalogPage: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { supplierId } = useParams();
   const [supplier, setSupplier] = useState<any>(null);
@@ -18,51 +21,80 @@ const SupplierCatalogPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulation de chargement du fournisseur et ses produits
-    setTimeout(() => {
-      setSupplier({
-        id: supplierId,
-        name: 'TechWorld Pro',
-        description: 'Spécialiste en électronique grand public et accessoires high-tech depuis 2010.',
-        logo: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=200',
-        banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200',
-        rating: 4.8,
-        reviewsCount: 2847,
-        location: 'Paris, France',
-        founded: '2010',
-        responseTime: '2h',
-        deliveryTime: '24-48h',
-        categories: ['Électronique', 'Smartphones', 'Accessoires', 'Audio'],
-        certifications: ['ISO 9001', 'CE', 'ROHS'],
-        stats: {
-          totalProducts: 1247,
-          completedOrders: 15420,
-          satisfactionRate: 98.5
-        },
-        policies: {
-          returns: '30 jours',
-          warranty: '2 ans',
-          support: '24/7'
-        }
-      });
-
-      const mockProducts = Array.from({ length: 8 }, (_, i) => ({
-        id: i + 1,
-        name: `Produit TechWorld ${i + 1}`,
-        description: `Description du produit ${i + 1} proposé par TechWorld Pro`,
-        price: Math.floor(Math.random() * 500) + 50,
-        originalPrice: Math.floor(Math.random() * 100) + 600,
-        rating: (Math.random() * 2 + 3).toFixed(1),
-        reviewsCount: Math.floor(Math.random() * 500) + 25,
-        image: `https://images.unsplash.com/photo-${1500000000000 + i}?w=400`,
-        category: ['Smartphones', 'Accessoires', 'Audio'][Math.floor(Math.random() * 3)],
-        inStock: true,
-        discount: Math.random() > 0.6 ? Math.floor(Math.random() * 30) + 10 : null
-      }));
-      setProducts(mockProducts);
-      setLoading(false);
-    }, 1000);
+    loadSupplierData();
   }, [supplierId]);
+
+  const loadSupplierData = async () => {
+    try {
+      setLoading(true);
+      
+      // Load supplier info
+      const { data: supplierData, error: supplierError } = await supabase
+        .from('suppliers')
+        .select('*')
+        .eq('id', supplierId)
+        .maybeSingle();
+
+      if (supplierError) throw supplierError;
+
+      if (supplierData) {
+        setSupplier({
+          id: supplierData.id,
+          name: supplierData.name,
+          description: supplierData.description || 'Fournisseur professionnel',
+          logo: supplierData.logo_url || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=200',
+          banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200',
+          rating: supplierData.rating || 4.5,
+          reviewsCount: 100,
+          location: supplierData.country || 'International',
+          founded: '2010',
+          responseTime: '2h',
+          deliveryTime: '24-48h',
+          categories: [supplierData.sector || 'Général'],
+          certifications: ['ISO 9001', 'CE'],
+          stats: {
+            totalProducts: supplierData.product_count || 0,
+            completedOrders: 1000,
+            satisfactionRate: 95
+          },
+          policies: {
+            returns: '30 jours',
+            warranty: '2 ans',
+            support: '24/7'
+          }
+        });
+      }
+
+      // Load supplier products
+      const { data: productsData, error: productsError } = await supabase
+        .from('supplier_products')
+        .select('*')
+        .eq('supplier_id', supplierId)
+        .limit(20);
+
+      if (productsError) throw productsError;
+
+      const mappedProducts = (productsData || []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        price: p.price,
+        originalPrice: p.original_price,
+        rating: 4.5,
+        reviewsCount: 50,
+        image: p.image_url || 'https://images.unsplash.com/photo-1560472355-536de3962603?w=400',
+        category: p.category || 'Général',
+        inStock: true,
+        discount: null
+      }));
+
+      setProducts(mappedProducts);
+    } catch (error) {
+      console.error('Error loading supplier:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (

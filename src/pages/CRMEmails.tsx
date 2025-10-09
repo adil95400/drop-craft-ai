@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Mail, Send, FileText, Archive, Star, Search, Plus, Filter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,6 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/integrations/supabase/client'
+import { useToast } from '@/hooks/use-toast'
 
 interface EmailCampaign {
   id: string
@@ -20,40 +23,11 @@ interface EmailCampaign {
   content: string
 }
 
-const mockCampaigns: EmailCampaign[] = [
-  {
-    id: '1',
-    subject: 'Offre spéciale - 20% sur tous nos produits',
-    status: 'sent',
-    recipients: 1250,
-    openRate: 32.5,
-    clickRate: 8.7,
-    sentAt: '2024-01-15T10:00:00',
-    content: 'Profitez de notre offre exceptionnelle...'
-  },
-  {
-    id: '2',
-    subject: 'Nouveautés de la semaine',
-    status: 'scheduled',
-    recipients: 890,
-    openRate: 0,
-    clickRate: 0,
-    scheduledAt: '2024-01-20T09:00:00',
-    content: 'Découvrez nos derniers produits...'
-  },
-  {
-    id: '3',
-    subject: 'Rappel panier abandonné',
-    status: 'draft',
-    recipients: 0,
-    openRate: 0,
-    clickRate: 0,
-    content: 'Vous avez oublié quelque chose dans votre panier...'
-  }
-]
-
 export default function CRMEmails() {
-  const [campaigns, setCampaigns] = useState(mockCampaigns)
+  const { user } = useAuth()
+  const { toast } = useToast()
+  const [campaigns, setCampaigns] = useState<EmailCampaign[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [newEmail, setNewEmail] = useState({
@@ -61,6 +35,49 @@ export default function CRMEmails() {
     content: '',
     recipients: 'all'
   })
+
+  useEffect(() => {
+    if (user?.id) {
+      loadCampaigns()
+    }
+  }, [user?.id])
+
+  const loadCampaigns = async () => {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('automated_campaigns')
+        .select('*')
+        .eq('user_id', user?.id)
+        .eq('campaign_type', 'email')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      const mappedCampaigns: EmailCampaign[] = (data || []).map(camp => ({
+        id: camp.id,
+        subject: camp.campaign_name,
+        status: camp.status === 'active' ? 'sent' : camp.status === 'draft' ? 'draft' : 'scheduled',
+        recipients: (camp.current_metrics as any)?.sent || 0,
+        openRate: (camp.current_metrics as any)?.open_rate || 0,
+        clickRate: (camp.current_metrics as any)?.click_rate || 0,
+        sentAt: camp.last_executed_at || undefined,
+        scheduledAt: camp.next_execution_at || undefined,
+        content: (camp.content_templates as any)?.body || 'Contenu de la campagne...'
+      }))
+
+      setCampaigns(mappedCampaigns)
+    } catch (error) {
+      console.error('Error loading campaigns:', error)
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de charger les campagnes',
+        variant: 'destructive'
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredCampaigns = campaigns.filter(campaign => {
     const matchesSearch = campaign.subject.toLowerCase().includes(searchTerm.toLowerCase())

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,127 +10,49 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
-
-// Mock data pour CRM
-const mockContacts = [
-  {
-    id: '1',
-    userId: 'user-1',
-    name: 'Sophie Durand',
-    email: 'sophie.durand@email.com',
-    phone: '+33 6 12 34 56 78',
-    company: 'TechCorp',
-    position: 'Responsable Achats',
-    leadScore: 85,
-    status: 'qualified',
-    source: 'website',
-    lastContact: '2024-01-15',
-    nextAction: '2024-01-20',
-    dealValue: 15000,
-    stage: 'negotiation',
-    tags: ['vip', 'decision-maker']
-  },
-  {
-    id: '2',
-    userId: 'user-2',
-    name: 'Marc Martin',
-    email: 'marc.martin@startup.fr',
-    phone: '+33 6 98 76 54 32',
-    company: 'StartupInnovante',
-    position: 'CEO', 
-    leadScore: 72,
-    status: 'interested',
-    source: 'linkedin',
-    lastContact: '2024-01-12',
-    nextAction: '2024-01-18',
-    dealValue: 8500,
-    stage: 'proposal',
-    tags: ['startup', 'tech']
-  },
-  {
-    id: '3',
-    userId: 'user-1',
-    name: 'Claire Leroy',
-    email: 'claire.leroy@bigcorp.com',
-    phone: '+33 6 55 44 33 22',
-    company: 'BigCorp Industries',
-    position: 'Directrice Marketing',
-    leadScore: 94,
-    status: 'hot',
-    source: 'referral',
-    lastContact: '2024-01-14',
-    nextAction: '2024-01-16',
-    dealValue: 45000,
-    stage: 'closing',
-    tags: ['enterprise', 'urgent']
-  }
-];
-
-// Mock data pour les deals
-const mockDeals = [
-  {
-    id: '1',
-    contactId: '1',
-    contactName: 'Sophie Durand',
-    company: 'TechCorp',
-    value: 15000,
-    stage: 'negotiation',
-    probability: 70,
-    closeDate: '2024-02-15',
-    createdDate: '2024-01-05',
-    lastActivity: '2024-01-15',
-    notes: 'Intéressée par le plan ultra pro, négociation en cours sur le prix'
-  },
-  {
-    id: '2',
-    contactId: '3',
-    contactName: 'Claire Leroy',
-    company: 'BigCorp Industries',
-    value: 45000,
-    stage: 'closing',
-    probability: 90,
-    closeDate: '2024-01-25',
-    createdDate: '2023-12-10',
-    lastActivity: '2024-01-14',
-    notes: 'Contrat en relecture juridique, signature prévue la semaine prochaine'
-  }
-];
-
-// Mock data pour les activités
-const mockActivities = [
-  {
-    id: '1',
-    contactId: '1',
-    type: 'email',
-    subject: 'Proposition commerciale envoyée',
-    date: '2024-01-15T14:30:00Z',
-    status: 'completed',
-    notes: 'Envoi de la proposition détaillée avec tarifs négociés'
-  },
-  {
-    id: '2',
-    contactId: '3',
-    type: 'call',
-    subject: 'Appel de suivi - négociation contrat',
-    date: '2024-01-14T10:00:00Z',
-    status: 'completed',
-    notes: 'Discussion sur les modalités de paiement et délais de mise en œuvre'
-  },
-  {
-    id: '3',
-    contactId: '2',
-    type: 'meeting',
-    subject: 'Rendez-vous démo produit',
-    date: '2024-01-18T15:00:00Z',
-    status: 'scheduled',
-    notes: 'Démonstration des fonctionnalités avancées'
-  }
-];
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const AdminCRM = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [deals, setDeals] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterStage, setFilterStage] = useState('all');
+
+  useEffect(() => {
+    if (user?.id) {
+      loadContacts();
+    }
+  }, [user?.id]);
+
+  const loadContacts = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('crm_contacts')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('lead_score', { ascending: false });
+
+      if (error) throw error;
+      setContacts(data || []);
+    } catch (error) {
+      console.error('Error loading contacts:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de charger les contacts',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch(status) {
@@ -166,12 +88,14 @@ const AdminCRM = () => {
   };
 
   const crmStats = {
-    totalContacts: mockContacts.length,
-    activeDeals: mockDeals.length,
-    pipelineValue: mockDeals.reduce((acc, deal) => acc + deal.value, 0),
-    avgDealSize: mockDeals.reduce((acc, deal) => acc + deal.value, 0) / mockDeals.length,
+    totalContacts: contacts.length,
+    activeDeals: deals.length,
+    pipelineValue: deals.reduce((acc: number, deal: any) => acc + (deal.value || 0), 0),
+    avgDealSize: deals.length > 0 ? deals.reduce((acc: number, deal: any) => acc + (deal.value || 0), 0) / deals.length : 0,
     conversionRate: 75.5,
-    avgLeadScore: Math.round(mockContacts.reduce((acc, contact) => acc + contact.leadScore, 0) / mockContacts.length)
+    avgLeadScore: contacts.length > 0 
+      ? Math.round(contacts.reduce((acc: number, contact: any) => acc + (contact.lead_score || 0), 0) / contacts.length)
+      : 0
   };
 
   return (
@@ -285,9 +209,9 @@ const AdminCRM = () => {
       {/* Tabs */}
       <Tabs defaultValue="contacts" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="contacts">Contacts ({mockContacts.length})</TabsTrigger>
-          <TabsTrigger value="deals">Deals ({mockDeals.length})</TabsTrigger>
-          <TabsTrigger value="activities">Activités ({mockActivities.length})</TabsTrigger>
+          <TabsTrigger value="contacts">Contacts ({contacts.length})</TabsTrigger>
+          <TabsTrigger value="deals">Deals ({deals.length})</TabsTrigger>
+          <TabsTrigger value="activities">Activités ({activities.length})</TabsTrigger>
         </TabsList>
         
         <TabsContent value="contacts" className="space-y-4">
@@ -324,7 +248,7 @@ const AdminCRM = () => {
 
           {/* Contacts List */}
           <div className="space-y-4">
-            {mockContacts.map((contact) => (
+            {contacts.map((contact) => (
               <Card key={contact.id}>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
@@ -392,7 +316,20 @@ const AdminCRM = () => {
 
         <TabsContent value="deals" className="space-y-4">
           <div className="space-y-4">
-            {mockDeals.map((deal) => (
+            {deals.length === 0 ? (
+              <Card>
+                <CardContent className="pt-6 text-center py-12">
+                  <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Aucun deal en cours</h3>
+                  <p className="text-muted-foreground mb-4">Créez votre premier deal pour suivre vos opportunités commerciales</p>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nouveau Deal
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              deals.map((deal) => (
               <Card key={deal.id}>
                 <CardContent className="pt-6">
                   <div className="space-y-4">
@@ -445,13 +382,22 @@ const AdminCRM = () => {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            )))}
           </div>
         </TabsContent>
 
         <TabsContent value="activities" className="space-y-4">
           <div className="space-y-4">
-            {mockActivities.map((activity) => (
+            {activities.length === 0 ? (
+              <Card>
+                <CardContent className="pt-6 text-center py-12">
+                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Aucune activité</h3>
+                  <p className="text-muted-foreground">Les activités CRM apparaîtront ici</p>
+                </CardContent>
+              </Card>
+            ) : (
+              activities.map((activity) => (
               <Card key={activity.id}>
                 <CardContent className="pt-6">
                   <div className="flex items-start space-x-4">
@@ -479,7 +425,7 @@ const AdminCRM = () => {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            )))}
           </div>
         </TabsContent>
       </Tabs>

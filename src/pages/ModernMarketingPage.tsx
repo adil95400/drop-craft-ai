@@ -1,7 +1,3 @@
-/**
- * Page Marketing moderne - Campagnes email, SMS et automation
- */
-
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -13,6 +9,8 @@ import { Helmet } from 'react-helmet-async'
 import { CampaignCreator } from '@/components/marketing/CampaignCreator'
 import { MarketingAnalytics } from '@/components/marketing/MarketingAnalytics'
 import { SmartAutomationBuilder } from '@/components/marketing/SmartAutomationBuilder'
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/integrations/supabase/client'
 import { 
   Mail, MessageSquare, Users, TrendingUp,
   Play, Pause, Eye, Edit, BarChart3,
@@ -37,81 +35,46 @@ interface Campaign {
 }
 
 const ModernMarketingPage: React.FC = () => {
+  const { user } = useAuth()
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
   const [showCampaignCreator, setShowCampaignCreator] = useState(false)
   const [activeTab, setActiveTab] = useState('campaigns')
 
   useEffect(() => {
-    loadCampaigns()
-  }, [])
+    if (user?.id) {
+      loadCampaigns()
+    }
+  }, [user?.id])
 
   const loadCampaigns = async () => {
     setLoading(true)
     try {
-      const mockCampaigns: Campaign[] = [
-        {
-          id: '1',
-          name: 'Promo Été 2024 - Nouveaux Produits',
-          type: 'email',
-          status: 'active',
-          created_at: '2024-01-10T10:00:00Z',
-          sent: 15420,
-          opened: 4235,
-          clicked: 892,
-          converted: 156,
-          revenue: 12450.80,
-          open_rate: 27.5,
-          click_rate: 21.1,
-          conversion_rate: 17.5
-        },
-        {
-          id: '2',
-          name: 'Abandon de Panier - Séquence Auto',
-          type: 'automation',
-          status: 'active',
-          created_at: '2024-01-05T14:30:00Z',
-          sent: 8760,
-          opened: 3240,
-          clicked: 1120,
-          converted: 280,
-          revenue: 18920.50,
-          open_rate: 37.0,
-          click_rate: 34.6,
-          conversion_rate: 25.0
-        },
-        {
-          id: '3',
-          name: 'Flash Sale SMS - Weekend',
-          type: 'sms',
-          status: 'completed',
-          created_at: '2024-01-08T16:00:00Z',
-          sent: 5280,
-          opened: 4950,
-          clicked: 1485,
-          converted: 297,
-          revenue: 8765.25,
-          open_rate: 93.8,
-          click_rate: 30.0,
-          conversion_rate: 20.0
-        },
-        {
-          id: '4',
-          name: 'Newsletter Mensuelle Janvier',
-          type: 'email',
-          status: 'draft',
-          created_at: '2024-01-12T09:00:00Z',
-          sent: 0,
-          opened: 0,
-          clicked: 0,
-          converted: 0,
-          revenue: 0,
-          open_rate: 0,
-          click_rate: 0,
-          conversion_rate: 0
-        }
-      ]
-      setCampaigns(mockCampaigns)
+      const { data, error } = await supabase
+        .from('automated_campaigns')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      const mappedCampaigns: Campaign[] = (data || []).map(camp => ({
+        id: camp.id,
+        name: camp.campaign_name,
+        type: camp.campaign_type as 'email' | 'sms' | 'automation',
+        status: camp.status as 'active' | 'paused' | 'draft' | 'completed',
+        created_at: camp.created_at,
+        sent: (camp.current_metrics as any)?.sent || 0,
+        opened: (camp.current_metrics as any)?.opened || 0,
+        clicked: (camp.current_metrics as any)?.clicked || 0,
+        converted: (camp.current_metrics as any)?.converted || 0,
+        revenue: (camp.current_metrics as any)?.revenue || 0,
+        open_rate: (camp.current_metrics as any)?.open_rate || 0,
+        click_rate: (camp.current_metrics as any)?.click_rate || 0,
+        conversion_rate: (camp.current_metrics as any)?.conversion_rate || 0
+      }))
+
+      setCampaigns(mappedCampaigns)
     } catch (error) {
       console.error('Erreur chargement campagnes:', error)
     } finally {

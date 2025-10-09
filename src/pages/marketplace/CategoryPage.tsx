@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Helmet } from 'react-helmet-async';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   ArrowLeft, Search, Filter, Star, 
   Heart, ShoppingCart, Grid, List 
@@ -12,6 +14,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 
 const CategoryPage: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { category } = useParams();
   const [products, setProducts] = useState<any[]>([]);
@@ -22,25 +25,41 @@ const CategoryPage: React.FC = () => {
   const [priceRange, setPriceRange] = useState('all');
 
   useEffect(() => {
-    // Simulation de chargement des produits de la catégorie
-    setTimeout(() => {
-      const mockProducts = Array.from({ length: 12 }, (_, i) => ({
-        id: i + 1,
-        name: `Produit ${category} ${i + 1}`,
-        description: `Description détaillée du produit ${i + 1} de la catégorie ${category}`,
-        price: Math.floor(Math.random() * 500) + 50,
-        originalPrice: Math.floor(Math.random() * 100) + 600,
-        rating: (Math.random() * 2 + 3).toFixed(1),
-        reviewsCount: Math.floor(Math.random() * 1000) + 50,
-        image: `https://images.unsplash.com/photo-${1500000000000 + i}?w=400`,
-        brand: ['Samsung', 'Apple', 'Xiaomi', 'OnePlus'][Math.floor(Math.random() * 4)],
-        inStock: Math.random() > 0.2,
-        discount: Math.random() > 0.6 ? Math.floor(Math.random() * 30) + 10 : null
-      }));
-      setProducts(mockProducts);
-      setLoading(false);
-    }, 1000);
+    loadProducts();
   }, [category]);
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.rpc('get_secure_catalog_products', {
+        category_filter: category,
+        search_term: null,
+        limit_count: 50
+      });
+
+      if (error) throw error;
+
+      const mappedProducts = (data || []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        price: p.price,
+        originalPrice: p.original_price,
+        rating: p.rating || 4.0,
+        reviewsCount: p.reviews_count || 0,
+        image: p.image_url || 'https://images.unsplash.com/photo-1560472355-536de3962603?w=400',
+        brand: p.brand || 'Non spécifié',
+        inStock: p.availability_status === 'in_stock',
+        discount: p.profit_margin ? Math.round(p.profit_margin) : null
+      }));
+
+      setProducts(mappedProducts);
+    } catch (error) {
+      console.error('Error loading products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

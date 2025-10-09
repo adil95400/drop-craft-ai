@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Package, 
   Search, 
@@ -37,6 +39,7 @@ interface Product {
 
 export const AdminProducts = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,84 +47,37 @@ export const AdminProducts = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
 
   useEffect(() => {
-    loadProducts();
-  }, []);
+    if (user?.id) {
+      loadProducts();
+    }
+  }, [user?.id]);
 
   const loadProducts = async () => {
     try {
       setLoading(true);
-      // Simulate loading products
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockProducts: Product[] = [
-        {
-          id: '1',
-          name: 'iPhone 15 Pro Max',
-          sku: 'IPH-15-PM-256',
-          category: 'Électronique',
-          price: 1199,
-          stock: 45,
-          status: 'active',
-          supplier: 'Apple Store',
-          created_at: '2024-01-15',
-          sales: 156,
-          rating: 4.8
-        },
-        {
-          id: '2',
-          name: 'MacBook Air M3',
-          sku: 'MBA-M3-13-512',
-          category: 'Informatique',
-          price: 1499,
-          stock: 23,
-          status: 'active',
-          supplier: 'Apple Store',
-          created_at: '2024-01-12',
-          sales: 89,
-          rating: 4.9
-        },
-        {
-          id: '3',
-          name: 'AirPods Pro 2',
-          sku: 'APP-2-GEN',
-          category: 'Audio',
-          price: 279,
-          stock: 0,
-          status: 'out_of_stock',
-          supplier: 'Apple Store',
-          created_at: '2024-01-10',
-          sales: 234,
-          rating: 4.7
-        },
-        {
-          id: '4',
-          name: 'Samsung Galaxy S24 Ultra',
-          sku: 'SGS-24-U-512',
-          category: 'Électronique',
-          price: 1299,
-          stock: 31,
-          status: 'active',
-          supplier: 'Samsung Direct',
-          created_at: '2024-01-08',
-          sales: 123,
-          rating: 4.6
-        },
-        {
-          id: '5',
-          name: 'Nike Air Max 270',
-          sku: 'NAM-270-BLK-42',
-          category: 'Mode',
-          price: 149,
-          stock: 78,
-          status: 'active',
-          supplier: 'Nike Store',
-          created_at: '2024-01-05',
-          sales: 67,
-          rating: 4.5
-        }
-      ];
-      
-      setProducts(mockProducts);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const mappedProducts: Product[] = (data || []).map(p => ({
+        id: p.id,
+        name: p.name,
+        sku: p.sku || '',
+        category: p.category || 'Non catégorisé',
+        price: p.price,
+        stock: p.stock_quantity || 0,
+        status: p.stock_quantity === 0 ? 'out_of_stock' : p.status === 'active' ? 'active' : 'inactive',
+        supplier: 'N/A',
+        created_at: p.created_at,
+        sales: 0,
+        rating: 0
+      }));
+
+      setProducts(mappedProducts);
     } catch (error) {
       console.error('Error loading products:', error);
       toast({
