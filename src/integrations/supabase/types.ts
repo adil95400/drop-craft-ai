@@ -9334,8 +9334,16 @@ export type Database = {
         Args: { context_data?: Json; trigger_id: string }
         Returns: Json
       }
+      process_pending_imports: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       public_newsletter_signup: {
         Args: { email_param: string }
+        Returns: Json
+      }
+      retry_failed_import: {
+        Args: { job_id: string }
         Returns: Json
       }
       revoke_user_sessions: {
