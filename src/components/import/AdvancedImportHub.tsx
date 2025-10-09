@@ -8,6 +8,7 @@ import { ImportMethodModal } from './ImportMethodModal'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
+import { useNavigate } from 'react-router-dom'
 import { 
   Upload, 
   Globe, 
@@ -141,6 +142,7 @@ export function AdvancedImportHub() {
   
   const { user } = useAuth()
   const { toast } = useToast()
+  const navigate = useNavigate()
 
   // Load real-time import data
   useEffect(() => {
@@ -292,7 +294,7 @@ export function AdvancedImportHub() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card 
           className="cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => window.location.href = '/import/sources'}
+          onClick={() => navigate('/import/sources')}
         >
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
