@@ -95,7 +95,27 @@ const CrmPage = () => {
 
         if (contactsError) throw contactsError
 
-        setContacts(contactsData || [])
+        // Map crm_contacts to Contact format
+        const mappedContacts = (contactsData || []).map(contact => ({
+          id: contact.id,
+          name: contact.name,
+          email: contact.email,
+          phone: contact.phone || undefined,
+          company: contact.company || undefined,
+          position: contact.position || undefined,
+          status: (contact.status || 'active') as 'active' | 'inactive' | 'lead' | 'customer',
+          lifecycle_stage: (contact.lifecycle_stage || 'subscriber') as 'subscriber' | 'lead' | 'opportunity' | 'customer' | 'evangelist',
+          lead_score: contact.lead_score || 0,
+          total_orders: 0,
+          total_spent: 0,
+          last_contacted_at: contact.last_contacted_at || undefined,
+          last_activity_at: contact.last_activity_at || undefined,
+          source: contact.source || undefined,
+          tags: contact.tags || [],
+          created_at: contact.created_at
+        }))
+
+        setContacts(mappedContacts)
 
         // Load campaigns
         const { data: campaignsData, error: campaignsError } = await supabase
@@ -134,100 +154,6 @@ const CrmPage = () => {
 
     loadData()
   }, [user?.id, toast])
-        {
-          id: '1',
-          name: 'Sophie Martin',
-          email: 'sophie.martin@email.com',
-          phone: '+33 1 23 45 67 89',
-          company: 'TechCorp',
-          position: 'Product Manager',
-          status: 'active',
-          lifecycle_stage: 'customer',
-          lead_score: 85,
-          total_orders: 12,
-          total_spent: 2450.00,
-          last_contacted_at: '2024-01-15T10:30:00Z',
-          last_activity_at: '2024-01-16T14:20:00Z',
-          source: 'website',
-          tags: ['VIP', 'Tech'],
-          created_at: '2023-06-15T09:00:00Z'
-        },
-        {
-          id: '2',
-          name: 'Thomas Dubois',
-          email: 'thomas.dubois@startup.fr',
-          phone: '+33 6 98 76 54 32',
-          company: 'StartupX',
-          position: 'CEO',
-          status: 'active',
-          lifecycle_stage: 'opportunity',
-          lead_score: 72,
-          total_orders: 3,
-          total_spent: 890.00,
-          last_contacted_at: '2024-01-10T16:45:00Z',
-          last_activity_at: '2024-01-14T11:15:00Z',
-          source: 'linkedin',
-          tags: ['Startup', 'Decision Maker'],
-          created_at: '2023-11-20T14:30:00Z'
-        },
-        {
-          id: '3',
-          name: 'Marie Petit',
-          email: 'marie.petit@boutique.com',
-          company: 'Ma Boutique',
-          status: 'lead',
-          lifecycle_stage: 'lead',
-          lead_score: 45,
-          total_orders: 0,
-          total_spent: 0,
-          last_activity_at: '2024-01-12T09:30:00Z',
-          source: 'facebook',
-          tags: ['E-commerce', 'Small Business'],
-          created_at: '2024-01-05T16:00:00Z'
-        }
-      ]
-
-      const mockCampaigns: Campaign[] = [
-        {
-          id: '1',
-          name: 'Campagne de Bienvenue',
-          type: 'email',
-          status: 'active',
-          sent_count: 1250,
-          open_rate: 24.5,
-          click_rate: 3.2,
-          conversion_rate: 1.8,
-          created_at: '2024-01-01T00:00:00Z'
-        },
-        {
-          id: '2',
-          name: 'Promo Black Friday',
-          type: 'email',
-          status: 'completed',
-          sent_count: 5600,
-          open_rate: 31.2,
-          click_rate: 7.8,
-          conversion_rate: 4.2,
-          created_at: '2023-11-15T00:00:00Z'
-        },
-        {
-          id: '3',
-          name: 'Réactivation SMS',
-          type: 'sms',
-          status: 'active',
-          sent_count: 890,
-          open_rate: 95.0,
-          click_rate: 12.4,
-          conversion_rate: 2.1,
-          created_at: '2024-01-10T00:00:00Z'
-        }
-      ]
-
-      setContacts(mockContacts)
-      setCampaigns(mockCampaigns)
-      setLoading(false)
-    }
-  }, [user])
 
   const filteredContacts = contacts.filter(contact => {
     const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
