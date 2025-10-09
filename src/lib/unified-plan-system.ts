@@ -203,7 +203,7 @@ export const useUnifiedPlan = create<UnifiedPlanState>()(
         
         const { data, error } = await supabase
           .from('profiles')
-          .select('plan, role, admin_mode')
+          .select('plan, is_admin, admin_mode')
           .eq('id', userId)
           .maybeSingle()
         
