@@ -1154,9 +1154,28 @@ function App() {
                 </Route>
 
                 {/* Routes du nouveau sidebar - 16 catégories, 85 pages */}
+                
+                {/* 🛒 E-COMMERCE */}
                 <Route path="/catalog" element={
                   <ProtectedRoute>
                     <AppLayout><CatalogPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* 🎯 SOURCING & IMPORT */}
+                <Route path="/product-finder" element={
+                  <ProtectedRoute>
+                    <AppLayout><ProductFinder /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/product-sourcing" element={
+                  <ProtectedRoute>
+                    <AppLayout><ProductSourcingHub /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/import" element={
+                  <ProtectedRoute>
+                    <AppLayout><ImportManagement /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/import/csv" element={
@@ -1179,14 +1198,107 @@ function App() {
                     <AppLayout><AIGenerationPage /></AppLayout>
                   </ProtectedRoute>
                 } />
-                <Route path="/crm" element={
+                <Route path="/import-sources" element={
                   <ProtectedRoute>
-                    <AppLayout><CrmPage /></AppLayout>
+                    <AppLayout><ImportSourcesPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* 📦 LOGISTIQUE & STOCK */}
+                <Route path="/inventory-management" element={
+                  <ProtectedRoute>
+                    <AppLayout><InventoryManagement /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/warehouse-management" element={
+                  <ProtectedRoute>
+                    <AppLayout><WarehouseManagement /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/shipping-manager" element={
+                  <ProtectedRoute>
+                    <AppLayout><ShippingManager /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/returns-management" element={
+                  <ProtectedRoute>
+                    <AppLayout><ReturnsManagement /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/auto-order" element={
+                  <ProtectedRoute>
+                    <AppLayout><AutoOrderSystem /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* 📢 MARKETING & VENTES */}
+                <Route path="/email-marketing" element={
+                  <ProtectedRoute>
+                    <AppLayout><EmailMarketing /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/pixel-tracking" element={
+                  <ProtectedRoute>
+                    <AppLayout><PixelTracking /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/upsell-manager" element={
+                  <ProtectedRoute>
+                    <AppLayout><UpsellManager /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/affiliate-program" element={
+                  <ProtectedRoute>
+                    <AppLayout><AffiliateProgram /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/ads-automation" element={
+                  <ProtectedRoute>
+                    <AppLayout><AdsMarketingPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/ab-testing" element={
+                  <ProtectedRoute>
+                    <AppLayout><PagePlaceholder title="A/B Testing" badge="A/B" description="Tests A/B pour optimiser vos conversions" /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/blog" element={
+                  <ProtectedRoute>
+                    <AppLayout><ModernBlog /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* 👥 CLIENTS & SUPPORT */}
+                <Route path="/live-chat" element={
+                  <ProtectedRoute>
+                    <AppLayout><LiveChatSupport /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/reviews-manager" element={
+                  <ProtectedRoute>
+                    <AppLayout><ReviewsManager /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/crm/calendar" element={
+                  <ProtectedRoute>
+                    <AppLayout><CRMCalendar /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* 💰 PRICING & FINANCE */}
+                <Route path="/profit-calculator" element={
+                  <ProtectedRoute>
+                    <AppLayout><ProfitCalculator /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/dynamic-pricing" element={
+                  <ProtectedRoute>
+                    <AppLayout><DynamicPricing /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/finance" element={
                   <ProtectedRoute>
-                    <AppLayout><PagePlaceholder title="Finance" badge="PRO" /></AppLayout>
+                    <AppLayout><PagePlaceholder title="Finance" badge="PRO" description="Gestion financière et comptabilité" /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/pricing-page" element={
@@ -1194,24 +1306,81 @@ function App() {
                     <AppLayout><Pricing /></AppLayout>
                   </ProtectedRoute>
                 } />
-                <Route path="/seo" element={
+                
+                {/* ⚡ AUTOMATISATION */}
+                <Route path="/ai-automation" element={
                   <ProtectedRoute>
-                    <AppLayout><PagePlaceholder title="SEO" badge="PRO" /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/marketplace-connector" element={
-                  <ProtectedRoute>
-                    <AppLayout><PagePlaceholder title="Marketplace Connector" /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/ab-testing" element={
-                  <ProtectedRoute>
-                    <AppLayout><PagePlaceholder title="A/B Testing" badge="A/B" /></AppLayout>
+                    <AppLayout><AIAutomationPage /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/automation-optimization" element={
                   <ProtectedRoute>
-                    <AppLayout><PagePlaceholder title="Workflow Automation" badge="FLOW" /></AppLayout>
+                    <AppLayout><PagePlaceholder title="Workflow Automation" badge="FLOW" description="Automatisation avancée des workflows" /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* 🤖 INTELLIGENCE & IA */}
+                <Route path="/ai-assistant" element={
+                  <ProtectedRoute>
+                    <AppLayout><AIAssistant /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/business-intelligence" element={
+                  <ProtectedRoute>
+                    <AppLayout><BusinessIntelligencePage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/creative-studio" element={
+                  <ProtectedRoute>
+                    <AppLayout><CreativeStudioPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* 📈 ANALYTICS & MONITORING */}
+                <Route path="/observability" element={
+                  <ProtectedRoute>
+                    <AppLayout><ObservabilityPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/advanced-analytics-enterprise" element={
+                  <ProtectedRoute>
+                    <AppLayout><PagePlaceholder title="Advanced Analytics" badge="ADVANCED" description="Analytics avancées pour l'entreprise" /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* 🌐 MULTI-STORE & ENTERPRISE */}
+                <Route path="/multi-store" element={
+                  <ProtectedRoute>
+                    <AppLayout><MultiStoreManager /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/multi-tenant" element={
+                  <ProtectedRoute>
+                    <AppLayout><MultiTenantPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/white-label" element={
+                  <ProtectedRoute>
+                    <AppLayout><WhiteLabelPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/enterprise-api" element={
+                  <ProtectedRoute>
+                    <AppLayout><EnterpriseAPIPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* 🔗 INTÉGRATIONS */}
+                <Route path="/marketplace-connector" element={
+                  <ProtectedRoute>
+                    <AppLayout><PagePlaceholder title="Marketplace Connector" description="Connectez vos marketplaces favorites" /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* 🛡️ ADMINISTRATION */}
+                <Route path="/security" element={
+                  <ProtectedRoute>
+                    <AppLayout><PagePlaceholder title="Security" badge="PRO" description="Sécurité et gestion des accès" /></AppLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/quota-manager" element={
@@ -1219,6 +1388,52 @@ function App() {
                     <AppLayout><QuotaManagerPage /></AppLayout>
                   </ProtectedRoute>
                 } />
+                <Route path="/team-collaboration" element={
+                  <ProtectedRoute>
+                    <AppLayout><TeamCollaborationPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* 📱 MOBILE & PWA */}
+                <Route path="/pwa-install" element={
+                  <ProtectedRoute>
+                    <AppLayout><PWAInstallPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/flutter-mobile" element={
+                  <ProtectedRoute>
+                    <AppLayout><FlutterMobilePage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/mobile-dashboard" element={
+                  <ProtectedRoute>
+                    <AppLayout><MobileDashboardPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* ❓ SUPPORT & AIDE */}
+                <Route path="/support" element={
+                  <ProtectedRoute>
+                    <AppLayout><SupportPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/help-center" element={
+                  <ProtectedRoute>
+                    <AppLayout><HelpCenterPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/qa" element={
+                  <ProtectedRoute>
+                    <AppLayout><QAPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                <Route path="/application-status" element={
+                  <ProtectedRoute>
+                    <AppLayout><ApplicationStatusPage /></AppLayout>
+                  </ProtectedRoute>
+                } />
+                
+                {/* ⚙️ CONFIGURATION - Déjà configurées plus haut */}
                 
                 {/* 404 Not Found Page */}
                 <Route path="*" element={<NotFoundPage />} />
