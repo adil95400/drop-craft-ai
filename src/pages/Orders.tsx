@@ -7,16 +7,21 @@ import {
   Package, Search, Plus, Filter, Download, Eye, Edit, 
   Truck, CreditCard, Clock, CheckCircle, DollarSign
 } from 'lucide-react'
-import { useOrdersDemo } from '@/hooks/useOrdersDemo'
+import { useOrders } from '@/hooks/useOrders'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function Orders() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string | undefined>()
   
-  const { orders, stats, isLoading } = useOrdersDemo({
-    status: statusFilter,
-    search: searchTerm
+  const { orders: allOrders, stats, isLoading } = useOrders()
+
+  // Filter orders based on search and status
+  const orders = allOrders.filter(order => {
+    const matchesSearch = !searchTerm || 
+      order.order_number.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = !statusFilter || order.status === statusFilter
+    return matchesSearch && matchesStatus
   })
 
   const getStatusBadge = (status: string) => {

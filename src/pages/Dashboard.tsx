@@ -25,6 +25,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { usePlan } from '@/contexts/PlanContext';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { CanvaIntegrationPanel } from '@/components/marketing/CanvaIntegrationPanel';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { AIRecommendations } from '@/components/ai/AIRecommendations';
@@ -37,24 +38,11 @@ import { PredictiveAnalytics } from '@/components/analytics/PredictiveAnalytics'
 import { MobileOptimizer } from '@/components/mobile/MobileOptimizer';
 import { NotificationProvider } from '@/components/notifications/NotificationService';
 
-interface DashboardStats {
-  revenue: number;
-  orders: number;
-  products: number;
-  customers: number;
-  conversionRate: number;
-  averageOrderValue: number;
-  revenueGrowth: number;
-  ordersGrowth: number;
-  customersGrowth: number;
-}
-
 const Dashboard = () => {
   const { user } = useAuth();
   const { isUltraPro, isPro } = usePlan();
   const { t } = useLanguage();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: dashboardStats, isLoading: statsLoading } = useDashboardStats();
   const [recentOrders, setRecentOrders] = useState([]);
   const [topProducts, setTopProducts] = useState([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -62,25 +50,15 @@ const Dashboard = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
-    fetchDashboardData();
+    fetchRecentData();
     checkOnboardingStatus();
     fetchNotifications();
   }, [user]);
 
-  const fetchDashboardData = async () => {
+  const fetchRecentData = async () => {
     if (!user) return;
 
     try {
-      setLoading(true);
-      
-      // Fetch dashboard analytics
-      const { data: analyticsData } = await supabase
-        .rpc('get_dashboard_analytics', { user_id_param: user.id });
-      
-      if (analyticsData && typeof analyticsData === 'object' && !Array.isArray(analyticsData)) {
-        setStats(analyticsData as unknown as DashboardStats);
-      }
-
       // Fetch recent orders
       const { data: ordersData } = await supabase
         .from('orders')
@@ -110,9 +88,7 @@ const Dashboard = () => {
       }
 
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching recent data:', error);
     }
   };
 
@@ -199,7 +175,7 @@ const Dashboard = () => {
     </Card>
   );
 
-  if (loading) {
+  if (statsLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -221,6 +197,18 @@ const Dashboard = () => {
       </div>
     );
   }
+
+  const stats = dashboardStats ? {
+    revenue: dashboardStats.monthlyRevenue || 0,
+    orders: dashboardStats.ordersCount || 0,
+    products: dashboardStats.productsCount || 0,
+    customers: dashboardStats.customersCount || 0,
+    conversionRate: dashboardStats.customersCount > 0 ? (dashboardStats.ordersCount / dashboardStats.customersCount) * 100 : 0,
+    averageOrderValue: dashboardStats.ordersCount > 0 ? dashboardStats.monthlyRevenue / dashboardStats.ordersCount : 0,
+    revenueGrowth: dashboardStats.revenueChange || 0,
+    ordersGrowth: dashboardStats.ordersChange || 0,
+    customersGrowth: dashboardStats.customersChange || 0
+  } : null;
 
   // Afficher l'onboarding si nécessaire
   if (showOnboarding && !onboardingCompleted) {
