@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   ShoppingCart, 
   Search, 
@@ -52,83 +53,30 @@ export const AdminOrders = () => {
   const loadOrders = async () => {
     try {
       setLoading(true);
-      // Simulate loading orders
-      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const mockOrders: Order[] = [
-        {
-          id: '1',
-          orderNumber: 'ORD-2024-001',
-          customer: {
-            name: 'Marie Dubois',
-            email: 'marie.dubois@email.com'
-          },
-          total: 1299.99,
-          status: 'processing',
-          items: 2,
-          created_at: '2024-01-15T10:30:00Z',
-          payment_status: 'paid',
-          shipping_method: 'Express'
-        },
-        {
-          id: '2',
-          orderNumber: 'ORD-2024-002',
-          customer: {
-            name: 'Jean Martin',
-            email: 'jean.martin@email.com'
-          },
-          total: 89.99,
-          status: 'shipped',
-          items: 1,
-          created_at: '2024-01-14T15:45:00Z',
-          payment_status: 'paid',
-          shipping_method: 'Standard'
-        },
-        {
-          id: '3',
-          orderNumber: 'ORD-2024-003',
-          customer: {
-            name: 'Sophie Bernard',
-            email: 'sophie.bernard@email.com'
-          },
-          total: 449.50,
-          status: 'pending',
-          items: 3,
-          created_at: '2024-01-14T09:20:00Z',
-          payment_status: 'pending',
-          shipping_method: 'Standard'
-        },
-        {
-          id: '4',
-          orderNumber: 'ORD-2024-004',
-          customer: {
-            name: 'Pierre Moreau',
-            email: 'pierre.moreau@email.com'
-          },
-          total: 199.99,
-          status: 'delivered',
-          items: 1,
-          created_at: '2024-01-13T14:15:00Z',
-          payment_status: 'paid',
-          shipping_method: 'Express'
-        },
-        {
-          id: '5',
-          orderNumber: 'ORD-2024-005',
-          customer: {
-            name: 'Claire Petit',
-            email: 'claire.petit@email.com'
-          },
-          total: 75.00,
-          status: 'cancelled',
-          items: 2,
-          created_at: '2024-01-12T11:30:00Z',
-          payment_status: 'failed',
-          shipping_method: 'Standard'
-        }
-      ];
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*, customers(*)')
+        .order('created_at', { ascending: false });
       
-      setOrders(mockOrders);
+      if (error) throw error;
+      
+      const mappedOrders: Order[] = (data || []).map((order: any) => ({
+        id: order.id,
+        orderNumber: order.order_number || `ORD-${order.id.slice(-6)}`,
+        customer: {
+          name: order.customers?.name || `Client ${order.customer_id?.slice(-6) || 'Inconnu'}`,
+          email: order.customers?.email || 'Non spécifié'
+        },
+        total: order.total_amount || 0,
+        status: order.status || 'pending',
+        items: Array.isArray(order.order_items) ? order.order_items.length : 1,
+        created_at: order.created_at,
+        payment_status: order.payment_status || 'pending',
+        shipping_method: 'Standard'
+      }));
+      
+      setOrders(mappedOrders);
     } catch (error) {
       console.error('Error loading orders:', error);
       toast({

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -8,6 +8,7 @@ import {
   Mail, Phone, MapPin, Calendar, DollarSign, ShoppingCart, 
   Star, TrendingUp, Activity, Package, Clock, CreditCard 
 } from 'lucide-react'
+import { supabase } from '@/integrations/supabase/client'
 
 interface Customer {
   id: string
@@ -33,31 +34,44 @@ interface CustomerDetailsModalProps {
   onOpenChange: (open: boolean) => void
 }
 
-const mockOrders = [
-  {
-    id: 'ORD-001',
-    date: '2024-01-15',
-    total: 450.00,
-    status: 'delivered',
-    items: 3
-  },
-  {
-    id: 'ORD-002',
-    date: '2024-01-08',
-    total: 280.50,
-    status: 'shipped',
-    items: 2
-  },
-  {
-    id: 'ORD-003',
-    date: '2024-01-01',
-    total: 120.00,
-    status: 'processing',
-    items: 1
-  }
-]
+// Orders will be fetched from database when needed
 
 export function CustomerDetailsModal({ customer, open, onOpenChange }: CustomerDetailsModalProps) {
+  const [orders, setOrders] = useState<any[]>([])
+  const [loadingOrders, setLoadingOrders] = useState(false)
+
+  useEffect(() => {
+    if (open && customer.id) {
+      loadCustomerOrders()
+    }
+  }, [open, customer.id])
+
+  const loadCustomerOrders = async () => {
+    setLoadingOrders(true)
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('customer_id', customer.id)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (!error && data) {
+        setOrders(data.map((order: any) => ({
+          id: order.order_number || order.id,
+          date: order.created_at,
+          total: order.total_amount || 0,
+          status: order.status || 'pending',
+          items: Array.isArray(order.order_items) ? order.order_items.length : 1
+        })))
+      }
+    } catch (error) {
+      console.error('Error loading customer orders:', error)
+    } finally {
+      setLoadingOrders(false)
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -155,8 +169,15 @@ export function CustomerDetailsModal({ customer, open, onOpenChange }: CustomerD
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {mockOrders.map((order) => (
+                  {loadingOrders ? (
+                    <div className="flex justify-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                    </div>
+                  ) : orders.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-4">Aucune commande</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {orders.map((order) => (
                       <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -176,9 +197,10 @@ export function CustomerDetailsModal({ customer, open, onOpenChange }: CustomerD
                             {order.status}
                           </Badge>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

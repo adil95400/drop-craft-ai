@@ -74,27 +74,40 @@ export function OrderCentralization() {
   const loadOrders = async () => {
     setIsLoading(true)
     try {
-      // Load orders from database
       const { data, error } = await supabase
         .from('orders')
-        .select('*')
+        .select('*, customers(*)')
         .order('created_at', { ascending: false })
         .limit(50)
 
-      if (error) {
-        console.error('Error loading orders:', error)
-        // Use mock data for demo
-        const mockOrders = generateMockOrders()
-        setOrders(mockOrders)
-      } else {
-        // Use mock data for demo
-        const mockOrders = generateMockOrders()
-        setOrders(mockOrders)
-      }
+      if (error) throw error
+
+      const mappedOrders: CentralizedOrder[] = (data || []).map((order: any) => ({
+        id: order.id,
+        order_number: order.order_number || `ORD-${order.id.slice(-6)}`,
+        platform: 'shopify', // Default platform
+        customer_name: order.customers?.name || 'Client Inconnu',
+        customer_email: order.customers?.email || 'Non spécifié',
+        total_amount: order.total_amount || 0,
+        currency: order.currency || 'EUR',
+        status: order.status || 'pending',
+        fulfillment_status: 'unfulfilled',
+        payment_status: order.payment_status || 'pending',
+        items: Array.isArray(order.order_items) ? order.order_items : [],
+        shipping_address: order.shipping_address || {},
+        created_at: order.created_at,
+        updated_at: order.updated_at,
+        supplier_orders: []
+      }))
+
+      setOrders(mappedOrders)
     } catch (error) {
       console.error('Error loading orders:', error)
-      const mockOrders = generateMockOrders()
-      setOrders(mockOrders)
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les commandes",
+        variant: "destructive"
+      })
     } finally {
       setIsLoading(false)
     }
@@ -122,88 +135,6 @@ export function OrderCentralization() {
     setFilteredOrders(filtered)
   }
 
-  const generateMockOrders = (): CentralizedOrder[] => {
-    return [
-      {
-        id: '1',
-        order_number: 'SH-001',
-        platform: 'shopify',
-        customer_name: 'Jean Dupont',
-        customer_email: 'jean@example.com',
-        total_amount: 159.99,
-        currency: 'EUR',
-        status: 'confirmed',
-        fulfillment_status: 'partial',
-        payment_status: 'paid',
-        items: [
-          {
-            id: '1-1',
-            product_name: 'T-shirt Premium',
-            sku: 'TSH-001',
-            quantity: 2,
-            unit_price: 29.99,
-            total_price: 59.98,
-            supplier_id: 'sup-1',
-            fulfillment_status: 'shipped'
-          },
-          {
-            id: '1-2',
-            product_name: 'Casquette Logo',
-            sku: 'CAP-001',
-            quantity: 1,
-            unit_price: 19.99,
-            total_price: 19.99,
-            supplier_id: 'sup-2',
-            fulfillment_status: 'pending'
-          }
-        ],
-        shipping_address: { city: 'Paris', country: 'France' },
-        created_at: new Date(Date.now() - 86400000).toISOString(),
-        updated_at: new Date(Date.now() - 3600000).toISOString(),
-        supplier_orders: [
-          {
-            id: 'so-1',
-            supplier_name: 'TextilePro',
-            supplier_id: 'sup-1',
-            items: [{ id: '1-1', product_name: 'T-shirt Premium', sku: 'TSH-001', quantity: 2, unit_price: 29.99, total_price: 59.98, fulfillment_status: 'shipped' }],
-            status: 'shipped',
-            tracking_number: 'TR123456789',
-            total_amount: 59.98,
-            created_at: new Date(Date.now() - 3600000).toISOString(),
-            estimated_delivery: new Date(Date.now() + 172800000).toISOString()
-          }
-        ]
-      },
-      {
-        id: '2',
-        order_number: 'WC-002',
-        platform: 'woocommerce',
-        customer_name: 'Marie Martin',
-        customer_email: 'marie@example.com',
-        total_amount: 89.95,
-        currency: 'EUR',
-        status: 'processing',
-        fulfillment_status: 'unfulfilled',
-        payment_status: 'paid',
-        items: [
-          {
-            id: '2-1',
-            product_name: 'Sac à dos Voyage',
-            sku: 'BAG-001',
-            quantity: 1,
-            unit_price: 89.95,
-            total_price: 89.95,
-            supplier_id: 'sup-3',
-            fulfillment_status: 'ordered'
-          }
-        ],
-        shipping_address: { city: 'Lyon', country: 'France' },
-        created_at: new Date(Date.now() - 43200000).toISOString(),
-        updated_at: new Date(Date.now() - 1800000).toISOString(),
-        supplier_orders: []
-      }
-    ]
-  }
 
   const getStatusColor = (status: string) => {
     switch (status) {

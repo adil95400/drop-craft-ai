@@ -48,76 +48,22 @@ const ModernOrdersPage: React.FC = () => {
     try {
       const ordersData = await getOrders()
       
-      // Si pas de commandes réelles, utiliser des données de démonstration
-      if (ordersData.length === 0) {
-        const mockOrders: Order[] = [
-          {
-            id: '1',
-            order_number: 'ORD-2024-001',
-            customer_name: 'Marie Dubois',
-            customer_email: 'marie.dubois@email.com',
-            status: 'processing',
-            total_amount: 89.99,
-            created_at: '2024-01-15T10:30:00Z',
-            tracking_number: 'FR7845120456',
-            items_count: 2,
-            shipping_address: 'Paris, France'
-          },
-          {
-            id: '2',
-            order_number: 'ORD-2024-002',
-            customer_name: 'Jean Martin',
-            customer_email: 'jean.martin@email.com',
-            status: 'shipped',
-            total_amount: 156.50,
-            created_at: '2024-01-14T14:20:00Z',
-            tracking_number: 'FR7845120457',
-            items_count: 3,
-            shipping_address: 'Lyon, France'
-          },
-          {
-            id: '3',
-            order_number: 'ORD-2024-003',
-            customer_name: 'Sophie Leroux',
-            customer_email: 'sophie.leroux@email.com',
-            status: 'delivered',
-            total_amount: 234.00,
-            created_at: '2024-01-13T09:15:00Z',
-            tracking_number: 'FR7845120458',
-            items_count: 4,
-            shipping_address: 'Marseille, France'
-          },
-          {
-            id: '4',
-            order_number: 'ORD-2024-004',
-            customer_name: 'Pierre Durand',
-            customer_email: 'pierre.durand@email.com',
-            status: 'pending',
-            total_amount: 67.25,
-            created_at: '2024-01-15T16:45:00Z',
-            items_count: 1,
-            shipping_address: 'Toulouse, France'
-          }
-        ]
-        setOrders(mockOrders)
-      } else {
-        // Mapper les données réelles vers le format interface Order
-        const mappedOrders = ordersData.map(order => ({
-          id: order.id,
-          order_number: order.order_number || `ORD-${order.id.slice(-6)}`,
-          customer_name: `Client ${order.customer_id?.slice(-6) || ''}`, // On n'a pas customer_name dans la DB
-          customer_email: '', // On n'a pas customer_email dans la DB
-          status: order.status || 'pending',
-          total_amount: order.total_amount || 0,
-          created_at: order.created_at,
-          tracking_number: order.tracking_number || undefined,
-          items_count: 1, // TODO: calculer depuis order_items
-          shipping_address: typeof order.shipping_address === 'string' 
-            ? order.shipping_address 
-            : JSON.stringify(order.shipping_address || {})
-        }))
-        setOrders(mappedOrders)
-      }
+      // Mapper les données réelles vers le format interface Order
+      const mappedOrders = ordersData.map((order: any) => ({
+        id: order.id,
+        order_number: order.order_number || `ORD-${order.id.slice(-6)}`,
+        customer_name: order.customers?.name || `Client ${order.customer_id?.slice(-6) || 'Inconnu'}`,
+        customer_email: order.customers?.email || '',
+        status: order.status || 'pending',
+        total_amount: order.total_amount || 0,
+        created_at: order.created_at,
+        tracking_number: order.tracking_number || undefined,
+        items_count: Array.isArray(order.order_items) ? order.order_items.length : 1,
+        shipping_address: typeof order.shipping_address === 'object' 
+          ? `${order.shipping_address?.city || ''}, ${order.shipping_address?.country || ''}`
+          : order.shipping_address || 'Non spécifiée'
+      }))
+      setOrders(mappedOrders)
     } catch (error) {
       console.error('Erreur chargement commandes:', error)
     } finally {
