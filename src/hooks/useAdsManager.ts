@@ -161,6 +161,28 @@ export function useAdsManager() {
     },
   });
 
+  // Generate complete AI ad with visuals
+  const generateCompleteAIAd = useMutation({
+    mutationFn: async ({ productData, platform, campaignType, targetAudience, generateVariants, generateVisuals }: any) => {
+      const { data, error } = await supabase.functions.invoke('ai-ad-creator-complete', {
+        body: { productData, platform, campaignType, targetAudience, generateVariants, generateVisuals },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast({ title: 'Complete AI ad with visuals generated!' });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'Complete AI generation failed', 
+        description: error.message, 
+        variant: 'destructive' 
+      });
+    },
+  });
+
   // Calculate stats
   const stats = {
     totalCampaigns: campaigns.length,
@@ -187,5 +209,7 @@ export function useAdsManager() {
     isCreating: createCampaign.isPending,
     generateAIAd: generateAIAd.mutate,
     isGenerating: generateAIAd.isPending,
+    generateCompleteAIAd: generateCompleteAIAd.mutate,
+    isGeneratingComplete: generateCompleteAIAd.isPending,
   };
 }

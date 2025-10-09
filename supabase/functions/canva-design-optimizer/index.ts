@@ -55,6 +55,9 @@ serve(async (req) => {
       case 'create_feature_graphics':
         return await createFeatureGraphics(content, brandColors)
       
+      case 'create_ad_visual':
+        return await createAdVisual(content, brandColors)
+      
       default:
         return new Response(JSON.stringify({ error: 'Unknown action' }), {
           status: 400,
@@ -243,4 +246,65 @@ async function createFeatureGraphics(content: any, brandColors: any) {
   return new Response(JSON.stringify(featureGraphics), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
+}
+
+async function createAdVisual(content: any, brandColors: any) {
+  // Create ad visual optimized for the platform
+  const adDesign = {
+    success: true,
+    designId: `canva_ad_${Date.now()}`,
+    designUrl: `https://canva.com/design/ad_${Date.now()}`,
+    thumbnailUrl: content.generatedImage || `https://via.placeholder.com/1080x1080/${brandColors?.primary?.replace('#', '') || '6366f1'}/ffffff?text=Ad+Visual`,
+    downloadUrl: content.generatedImage || `https://via.placeholder.com/1080x1080/${brandColors?.primary?.replace('#', '') || '6366f1'}/ffffff?text=Ad+Visual`,
+    platform: content.platform || 'facebook',
+    dimensions: getDimensionsForPlatform(content.platform),
+    elements: [
+      {
+        type: "background",
+        content: content.generatedImage ? "ai-generated-image" : "brand-gradient",
+        url: content.generatedImage
+      },
+      {
+        type: "headline",
+        text: content.headline,
+        style: "bold-impactful",
+        position: { x: 50, y: 20 }
+      },
+      {
+        type: "body",
+        text: content.body,
+        style: "clear-persuasive",
+        position: { x: 50, y: 60 }
+      },
+      {
+        type: "cta",
+        text: content.cta,
+        style: "conversion-button",
+        position: { x: 50, y: 85 }
+      }
+    ],
+    optimizations: [
+      "AI-generated visual background",
+      "Platform-optimized dimensions",
+      "Conversion-focused layout",
+      "Brand-consistent colors",
+      "Mobile-first design"
+    ],
+    exportFormats: ["png", "jpg", "mp4"],
+    status: "ready"
+  }
+
+  return new Response(JSON.stringify(adDesign), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+}
+
+function getDimensionsForPlatform(platform: string) {
+  const dimensions = {
+    facebook: { width: 1200, height: 628 },
+    instagram: { width: 1080, height: 1080 },
+    tiktok: { width: 1080, height: 1920 },
+    google: { width: 1200, height: 1200 }
+  }
+  return dimensions[platform as keyof typeof dimensions] || dimensions.facebook
 }

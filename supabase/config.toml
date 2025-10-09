@@ -189,3 +189,9 @@ verify_jwt = true
 
 [functions.ai-ad-creator]
 verify_jwt = true
+
+[functions.ai-ad-creator-complete]
+verify_jwt = true
+
+[functions.canva-design-optimizer]
+verify_jwt = true

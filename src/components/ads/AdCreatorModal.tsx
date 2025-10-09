@@ -15,9 +15,11 @@ interface AdCreatorModalProps {
 }
 
 export function AdCreatorModal({ open, onOpenChange }: AdCreatorModalProps) {
-  const { createCampaign, generateAIAd, isCreating, isGenerating } = useAdsManager();
+  const { createCampaign, generateAIAd, generateCompleteAIAd, isCreating, isGenerating, isGeneratingComplete } = useAdsManager();
   const [useAI, setUseAI] = useState(false);
   const [enableABTest, setEnableABTest] = useState(false);
+  const [generateVisuals, setGenerateVisuals] = useState(false);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     campaignName: '',
@@ -46,25 +48,51 @@ export function AdCreatorModal({ open, onOpenChange }: AdCreatorModalProps) {
       currency: 'USD'
     };
 
-    generateAIAd(
-      {
-        productData,
-        platform: formData.platform,
-        campaignType: formData.campaignType,
-        targetAudience: formData.targetAudience,
-        generateVariants: enableABTest
-      },
-      {
-        onSuccess: (data: any) => {
-          setFormData(prev => ({
-            ...prev,
-            headline: data.adCreative.primary.headline,
-            body: data.adCreative.primary.body,
-            cta: data.adCreative.primary.cta
-          }));
+    if (generateVisuals) {
+      generateCompleteAIAd(
+        {
+          productData,
+          platform: formData.platform,
+          campaignType: formData.campaignType,
+          targetAudience: formData.targetAudience,
+          generateVariants: enableABTest,
+          generateVisuals: true
+        },
+        {
+          onSuccess: (data: any) => {
+            setFormData(prev => ({
+              ...prev,
+              headline: data.adCreative.primary.headline,
+              body: data.adCreative.primary.body,
+              cta: data.adCreative.primary.cta
+            }));
+            if (data.generatedImage) {
+              setGeneratedImageUrl(data.generatedImage);
+            }
+          }
         }
-      }
-    );
+      );
+    } else {
+      generateAIAd(
+        {
+          productData,
+          platform: formData.platform,
+          campaignType: formData.campaignType,
+          targetAudience: formData.targetAudience,
+          generateVariants: enableABTest
+        },
+        {
+          onSuccess: (data: any) => {
+            setFormData(prev => ({
+              ...prev,
+              headline: data.adCreative.primary.headline,
+              body: data.adCreative.primary.body,
+              cta: data.adCreative.primary.cta
+            }));
+          }
+        }
+      );
+    }
   };
 
   const handleSubmit = () => {
@@ -233,13 +261,40 @@ export function AdCreatorModal({ open, onOpenChange }: AdCreatorModalProps) {
                     placeholder="199.99"
                   />
                 </div>
+                
+                <div className="flex items-center justify-between border-t pt-4">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="generateVisuals">Generate Visuals with AI</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Create ad images automatically
+                    </p>
+                  </div>
+                  <Switch
+                    id="generateVisuals"
+                    checked={generateVisuals}
+                    onCheckedChange={setGenerateVisuals}
+                  />
+                </div>
+
+                {generatedImageUrl && (
+                  <div className="border rounded-lg p-4 bg-background">
+                    <Label className="mb-2 block">Generated Visual Preview</Label>
+                    <img 
+                      src={generatedImageUrl} 
+                      alt="AI Generated Ad Visual" 
+                      className="w-full rounded-lg"
+                    />
+                  </div>
+                )}
+
                 <Button 
                   onClick={handleGenerateAI} 
-                  disabled={isGenerating}
+                  disabled={isGenerating || isGeneratingComplete}
                   className="w-full"
                 >
                   <Wand2 className="mr-2 h-4 w-4" />
-                  {isGenerating ? 'Generating...' : 'Generate Ad Content with AI'}
+                  {(isGenerating || isGeneratingComplete) ? 'Generating...' : 
+                    generateVisuals ? 'Generate Complete Ad with AI (Text + Visuals)' : 'Generate Ad Content with AI'}
                 </Button>
               </div>
             )}
