@@ -2,6 +2,7 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { RealTimeMonitor } from '@/components/dashboard/RealTimeMonitor'
 import { QuickActions } from '@/components/navigation/QuickActions'
+import { StatCard } from '@/components/dashboard/StatCard'
 import { 
   TrendingUp, 
   Package, 
@@ -20,85 +21,70 @@ export default function DashboardHome() {
       value: stats.productsCount.toLocaleString(), 
       change: `${stats.productsChange >= 0 ? '+' : ''}${stats.productsChange.toFixed(1)}%`, 
       icon: Package, 
-      color: "text-blue-600" 
+      color: "from-blue-500 to-blue-600" 
     },
     { 
       label: "Commandes", 
       value: stats.ordersCount.toLocaleString(), 
       change: `${stats.ordersChange >= 0 ? '+' : ''}${stats.ordersChange.toFixed(1)}%`, 
       icon: ShoppingCart, 
-      color: "text-green-600" 
+      color: "from-green-500 to-green-600" 
     },
     { 
       label: "Clients", 
       value: stats.customersCount.toLocaleString(), 
       change: `${stats.customersChange >= 0 ? '+' : ''}${stats.customersChange.toFixed(1)}%`, 
       icon: Users, 
-      color: "text-purple-600" 
+      color: "from-purple-500 to-purple-600" 
     },
     { 
       label: "CA Mensuel", 
       value: `€${stats.monthlyRevenue.toFixed(2)}`, 
       change: `${stats.revenueChange >= 0 ? '+' : ''}${stats.revenueChange.toFixed(1)}%`, 
       icon: TrendingUp, 
-      color: "text-orange-600" 
+      color: "from-orange-500 to-orange-600" 
     }
   ] : []
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-6 space-y-8 animate-in fade-in duration-500">
       {/* Welcome Section */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Tableau de Bord</h1>
-        <p className="text-muted-foreground">
+      <div className="space-y-2">
+        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          Tableau de Bord
+        </h1>
+        <p className="text-lg text-muted-foreground">
           Vue d'ensemble de votre plateforme e-commerce
         </p>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {isLoading ? (
           // Loading skeletons
           Array.from({ length: 4 }).map((_, index) => (
-            <Card key={index}>
+            <Card key={index} className="animate-pulse">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-20" />
+                  <div className="space-y-3">
+                    <Skeleton className="h-4 w-24" />
                     <Skeleton className="h-8 w-32" />
                   </div>
-                  <Skeleton className="h-12 w-12 rounded-lg" />
+                  <Skeleton className="h-14 w-14 rounded-xl" />
                 </div>
               </CardContent>
             </Card>
           ))
         ) : (
-          statsData.map((stat, index) => {
-            const IconComponent = stat.icon
-            return (
-              <Card key={index}>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">
-                        {stat.label}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-2xl font-bold">{stat.value}</p>
-                        <span className={`text-sm font-medium ${
-                          stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {stat.change}
-                        </span>
-                      </div>
-                    </div>
-                    <div className={`p-2 rounded-lg bg-muted ${stat.color}`}>
-                      <IconComponent className="w-5 h-5" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })
+          statsData.map((stat, index) => (
+            <StatCard
+              key={index}
+              label={stat.label}
+              value={stat.value}
+              change={stat.change}
+              icon={stat.icon}
+              color={stat.color}
+            />
+          ))
         )}
       </div>
 

@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { 
   ChevronDown, Search, Bot, Sparkles, ShoppingCart, Package, BarChart3, Users, 
   ShieldCheck, Zap, Settings, HelpCircle, Store, Smartphone, Download, Code,
@@ -272,12 +273,80 @@ const navigationGroups: NavigationGroup[] = [
   }
 ];
 
+// Composants mémoïsés pour optimiser les performances
+const SidebarItem = memo(({ 
+  item, 
+  isActive, 
+  onClick, 
+  state 
+}: { 
+  item: NavigationItem; 
+  isActive: boolean; 
+  onClick: () => void; 
+  state: string;
+}) => (
+  <SidebarMenuButton
+    onClick={onClick}
+    className={cn(
+      "w-full justify-start transition-all duration-200",
+      isActive 
+        ? "bg-primary text-primary-foreground shadow-md" 
+        : "hover:bg-accent hover:text-accent-foreground"
+    )}
+  >
+    <item.icon className={cn(
+      "h-4 w-4", 
+      item.premium ? "text-yellow-500" : ""
+    )} />
+    {state !== "collapsed" && (
+      <div className="flex items-center justify-between w-full">
+        <span className="truncate">{item.title}</span>
+        {item.badge && (
+          <Badge 
+            variant="secondary"
+            className={cn(
+              "text-xs h-5 px-2 font-medium",
+              item.badge === "PRO" && "bg-purple-500 text-white hover:bg-purple-600",
+              item.badge === "AI" && "bg-blue-500 text-white hover:bg-blue-600",
+              item.badge === "AUTO" && "bg-orange-500 text-white hover:bg-orange-600",
+              item.badge === "ADS" && "bg-red-500 text-white hover:bg-red-600",
+              item.badge === "A/B" && "bg-indigo-500 text-white hover:bg-indigo-600",
+              item.badge === "CHAT" && "bg-green-500 text-white hover:bg-green-600",
+              item.badge === "DYNAMIC" && "bg-yellow-500 text-white hover:bg-yellow-600",
+              item.badge === "STUDIO" && "bg-pink-500 text-white hover:bg-pink-600",
+              item.badge === "AI AUTO" && "bg-cyan-500 text-white hover:bg-cyan-600",
+              item.badge === "FLOW" && "bg-violet-500 text-white hover:bg-violet-600",
+              item.badge === "BI" && "bg-blue-600 text-white hover:bg-blue-700",
+              item.badge === "INTEL" && "bg-teal-500 text-white hover:bg-teal-600",
+              item.badge === "CREATIVE" && "bg-fuchsia-500 text-white hover:bg-fuchsia-600",
+              item.badge === "OBSERVE" && "bg-amber-500 text-white hover:bg-amber-600",
+              item.badge === "ADVANCED" && "bg-slate-600 text-white hover:bg-slate-700",
+              item.badge === "MULTI" && "bg-emerald-500 text-white hover:bg-emerald-600",
+              item.badge === "TENANT" && "bg-lime-500 text-white hover:bg-lime-600",
+              item.badge === "LABEL" && "bg-rose-500 text-white hover:bg-rose-600",
+              item.badge === "API" && "bg-sky-500 text-white hover:bg-sky-600",
+              item.badge === "MOBILE" && "bg-purple-600 text-white hover:bg-purple-700"
+            )}
+          >
+            {item.badge}
+          </Badge>
+        )}
+      </div>
+    )}
+  </SidebarMenuButton>
+));
+
+SidebarItem.displayName = 'SidebarItem';
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [openGroups, setOpenGroups] = useState<string[]>([]);
+
+  // Debounce la recherche pour éviter les re-renders excessifs
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
 
   // Déterminer le groupe actif basé sur l'URL
   const activeGroup = useMemo(() => {
@@ -296,35 +365,43 @@ export function AppSidebar() {
     if (activeGroup && !openGroups.includes(activeGroup)) {
       setOpenGroups(prev => [...prev, activeGroup]);
     }
-  }, [activeGroup]);
+  }, [activeGroup, openGroups]);
 
-  const isActive = (path: string) => {
+  // Mémoïser la fonction isActive
+  const isActive = useCallback((path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
+  }, [location.pathname]);
 
-  const toggleGroup = (groupTitle: string) => {
+  // Mémoïser toggleGroup
+  const toggleGroup = useCallback((groupTitle: string) => {
     setOpenGroups(prev => 
       prev.includes(groupTitle) 
         ? prev.filter(g => g !== groupTitle)
         : [...prev, groupTitle]
     );
-  };
+  }, []);
 
-  // Filtrer les éléments de navigation basé sur la recherche
+  // Mémoïser handleNavigate
+  const handleNavigate = useCallback((url: string) => {
+    navigate(url);
+  }, [navigate]);
+
+  // Filtrer les éléments de navigation basé sur la recherche (debounced)
   const filteredGroups = useMemo(() => {
-    if (!searchQuery) return navigationGroups;
+    if (!debouncedSearchQuery) return navigationGroups;
     
+    const query = debouncedSearchQuery.toLowerCase();
     return navigationGroups.map(group => ({
       ...group,
       items: group.items.filter(item => 
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.badge && item.badge.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        item.title.toLowerCase().includes(query) ||
+        (item.badge && item.badge.toLowerCase().includes(query)) ||
         item.subItems?.some(sub => 
-          sub.title.toLowerCase().includes(searchQuery.toLowerCase())
+          sub.title.toLowerCase().includes(query)
         )
       )
     })).filter(group => group.items.length > 0);
-  }, [searchQuery]);
+  }, [debouncedSearchQuery]);
 
   return (
     <Sidebar className="border-r bg-card/50 backdrop-blur-md">
@@ -375,55 +452,12 @@ export function AppSidebar() {
                   <SidebarMenu>
                     {group.items.map((item) => (
                       <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                          onClick={() => navigate(item.url)}
-                          className={cn(
-                            "w-full justify-start transition-all duration-200",
-                            isActive(item.url) 
-                              ? "bg-primary text-primary-foreground shadow-md" 
-                              : "hover:bg-accent hover:text-accent-foreground"
-                          )}
-                        >
-                          <item.icon className={cn(
-                            "h-4 w-4", 
-                            item.premium ? "text-yellow-500" : ""
-                          )} />
-                          {state !== "collapsed" && (
-                            <div className="flex items-center justify-between w-full">
-                              <span className="truncate">{item.title}</span>
-                              {item.badge && (
-                                <Badge 
-                                  variant="secondary"
-                                  className={cn(
-                                    "text-xs h-5 px-2 font-medium",
-                                    item.badge === "PRO" && "bg-purple-500 text-white hover:bg-purple-600",
-                                    item.badge === "AI" && "bg-blue-500 text-white hover:bg-blue-600",
-                                    item.badge === "AUTO" && "bg-orange-500 text-white hover:bg-orange-600",
-                                    item.badge === "ADS" && "bg-red-500 text-white hover:bg-red-600",
-                                    item.badge === "A/B" && "bg-indigo-500 text-white hover:bg-indigo-600",
-                                    item.badge === "CHAT" && "bg-green-500 text-white hover:bg-green-600",
-                                    item.badge === "DYNAMIC" && "bg-yellow-500 text-white hover:bg-yellow-600",
-                                    item.badge === "STUDIO" && "bg-pink-500 text-white hover:bg-pink-600",
-                                    item.badge === "AI AUTO" && "bg-cyan-500 text-white hover:bg-cyan-600",
-                                    item.badge === "FLOW" && "bg-violet-500 text-white hover:bg-violet-600",
-                                    item.badge === "BI" && "bg-blue-600 text-white hover:bg-blue-700",
-                                    item.badge === "INTEL" && "bg-teal-500 text-white hover:bg-teal-600",
-                                    item.badge === "CREATIVE" && "bg-fuchsia-500 text-white hover:bg-fuchsia-600",
-                                    item.badge === "OBSERVE" && "bg-amber-500 text-white hover:bg-amber-600",
-                                    item.badge === "ADVANCED" && "bg-slate-600 text-white hover:bg-slate-700",
-                                    item.badge === "MULTI" && "bg-emerald-500 text-white hover:bg-emerald-600",
-                                    item.badge === "TENANT" && "bg-lime-500 text-white hover:bg-lime-600",
-                                    item.badge === "LABEL" && "bg-rose-500 text-white hover:bg-rose-600",
-                                    item.badge === "API" && "bg-sky-500 text-white hover:bg-sky-600",
-                                    item.badge === "MOBILE" && "bg-purple-600 text-white hover:bg-purple-700"
-                                  )}
-                                >
-                                  {item.badge}
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-                        </SidebarMenuButton>
+                        <SidebarItem
+                          item={item}
+                          isActive={isActive(item.url)}
+                          onClick={() => handleNavigate(item.url)}
+                          state={state}
+                        />
                         
                         {/* Sub-items */}
                         {item.subItems && state !== "collapsed" && (
@@ -431,7 +465,7 @@ export function AppSidebar() {
                             {item.subItems.map((subItem) => (
                               <SidebarMenuSubItem key={subItem.title}>
                                 <SidebarMenuSubButton
-                                  onClick={() => navigate(subItem.url)}
+                                  onClick={() => handleNavigate(subItem.url)}
                                   className={cn(
                                     "transition-all duration-200",
                                     isActive(subItem.url) 
