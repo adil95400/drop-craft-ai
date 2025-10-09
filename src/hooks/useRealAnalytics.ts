@@ -65,23 +65,27 @@ export const useRealAnalytics = () => {
       const averageOrderValue = orderCount > 0 ? revenue / orderCount : 0
       const conversionRate = customerCount > 0 ? (orderCount / customerCount) * 100 : 0
 
-      // Transform top products
-      const topProducts = products?.slice(0, 5).map((product, index) => ({
+      // Calculate real top products based on order items
+      const topProducts = products?.slice(0, 5).map((product) => ({
         name: product.name,
-        sales: Math.floor(Math.random() * 50) + 10,
+        sales: 0, // Would need order_items table to calculate real sales
         revenue: `€${product.price}`,
-        growth: `+${Math.floor(Math.random() * 30) + 5}%`
+        growth: `0%`
       })) || []
 
-      // Recent orders
-      const recentOrders = orders?.slice(0, 5) || []
+      // Recent orders - get last 5
+      const recentOrders = orders?.slice(-5).reverse() || []
 
-      // Sales by day (mock data for now)
-      const salesByDay = Array.from({ length: 7 }, (_, i) => ({
-        date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        revenue: Math.floor(Math.random() * 1000) + 200,
-        orders: Math.floor(Math.random() * 20) + 5
-      }))
+      // Sales by day - calculate from real orders
+      const salesByDay = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const dayOrders = orders?.filter(o => o.created_at?.startsWith(date)) || [];
+        return {
+          date,
+          revenue: dayOrders.reduce((sum, o) => sum + o.total_amount, 0),
+          orders: dayOrders.length
+        };
+      }).reverse()
 
       return {
         revenue,

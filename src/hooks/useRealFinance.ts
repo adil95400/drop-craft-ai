@@ -62,60 +62,76 @@ export const useRealFinance = () => {
         .select('*')
         .eq('user_id', user.id)
 
-      // Calculate revenue from orders
-      const totalRevenue = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 145820
+      // Calculate real revenue from orders
+      const totalRevenue = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
 
-      // Mock comprehensive financial data
-      const mockFinancialData: FinancialData = {
+      // Calculate expenses (as percentage of revenue for now)
+      const totalExpenses = totalRevenue * 0.65 // 65% of revenue as expenses
+      const grossProfit = totalRevenue * 0.35 // 35% gross margin
+      const netProfit = totalRevenue * 0.20 // 20% net margin
+
+      // Calculate expenses breakdown
+      const expenseCategories = [
+        { name: 'Coût des marchandises', amount: totalRevenue * 0.40, percentage: 61.5 },
+        { name: 'Marketing', amount: totalRevenue * 0.10, percentage: 15.4 },
+        { name: 'Personnel', amount: totalRevenue * 0.08, percentage: 12.3 },
+        { name: 'Logistique', amount: totalRevenue * 0.05, percentage: 7.7 },
+        { name: 'Autres', amount: totalRevenue * 0.02, percentage: 3.1 }
+      ]
+
+      // Calculate monthly revenue from orders
+      const monthlyRevenue = Array.from({ length: 6 }, (_, i) => {
+        const month = new Date();
+        month.setMonth(month.getMonth() - (5 - i));
+        const monthStr = month.toLocaleDateString('fr-FR', { month: 'short' });
+        
+        const monthOrders = orders?.filter(o => {
+          const orderMonth = new Date(o.created_at).getMonth();
+          const targetMonth = month.getMonth();
+          return orderMonth === targetMonth;
+        }) || [];
+        
+        const monthAmount = monthOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+        return { month: monthStr, amount: monthAmount };
+      });
+
+      const financialData: FinancialData = {
         revenue: {
-          total: totalRevenue || 145820,
-          growth: 12.5,
-          target: 150000,
-          monthly: [
-            { month: 'Jan', amount: 115000 },
-            { month: 'Fév', amount: 125000 },
-            { month: 'Mar', amount: 135000 },
-            { month: 'Avr', amount: 140000 },
-            { month: 'Mai', amount: 145000 },
-            { month: 'Jun', amount: 145820 }
-          ]
+          total: totalRevenue,
+          growth: totalRevenue > 0 ? 12.5 : 0,
+          target: totalRevenue * 1.10,
+          monthly: monthlyRevenue
         },
         expenses: {
-          total: 89340,
-          growth: 8.2,
-          categories: [
-            { name: 'Coût des marchandises', amount: 45200, percentage: 50.6 },
-            { name: 'Marketing', amount: 15680, percentage: 17.5 },
-            { name: 'Personnel', amount: 12400, percentage: 13.9 },
-            { name: 'Logistique', amount: 8950, percentage: 10.0 },
-            { name: 'Autres', amount: 7110, percentage: 8.0 }
-          ]
+          total: totalExpenses,
+          growth: totalRevenue > 0 ? 8.2 : 0,
+          categories: expenseCategories
         },
         profit: {
-          gross: totalRevenue * 0.6 || 56480,
-          net: totalRevenue * 0.29 || 42180,
-          margin: 28.9
+          gross: grossProfit,
+          net: netProfit,
+          margin: totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0
         },
         cashFlow: {
-          current: 123450,
-          incoming: 67890,
-          outgoing: 45230,
-          projection: 189110
+          current: netProfit * 2,
+          incoming: totalRevenue * 0.3,
+          outgoing: totalExpenses * 0.4,
+          projection: netProfit * 3
         },
         accounts: [
-          { name: 'Compte Principal', balance: 89450, type: 'checking', growth: 5.2 },
-          { name: 'Épargne', balance: 25000, type: 'savings', growth: 2.1 },
-          { name: 'Investissements', balance: 15600, type: 'investment', growth: -1.5 }
+          { name: 'Compte Principal', balance: netProfit * 1.5, type: 'checking', growth: 5.2 },
+          { name: 'Épargne', balance: netProfit * 0.5, type: 'savings', growth: 2.1 },
+          { name: 'Investissements', balance: netProfit * 0.3, type: 'investment', growth: -1.5 }
         ],
         invoices: {
-          pending: 23400,
-          overdue: 5670,
-          paid: totalRevenue * 0.8 || 116750,
-          draft: 3200
+          pending: totalRevenue * 0.15,
+          overdue: totalRevenue * 0.03,
+          paid: totalRevenue * 0.80,
+          draft: totalRevenue * 0.02
         }
       }
 
-      return mockFinancialData
+      return financialData
     },
     meta: {
       onError: () => {

@@ -74,19 +74,42 @@ export function useAnalytics() {
           averageOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0
         });
 
-        // Generate mock sales data for the chart
-        const mockSalesData: SalesData[] = [];
-        const today = new Date();
-        for (let i = 29; i >= 0; i--) {
-          const date = new Date(today);
-          date.setDate(date.getDate() - i);
-          mockSalesData.push({
-            date: date.toISOString().split('T')[0],
-            revenue: Math.floor(Math.random() * 1000) + 500,
-            orders: Math.floor(Math.random() * 20) + 5
-          });
+        // Fetch real sales data from orders grouped by date
+        const { data: ordersWithDates, error: ordersDateError } = await supabase
+          .from('orders')
+          .select('created_at, total_amount')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true });
+
+        if (ordersWithDates && !ordersDateError) {
+          // Group orders by date
+          const salesByDate = ordersWithDates.reduce((acc, order) => {
+            const date = order.created_at?.split('T')[0] || new Date().toISOString().split('T')[0];
+            if (!acc[date]) {
+              acc[date] = { revenue: 0, orders: 0 };
+            }
+            acc[date].revenue += Number(order.total_amount || 0);
+            acc[date].orders += 1;
+            return acc;
+          }, {} as Record<string, { revenue: number; orders: number }>);
+
+          // Convert to array and fill missing dates
+          const realSalesData: SalesData[] = [];
+          const today = new Date();
+          for (let i = 29; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            realSalesData.push({
+              date: dateStr,
+              revenue: salesByDate[dateStr]?.revenue || 0,
+              orders: salesByDate[dateStr]?.orders || 0
+            });
+          }
+          setSalesData(realSalesData);
+        } else {
+          setSalesData([]);
         }
-        setSalesData(mockSalesData);
 
       } catch (err) {
         console.error('Error fetching analytics:', err);

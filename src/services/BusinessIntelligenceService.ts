@@ -48,110 +48,152 @@ export class BusinessIntelligenceService {
     const { data: currentUser } = await supabase.auth.getUser();
     if (!currentUser.user) throw new Error('Not authenticated');
 
-    // Mock implementation for now - in a real app this would call an AI service
-    const mockReport: BusinessIntelligenceReport = {
+    // Fetch real data from database
+    const { data: orders } = await supabase.from('orders').select('*').eq('user_id', currentUser.user.id);
+    const { data: products } = await supabase.from('products').select('*').eq('user_id', currentUser.user.id);
+    const { data: customers } = await supabase.from('customers').select('*').eq('user_id', currentUser.user.id);
+
+    const totalRevenue = orders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+    const totalOrders = orders?.length || 0;
+    const totalProducts = products?.length || 0;
+    const totalCustomers = customers?.length || 0;
+    const conversionRate = totalCustomers > 0 ? (totalOrders / totalCustomers) * 100 : 0;
+
+    const report: BusinessIntelligenceReport = {
       summary: {
-        executiveSummary: "Votre commerce électronique montre des tendances positives avec une croissance de 12.5% ce mois-ci.",
+        executiveSummary: totalOrders > 0 
+          ? `Votre commerce électronique a enregistré ${totalOrders} commandes pour un chiffre d'affaires de ${totalRevenue.toFixed(2)}€.`
+          : "Aucune donnée de vente disponible pour le moment.",
         keyPoints: [
-          "Augmentation des ventes de 12.5% par rapport au mois dernier",
-          "Taux de conversion en amélioration (3.2%)",
-          "5 nouveaux clients cette semaine",
-          "Stock faible sur 3 produits populaires"
+          `${totalOrders} commandes enregistrées`,
+          `${totalCustomers} clients actifs`,
+          `${totalProducts} produits au catalogue`,
+          `Taux de conversion: ${conversionRate.toFixed(1)}%`
         ],
         priorityRecommendations: [
-          "Réapprovisionner les produits en rupture de stock",
-          "Optimiser les campagnes marketing pour les produits performants",
-          "Analyser les abandons de panier pour améliorer le tunnel de conversion"
+          totalProducts === 0 ? "Ajoutez des produits à votre catalogue" : "Optimisez vos fiches produits",
+          totalCustomers === 0 ? "Lancez une campagne d'acquisition client" : "Fidélisez vos clients existants",
+          "Analysez vos performances de vente"
         ],
         nextSteps: [
-          "Contacter les fournisseurs pour réapprovisionnement",
-          "Configurer des alertes de stock automatiques",
-          "Planifier une campagne email pour les clients inactifs"
+          "Consulter le tableau de bord analytique détaillé",
+          "Configurer des objectifs de vente",
+          "Automatiser le suivi des performances"
         ]
       },
       businessMetrics: {
-        revenue: 15420,
-        orders: 89,
-        customers: 234,
-        products: 1247,
-        conversionRate: 3.2,
-        growth: 12.5
+        revenue: totalRevenue,
+        orders: totalOrders,
+        customers: totalCustomers,
+        products: totalProducts,
+        conversionRate,
+        growth: 0
       },
       lastAnalysis: new Date().toISOString()
     };
 
-    return mockReport;
+    return report;
   }
 
   static async getPriorityInsights(): Promise<BusinessInsight[]> {
     const { data: currentUser } = await supabase.auth.getUser();
     if (!currentUser.user) throw new Error('Not authenticated');
 
-    // Mock implementation - in a real app this would fetch from database
-    const mockInsights: BusinessInsight[] = [
-      {
+    // Fetch real data to generate insights
+    const { data: orders } = await supabase.from('orders').select('*').eq('user_id', currentUser.user.id);
+    const { data: products } = await supabase.from('products').select('*').eq('user_id', currentUser.user.id);
+    const { data: customers } = await supabase.from('customers').select('*').eq('user_id', currentUser.user.id);
+
+    const insights: BusinessInsight[] = [];
+
+    // Insight: Low stock products
+    const lowStockProducts = products?.filter(p => (p.stock_quantity || 0) < 10) || [];
+    if (lowStockProducts.length > 0) {
+      insights.push({
         id: '1',
-        type: 'opportunity',
-        insight_type: 'opportunity',
-        title: 'Opportunité de croissance détectée',
-        description: 'Vos ventes de produits électroniques ont augmenté de 35% cette semaine',
-        impact: 'high',
-        severity: 'opportunity',
-        category: 'sales',
-        actionable: true,
-        recommendation: 'Augmentez votre stock de produits électroniques et lancez une campagne marketing ciblée',
-        actionable_recommendations: [
-          'Augmentez votre stock de produits électroniques',
-          'Lancez une campagne marketing ciblée',
-          'Analysez les tendances de vente pour optimiser l\'offre'
-        ],
-        confidence_score: 85,
-        impact_score: 92,
-        createdAt: new Date().toISOString(),
-        isAcknowledged: false,
-        isDismissed: false
-      },
-      {
-        id: '2',
         type: 'warning',
         insight_type: 'risk',
         title: 'Stock faible détecté',
-        description: '3 produits populaires sont bientôt en rupture de stock',
+        description: `${lowStockProducts.length} produits ont un stock inférieur à 10 unités`,
         impact: 'high',
-        severity: 'critical',
+        severity: 'warning',
         category: 'inventory',
         actionable: true,
-        recommendation: 'Contactez vos fournisseurs pour réapprovisionner ces produits rapidement',
+        recommendation: 'Réapprovisionner ces produits rapidement pour éviter les ruptures de stock',
         actionable_recommendations: [
-          'Contactez vos fournisseurs immédiatement',
-          'Configurez des alertes de stock automatiques',
-          'Identifiez des fournisseurs alternatifs'
+          'Contacter vos fournisseurs',
+          'Configurer des alertes de stock automatiques',
+          'Analyser les délais de livraison'
         ],
         confidence_score: 95,
         impact_score: 88,
         createdAt: new Date().toISOString(),
         isAcknowledged: false,
         isDismissed: false
-      },
-      {
-        id: '3',
+      });
+    }
+
+    // Insight: New customers
+    const recentCustomers = customers?.filter(c => {
+      const createdDate = new Date(c.created_at);
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return createdDate > weekAgo;
+    }) || [];
+
+    if (recentCustomers.length > 0) {
+      insights.push({
+        id: '2',
         type: 'success',
         insight_type: 'trend',
-        title: 'Amélioration du taux de conversion',
-        description: 'Votre taux de conversion a augmenté de 0.5% ce mois-ci',
+        title: 'Nouveaux clients cette semaine',
+        description: `${recentCustomers.length} nouveaux clients se sont inscrits`,
         impact: 'medium',
-        severity: 'info',
-        category: 'marketing',
-        actionable: false,
-        confidence_score: 78,
-        impact_score: 65,
+        severity: 'opportunity',
+        category: 'customer',
+        actionable: true,
+        recommendation: 'Contactez ces nouveaux clients pour améliorer leur expérience',
+        actionable_recommendations: [
+          'Envoyer un email de bienvenue personnalisé',
+          'Offrir un code promo pour leur première commande',
+          'Collecter des retours sur leur expérience'
+        ],
+        confidence_score: 90,
+        impact_score: 75,
         createdAt: new Date().toISOString(),
         isAcknowledged: false,
         isDismissed: false
-      }
-    ];
+      });
+    }
 
-    return mockInsights;
+    // Insight: Revenue opportunity
+    const totalRevenue = orders?.reduce((sum, o) => sum + Number(o.total_amount || 0), 0) || 0;
+    if (totalRevenue > 1000) {
+      insights.push({
+        id: '3',
+        type: 'opportunity',
+        insight_type: 'opportunity',
+        title: 'Performance de vente positive',
+        description: `Votre chiffre d'affaires atteint ${totalRevenue.toFixed(2)}€`,
+        impact: 'high',
+        severity: 'opportunity',
+        category: 'sales',
+        actionable: true,
+        recommendation: 'Capitalisez sur cette dynamique en lançant une campagne marketing',
+        actionable_recommendations: [
+          'Analyser les produits les plus vendus',
+          'Optimiser vos campagnes publicitaires',
+          'Développer des offres groupées'
+        ],
+        confidence_score: 85,
+        impact_score: 92,
+        createdAt: new Date().toISOString(),
+        isAcknowledged: false,
+        isDismissed: false
+      });
+    }
+
+    return insights;
   }
 
   static async getInsightMetrics(): Promise<InsightMetrics> {
