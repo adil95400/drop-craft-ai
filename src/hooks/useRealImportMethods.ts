@@ -35,6 +35,14 @@ export const useRealImportMethods = () => {
       if (error) throw error
       return data as ImportMethod[]
     },
+    refetchInterval: (query) => {
+      // Intelligent polling: only refetch if there are active jobs
+      const jobs = query.state.data || []
+      const hasActiveJobs = jobs.some(job => 
+        job.status === 'pending' || job.status === 'processing'
+      )
+      return hasActiveJobs ? 3000 : false // 3s if active, stop if all done
+    },
   })
 
   const createMethod = useMutation({

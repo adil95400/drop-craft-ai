@@ -300,7 +300,7 @@ serve(async (req) => {
         .update({
           processed_rows: Math.min(i + batch.length, mappedProducts.length),
           success_rows: successCount,
-          failed_rows: errorCount,
+          error_rows: errorCount,
           updated_at: new Date().toISOString()
         })
         .eq('id', jobId);
@@ -327,7 +327,7 @@ serve(async (req) => {
         total_rows: allProducts.length,
         processed_rows: mappedProducts.length,
         success_rows: successCount,
-        failed_rows: errorCount,
+        error_rows: errorCount,
         errors: errors.length > 0 ? errors : null,
         updated_at: new Date().toISOString()
       })

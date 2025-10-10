@@ -1,0 +1,314 @@
+import { supabase } from '@/integrations/supabase/client'
+import { toast } from 'sonner'
+
+type ImportStatus = 'pending' | 'processing' | 'completed' | 'failed'
+type ImportSourceType = 'url' | 'csv' | 'xml' | 'json' | 'api' | 'ftp'
+
+export interface ImportJobStatus {
+  id: string
+  status: ImportStatus
+  progress: number
+  total_rows: number
+  processed_rows: number
+  success_rows: number
+  error_rows: number
+  errors: string[] | null
+  started_at: string | null
+  completed_at: string | null
+}
+
+export interface ImportConfig {
+  source_type: ImportSourceType
+  source_url?: string
+  configuration?: Record<string, any>
+  field_mapping?: Record<string, string>
+}
+
+class UnifiedImportService {
+  private pollingIntervals: Map<string, number> = new Map()
+
+  /**
+   * Start an import job
+   */
+  async startImport(config: ImportConfig): Promise<string> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      console.log('[UnifiedImport] Starting import', config)
+
+      // Create job in database
+      const { data: job, error: jobError } = await supabase
+        .from('import_jobs')
+        .insert({
+          user_id: user.id,
+          source_type: config.source_type,
+          source_url: config.source_url || null,
+          configuration: config.configuration || {},
+          mapping_config: config.field_mapping || {},
+          status: 'pending',
+          total_rows: 0,
+          processed_rows: 0,
+          success_rows: 0,
+          error_rows: 0
+        })
+        .select()
+        .single()
+
+      if (jobError) throw jobError
+
+      console.log('[UnifiedImport] Job created', { job_id: job.id })
+
+      // Trigger appropriate edge function
+      let edgeFunction: string
+      let payload: any = {
+        job_id: job.id,
+        user_id: user.id,
+        config: config.configuration || {}
+      }
+
+      switch (config.source_type) {
+        case 'url':
+          edgeFunction = 'url-import'
+          payload.url = config.source_url
+          break
+        case 'csv':
+          edgeFunction = 'csv-import'
+          payload.file_url = config.source_url
+          payload.field_mapping = config.field_mapping || {}
+          break
+        case 'api':
+          edgeFunction = 'api-import-execute'
+          break
+        case 'xml':
+        case 'json':
+          edgeFunction = 'xml-json-import'
+          payload.sourceUrl = config.source_url
+          payload.sourceType = config.source_type
+          payload.mapping = config.field_mapping || {}
+          break
+        default:
+          throw new Error(`Unsupported import type: ${config.source_type}`)
+      }
+
+      // Call edge function (non-blocking)
+      supabase.functions.invoke(edgeFunction, { body: payload })
+        .then(({ error }) => {
+          if (error) {
+            console.error('[UnifiedImport] Edge function error', error)
+            toast.error(`Import failed: ${error.message}`)
+          }
+        })
+
+      // Start monitoring
+      this.startMonitoring(job.id)
+
+      toast.success('Import started successfully')
+      return job.id
+
+    } catch (error) {
+      console.error('[UnifiedImport] Start import error', error)
+      toast.error(`Failed to start import: ${error.message}`)
+      throw error
+    }
+  }
+
+  /**
+   * Get job status
+   */
+  async getJobStatus(jobId: string): Promise<ImportJobStatus | null> {
+    try {
+      const { data, error } = await supabase
+        .from('import_jobs')
+        .select('*')
+        .eq('id', jobId)
+        .single()
+
+      if (error) throw error
+
+      const progress = data.total_rows > 0 
+        ? Math.round((data.processed_rows / data.total_rows) * 100)
+        : 0
+
+      return {
+        id: data.id,
+        status: data.status as ImportStatus,
+        progress,
+        total_rows: data.total_rows,
+        processed_rows: data.processed_rows,
+        success_rows: data.success_rows,
+        error_rows: data.error_rows,
+        errors: data.errors as string[] | null,
+        started_at: data.started_at,
+        completed_at: data.completed_at
+      }
+    } catch (error) {
+      console.error('[UnifiedImport] Get status error', error)
+      return null
+    }
+  }
+
+  /**
+   * Start intelligent polling for job status
+   */
+  private startMonitoring(jobId: string) {
+    // Don't start if already monitoring
+    if (this.pollingIntervals.has(jobId)) {
+      return
+    }
+
+    let pollCount = 0
+    const maxPolls = 120 // 10 minutes max (5s intervals)
+
+    const pollInterval = setInterval(async () => {
+      pollCount++
+
+      const status = await this.getJobStatus(jobId)
+      
+      if (!status) {
+        this.stopMonitoring(jobId)
+        return
+      }
+
+      // Notify progress
+      if (status.status === 'processing' && status.progress > 0) {
+        console.log(`[UnifiedImport] Job ${jobId} progress: ${status.progress}%`)
+      }
+
+      // Stop if completed or failed
+      if (status.status === 'completed' || status.status === 'failed') {
+        this.stopMonitoring(jobId)
+        
+        if (status.status === 'completed') {
+          toast.success(
+            `Import completed: ${status.success_rows} products imported`,
+            { duration: 5000 }
+          )
+        } else {
+          toast.error(
+            `Import failed: ${status.errors?.[0] || 'Unknown error'}`,
+            { duration: 5000 }
+          )
+        }
+        return
+      }
+
+      // Stop after max polls
+      if (pollCount >= maxPolls) {
+        this.stopMonitoring(jobId)
+        toast.warning('Import monitoring stopped (timeout)', { duration: 5000 })
+      }
+    }, 5000) // Poll every 5 seconds
+
+    this.pollingIntervals.set(jobId, pollInterval as unknown as number)
+  }
+
+  /**
+   * Stop monitoring a job
+   */
+  private stopMonitoring(jobId: string) {
+    const interval = this.pollingIntervals.get(jobId)
+    if (interval) {
+      clearInterval(interval)
+      this.pollingIntervals.delete(jobId)
+      console.log('[UnifiedImport] Stopped monitoring', { job_id: jobId })
+    }
+  }
+
+  /**
+   * Cancel a job
+   */
+  async cancelJob(jobId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('import_jobs')
+        .update({
+          status: 'failed',
+          errors: ['Cancelled by user'],
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', jobId)
+        .eq('status', 'processing') // Only cancel if processing
+
+      if (error) throw error
+
+      this.stopMonitoring(jobId)
+      toast.success('Import cancelled')
+      return true
+    } catch (error) {
+      console.error('[UnifiedImport] Cancel error', error)
+      toast.error('Failed to cancel import')
+      return false
+    }
+  }
+
+  /**
+   * Retry a failed job
+   */
+  async retryJob(jobId: string): Promise<string> {
+    try {
+      // Get original job
+      const { data: originalJob, error: fetchError } = await supabase
+        .from('import_jobs')
+        .select('*')
+        .eq('id', jobId)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      // Create new job with same config  
+      return this.startImport({
+        source_type: originalJob.source_type as ImportSourceType,
+        source_url: originalJob.source_url || undefined,
+        configuration: (originalJob.file_data as Record<string, any>) || {},
+        field_mapping: (originalJob.mapping_config as Record<string, string>) || {}
+      })
+    } catch (error) {
+      console.error('[UnifiedImport] Retry error', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get import history
+   */
+  async getHistory(limit: number = 50): Promise<ImportJobStatus[]> {
+    try {
+      const { data, error } = await supabase
+        .from('import_jobs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+      if (error) throw error
+
+      return data.map(job => ({
+        id: job.id,
+        status: job.status as ImportStatus,
+        progress: job.total_rows > 0 
+          ? Math.round((job.processed_rows / job.total_rows) * 100)
+          : 0,
+        total_rows: job.total_rows,
+        processed_rows: job.processed_rows,
+        success_rows: job.success_rows,
+        error_rows: job.error_rows,
+        errors: job.errors as string[] | null,
+        started_at: job.started_at,
+        completed_at: job.completed_at
+      }))
+    } catch (error) {
+      console.error('[UnifiedImport] Get history error', error)
+      return []
+    }
+  }
+
+  /**
+   * Cleanup - stop all monitoring
+   */
+  cleanup() {
+    this.pollingIntervals.forEach((interval) => clearInterval(interval))
+    this.pollingIntervals.clear()
+  }
+}
+
+export const unifiedImportService = new UnifiedImportService()

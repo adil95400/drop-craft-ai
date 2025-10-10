@@ -1,437 +1,260 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { corsHeaders } from "../_shared/cors.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
+import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts"
 
-
-interface URLImportRequest {
-  url: string
-  userId: string
-  options?: {
-    extract_images?: boolean
-    analyze_content?: boolean
-    auto_categorize?: boolean
-  }
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
+  const startTime = Date.now()
+  let jobId: string | null = null
+
   try {
-    const requestBody = await req.json();
-    const { url, userId = requestBody.user_id, options = {} } = requestBody;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
     
-    // Get user from auth header if userId not provided
-    if (!userId) {
-      const authHeader = req.headers.get('authorization');
-      if (!authHeader) {
-        return new Response(JSON.stringify({ 
-          error: 'Authorization header required',
-          success: false 
-        }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      
-      const supabaseAuth = createClient(
-        Deno.env.get('SUPABASE_URL')!,
-        Deno.env.get('SUPABASE_ANON_KEY')!
-      );
-      
-      const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(
-        authHeader.replace('Bearer ', '')
-      );
-      
-      if (authError || !user) {
-        return new Response(JSON.stringify({ 
-          error: 'Invalid or expired token',
-          success: false 
-        }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      
-      requestBody.userId = user.id;
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader) {
+      throw new Error('Authentication required')
+    }
+    
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
+    
+    if (userError || !user) {
+      throw new Error('User not authenticated')
     }
 
-    // Validate inputs
-    if (!url || !requestBody.userId) {
-      return new Response(JSON.stringify({ 
-        error: 'URL et authentification requis',
-        success: false 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+    const { url, config = {} } = await req.json()
     
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('Missing Supabase configuration')
-      return new Response(JSON.stringify({ 
-        error: 'Configuration serveur manquante',
-        success: false 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-    
-    const supabase = createClient(supabaseUrl, supabaseKey)
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
-    
-    console.log(`Processing URL import: ${url} for user ${userId}`)
-    
-    // Validate URL
-    if (!isValidURL(url)) {
-      return new Response(JSON.stringify({ 
-        error: 'URL invalide fournie',
-        success: false 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    if (!url) {
+      throw new Error('URL is required')
     }
 
-    // Create import record
-    const { data: importRecord, error: importError } = await supabase
-      .from('product_imports')
+    console.log('[URL-IMPORT] Starting import from URL', { url, user_id: user.id })
+
+    // Create import job
+    const { data: job, error: jobError } = await supabase
+      .from('import_jobs')
       .insert({
-        user_id: requestBody.userId,
-        import_type: 'url',
-        source_name: 'URL Import',
+        user_id: user.id,
+        source_type: 'url',
         source_url: url,
+        configuration: config,
         status: 'processing',
-        import_config: { url, options, timestamp: new Date().toISOString() }
+        started_at: new Date().toISOString()
       })
       .select()
       .single()
 
-    if (importError) {
-      console.error('Import record creation error:', importError)
-      return new Response(JSON.stringify({ 
-        error: `Erreur lors de la création de l'import: ${importError.message}`,
-        success: false 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+    if (jobError) throw jobError
+    jobId = job.id
 
-    // Fetch and analyze URL content
-    let products: any[] = []
-    
-    try {
-      const urlContent = await fetchURLContent(url)
-      
-      if (openaiApiKey && openaiApiKey !== 'your_openai_key_here') {
-        // Use AI to extract product information
-        products = await extractProductsWithAI(openaiApiKey, urlContent, url, options)
-      } else {
-        // Fallback to pattern-based extraction
-        products = await extractProductsWithPatterns(urlContent, url)
-      }
+    console.log('[URL-IMPORT] Created job', { job_id: jobId })
 
-      console.log(`Extracted ${products.length} products from URL`)
-
-      // Save extracted products
-      if (products.length > 0) {
-        const importedProducts = products.map(product => ({
-          user_id: requestBody.userId,
-          import_id: importRecord.id,
-          name: product.title || 'Produit importé depuis URL',
-          description: product.description || `Produit importé depuis ${url}`,
-          price: product.price || 0,
-          cost_price: product.cost_price || (product.price * 0.7),
-          currency: product.currency || 'EUR',
-          sku: product.sku || `URL-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          category: product.category || 'General',
-          supplier_name: getDomainFromURL(url),
-          supplier_url: url,
-          image_urls: product.images || [],
-          tags: product.tags || ['url-import', getDomainFromURL(url)],
-          status: 'draft',
-          review_status: 'pending',
-          ai_optimized: !!openaiApiKey,
-          import_quality_score: calculateImportQuality(product),
-          data_completeness_score: calculateDataCompleteness(product)
-        }))
-
-        const { error: productsError } = await supabase
-          .from('imported_products')
-          .insert(importedProducts)
-
-        if (productsError) {
-          console.error('Products insert error:', productsError)
-          throw new Error(`Failed to save products: ${productsError.message}`)
-        }
-      }
-
-      // Update import status
-      await supabase
-        .from('product_imports')
-        .update({
-          status: 'completed',
-          products_imported: products.length,
-          completed_at: new Date().toISOString(),
-          processing_time_ms: Date.now() - new Date(importRecord.created_at).getTime()
-        })
-        .eq('id', importRecord.id)
-
-      // Log activity
-      await supabase
-        .from('activity_logs')
-        .insert({
-          user_id: requestBody.userId,
-          action: 'url_import',
-          description: `Imported ${products.length} products from URL`,
-          entity_type: 'import',
-          entity_id: importRecord.id,
-          metadata: {
-            url,
-            products_count: products.length,
-            ai_enabled: !!openaiApiKey
-          }
-        })
-
-      return new Response(JSON.stringify({
-        success: true,
-        data: {
-          import_id: importRecord.id,
-          products_imported: products.length,
-          products: products.slice(0, 5), // Return first 5 for preview
-          source_url: url
-        },
-        message: `Successfully imported ${products.length} product(s) from URL`
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-
-    } catch (processingError) {
-      console.error('URL processing error:', processingError)
-      
-      // Update import status to failed
-      await supabase
-        .from('product_imports')
-        .update({
-          status: 'failed',
-          error_message: processingError.message,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', importRecord.id)
-
-      throw processingError
-    }
-
-  } catch (error) {
-    console.error('URL import function error:', error)
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      success: false
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-  }
-})
-
-function isValidURL(string: string): boolean {
-  try {
-    new URL(string)
-    return true
-  } catch (_) {
-    return false
-  }
-}
-
-async function fetchURLContent(url: string): Promise<string> {
-  try {
+    // Fetch the URL
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        'User-Agent': 'Mozilla/5.0 (compatible; ImportBot/1.0)'
       }
     })
-    
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch URL: ${response.status}`)
+      throw new Error(`Failed to fetch URL: ${response.status} ${response.statusText}`)
     }
-    
-    return await response.text()
-  } catch (error) {
-    throw new Error(`Error fetching URL content: ${error.message}`)
-  }
-}
 
-async function extractProductsWithAI(
-  apiKey: string,
-  content: string,
-  url: string,
-  options: any
-): Promise<any[]> {
-  try {
-    // Truncate content to avoid token limits
-    const truncatedContent = content.substring(0, 8000)
-    
-    const prompt = `Extract product information from this webpage content.
-URL: ${url}
-Content: ${truncatedContent}
+    const contentType = response.headers.get('content-type') || ''
+    const html = await response.text()
 
-Please extract products and return JSON array with format:
-[{
-  "title": "Product name",
-  "description": "Product description", 
-  "price": number,
-  "currency": "EUR/USD/etc",
-  "images": ["image_url1", "image_url2"],
-  "category": "category",
-  "sku": "product_sku",
-  "tags": ["tag1", "tag2"]
-}]
-
-Focus on extracting real product data. If no clear products found, return empty array.`
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are an expert at extracting product information from web content. Return valid JSON only.' },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 2000,
-        temperature: 0.1
-      })
+    console.log('[URL-IMPORT] Fetched content', { 
+      content_type: contentType,
+      size: html.length 
     })
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`)
+    // Parse HTML
+    const doc = new DOMParser().parseFromString(html, 'text/html')
+    if (!doc) {
+      throw new Error('Failed to parse HTML')
     }
 
-    const data = await response.json()
-    const extractedContent = data.choices[0].message.content
-
-    try {
-      const products = JSON.parse(extractedContent)
-      return Array.isArray(products) ? products : [products]
-    } catch (parseError) {
-      console.error('Failed to parse AI response as JSON:', parseError)
-      return await extractProductsWithPatterns(content, url)
+    // Extract product data using intelligent selectors
+    const productData: any = {
+      user_id: user.id,
+      status: 'draft',
+      import_job_id: jobId,
+      source_url: url
     }
 
-  } catch (error) {
-    console.error('AI extraction failed:', error)
-    return await extractProductsWithPatterns(content, url)
-  }
-}
+    // Extract title
+    productData.name = 
+      doc.querySelector('h1')?.textContent?.trim() ||
+      doc.querySelector('[itemprop="name"]')?.textContent?.trim() ||
+      doc.querySelector('.product-title')?.textContent?.trim() ||
+      doc.querySelector('.product-name')?.textContent?.trim() ||
+      doc.querySelector('title')?.textContent?.trim() ||
+      'Sans nom'
 
-async function extractProductsWithPatterns(content: string, url: string): Promise<any[]> {
-  // Simple pattern-based extraction for common e-commerce patterns
-  const products: any[] = []
-  
-  // Extract JSON-LD structured data
-  const jsonLdMatches = content.match(/<script[^>]*type="application\/ld\+json"[^>]*>(.*?)<\/script>/gis)
-  
-  if (jsonLdMatches) {
-    for (const match of jsonLdMatches) {
-      try {
-        const jsonContent = match.replace(/<script[^>]*>|<\/script>/gi, '')
-        const data = JSON.parse(jsonContent)
-        
-        if (data['@type'] === 'Product' || data.type === 'Product') {
-          products.push({
-            title: data.name || 'Produit extrait',
-            description: data.description || '',
-            price: parseFloat(data.offers?.price || data.price || '0'),
-            currency: data.offers?.priceCurrency || 'EUR',
-            images: [data.image].flat().filter(Boolean),
-            category: data.category || 'General',
-            sku: data.sku || data.productID || `EXTRACT-${Date.now()}`,
-            tags: ['url-import', getDomainFromURL(url)]
-          })
+    // Extract description
+    productData.description = 
+      doc.querySelector('[itemprop="description"]')?.textContent?.trim() ||
+      doc.querySelector('.product-description')?.textContent?.trim() ||
+      doc.querySelector('.description')?.textContent?.trim() ||
+      doc.querySelector('meta[name="description"]')?.getAttribute('content')?.trim() ||
+      null
+
+    // Extract price
+    const priceSelectors = [
+      '[itemprop="price"]',
+      '.price',
+      '.product-price',
+      '[data-price]',
+      '.sale-price'
+    ]
+    
+    for (const selector of priceSelectors) {
+      const priceEl = doc.querySelector(selector)
+      if (priceEl) {
+        const priceText = priceEl.textContent || priceEl.getAttribute('content') || priceEl.getAttribute('data-price') || ''
+        const priceMatch = priceText.match(/[\d,]+\.?\d*/g)
+        if (priceMatch) {
+          productData.price = parseFloat(priceMatch[0].replace(/,/g, ''))
+          break
         }
-      } catch (e) {
-        // Skip invalid JSON-LD
       }
     }
-  }
-  
-  // If no structured data found, create a basic product from URL
-  if (products.length === 0) {
-    // Extract title from page
-    const titleMatch = content.match(/<title[^>]*>(.*?)<\/title>/i)
-    const title = titleMatch ? titleMatch[1].trim() : 'Produit importé depuis URL'
-    
-    // Try to extract price patterns
-    const priceMatches = content.match(/[\$€£¥]\s*\d+(?:[.,]\d{2})?/g)
-    const price = priceMatches ? parseFloat(priceMatches[0].replace(/[^\d.,]/g, '').replace(',', '.')) : 0
-    
-    // Extract image URLs
-    const imageMatches = content.match(/<img[^>]+src=["']([^"']+)["'][^>]*>/gi) || []
-    const images = imageMatches
-      .map(img => {
-        const srcMatch = img.match(/src=["']([^"']+)["']/)
-        return srcMatch ? srcMatch[1] : null
-      })
-      .filter(Boolean)
-      .slice(0, 3) // Limit to 3 images
-    
-    products.push({
-      title: title.substring(0, 200),
-      description: `Produit importé depuis ${url}`,
-      price,
-      currency: 'EUR',
-      images,
-      category: 'General',
-      sku: `URL-${Date.now()}`,
-      tags: ['url-import', getDomainFromURL(url)]
-    })
-  }
-  
-  return products
-}
 
-function getDomainFromURL(url: string): string {
-  try {
-    return new URL(url).hostname.replace('www.', '')
-  } catch {
-    return 'unknown'
-  }
-}
+    // Extract images
+    const images: string[] = []
+    const imageSelectors = [
+      '[itemprop="image"]',
+      '.product-image img',
+      '.product-gallery img',
+      '[data-zoom-image]',
+      'img[src*="product"]'
+    ]
 
-function calculateImportQuality(product: any): number {
-  let score = 0
-  
-  if (product.title && product.title.length > 10) score += 25
-  if (product.description && product.description.length > 50) score += 25
-  if (product.price && product.price > 0) score += 20
-  if (product.images && product.images.length > 0) score += 20
-  if (product.category && product.category !== 'General') score += 10
-  
-  return Math.min(100, score)
-}
-
-function calculateDataCompleteness(product: any): number {
-  const fields = ['title', 'description', 'price', 'images', 'category', 'sku']
-  let filledFields = 0
-  
-  fields.forEach(field => {
-    if (product[field] && 
-        (typeof product[field] === 'string' ? product[field].trim() : true) &&
-        (Array.isArray(product[field]) ? product[field].length > 0 : true)) {
-      filledFields++
+    for (const selector of imageSelectors) {
+      const imgElements = doc.querySelectorAll(selector)
+      for (const img of Array.from(imgElements)) {
+        const src = img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-zoom-image')
+        if (src && !src.includes('data:image')) {
+          // Convert relative URLs to absolute
+          const absoluteUrl = src.startsWith('http') ? src : new URL(src, url).toString()
+          if (!images.includes(absoluteUrl)) {
+            images.push(absoluteUrl)
+          }
+        }
+      }
     }
-  })
-  
-  return Math.round((filledFields / fields.length) * 100)
-}
+
+    if (images.length > 0) {
+      productData.image_url = images[0]
+      productData.images = images
+    }
+
+    // Extract SKU
+    productData.sku = 
+      doc.querySelector('[itemprop="sku"]')?.textContent?.trim() ||
+      doc.querySelector('.sku')?.textContent?.trim() ||
+      doc.querySelector('[data-sku]')?.getAttribute('data-sku') ||
+      null
+
+    // Extract brand
+    productData.brand = 
+      doc.querySelector('[itemprop="brand"]')?.textContent?.trim() ||
+      doc.querySelector('.brand')?.textContent?.trim() ||
+      null
+
+    console.log('[URL-IMPORT] Extracted product data', {
+      name: productData.name,
+      price: productData.price,
+      images_count: images.length
+    })
+
+    // Insert product
+    const { error: insertError } = await supabase
+      .from('imported_products')
+      .insert(productData)
+
+    if (insertError) throw insertError
+
+    const executionTime = Date.now() - startTime
+
+    // Update job as completed
+    await supabase
+      .from('import_jobs')
+      .update({
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+        total_rows: 1,
+        processed_rows: 1,
+        success_rows: 1,
+        error_rows: 0,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', jobId)
+
+    console.log('[URL-IMPORT] Import completed', {
+      job_id: jobId,
+      duration_ms: executionTime
+    })
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        job_id: jobId,
+        product_data: productData,
+        execution_time_ms: executionTime
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
+
+  } catch (error) {
+    const executionTime = Date.now() - startTime
+    console.error('[URL-IMPORT] Error', { 
+      error: error.message,
+      job_id: jobId 
+    })
+
+    if (jobId) {
+      try {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey)
+        await supabase
+          .from('import_jobs')
+          .update({
+            status: 'failed',
+            completed_at: new Date().toISOString(),
+            errors: [error.message],
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', jobId)
+      } catch (updateError) {
+        console.error('[URL-IMPORT] Failed to update job status', updateError)
+      }
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message,
+        job_id: jobId,
+        execution_time_ms: executionTime
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
+    )
+  }
+})
