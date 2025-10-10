@@ -35,25 +35,67 @@ export interface ImportFromFtpOptions {
 }
 
 export const importAdvancedService = {
+  /**
+   * Import depuis une URL avec validation
+   */
   async importFromUrl(options: ImportFromUrlOptions) {
     try {
+      // Validation de l'URL
+      if (!options.url) {
+        throw new Error('URL is required')
+      }
+
+      // Vérifier que c'est une URL valide
+      try {
+        new URL(options.url)
+      } catch {
+        throw new Error('Invalid URL format')
+      }
+
+      console.log('[ImportAdvanced] Starting URL import', { url: options.url })
+
       const { data, error } = await supabase.functions.invoke('url-import', {
         body: {
           url: options.url,
           config: options.config || {}
         }
-      });
+      })
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('[ImportAdvanced] URL import error', error)
+        throw new Error(`Import failed: ${error.message}`)
+      }
+
+      console.log('[ImportAdvanced] URL import success', data)
+      return data
     } catch (error) {
-      console.error('URL import error:', error);
-      throw error;
+      console.error('[ImportAdvanced] URL import error:', error)
+      throw error
     }
   },
 
+  /**
+   * Import depuis XML/RSS avec validation
+   */
   async importFromXml(options: ImportFromXmlOptions) {
     try {
+      // Validation
+      if (!options.xmlUrl) {
+        throw new Error('XML URL is required')
+      }
+
+      // Vérifier que c'est une URL valide
+      try {
+        new URL(options.xmlUrl)
+      } catch {
+        throw new Error('Invalid XML URL format')
+      }
+
+      console.log('[ImportAdvanced] Starting XML import', { 
+        url: options.xmlUrl,
+        has_mapping: !!options.mapping 
+      })
+
       const { data, error } = await supabase.functions.invoke('xml-json-import', {
         body: {
           sourceUrl: options.xmlUrl,
@@ -61,13 +103,18 @@ export const importAdvancedService = {
           mapping: options.mapping || {},
           config: options.config || {}
         }
-      });
+      })
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('[ImportAdvanced] XML import error', error)
+        throw new Error(`XML import failed: ${error.message}`)
+      }
+
+      console.log('[ImportAdvanced] XML import success', data)
+      return data
     } catch (error) {
-      console.error('XML import error:', error);
-      throw error;
+      console.error('[ImportAdvanced] XML import error:', error)
+      throw error
     }
   },
 

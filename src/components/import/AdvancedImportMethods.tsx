@@ -28,6 +28,7 @@ import { useRealImportMethods } from '@/hooks/useRealImportMethods'
 import { type ImportMethodTemplate } from '@/hooks/useImportMethods'
 import { unifiedImportService } from '@/services/UnifiedImportService'
 import { ImportProgress } from './ImportProgress'
+import { ImportConfigModal } from './ImportConfigModal'
 
 interface LocalImportMethod {
   id: string
@@ -198,6 +199,8 @@ export const AdvancedImportMethods: React.FC = () => {
   const { importMethods: dbMethods, isLoading, executeImport, createMethod } = useRealImportMethods()
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [activeJobs, setActiveJobs] = useState<any[]>([])
+  const [configModalOpen, setConfigModalOpen] = useState(false)
+  const [selectedMethod, setSelectedMethod] = useState<ImportMethodTemplate | null>(null)
   
   // Surveiller les jobs actifs
   React.useEffect(() => {
@@ -228,17 +231,23 @@ export const AdvancedImportMethods: React.FC = () => {
         variant: "destructive"
       })
     } else {
-      // Créer la méthode dans la base de données
-      createMethod({
-        method_type: method.id,
-        method_name: method.title,
-        configuration: {
-          category: method.category,
-          complexity: method.complexity,
-          features: method.features
-        },
-        source_type: method.id
-      })
+      // Ouvrir le modal de configuration pour les méthodes basiques
+      if (['url', 'xml', 'csv-excel'].includes(method.id)) {
+        setSelectedMethod(method)
+        setConfigModalOpen(true)
+      } else {
+        // Créer directement pour les autres méthodes
+        createMethod({
+          method_type: method.id,
+          method_name: method.title,
+          configuration: {
+            category: method.category,
+            complexity: method.complexity,
+            features: method.features
+          },
+          source_type: method.id
+        })
+      }
     }
   }
 
@@ -353,6 +362,15 @@ export const AdvancedImportMethods: React.FC = () => {
           )
         })}
       </div>
+
+      {/* Configuration Modal */}
+      {selectedMethod && (
+        <ImportConfigModal
+          open={configModalOpen}
+          onOpenChange={setConfigModalOpen}
+          method={selectedMethod}
+        />
+      )}
     </div>
   )
 }
