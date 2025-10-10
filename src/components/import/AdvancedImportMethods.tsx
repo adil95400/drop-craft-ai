@@ -29,6 +29,7 @@ import { type ImportMethodTemplate } from '@/hooks/useImportMethods'
 import { unifiedImportService } from '@/services/UnifiedImportService'
 import { ImportProgress } from './ImportProgress'
 import { ImportConfigModal } from './ImportConfigModal'
+import { RateLimitStatus } from './RateLimitStatus'
 
 interface LocalImportMethod {
   id: string
@@ -262,6 +263,9 @@ export const AdvancedImportMethods: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Rate Limit Status */}
+      <RateLimitStatus />
+
       {/* Active Jobs Progress */}
       {activeJobs.length > 0 && (
         <div className="space-y-4">

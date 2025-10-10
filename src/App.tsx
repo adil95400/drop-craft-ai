@@ -34,6 +34,7 @@ import BulkImportConfig from '@/pages/import/BulkImportConfig';
 import AIImportConfig from '@/pages/import/AIImportConfig';
 import ImportHistory from '@/pages/ImportHistory';
 import ImportedProducts from '@/pages/ImportedProducts';
+import ImportMonitoringPage from '@/pages/ImportMonitoring';
 import { ModuleRoutes } from '@/components/routing/ModuleRoutes';
 import Products from '@/pages/Products';
 import { RequirePlan } from '@/components/plan/RequirePlan';
@@ -656,12 +657,19 @@ function App() {
                      <AppLayout><ImportConfigurationPage /></AppLayout>
                    </ProtectedRoute>
                  } />
-                 <Route path="/import/history" element={
-                   <ProtectedRoute>
-                     <AppLayout><ImportHistoryPage /></AppLayout>
-                   </ProtectedRoute>
-                 } />
-                 <Route path="/automation" element={
+                  <Route path="/import/history" element={
+                    <ProtectedRoute>
+                      <AppLayout><ImportHistoryPage /></AppLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/import/monitoring" element={
+                    <ProtectedRoute>
+                      <AdminRoute>
+                        <ImportMonitoringPage />
+                      </AdminRoute>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/automation" element={
                   <ProtectedRoute>
                     <AppLayout><AutomationPage /></AppLayout>
                   </ProtectedRoute>

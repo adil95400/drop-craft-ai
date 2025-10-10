@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { importRateLimiter } from './importRateLimiter'
 
 type ImportStatus = 'pending' | 'processing' | 'completed' | 'failed'
 type ImportSourceType = 'url' | 'csv' | 'xml' | 'json' | 'api' | 'ftp'
@@ -33,10 +34,16 @@ class UnifiedImportService {
   private pollingIntervals: Map<string, number> = new Map()
 
   /**
-   * Start an import job
+   * Start an import job with rate limiting
    */
   async startImport(config: ImportConfig): Promise<string> {
     try {
+      // Check rate limit
+      const isAllowed = await importRateLimiter.checkLimit('import_start', 10, 60)
+      if (!isAllowed) {
+        throw new Error('Rate limit exceeded')
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 

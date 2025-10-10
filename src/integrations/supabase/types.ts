@@ -2829,6 +2829,36 @@ export type Database = {
         }
         Relationships: []
       }
+      import_rate_limits: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          request_count: number
+          updated_at: string
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          request_count?: number
+          updated_at?: string
+          user_id: string
+          window_start?: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          request_count?: number
+          updated_at?: string
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       imported_products: {
         Row: {
           ai_optimization_data: Json | null
@@ -8411,9 +8441,22 @@ export type Database = {
         Args: { new_role: string; target_user_id: string }
         Returns: Json
       }
+      auto_unlock_stuck_imports: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       calculate_profit_margin: {
         Args: { cost_price: number; price: number }
         Returns: number
+      }
+      check_import_rate_limit: {
+        Args: {
+          p_action_type: string
+          p_max_requests?: number
+          p_user_id: string
+          p_window_minutes?: number
+        }
+        Returns: Json
       }
       check_quota: {
         Args: { quota_key_param: string; user_id_param: string }
