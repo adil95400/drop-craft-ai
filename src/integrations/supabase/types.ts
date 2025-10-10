@@ -2763,11 +2763,13 @@ export type Database = {
       import_jobs: {
         Row: {
           completed_at: string | null
+          configuration: Json | null
           created_at: string
           error_rows: number | null
           errors: string[] | null
           file_data: Json | null
           id: string
+          import_type: string | null
           mapping_config: Json | null
           processed_rows: number | null
           result_data: Json | null
@@ -2783,11 +2785,13 @@ export type Database = {
         }
         Insert: {
           completed_at?: string | null
+          configuration?: Json | null
           created_at?: string
           error_rows?: number | null
           errors?: string[] | null
           file_data?: Json | null
           id?: string
+          import_type?: string | null
           mapping_config?: Json | null
           processed_rows?: number | null
           result_data?: Json | null
@@ -2803,11 +2807,13 @@ export type Database = {
         }
         Update: {
           completed_at?: string | null
+          configuration?: Json | null
           created_at?: string
           error_rows?: number | null
           errors?: string[] | null
           file_data?: Json | null
           id?: string
+          import_type?: string | null
           mapping_config?: Json | null
           processed_rows?: number | null
           result_data?: Json | null
@@ -8441,6 +8447,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_old_import_jobs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       cleanup_old_security_events: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -8996,6 +9006,10 @@ export type Database = {
       simple_mask_phone: {
         Args: { phone: string }
         Returns: string
+      }
+      unlock_stuck_import_jobs: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       user_has_role: {
         Args:

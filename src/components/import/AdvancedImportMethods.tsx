@@ -26,6 +26,8 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { useRealImportMethods } from '@/hooks/useRealImportMethods'
 import { type ImportMethodTemplate } from '@/hooks/useImportMethods'
+import { unifiedImportService } from '@/services/UnifiedImportService'
+import { ImportProgress } from './ImportProgress'
 
 interface LocalImportMethod {
   id: string
@@ -195,6 +197,15 @@ export const AdvancedImportMethods: React.FC = () => {
   const { toast } = useToast()
   const { importMethods: dbMethods, isLoading, executeImport, createMethod } = useRealImportMethods()
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [activeJobs, setActiveJobs] = useState<any[]>([])
+  
+  // Surveiller les jobs actifs
+  React.useEffect(() => {
+    const activeJobsList = dbMethods?.filter(job => 
+      job.status === 'pending' || job.status === 'processing'
+    ) || []
+    setActiveJobs(activeJobsList)
+  }, [dbMethods])
   
   if (isLoading) {
     return <div className="flex justify-center p-8"><div className="animate-spin h-6 w-6 border-2 border-primary rounded-full border-t-transparent"></div></div>
@@ -242,6 +253,27 @@ export const AdvancedImportMethods: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Active Jobs Progress */}
+      {activeJobs.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Imports en cours</h3>
+          {activeJobs.map(job => (
+            <ImportProgress 
+              key={job.id} 
+              job={job}
+              onRetry={() => {
+                unifiedImportService.retryJob(job.id).then(() => {
+                  toast({
+                    title: "Import relancé",
+                    description: "Le job d'import a été relancé avec succès"
+                  })
+                })
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Header */}
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold">Méthodes d'Import Avancées</h2>

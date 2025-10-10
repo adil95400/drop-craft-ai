@@ -6,7 +6,10 @@ type ImportSourceType = 'url' | 'csv' | 'xml' | 'json' | 'api' | 'ftp'
 
 export interface ImportJobStatus {
   id: string
+  user_id: string
   status: ImportStatus
+  source_type?: string
+  source_url?: string | null
   progress: number
   total_rows: number
   processed_rows: number
@@ -15,6 +18,8 @@ export interface ImportJobStatus {
   errors: string[] | null
   started_at: string | null
   completed_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface ImportConfig {
@@ -132,7 +137,10 @@ class UnifiedImportService {
 
       return {
         id: data.id,
+        user_id: data.user_id,
         status: data.status as ImportStatus,
+        source_type: data.source_type,
+        source_url: data.source_url,
         progress,
         total_rows: data.total_rows,
         processed_rows: data.processed_rows,
@@ -140,7 +148,9 @@ class UnifiedImportService {
         error_rows: data.error_rows,
         errors: data.errors as string[] | null,
         started_at: data.started_at,
-        completed_at: data.completed_at
+        completed_at: data.completed_at,
+        created_at: data.created_at,
+        updated_at: data.updated_at
       }
     } catch (error) {
       console.error('[UnifiedImport] Get status error', error)
@@ -284,7 +294,10 @@ class UnifiedImportService {
 
       return data.map(job => ({
         id: job.id,
+        user_id: job.user_id,
         status: job.status as ImportStatus,
+        source_type: job.source_type,
+        source_url: job.source_url,
         progress: job.total_rows > 0 
           ? Math.round((job.processed_rows / job.total_rows) * 100)
           : 0,
@@ -294,7 +307,9 @@ class UnifiedImportService {
         error_rows: job.error_rows,
         errors: job.errors as string[] | null,
         started_at: job.started_at,
-        completed_at: job.completed_at
+        completed_at: job.completed_at,
+        created_at: job.created_at,
+        updated_at: job.updated_at
       }))
     } catch (error) {
       console.error('[UnifiedImport] Get history error', error)
