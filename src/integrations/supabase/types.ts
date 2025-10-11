@@ -8441,6 +8441,10 @@ export type Database = {
         Args: { new_role: string; target_user_id: string }
         Returns: Json
       }
+      archive_old_import_jobs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       auto_unlock_stuck_imports: {
         Args: Record<PropertyKey, never>
         Returns: undefined

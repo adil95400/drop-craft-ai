@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -21,7 +21,9 @@ import {
   Cloud,
   Rss,
   ShoppingCart,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Wifi,
+  WifiOff
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useRealImportMethods } from '@/hooks/useRealImportMethods'
@@ -30,6 +32,9 @@ import { unifiedImportService } from '@/services/UnifiedImportService'
 import { ImportProgress } from './ImportProgress'
 import { ImportConfigModal } from './ImportConfigModal'
 import { RateLimitStatus } from './RateLimitStatus'
+import { ImportStatistics } from './ImportStatistics'
+import { useImportRealtime } from '@/hooks/useImportRealtime'
+import { supabase } from '@/integrations/supabase/client'
 
 interface LocalImportMethod {
   id: string
@@ -199,17 +204,19 @@ export const AdvancedImportMethods: React.FC = () => {
   const { toast } = useToast()
   const { importMethods: dbMethods, isLoading, executeImport, createMethod } = useRealImportMethods()
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [activeJobs, setActiveJobs] = useState<any[]>([])
   const [configModalOpen, setConfigModalOpen] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState<ImportMethodTemplate | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  // Charger l'ID utilisateur
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUserId(user?.id || null)
+    })
+  }, [])
   
-  // Surveiller les jobs actifs
-  React.useEffect(() => {
-    const activeJobsList = dbMethods?.filter(job => 
-      job.status === 'pending' || job.status === 'processing'
-    ) || []
-    setActiveJobs(activeJobsList)
-  }, [dbMethods])
+  // Real-time monitoring des imports
+  const { activeJobs, isConnected } = useImportRealtime(userId || undefined)
   
   if (isLoading) {
     return <div className="flex justify-center p-8"><div className="animate-spin h-6 w-6 border-2 border-primary rounded-full border-t-transparent"></div></div>
@@ -262,16 +269,40 @@ export const AdvancedImportMethods: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
+      {/* Real-time Connection Status */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {isConnected ? (
+            <>
+              <Wifi className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <span className="text-xs text-muted-foreground">
+                Suivi en temps réel actif
+              </span>
+            </>
+          ) : (
+            <>
+              <WifiOff className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                Connexion temps réel...
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Import Statistics */}
+      <ImportStatistics />
+
       {/* Rate Limit Status */}
       <RateLimitStatus />
 
       {/* Active Jobs Progress */}
       {activeJobs.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-4 animate-scale-in">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Imports en cours</h3>
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs animate-pulse">
               {activeJobs.length} actif{activeJobs.length > 1 ? 's' : ''}
             </Badge>
           </div>
@@ -316,10 +347,14 @@ export const AdvancedImportMethods: React.FC = () => {
 
       {/* Import Methods Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredMethods.map((method) => {
+        {filteredMethods.map((method, idx) => {
           const Icon = method.icon
           return (
-            <Card key={method.id} className="relative h-full hover:shadow-lg transition-shadow">
+            <Card 
+              key={method.id} 
+              className="relative h-full hover:shadow-lg transition-all duration-300 hover-scale animate-fade-in"
+              style={{ animationDelay: `${idx * 50}ms` }}
+            >
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
