@@ -269,7 +269,12 @@ export const AdvancedImportMethods: React.FC = () => {
       {/* Active Jobs Progress */}
       {activeJobs.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Imports en cours</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Imports en cours</h3>
+            <Badge variant="outline" className="text-xs">
+              {activeJobs.length} actif{activeJobs.length > 1 ? 's' : ''}
+            </Badge>
+          </div>
           {activeJobs.map(job => (
             <ImportProgress 
               key={job.id} 

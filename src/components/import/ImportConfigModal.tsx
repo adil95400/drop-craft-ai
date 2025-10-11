@@ -36,13 +36,33 @@ export const ImportConfigModal = ({ open, onOpenChange, method }: ImportConfigMo
     generateSeo: false
   })
 
+  const validateUrl = (url: string): boolean => {
+    try {
+      const urlObj = new URL(url)
+      return ['http:', 'https:'].includes(urlObj.protocol)
+    } catch {
+      return false
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!config.url) {
+    const trimmedUrl = config.url.trim()
+    
+    if (!trimmedUrl) {
       toast({
         title: "URL requise",
-        description: "Veuillez entrer une URL",
+        description: "Veuillez entrer une URL valide",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!validateUrl(trimmedUrl)) {
+      toast({
+        title: "URL invalide",
+        description: "L'URL doit commencer par http:// ou https://",
         variant: "destructive"
       })
       return
@@ -51,9 +71,11 @@ export const ImportConfigModal = ({ open, onOpenChange, method }: ImportConfigMo
     setIsLoading(true)
     
     try {
+      console.log('[ImportConfigModal] Starting import:', { method: method.id, url: trimmedUrl })
+      
       await unifiedImportService.startImport({
         source_type: method.id as any,
-        source_url: config.url,
+        source_url: trimmedUrl,
         configuration: {
           auto_optimize: config.autoOptimize,
           extract_images: config.extractImages,
@@ -63,16 +85,16 @@ export const ImportConfigModal = ({ open, onOpenChange, method }: ImportConfigMo
 
       toast({
         title: "Import démarré",
-        description: "L'import a été lancé avec succès"
+        description: "Votre import est en cours de traitement. Suivez sa progression ci-dessus."
       })
       
       onOpenChange(false)
       setConfig({ url: '', autoOptimize: true, extractImages: true, generateSeo: false })
     } catch (error) {
-      console.error('Import error:', error)
+      console.error('[ImportConfigModal] Import error:', error)
       toast({
         title: "Erreur",
-        description: error.message || "Échec du démarrage de l'import",
+        description: error instanceof Error ? error.message : "Échec du démarrage de l'import",
         variant: "destructive"
       })
     } finally {

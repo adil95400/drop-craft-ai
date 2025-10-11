@@ -38,14 +38,23 @@ class UnifiedImportService {
    */
   async startImport(config: ImportConfig): Promise<string> {
     try {
+      // Validation
+      if (!config.source_url?.trim()) {
+        throw new Error('URL source requise')
+      }
+
+      if (!config.source_type) {
+        throw new Error('Type de source manquant')
+      }
+
       // Check rate limit
       const isAllowed = await importRateLimiter.checkLimit('import_start', 10, 60)
       if (!isAllowed) {
-        throw new Error('Rate limit exceeded')
+        throw new Error('Limite d\'imports atteinte. Réessayez dans quelques minutes.')
       }
 
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
+      if (!user) throw new Error('Utilisateur non authentifié')
 
       console.log('[UnifiedImport] Starting import', config)
 
@@ -120,7 +129,8 @@ class UnifiedImportService {
 
     } catch (error) {
       console.error('[UnifiedImport] Start import error', error)
-      toast.error(`Failed to start import: ${error.message}`)
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue'
+      toast.error(`Échec de l'import: ${errorMessage}`)
       throw error
     }
   }

@@ -26,11 +26,11 @@ export const ImportProgress = ({ job, onCancel, onRetry }: ImportProgressProps) 
   const getStatusIcon = () => {
     switch (job.status) {
       case 'completed':
-        return <CheckCircle2 className="h-5 w-5 text-success" />
+        return <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
       case 'failed':
         return <XCircle className="h-5 w-5 text-destructive" />
       case 'processing':
-        return <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        return <Loader2 className="h-5 w-5 text-primary animate-spin" />
       default:
         return <Clock className="h-5 w-5 text-muted-foreground" />
     }
@@ -126,7 +126,7 @@ export const ImportProgress = ({ job, onCancel, onRetry }: ImportProgressProps) 
               <CheckCircle2 className="h-3 w-3" />
               Réussis
             </p>
-            <p className="text-2xl font-bold text-success">{job.success_rows || 0}</p>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{job.success_rows || 0}</p>
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground flex items-center gap-1">
