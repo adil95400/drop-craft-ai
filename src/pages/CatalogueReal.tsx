@@ -33,7 +33,7 @@ import { useToast } from '@/hooks/use-toast'
 
 export default function CatalogueReal() {
   const { user } = useAuth()
-  const { hasPlan, plan } = usePlan(user)
+  const { hasPlan, plan } = usePlan()
   const { toast } = useToast()
   
   const [searchQuery, setSearchQuery] = useState('')

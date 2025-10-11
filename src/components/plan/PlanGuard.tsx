@@ -41,7 +41,7 @@ export const PlanGuard = ({
   className 
 }: PlanGuardProps) => {
   const { user } = useAuth()
-  const { hasPlan } = usePlan(user)
+  const { hasPlan } = usePlan()
   
   const hasAccess = hasPlan(requiredPlan)
   

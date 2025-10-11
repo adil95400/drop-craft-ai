@@ -78,7 +78,7 @@ const PLAN_FEATURES = {
 
 export function UnifiedPlanProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  const { plan, hasPlan, isUltraPro, isPro, loading, error, updatePlan, refetch } = useSupabasePlan(user)
+  const { plan, hasPlan, isUltraPro, isPro, loading, error, updatePlan, refetch } = useSupabasePlan()
   const planStore = usePlanStore()
 
   // Sync plan with store and Stripe subscription

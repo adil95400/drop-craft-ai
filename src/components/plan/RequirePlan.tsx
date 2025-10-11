@@ -18,7 +18,7 @@ export const RequirePlan = ({
   showModal = false 
 }: RequirePlanProps) => {
   const { user, loading: authLoading } = useAuth()
-  const { hasPlan, loading: planLoading } = usePlan(user)
+  const { hasPlan, loading: planLoading } = usePlan()
   const location = useLocation()
 
   // Still loading

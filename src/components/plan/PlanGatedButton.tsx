@@ -38,7 +38,7 @@ export const PlanGatedButton = ({
   ...props 
 }: PlanGatedButtonProps) => {
   const { user } = useAuth()
-  const { hasPlan } = usePlan(user)
+  const { hasPlan } = usePlan()
   const [showUpgrade, setShowUpgrade] = useState(false)
   const navigate = useNavigate()
   

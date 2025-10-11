@@ -314,7 +314,7 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useUnifiedAuth();
-  const { hasPlan, plan } = usePlan(user);
+  const { hasPlan, plan } = usePlan();
   const { isAdmin } = useEnhancedAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [openGroups, setOpenGroups] = useState<string[]>([]);
