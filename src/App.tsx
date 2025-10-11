@@ -44,8 +44,19 @@ const AnalyticsStudio = lazy(() => import('@/pages/AnalyticsStudio'));
 const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
 const PaymentCancelled = lazy(() => import('@/pages/PaymentCancelled'));
 
-// Admin pages - lazy loaded
+// Admin pages
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+
+// Additional pages
+const SEO = lazy(() => import('@/pages/SEO'));
+const Automations = lazy(() => import('@/pages/AutomationPage'));
+const Integrations = lazy(() => import('@/pages/Integrations'));
+const Catalog = lazy(() => import('@/pages/CatalogueReal'));
+const Reports = lazy(() => import('@/pages/Reports'));
+const Marketplace = lazy(() => import('@/pages/Marketplace'));
+const Suppliers = lazy(() => import('@/pages/ModernSuppliersHub'));
+const Orders = lazy(() => import('@/pages/ModernOrdersPage'));
+const Customers = lazy(() => import('@/pages/ModernCustomersPage'));
 
 // Optimized QueryClient with caching strategies
 const queryClient = new QueryClient({

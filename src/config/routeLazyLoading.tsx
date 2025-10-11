@@ -36,7 +36,7 @@ export const LazyAIAutomationPage = lazyWithRetry(() => import('@/pages/AIAutoma
 export const LazyMarketingAutomation = lazyWithRetry(() => import('@/pages/MarketingAutomation'));
 
 // Pages d'import - Lazy load
-export const LazyUnifiedImport = lazyWithRetry(() => import('@/pages/unified/UnifiedImport'));
+export const LazyUnifiedImport = lazyWithRetry(() => import('@/pages/UnifiedImport'));
 export const LazyCSVImportPage = lazyWithRetry(() => import('@/pages/import/CSVImportPage'));
 export const LazyWebScrapingPage = lazyWithRetry(() => import('@/pages/import/WebScrapingPage'));
 export const LazyAPIImportPage = lazyWithRetry(() => import('@/pages/import/APIImportPage'));
@@ -72,3 +72,14 @@ export const LazyContact = lazyWithRetry(() => import('@/pages/Contact'));
 
 // Auth page - Important, mais peut être lazy
 export const LazyAuthPage = lazyWithRetry(() => import('@/pages/AuthPage'));
+
+// Additional pages from App.tsx
+export const LazySEO = lazyWithRetry(() => import('@/pages/SEO'));
+export const LazyAutomations = lazyWithRetry(() => import('@/pages/AutomationPage'));
+export const LazyIntegrations = lazyWithRetry(() => import('@/pages/Integrations'));
+export const LazyCatalog = lazyWithRetry(() => import('@/pages/CatalogueReal'));
+export const LazyReports = lazyWithRetry(() => import('@/pages/Reports'));
+export const LazyMarketplace = lazyWithRetry(() => import('@/pages/Marketplace'));
+export const LazySuppliers = lazyWithRetry(() => import('@/pages/ModernSuppliersHub'));
+export const LazyOrders = lazyWithRetry(() => import('@/pages/ModernOrdersPage'));
+export const LazyCustomers = lazyWithRetry(() => import('@/pages/ModernCustomersPage'));
