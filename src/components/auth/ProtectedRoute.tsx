@@ -2,7 +2,7 @@
  * Composant de protection des routes nécessitant une authentification
  */
 import React from 'react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useUnifiedAuth as useAuth } from '@/contexts/UnifiedAuthContext'
 import { Navigate, useLocation } from 'react-router-dom'
 
 interface ProtectedRouteProps {

@@ -1,5 +1,8 @@
-// FICHIER TEMPORAIRE - Migration vers UnifiedAuthContext en cours
-// Ce fichier sera supprimé une fois la migration terminée
+// TEMPORARY WRAPPER - Will be removed after full migration
+// This file exports UnifiedAuthContext with the old name for backwards compatibility
 
-export { useUnifiedAuth as useAuth } from './UnifiedAuthContext'
-export { UnifiedAuthProvider as AuthProvider } from './UnifiedAuthContext'
+export { 
+  useUnifiedAuth as useAuth,
+  UnifiedAuthProvider as AuthProvider,
+  type Profile
+} from './UnifiedAuthContext';

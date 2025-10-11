@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useUnifiedAuth as useAuth } from '@/contexts/UnifiedAuthContext';
 import { Loader2 } from 'lucide-react';
 
 interface AuthGuardProps {

@@ -1,266 +1,79 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
-import { AuthProvider } from '@/contexts/AuthContext';
 import { UnifiedAuthProvider } from '@/contexts/UnifiedAuthContext';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UnifiedPlanProvider } from '@/components/plan/UnifiedPlanProvider';
 import { HelmetProvider } from 'react-helmet-async';
 import { PerformanceProvider } from '@/components/providers/PerformanceProvider';
-import { AppLayout } from '@/layouts/AppLayout';
 import { NotificationProvider } from '@/components/notifications/NotificationService';
 import { ThemeProvider } from 'next-themes';
 import { GlobalModals } from '@/components/GlobalModals';
 import '@/lib/i18n';
+import { Loader2 } from 'lucide-react';
 
-// Pages
-import Index from '@/pages/Index';
-import UnifiedDashboard from '@/pages/unified/UnifiedDashboard';
-import Orders from '@/pages/Orders';
-import Customers from '@/pages/Customers';
-import Marketing from '@/pages/Marketing';
-import SubscriptionDashboard from '@/pages/SubscriptionDashboard';
-import QuotaManagerPage from '@/pages/QuotaManagerPage';
-import Suppliers from "@/pages/Suppliers";
-import AutomationPage from '@/pages/AutomationPage';
-import ProductIntelligencePage from '@/pages/ProductIntelligencePage';
-import UnifiedImport from '@/pages/unified/UnifiedImport';
-import URLImportConfig from '@/pages/import/URLImportConfig';
-import XMLImportConfig from '@/pages/import/XMLImportConfig';
-import FTPImportConfig from '@/pages/import/FTPImportConfig';
-import ScheduledImportConfig from '@/pages/import/ScheduledImportConfig';
-import BulkImportConfig from '@/pages/import/BulkImportConfig';
-import AIImportConfig from '@/pages/import/AIImportConfig';
-import ImportHistory from '@/pages/ImportHistory';
-import ImportedProducts from '@/pages/ImportedProducts';
-import ImportMonitoringPage from '@/pages/ImportMonitoring';
-import { ModuleRoutes } from '@/components/routing/ModuleRoutes';
-import Products from '@/pages/Products';
-import { RequirePlan } from '@/components/plan/RequirePlan';
-import { AdminRoute } from '@/components/auth/AdminRoute';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
-
-// Nouvelles pages modernes
-import ModernProducts from '@/pages/modern/ModernProducts';
-import ModernSuppliers from '@/pages/modern/ModernSuppliers';
-import ModernImport from '@/pages/modern/ModernImport';
-import ModernCustomers from '@/pages/modern/ModernCustomers';
-import ModernOrders from '@/pages/modern/ModernOrders';
-import ModernMarketing from '@/pages/modern/ModernMarketing';
-import { ModernNavigation } from '@/components/layout/ModernNavigation';
-import ModernBilling from '@/pages/modern/ModernBilling';
-import { AdminLayout } from '@/layouts/AdminLayout';
-
-// Nouvelles pages avancées
-import { AdvancedImportPage } from '@/pages/AdvancedImportPage';
-import { AdvancedProductsPage } from '@/pages/AdvancedProductsPage';
-import { AdvancedSuppliersPage } from '@/pages/AdvancedSuppliersPage';
-import { AdvancedModulesHub } from '@/pages/AdvancedModulesHub';
-import { AdminDashboard } from '@/pages/admin/AdminDashboard';
-import { AdminProducts } from '@/pages/admin/AdminProducts';
-import { AdminOrders } from '@/pages/admin/AdminOrders';
-import { AdminCustomers } from '@/pages/admin/AdminCustomers';
-import { AdminSuppliers } from '@/pages/admin/AdminSuppliers';
-import AdminSubscriptions from '@/pages/admin/AdminSubscriptions';
-import AdminIntegrations from '@/pages/admin/AdminIntegrations';
-import AdminAnalytics from '@/pages/admin/AdminAnalytics';
-import AdminSEO from '@/pages/admin/AdminSEO';
-import AdminCRM from '@/pages/admin/AdminCRM';
-import AdminMarketing from '@/pages/admin/AdminMarketing';
-import AdminBlog from '@/pages/admin/AdminBlog';
-import AdminAI from '@/pages/admin/AdminAI';
-import AdminAutomation from '@/pages/admin/AdminAutomation';
-import AdminSecurity from '@/pages/admin/AdminSecurity';
-import AdminImport from '@/pages/admin/AdminImport';
-import SyncManager from '@/pages/SyncManager';
-import OrdersCenter from '@/pages/OrdersCenter';
-import DashboardHome from '@/pages/DashboardHome';
-import ImportManagement from '@/pages/ImportManagement';
-
-// Nouvelles pages de refonte
-import ModernDashboard from '@/pages/ModernDashboard';
-import ModernSuppliersHub from '@/pages/ModernSuppliersHub'; 
-import ModernProductsPage from '@/pages/ModernProductsPage';
-import ModernSuppliersPage from '@/pages/ModernSuppliersPage';
-import ModernImportPage from '@/pages/ModernImportPage';
-import ModernOrdersPage from '@/pages/ModernOrdersPage';
-import ModernIntegrationsHub from '@/pages/ModernIntegrationsHub';
-import ModernMarketingPage from '@/pages/ModernMarketingPage';
-import ModernCustomersPage from '@/pages/ModernCustomersPage';
-import ModernAnalyticsPage from '@/pages/ModernAnalyticsPage';
-import ModernMarketplacePage from '@/pages/ModernMarketplacePage';
-import ModernSettingsPage from '@/pages/ModernSettingsPage';
-
-// Import specialized pages
-import CSVImportPage from '@/pages/import/CSVImportPage';
-import WebScrapingPage from '@/pages/import/WebScrapingPage';
-import APIImportPage from '@/pages/import/APIImportPage';
-import DatabaseImportPage from '@/pages/import/DatabaseImportPage';
-import AIGenerationPage from '@/pages/import/AIGenerationPage';
-import ScheduledImportsPage from '@/pages/import/ScheduledImportsPage';
-
-// Marketplace pages
-import ProductDetailPage from '@/pages/marketplace/ProductDetailPage';
-import CategoryPage from '@/pages/marketplace/CategoryPage';
-import SupplierCatalogPage from '@/pages/marketplace/SupplierCatalogPage';
-
-// Auth Page
+// Critical pages loaded immediately
 import AuthPage from '@/pages/AuthPage';
-import AdminPanel from '@/pages/AdminPanel';
-import AIStudio from '@/pages/AIStudio';
-import AutomationStudio from '@/pages/AutomationStudio';
-import AnalyticsStudio from '@/pages/AnalyticsStudio';
-import AIAssistant from '@/pages/AIAssistant';
-
-// Business Pages
-import CatalogPage from '@/pages/CatalogPage';
-import CrmPage from '@/pages/CrmPage';
-import MonitoringPage from '@/pages/MonitoringPage';
-import StockPage from '@/pages/StockPage';
-
-// Phase 3 Pages - Différenciation
-import MarketplaceHubPage from '@/pages/MarketplaceHubPage';
-import MultiTenantPage from '@/pages/MultiTenantPage';
-
-// Phase 4 Pages - Enterprise Scalability
-import EnterpriseScalabilityPage from '@/pages/EnterpriseScalabilityPage';
-
-// Phase 5 Pages - AI Intelligence
-import AIPredictiveAnalyticsPage from '@/pages/AIPredictiveAnalyticsPage';
-
-// Profile & Settings Pages
-import Profile from '@/pages/Profile';
-import Settings from '@/pages/Settings';
-
-// Extensions Pages
-import ExtensionsHub from '@/pages/ExtensionsHub';
-import Extensions from '@/pages/Extensions';
-import ExtensionMarketplace from '@/pages/ExtensionMarketplace';
-import ExtensionDeveloper from '@/pages/ExtensionDeveloper';
-import ExtensionCLI from '@/pages/ExtensionCLI';
-import ExtensionWhiteLabel from '@/pages/ExtensionWhiteLabel';
-import ExtensionSSO from '@/pages/ExtensionSSO';
-
-import ExtensionMarketplacePage from '@/pages/ExtensionMarketplacePage';
-import AIAutomationPage from '@/pages/AIAutomationPage';
-import BusinessIntelligencePage from '@/pages/BusinessIntelligencePage';
-
-// Phase 5 Pages - Mobile & Enterprise  
-import MobileDashboardPage from '@/pages/MobileDashboardPage';
-import WhiteLabelPage from '@/pages/WhiteLabelPage';
-import PrintManager from '@/components/print/PrintManager';
-
-// PR6, PR7, PR8 - Nouveaux modules
-import ReturnsPage from '@/pages/ReturnsPage';
-import AdsMarketingPage from '@/pages/AdsMarketingPage';
-import AffiliationPage from '@/pages/AffiliationPage';
-import Returns from '@/pages/Returns';
-import MarketingAutomation from '@/pages/MarketingAutomation';
-import AutomationHub from '@/pages/AutomationHub';
-
-// Phase 4 - Mobile & Extensions
-import PWAInstallPage from '@/pages/PWAInstallPage';
-import FlutterMobilePage from '@/pages/FlutterMobilePage';
-import ExtensionAPIPage from '@/pages/ExtensionAPIPage';
-
-// QA & UX Phase Pages
-import QAPage from '@/pages/QAPage';
-import SupportPage from '@/pages/SupportPage';
-import HelpCenterPage from '@/pages/HelpCenterPage';
-import ApplicationStatusPage from '@/pages/ApplicationStatusPage';
-import PaymentSuccess from '@/pages/PaymentSuccess';
-import PaymentCancelled from '@/pages/PaymentCancelled';
-
-// Landing Pages
-import Features from '@/pages/Features';
-import Pricing from '@/pages/Pricing';
-import Contact from '@/pages/Contact';
-import Testimonials from '@/pages/Testimonials';
-import About from '@/pages/About';
-import ModernBlog from '@/pages/ModernBlog';
-import { BlogPostDetail } from '@/pages/BlogPostDetail';
-import { BlogCategories } from '@/pages/BlogCategories';
-import Legal from '@/pages/Legal';
-import Status from '@/pages/Status';
-
-// Super Dashboard Concurrentiel
-import SuperDashboard from '@/pages/SuperDashboard';
-
-// Unified Pages
-import UnifiedDashboardPage from '@/pages/UnifiedDashboardPage';
-
-import { StoreDashboard } from '@/pages/stores/StoreDashboard';
-import { IntegrationsPage } from '@/pages/stores/IntegrationsPage';
-import { ManageIntegrationPage } from '@/pages/stores/ManageIntegrationPage';
-import ConnectStorePage from '@/pages/stores/ConnectStorePage';
-import StoreDetailPage from '@/pages/stores/StoreDetailPage';
-import { StoreSettingsPage } from '@/pages/stores/StoreSettingsPage';
-
-import { ExtensionDownloadPage } from "./pages/ExtensionDownloadPage";
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
-// Optimized client dashboard for ShopOpti+
-import OptimizedClientDashboard from '@/components/dashboard/OptimizedClientDashboard';
 import NotFoundPage from '@/pages/NotFoundPage';
-import { AuthDebug } from '@/components/debug/AuthDebug';
+import { AppLayout } from '@/layouts/AppLayout';
+import { AdminLayout } from '@/layouts/AdminLayout';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { AdminRoute } from '@/components/auth/AdminRoute';
 
-// Competitive Intelligence Components
-import { WinningProductsMarketplace } from '@/components/intelligence/WinningProductsMarketplace';
-import { SocialTrendsAnalyzer } from '@/components/intelligence/SocialTrendsAnalyzer';
-import { OrderAutomationCenter } from '@/components/automation/OrderAutomationCenter';
-import { StockManagementHub } from '@/components/automation/StockManagementHub';
-import { CreativeStudio } from '@/components/creative/CreativeStudio';
-import { CompetitiveAdvantageHub } from '@/components/dashboard/CompetitiveAdvantageHub';
-import { UnifiedDashboard as CommandCenter } from '@/components/dashboard/UnifiedDashboard';
-import { MobileAppDashboard } from '@/components/mobile/MobileAppDashboard';
-import { TeamCollaboration } from '@/components/team/TeamCollaboration';
-import { WhiteLabelSolution } from '@/components/enterprise/WhiteLabelSolution';
-import { EnterpriseAPI } from '@/components/enterprise/EnterpriseAPI';
+// Lazy load all other pages for performance
+const DashboardHome = lazy(() => import('@/pages/DashboardHome'));
+const SuperDashboard = lazy(() => import('@/pages/SuperDashboard'));
+const OptimizedClientDashboard = lazy(() => import('@/components/dashboard/OptimizedClientDashboard'));
+const Profile = lazy(() => import('@/pages/Profile'));
+const Settings = lazy(() => import('@/pages/Settings'));
+const ModernSuppliersHub = lazy(() => import('@/pages/ModernSuppliersHub'));
+const ModernProductsPage = lazy(() => import('@/pages/ModernProductsPage'));
+const ModernOrdersPage = lazy(() => import('@/pages/ModernOrdersPage'));
+const ModernCustomersPage = lazy(() => import('@/pages/ModernCustomersPage'));
+const ModernAnalyticsPage = lazy(() => import('@/pages/ModernAnalyticsPage'));
+const ModernIntegrationsHub = lazy(() => import('@/pages/ModernIntegrationsHub'));
+const ModernMarketingPage = lazy(() => import('@/pages/ModernMarketingPage'));
+const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard').then(m => ({ default: m.StoreDashboard })));
+const AIStudio = lazy(() => import('@/pages/AIStudio'));
+const AutomationStudio = lazy(() => import('@/pages/AutomationStudio'));
+const AnalyticsStudio = lazy(() => import('@/pages/AnalyticsStudio'));
 
-// Tracking Pages
-import TrackingToday from '@/pages/TrackingToday';
-import CRMCalendar from '@/pages/CRMCalendar';
+// Payment pages
+const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
+const PaymentCancelled = lazy(() => import('@/pages/PaymentCancelled'));
 
-// Team & Stock Management
-import StockManagement from '@/pages/StockManagement';
-import TeamCollaborationPage from '@/pages/TeamCollaboration';
+// Admin pages - lazy loaded
+const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 
-import ExtensionNavigatorPage from '@/pages/import/ExtensionNavigatorPage';
-import ImportConfigurationPage from '@/pages/import/ImportConfigurationPage';  
-import ImportHistoryPage from '@/pages/import/ImportHistoryPage';
-import EnterpriseAPIPage from '@/pages/EnterpriseAPIPage';
-import ObservabilityPage from '@/pages/ObservabilityPage';
-import CreativeStudioPage from '@/pages/CreativeStudioPage';
-import ProfitCalculator from '@/pages/ProfitCalculator';
-import ShippingManager from '@/pages/ShippingManager';
-import ReviewsManager from '@/pages/ReviewsManager';
-import AutoOrderSystem from '@/pages/AutoOrderSystem';
-import ProductSourcingHub from '@/pages/ProductSourcingHub';
-import InventoryManagement from '@/pages/InventoryManagement';
-import PixelTracking from '@/pages/PixelTracking';
-import EmailMarketing from '@/pages/EmailMarketing';
-import UpsellManager from '@/pages/UpsellManager';
-import MultiStoreManager from '@/pages/MultiStoreManager';
-import ProductFinder from '@/pages/ProductFinder';
-import LiveChatSupport from '@/pages/LiveChatSupport';
-import ReturnsManagement from '@/pages/ReturnsManagement';
-import WarehouseManagement from '@/pages/WarehouseManagement';
-import AffiliateProgram from '@/pages/AffiliateProgram';
-import DynamicPricing from '@/pages/DynamicPricing';
-import AdvancedMonitoringPage from '@/pages/AdvancedMonitoringPage';
-import ImportSourcesPage from '@/pages/ImportSourcesPage';
-import { PagePlaceholder } from '@/pages/PagePlaceholder';
-import SEOPage from '@/pages/SEOPage';
-import FinancePage from '@/pages/FinancePage';
-
+// Optimized QueryClient with caching strategies
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 2 * 60 * 1000, // 2 minutes
-      gcTime: 10 * 60 * 1000,   // 10 minutes
+      staleTime: 5 * 60 * 1000, // 5 minutes - data considered fresh
+      gcTime: 10 * 60 * 1000,   // 10 minutes - cache retention
+      refetchOnWindowFocus: false, // Reduce unnecessary refetches
+      refetchOnReconnect: true,
+      retry: 1, // Only retry failed requests once
+      networkMode: 'offlineFirst', // Prefer cached data when available
+    },
+    mutations: {
+      retry: 1,
+      networkMode: 'online',
     },
   },
 });
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="text-center space-y-4">
+      <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+      <p className="text-sm text-muted-foreground">Chargement...</p>
+    </div>
+  </div>
+);
 
 function App() {
   return (
@@ -277,1191 +90,135 @@ function App() {
               <UnifiedAuthProvider>
                 <UnifiedPlanProvider>
                   <NotificationProvider>
-              <Routes>
-                <Route path="/dashboard" element={
-                  <ProtectedRoute>
-                    <AppLayout><DashboardHome /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/auth" element={<AuthPage />} />
-                
-                {/* Payment Routes */}
-                <Route path="/payment/success" element={<PaymentSuccess />} />
-                <Route path="/payment/cancelled" element={<PaymentCancelled />} />
-                
-                <Route path="/profile" element={
-                  <ProtectedRoute>
-                    <AppLayout><Profile /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/settings" element={
-                  <ProtectedRoute>
-                    <AppLayout><Settings /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/modern" element={<AppLayout><ModernNavigation /></AppLayout>} />
-                <Route path="/dashboard-super" element={
-                  <ProtectedRoute>
-                    <AppLayout><SuperDashboard /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/dashboard-classic" element={
-                  <ProtectedRoute>
-                    <AppLayout><OptimizedClientDashboard /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/ai-studio" element={
-                  <ProtectedRoute>
-                    <AppLayout><AIStudio /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/automation-studio" element={
-                  <ProtectedRoute>
-                    <AppLayout><AutomationStudio /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/analytics-studio" element={
-                  <ProtectedRoute>
-                    <AppLayout><AnalyticsStudio /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/dashboard-old" element={
-                  <ProtectedRoute>
-                    <AppLayout><UnifiedDashboard /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Hub fournisseurs moderne */}
-                <Route path="/suppliers" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernSuppliersHub /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/suppliers-old" element={
-                  <ProtectedRoute>
-                    <AppLayout><Suppliers /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                {/* Products moderne */}
-                <Route path="/products" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernProductsPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Orders moderne */}
-                <Route path="/orders" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernOrdersPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Customers moderne */}
-                <Route path="/customers" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernCustomersPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Analytics moderne */}
-                <Route path="/analytics" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernAnalyticsPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Intégrations Hub */}
-                <Route path="/integrations" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernIntegrationsHub /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Marketing Hub */}
-                <Route path="/marketing" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernMarketingPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Stores */}
-                <Route path="/stores" element={
-                  <ProtectedRoute>
-                    <AppLayout><StoreDashboard /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/stores/connect" element={
-                  <ProtectedRoute>
-                    <AppLayout><ConnectStorePage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/stores/integrations" element={
-                  <ProtectedRoute>
-                    <AppLayout><IntegrationsPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/stores/integrations/:id" element={
-                  <ProtectedRoute>
-                    <AppLayout><ManageIntegrationPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/stores/:storeId" element={
-                  <ProtectedRoute>
-                    <AppLayout><StoreDetailPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/stores/:storeId/settings" element={
-                  <ProtectedRoute>
-                    <AppLayout><StoreSettingsPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Dashboard Stores Routes */}
-                <Route path="/dashboard/stores" element={
-                  <ProtectedRoute>
-                    <AppLayout><StoreDashboard /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/dashboard/stores/connect" element={
-                  <ProtectedRoute>
-                    <AppLayout><ConnectStorePage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/dashboard/stores/:storeId" element={
-                  <ProtectedRoute>
-                    <AppLayout><StoreDetailPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/dashboard/stores/:storeId/settings" element={
-                  <ProtectedRoute>
-                    <AppLayout><StoreSettingsPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Marketplace */}
-                <Route path="/marketplace" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernMarketplacePage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/marketplace/product/:id" element={
-                  <ProtectedRoute>
-                    <AppLayout><ProductDetailPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/marketplace/category/:category" element={
-                  <ProtectedRoute>
-                    <AppLayout><CategoryPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/marketplace/supplier/:supplierId" element={
-                  <ProtectedRoute>
-                    <AppLayout><SupplierCatalogPage /></AppLayout>
-                  </ProtectedRoute>
-                 } />
-                 
-                 {/* Catalog Management */}
-                 <Route path="/catalog/*" element={
-                   <ProtectedRoute>
-                     <AppLayout><CatalogPage /></AppLayout>
-                   </ProtectedRoute>
-                 } />
-                 
-                 {/* CRM & Marketing */}
-                 <Route path="/crm" element={
-                   <ProtectedRoute>
-                     <AppLayout><CrmPage /></AppLayout>
-                   </ProtectedRoute>
-                 } />
-                 
-                 {/* System Monitoring */}
-                 <Route path="/monitoring" element={
-                   <ProtectedRoute>
-                     <AppLayout><MonitoringPage /></AppLayout>
-                   </ProtectedRoute>
-                 } />
-                 
-                 {/* PR6, PR7, PR8 - Nouveaux modules */}
-                 <Route path="/returns" element={
-                   <ProtectedRoute>
-                     <RequirePlan minPlan="ultra_pro">
-                       <AppLayout><ReturnsPage /></AppLayout>
-                     </RequirePlan>
-                   </ProtectedRoute>
-                 } />
-                 <Route path="/ads-marketing" element={
-                   <ProtectedRoute>
-                     <RequirePlan minPlan="ultra_pro">
-                       <AppLayout><AdsMarketingPage /></AppLayout>
-                     </RequirePlan>
-                   </ProtectedRoute>
-                 } />
-                 <Route path="/affiliation" element={
-                   <ProtectedRoute>
-                     <RequirePlan minPlan="ultra_pro">
-                       <AppLayout><AffiliationPage /></AppLayout>
-                     </RequirePlan>
-                   </ProtectedRoute>
-                  } />
-                  
-                  {/* Phase 4 - Mobile & Extensions Routes */}
-                  <Route path="/pwa-install" element={
-                    <ProtectedRoute>
-                      <AppLayout><PWAInstallPage /></AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/flutter-mobile" element={
-                    <ProtectedRoute>
-                      <AppLayout><FlutterMobilePage /></AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/extensions-api" element={
-                    <ProtectedRoute>
-                      <RequirePlan minPlan="pro">
-                        <AppLayout><ExtensionAPIPage /></AppLayout>
-                      </RequirePlan>
-                    </ProtectedRoute>
-                  } />
-                  
-                  {/* Phase 3 - Différenciation Routes */}
-                 <Route path="/marketplace-hub" element={
-                   <ProtectedRoute>
-                     <RequirePlan minPlan="ultra_pro">
-                       <AppLayout><MarketplaceHubPage /></AppLayout>
-                     </RequirePlan>
-                   </ProtectedRoute>
-                 } />
-                 <Route path="/multi-tenant" element={
-                   <ProtectedRoute>
-                     <RequirePlan minPlan="ultra_pro">
-                       <AppLayout><MultiTenantPage /></AppLayout>
-                     </RequirePlan>
-                   </ProtectedRoute>
-                 } />
-                   <Route path="/observability" element={
-                     <ProtectedRoute>
-                       <RequirePlan minPlan="ultra_pro">
-                         <AppLayout><ObservabilityPage /></AppLayout>
-                       </RequirePlan>
-                     </ProtectedRoute>
-                   } />
-                   
-                    {/* Phase 4 - Enterprise Scalability Routes */}
-                    <Route path="/enterprise-scalability" element={
-                      <ProtectedRoute>
-                        <RequirePlan minPlan="ultra_pro">
-                          <AppLayout><EnterpriseScalabilityPage /></AppLayout>
-                        </RequirePlan>
-                      </ProtectedRoute>
-                    } />
+                    <Suspense fallback={<PageLoader />}>
+                      <Routes>
+                        {/* Public routes */}
+                        <Route path="/auth" element={<AuthPage />} />
+                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                        
+                        {/* Payment Routes */}
+                        <Route path="/payment/success" element={<PaymentSuccess />} />
+                        <Route path="/payment/cancelled" element={<PaymentCancelled />} />
+                        
+                        {/* Protected routes */}
+                        <Route path="/dashboard" element={
+                          <ProtectedRoute>
+                            <AppLayout><DashboardHome /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/dashboard-super" element={
+                          <ProtectedRoute>
+                            <AppLayout><SuperDashboard /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/dashboard-classic" element={
+                          <ProtectedRoute>
+                            <AppLayout><OptimizedClientDashboard /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/profile" element={
+                          <ProtectedRoute>
+                            <AppLayout><Profile /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/settings" element={
+                          <ProtectedRoute>
+                            <AppLayout><Settings /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+
+                        {/* Core features */}
+                        <Route path="/suppliers" element={
+                          <ProtectedRoute>
+                            <AppLayout><ModernSuppliersHub /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/products" element={
+                          <ProtectedRoute>
+                            <AppLayout><ModernProductsPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/orders" element={
+                          <ProtectedRoute>
+                            <AppLayout><ModernOrdersPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/customers" element={
+                          <ProtectedRoute>
+                            <AppLayout><ModernCustomersPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/analytics" element={
+                          <ProtectedRoute>
+                            <AppLayout><ModernAnalyticsPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/integrations" element={
+                          <ProtectedRoute>
+                            <AppLayout><ModernIntegrationsHub /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/marketing" element={
+                          <ProtectedRoute>
+                            <AppLayout><ModernMarketingPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/stores" element={
+                          <ProtectedRoute>
+                            <AppLayout><StoreDashboard /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        {/* AI & Automation Studios */}
+                        <Route path="/ai-studio" element={
+                          <ProtectedRoute>
+                            <AppLayout><AIStudio /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/automation-studio" element={
+                          <ProtectedRoute>
+                            <AppLayout><AutomationStudio /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/analytics-studio" element={
+                          <ProtectedRoute>
+                            <AppLayout><AnalyticsStudio /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+
+                        {/* Admin routes */}
+                        <Route path="/admin/*" element={
+                          <AdminRoute>
+                            <AdminLayout />
+                          </AdminRoute>
+                        } />
+
+                        {/* 404 - must be last */}
+                        <Route path="*" element={<NotFoundPage />} />
+                      </Routes>
+                    </Suspense>
                     
-                    {/* Phase 5 - AI Predictive Analytics */}
-                    <Route path="/ai-predictive-analytics" element={
-                      <ProtectedRoute>
-                        <RequirePlan minPlan="ultra_pro">
-                          <AppLayout><AIPredictiveAnalyticsPage /></AppLayout>
-                        </RequirePlan>
-                      </ProtectedRoute>
-                    } />
-                   
-                   <Route path="/enterprise-api" element={
-                     <ProtectedRoute>
-                       <RequirePlan minPlan="ultra_pro">
-                         <AppLayout><EnterpriseAPIPage /></AppLayout>
-                       </RequirePlan>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/creative-studio" element={
-                    <ProtectedRoute>
-                      <AppLayout><CreativeStudioPage /></AppLayout>
-                    </ProtectedRoute>
-                  } />
-                 
-                 {/* Import moderne */}
-                <Route path="/import" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernImportPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Hub modules avancés */}
-                <Route path="/advanced" element={
-                  <ProtectedRoute>
-                    <AppLayout><AdvancedModulesHub /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Pages avancées inspirées des concurrents */}
-                <Route path="/import/advanced" element={
-                  <ProtectedRoute>
-                    <RequirePlan minPlan="ultra_pro">
-                      <AppLayout><AdvancedImportPage /></AppLayout>
-                    </RequirePlan>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/products/advanced" element={
-                  <ProtectedRoute>
-                    <RequirePlan minPlan="ultra_pro">
-                      <AppLayout><AdvancedProductsPage /></AppLayout>
-                    </RequirePlan>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/suppliers/advanced" element={
-                  <ProtectedRoute>
-                    <RequirePlan minPlan="ultra_pro">
-                      <AppLayout><AdvancedSuppliersPage /></AppLayout>
-                    </RequirePlan>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import/csv" element={
-                  <ProtectedRoute>
-                    <AppLayout><CSVImportPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import/url" element={
-                  <ProtectedRoute>
-                    <AppLayout><WebScrapingPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import/api" element={
-                  <ProtectedRoute>
-                    <AppLayout><APIImportPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import/database" element={
-                  <ProtectedRoute>
-                    <AppLayout><DatabaseImportPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import/ai-generation" element={
-                  <ProtectedRoute>
-                    <AppLayout><AIGenerationPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                 <Route path="/import/scheduled" element={
-                   <ProtectedRoute>
-                     <AppLayout><ScheduledImportsPage /></AppLayout>
-                   </ProtectedRoute>
-                 } />
-                 <Route path="/import/extension-navigator" element={
-                   <ProtectedRoute>
-                     <AppLayout><ExtensionNavigatorPage /></AppLayout>
-                   </ProtectedRoute>
-                 } />
-                 <Route path="/import/configuration" element={
-                   <ProtectedRoute>
-                     <AppLayout><ImportConfigurationPage /></AppLayout>
-                   </ProtectedRoute>
-                 } />
-                  <Route path="/import/history" element={
-                    <ProtectedRoute>
-                      <AppLayout><ImportHistoryPage /></AppLayout>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/import/monitoring" element={
-                    <ProtectedRoute>
-                      <AdminRoute>
-                        <ImportMonitoringPage />
-                      </AdminRoute>
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/automation" element={
-                  <ProtectedRoute>
-                    <AppLayout><AutomationPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/product-intelligence" element={
-                  <ProtectedRoute>
-                    <AppLayout><ProductIntelligencePage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/stock" element={
-                  <ProtectedRoute>
-                    <AppLayout><StockPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import-old" element={<AppLayout><UnifiedImport /></AppLayout>} />
-                
-                {/* Routes modernes avec protection par plan */}
-                <Route path="/modern/products" element={
-                  <AppLayout>
-                    <RequirePlan minPlan="pro">
-                      <ModernProducts />
-                    </RequirePlan>
-                  </AppLayout>
-                } />
-                <Route path="/modern/suppliers" element={
-                  <AppLayout>
-                    <RequirePlan minPlan="pro">
-                      <ModernSuppliers />
-                    </RequirePlan>
-                  </AppLayout>
-                } />
-                
-                {/* Nouvelles routes refonte */}
-                <Route path="/suppliers-v2" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernSuppliersPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import-v2" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernImportPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/modern/billing" element={<AppLayout><ModernBilling /></AppLayout>} />
-                <Route path="/modern/customers" element={
-                  <AppLayout>
-                    <RequirePlan minPlan="pro">
-                      <ModernCustomers />
-                    </RequirePlan>
-                  </AppLayout>
-                } />
-                <Route path="/modern/orders" element={
-                  <AppLayout>
-                    <RequirePlan minPlan="pro">
-                      <ModernOrders />
-                    </RequirePlan>
-                  </AppLayout>
-                } />
-                <Route path="/modern/marketing" element={
-                  <AppLayout>
-                    <RequirePlan minPlan="ultra_pro">
-                      <ModernMarketing />
-                    </RequirePlan>
-                  </AppLayout>
-                } />
-                
-                <Route path="/import/url-config" element={<AppLayout><URLImportConfig /></AppLayout>} />
-                <Route path="/import/xml-config" element={<AppLayout><XMLImportConfig /></AppLayout>} />
-                <Route path="/import/ftp-config" element={<AppLayout><FTPImportConfig /></AppLayout>} />
-                <Route path="/import/scheduled-config" element={<AppLayout><ScheduledImportConfig /></AppLayout>} />
-                <Route path="/import/bulk-config" element={<AppLayout><BulkImportConfig /></AppLayout>} />
-                <Route path="/import/ai-config" element={<AppLayout><AIImportConfig /></AppLayout>} />
-                <Route path="/import/history" element={<AppLayout><ImportHistory /></AppLayout>} />
-                <Route path="/import/products" element={<AppLayout><ImportedProducts /></AppLayout>} />
-                <Route path="/subscription" element={<AppLayout><SubscriptionDashboard /></AppLayout>} />
-                <Route path="/quotas" element={<AppLayout><QuotaManagerPage /></AppLayout>} />
-                
-                {/* Extensions Routes */}
-                <Route path="/extensions" element={
-                  <ProtectedRoute>
-                    <AppLayout><Extensions /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/extensions/hub" element={
-                  <ProtectedRoute>
-                    <AppLayout><ExtensionsHub /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/extensions/marketplace" element={
-                  <ProtectedRoute>
-                    <AppLayout><ExtensionMarketplace /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/extensions/developer" element={
-                  <ProtectedRoute>
-                    <AppLayout><ExtensionDeveloper /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/extensions/cli" element={
-                  <ProtectedRoute>
-                    <RequirePlan minPlan="pro">
-                      <AppLayout><ExtensionCLI /></AppLayout>
-                    </RequirePlan>
-                  </ProtectedRoute>
-                } />
-                <Route path="/extensions/white-label" element={
-                  <ProtectedRoute>
-                    <RequirePlan minPlan="ultra_pro">
-                      <AppLayout><ExtensionWhiteLabel /></AppLayout>
-                    </RequirePlan>
-                  </ProtectedRoute>
-                } />
-                <Route path="/extensions/sso" element={
-                  <ProtectedRoute>
-                    <RequirePlan minPlan="ultra_pro">
-                      <AppLayout><ExtensionSSO /></AppLayout>
-                    </RequirePlan>
-                  </ProtectedRoute>
-                } />
-                <Route path="/print" element={
-                  <ProtectedRoute>
-                    <AppLayout><PrintManager /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/extension-download" element={<ExtensionDownloadPage />} />
-                
-                {/* Competitive Intelligence Routes */}
-                <Route path="/winning-products" element={
-                  <ProtectedRoute>
-                    <AppLayout><WinningProductsMarketplace /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/social-trends" element={
-                  <ProtectedRoute>
-                    <AppLayout><SocialTrendsAnalyzer /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/automation-center" element={
-                  <ProtectedRoute>
-                    <AppLayout><OrderAutomationCenter /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/automation-hub" element={
-                  <ProtectedRoute>
-                    <AppLayout><AutomationHub /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/returns" element={
-                  <ProtectedRoute>
-                    <AppLayout><Returns /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/marketing-automation" element={
-                  <ProtectedRoute>
-                    <AppLayout><MarketingAutomation /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/stock" element={
-                  <ProtectedRoute>
-                    <AppLayout><StockPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/stock-management" element={
-                  <ProtectedRoute>
-                    <AppLayout><StockManagementHub /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Phase 5: Mobile & Performance Features */}
-                <Route path="/mobile-dashboard" element={
-                  <ProtectedRoute>
-                    <AppLayout><MobileDashboardPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/white-label" element={
-                  <ProtectedRoute>
-                    <RequirePlan minPlan="ultra_pro">
-                      <AppLayout><WhiteLabelPage /></AppLayout>
-                    </RequirePlan>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Phase 4: Extension Marketplace & AI Features */}
-                <Route path="/extensions-marketplace" element={
-                  <ProtectedRoute>
-                    <RequirePlan minPlan="ultra_pro">
-                      <AppLayout><ExtensionMarketplacePage /></AppLayout>
-                    </RequirePlan>
-                  </ProtectedRoute>
-                } />
-                <Route path="/ai-automation" element={
-                  <ProtectedRoute>
-                    <RequirePlan minPlan="ultra_pro">
-                      <AppLayout><AIAutomationPage /></AppLayout>
-                    </RequirePlan>
-                  </ProtectedRoute>
-                } />
-                <Route path="/business-intelligence" element={
-                  <ProtectedRoute>
-                    <RequirePlan minPlan="ultra_pro">
-                      <AppLayout><BusinessIntelligencePage /></AppLayout>
-                    </RequirePlan>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Phase 4: Mobile & Enterprise Routes */}
-                <Route path="/mobile-apps" element={
-                  <ProtectedRoute>
-                    <AppLayout><MobileAppDashboard /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/team-collaboration" element={
-                  <ProtectedRoute>
-                    <AppLayout><TeamCollaborationPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/white-label" element={
-                  <ProtectedRoute>
-                    <AppLayout><WhiteLabelSolution /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/enterprise-api" element={
-                  <ProtectedRoute>
-                    <AppLayout><EnterpriseAPI /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Phase 5: Final Integration & Polish Routes */}
-                <Route path="/creative-studio" element={
-                  <ProtectedRoute>
-                    <AppLayout><CreativeStudio /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/competitive-advantage" element={
-                  <ProtectedRoute>
-                    <AppLayout><CompetitiveAdvantageHub /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/command-center" element={
-                  <ProtectedRoute>
-                    <AppLayout><CommandCenter /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Landing Pages */}
-                <Route path="/features" element={<Features />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/testimonials" element={<Testimonials />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/blog" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernBlog /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/blog/post/:id" element={
-                  <ProtectedRoute>
-                    <AppLayout><BlogPostDetail /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/blog/categories" element={
-                  <ProtectedRoute>
-                    <AppLayout><BlogCategories /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/blog/category/:category" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernBlog /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/legal" element={<Legal />} />
-                <Route path="/status" element={<Status />} />
-                <Route path="/support" element={
-                  <ProtectedRoute>
-                    <AppLayout><SupportPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/help" element={
-                  <ProtectedRoute>
-                    <AppLayout><HelpCenterPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/app-status" element={
-                  <ProtectedRoute>
-                    <AppLayout><ApplicationStatusPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/*" element={<AppLayout><ModuleRoutes /></AppLayout>} />
-                
-                {/* Sync Manager Route */}
-                <Route path="/sync-manager" element={
-                  <ProtectedRoute>
-                    <AppLayout><SyncManager /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* New Business Tools */}
-                <Route path="/profit-calculator" element={
-                  <ProtectedRoute>
-                    <AppLayout><ProfitCalculator /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/shipping-manager" element={
-                  <ProtectedRoute>
-                    <AppLayout><ShippingManager /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/reviews-manager" element={
-                  <ProtectedRoute>
-                    <AppLayout><ReviewsManager /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/auto-order" element={
-                  <ProtectedRoute>
-                    <AppLayout><AutoOrderSystem /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/product-sourcing" element={
-                  <ProtectedRoute>
-                    <AppLayout><ProductSourcingHub /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/inventory-management" element={
-                  <ProtectedRoute>
-                    <AppLayout><InventoryManagement /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/pixel-tracking" element={
-                  <ProtectedRoute>
-                    <AppLayout><PixelTracking /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/email-marketing" element={
-                  <ProtectedRoute>
-                    <AppLayout><EmailMarketing /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/upsell-manager" element={
-                  <ProtectedRoute>
-                    <AppLayout><UpsellManager /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/multi-store" element={
-                  <ProtectedRoute>
-                    <AppLayout><MultiStoreManager /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/product-finder" element={
-                  <ProtectedRoute>
-                    <AppLayout><ProductFinder /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/live-chat" element={
-                  <ProtectedRoute>
-                    <AppLayout><LiveChatSupport /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/returns-management" element={
-                  <ProtectedRoute>
-                    <AppLayout><ReturnsManagement /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/warehouse-management" element={
-                  <ProtectedRoute>
-                    <AppLayout><WarehouseManagement /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/affiliate-program" element={
-                  <ProtectedRoute>
-                    <AppLayout><AffiliateProgram /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/dynamic-pricing" element={
-                  <ProtectedRoute>
-                    <AppLayout><DynamicPricing /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/observability" element={
-                  <ProtectedRoute>
-                    <AppLayout><AdvancedMonitoringPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import-sources" element={
-                  <ProtectedRoute>
-                    <AppLayout><ImportSourcesPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* Tracking Routes */}
-                <Route path="/tracking/today" element={
-                  <ProtectedRoute>
-                    <AppLayout><TrackingToday /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* CRM Routes */}
-                <Route path="/crm/calendar" element={
-                  <ProtectedRoute>
-                    <AppLayout><CRMCalendar /></AppLayout>
-                  </ProtectedRoute>
-                } />
-
-                {/* Orders Center Route */}
-                <Route path="/orders-center" element={
-                  <ProtectedRoute>
-                    <AppLayout><OrdersCenter /></AppLayout>
-                  </ProtectedRoute>
-                } />
-
-                {/* AI Assistant Route */}
-                <Route path="/ai-assistant" element={
-                  <ProtectedRoute>
-                    <AppLayout><AIAssistant /></AppLayout>
-                  </ProtectedRoute>
-                } />
-
-                {/* Stock Management Route */}
-                <Route path="/stock-management" element={
-                  <ProtectedRoute>
-                    <AppLayout><StockManagement /></AppLayout>
-                  </ProtectedRoute>
-                } />
-
-                 {/* Import Advanced Route - Updated */}
-                 <Route path="/import-management" element={
-                   <ProtectedRoute>
-                     <AppLayout><ImportManagement /></AppLayout>
-                   </ProtectedRoute>
-                 } />
-                
-                {/* Admin Panel Route */}
-                <Route path="/admin-panel" element={
-                  <AdminRoute>
-                    <AppLayout><AdminPanel /></AppLayout>
-                  </AdminRoute>
-                } />
-
-                {/* Admin Routes avec AdminLayout moderne et Outlet */}
-                <Route path="/admin" element={
-                  <AdminRoute>
-                    <AdminLayout />
-                  </AdminRoute>
-                }>
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="products" element={<AdminProducts />} />
-                  <Route path="orders" element={<AdminOrders />} />
-                  <Route path="customers" element={<AdminCustomers />} />
-                  <Route path="import" element={<AdminImport />} />
-                  <Route path="suppliers" element={<AdminSuppliers />} />
-                  <Route path="analytics" element={<AdminAnalytics />} />
-                  <Route path="crm" element={
-                    <RequirePlan minPlan="pro">
-                      <AdminCRM />
-                    </RequirePlan>
-                  } />
-                  <Route path="marketing" element={
-                    <RequirePlan minPlan="pro">
-                      <AdminMarketing />
-                    </RequirePlan>
-                  } />
-                  <Route path="seo" element={
-                    <RequirePlan minPlan="pro">
-                      <AdminSEO />
-                    </RequirePlan>
-                  } />
-                  <Route path="blog" element={
-                    <RequirePlan minPlan="pro">
-                      <AdminBlog />
-                    </RequirePlan>
-                  } />
-                  <Route path="ai" element={
-                    <RequirePlan minPlan="ultra_pro">
-                      <AdminAI />
-                    </RequirePlan>
-                  } />
-                  <Route path="automation" element={
-                    <RequirePlan minPlan="ultra_pro">
-                      <AdminAutomation />
-                    </RequirePlan>
-                  } />
-                  <Route path="security" element={
-                    <RequirePlan minPlan="ultra_pro">
-                      <AdminSecurity />
-                    </RequirePlan>
-                  } />
-                  <Route path="integrations" element={<AdminIntegrations />} />
-                  <Route path="subscriptions" element={<AdminSubscriptions />} />
-                </Route>
-
-                {/* Routes du nouveau sidebar - 16 catégories, 85 pages */}
-                
-                {/* 🛒 E-COMMERCE */}
-                <Route path="/catalog" element={
-                  <ProtectedRoute>
-                    <AppLayout><CatalogPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* 🎯 SOURCING & IMPORT */}
-                <Route path="/product-finder" element={
-                  <ProtectedRoute>
-                    <AppLayout><ProductFinder /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/product-sourcing" element={
-                  <ProtectedRoute>
-                    <AppLayout><ProductSourcingHub /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import" element={
-                  <ProtectedRoute>
-                    <AppLayout><ImportManagement /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import/csv" element={
-                  <ProtectedRoute>
-                    <AppLayout><CSVImportPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import/api" element={
-                  <ProtectedRoute>
-                    <AppLayout><APIImportPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import/scraping" element={
-                  <ProtectedRoute>
-                    <AppLayout><WebScrapingPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import/ai" element={
-                  <ProtectedRoute>
-                    <AppLayout><AIGenerationPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/import-sources" element={
-                  <ProtectedRoute>
-                    <AppLayout><ImportSourcesPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* 📦 LOGISTIQUE & STOCK */}
-                <Route path="/inventory-management" element={
-                  <ProtectedRoute>
-                    <AppLayout><InventoryManagement /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/warehouse-management" element={
-                  <ProtectedRoute>
-                    <AppLayout><WarehouseManagement /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/shipping-manager" element={
-                  <ProtectedRoute>
-                    <AppLayout><ShippingManager /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/returns-management" element={
-                  <ProtectedRoute>
-                    <AppLayout><ReturnsManagement /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/auto-order" element={
-                  <ProtectedRoute>
-                    <AppLayout><AutoOrderSystem /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* 📢 MARKETING & VENTES */}
-                <Route path="/email-marketing" element={
-                  <ProtectedRoute>
-                    <AppLayout><EmailMarketing /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/pixel-tracking" element={
-                  <ProtectedRoute>
-                    <AppLayout><PixelTracking /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/upsell-manager" element={
-                  <ProtectedRoute>
-                    <AppLayout><UpsellManager /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/affiliate-program" element={
-                  <ProtectedRoute>
-                    <AppLayout><AffiliateProgram /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/ads-automation" element={
-                  <ProtectedRoute>
-                    <AppLayout><AdsMarketingPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/ab-testing" element={
-                  <ProtectedRoute>
-                    <AppLayout><PagePlaceholder title="A/B Testing" badge="A/B" description="Tests A/B pour optimiser vos conversions" /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/blog" element={
-                  <ProtectedRoute>
-                    <AppLayout><ModernBlog /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/seo" element={
-                  <ProtectedRoute>
-                    <AppLayout><SEOPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* 👥 CLIENTS & SUPPORT */}
-                <Route path="/live-chat" element={
-                  <ProtectedRoute>
-                    <AppLayout><LiveChatSupport /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/reviews-manager" element={
-                  <ProtectedRoute>
-                    <AppLayout><ReviewsManager /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/crm/calendar" element={
-                  <ProtectedRoute>
-                    <AppLayout><CRMCalendar /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* 💰 PRICING & FINANCE */}
-                <Route path="/profit-calculator" element={
-                  <ProtectedRoute>
-                    <AppLayout><ProfitCalculator /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/dynamic-pricing" element={
-                  <ProtectedRoute>
-                    <AppLayout><DynamicPricing /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/finance" element={
-                  <ProtectedRoute>
-                    <AppLayout><FinancePage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/pricing-page" element={
-                  <ProtectedRoute>
-                    <AppLayout><Pricing /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* ⚡ AUTOMATISATION */}
-                <Route path="/ai-automation" element={
-                  <ProtectedRoute>
-                    <AppLayout><AIAutomationPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/automation-optimization" element={
-                  <ProtectedRoute>
-                    <AppLayout><PagePlaceholder title="Workflow Automation" badge="FLOW" description="Automatisation avancée des workflows" /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* 🤖 INTELLIGENCE & IA */}
-                <Route path="/ai-assistant" element={
-                  <ProtectedRoute>
-                    <AppLayout><AIAssistant /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/business-intelligence" element={
-                  <ProtectedRoute>
-                    <AppLayout><BusinessIntelligencePage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/creative-studio" element={
-                  <ProtectedRoute>
-                    <AppLayout><CreativeStudioPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* 📈 ANALYTICS & MONITORING */}
-                <Route path="/observability" element={
-                  <ProtectedRoute>
-                    <AppLayout><ObservabilityPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/advanced-analytics-enterprise" element={
-                  <ProtectedRoute>
-                    <AppLayout><PagePlaceholder title="Advanced Analytics" badge="ADVANCED" description="Analytics avancées pour l'entreprise" /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* 🌐 MULTI-STORE & ENTERPRISE */}
-                <Route path="/multi-store" element={
-                  <ProtectedRoute>
-                    <AppLayout><MultiStoreManager /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/multi-tenant" element={
-                  <ProtectedRoute>
-                    <AppLayout><MultiTenantPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/white-label" element={
-                  <ProtectedRoute>
-                    <AppLayout><WhiteLabelPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/enterprise-api" element={
-                  <ProtectedRoute>
-                    <AppLayout><EnterpriseAPIPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* 🔗 INTÉGRATIONS */}
-                <Route path="/marketplace-connector" element={
-                  <ProtectedRoute>
-                    <AppLayout><PagePlaceholder title="Marketplace Connector" description="Connectez vos marketplaces favorites" /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* 🛡️ ADMINISTRATION */}
-                <Route path="/security" element={
-                  <ProtectedRoute>
-                    <AppLayout><PagePlaceholder title="Security" badge="PRO" description="Sécurité et gestion des accès" /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/quota-manager" element={
-                  <ProtectedRoute>
-                    <AppLayout><QuotaManagerPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/team-collaboration" element={
-                  <ProtectedRoute>
-                    <AppLayout><TeamCollaborationPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* 📱 MOBILE & PWA */}
-                <Route path="/pwa-install" element={
-                  <ProtectedRoute>
-                    <AppLayout><PWAInstallPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/flutter-mobile" element={
-                  <ProtectedRoute>
-                    <AppLayout><FlutterMobilePage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/mobile-dashboard" element={
-                  <ProtectedRoute>
-                    <AppLayout><MobileDashboardPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* ❓ SUPPORT & AIDE */}
-                <Route path="/support" element={
-                  <ProtectedRoute>
-                    <AppLayout><SupportPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/help-center" element={
-                  <ProtectedRoute>
-                    <AppLayout><HelpCenterPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/qa" element={
-                  <ProtectedRoute>
-                    <AppLayout><QAPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                <Route path="/application-status" element={
-                  <ProtectedRoute>
-                    <AppLayout><ApplicationStatusPage /></AppLayout>
-                  </ProtectedRoute>
-                } />
-                
-                {/* ⚙️ CONFIGURATION - Déjà configurées plus haut */}
-                
-                {/* 404 Not Found Page */}
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-              <Toaster />
-              <SonnerToaster />
-              <GlobalModals />
-              <AuthDebug />
-            </NotificationProvider>
-          </UnifiedPlanProvider>
-        </UnifiedAuthProvider>
-      </ErrorBoundary>
-    </ThemeProvider>
+                    <GlobalModals />
+                    <Toaster />
+                    <SonnerToaster />
+                  </NotificationProvider>
+                </UnifiedPlanProvider>
+              </UnifiedAuthProvider>
+            </ErrorBoundary>
+          </ThemeProvider>
         </PerformanceProvider>
       </QueryClientProvider>
     </HelmetProvider>
