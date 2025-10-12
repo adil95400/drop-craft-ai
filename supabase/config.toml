@@ -226,6 +226,9 @@ verify_jwt = false
 [functions.ai-chatbot-support]
 verify_jwt = false
 
+[functions.multi-tenant]
+verify_jwt = true
+
 [functions.public-api]
 verify_jwt = false
 
