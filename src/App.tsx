@@ -43,6 +43,7 @@ const AnalyticsStudio = lazy(() => import('@/pages/AnalyticsStudio'));
 // Payment pages
 const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
 const PaymentCancelled = lazy(() => import('@/pages/PaymentCancelled'));
+const Pricing = lazy(() => import('@/pages/Pricing'));
 
 // Admin pages
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
@@ -106,6 +107,7 @@ function App() {
                         {/* Public routes */}
                         <Route path="/auth" element={<AuthPage />} />
                         <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                        <Route path="/pricing" element={<Pricing />} />
                         
                         {/* Payment Routes */}
                         <Route path="/payment/success" element={<PaymentSuccess />} />

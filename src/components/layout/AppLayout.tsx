@@ -23,13 +23,14 @@ import {
   Zap
 } from 'lucide-react';
 import { AppNavigation, QuickActions } from '@/components/navigation/AppNavigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { usePlan } from '@/contexts/PlanContext';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
+import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
+import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, signOut } = useAuth();
-  const { plan, isPro, isUltraPro } = usePlan();
+  const { user, signOut } = useUnifiedAuth();
+  const { plan, isUltraPro, isPro } = useUnifiedPlan();
 
   const getPlanIcon = () => {
     if (isUltraPro) return <Crown className="h-4 w-4 text-yellow-500" />;
@@ -115,12 +116,7 @@ export function AppLayout() {
             {getPlanBadge()}
 
             {/* Notifications */}
-            <Button variant="outline" size="icon" className="relative">
-              <Bell className="h-4 w-4" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                3
-              </Badge>
-            </Button>
+            <NotificationCenter />
 
             {/* User Menu */}
             <DropdownMenu>
