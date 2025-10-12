@@ -1,6 +1,7 @@
 /**
  * Code optimization utilities for bundle size and performance
  */
+import React from 'react';
 
 // Dynamic imports for heavy libraries
 export const loadChartLibrary = () => import('recharts');
@@ -40,5 +41,22 @@ export const registerServiceWorker = async () => {
     } catch (error) {
       console.error('SW registration failed:', error);
     }
+  }
+};
+
+// React optimization helpers
+export const shouldComponentUpdate = <T extends Record<string, any>>(
+  prevProps: T,
+  nextProps: T
+): boolean => {
+  return Object.keys(prevProps).some(key => prevProps[key] !== nextProps[key]);
+};
+
+// Batch state updates
+export const batchStateUpdates = (callback: () => void) => {
+  if ('startTransition' in React) {
+    (React as any).startTransition(callback);
+  } else {
+    callback();
   }
 };
