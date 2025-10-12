@@ -223,6 +223,9 @@ verify_jwt = false
 [functions.ai-sentiment-analysis]
 verify_jwt = false
 
+[functions.ai-chatbot-support]
+verify_jwt = false
+
 [functions.canva-design-optimizer]
 verify_jwt = true
 

@@ -1,6 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AIProductDescriptionGenerator } from '@/components/ai-automation/AIProductDescriptionGenerator';
 import { AIPriceOptimizer } from '@/components/ai-automation/AIPriceOptimizer';
+import { AIMarketingGenerator } from '@/components/ai-automation/AIMarketingGenerator';
+import { AISentimentAnalyzer } from '@/components/ai-automation/AISentimentAnalyzer';
+import { AIChatbotSupport } from '@/components/ai-automation/AIChatbotSupport';
 import { Brain, FileText, DollarSign, MessageSquare, BarChart3 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
@@ -55,21 +58,15 @@ export default function AIAutomationHub() {
           </TabsContent>
 
           <TabsContent value="marketing" className="space-y-4">
-            <div className="text-center py-12 text-muted-foreground">
-              Générateur de contenu marketing - À venir
-            </div>
+            <AIMarketingGenerator />
           </TabsContent>
 
           <TabsContent value="sentiment" className="space-y-4">
-            <div className="text-center py-12 text-muted-foreground">
-              Analyse de sentiment des avis - À venir
-            </div>
+            <AISentimentAnalyzer />
           </TabsContent>
 
           <TabsContent value="chatbot" className="space-y-4">
-            <div className="text-center py-12 text-muted-foreground">
-              Chatbot intelligent support client - À venir
-            </div>
+            <AIChatbotSupport />
           </TabsContent>
         </Tabs>
       </div>
