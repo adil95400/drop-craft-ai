@@ -40,6 +40,7 @@ const AIStudio = lazy(() => import('@/pages/AIStudio'));
 const AutomationStudio = lazy(() => import('@/pages/AutomationStudio'));
 const AnalyticsStudio = lazy(() => import('@/pages/AnalyticsStudio'));
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalytics'));
+const AIAutomationHub = lazy(() => import('@/pages/AIAutomationHub'));
 
 // Payment pages
 const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
@@ -216,6 +217,12 @@ function App() {
                         <Route path="/advanced-analytics" element={
                           <ProtectedRoute>
                             <AppLayout><AdvancedAnalytics /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/ai-automation" element={
+                          <ProtectedRoute>
+                            <AppLayout><AIAutomationHub /></AppLayout>
                           </ProtectedRoute>
                         } />
 

@@ -211,6 +211,18 @@ verify_jwt = true
 [functions.ai-image-enhancer]
 verify_jwt = true
 
+[functions.ai-product-description]
+verify_jwt = false
+
+[functions.ai-marketing-content]
+verify_jwt = false
+
+[functions.ai-price-optimizer]
+verify_jwt = false
+
+[functions.ai-sentiment-analysis]
+verify_jwt = false
+
 [functions.canva-design-optimizer]
 verify_jwt = true
 
