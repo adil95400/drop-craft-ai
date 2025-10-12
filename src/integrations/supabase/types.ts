@@ -531,6 +531,45 @@ export type Database = {
         }
         Relationships: []
       }
+      api_keys: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          key: string
+          last_used_at: string | null
+          name: string
+          permissions: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key: string
+          last_used_at?: string | null
+          name: string
+          permissions?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key?: string
+          last_used_at?: string | null
+          name?: string
+          permissions?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       automated_campaigns: {
         Row: {
           ai_optimization_data: Json
@@ -8517,6 +8556,10 @@ export type Database = {
       detect_suspicious_activity: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      generate_api_key: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_admin_catalog_intelligence: {
         Args: { category_filter?: string; limit_count?: number }

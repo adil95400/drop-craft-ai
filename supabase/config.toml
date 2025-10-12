@@ -226,6 +226,9 @@ verify_jwt = false
 [functions.ai-chatbot-support]
 verify_jwt = false
 
+[functions.public-api]
+verify_jwt = false
+
 [functions.canva-design-optimizer]
 verify_jwt = true
 
@@ -266,4 +269,7 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.analyze-competitor]
+verify_jwt = false
+
+[functions.public-api]
 verify_jwt = false

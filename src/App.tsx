@@ -41,6 +41,8 @@ const AutomationStudio = lazy(() => import('@/pages/AutomationStudio'));
 const AnalyticsStudio = lazy(() => import('@/pages/AnalyticsStudio'));
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalytics'));
 const AIAutomationHub = lazy(() => import('@/pages/AIAutomationHub'));
+const APIDocumentationPage = lazy(() => import('@/pages/APIDocumentationPage'));
+const SettingsPage = lazy(() => import('@/pages/Settings'));
 
 // Payment pages
 const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
@@ -142,7 +144,7 @@ function App() {
                         
                         <Route path="/settings" element={
                           <ProtectedRoute>
-                            <AppLayout><Settings /></AppLayout>
+                            <AppLayout><SettingsPage /></AppLayout>
                           </ProtectedRoute>
                         } />
 
@@ -223,6 +225,12 @@ function App() {
                         <Route path="/ai-automation" element={
                           <ProtectedRoute>
                             <AppLayout><AIAutomationHub /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/api-docs" element={
+                          <ProtectedRoute>
+                            <AppLayout><APIDocumentationPage /></AppLayout>
                           </ProtectedRoute>
                         } />
 
