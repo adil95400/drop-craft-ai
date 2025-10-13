@@ -6,6 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { AIAssistantChat } from '@/components/ai/AIAssistantChat';
 import { ContentGenerator } from '@/components/ai/ContentGenerator';
 import { PredictiveAnalyzer } from '@/components/ai/PredictiveAnalyzer';
+import { AIProductDescriptionGenerator } from '@/components/ai/AIProductDescriptionGenerator';
+import { AIPricingOptimizer } from '@/components/ai/AIPricingOptimizer';
+import { AIMarketingGenerator } from '@/components/ai/AIMarketingGenerator';
+import { AISentimentAnalyzer } from '@/components/ai/AISentimentAnalyzer';
 import {
   Brain,
   Bot,
@@ -17,7 +21,9 @@ import {
   BarChart3,
   Wand2,
   MessageSquare,
-  Clock
+  Clock,
+  DollarSign,
+  Mail
 } from 'lucide-react';
 
 export default function AIStudio() {
@@ -163,18 +169,34 @@ export default function AIStudio() {
 
       {/* Contenu principal */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="assistant" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
-            Assistant IA
+            Assistant
           </TabsTrigger>
           <TabsTrigger value="content" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Générateur
+            Contenu
           </TabsTrigger>
           <TabsTrigger value="analysis" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
             Analyse
+          </TabsTrigger>
+          <TabsTrigger value="descriptions" className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            Descriptions
+          </TabsTrigger>
+          <TabsTrigger value="pricing" className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            Prix
+          </TabsTrigger>
+          <TabsTrigger value="marketing" className="flex items-center gap-2">
+            <Mail className="h-4 w-4" />
+            Marketing
+          </TabsTrigger>
+          <TabsTrigger value="sentiment" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Sentiment
           </TabsTrigger>
         </TabsList>
 
@@ -201,6 +223,22 @@ export default function AIStudio() {
 
         <TabsContent value="analysis" className="space-y-6">
           <PredictiveAnalyzer />
+        </TabsContent>
+
+        <TabsContent value="descriptions" className="space-y-6">
+          <AIProductDescriptionGenerator />
+        </TabsContent>
+
+        <TabsContent value="pricing" className="space-y-6">
+          <AIPricingOptimizer />
+        </TabsContent>
+
+        <TabsContent value="marketing" className="space-y-6">
+          <AIMarketingGenerator />
+        </TabsContent>
+
+        <TabsContent value="sentiment" className="space-y-6">
+          <AISentimentAnalyzer />
         </TabsContent>
       </Tabs>
 

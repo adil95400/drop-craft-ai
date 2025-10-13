@@ -222,7 +222,9 @@ const navigationGroups: NavigationGroup[] = [
     items: [
       { title: "Intégrations Hub", url: "/integrations", icon: Link2 },
       { title: "Marketplace Connector", url: "/marketplace-connector", icon: Link },
-      { title: "Extensions", url: "/extensions", icon: Puzzle }
+      { title: "Extensions", url: "/extensions", icon: Puzzle },
+      { title: "API Developer", url: "/api-developer", icon: Code, badge: "API", premium: true },
+      { title: "API Documentation", url: "/api-docs", icon: BookOpen }
     ]
   },
   
@@ -234,7 +236,9 @@ const navigationGroups: NavigationGroup[] = [
       { title: "Admin Panel", url: "/admin", icon: Settings },
       { title: "Security", url: "/security", icon: Shield },
       { title: "Quota Manager", url: "/quota-manager", icon: Gauge },
-      { title: "Team Collaboration", url: "/team-collaboration", icon: Users }
+      { title: "Team Collaboration", url: "/team-collaboration", icon: Users },
+      { title: "Multi-Tenant Management", url: "/multi-tenant-management", icon: Building, badge: "TENANT", premium: true },
+      { title: "Performance Monitoring", url: "/performance-monitoring", icon: Activity, badge: "PERF", premium: true }
     ]
   },
   

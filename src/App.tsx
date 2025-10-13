@@ -42,6 +42,9 @@ const AnalyticsStudio = lazy(() => import('@/pages/AnalyticsStudio'));
 const AdvancedAnalytics = lazy(() => import('@/pages/AdvancedAnalytics'));
 const AIAutomationHub = lazy(() => import('@/pages/AIAutomationHub'));
 const APIDocumentationPage = lazy(() => import('@/pages/APIDocumentationPage'));
+const APIDeveloperPage = lazy(() => import('@/pages/APIDeveloperPage'));
+const MultiTenantManagementPage = lazy(() => import('@/pages/MultiTenantManagementPage'));
+const PerformanceMonitoringPage = lazy(() => import('@/pages/PerformanceMonitoringPage'));
 const SettingsPage = lazy(() => import('@/pages/Settings'));
 
 // Payment pages
@@ -231,6 +234,24 @@ function App() {
                         <Route path="/api-docs" element={
                           <ProtectedRoute>
                             <AppLayout><APIDocumentationPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/api-developer" element={
+                          <ProtectedRoute>
+                            <AppLayout><APIDeveloperPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/multi-tenant-management" element={
+                          <ProtectedRoute>
+                            <AppLayout><MultiTenantManagementPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/performance-monitoring" element={
+                          <ProtectedRoute>
+                            <AppLayout><PerformanceMonitoringPage /></AppLayout>
                           </ProtectedRoute>
                         } />
 
