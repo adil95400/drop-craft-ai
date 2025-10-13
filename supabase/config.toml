@@ -288,3 +288,9 @@ verify_jwt = false
 
 [functions.public-api]
 verify_jwt = false
+
+[functions.extension-product-importer]
+verify_jwt = true
+
+[functions.extension-review-importer]
+verify_jwt = true

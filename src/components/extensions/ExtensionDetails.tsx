@@ -13,6 +13,8 @@ import {
   Clock, Users, Package, CheckCircle2
 } from 'lucide-react'
 import type { Extension } from '@/types/extensions'
+import { ProductImporterConfig } from './ProductImporterConfig'
+import { ReviewImporterConfig } from './ReviewImporterConfig'
 
 interface ExtensionDetailsProps {
   extension: Extension
@@ -153,6 +155,10 @@ export const ExtensionDetails: React.FC<ExtensionDetailsProps> = ({
               <p>{extension.description}</p>
             </CardContent>
           </Card>
+
+          {/* Configuration pour les extensions spécifiques */}
+          {extension.id === 'ext-product-importer' && <ProductImporterConfig />}
+          {extension.id === 'ext-review-importer' && <ReviewImporterConfig />}
 
           {extension.screenshots && extension.screenshots.length > 0 && (
             <Card>
