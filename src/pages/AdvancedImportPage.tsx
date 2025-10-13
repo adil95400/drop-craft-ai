@@ -231,7 +231,18 @@ const AdvancedImportPage = () => {
                       <p className="text-xs text-muted-foreground">Format recommandé</p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={async () => {
+                      const { importExportService } = await import('@/services/importExportService')
+                      importExportService.downloadTemplate()
+                      toast({
+                        title: "Téléchargement démarré",
+                        description: "Le modèle CSV a été téléchargé"
+                      })
+                    }}
+                  >
                     Télécharger
                   </Button>
                 </div>

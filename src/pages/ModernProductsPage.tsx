@@ -63,8 +63,19 @@ export default function ModernProductsPage() {
           viewMode="list"
           onViewModeChange={() => {}}
           onCreateNew={() => setCreateDialogOpen(true)}
-          onImport={() => {}}
-          onExport={() => {}}
+          onImport={() => {
+            // Navigate to advanced import page
+            window.location.href = '/import/advanced'
+          }}
+          onExport={async () => {
+            try {
+              const { importExportService } = await import('@/services/importExportService')
+              const userId = localStorage.getItem('userId') || ''
+              await importExportService.exportAllProducts(userId)
+            } catch (error) {
+              console.error('Export error:', error)
+            }
+          }}
         />
 
         {/* Bulk Operations */}

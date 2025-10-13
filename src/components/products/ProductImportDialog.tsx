@@ -14,6 +14,7 @@ import { FileText, Globe, Database, Sparkles, Upload, Download, Loader2, Shoppin
 import { useToast } from '@/hooks/use-toast'
 import { importExportService } from '@/services/importExportService'
 import { useCatalog } from '@/domains/commerce/hooks/useCatalog'
+import { supabase } from '@/integrations/supabase/client'
 
 interface ProductImportDialogProps {
   open: boolean
@@ -55,7 +56,9 @@ export function ProductImportDialog({ open, onOpenChange }: ProductImportDialogP
       switch (selectedMethod) {
         case 'csv':
           if (!file) throw new Error('Veuillez sélectionner un fichier CSV')
-          result = await importExportService.importFromCSV(file)
+          const userId = (await supabase.auth.getUser()).data.user?.id
+          if (!userId) throw new Error('Utilisateur non authentifié')
+          result = await importExportService.importFromCSV(file, userId)
           break
         case 'url':
           if (!url.trim()) throw new Error('Veuillez saisir une URL valide')
