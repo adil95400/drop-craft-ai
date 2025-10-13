@@ -23,6 +23,14 @@ import { AdminLayout } from '@/layouts/AdminLayout';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { AdminRoute } from '@/components/auth/AdminRoute';
 
+// Public pages
+const ModernBlog = lazy(() => import('@/pages/ModernBlog'));
+const Contact = lazy(() => import('@/pages/Contact'));
+const FAQ = lazy(() => import('@/pages/FAQ'));
+const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
+const About = lazy(() => import('@/pages/About'));
+
 // Lazy load all other pages for performance
 const DashboardHome = lazy(() => import('@/pages/DashboardHome'));
 const SuperDashboard = lazy(() => import('@/pages/SuperDashboard'));
@@ -37,6 +45,15 @@ const ModernAnalyticsPage = lazy(() => import('@/pages/ModernAnalyticsPage'));
 const ModernIntegrationsHub = lazy(() => import('@/pages/ModernIntegrationsHub'));
 const ModernMarketingPage = lazy(() => import('@/pages/ModernMarketingPage'));
 const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard').then(m => ({ default: m.StoreDashboard })));
+const CRM = lazy(() => import('@/pages/CRM'));
+const CRMLeads = lazy(() => import('@/pages/CRMLeads'));
+const CRMActivity = lazy(() => import('@/pages/CRMActivity'));
+const CRMEmails = lazy(() => import('@/pages/CRMEmails'));
+const CRMCalls = lazy(() => import('@/pages/CRMCalls'));
+const CRMCalendar = lazy(() => import('@/pages/CRMCalendar'));
+const Catalogue = lazy(() => import('@/pages/CatalogueReal'));
+const Extension = lazy(() => import('@/pages/Extension'));
+const Marketplace = lazy(() => import('@/pages/Marketplace'));
 const AIStudio = lazy(() => import('@/pages/AIStudio'));
 const AutomationStudio = lazy(() => import('@/pages/AutomationStudio'));
 const AnalyticsStudio = lazy(() => import('@/pages/AnalyticsStudio'));
@@ -60,12 +77,7 @@ const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then(m 
 const SEO = lazy(() => import('@/pages/SEO'));
 const Automations = lazy(() => import('@/pages/AutomationPage'));
 const Integrations = lazy(() => import('@/pages/Integrations'));
-const Catalog = lazy(() => import('@/pages/CatalogueReal'));
 const Reports = lazy(() => import('@/pages/Reports'));
-const Marketplace = lazy(() => import('@/pages/Marketplace'));
-const Suppliers = lazy(() => import('@/pages/ModernSuppliersHub'));
-const Orders = lazy(() => import('@/pages/ModernOrdersPage'));
-const Customers = lazy(() => import('@/pages/ModernCustomersPage'));
 
 // Optimized QueryClient with caching strategies
 const queryClient = new QueryClient({
@@ -116,6 +128,13 @@ function App() {
                         <Route path="/" element={<Index />} />
                         <Route path="/auth" element={<AuthPage />} />
                         <Route path="/pricing" element={<Pricing />} />
+                        <Route path="/blog" element={<ModernBlog />} />
+                        <Route path="/blog/:id" element={<ModernBlog />} />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/faq" element={<FAQ />} />
+                        <Route path="/privacy" element={<PrivacyPolicy />} />
+                        <Route path="/terms" element={<TermsOfService />} />
+                        <Route path="/about" element={<About />} />
                         
                         {/* Payment Routes */}
                         <Route path="/payment/success" element={<PaymentSuccess />} />
@@ -201,6 +220,60 @@ function App() {
                           </ProtectedRoute>
                         } />
                         
+                        <Route path="/crm" element={
+                          <ProtectedRoute>
+                            <AppLayout><CRM /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/crm/leads" element={
+                          <ProtectedRoute>
+                            <AppLayout><CRMLeads /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/crm/activity" element={
+                          <ProtectedRoute>
+                            <AppLayout><CRMActivity /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/crm/emails" element={
+                          <ProtectedRoute>
+                            <AppLayout><CRMEmails /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/crm/calls" element={
+                          <ProtectedRoute>
+                            <AppLayout><CRMCalls /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/crm/calendar" element={
+                          <ProtectedRoute>
+                            <AppLayout><CRMCalendar /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/catalog" element={
+                          <ProtectedRoute>
+                            <AppLayout><Catalogue /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/extension" element={
+                          <ProtectedRoute>
+                            <AppLayout><Extension /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/marketplace" element={
+                          <ProtectedRoute>
+                            <AppLayout><Marketplace /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
                         {/* AI & Automation Studios */}
                         <Route path="/ai-studio" element={
                           <ProtectedRoute>
@@ -253,6 +326,24 @@ function App() {
                         <Route path="/performance-monitoring" element={
                           <ProtectedRoute>
                             <AppLayout><PerformanceMonitoringPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/seo" element={
+                          <ProtectedRoute>
+                            <AppLayout><SEO /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/automations" element={
+                          <ProtectedRoute>
+                            <AppLayout><Automations /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/reports" element={
+                          <ProtectedRoute>
+                            <AppLayout><Reports /></AppLayout>
                           </ProtectedRoute>
                         } />
 
