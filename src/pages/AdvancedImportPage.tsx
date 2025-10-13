@@ -3,11 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Download, Upload, History, Settings2 } from 'lucide-react';
-import { useImportExport } from '@/hooks/useImportExport';
+import { useOptimizedImport } from '@/hooks/useOptimizedImport';
+import { useOptimizedExport } from '@/hooks/useOptimizedExport';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { ImportZone } from '@/components/import/ImportZone';
 import { ImportProgress as EnhancedImportProgress } from '@/components/import/EnhancedImportProgress';
 import { ImportHistory } from '@/components/import/ImportHistory';
-import { importExportService } from '@/services/importExportService';
 
 function AdvancedImportPage() {
   const [importOptions, setImportOptions] = useState({
@@ -16,20 +18,30 @@ function AdvancedImportPage() {
     skipRows: 1,
   });
 
-  const {
-    importData,
-    isImporting,
-    progress,
-    importHistory,
-    historyLoading,
-  } = useImportExport();
+  const { importData, isImporting, progress, status, details } = useOptimizedImport();
+  const { downloadTemplate } = useOptimizedExport();
+
+  // Fetch import history
+  const { data: importHistory, isLoading: historyLoading } = useQuery({
+    queryKey: ['import-history'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('import_jobs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
   const handleFileSelect = (file: File) => {
-    importData({ file, options: importOptions });
-  };
-
-  const handleDownloadTemplate = async () => {
-    await importExportService.downloadTemplate();
+    importData(file, importOptions);
   };
 
   return (
@@ -41,7 +53,7 @@ function AdvancedImportPage() {
             Importez vos produits depuis différentes sources avec suivi en temps réel
           </p>
         </div>
-        <Button onClick={handleDownloadTemplate} variant="outline">
+        <Button onClick={downloadTemplate} variant="outline">
           <Download className="w-4 h-4 mr-2" />
           Template CSV
         </Button>
@@ -74,8 +86,15 @@ function AdvancedImportPage() {
           {isImporting && (
             <EnhancedImportProgress
               progress={progress}
-              status="processing"
-              message="Traitement des données en cours..."
+              status={status}
+              message={
+                status === 'processing' 
+                  ? 'Traitement des données en cours...' 
+                  : status === 'success'
+                  ? 'Import terminé avec succès'
+                  : 'Erreur lors de l\'import'
+              }
+              details={details}
             />
           )}
 
