@@ -15,6 +15,7 @@ import '@/lib/i18n';
 import { Loader2 } from 'lucide-react';
 
 // Critical pages loaded immediately
+import Index from '@/pages/Index';
 import AuthPage from '@/pages/AuthPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import { AppLayout } from '@/layouts/AppLayout';
@@ -112,8 +113,8 @@ function App() {
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
                         {/* Public routes */}
+                        <Route path="/" element={<Index />} />
                         <Route path="/auth" element={<AuthPage />} />
-                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
                         <Route path="/pricing" element={<Pricing />} />
                         
                         {/* Payment Routes */}
