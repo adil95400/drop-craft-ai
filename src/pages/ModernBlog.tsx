@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -150,6 +151,7 @@ const categories = ['Toutes', 'Intelligence Artificielle', 'Sélection Produits'
 const tags = ['IA', 'Dropshipping', 'Facebook Ads', 'Google Ads', 'Shopify', 'Automation', 'TikTok', 'ROI', 'Stratégie', 'Case Study'];
 
 export default function ModernBlog() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTag, setSelectedTag] = useState('all');
@@ -338,7 +340,7 @@ export default function ModernBlog() {
                               <BlogCard 
                                 key={post.id} 
                                 post={post} 
-                                onClick={() => console.log('Navigate to post:', post.id)}
+                                onClick={() => navigate(`/blog/${post.id}`)}
                               />
                             ))}
                           </div>
