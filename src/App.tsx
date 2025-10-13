@@ -78,6 +78,21 @@ const SEO = lazy(() => import('@/pages/SEO'));
 const Automations = lazy(() => import('@/pages/AutomationPage'));
 const Integrations = lazy(() => import('@/pages/Integrations'));
 const Reports = lazy(() => import('@/pages/Reports'));
+const ConnectStorePage = lazy(() => import('@/pages/stores/ConnectStorePage'));
+const IntegrationsPage = lazy(() => import('@/pages/stores/IntegrationsPage').then(m => ({ default: m.IntegrationsPage })));
+const ManageIntegrationPage = lazy(() => import('@/pages/stores/ManageIntegrationPage').then(m => ({ default: m.ManageIntegrationPage })));
+const MarketplaceHubPage = lazy(() => import('@/pages/MarketplaceHubPage'));
+const MultiTenantPage = lazy(() => import('@/pages/MultiTenantPage'));
+const AdvancedMonitoringPage = lazy(() => import('@/pages/AdvancedMonitoringPage'));
+const ImportSourcesPage = lazy(() => import('@/pages/ImportSourcesPage'));
+const UnifiedImport = lazy(() => import('@/pages/UnifiedImport'));
+const Tracking = lazy(() => import('@/pages/Tracking'));
+const Reviews = lazy(() => import('@/pages/Reviews'));
+const Inventory = lazy(() => import('@/pages/Inventory'));
+const Plugins = lazy(() => import('@/pages/Plugins'));
+const Mobile = lazy(() => import('@/pages/Mobile'));
+const Support = lazy(() => import('@/pages/Support'));
+const ExtensionsHub = lazy(() => import('@/pages/ExtensionsHub'));
 
 // Optimized QueryClient with caching strategies
 const queryClient = new QueryClient({
@@ -217,6 +232,96 @@ function App() {
                         <Route path="/stores" element={
                           <ProtectedRoute>
                             <AppLayout><StoreDashboard /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/stores/connect" element={
+                          <ProtectedRoute>
+                            <AppLayout><ConnectStorePage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/stores/integrations" element={
+                          <ProtectedRoute>
+                            <AppLayout><IntegrationsPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/stores/integrations/:id" element={
+                          <ProtectedRoute>
+                            <AppLayout><ManageIntegrationPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/marketplace-hub" element={
+                          <ProtectedRoute>
+                            <AppLayout><MarketplaceHubPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/multi-tenant" element={
+                          <ProtectedRoute>
+                            <AppLayout><MultiTenantPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/observability" element={
+                          <ProtectedRoute>
+                            <AppLayout><AdvancedMonitoringPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/import" element={
+                          <ProtectedRoute>
+                            <AppLayout><UnifiedImport /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/import/sources" element={
+                          <ProtectedRoute>
+                            <AppLayout><ImportSourcesPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/tracking" element={
+                          <ProtectedRoute>
+                            <AppLayout><Tracking /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/reviews" element={
+                          <ProtectedRoute>
+                            <AppLayout><Reviews /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/inventory" element={
+                          <ProtectedRoute>
+                            <AppLayout><Inventory /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/plugins" element={
+                          <ProtectedRoute>
+                            <AppLayout><Plugins /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/mobile" element={
+                          <ProtectedRoute>
+                            <AppLayout><Mobile /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/support" element={
+                          <ProtectedRoute>
+                            <AppLayout><Support /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/extensions-hub" element={
+                          <ProtectedRoute>
+                            <AppLayout><ExtensionsHub /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
