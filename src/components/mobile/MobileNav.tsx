@@ -58,8 +58,8 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t z-50 pb-safe">
-      <div className="grid grid-cols-5 h-16">
+    <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t z-50 pb-safe">
+      <div className="grid grid-cols-5 h-14 sm:h-16">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -68,26 +68,26 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center justify-center space-y-1 transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center space-y-0.5 sm:space-y-1 transition-all duration-200 ${
                 active 
                   ? 'bg-primary/10 text-primary' 
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground active:scale-95'
               }`}
             >
               <div className="relative">
                 <Icon 
-                  className={`h-5 w-5 ${active ? item.color : ''}`} 
+                  className={`h-4 w-4 sm:h-5 sm:w-5 ${active ? item.color : ''}`} 
                 />
                 {item.label === 'Accueil' && notifications > 0 && (
                   <Badge 
                     variant="destructive" 
-                    className="absolute -top-2 -right-2 h-4 w-4 p-0 text-xs flex items-center justify-center"
+                    className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 p-0 text-[10px] flex items-center justify-center"
                   >
                     {notifications > 9 ? '9+' : notifications}
                   </Badge>
                 )}
               </div>
-              <span className="text-xs font-medium">{item.label}</span>
+              <span className="text-[10px] sm:text-xs font-medium">{item.label}</span>
             </Link>
           );
         })}
@@ -98,25 +98,25 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
 
 export function MobileHeader() {
   return (
-    <div className="bg-white border-b sticky top-0 z-40 pt-safe">
-      <div className="flex items-center justify-between p-4">
+    <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b sticky top-0 z-40 pt-safe">
+      <div className="flex items-center justify-between p-3 sm:p-4">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-white" />
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center">
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
           </div>
           <div>
-            <h1 className="font-bold text-lg">Drop Craft AI</h1>
-            <p className="text-xs text-muted-foreground">Dropshipping Intelligent</p>
+            <h1 className="font-bold text-base sm:text-lg">Shopopti+</h1>
+            <p className="text-xs text-muted-foreground hidden sm:block">Dropshipping Intelligent</p>
           </div>
         </div>
         
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm">
+        <div className="flex items-center space-x-1 sm:space-x-2">
+          <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-9 sm:w-9">
             <Search className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm" className="relative">
+          <Button variant="ghost" size="sm" className="relative h-8 w-8 sm:h-9 sm:w-9">
             <Bell className="h-4 w-4" />
-            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+            <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></div>
           </Button>
         </div>
       </div>
