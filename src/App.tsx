@@ -94,6 +94,11 @@ const Mobile = lazy(() => import('@/pages/Mobile'));
 const Support = lazy(() => import('@/pages/Support'));
 const ExtensionsHub = lazy(() => import('@/pages/ExtensionsHub'));
 
+// Priority pages (from QuickActions)
+const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
+const SyncManagerPage = lazy(() => import('@/pages/SyncManagerPage'));
+const OrdersCenterPage = lazy(() => import('@/pages/OrdersCenterPage'));
+
 // Optimized QueryClient with caching strategies
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -322,6 +327,24 @@ function App() {
                         <Route path="/extensions-hub" element={
                           <ProtectedRoute>
                             <AppLayout><ExtensionsHub /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/import/advanced" element={
+                          <ProtectedRoute>
+                            <AppLayout><AdvancedImportPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/sync-manager" element={
+                          <ProtectedRoute>
+                            <AppLayout><SyncManagerPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/orders-center" element={
+                          <ProtectedRoute>
+                            <AppLayout><OrdersCenterPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
