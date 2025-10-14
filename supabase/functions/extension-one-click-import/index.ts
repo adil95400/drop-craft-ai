@@ -395,11 +395,15 @@ serve(async (req) => {
     console.log(`🚀 Démarrage import ${importType} pour ${urls.length} URL(s)`);
     
     let importedCount = 0;
+    let failedCount = 0;
     const results = [];
 
     if (importType === 'products') {
       // Import des produits
       for (const url of urls) {
+        let importStatus = 'success';
+        let errorMessage = null;
+        
         try {
           console.log(`📦 Traitement: ${url}`);
           
@@ -450,13 +454,39 @@ serve(async (req) => {
           importedCount++;
           
           console.log(`✅ Produit importé avec succès: ${productData.sku}`);
+          
+          // Sauvegarder dans l'historique
+          await supabaseClient.from('import_history').insert({
+            user_id: user.id,
+            source_url: url,
+            platform,
+            status: 'success',
+            products_imported: 1,
+            products_failed: 0,
+            settings: requestData,
+          });
         } catch (error) {
           console.error(`❌ Erreur import produit ${url}:`, error);
+          failedCount++;
+          const platform = detectPlatform(url);
+          
           results.push({ 
             url, 
             success: false, 
             error: error.message,
-            platform: detectPlatform(url),
+            platform,
+          });
+          
+          // Sauvegarder l'échec dans l'historique
+          await supabaseClient.from('import_history').insert({
+            user_id: user.id,
+            source_url: url,
+            platform,
+            status: 'failed',
+            products_imported: 0,
+            products_failed: 1,
+            error_message: error.message,
+            settings: requestData,
           });
         }
       }

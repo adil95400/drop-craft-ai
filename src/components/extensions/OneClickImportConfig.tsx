@@ -7,12 +7,15 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Link as LinkIcon, Package, Star, Settings, History, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { Loader2, Link as LinkIcon, Package, Star, Settings, History, CheckCircle2, XCircle, AlertCircle, Clock, RefreshCw } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useImportHistory } from '@/hooks/useImportHistory';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface ImportResult {
   url: string;
@@ -40,6 +43,7 @@ export const OneClickImportConfig: React.FC = () => {
   const [categoryMapping, setCategoryMapping] = useState<Record<string, string>>({});
   
   const { toast } = useToast();
+  const { data: importHistory, refetch: refetchHistory } = useImportHistory();
 
   const handleImport = async () => {
     if (!urls.trim()) {
@@ -103,6 +107,9 @@ export const OneClickImportConfig: React.FC = () => {
         if (data.imported > 0) {
           setUrls('');
         }
+        
+        // Rafraîchir l'historique
+        refetchHistory();
       } else {
         throw new Error(data.error || 'Erreur lors de l\'import');
       }
@@ -457,20 +464,99 @@ https://store.myshopify.com/products/example`}
 
             {/* Onglet Historique */}
             <TabsContent value="history" className="space-y-4 mt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <History className="w-5 h-5" />
-                <h3 className="text-lg font-semibold">Historique des imports</h3>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <History className="w-5 h-5" />
+                  <h3 className="text-lg font-semibold">Historique des imports</h3>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetchHistory()}
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Actualiser
+                </Button>
               </div>
               
-              <div className="bg-muted/50 p-8 rounded-lg text-center">
-                <History className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">
-                  L'historique des imports sera disponible prochainement
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Vous pourrez consulter tous vos imports passés et leurs statistiques
-                </p>
-              </div>
+              {!importHistory || importHistory.length === 0 ? (
+                <div className="bg-muted/50 p-8 rounded-lg text-center">
+                  <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-muted-foreground">
+                    Aucun import pour le moment
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Vos imports apparaîtront ici avec tous les détails
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {importHistory.map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-4 rounded-lg border hover:bg-accent/5 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2">
+                            {item.status === 'success' ? (
+                              <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            ) : item.status === 'failed' ? (
+                              <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                            ) : (
+                              <AlertCircle className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                            )}
+                            <span className="text-lg">{getPlatformIcon(item.platform)}</span>
+                            <Badge variant="outline" className="uppercase text-xs">
+                              {item.platform}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(item.created_at), 'PPp', { locale: fr })}
+                            </span>
+                          </div>
+                          
+                          <p className="text-sm text-muted-foreground truncate font-mono">
+                            {item.source_url}
+                          </p>
+                          
+                          <div className="flex items-center gap-4 text-xs">
+                            <span className="flex items-center gap-1 text-green-600">
+                              <CheckCircle2 className="w-3 h-3" />
+                              {item.products_imported} importé{item.products_imported > 1 ? 's' : ''}
+                            </span>
+                            {item.products_failed > 0 && (
+                              <span className="flex items-center gap-1 text-red-600">
+                                <XCircle className="w-3 h-3" />
+                                {item.products_failed} échoué{item.products_failed > 1 ? 's' : ''}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {item.error_message && (
+                            <p className="text-xs text-red-600 bg-red-50 dark:bg-red-950 p-2 rounded">
+                              Erreur: {item.error_message}
+                            </p>
+                          )}
+                        </div>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setUrls(item.source_url);
+                            toast({
+                              title: "URL chargée",
+                              description: "Vous pouvez maintenant ré-importer ce produit",
+                            });
+                          }}
+                        >
+                          Ré-importer
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
