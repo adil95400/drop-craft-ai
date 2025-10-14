@@ -15,6 +15,10 @@ import {
 import type { Extension } from '@/types/extensions'
 import { ProductImporterConfig } from './ProductImporterConfig'
 import { ReviewImporterConfig } from './ReviewImporterConfig'
+import { AutoOrderConfig } from './AutoOrderConfig'
+import { PriceMonitorConfig } from './PriceMonitorConfig'
+import { ProductResearchConfig } from './ProductResearchConfig'
+import { MarketplaceSyncConfig } from './MarketplaceSyncConfig'
 
 interface ExtensionDetailsProps {
   extension: Extension
@@ -159,6 +163,10 @@ export const ExtensionDetails: React.FC<ExtensionDetailsProps> = ({
           {/* Configuration pour les extensions spécifiques */}
           {extension.id === 'ext-product-importer' && <ProductImporterConfig />}
           {extension.id === 'ext-review-importer' && <ReviewImporterConfig />}
+          {extension.id === 'ext-auto-order' && <AutoOrderConfig />}
+          {extension.id === 'ext-price-monitor' && <PriceMonitorConfig />}
+          {extension.id === 'ext-product-research' && <ProductResearchConfig />}
+          {extension.id === 'ext-marketplace-sync' && <MarketplaceSyncConfig />}
 
           {extension.screenshots && extension.screenshots.length > 0 && (
             <Card>

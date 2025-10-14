@@ -294,3 +294,15 @@ verify_jwt = true
 
 [functions.extension-review-importer]
 verify_jwt = true
+
+[functions.extension-auto-order]
+verify_jwt = true
+
+[functions.extension-price-monitor]
+verify_jwt = true
+
+[functions.extension-product-research]
+verify_jwt = true
+
+[functions.extension-marketplace-sync]
+verify_jwt = true
