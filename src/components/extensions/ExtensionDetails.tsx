@@ -19,6 +19,7 @@ import { AutoOrderConfig } from './AutoOrderConfig'
 import { PriceMonitorConfig } from './PriceMonitorConfig'
 import { ProductResearchConfig } from './ProductResearchConfig'
 import { MarketplaceSyncConfig } from './MarketplaceSyncConfig'
+import { OneClickImportConfig } from './OneClickImportConfig'
 
 interface ExtensionDetailsProps {
   extension: Extension
@@ -167,6 +168,7 @@ export const ExtensionDetails: React.FC<ExtensionDetailsProps> = ({
           {extension.id === 'ext-price-monitor' && <PriceMonitorConfig />}
           {extension.id === 'ext-product-research' && <ProductResearchConfig />}
           {extension.id === 'ext-marketplace-sync' && <MarketplaceSyncConfig />}
+          {extension.id === 'ext-one-click-import' && <OneClickImportConfig />}
 
           {extension.screenshots && extension.screenshots.length > 0 && (
             <Card>

@@ -299,6 +299,27 @@ class MarketplaceService {
         updated_at: "2024-01-05"
       },
       {
+        id: 'ext-one-click-import',
+        name: 'One-Click Import Pro',
+        description: 'Importez des produits et avis en un clic depuis n\'importe quelle URL de marketplace. Compatible AliExpress, Amazon, eBay et plus.',
+        category: 'Importation',
+        downloads: '12.4K',
+        rating: 4.9,
+        price: 'Gratuit',
+        verified: true,
+        developer: 'Drop Craft Team',
+        version: '1.0.0',
+        lastUpdated: '2024-01-16',
+        featured: true,
+        minPlan: 'free',
+        installCount: 12400,
+        icon: '🚀',
+        screenshots: ['/placeholder.svg'],
+        permissions: ['Créer des produits', 'Importer des avis'],
+        created_at: '2024-01-07',
+        updated_at: '2024-01-16'
+      },
+      {
         id: '5',
         name: "Marketing Automation Suite",
         description: "Automatisation marketing complète",
