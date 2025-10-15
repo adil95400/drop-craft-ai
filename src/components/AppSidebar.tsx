@@ -155,7 +155,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r bg-card/50 backdrop-blur-md">
+    <Sidebar collapsible="icon" className="border-r bg-card/50 backdrop-blur-md">
       <SidebarHeader className="border-b bg-gradient-to-r from-background/80 to-muted/20 backdrop-blur-md">
         <div className="px-2 py-4">
           <ShopoptiLogo />
