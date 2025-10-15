@@ -30,7 +30,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
       <div className="min-h-screen w-full flex bg-background">
         <AppSidebar />
         
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 peer-data-[state=collapsed]:ml-[--sidebar-width-icon] ml-[--sidebar-width] transition-[margin-left] duration-200 ease-linear">
           {/* Header */}
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-16 items-center gap-4 px-6">
