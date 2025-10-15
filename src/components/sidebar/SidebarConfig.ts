@@ -48,6 +48,7 @@ export const userActivityConfig = {
 // Génération dynamique des éléments de sidebar basée sur la configuration des modules
 export function getSidebarItems(currentPlan: PlanType): SidebarItem[] {
   const planBadgeMap: Record<PlanType, string> = {
+    'free': '',
     'standard': '',
     'pro': 'PRO',
     'ultra_pro': 'ULTRA'

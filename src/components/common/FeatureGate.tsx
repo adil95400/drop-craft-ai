@@ -16,12 +16,14 @@ interface FeatureGateProps {
 }
 
 const PLAN_LABELS: Record<PlanType, string> = {
+  'free': 'Gratuit',
   'standard': 'Standard',
   'pro': 'Pro',
   'ultra_pro': 'Ultra Pro'
 };
 
 const PLAN_ICONS: Record<PlanType, React.ComponentType> = {
+  'free': Lock,
   'standard': Lock,
   'pro': Crown,
   'ultra_pro': Zap

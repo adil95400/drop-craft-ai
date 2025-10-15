@@ -8,7 +8,7 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import { supabase } from '@/integrations/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
-export type PlanType = 'standard' | 'pro' | 'ultra_pro'
+export type PlanType = 'standard' | 'pro' | 'ultra_pro' | 'free'
 export type UserRole = 'admin' | 'user'
 export type AdminMode = 'bypass' | 'preview:standard' | 'preview:pro' | 'preview:ultra_pro' | null
 
@@ -20,6 +20,12 @@ export interface UserProfile {
 
 // Configuration des fonctionnalités par plan
 export const PLAN_FEATURES = {
+  free: [
+    'basic-analytics',
+    'basic-import',
+    'standard-catalog',
+    'basic-dashboard'
+  ],
   standard: [
     'basic-analytics',
     'basic-import',
@@ -70,6 +76,11 @@ export const PLAN_FEATURES = {
 
 // Configuration des quotas par plan
 export const PLAN_QUOTAS = {
+  free: {
+    'products-import': 100,
+    'ai-analysis': 10,
+    'api-calls': 1000
+  },
   standard: {
     'products-import': 100,
     'ai-analysis': 10,
@@ -126,7 +137,7 @@ interface UnifiedPlanState {
   canBypass: () => boolean
 }
 
-const PLAN_HIERARCHY = { standard: 0, pro: 1, ultra_pro: 2 }
+const PLAN_HIERARCHY = { free: 0, standard: 0, pro: 1, ultra_pro: 2 }
 
 function calculateEffectivePlan(plan: PlanType, role: UserRole, adminMode: AdminMode): PlanType {
   if (role !== 'admin' || !adminMode) return plan
@@ -213,6 +224,11 @@ export const useUnifiedPlan = create<UnifiedPlanState>()(
           plan: (data?.plan as PlanType) || 'standard',
           role: data?.is_admin ? 'admin' : 'user',
           admin_mode: (data?.admin_mode as AdminMode) || null
+        }
+        
+        // Normaliser 'free' en 'standard'
+        if (profile.plan === 'free') {
+          profile.plan = 'standard';
         }
         
         const effectivePlan = calculateEffectivePlan(profile.plan, profile.role, profile.admin_mode)

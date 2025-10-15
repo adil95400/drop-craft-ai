@@ -1,4 +1,4 @@
-import type { PlanType } from '@/hooks/usePlan';
+import type { PlanType } from '@/lib/unified-plan-system';
 
 // Configuration des modules par plan
 export interface ModuleConfig {
@@ -152,6 +152,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
 
 // Hiérarchie des plans
 export const PLAN_HIERARCHY: Record<PlanType, number> = {
+  'free': 1,
   'standard': 1,
   'pro': 2,
   'ultra_pro': 3,

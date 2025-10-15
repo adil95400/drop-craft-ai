@@ -57,6 +57,7 @@ export interface PlanStore {
 }
 
 const PLAN_HIERARCHY: Record<PlanType, number> = {
+  'free': 1,
   'standard': 1,
   'pro': 2,
   'ultra_pro': 3,

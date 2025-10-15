@@ -34,6 +34,23 @@ interface SmartPlanConfig {
 }
 
 const smartPlanConfigs: Record<PlanType, SmartPlanConfig> = {
+  free: {
+    name: 'Gratuit',
+    price: '0€',
+    icon: Heart,
+    color: 'text-gray-600',
+    bgColor: 'bg-gray-50',
+    borderColor: 'border-gray-200',
+    description: 'Parfait pour découvrir',
+    features: [
+      { name: 'Import basique', included: true, limit: '10/jour' },
+      { name: 'Catalogue produits', included: true, limit: '100 produits' },
+      { name: 'Support communautaire', included: true },
+      { name: 'Analytics de base', included: true },
+      { name: 'AI Analytics', included: false },
+      { name: 'Automatisation', included: false }
+    ]
+  },
   standard: {
     name: 'Gratuit',
     price: '0€',
