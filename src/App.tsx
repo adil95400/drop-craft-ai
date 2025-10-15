@@ -355,6 +355,12 @@ function App() {
                           </ProtectedRoute>
                         } />
                         
+                        <Route path="/crm" element={
+                          <ProtectedRoute>
+                            <AppLayout><CrmPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
                         <Route path="/automation" element={
                           <ProtectedRoute>
                             <AppLayout><AutomationPage /></AppLayout>

@@ -20,12 +20,6 @@ export function AppLayout({
 }: AppLayoutProps) {
   const isMobile = useIsMobile();
   const { user, signOut } = useAuth();
-  
-  // Force la sidebar à être ouverte au chargement
-  React.useEffect(() => {
-    // Supprimer le cookie qui pourrait forcer la sidebar à être fermée
-    document.cookie = "sidebar:state=true; path=/; max-age=604800";
-  }, []);
 
   // Version mobile optimisée
   if (isMobile) {
