@@ -14,6 +14,7 @@ interface UnifiedPlanContextType {
   error: string | null
   updatePlan: (newPlan: PlanType) => Promise<boolean>
   refetch: () => void
+  canBypass: () => boolean  // Ajout de canBypass
   
   // Enhanced feature flags
   getFeatureConfig: (moduleName: string) => {
@@ -27,6 +28,11 @@ const UnifiedPlanContext = createContext<UnifiedPlanContextType | undefined>(und
 
 // Configuration centralisée des fonctionnalités par plan
 const PLAN_FEATURES = {
+  free: [
+    'basic-import',
+    'basic-catalog',
+    'email-support'
+  ],
   standard: [
     'basic-import',
     'basic-catalog',
@@ -77,7 +83,7 @@ const PLAN_FEATURES = {
 } as const
 
 export function UnifiedPlanProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { plan, hasPlan, isUltraPro, isPro, loading, error, updatePlan, refetch } = useSupabasePlan()
   const planStore = usePlanStore()
 
@@ -94,6 +100,11 @@ export function UnifiedPlanProvider({ children }: { children: ReactNode }) {
       refetch()
     }
   }, [user])
+  
+  // Vérifier si l'utilisateur est admin en mode bypass
+  const canBypass = (): boolean => {
+    return (profile?.is_admin && profile?.admin_mode === 'bypass') || false;
+  };
 
   const hasFeature = (feature: string): boolean => {
     return PLAN_FEATURES[plan].includes(feature as any) || planStore.hasFeature(feature)
@@ -162,6 +173,7 @@ export function UnifiedPlanProvider({ children }: { children: ReactNode }) {
     error,
     updatePlan,
     refetch,
+    canBypass,
     getFeatureConfig
   }
 

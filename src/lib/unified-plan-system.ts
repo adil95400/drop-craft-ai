@@ -140,15 +140,16 @@ interface UnifiedPlanState {
 const PLAN_HIERARCHY = { free: 0, standard: 0, pro: 1, ultra_pro: 2 }
 
 function calculateEffectivePlan(plan: PlanType, role: UserRole, adminMode: AdminMode): PlanType {
-  if (role !== 'admin' || !adminMode) return plan
-  
-  if (adminMode === 'bypass') return 'ultra_pro'
-  
-  if (adminMode.startsWith('preview:')) {
-    return adminMode.split(':')[1] as PlanType
+  // Les admins en mode bypass ont toujours le plan ultra_pro
+  if (role === 'admin' && adminMode === 'bypass') {
+    return 'ultra_pro';
   }
   
-  return plan
+  if (role === 'admin' && adminMode && adminMode.startsWith('preview:')) {
+    return adminMode.split(':')[1] as PlanType;
+  }
+  
+  return plan;
 }
 
 export const useUnifiedPlan = create<UnifiedPlanState>()(

@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useUnifiedAuth } from "@/contexts/UnifiedAuthContext";
 import { 
   Search, Bot, ShoppingCart, BarChart3, 
   Truck, Upload, Trophy, TrendingUp, Zap, 
   Users, Brain, Shield, Plug, Settings,
-  ChevronDown, Package, Sparkles
+  ChevronDown, Package, Sparkles, Crown
 } from "lucide-react";
 import {
   Sidebar,
@@ -90,13 +91,16 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
+  const { profile } = useUnifiedAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [openGroups, setOpenGroups] = useState<string[]>(
     moduleGroups.map(g => g.title) // Tous les groupes ouverts par défaut
   );
   
   // Utiliser le système de modules
-  const { availableModules, canAccess, isModuleEnabled } = useModules();
+  const modulesData = useModules();
+  const { availableModules, canAccess, isModuleEnabled } = modulesData;
+  const isAdminBypass = (modulesData as any).isAdminBypass || false;
 
   // Debounce la recherche
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
@@ -167,7 +171,15 @@ export function AppSidebar() {
       <SidebarHeader className="border-b bg-gradient-to-r from-background/80 to-muted/20 backdrop-blur-md">
         <div className="px-2 py-4 animate-fade-in">
           {state !== "collapsed" ? (
-            <ShopoptiLogo />
+            <div className="space-y-2">
+              <ShopoptiLogo />
+              {isAdminBypass && (
+                <Badge className="w-full justify-center bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg animate-pulse">
+                  <Crown className="w-3 h-3 mr-1" />
+                  ADMIN - ACCÈS TOTAL
+                </Badge>
+              )}
+            </div>
           ) : (
             <div className="w-8 h-8 mx-auto bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group">
               <ShoppingCart className="w-5 h-5 text-white group-hover:rotate-12 transition-transform duration-300" />

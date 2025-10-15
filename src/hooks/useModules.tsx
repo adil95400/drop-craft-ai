@@ -1,9 +1,29 @@
 import { useMemo } from 'react';
 import { usePlan } from './usePlan';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { MODULE_REGISTRY, ModuleManager, type ModuleConfig } from '@/config/modules';
 
-export function useModules() {
+
+export interface UseModulesReturn {
+  availableModules: ModuleConfig[];
+  allModules: ModuleConfig[];
+  canAccess: (moduleId: string) => boolean;
+  isModuleEnabled: (moduleId: string) => boolean;
+  hasFeature: (feature: string) => boolean;
+  getModuleConfig: (moduleId: string) => ModuleConfig | null;
+  availableFeatures: string[];
+  currentPlan: any;
+  isAdminBypass: boolean;
+}
+
+export function useModules(): UseModulesReturn {
   const { plan } = usePlan();
+  const { profile } = useUnifiedAuth();
+  
+  // Vérifier si l'utilisateur est admin avec bypass
+  const isAdminBypass = useMemo(() => {
+    return profile?.is_admin && profile?.admin_mode === 'bypass';
+  }, [profile]);
   
   // Créer le ModuleManager avec le plan actuel
   const moduleManager = useMemo(() => {
@@ -12,8 +32,12 @@ export function useModules() {
 
   // Obtenir tous les modules disponibles
   const availableModules = useMemo(() => {
+    // Si admin en mode bypass, tous les modules sont disponibles
+    if (isAdminBypass) {
+      return Object.values(MODULE_REGISTRY);
+    }
     return moduleManager.getAvailableModules();
-  }, [moduleManager]);
+  }, [moduleManager, isAdminBypass]);
 
   // Obtenir tous les modules (pour affichage avec restrictions)
   const allModules = useMemo(() => {
@@ -22,6 +46,10 @@ export function useModules() {
 
   // Vérifier si un module est accessible
   const canAccess = (moduleId: string): boolean => {
+    // Admin bypass a accès à TOUT
+    if (isAdminBypass) {
+      return true;
+    }
     return moduleManager.canAccessModule(moduleId);
   };
 
@@ -33,6 +61,10 @@ export function useModules() {
 
   // Vérifier si une fonctionnalité est disponible
   const hasFeature = (feature: string): boolean => {
+    // Admin bypass a accès à toutes les fonctionnalités
+    if (isAdminBypass) {
+      return true;
+    }
     return moduleManager.hasFeature(feature);
   };
 
@@ -43,8 +75,12 @@ export function useModules() {
 
   // Obtenir les fonctionnalités disponibles
   const availableFeatures = useMemo(() => {
+    // Admin bypass a toutes les fonctionnalités
+    if (isAdminBypass) {
+      return Object.values(MODULE_REGISTRY).flatMap(m => m.features);
+    }
     return moduleManager.getAvailableFeatures();
-  }, [moduleManager]);
+  }, [moduleManager, isAdminBypass]);
 
   return {
     availableModules,
@@ -55,5 +91,6 @@ export function useModules() {
     getModuleConfig,
     availableFeatures,
     currentPlan: plan,
+    isAdminBypass, // Expose le statut admin bypass
   };
 }

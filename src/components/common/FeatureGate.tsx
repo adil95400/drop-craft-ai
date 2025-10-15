@@ -37,8 +37,13 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   showUpgrade = true,
   className
 }) => {
-  const { hasFeature, hasPlan, plan: currentPlan } = useUnifiedPlan();
+  const { hasFeature, hasPlan, plan: currentPlan, canBypass } = useUnifiedPlan();
   const planStore = usePlanStore();
+  
+  // Admin en mode bypass a TOUJOURS accès
+  if (canBypass()) {
+    return <>{children}</>;
+  }
   
   // Determine access
   let hasAccess = true;
