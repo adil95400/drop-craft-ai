@@ -1,11 +1,11 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { 
   Search, Bot, ShoppingCart, BarChart3, 
   Truck, Upload, Trophy, TrendingUp, Zap, 
   Users, Brain, Shield, Plug, Settings,
-  ChevronDown, Package
+  ChevronDown, Package, Sparkles
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,20 +27,25 @@ import { cn } from "@/lib/utils";
 import { MODULE_REGISTRY, type ModuleConfig } from "@/config/modules";
 import { useModules } from "@/hooks/useModules";
 
-// Logo
-const ShopoptiLogo = () => (
-  <div className="flex items-center gap-3 px-2">
-    <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center shadow-lg">
-      <ShoppingCart className="w-5 h-5 text-white" />
+// Logo mémoïsé pour éviter les re-renders inutiles
+const ShopoptiLogo = memo(() => (
+  <div className="flex items-center gap-3 px-2 group">
+    <div className="relative w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 group-hover:shadow-xl group-hover:scale-105">
+      <ShoppingCart className="w-5 h-5 text-white transition-transform duration-300 group-hover:rotate-12" />
+      <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </div>
     <div className="flex flex-col">
-      <span className="font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+      <span className="font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent transition-all duration-300 group-hover:from-primary/80 group-hover:to-secondary/80">
         DropCraft AI
       </span>
-      <span className="text-xs text-muted-foreground -mt-1">Pro Platform</span>
+      <span className="text-xs text-muted-foreground -mt-1 flex items-center gap-1">
+        <Sparkles className="w-3 h-3" />
+        Pro Platform
+      </span>
     </div>
   </div>
-);
+));
+ShopoptiLogo.displayName = "ShopoptiLogo";
 
 // Map des icônes pour chaque module
 const iconMap: Record<string, React.ComponentType<any>> = {
@@ -149,36 +154,36 @@ export function AppSidebar() {
     })).filter(group => group.modules.length > 0);
   }, [debouncedSearchQuery]);
 
-  const getBadgeVariant = (plan: string) => {
+  const getBadgeVariant = useCallback((plan: string) => {
     switch (plan) {
-      case 'pro': return 'bg-purple-500 hover:bg-purple-600 text-white';
-      case 'ultra_pro': return 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white';
+      case 'pro': return 'bg-purple-500 hover:bg-purple-600 text-white shadow-sm';
+      case 'ultra_pro': return 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-md';
       default: return 'bg-secondary text-secondary-foreground';
     }
-  };
+  }, []);
 
   return (
-    <Sidebar collapsible="icon" className="border-r bg-card/50 backdrop-blur-md">
+    <Sidebar collapsible="icon" className="border-r bg-card/50 backdrop-blur-md transition-all duration-300">
       <SidebarHeader className="border-b bg-gradient-to-r from-background/80 to-muted/20 backdrop-blur-md">
-        <div className="px-2 py-4">
+        <div className="px-2 py-4 animate-fade-in">
           {state !== "collapsed" ? (
             <ShopoptiLogo />
           ) : (
-            <div className="w-8 h-8 mx-auto bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center shadow-lg">
-              <ShoppingCart className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 mx-auto bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group">
+              <ShoppingCart className="w-5 h-5 text-white group-hover:rotate-12 transition-transform duration-300" />
             </div>
           )}
         </div>
         
         {state !== "collapsed" && (
-          <div className="px-2 pb-4">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="px-2 pb-4 animate-fade-in">
+            <div className="relative group">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground transition-colors duration-200 group-focus-within:text-primary" />
               <Input
                 placeholder="Rechercher un module..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 bg-background/50 border-border/50"
+                className="pl-8 bg-background/50 border-border/50 transition-all duration-200 focus:bg-background focus:border-primary/50 focus:shadow-sm"
               />
             </div>
           </div>
@@ -201,13 +206,13 @@ export function AppSidebar() {
             >
               <SidebarGroup>
                 <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="group/label w-full hover:bg-accent hover:text-accent-foreground rounded-md transition-colors cursor-pointer">
+                  <SidebarGroupLabel className="group/label w-full hover:bg-accent hover:text-accent-foreground rounded-md transition-all duration-200 cursor-pointer hover:shadow-sm">
                     <div className="flex items-center justify-between w-full">
                       {state !== "collapsed" && (
                         <>
-                          <span className="text-xs font-semibold">{group.title}</span>
+                          <span className="text-xs font-semibold transition-colors duration-200">{group.title}</span>
                           <ChevronDown className={cn(
-                            "h-4 w-4 transition-transform duration-200",
+                            "h-4 w-4 transition-all duration-300 group-hover/label:text-primary",
                             openGroups.includes(group.title) && "rotate-180"
                           )} />
                         </>
@@ -216,7 +221,7 @@ export function AppSidebar() {
                   </SidebarGroupLabel>
                 </CollapsibleTrigger>
 
-                <CollapsibleContent>
+                <CollapsibleContent className="animate-accordion-down">
                   <SidebarGroupContent>
                     <SidebarMenu>
                       {groupModules.map((module) => {
@@ -225,27 +230,35 @@ export function AppSidebar() {
                         const accessible = canAccess(module.id);
 
                         return (
-                          <SidebarMenuItem key={module.id}>
+                          <SidebarMenuItem key={module.id} className="animate-fade-in">
                             <SidebarMenuButton
                               onClick={() => handleNavigate(module.route, module.id)}
+                              tooltip={state === "collapsed" ? module.name : undefined}
                               className={cn(
-                                "w-full justify-start transition-all duration-200",
+                                "w-full justify-start transition-all duration-300 group relative overflow-hidden",
                                 active 
-                                  ? "bg-primary text-primary-foreground shadow-md" 
-                                  : "hover:bg-accent hover:text-accent-foreground",
-                                !accessible && "opacity-50 cursor-not-allowed"
+                                  ? "bg-primary text-primary-foreground shadow-md hover:shadow-lg" 
+                                  : "hover:bg-accent hover:text-accent-foreground hover:shadow-sm",
+                                !accessible && "opacity-50 cursor-not-allowed",
+                                "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700"
                               )}
                               disabled={!accessible}
+                              isActive={active}
                             >
-                              <Icon className="h-4 w-4" />
+                              <Icon className={cn(
+                                "h-4 w-4 transition-all duration-300",
+                                active && "scale-110"
+                              )} />
                               {state !== "collapsed" && (
-                                <div className="flex items-center justify-between w-full">
-                                  <span className="truncate">{module.name}</span>
+                                <div className="flex items-center justify-between w-full gap-2">
+                                  <span className="truncate transition-transform duration-200 group-hover:translate-x-0.5">
+                                    {module.name}
+                                  </span>
                                   {module.minPlan !== 'standard' && (
                                     <Badge 
                                       variant="secondary"
                                       className={cn(
-                                        "text-xs h-5 px-2 font-medium",
+                                        "text-xs h-5 px-2 font-medium transition-all duration-200 group-hover:scale-105",
                                         getBadgeVariant(module.minPlan)
                                       )}
                                     >
@@ -267,8 +280,8 @@ export function AppSidebar() {
         })}
       </SidebarContent>
       
-      {/* Rail pour rouvrir la sidebar en mode collapsed */}
-      <SidebarRail />
+      {/* Rail pour rouvrir la sidebar en mode collapsed avec animation */}
+      <SidebarRail className="transition-all duration-300 hover:bg-primary/10" />
     </Sidebar>
   );
 }
