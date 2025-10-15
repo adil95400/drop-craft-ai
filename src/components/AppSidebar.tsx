@@ -17,6 +17,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
@@ -85,7 +86,9 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [openGroups, setOpenGroups] = useState<string[]>(["🚀 ESSENTIELS"]);
+  const [openGroups, setOpenGroups] = useState<string[]>(
+    moduleGroups.map(g => g.title) // Tous les groupes ouverts par défaut
+  );
   
   // Utiliser le système de modules
   const { availableModules, canAccess, isModuleEnabled } = useModules();
@@ -158,7 +161,13 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r bg-card/50 backdrop-blur-md">
       <SidebarHeader className="border-b bg-gradient-to-r from-background/80 to-muted/20 backdrop-blur-md">
         <div className="px-2 py-4">
-          <ShopoptiLogo />
+          {state !== "collapsed" ? (
+            <ShopoptiLogo />
+          ) : (
+            <div className="w-8 h-8 mx-auto bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center shadow-lg">
+              <ShoppingCart className="w-5 h-5 text-white" />
+            </div>
+          )}
         </div>
         
         {state !== "collapsed" && (
@@ -257,6 +266,9 @@ export function AppSidebar() {
           );
         })}
       </SidebarContent>
+      
+      {/* Rail pour rouvrir la sidebar en mode collapsed */}
+      <SidebarRail />
     </Sidebar>
   );
 }

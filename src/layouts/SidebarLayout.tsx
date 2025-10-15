@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/notifications/NotificationService";
 import { ExtensionMenu } from "@/components/navigation/ExtensionMenu";
 import { Settings } from "lucide-react";
+import React from "react";
 
 interface SidebarLayoutProps {
   children: React.ReactNode;
@@ -24,6 +25,12 @@ interface SidebarLayoutProps {
 
 export function SidebarLayout({ children }: SidebarLayoutProps) {
   const { user, signOut } = useAuth();
+  
+  // Force la sidebar à être ouverte au chargement
+  React.useEffect(() => {
+    // Supprimer le cookie qui pourrait forcer la sidebar à être fermée
+    document.cookie = "sidebar:state=true; path=/; max-age=604800";
+  }, []);
 
   return (
     <SidebarProvider defaultOpen={true}>
