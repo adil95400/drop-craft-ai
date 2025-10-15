@@ -93,6 +93,13 @@ const Plugins = lazy(() => import('@/pages/Plugins'));
 const Mobile = lazy(() => import('@/pages/Mobile'));
 const Support = lazy(() => import('@/pages/Support'));
 const ExtensionsHub = lazy(() => import('@/pages/ExtensionsHub'));
+const WinnersPage = lazy(() => import('@/pages/WinnersPage'));
+const CommercePage = lazy(() => import('@/pages/CommercePage'));
+const SEOManagerPage = lazy(() => import('@/pages/SEOManagerPage'));
+const CrmPage = lazy(() => import('@/pages/CrmPage'));
+const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
+const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
+const AIPage = lazy(() => import('@/pages/AIPage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
@@ -327,6 +334,42 @@ function App() {
                         <Route path="/extensions-hub" element={
                           <ProtectedRoute>
                             <AppLayout><ExtensionsHub /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/winners" element={
+                          <ProtectedRoute>
+                            <AppLayout><WinnersPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/commerce" element={
+                          <ProtectedRoute>
+                            <AppLayout><CommercePage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/seo" element={
+                          <ProtectedRoute>
+                            <AppLayout><SEOManagerPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/automation" element={
+                          <ProtectedRoute>
+                            <AppLayout><AutomationPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/security" element={
+                          <ProtectedRoute>
+                            <AppLayout><SecurityDashboard /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/ai" element={
+                          <ProtectedRoute>
+                            <AppLayout><AIPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
