@@ -26,16 +26,16 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   const { user, signOut } = useAuth();
 
   return (
-    <SidebarProvider defaultOpen>
-      <div className="min-h-screen w-full flex">
+    <SidebarProvider defaultOpen={true}>
+      <div className="min-h-screen w-full flex bg-background">
         <AppSidebar />
         
-        <SidebarInset className="md:ml-[--sidebar-width] md:peer-data-[state=collapsed]:ml-[--sidebar-width-icon] transition-[margin] duration-200 ease-linear">
+        <SidebarInset className="flex-1">
           {/* Header */}
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-16 items-center gap-4 px-6">
-              {/* Sidebar Toggle */}
-              <SidebarTrigger className="h-8 w-8" />
+              {/* Sidebar Toggle - Always visible */}
+              <SidebarTrigger className="h-9 w-9 hover:bg-accent rounded-md transition-colors" />
 
               {/* Search Bar */}
               <div className="flex-1 max-w-md">
