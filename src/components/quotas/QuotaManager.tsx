@@ -60,7 +60,7 @@ const QUOTA_DEFINITIONS = {
 
 export function QuotaManager() {
   const { user } = useAuth();
-  const { plan, isUltraPro, isPro } = useUnifiedPlan();
+  const { currentPlan, isUltraPro, isPro } = useUnifiedPlan();
   const { toast } = useToast();
   const [quotas, setQuotas] = useState({});
   const [limits, setLimits] = useState({});
@@ -84,7 +84,7 @@ export function QuotaManager() {
       const { data: limitsData, error: limitsError } = await supabase
         .from('plans_limits')
         .select('*')
-        .eq('plan', plan);
+        .eq('plan', currentPlan);
 
       if (limitsError) throw limitsError;
 
@@ -139,7 +139,7 @@ export function QuotaManager() {
 
   useEffect(() => {
     loadQuotas();
-  }, [user, plan]);
+  }, [user, currentPlan]);
 
   const getUsagePercentage = (quotaKey) => {
     const current = quotas[quotaKey]?.current || 0;
@@ -208,7 +208,7 @@ export function QuotaManager() {
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Gestion des Quotas</h2>
           <p className="text-muted-foreground">
-            Surveillez votre utilisation et les limites de votre plan {plan}
+            Surveillez votre utilisation et les limites de votre plan {currentPlan}
           </p>
         </div>
         <Button variant="outline" onClick={loadQuotas} disabled={loading}>
@@ -241,7 +241,7 @@ export function QuotaManager() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            Plan Actuel: {plan}
+            Plan Actuel: {currentPlan}
             <Badge variant="default" className="ml-2 capitalize">
               {isUltraPro ? 'Ultra Pro' : isPro ? 'Pro' : 'Standard'}
             </Badge>

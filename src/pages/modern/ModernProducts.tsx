@@ -73,7 +73,7 @@ interface Product {
 export default function ModernProducts() {
   const { user } = useAuth()
   const { toast } = useToast()
-  const { isPro, isUltraPro } = useLegacyPlan(user)
+  const { isPro, isUltraPro } = useLegacyPlan()
   
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)

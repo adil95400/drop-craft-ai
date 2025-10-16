@@ -15,7 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useUnifiedPlan } from "@/components/plan/UnifiedPlanProvider";
+import { useUnifiedPlan } from "@/lib/unified-plan-system";
 import { useModules } from '@/hooks/useModules';
 import { getSidebarItems } from './SidebarConfig';
 import { Search, Crown } from 'lucide-react';
@@ -25,14 +25,14 @@ export function OptimizedSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const navigate = useNavigate();
-  const { plan } = useUnifiedPlan();
+  const { currentPlan } = useUnifiedPlan();
   const { canAccess } = useModules();
   
   // State management optimisé
   const [searchQuery, setSearchQuery] = useState("");
 
   // Génération dynamique des éléments basée sur la configuration des modules
-  const sidebarItems = useMemo(() => getSidebarItems(plan), [plan]);
+  const sidebarItems = useMemo(() => getSidebarItems(currentPlan), [currentPlan]);
 
   // Détection optimisée de la route active
   const isActive = useCallback((url?: string) => {
@@ -225,7 +225,7 @@ export function OptimizedSidebar() {
         )}
 
         {/* Upgrade prompt pour les modules non accessibles */}
-        {!collapsed && plan === 'standard' && (
+        {!collapsed && currentPlan === 'standard' && (
           <div className="mt-auto p-4 border rounded-lg bg-gradient-to-br from-primary/5 to-primary/10">
             <div className="text-center space-y-2">
               <Crown className="h-8 w-8 mx-auto text-primary" />

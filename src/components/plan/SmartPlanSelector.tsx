@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/AuthContext'
-import { useUnifiedPlan } from './UnifiedPlanProvider'
+import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { PlanType } from '@/hooks/usePlan'
 import { useStripeSubscription } from '@/hooks/useStripeSubscription'
 import { useNavigate } from 'react-router-dom'
@@ -120,7 +120,7 @@ export const SmartPlanSelector = () => {
   const [loading, setLoading] = useState<PlanType | null>(null)
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly')
   const { user } = useAuth()
-  const { plan: currentPlan, loading: planLoading } = useUnifiedPlan()
+  const { currentPlan, loading: planLoading } = useUnifiedPlan()
   const { createCheckout } = useStripeSubscription()
   const navigate = useNavigate()
 

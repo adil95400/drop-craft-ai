@@ -3,7 +3,7 @@ import { Lock, Crown, Star, Heart, ArrowRight, Sparkles } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useUnifiedPlan } from './UnifiedPlanProvider'
+import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { PlanType } from '@/hooks/usePlan'
 import { useNavigate } from 'react-router-dom'
 

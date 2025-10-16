@@ -22,7 +22,7 @@ interface OnboardingStep {
 
 export const OnboardingChecklist = () => {
   const { user } = useAuth()
-  const { plan, hasFeature } = usePlan()
+  const { currentPlan, hasFeature } = usePlan()
   const navigate = useNavigate()
   const [steps, setSteps] = useState<OnboardingStep[]>([])
   const [completionRate, setCompletionRate] = useState(0)
@@ -46,7 +46,7 @@ export const OnboardingChecklist = () => {
         title: 'Choisir un plan',
         description: 'Sélectionnez le plan qui correspond à vos besoins',
         icon: CreditCard,
-        completed: plan !== 'free',
+        completed: currentPlan !== 'free',
         action: 'Voir les plans',
         route: '/pricing'
       },
@@ -107,7 +107,7 @@ export const OnboardingChecklist = () => {
     if (user) {
       initializeSteps()
     }
-  }, [user, plan])
+  }, [user, currentPlan])
 
   const handleStepAction = (step: OnboardingStep) => {
     if (step.planRequired && !hasFeature('ai-analysis')) {

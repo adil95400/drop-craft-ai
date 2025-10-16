@@ -18,8 +18,8 @@ const ImportBasic = React.lazy(() => import('./Import'));
 const ImportAdvanced = React.lazy(() => import('./ImportAdvanced'));
 
 const UnifiedImport: React.FC = () => {
-  const { getFeatureConfig } = useUnifiedPlan();
-  const config = getFeatureConfig('import');
+  const { hasFeature } = useUnifiedPlan();
+  const aiImportEnabled = hasFeature('ai-import');
   const [activeTab, setActiveTab] = React.useState<'basic' | 'csv' | 'url' | 'xml' | 'ftp' | 'bulk' | 'history' | 'realtime' | 'recommendations' | 'monitor'>('basic');
   const [csvData, setCsvData] = React.useState<{headers: string[], rows: string[][]} | null>(null);
   const [showMappingInterface, setShowMappingInterface] = React.useState(false);
@@ -56,8 +56,8 @@ const UnifiedImport: React.FC = () => {
       {/* Main Import Interface */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">{config.title}</h1>
-          {config.features['ai-import'] && (
+          <h1 className="text-2xl font-bold">Import de Produits</h1>
+          {aiImportEnabled && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary">
                 🤖 IA Activée

@@ -3,7 +3,7 @@ import { Crown, Star, TrendingUp, Zap, ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useUnifiedPlan } from './UnifiedPlanProvider'
+import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { useStripeSubscription } from '@/hooks/useStripeSubscription'
 import { useNavigate } from 'react-router-dom'
 
@@ -46,7 +46,7 @@ const quickUpgrades = [
 
 export const PlanQuickActions = () => {
   const [loading, setLoading] = useState<string | null>(null)
-  const { plan, loading: planLoading } = useUnifiedPlan()
+  const { currentPlan, loading: planLoading } = useUnifiedPlan()
   const { createCheckout } = useStripeSubscription()
   const navigate = useNavigate()
 
@@ -58,7 +58,7 @@ export const PlanQuickActions = () => {
     )
   }
 
-  const availableUpgrades = quickUpgrades.filter(upgrade => upgrade.from === plan)
+  const availableUpgrades = quickUpgrades.filter(upgrade => upgrade.from === currentPlan)
 
   if (availableUpgrades.length === 0) {
     return (

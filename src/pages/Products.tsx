@@ -42,7 +42,7 @@ interface Product {
 const Products = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { isUltraPro, isPro } = useLegacyPlan(user);
+  const { isUltraPro, isPro } = useLegacyPlan();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

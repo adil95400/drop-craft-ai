@@ -28,7 +28,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
   onSelect
 }) => {
   const { createCheckout, isCreatingCheckout } = useStripeIntegration();
-  const { plan: currentPlan } = usePlan();
+  const { currentPlan } = usePlan();
 
   const handleSelect = () => {
     if (onSelect) {

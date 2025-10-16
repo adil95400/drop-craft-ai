@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Lock, Crown, Zap, ArrowRight } from 'lucide-react'
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider'
+import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { useNavigate } from 'react-router-dom'
 
 interface PlanGateProps {
@@ -23,7 +23,7 @@ export const PlanGate = ({
   description,
   showUpgrade = true 
 }: PlanGateProps) => {
-  const { plan, hasFeature } = useUnifiedPlan()
+  const { currentPlan, hasFeature } = useUnifiedPlan()
   const navigate = useNavigate()
 
   // Check if user has access to this feature

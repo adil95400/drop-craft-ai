@@ -13,11 +13,11 @@ export interface UseModulesReturn {
 }
 
 export function useModules(): UseModulesReturn {
-  const { plan, hasFeature: planHasFeature } = useUnifiedPlan();
+  const { currentPlan, hasFeature: planHasFeature } = useUnifiedPlan();
 
   const moduleManager = useMemo(() => {
-    return new ModuleManager(plan);
-  }, [plan]);
+    return new ModuleManager(currentPlan);
+  }, [currentPlan]);
 
   const availableModules = useMemo(() => {
     return moduleManager.getAvailableModules();

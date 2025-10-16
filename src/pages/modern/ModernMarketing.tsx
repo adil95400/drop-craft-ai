@@ -53,7 +53,7 @@ interface Campaign {
 
 export default function ModernMarketing() {
   const { user } = useAuth()
-  const { isPro, isUltraPro } = useLegacyPlan(user)
+  const { isPro, isUltraPro } = useLegacyPlan()
   
   // Données mockées pour la démonstration
   const [campaigns] = useState<Campaign[]>([

@@ -17,7 +17,7 @@ import {
   DollarSign,
   Globe
 } from 'lucide-react'
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider'
+import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { toast } from 'sonner'
 
 interface ImportRecommendation {
@@ -103,8 +103,8 @@ const mockRecommendations: ImportRecommendation[] = [
 ]
 
 export const SmartImportRecommendations = () => {
-  const { getFeatureConfig } = useUnifiedPlan()
-  const config = getFeatureConfig('ai-import')
+  const { hasFeature } = useUnifiedPlan()
+  const aiImportEnabled = hasFeature('ai-import')
   const [recommendations, setRecommendations] = useState<ImportRecommendation[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [appliedRecommendations, setAppliedRecommendations] = useState<Set<string>>(new Set())
@@ -183,7 +183,7 @@ export const SmartImportRecommendations = () => {
     )
   }
 
-  if (!config.enabled) {
+  if (!aiImportEnabled) {
     return (
       <Card>
         <CardContent className="p-8 text-center">

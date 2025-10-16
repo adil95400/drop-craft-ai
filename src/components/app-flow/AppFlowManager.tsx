@@ -202,7 +202,7 @@ export function AppFlowProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { plan } = usePlan()
+  const { currentPlan } = usePlan()
 
   // Charger l'état depuis localStorage
   useEffect(() => {
@@ -252,7 +252,7 @@ export function AppFlowProvider({ children }: { children: React.ReactNode }) {
     // Vérifier le plan requis
     if (step.planRequired) {
       const planLevels = { standard: 0, pro: 1, ultra_pro: 2 }
-      const userLevel = planLevels[plan as keyof typeof planLevels] || 0
+      const userLevel = planLevels[currentPlan as keyof typeof planLevels] || 0
       const requiredLevel = planLevels[step.planRequired]
       if (userLevel < requiredLevel) return false
     }

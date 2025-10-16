@@ -7,17 +7,17 @@ import { SupplierPerformanceAnalytics } from '@/components/suppliers/SupplierPer
 import { AutomatedSupplierWorkflows } from '@/components/suppliers/AutomatedSupplierWorkflows';
 
 const UnifiedSuppliers: React.FC = () => {
-  const { getFeatureConfig } = useUnifiedPlan();
-  const config = getFeatureConfig('suppliers');
+  const { hasFeature } = useUnifiedPlan();
+  const supplierAnalyticsEnabled = hasFeature('supplier-analytics');
   const [activeTab, setActiveTab] = React.useState<'hub' | 'monitor' | 'analytics' | 'workflows'>('hub');
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">
-          {config.title || 'Fournisseurs'}
+          Gestion des Fournisseurs
         </h1>
-        {config.features?.['supplier-analytics'] && (
+        {supplierAnalyticsEnabled && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary">
               📊 Analytics Activées

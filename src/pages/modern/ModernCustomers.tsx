@@ -52,7 +52,7 @@ interface Customer {
 export default function ModernCustomers() {
   const { user } = useAuth()
   const { toast } = useToast()
-  const { isPro, isUltraPro } = useLegacyPlan(user)
+  const { isPro, isUltraPro } = useLegacyPlan()
   
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)

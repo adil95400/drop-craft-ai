@@ -93,7 +93,7 @@ const mockJobs: ImportJob[] = [
 export default function ModernImport() {
   const { user } = useAuth()
   const { toast } = useToast()
-  const { isPro, isUltraPro } = useLegacyPlan(user)
+  const { isPro, isUltraPro } = useLegacyPlan()
   
   const [activeTab, setActiveTab] = useState('csv')
   const [jobs, setJobs] = useState<ImportJob[]>(mockJobs)

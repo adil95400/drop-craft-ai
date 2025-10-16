@@ -63,7 +63,7 @@ interface Order {
 export default function ModernOrders() {
   const { user } = useAuth()
   const { toast } = useToast()
-  const { isPro, isUltraPro } = useLegacyPlan(user)
+  const { isPro, isUltraPro } = useLegacyPlan()
   
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)

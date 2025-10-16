@@ -16,7 +16,7 @@ import { SEO } from '@/components/SEO'
 
 export default function Catalogue() {
   const { user } = useAuth()
-  const { plan, isUltraPro, isPro, hasFeature } = useLegacyPlan(user)
+  const { currentPlan, isUltraPro, isPro, hasFeature } = useLegacyPlan()
   const [searchTerm, setSearchTerm] = useState('')
   const [favorites, setFavorites] = useState<string[]>([])
   

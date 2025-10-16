@@ -41,7 +41,7 @@ interface Campaign {
 const Marketing = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { isUltraPro, isPro } = useLegacyPlan(user);
+  const { isUltraPro, isPro } = useLegacyPlan();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStores, setSelectedStores] = useState<string[]>([]);

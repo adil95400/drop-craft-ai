@@ -18,7 +18,7 @@ import { StripeSetupGuide } from '@/components/subscription/StripeSetupGuide';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
 
 export default function SubscriptionDashboard() {
-  const { plan } = useUnifiedPlan();
+  const { currentPlan } = useUnifiedPlan();
 
   const planFeatures = {
     standard: [
@@ -43,7 +43,7 @@ export default function SubscriptionDashboard() {
     ]
   };
 
-  const currentFeatures = planFeatures[plan] || planFeatures.standard;
+  const currentFeatures = planFeatures[currentPlan] || planFeatures.standard;
 
   return (
     <div className="min-h-screen bg-background">
@@ -82,11 +82,11 @@ export default function SubscriptionDashboard() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Upgrade Card */}
-            {plan !== 'ultra_pro' && (
+            {currentPlan !== 'ultra_pro' && (
               <Card className="border-primary/20 bg-gradient-to-b from-primary/5 to-background">
                 <CardContent className="pt-6">
                   <div className="text-center space-y-4">
-                    {plan === 'standard' ? (
+                    {currentPlan === 'standard' ? (
                       <>
                         <Crown className="w-12 h-12 text-primary mx-auto" />
                         <h3 className="font-semibold">Passez au plan Pro</h3>

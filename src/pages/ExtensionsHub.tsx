@@ -22,7 +22,7 @@ import {
 
 export default function ExtensionsHub() {
   const navigate = useNavigate()
-  const { plan, isPro, isUltraPro } = useLegacyPlan();
+  const { currentPlan, isPro, isUltraPro } = useLegacyPlan();
 
   const extensionFeatures = [
     {

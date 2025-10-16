@@ -115,7 +115,7 @@ const mockSuppliers: Supplier[] = [
 const Suppliers = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { isPro, isUltraPro } = useLegacyPlan(user);
+  const { isPro, isUltraPro } = useLegacyPlan();
   const [suppliers] = useState<Supplier[]>(mockSuppliers);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');

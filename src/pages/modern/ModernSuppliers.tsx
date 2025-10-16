@@ -154,7 +154,7 @@ const mockSuppliers: Supplier[] = [
 export default function ModernSuppliers() {
   const { user } = useAuth()
   const { toast } = useToast()
-  const { isPro, isUltraPro } = useLegacyPlan(user)
+  const { isPro, isUltraPro } = useLegacyPlan()
   
   const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers)
   const [loading, setLoading] = useState(false)

@@ -7,10 +7,10 @@ import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { Link } from 'react-router-dom';
 
 export const SubscriptionUpgradeCard = () => {
-  const { plan } = useUnifiedPlan();
+  const { currentPlan } = useUnifiedPlan();
   const { createCheckout } = useStripeSubscription();
 
-  if (plan === 'ultra_pro') {
+  if (currentPlan === 'ultra_pro') {
     return null; // No upgrade needed
   }
 
@@ -46,7 +46,7 @@ export const SubscriptionUpgradeCard = () => {
     }
   };
 
-  const config = upgradeConfig[plan];
+  const config = upgradeConfig[currentPlan];
   if (!config) return null;
 
   const IconComponent = config.icon;

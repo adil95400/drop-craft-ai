@@ -29,7 +29,7 @@ interface SmartMetric {
 
 export const SmartDashboard = () => {
   const { user } = useAuth()
-  const { plan, isPro, isUltraPro } = useLegacyPlan(user)
+  const { currentPlan, isPro, isUltraPro } = useLegacyPlan()
 
   const intelligentMetrics: SmartMetric[] = [
     {
@@ -45,7 +45,7 @@ export const SmartDashboard = () => {
       change: { value: 45.2, trend: 'up' },
       icon: TrendingUp,
       description: "Winners détectés par IA",
-      planRestricted: !isPro()
+      planRestricted: !isPro
     },
     {
       title: "Optimisations Auto",
@@ -53,7 +53,7 @@ export const SmartDashboard = () => {
       change: { value: 8.7, trend: 'up' },
       icon: Zap,
       description: "Actions automatisées",
-      planRestricted: !isUltraPro()
+      planRestricted: !isUltraPro
     },
     {
       title: "Alertes Critiques",
@@ -102,7 +102,7 @@ export const SmartDashboard = () => {
       icon: Package,
       href: "/import?mode=winners",
       badge: "IA",
-      restricted: !isPro()
+      restricted: !isPro
     },
     {
       title: "Optimisation Automatique",
@@ -110,7 +110,7 @@ export const SmartDashboard = () => {
       icon: Zap,
       href: "/automation?action=optimize",
       badge: "Auto",
-      restricted: !isUltraPro()
+      restricted: !isUltraPro
     },
     {
       title: "Analytics Avancés",
@@ -128,7 +128,7 @@ export const SmartDashboard = () => {
         <div>
           <h2 className="text-2xl font-bold">Dashboard Intelligent</h2>
           <p className="text-muted-foreground">
-            Insights IA en temps réel • Plan {plan}
+            Insights IA en temps réel • Plan {currentPlan}
           </p>
         </div>
         <Badge variant="outline" className="gap-1">
