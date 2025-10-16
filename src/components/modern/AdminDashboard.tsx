@@ -54,13 +54,30 @@ export const AdminDashboard = () => {
   const { data: users, isLoading, refetch } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Get profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, full_name, is_admin, plan, created_at")
+        .select("id, full_name, plan, created_at")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return data as UserProfile[];
+      if (profilesError) throw profilesError;
+
+      // Get roles for each user using secure function
+      const usersWithRoles = await Promise.all(
+        (profiles || []).map(async (profile) => {
+          const { data: isAdmin } = await supabase.rpc('has_role', {
+            _user_id: profile.id,
+            _role: 'admin'
+          });
+          
+          return {
+            ...profile,
+            is_admin: Boolean(isAdmin)
+          };
+        })
+      );
+
+      return usersWithRoles as UserProfile[];
     },
   });
 

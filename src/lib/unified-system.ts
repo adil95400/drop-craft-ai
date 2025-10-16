@@ -30,19 +30,19 @@ export class UnifiedSystem {
     UnifiedSystem.instance = this
   }
 
-  // Vérification des rôles - compatible avec le schéma existant
+  // Vérification des rôles - utilise la table user_roles sécurisée
   async isAdmin(userId?: string): Promise<boolean> {
     if (!userId) return false
     
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .single()
+        .rpc('has_role', { 
+          _user_id: userId, 
+          _role: 'admin' 
+        })
       
       if (error) throw error
-      return data?.role === 'admin' || false
+      return Boolean(data)
     } catch (error) {
       console.error('Error checking admin status:', error)
       return false
@@ -57,16 +57,16 @@ export class UnifiedSystem {
       const isAdmin = await this.isAdmin(userId)
       if (isAdmin) return true // Les admins ont tous les droits
       
-      // Vérifier les permissions spécifiques selon le rôle
-      const { data, error } = await supabase
-        .from('profiles')
+      // Vérifier le rôle de l'utilisateur via user_roles
+      const { data: roleData, error } = await supabase
+        .from('user_roles')
         .select('role')
-        .eq('id', userId)
-        .single()
+        .eq('user_id', userId)
+        .maybeSingle()
       
       if (error) throw error
       
-      const userRole = data?.role || 'user'
+      const userRole = roleData?.role || 'user'
       
       // Définir les permissions par rôle
       const permissions: Record<string, string[]> = {

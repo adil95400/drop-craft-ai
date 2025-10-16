@@ -58,9 +58,9 @@ export class SecureAdminService {
    */
   async getAllUsers(): Promise<AdminActionResult> {
     try {
-      const { data, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('id, full_name, role, created_at, updated_at')
+        .select('id, full_name, created_at, updated_at')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -71,10 +71,26 @@ export class SecureAdminService {
         };
       }
 
+      // Get roles for each user
+      const usersWithRoles = await Promise.all(
+        (profiles || []).map(async (profile) => {
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', profile.id)
+            .maybeSingle();
+          
+          return {
+            ...profile,
+            role: roleData?.role || 'user'
+          };
+        })
+      );
+
       return {
         success: true,
         message: 'Users fetched successfully',
-        data: data || []
+        data: usersWithRoles
       };
     } catch (error: any) {
       return {
@@ -142,14 +158,13 @@ export class SecureAdminService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+      const { data, error } = await supabase.rpc('has_role', {
+        _user_id: user.id,
+        _role: 'admin'
+      });
 
-      if (error || !data) return false;
-      return data.role === 'admin';
+      if (error) return false;
+      return Boolean(data);
     } catch (error) {
       console.error('Error checking admin status:', error);
       return false;

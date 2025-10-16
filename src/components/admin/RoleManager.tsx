@@ -46,30 +46,38 @@ export const RoleManager = () => {
   const loadUsers = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
+      // Get all users with their roles from user_roles table
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          full_name,
-          role,
-          last_login_at,
-          login_count,
-          created_at,
-          role_updated_at
-        `)
+        .select('id, full_name, last_login_at, login_count, created_at')
         .order('created_at', { ascending: false })
 
-      if (error) {
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les utilisateurs",
-          variant: "destructive"
+      if (profilesError) throw profilesError
+
+      // Get roles for each user
+      const usersWithRoles = await Promise.all(
+        (profiles || []).map(async (profile) => {
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', profile.id)
+            .maybeSingle()
+          
+          return {
+            ...profile,
+            role: roleData?.role || 'user'
+          }
         })
-      } else {
-        setUsers(data || [])
-      }
+      )
+
+      setUsers(usersWithRoles as UserProfile[])
     } catch (error) {
       logError(error, 'RoleManager.loadUsers');
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les utilisateurs",
+        variant: "destructive"
+      })
     } finally {
       setLoading(false)
     }

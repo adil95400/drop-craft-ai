@@ -4977,7 +4977,6 @@ export type Database = {
           full_name: string | null
           id: string
           interests: string[] | null
-          is_admin: boolean | null
           last_login_at: string | null
           login_count: number | null
           monthly_volume: string | null
@@ -4985,8 +4984,6 @@ export type Database = {
           onboarding_completed: boolean | null
           plan: Database["public"]["Enums"]["plan_type"] | null
           preferences: Json | null
-          role: string
-          role_updated_at: string | null
           settings: Json | null
           subscription_expires_at: string | null
           subscription_plan: string | null
@@ -5011,7 +5008,6 @@ export type Database = {
           full_name?: string | null
           id: string
           interests?: string[] | null
-          is_admin?: boolean | null
           last_login_at?: string | null
           login_count?: number | null
           monthly_volume?: string | null
@@ -5019,8 +5015,6 @@ export type Database = {
           onboarding_completed?: boolean | null
           plan?: Database["public"]["Enums"]["plan_type"] | null
           preferences?: Json | null
-          role?: string
-          role_updated_at?: string | null
           settings?: Json | null
           subscription_expires_at?: string | null
           subscription_plan?: string | null
@@ -5045,7 +5039,6 @@ export type Database = {
           full_name?: string | null
           id?: string
           interests?: string[] | null
-          is_admin?: boolean | null
           last_login_at?: string | null
           login_count?: number | null
           monthly_volume?: string | null
@@ -5053,8 +5046,6 @@ export type Database = {
           onboarding_completed?: boolean | null
           plan?: Database["public"]["Enums"]["plan_type"] | null
           preferences?: Json | null
-          role?: string
-          role_updated_at?: string | null
           settings?: Json | null
           subscription_expires_at?: string | null
           subscription_plan?: string | null
@@ -8803,6 +8794,41 @@ export type Database = {
           total_spent: number
           updated_at: string
           user_id: string
+        }[]
+      }
+      get_profile_with_role: {
+        Args: { profile_user_id: string }
+        Returns: {
+          admin_mode: string
+          avatar_url: string
+          business_goals: string[]
+          business_name: string
+          business_type: string
+          company: string
+          company_name: string
+          company_website: string
+          created_at: string
+          email_notifications: boolean
+          experience_level: string
+          feature_flags: Json
+          full_name: string
+          id: string
+          interests: string[]
+          is_admin: boolean
+          last_login_at: string
+          login_count: number
+          monthly_volume: string
+          notification_settings: Json
+          onboarding_completed: boolean
+          plan: Database["public"]["Enums"]["plan_type"]
+          preferences: Json
+          settings: Json
+          subscription_expires_at: string
+          subscription_plan: string
+          subscription_status: string
+          timezone: string
+          updated_at: string
+          website: string
         }[]
       }
       get_public_catalog_products: {

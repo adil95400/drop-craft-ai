@@ -213,10 +213,9 @@ export const useUnifiedPlan = create<UnifiedPlanState>()(
       try {
         set({ loading: true, error: null })
         
+        // Use secure function that computes is_admin from user_roles
         const { data, error } = await supabase
-          .from('profiles')
-          .select('plan, is_admin, admin_mode')
-          .eq('id', userId)
+          .rpc('get_profile_with_role', { profile_user_id: userId })
           .maybeSingle()
         
         if (error) throw error

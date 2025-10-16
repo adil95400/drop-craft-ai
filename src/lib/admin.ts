@@ -72,18 +72,28 @@ export const adminActions = {
   // Update user
   async updateUser(userId: string, updates: Partial<User>) {
     try {
+      // Update profile (plan only, not role)
       const { data, error } = await supabase
         .from('profiles')
         .update({
           full_name: updates.name,
-          plan: updates.plan as 'standard' | 'pro' | 'ultra_pro' | 'free',
-          role: updates.role
+          plan: updates.plan as 'standard' | 'pro' | 'ultra_pro' | 'free'
         })
         .eq('id', userId)
         .select()
         .single()
 
       if (error) throw error
+
+      // Update role separately using secure function
+      if (updates.role) {
+        const { error: roleError } = await supabase.rpc('admin_set_role', {
+          target_user_id: userId,
+          new_role: updates.role as 'admin' | 'user'
+        });
+        
+        if (roleError) throw roleError;
+      }
 
       toast({
         title: "Utilisateur mis à jour",
@@ -105,12 +115,12 @@ export const adminActions = {
   // Suspend user
   async suspendUser(userId: string, userName: string) {
     try {
-      const { data, error } = await supabase
+      // Note: 'suspended' is not in app_role enum, we handle this differently
+      // For now, we just log the suspension event
+      const { error } = await supabase
         .from('profiles')
-        .update({ role: 'suspended' })
+        .update({ admin_mode: 'suspended' })
         .eq('id', userId)
-        .select()
-        .single()
 
       if (error) throw error
 
@@ -130,7 +140,7 @@ export const adminActions = {
         description: `${userName} a été suspendu`,
       })
 
-      return { success: true, data }
+      return { success: true, data: null }
     } catch (error) {
       console.error('Error suspending user:', error)
       toast({

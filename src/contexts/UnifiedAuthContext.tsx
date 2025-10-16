@@ -98,11 +98,9 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     try {
       console.log('Fetching profile for user:', userId);
       
-      // Fetch profile directly (the role column was removed, use is_admin instead)
+      // Use secure function that computes is_admin from user_roles table
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
+        .rpc('get_profile_with_role', { profile_user_id: userId })
         .maybeSingle();
 
       if (error) {
