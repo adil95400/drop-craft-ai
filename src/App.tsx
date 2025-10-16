@@ -5,7 +5,7 @@ import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { UnifiedAuthProvider } from '@/contexts/UnifiedAuthContext';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { UnifiedPlanProvider } from '@/components/plan/UnifiedPlanProvider';
+import { UnifiedProvider } from '@/components/unified/UnifiedProvider';
 import { HelmetProvider } from 'react-helmet-async';
 import { PerformanceProvider } from '@/components/providers/PerformanceProvider';
 import { NotificationProvider } from '@/components/notifications/NotificationService';
@@ -145,10 +145,10 @@ function App() {
             enableSystem
             disableTransitionOnChange
           >
-            <ErrorBoundary>
-              <UnifiedAuthProvider>
-                <UnifiedPlanProvider>
-                  <NotificationProvider>
+              <ErrorBoundary>
+                <UnifiedAuthProvider>
+                  <UnifiedProvider>
+                    <NotificationProvider>
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
                         {/* Public routes */}
@@ -539,10 +539,10 @@ function App() {
                     <GlobalModals />
                     <Toaster />
                     <SonnerToaster />
-                  </NotificationProvider>
-                </UnifiedPlanProvider>
-              </UnifiedAuthProvider>
-            </ErrorBoundary>
+                    </NotificationProvider>
+                  </UnifiedProvider>
+                </UnifiedAuthProvider>
+              </ErrorBoundary>
           </ThemeProvider>
         </PerformanceProvider>
       </QueryClientProvider>

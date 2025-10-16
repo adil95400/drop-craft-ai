@@ -1,6 +1,6 @@
 import React from 'react';
 import { FeatureGate } from '@/components/common/FeatureGate';
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
+import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { CSVMappingInterface } from '@/components/import/CSVMappingInterface';
 import { URLImportInterface } from '@/components/import/URLImportInterface';
 import { XMLFeedImporter } from '@/components/import/XMLFeedImporter';

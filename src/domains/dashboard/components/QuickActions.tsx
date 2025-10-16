@@ -28,7 +28,7 @@ interface QuickAction {
 }
 
 export const QuickActions: React.FC = () => {
-  const { hasFeature, plan } = usePlanContext()
+  const { hasFeature, currentPlan: plan } = usePlanContext()
   const navigate = useNavigate()
 
   const actions: QuickAction[] = [

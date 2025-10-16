@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
+import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { FeatureGate } from '@/components/common/FeatureGate';
 import type { PlanType } from '@/hooks/usePlan';
 

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
+import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { ModuleManager, MODULE_REGISTRY, type ModuleConfig } from '@/config/modules';
 
 export interface UseModulesReturn {

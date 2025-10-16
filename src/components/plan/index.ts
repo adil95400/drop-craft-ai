@@ -12,8 +12,8 @@ export { QuotaIndicator } from './QuotaIndicator'
 export { RequirePlan } from './RequirePlan'
 export { UpgradeDialog } from './UpgradeDialog'
 
-// Providers
-export { UnifiedPlanProvider, useUnifiedPlan, usePlanContext } from './UnifiedPlanProvider'
+// Plan system - re-export from unified system
+export { useUnifiedPlan, usePlanSystem as usePlanContext } from '@/lib/unified-plan-system'
 
 // Types
 export type { PlanType } from '@/hooks/usePlan'

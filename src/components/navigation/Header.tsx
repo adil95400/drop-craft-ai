@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePlan } from '@/contexts/PlanContext';
+import { usePlan } from '@/hooks/usePlan';
 import { useLanguage } from '@/hooks/useLanguage';
 
 export function Header() {

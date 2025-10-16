@@ -1,7 +1,8 @@
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider'
+import { useUnifiedPlan } from '@/lib/unified-plan-system'
 
 export const usePlanFeatures = () => {
-  const { plan, isUltraPro, isPro, hasFeature } = useUnifiedPlan()
+  const { currentPlan, isUltraPro, isPro, hasFeature } = useUnifiedPlan()
+  const plan = currentPlan
 
   // Feature checks pour différents modules
   const features = {

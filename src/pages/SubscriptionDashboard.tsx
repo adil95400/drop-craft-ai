@@ -15,7 +15,7 @@ import {
 import { Link } from 'react-router-dom';
 import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
 import { StripeSetupGuide } from '@/components/subscription/StripeSetupGuide';
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
+import { useUnifiedPlan } from '@/lib/unified-plan-system';
 
 export default function SubscriptionDashboard() {
   const { plan } = useUnifiedPlan();

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
+import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { useModules, useModuleFeatures } from '@/hooks/useModules';
-import { usePlanStore } from '@/stores/planStore';
+// planStore removed - using unified-plan-system
 
 /**
  * Hook unifié qui combine tous les systèmes de gestion des modules et plans
@@ -9,8 +9,7 @@ import { usePlanStore } from '@/stores/planStore';
  */
 export function useUnifiedModules() {
   // Plans et fonctionnalités
-  const { plan, hasFeature: planHasFeature, hasPlan } = useUnifiedPlan();
-  const planStore = usePlanStore();
+  const { currentPlan, hasFeature: planHasFeature, hasPlan } = useUnifiedPlan();
   
   // Modules
   const {
@@ -29,22 +28,21 @@ export function useUnifiedModules() {
   const unifiedFeatureCheck = useMemo(() => {
     return (feature: string): boolean => {
       // Admin a accès à toutes les fonctionnalités
-      if (plan === 'ultra_pro') return true;
+      if (currentPlan === 'ultra_pro') return true;
       
-      // Vérifie dans le store, le plan provider et les modules
+      // Vérifie dans le plan provider et les modules
       return (
-        planStore.hasFeature(feature) ||
         planHasFeature(feature) ||
         moduleHasFeature(feature) ||
         moduleFeatures.hasAnyFeature([feature])
       );
     };
-  }, [planStore, planHasFeature, moduleHasFeature, moduleFeatures, plan]);
+  }, [planHasFeature, moduleHasFeature, moduleFeatures, currentPlan]);
 
   const unifiedAccessCheck = useMemo(() => {
     return (moduleOrFeature: string): boolean => {
       // Admin a accès à tout
-      if (plan === 'ultra_pro') return true;
+      if (currentPlan === 'ultra_pro') return true;
       
       // Peut être un module ou une fonctionnalité
       return (
@@ -52,7 +50,7 @@ export function useUnifiedModules() {
         unifiedFeatureCheck(moduleOrFeature)
       );
     };
-  }, [moduleCanAccess, unifiedFeatureCheck, plan]);
+  }, [moduleCanAccess, unifiedFeatureCheck, currentPlan]);
 
   // Configuration unifiée des fonctionnalités
   const getUnifiedFeatureConfig = useMemo(() => {
@@ -98,20 +96,20 @@ export function useUnifiedModules() {
         
         // Plan info
         plan: {
-          current: plan,
-          canUpgrade: plan !== 'ultra_pro',
-          nextPlan: plan === 'standard' ? 'pro' : plan === 'pro' ? 'ultra_pro' : null
+          current: currentPlan,
+          canUpgrade: currentPlan !== 'ultra_pro',
+          nextPlan: currentPlan === 'standard' ? 'pro' : currentPlan === 'pro' ? 'ultra_pro' : null
         }
       };
     };
   }, [
     getModuleConfig, isModuleEnabled, moduleCanAccess, 
-    unifiedFeatureCheck, plan
+    unifiedFeatureCheck, currentPlan
   ]);
 
   return {
     // Plan management
-    plan,
+    plan: currentPlan,
     hasPlan,
     
     // Modules
@@ -129,12 +127,12 @@ export function useUnifiedModules() {
     ...moduleFeatures,
     
     // Store actions
-    updatePlan: planStore.setPlan,
+    updatePlan: (newPlan: any) => {}, // Stub for backward compat
     
     // Utility
-    isStandard: plan === 'standard',
+    isStandard: currentPlan === 'standard',
     isPro: hasPlan('pro'),
-    isUltraPro: plan === 'ultra_pro'
+    isUltraPro: currentPlan === 'ultra_pro'
   };
 }
 

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Crown, Zap, Check } from 'lucide-react';
 import { useStripeSubscription } from '@/hooks/useStripeSubscription';
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
+import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { Link } from 'react-router-dom';
 
 export const SubscriptionUpgradeCard = () => {

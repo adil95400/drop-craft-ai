@@ -19,7 +19,7 @@ import {
   Palette,
   Shield
 } from 'lucide-react';
-import { usePlan } from '@/contexts/PlanContext';
+import { usePlan } from '@/hooks/usePlan';
 
 interface NavItem {
   href: string;

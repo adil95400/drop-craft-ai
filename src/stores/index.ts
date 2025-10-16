@@ -11,5 +11,5 @@ export {
   useCacheStore 
 } from './globalStore';
 
-// New unified plan store  
-export { usePlanStore, type PlanStore } from './planStore';
+// Plan store - re-export from unified system
+export { useUnifiedPlan as usePlanStore } from '@/lib/unified-plan-system';

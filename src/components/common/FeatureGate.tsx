@@ -1,6 +1,6 @@
 import React from 'react';
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
-import { usePlanStore } from '@/stores';
+import { useUnifiedPlan } from '@/lib/unified-plan-system';
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Lock, Crown, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,17 +31,17 @@ const PLAN_ICONS: Record<PlanType, React.ComponentType> = {
 
 export const FeatureGate: React.FC<FeatureGateProps> = ({
   feature,
-  plan,
+  plan: requiredPlanProp,
   children,
   fallback,
   showUpgrade = true,
   className
 }) => {
-  const { hasFeature, hasPlan, plan: currentPlan, canBypass } = useUnifiedPlan();
-  const planStore = usePlanStore();
+  const { hasFeature, hasPlan, currentPlan, canBypass } = useUnifiedPlan();
+  const { profile } = useUnifiedAuth();
   
   // Admin en mode bypass a TOUJOURS accès
-  if (canBypass()) {
+  if (canBypass() || (profile?.is_admin && profile?.admin_mode === 'bypass')) {
     return <>{children}</>;
   }
   
@@ -78,9 +78,9 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
     requiredPlan = featureRequirements[feature as keyof typeof featureRequirements] || null;
   }
   
-  if (plan) {
-    hasAccess = hasPlan(plan);
-    requiredPlan = plan;
+  if (requiredPlanProp) {
+    hasAccess = hasPlan(requiredPlanProp);
+    requiredPlan = requiredPlanProp;
   }
   
   if (hasAccess) {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { FeatureGate } from '@/components/common/FeatureGate';
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
+import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import SupplierHub from '@/components/SupplierHub';
 import { RealTimeSupplierMonitor } from '@/components/suppliers/RealTimeSupplierMonitor';
 import { SupplierPerformanceAnalytics } from '@/components/suppliers/SupplierPerformanceAnalytics';

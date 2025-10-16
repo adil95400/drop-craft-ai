@@ -24,13 +24,13 @@ import {
 } from 'lucide-react';
 import { AppNavigation, QuickActions } from '@/components/navigation/AppNavigation';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
-import { useUnifiedPlan } from '@/components/plan/UnifiedPlanProvider';
+import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, signOut } = useUnifiedAuth();
-  const { plan, isUltraPro, isPro } = useUnifiedPlan();
+  const { currentPlan, isUltraPro, isPro } = useUnifiedPlan();
 
   const getPlanIcon = () => {
     if (isUltraPro) return <Crown className="h-4 w-4 text-yellow-500" />;
@@ -137,7 +137,7 @@ export function AppLayout() {
                       {user?.email || 'Utilisateur'}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      Plan {plan}
+                      Plan {currentPlan}
                     </p>
                   </div>
                 </DropdownMenuLabel>
