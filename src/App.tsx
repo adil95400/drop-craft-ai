@@ -27,6 +27,7 @@ import { AdminRoute } from '@/components/auth/AdminRoute';
 const ModernBlog = lazy(() => import('@/pages/ModernBlog'));
 const Contact = lazy(() => import('@/pages/Contact'));
 const FAQ = lazy(() => import('@/pages/FAQ'));
+const GuidePage = lazy(() => import('@/pages/GuidePage'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
 const About = lazy(() => import('@/pages/About'));
@@ -328,6 +329,12 @@ function App() {
                         <Route path="/support" element={
                           <ProtectedRoute>
                             <AppLayout><Support /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/guide" element={
+                          <ProtectedRoute>
+                            <AppLayout><GuidePage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         

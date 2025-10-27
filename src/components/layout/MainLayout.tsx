@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/AppSidebar'
 import { RealTimeNotifications } from '@/components/notifications/RealTimeNotifications'
 import { InteractiveOnboarding } from '@/components/onboarding/InteractiveOnboarding'
+import { AccessibilityMenu } from '@/components/ux/AccessibilityMenu'
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -22,6 +23,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               </div>
               
               <div className="flex items-center space-x-4">
+                <AccessibilityMenu />
                 <RealTimeNotifications />
               </div>
             </div>
