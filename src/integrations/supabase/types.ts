@@ -4739,6 +4739,376 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_products: {
+        Row: {
+          brand: string | null
+          category: string
+          certifications:
+            | Database["public"]["Enums"]["quality_certification"][]
+            | null
+          compare_at_price: number | null
+          cost_price: number | null
+          created_at: string | null
+          currency: string | null
+          delivery_regions:
+            | Database["public"]["Enums"]["delivery_region"][]
+            | null
+          description: string | null
+          dimensions_cm: Json | null
+          external_id: string
+          id: string
+          images: string[] | null
+          is_active: boolean | null
+          is_bestseller: boolean | null
+          is_trending: boolean | null
+          low_stock_threshold: number | null
+          metadata: Json | null
+          name: string
+          price: number
+          profit_margin: number | null
+          quality_badges: string[] | null
+          rating: number | null
+          reviews_count: number | null
+          ships_from: string | null
+          sku: string
+          stock_quantity: number | null
+          subcategory: string | null
+          supplier_id: string
+          tags: string[] | null
+          updated_at: string | null
+          video_url: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          brand?: string | null
+          category: string
+          certifications?:
+            | Database["public"]["Enums"]["quality_certification"][]
+            | null
+          compare_at_price?: number | null
+          cost_price?: number | null
+          created_at?: string | null
+          currency?: string | null
+          delivery_regions?:
+            | Database["public"]["Enums"]["delivery_region"][]
+            | null
+          description?: string | null
+          dimensions_cm?: Json | null
+          external_id: string
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          is_bestseller?: boolean | null
+          is_trending?: boolean | null
+          low_stock_threshold?: number | null
+          metadata?: Json | null
+          name: string
+          price: number
+          profit_margin?: number | null
+          quality_badges?: string[] | null
+          rating?: number | null
+          reviews_count?: number | null
+          ships_from?: string | null
+          sku: string
+          stock_quantity?: number | null
+          subcategory?: string | null
+          supplier_id: string
+          tags?: string[] | null
+          updated_at?: string | null
+          video_url?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          brand?: string | null
+          category?: string
+          certifications?:
+            | Database["public"]["Enums"]["quality_certification"][]
+            | null
+          compare_at_price?: number | null
+          cost_price?: number | null
+          created_at?: string | null
+          currency?: string | null
+          delivery_regions?:
+            | Database["public"]["Enums"]["delivery_region"][]
+            | null
+          description?: string | null
+          dimensions_cm?: Json | null
+          external_id?: string
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          is_bestseller?: boolean | null
+          is_trending?: boolean | null
+          low_stock_threshold?: number | null
+          metadata?: Json | null
+          name?: string
+          price?: number
+          profit_margin?: number | null
+          quality_badges?: string[] | null
+          rating?: number | null
+          reviews_count?: number | null
+          ships_from?: string | null
+          sku?: string
+          stock_quantity?: number | null
+          subcategory?: string | null
+          supplier_id?: string
+          tags?: string[] | null
+          updated_at?: string | null
+          video_url?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "premium_products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "premium_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      premium_supplier_connections: {
+        Row: {
+          approved_at: string | null
+          auto_sync_enabled: boolean | null
+          created_at: string | null
+          id: string
+          last_sync_at: string | null
+          markup_percentage: number | null
+          metadata: Json | null
+          pricing_rules: Json | null
+          products_imported: number | null
+          products_synced: number | null
+          status: string | null
+          supplier_id: string
+          sync_frequency_hours: number | null
+          total_revenue: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          auto_sync_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          markup_percentage?: number | null
+          metadata?: Json | null
+          pricing_rules?: Json | null
+          products_imported?: number | null
+          products_synced?: number | null
+          status?: string | null
+          supplier_id: string
+          sync_frequency_hours?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          auto_sync_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          markup_percentage?: number | null
+          metadata?: Json | null
+          pricing_rules?: Json | null
+          products_imported?: number | null
+          products_synced?: number | null
+          status?: string | null
+          supplier_id?: string
+          sync_frequency_hours?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "premium_supplier_connections_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "premium_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      premium_suppliers: {
+        Row: {
+          api_endpoint: string | null
+          avg_delivery_days: number | null
+          categories: string[] | null
+          certifications:
+            | Database["public"]["Enums"]["quality_certification"][]
+            | null
+          country: string
+          cover_image_url: string | null
+          created_at: string | null
+          delivery_regions:
+            | Database["public"]["Enums"]["delivery_region"][]
+            | null
+          description: string | null
+          display_name: string
+          express_delivery_available: boolean | null
+          featured: boolean | null
+          free_shipping_threshold: number | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          minimum_order_value: number | null
+          name: string
+          product_count: number | null
+          quality_score: number | null
+          reliability_score: number | null
+          requires_approval: boolean | null
+          response_time_hours: number | null
+          support_email: string | null
+          support_phone: string | null
+          tags: string[] | null
+          tier: Database["public"]["Enums"]["premium_tier"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          api_endpoint?: string | null
+          avg_delivery_days?: number | null
+          categories?: string[] | null
+          certifications?:
+            | Database["public"]["Enums"]["quality_certification"][]
+            | null
+          country: string
+          cover_image_url?: string | null
+          created_at?: string | null
+          delivery_regions?:
+            | Database["public"]["Enums"]["delivery_region"][]
+            | null
+          description?: string | null
+          display_name: string
+          express_delivery_available?: boolean | null
+          featured?: boolean | null
+          free_shipping_threshold?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          minimum_order_value?: number | null
+          name: string
+          product_count?: number | null
+          quality_score?: number | null
+          reliability_score?: number | null
+          requires_approval?: boolean | null
+          response_time_hours?: number | null
+          support_email?: string | null
+          support_phone?: string | null
+          tags?: string[] | null
+          tier?: Database["public"]["Enums"]["premium_tier"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          api_endpoint?: string | null
+          avg_delivery_days?: number | null
+          categories?: string[] | null
+          certifications?:
+            | Database["public"]["Enums"]["quality_certification"][]
+            | null
+          country?: string
+          cover_image_url?: string | null
+          created_at?: string | null
+          delivery_regions?:
+            | Database["public"]["Enums"]["delivery_region"][]
+            | null
+          description?: string | null
+          display_name?: string
+          express_delivery_available?: boolean | null
+          featured?: boolean | null
+          free_shipping_threshold?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          minimum_order_value?: number | null
+          name?: string
+          product_count?: number | null
+          quality_score?: number | null
+          reliability_score?: number | null
+          requires_approval?: boolean | null
+          response_time_hours?: number | null
+          support_email?: string | null
+          support_phone?: string | null
+          tags?: string[] | null
+          tier?: Database["public"]["Enums"]["premium_tier"] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      premium_sync_logs: {
+        Row: {
+          completed_at: string | null
+          connection_id: string
+          created_at: string | null
+          duration_seconds: number | null
+          error_count: number | null
+          errors: Json | null
+          id: string
+          processed_items: number | null
+          started_at: string | null
+          status: string | null
+          success_count: number | null
+          summary: Json | null
+          supplier_id: string
+          sync_type: string
+          total_items: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          connection_id: string
+          created_at?: string | null
+          duration_seconds?: number | null
+          error_count?: number | null
+          errors?: Json | null
+          id?: string
+          processed_items?: number | null
+          started_at?: string | null
+          status?: string | null
+          success_count?: number | null
+          summary?: Json | null
+          supplier_id: string
+          sync_type: string
+          total_items?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          connection_id?: string
+          created_at?: string | null
+          duration_seconds?: number | null
+          error_count?: number | null
+          errors?: Json | null
+          id?: string
+          processed_items?: number | null
+          started_at?: string | null
+          status?: string | null
+          success_count?: number | null
+          summary?: Json | null
+          supplier_id?: string
+          sync_type?: string
+          total_items?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "premium_sync_logs_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "premium_supplier_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "premium_sync_logs_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "premium_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       price_alerts: {
         Row: {
           catalog_product_id: string
@@ -9393,6 +9763,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user" | "staff"
+      delivery_region: "eu" | "us" | "uk" | "worldwide"
       enhanced_app_role: "admin" | "manager" | "user"
       marketplace_platform:
         | "shopify"
@@ -9404,6 +9775,13 @@ export type Database = {
         | "amazon"
         | "ebay"
       plan_type: "standard" | "pro" | "ultra_pro" | "free"
+      premium_tier: "gold" | "platinum" | "diamond"
+      quality_certification:
+        | "iso_9001"
+        | "fda_approved"
+        | "ce_certified"
+        | "eco_friendly"
+        | "fair_trade"
       sync_direction: "push" | "pull" | "bidirectional"
       sync_status: "idle" | "syncing" | "completed" | "failed" | "paused"
       user_role: "user" | "admin" | "manager"
@@ -9535,6 +9913,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user", "staff"],
+      delivery_region: ["eu", "us", "uk", "worldwide"],
       enhanced_app_role: ["admin", "manager", "user"],
       marketplace_platform: [
         "shopify",
@@ -9547,6 +9926,14 @@ export const Constants = {
         "ebay",
       ],
       plan_type: ["standard", "pro", "ultra_pro", "free"],
+      premium_tier: ["gold", "platinum", "diamond"],
+      quality_certification: [
+        "iso_9001",
+        "fda_approved",
+        "ce_certified",
+        "eco_friendly",
+        "fair_trade",
+      ],
       sync_direction: ["push", "pull", "bidirectional"],
       sync_status: ["idle", "syncing", "completed", "failed", "paused"],
       user_role: ["user", "admin", "manager"],
