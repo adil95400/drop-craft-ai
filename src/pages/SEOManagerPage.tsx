@@ -16,6 +16,7 @@ import { SEOContentGenerator } from '@/components/seo/SEOContentGenerator';
 import { SEOTechnicalDetailsModal } from '@/components/seo/SEOTechnicalDetailsModal';
 import { SEOPageOptimizationModal } from '@/components/seo/SEOPageOptimizationModal';
 import { useToast } from '@/hooks/use-toast';
+import { useSEOOptimization } from '@/hooks/useSEOOptimization';
 
 export default function SEOManagerPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,6 +39,8 @@ export default function SEOManagerPage() {
     isAddingKeyword,
     updateKeyword
   } = useRealSEO();
+  
+  const { startOptimization, isOptimizing } = useSEOOptimization();
   
   const { toast } = useToast();
 
@@ -487,6 +490,9 @@ export default function SEOManagerPage() {
           open={showTechnicalModal}
           onOpenChange={setShowTechnicalModal}
           detail={selectedTechnicalDetail}
+          onOptimize={(checkType, recommendations) => {
+            startOptimization({ checkType, recommendations });
+          }}
         />
         
         <SEOPageOptimizationModal

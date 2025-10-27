@@ -17,12 +17,14 @@ interface SEOTechnicalDetailsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   detail: TechnicalDetail | null;
+  onOptimize?: (checkType: string, recommendations: string[]) => void;
 }
 
 export const SEOTechnicalDetailsModal = ({ 
   open, 
   onOpenChange, 
-  detail 
+  detail,
+  onOptimize
 }: SEOTechnicalDetailsModalProps) => {
   if (!detail) return null;
 
@@ -216,7 +218,14 @@ export const SEOTechnicalDetailsModal = ({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Fermer
             </Button>
-            <Button>
+            <Button 
+              onClick={() => {
+                if (onOptimize) {
+                  onOptimize(detail.check, detailedInfo.recommendations);
+                }
+                onOpenChange(false);
+              }}
+            >
               Commencer l'optimisation
             </Button>
           </div>
