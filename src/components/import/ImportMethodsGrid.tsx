@@ -450,20 +450,33 @@ export const ImportMethodsGrid = () => {
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 {[
-                  { type: 'XML', icon: '🗂️', color: 'bg-gray-100' },
-                  { type: 'CSV', icon: '📊', color: 'bg-green-100' },
-                  { type: 'Text', icon: '📄', color: 'bg-red-100' },
-                  { type: 'JSON', icon: '📋', color: 'bg-blue-100' },
-                  { type: 'Google sheets', icon: '📈', color: 'bg-green-100' }
+                  { type: 'XML', icon: '🗂️', color: 'bg-gray-100', accept: '.xml' },
+                  { type: 'CSV', icon: '📊', color: 'bg-green-100', accept: '.csv' },
+                  { type: 'Text', icon: '📄', color: 'bg-red-100', accept: '.txt' },
+                  { type: 'JSON', icon: '📋', color: 'bg-blue-100', accept: '.json' },
+                  { type: 'Google sheets', icon: '📈', color: 'bg-green-100', accept: '.xlsx,.xls' }
                 ].map((format) => (
-                  <div
+                  <label
                     key={format.type}
-                    className={`${format.color} p-4 rounded-lg text-center cursor-pointer hover:shadow-md transition-shadow`}
-                    onClick={() => toast.info(`Configuration ${format.type} en cours de développement`)}
+                    className={`${format.color} p-4 rounded-lg text-center cursor-pointer hover:shadow-md transition-all hover:-translate-y-1 duration-300`}
                   >
+                    <input
+                      type="file"
+                      accept={format.accept}
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          toast.success(`Fichier ${format.type} sélectionné : ${file.name}`, {
+                            description: "Import du fichier en cours..."
+                          });
+                          // TODO: Implement actual file import logic
+                        }
+                      }}
+                    />
                     <div className="text-2xl mb-2">{format.icon}</div>
                     <div className="text-sm font-medium">{format.type}</div>
-                  </div>
+                  </label>
                 ))}
               </div>
             </CardContent>

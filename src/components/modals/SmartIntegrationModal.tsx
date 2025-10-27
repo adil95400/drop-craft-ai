@@ -419,7 +419,16 @@ export const SmartIntegrationModal: React.FC<SmartIntegrationModalProps> = ({
                       <Shield className="w-4 h-4 mr-2" />
                       Tester la connexion
                     </Button>
-                    <Button onClick={() => toast({ title: "Guide ouvert", description: "Documentation d'aide" })} variant="outline">
+                    <Button 
+                      onClick={() => {
+                        window.open('https://docs.lovable.dev/features/cloud', '_blank');
+                        toast({ 
+                          title: "Documentation ouverte", 
+                          description: "Consultez le guide dans le nouvel onglet" 
+                        });
+                      }} 
+                      variant="outline"
+                    >
                       <Eye className="w-4 h-4 mr-2" />
                       Guide d'installation
                     </Button>

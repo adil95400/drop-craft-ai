@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { Link } from 'react-router-dom';
 import { 
   TrendingUp, 
   Users, 
@@ -449,27 +450,33 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="/import">
+                  <Link to="/import">
                     <Package className="mr-2 h-4 w-4" />
                     Importer des produits
-                  </a>
+                  </Link>
                 </Button>
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="/orders">
+                  <Link to="/orders">
                     <ShoppingCart className="mr-2 h-4 w-4" />
                     Gérer les commandes
-                  </a>
+                  </Link>
                 </Button>
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href="/customers">
+                  <Link to="/customers">
                     <Users className="mr-2 h-4 w-4" />
                     Voir les clients
-                  </a>
+                  </Link>
                 </Button>
                 {isUltraPro && (
-                  <Button variant="outline" className="w-full justify-start bg-gradient-to-r from-primary/5 to-purple-500/5 border-primary/20">
-                    <Brain className="mr-2 h-4 w-4 text-primary" />
-                    Optimisation IA
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start bg-gradient-to-r from-primary/5 to-purple-500/5 border-primary/20"
+                    asChild
+                  >
+                    <Link to="/ai-optimizer">
+                      <Brain className="mr-2 h-4 w-4 text-primary" />
+                      Optimisation IA
+                    </Link>
                   </Button>
                 )}
               </CardContent>

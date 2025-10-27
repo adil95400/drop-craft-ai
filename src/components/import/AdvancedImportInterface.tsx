@@ -239,31 +239,45 @@ export const AdvancedImportInterface = () => {
     // Ouvre la configuration selon la méthode
     switch (methodId) {
       case 'shopify':
-        toast.info('Configuration Shopify en cours de développement')
-        // Ici on ouvrirait un modal de configuration Shopify
+        window.open('https://apps.shopify.com/', '_blank');
+        toast.info('Ouvrir votre admin Shopify pour connecter l\'application', {
+          description: "Consultez Apps → Développer une app"
+        });
         break
       case 'woocommerce':
-        toast.info('Configuration WooCommerce en cours de développement')
-        // Ici on ouvrirait un modal de configuration WooCommerce
+        window.open('https://woocommerce.com/document/woocommerce-rest-api/', '_blank');
+        toast.info('Configuration WooCommerce REST API', {
+          description: "Générez vos clés API depuis WooCommerce → Réglages → Avancé → API REST"
+        });
         break
       case 'aliexpress':
-        toast.info('Configuration AliExpress en cours de développement')
-        // Ici on ouvrirait un modal de configuration AliExpress
+        window.open('https://portals.aliexpress.com/', '_blank');
+        toast.info('Accédez à votre compte AliExpress', {
+          description: "Générez vos clés API depuis le portail développeur"
+        });
         break
       case 'bigbuy':
-        toast.info('Configuration BigBuy en cours de développement')
-        // Ici on ouvrirait un modal de configuration BigBuy
+        window.open('https://www.bigbuy.eu/fr/developer/', '_blank');
+        toast.info('Documentation API BigBuy', {
+          description: "Consultez la documentation pour obtenir vos identifiants"
+        });
         break
       case 'csv':
         // Redirection vers l'upload CSV
         setActiveTab('mapping')
-        toast.info('Passez à l\'onglet Mapping pour configurer l\'import CSV')
+        toast.success('Mode CSV activé', {
+          description: 'Uploadez votre fichier dans l\'onglet Mapping'
+        });
         break
       case 'url':
-        toast.info('L\'import URL est prêt à utiliser - saisissez une URL ci-dessous')
+        toast.success('Import URL prêt', {
+          description: 'Saisissez une URL de produit ci-dessous'
+        });
         break
       default:
-        toast.info('Configuration en cours de développement')
+        toast.info('Fonctionnalité disponible prochainement', {
+          description: 'Cette méthode d\'import sera disponible dans une future version'
+        });
     }
   }, [])
 
