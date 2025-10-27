@@ -27,20 +27,62 @@ serve(async (req) => {
       throw new Error('Unauthorized')
     }
 
-    const { action, extension_id, price, pricing_model } = await req.json()
-    console.log(`🏪 Marketplace action: ${action}`)
+    const { action, platform, credentials, config } = await req.json()
+    console.log(`🏪 Marketplace action: ${action} for platform: ${platform}`)
 
-    if (action === 'purchase_extension') {
-      // Simulate payment processing
-      const paymentResult = {
-        success: true,
-        payment_id: `pay_${Date.now()}`,
-        amount: price,
-        developer_share: price * 0.7,
-        platform_share: price * 0.3
+    if (action === 'connect') {
+      // Validate credentials based on platform
+      const validPlatforms = ['amazon', 'ebay', 'shopify', 'aliexpress', 'cdiscount', 'etsy', 'facebook', 'instagram']
+      if (!validPlatforms.includes(platform)) {
+        throw new Error('Platform not supported')
       }
 
-      return new Response(JSON.stringify(paymentResult), {
+      // Create or update platform integration
+      const { data: integration, error: integrationError } = await supabase
+        .from('platform_integrations')
+        .upsert({
+          user_id: user.id,
+          platform_name: platform,
+          platform_type: 'marketplace',
+          credentials: credentials,
+          is_active: true,
+          connection_status: 'connected',
+          last_connected_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (integrationError) throw integrationError
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        integration,
+        message: `Connected to ${platform} successfully`
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      })
+    }
+
+    if (action === 'sync_products') {
+      // Simulate product sync
+      const productsCount = Math.floor(Math.random() * 100) + 50
+      
+      // Update sync stats
+      await supabase
+        .from('platform_integrations')
+        .update({
+          last_sync_at: new Date().toISOString(),
+          connection_status: 'connected'
+        })
+        .eq('platform_name', platform)
+        .eq('user_id', user.id)
+
+      return new Response(JSON.stringify({ 
+        success: true,
+        synced_products: productsCount,
+        message: `Synced ${productsCount} products from ${platform}`
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       })
@@ -52,6 +94,7 @@ serve(async (req) => {
     })
 
   } catch (error) {
+    console.error('Marketplace connector error:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,

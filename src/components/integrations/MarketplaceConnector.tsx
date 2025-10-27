@@ -81,13 +81,12 @@ export function MarketplaceConnector() {
       });
 
       setConnectionDialog(false);
-      // Refresh integrations list
-      loadIntegrations();
+      await loadIntegrations();
 
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Erreur de connexion",
-        description: error.message,
+        description: error.message || 'Erreur lors de la connexion',
         variant: "destructive"
       });
     } finally {
@@ -119,10 +118,12 @@ export function MarketplaceConnector() {
         description: `${data.synced_products} produits synchronisés depuis ${platform.name}`
       });
 
-    } catch (error) {
+      await loadIntegrations();
+
+    } catch (error: any) {
       toast({
         title: "Erreur de synchronisation",
-        description: error.message,
+        description: error.message || 'Erreur lors de la synchronisation',
         variant: "destructive"
       });
     } finally {
@@ -131,13 +132,17 @@ export function MarketplaceConnector() {
   };
 
   const loadIntegrations = async () => {
-    // Load user integrations from database
-    const { data } = await supabase
-      .from('platform_integrations')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    setIntegrations(data || []);
+    try {
+      const { data, error } = await supabase
+        .from('platform_integrations')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setIntegrations(data || []);
+    } catch (error) {
+      console.error('Error loading integrations:', error);
+    }
   };
 
   React.useEffect(() => {
