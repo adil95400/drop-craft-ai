@@ -111,6 +111,8 @@ const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage')
 const CollaborationPage = lazy(() => import('@/pages/CollaborationPage'));
 const GlobalIntelligencePage = lazy(() => import('@/pages/GlobalIntelligencePage'));
 const CompetitorAnalysisPage = lazy(() => import('@/pages/CompetitorAnalysisPage'));
+const AIMarketplacePage = lazy(() => import('@/pages/AIMarketplacePage'));
+const PremiumNetworkPage = lazy(() => import('@/pages/PremiumNetworkPage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
@@ -303,6 +305,18 @@ function App() {
                         <Route path="/competitor-analysis" element={
                           <ProtectedRoute>
                             <AppLayout><CompetitorAnalysisPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/ai-marketplace" element={
+                          <ProtectedRoute>
+                            <AppLayout><AIMarketplacePage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/premium-network" element={
+                          <ProtectedRoute>
+                            <AppLayout><PremiumNetworkPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
