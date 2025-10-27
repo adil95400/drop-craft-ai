@@ -1,16 +1,24 @@
 /**
- * Hook unifié qui remplace tous les hooks de plan/module dispersés
+ * Hook unifié optimisé avec memoization et performance améliorée
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { unifiedSystem } from '@/lib/unified-system'
+
+interface DashboardStats {
+  totalSuppliers: number
+  totalProducts: number
+  totalJobs: number
+  recentJobs: any[]
+  publishedProducts: number
+}
 
 export function useUnifiedSystem() {
   const { user, profile, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [dashboardStats, setDashboardStats] = useState({
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
     totalSuppliers: 0,
     totalProducts: 0,
     totalJobs: 0,
@@ -18,24 +26,29 @@ export function useUnifiedSystem() {
     publishedProducts: 0
   })
 
-  // Vérification du rôle admin
+  // Memoized admin check
   useEffect(() => {
-    async function checkAdminStatus() {
+    const checkAdminStatus = async () => {
       if (!user?.id) {
         setIsAdmin(false)
         return
       }
 
-      const adminStatus = await unifiedSystem.isAdmin(user.id)
-      setIsAdmin(adminStatus)
+      try {
+        const adminStatus = await unifiedSystem.isAdmin(user.id)
+        setIsAdmin(adminStatus)
+      } catch (error) {
+        console.error('Admin status check failed:', error)
+        setIsAdmin(false)
+      }
     }
 
     checkAdminStatus()
   }, [user?.id])
 
-  // Chargement des statistiques du dashboard
+  // Load dashboard stats with error handling
   useEffect(() => {
-    async function loadDashboardStats() {
+    const loadDashboardStats = async () => {
       if (!user?.id) {
         setLoading(false)
         return
@@ -45,7 +58,7 @@ export function useUnifiedSystem() {
         const stats = await unifiedSystem.getDashboardStats(user.id)
         setDashboardStats(stats)
       } catch (error) {
-        console.error('Error loading dashboard stats:', error)
+        console.error('Dashboard stats loading failed:', error)
       } finally {
         setLoading(false)
       }
@@ -56,35 +69,90 @@ export function useUnifiedSystem() {
     }
   }, [user?.id, authLoading])
 
-  // Fonction pour vérifier les features - Admin a accès à toutes les features
-  const hasFeature = async (feature: string): Promise<boolean> => {
-    if (!user?.id) return false
-    if (isAdmin) return true
-    return await unifiedSystem.hasFeature(user.id, feature)
-  }
+  // Memoized feature check
+  const hasFeature = useCallback(
+    async (feature: string): Promise<boolean> => {
+      if (!user?.id) return false
+      if (isAdmin) return true
+      
+      try {
+        return await unifiedSystem.hasFeature(user.id, feature)
+      } catch (error) {
+        console.error('Feature check failed:', error)
+        return false
+      }
+    },
+    [user?.id, isAdmin]
+  )
 
-  // Fonctions pour les fournisseurs
-  const getSuppliers = async () => {
+  // Memoized data fetchers
+  const getSuppliers = useCallback(async () => {
     if (!user?.id) return []
     return await unifiedSystem.getSuppliers(user.id)
-  }
+  }, [user?.id])
 
-  // Fonctions pour les produits
-  const getProducts = async () => {
+  const getProducts = useCallback(async () => {
     if (!user?.id) return []
     return await unifiedSystem.getImportedProducts(user.id)
-  }
+  }, [user?.id])
 
-  // Fonctions pour les jobs d'import
-  const getImportJobs = async () => {
+  const getImportJobs = useCallback(async () => {
     if (!user?.id) return []
     return await unifiedSystem.getImportJobs(user.id)
-  }
+  }, [user?.id])
 
-  // Vérifications de plan simplifiées - Admin a accès à tout
-  const isPro = profile?.plan === 'pro' || profile?.plan === 'ultra_pro' || isAdmin
-  const isUltraPro = profile?.plan === 'ultra_pro' || isAdmin
-  const plan = isAdmin ? 'ultra_pro' : (profile?.plan || 'standard')
+  const getOrders = useCallback(() => 
+    unifiedSystem.getOrders(user?.id || ''), [user?.id]
+  )
+
+  const getCustomers = useCallback(() => 
+    unifiedSystem.getCustomers(user?.id || ''), [user?.id]
+  )
+
+  // Memoized CRUD actions
+  const createProduct = useCallback(
+    (productData: any) => unifiedSystem.createProduct(user?.id || '', productData),
+    [user?.id]
+  )
+
+  const updateProduct = useCallback(
+    (productId: string, productData: any) => 
+      unifiedSystem.updateProduct(productId, productData),
+    []
+  )
+
+  const deleteProduct = useCallback(
+    (productId: string) => unifiedSystem.deleteProduct(productId),
+    []
+  )
+
+  const createImportJob = useCallback(
+    (jobData: any) => unifiedSystem.createImportJob(user?.id || '', jobData),
+    [user?.id]
+  )
+
+  // Memoized refresh function
+  const refresh = useCallback(() => {
+    if (user?.id) {
+      unifiedSystem.getDashboardStats(user.id).then(setDashboardStats)
+    }
+  }, [user?.id])
+
+  // Memoized plan calculations
+  const isPro = useMemo(() => 
+    profile?.plan === 'pro' || profile?.plan === 'ultra_pro' || isAdmin,
+    [profile?.plan, isAdmin]
+  )
+
+  const isUltraPro = useMemo(() => 
+    profile?.plan === 'ultra_pro' || isAdmin,
+    [profile?.plan, isAdmin]
+  )
+
+  const plan = useMemo(() => 
+    isAdmin ? 'ultra_pro' : (profile?.plan || 'standard'),
+    [isAdmin, profile?.plan]
+  )
 
   return {
     // État général
@@ -99,25 +167,21 @@ export function useUnifiedSystem() {
     isUltraPro,
     hasFeature,
     
-  // Données
-  dashboardStats,
-  getSuppliers,
-  getProducts,
-  getImportJobs,
-  getOrders: () => unifiedSystem.getOrders(user?.id || ''),
-  getCustomers: () => unifiedSystem.getCustomers(user?.id || ''),
-  
-  // Actions CRUD
-  createProduct: (productData: any) => unifiedSystem.createProduct(user?.id || '', productData),
-  updateProduct: (productId: string, productData: any) => unifiedSystem.updateProduct(productId, productData),
-  deleteProduct: (productId: string) => unifiedSystem.deleteProduct(productId),
-  createImportJob: (jobData: any) => unifiedSystem.createImportJob(user?.id || '', jobData),
+    // Données
+    dashboardStats,
+    getSuppliers,
+    getProducts,
+    getImportJobs,
+    getOrders,
+    getCustomers,
+    
+    // Actions CRUD
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    createImportJob,
     
     // Refresh function
-    refresh: () => {
-      if (user?.id) {
-        unifiedSystem.getDashboardStats(user.id).then(setDashboardStats)
-      }
-    }
+    refresh
   }
 }

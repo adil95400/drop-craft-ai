@@ -12,4 +12,4 @@ export { UserDropdown } from './components/UserDropdown'
 export { LoadingSpinner } from './components/LoadingSpinner'
 
 // Utilitaires performance
-export { lazyComponents, createLazyComponent, memoizedComponents, PerformanceCache, debounce, throttle } from './utils/performanceOptimizations'
+export { memoizedComponents, PerformanceCache, debounce, throttle } from './utils/performanceOptimizations'

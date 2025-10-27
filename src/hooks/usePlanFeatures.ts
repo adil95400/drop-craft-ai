@@ -1,11 +1,11 @@
 import { useUnifiedPlan } from '@/lib/unified-plan-system'
+import { useMemo } from 'react'
 
 export const usePlanFeatures = () => {
   const { currentPlan, isUltraPro, isPro, hasFeature } = useUnifiedPlan()
-  const plan = currentPlan
 
-  // Feature checks pour différents modules
-  const features = {
+  // Memoize feature checks to avoid recalculation
+  const features = useMemo(() => ({
     // Dashboard
     aiInsights: hasFeature('ai-analysis'),
     predictiveAnalytics: hasFeature('predictive-analytics'),
@@ -39,41 +39,35 @@ export const usePlanFeatures = () => {
     
     // Integrations
     premiumIntegrations: hasFeature('premium-integrations')
-  }
+  }), [hasFeature])
 
-  const getFeatureConfig = (moduleName: string) => {
-    switch (moduleName) {
-      case 'dashboard':
-        return {
-          showAIInsights: features.aiInsights,
-          showPredictive: features.predictiveAnalytics,
-          title: isUltraPro ? 'Dashboard Ultra Pro' : 'Dashboard'
-        }
-      
-      case 'import':
-        return {
-          showAIImport: features.aiImport,
-          showBulkOps: features.bulkOperations,
-          title: isUltraPro ? 'Import Ultra Pro' : 'Import'
-        }
-      
-      case 'catalogue':
-        return {
-          showAdvancedFilters: features.advancedFilters,
-          showAnalytics: features.advancedAnalytics,
-          title: isUltraPro ? 'Catalogue Ultra Pro' : 'Catalogue'
-        }
-      
-      default:
-        return {
-          title: moduleName,
-          showAdvanced: isUltraPro
-        }
-    }
-  }
+  const getFeatureConfig = useMemo(() => (moduleName: string) => {
+    const configs: Record<string, any> = {
+      dashboard: {
+        showAIInsights: features.aiInsights,
+        showPredictive: features.predictiveAnalytics,
+        title: isUltraPro ? 'Dashboard Ultra Pro' : 'Dashboard'
+      },
+      import: {
+        showAIImport: features.aiImport,
+        showBulkOps: features.bulkOperations,
+        title: isUltraPro ? 'Import Ultra Pro' : 'Import'
+      },
+      catalogue: {
+        showAdvancedFilters: features.advancedFilters,
+        showAnalytics: features.advancedAnalytics,
+        title: isUltraPro ? 'Catalogue Ultra Pro' : 'Catalogue'
+      }
+    };
+
+    return configs[moduleName] || {
+      title: moduleName,
+      showAdvanced: isUltraPro
+    };
+  }, [features, isUltraPro]);
 
   return {
-    plan,
+    plan: currentPlan,
     isUltraPro,
     isPro,
     features,

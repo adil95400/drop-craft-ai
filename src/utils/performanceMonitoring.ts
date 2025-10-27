@@ -1,7 +1,9 @@
 /**
- * Performance monitoring utilities
+ * Unified Performance Monitoring System
+ * Consolidates all performance tracking utilities
  */
 
+// Performance measurement
 export const measurePerformance = (metricName: string) => {
   const startTime = performance.now();
   
@@ -19,13 +21,14 @@ export const measurePerformance = (metricName: string) => {
   };
 };
 
+// Web Vitals reporting
 export const reportWebVitals = (metric: any) => {
-  if (process.env.NODE_ENV === 'production') {
-    // Send to analytics service
+  if (import.meta.env.PROD) {
     console.log('Web Vital:', metric);
   }
 };
 
+// Image preloading
 export const preloadImage = (src: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -39,15 +42,23 @@ export const preloadImages = async (urls: string[]): Promise<void> => {
   await Promise.all(urls.map(url => preloadImage(url)));
 };
 
-// Advanced performance tracking
+// Advanced performance tracking with singleton pattern
 export class PerformanceTracker {
+  private static instance: PerformanceTracker;
   private marks: Map<string, number> = new Map();
 
-  mark(name: string) {
+  static getInstance(): PerformanceTracker {
+    if (!PerformanceTracker.instance) {
+      PerformanceTracker.instance = new PerformanceTracker();
+    }
+    return PerformanceTracker.instance;
+  }
+
+  mark(name: string): void {
     this.marks.set(name, performance.now());
   }
 
-  measure(name: string, startMark: string, endMark?: string) {
+  measure(name: string, startMark: string, endMark?: string): number {
     const start = this.marks.get(startMark);
     const end = endMark ? this.marks.get(endMark) : performance.now();
     
@@ -58,14 +69,14 @@ export class PerformanceTracker {
 
     const duration = (end || performance.now()) - start;
     
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.log(`⏱️ ${name}: ${duration.toFixed(2)}ms`);
     }
 
     return duration;
   }
 
-  clear() {
+  clear(): void {
     this.marks.clear();
   }
 }
@@ -86,8 +97,14 @@ export const monitorMemory = () => {
 // Network performance
 export const monitorNetworkSpeed = async (): Promise<number> => {
   const startTime = performance.now();
-  const response = await fetch('/placeholder.svg', { method: 'HEAD' });
-  const endTime = performance.now();
-  
-  return endTime - startTime;
+  try {
+    await fetch('/placeholder.svg', { method: 'HEAD' });
+    return performance.now() - startTime;
+  } catch (error) {
+    console.error('Network speed test failed:', error);
+    return -1;
+  }
 };
+
+// Export singleton instance
+export const performanceTracker = PerformanceTracker.getInstance();
