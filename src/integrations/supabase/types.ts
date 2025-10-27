@@ -657,6 +657,57 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_trail: {
+        Row: {
+          action: string
+          after_data: Json | null
+          before_data: Json | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          region: string | null
+          session_id: string | null
+          severity: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          region?: string | null
+          session_id?: string | null
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          region?: string | null
+          session_id?: string | null
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       automated_campaigns: {
         Row: {
           ai_optimization_data: Json
@@ -1676,6 +1727,54 @@ export type Database = {
         }
         Relationships: []
       }
+      compliance_records: {
+        Row: {
+          compliance_score: number | null
+          compliance_type: string
+          created_at: string
+          findings: Json | null
+          id: string
+          last_audit_date: string | null
+          metadata: Json | null
+          next_audit_date: string | null
+          recommendations: Json | null
+          risk_level: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          compliance_score?: number | null
+          compliance_type: string
+          created_at?: string
+          findings?: Json | null
+          id?: string
+          last_audit_date?: string | null
+          metadata?: Json | null
+          next_audit_date?: string | null
+          recommendations?: Json | null
+          risk_level?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          compliance_score?: number | null
+          compliance_type?: string
+          created_at?: string
+          findings?: Json | null
+          id?: string
+          last_audit_date?: string | null
+          metadata?: Json | null
+          next_audit_date?: string | null
+          recommendations?: Json | null
+          risk_level?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversion_events: {
         Row: {
           conversion_value: number | null
@@ -2026,6 +2125,51 @@ export type Database = {
           total_orders?: number | null
           total_spent?: number | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      data_residency: {
+        Row: {
+          access_count: number | null
+          backup_regions: string[] | null
+          compliance_tags: string[] | null
+          created_at: string
+          data_type: string
+          encryption_status: string | null
+          id: string
+          last_access: string | null
+          metadata: Json | null
+          primary_region: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_count?: number | null
+          backup_regions?: string[] | null
+          compliance_tags?: string[] | null
+          created_at?: string
+          data_type: string
+          encryption_status?: string | null
+          id?: string
+          last_access?: string | null
+          metadata?: Json | null
+          primary_region: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_count?: number | null
+          backup_regions?: string[] | null
+          compliance_tags?: string[] | null
+          created_at?: string
+          data_type?: string
+          encryption_status?: string | null
+          id?: string
+          last_access?: string | null
+          metadata?: Json | null
+          primary_region?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -2929,6 +3073,60 @@ export type Database = {
           shipping_rules?: Json | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      global_insights: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          data_sources: string[] | null
+          description: string | null
+          id: string
+          impact_level: string | null
+          insight_type: string
+          is_active: boolean | null
+          metadata: Json | null
+          recommendations: Json | null
+          regions: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          data_sources?: string[] | null
+          description?: string | null
+          id?: string
+          impact_level?: string | null
+          insight_type: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          recommendations?: Json | null
+          regions?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          data_sources?: string[] | null
+          description?: string | null
+          id?: string
+          impact_level?: string | null
+          insight_type?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          recommendations?: Json | null
+          regions?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          valid_until?: string | null
         }
         Relationships: []
       }
@@ -6366,6 +6564,45 @@ export type Database = {
           is_active?: boolean
           last_seen?: string
           presence_data?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      regional_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          metric_type: string
+          metric_unit: string | null
+          metric_value: number
+          period_end: string
+          period_start: string
+          region: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          metric_unit?: string | null
+          metric_value: number
+          period_end: string
+          period_start: string
+          region: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          metric_unit?: string | null
+          metric_value?: number
+          period_end?: string
+          period_start?: string
+          region?: string
           user_id?: string
         }
         Relationships: []
@@ -10491,6 +10728,17 @@ export type Database = {
       is_user_admin_secure: {
         Args: { check_user_id: string }
         Returns: boolean
+      }
+      log_audit_event: {
+        Args: {
+          p_action: string
+          p_after_data?: Json
+          p_before_data?: Json
+          p_entity_id?: string
+          p_entity_type: string
+          p_severity?: string
+        }
+        Returns: string
       }
       log_credential_access: {
         Args: {

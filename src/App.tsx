@@ -109,6 +109,7 @@ const PWAInstallPage = lazy(() => import('@/pages/PWAInstallPage'));
 const ExtensionAPIPage = lazy(() => import('@/pages/ExtensionAPIPage'));
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 const CollaborationPage = lazy(() => import('@/pages/CollaborationPage'));
+const GlobalIntelligencePage = lazy(() => import('@/pages/GlobalIntelligencePage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
@@ -289,6 +290,12 @@ function App() {
                         <Route path="/collaboration" element={
                           <ProtectedRoute>
                             <AppLayout><CollaborationPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/global-intelligence" element={
+                          <ProtectedRoute>
+                            <AppLayout><GlobalIntelligencePage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
