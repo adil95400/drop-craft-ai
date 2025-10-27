@@ -105,6 +105,8 @@ const MarketplaceIntegrationsPage = lazy(() => import('@/pages/MarketplaceIntegr
 const PremiumSuppliersPage = lazy(() => import('@/pages/PremiumSuppliersPage'));
 const FeedManagerPage = lazy(() => import('@/pages/FeedManagerPage'));
 const AIIntelligencePage = lazy(() => import('@/pages/AIIntelligencePage'));
+const PWAInstallPage = lazy(() => import('@/pages/PWAInstallPage'));
+const ExtensionAPIPage = lazy(() => import('@/pages/ExtensionAPIPage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
@@ -261,6 +263,18 @@ function App() {
                         <Route path="/ai-intelligence" element={
                           <ProtectedRoute>
                             <AppLayout><AIIntelligencePage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/pwa-install" element={
+                          <ProtectedRoute>
+                            <AppLayout><PWAInstallPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/extensions-api" element={
+                          <ProtectedRoute>
+                            <AppLayout><ExtensionAPIPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         

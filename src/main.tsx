@@ -10,6 +10,10 @@ import { logger } from '@/utils/logger'
 import App from './App'
 import './index.css'
 import './styles/import-animations.css'
+import { PWAService } from './services/PWAService'
+
+// Initialize PWA
+PWAService.init()
 
 // Initialize error monitoring
 initSentry()

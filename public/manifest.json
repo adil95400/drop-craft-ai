@@ -81,17 +81,17 @@
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
-      "name": "Catalogue",
+      "name": "Catalogue AI",
       "short_name": "Catalogue",
-      "description": "Parcourir le catalogue produits",
-      "url": "/products",
+      "description": "Intelligence artificielle produits",
+      "url": "/ai-intelligence",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     },
     {
-      "name": "Commandes",
-      "short_name": "Commandes",
-      "description": "Gérer les commandes",
-      "url": "/orders",
+      "name": "Import",
+      "short_name": "Import",
+      "description": "Importer des produits",
+      "url": "/import/sources",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ],
