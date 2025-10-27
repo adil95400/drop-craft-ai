@@ -51,7 +51,7 @@ export const useRealSEO = () => {
       const { data, error } = await supabase
         .from('seo_analyses')
         .select('*')
-        .order('analyzed_at', { ascending: false })
+        .order('created_at', { ascending: false })
 
       if (error) throw error
       return data as unknown as SEOAnalysis[]

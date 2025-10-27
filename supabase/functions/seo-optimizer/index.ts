@@ -84,7 +84,6 @@ serve(async (req) => {
           meta_description: optimizedDescription,
           recommendations,
           overall_score: 0,
-          analyzed_at: new Date().toISOString(),
         });
 
       if (insertError) throw insertError;
