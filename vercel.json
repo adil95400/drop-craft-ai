@@ -11,11 +11,7 @@
     "VITE_SUPABASE_PUBLISHABLE_KEY": "@vite_supabase_publishable_key",
     "VITE_SUPABASE_PROJECT_ID": "@vite_supabase_project_id"
   },
-  "functions": {
-    "api/**/*.{js,ts}": {
-      "runtime": "nodejs20.x"
-    }
-  },
+  "functions": {},
   "headers": [
     {
       "source": "/api/(.*)",
