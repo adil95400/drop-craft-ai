@@ -28,9 +28,14 @@ export default function AuthPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center">
-        <div className="text-center space-y-4 animate-fade-in">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">
+        <div className="text-center space-y-4 animate-scale-in">
+          <div className="relative">
+            <div className="absolute inset-0 blur-xl opacity-30">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            </div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto relative"></div>
+          </div>
+          <p className="text-muted-foreground font-medium animate-pulse-subtle">
             Vérification de votre session...
           </p>
         </div>
