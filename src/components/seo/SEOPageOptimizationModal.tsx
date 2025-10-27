@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, AlertTriangle, FileText, Target, Search, Zap, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useSEOOptimization } from "@/hooks/useSEOOptimization";
 
 interface PageData {
   url: string;
@@ -32,6 +33,7 @@ export const SEOPageOptimizationModal = ({
   const [optimizedTitle, setOptimizedTitle] = useState('');
   const [optimizedDescription, setOptimizedDescription] = useState('');
   const { toast } = useToast();
+  const { startOptimization, isOptimizing: isApplying } = useSEOOptimization();
 
   if (!page) return null;
 
@@ -122,10 +124,16 @@ export const SEOPageOptimizationModal = ({
   };
 
   const handleApplyOptimizations = () => {
-    toast({
-      title: "Optimisations appliquées",
-      description: `Les optimisations SEO pour ${page.url} ont été sauvegardées`
+    const recommendations = [
+      `Titre optimisé: ${optimizedTitle}`,
+      `Meta description optimisée: ${optimizedDescription}`
+    ];
+    
+    startOptimization({ 
+      checkType: `page_${page.url}`,
+      recommendations 
     });
+    
     onOpenChange(false);
   };
 
@@ -310,9 +318,9 @@ export const SEOPageOptimizationModal = ({
             Annuler
           </Button>
           {(optimizedTitle || optimizedDescription) && (
-            <Button onClick={handleApplyOptimizations}>
+            <Button onClick={handleApplyOptimizations} disabled={isApplying}>
               <CheckCircle className="mr-2 h-4 w-4" />
-              Appliquer les optimisations
+              {isApplying ? 'Application...' : 'Appliquer les optimisations'}
             </Button>
           )}
         </div>
