@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { NotificationBell } from '@/components/notifications/NotificationService';
 import { ExtensionMenu } from '@/components/navigation/ExtensionMenu';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { UnifiedSidebar } from '@/components/layout/UnifiedSidebar';
 interface AppLayoutProps {
   children: React.ReactNode;
 }
@@ -40,7 +40,7 @@ export function AppLayout({
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen w-full flex bg-background">
-        <AppSidebar />
+        <UnifiedSidebar />
         
         <SidebarInset className="flex-1 peer-data-[state=collapsed]:ml-[--sidebar-width-icon] ml-[--sidebar-width] transition-[margin-left] duration-200 ease-linear">
           {/* Header */}
