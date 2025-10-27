@@ -104,6 +104,7 @@ const AIPage = lazy(() => import('@/pages/AIPage'));
 const MarketplaceIntegrationsPage = lazy(() => import('@/pages/MarketplaceIntegrationsPage'));
 const PremiumSuppliersPage = lazy(() => import('@/pages/PremiumSuppliersPage'));
 const FeedManagerPage = lazy(() => import('@/pages/FeedManagerPage'));
+const AIIntelligencePage = lazy(() => import('@/pages/AIIntelligencePage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
@@ -254,6 +255,12 @@ function App() {
                         <Route path="/feed-manager" element={
                           <ProtectedRoute>
                             <AppLayout><FeedManagerPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/ai-intelligence" element={
+                          <ProtectedRoute>
+                            <AppLayout><AIIntelligencePage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         

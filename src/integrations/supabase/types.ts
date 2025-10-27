@@ -372,6 +372,93 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_insights: {
+        Row: {
+          acted_upon_at: string | null
+          action_taken: Json | null
+          actual_impact: Json | null
+          ai_reasoning: Json | null
+          category: string
+          confidence_score: number
+          created_at: string | null
+          description: string
+          dismissed_at: string | null
+          estimated_revenue_impact: number | null
+          estimated_time_to_implement: string | null
+          expires_at: string | null
+          id: string
+          impact_level: string | null
+          insight_type: string
+          metadata: Json | null
+          priority: number | null
+          quick_actions: Json | null
+          recommended_actions: Json | null
+          related_categories: string[] | null
+          related_products: string[] | null
+          status: string | null
+          supporting_data: Json | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          acted_upon_at?: string | null
+          action_taken?: Json | null
+          actual_impact?: Json | null
+          ai_reasoning?: Json | null
+          category: string
+          confidence_score: number
+          created_at?: string | null
+          description: string
+          dismissed_at?: string | null
+          estimated_revenue_impact?: number | null
+          estimated_time_to_implement?: string | null
+          expires_at?: string | null
+          id?: string
+          impact_level?: string | null
+          insight_type: string
+          metadata?: Json | null
+          priority?: number | null
+          quick_actions?: Json | null
+          recommended_actions?: Json | null
+          related_categories?: string[] | null
+          related_products?: string[] | null
+          status?: string | null
+          supporting_data?: Json | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          acted_upon_at?: string | null
+          action_taken?: Json | null
+          actual_impact?: Json | null
+          ai_reasoning?: Json | null
+          category?: string
+          confidence_score?: number
+          created_at?: string | null
+          description?: string
+          dismissed_at?: string | null
+          estimated_revenue_impact?: number | null
+          estimated_time_to_implement?: string | null
+          expires_at?: string | null
+          id?: string
+          impact_level?: string | null
+          insight_type?: string
+          metadata?: Json | null
+          priority?: number | null
+          quick_actions?: Json | null
+          recommended_actions?: Json | null
+          related_categories?: string[] | null
+          related_products?: string[] | null
+          status?: string | null
+          supporting_data?: Json | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_optimization_jobs: {
         Row: {
           completed_at: string | null
@@ -2087,6 +2174,96 @@ export type Database = {
         }
         Relationships: []
       }
+      dynamic_pricing_rules: {
+        Row: {
+          adjust_on_demand: boolean | null
+          ai_enabled: boolean | null
+          competitor_matching: boolean | null
+          conversion_impact: number | null
+          created_at: string | null
+          description: string | null
+          high_demand_multiplier: number | null
+          id: string
+          is_active: boolean | null
+          learning_rate: number | null
+          low_demand_multiplier: number | null
+          max_price: number | null
+          metadata: Json | null
+          min_margin_percent: number | null
+          min_price: number | null
+          priority: number | null
+          revenue_impact: number | null
+          rule_name: string
+          schedule_config: Json | null
+          strategy_type: string
+          target_categories: string[] | null
+          target_margin_percent: number | null
+          target_products: Json | null
+          total_adjustments: number | null
+          undercut_percent: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          adjust_on_demand?: boolean | null
+          ai_enabled?: boolean | null
+          competitor_matching?: boolean | null
+          conversion_impact?: number | null
+          created_at?: string | null
+          description?: string | null
+          high_demand_multiplier?: number | null
+          id?: string
+          is_active?: boolean | null
+          learning_rate?: number | null
+          low_demand_multiplier?: number | null
+          max_price?: number | null
+          metadata?: Json | null
+          min_margin_percent?: number | null
+          min_price?: number | null
+          priority?: number | null
+          revenue_impact?: number | null
+          rule_name: string
+          schedule_config?: Json | null
+          strategy_type: string
+          target_categories?: string[] | null
+          target_margin_percent?: number | null
+          target_products?: Json | null
+          total_adjustments?: number | null
+          undercut_percent?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          adjust_on_demand?: boolean | null
+          ai_enabled?: boolean | null
+          competitor_matching?: boolean | null
+          conversion_impact?: number | null
+          created_at?: string | null
+          description?: string | null
+          high_demand_multiplier?: number | null
+          id?: string
+          is_active?: boolean | null
+          learning_rate?: number | null
+          low_demand_multiplier?: number | null
+          max_price?: number | null
+          metadata?: Json | null
+          min_margin_percent?: number | null
+          min_price?: number | null
+          priority?: number | null
+          revenue_impact?: number | null
+          rule_name?: string
+          schedule_config?: Json | null
+          strategy_type?: string
+          target_categories?: string[] | null
+          target_margin_percent?: number | null
+          target_products?: Json | null
+          total_adjustments?: number | null
+          undercut_percent?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       enterprise_integrations: {
         Row: {
           authentication_data: Json
@@ -3477,6 +3654,99 @@ export type Database = {
           supported_locales?: string[] | null
           translation_provider?: string | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      market_analysis: {
+        Row: {
+          analysis_type: string
+          average_pricing: Json | null
+          competition_intensity: string | null
+          confidence_score: number | null
+          created_at: string | null
+          customer_segments: Json | null
+          data_sources: Json | null
+          emerging_trends: Json | null
+          entry_barriers: Json | null
+          id: string
+          last_updated_at: string | null
+          market_gaps: Json | null
+          market_growth_rate: number | null
+          market_maturity: string | null
+          market_size: number | null
+          metadata: Json | null
+          opportunity_score: number | null
+          recommended_strategy: string | null
+          risk_score: number | null
+          search_trend: string | null
+          search_volume: number | null
+          seasonal_patterns: Json | null
+          success_factors: Json | null
+          target_market: string
+          top_competitors: Json | null
+          total_competitors: number | null
+          underserved_segments: Json | null
+          user_id: string
+        }
+        Insert: {
+          analysis_type: string
+          average_pricing?: Json | null
+          competition_intensity?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          customer_segments?: Json | null
+          data_sources?: Json | null
+          emerging_trends?: Json | null
+          entry_barriers?: Json | null
+          id?: string
+          last_updated_at?: string | null
+          market_gaps?: Json | null
+          market_growth_rate?: number | null
+          market_maturity?: string | null
+          market_size?: number | null
+          metadata?: Json | null
+          opportunity_score?: number | null
+          recommended_strategy?: string | null
+          risk_score?: number | null
+          search_trend?: string | null
+          search_volume?: number | null
+          seasonal_patterns?: Json | null
+          success_factors?: Json | null
+          target_market: string
+          top_competitors?: Json | null
+          total_competitors?: number | null
+          underserved_segments?: Json | null
+          user_id: string
+        }
+        Update: {
+          analysis_type?: string
+          average_pricing?: Json | null
+          competition_intensity?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          customer_segments?: Json | null
+          data_sources?: Json | null
+          emerging_trends?: Json | null
+          entry_barriers?: Json | null
+          id?: string
+          last_updated_at?: string | null
+          market_gaps?: Json | null
+          market_growth_rate?: number | null
+          market_maturity?: string | null
+          market_size?: number | null
+          metadata?: Json | null
+          opportunity_score?: number | null
+          recommended_strategy?: string | null
+          risk_score?: number | null
+          search_trend?: string | null
+          search_volume?: number | null
+          seasonal_patterns?: Json | null
+          success_factors?: Json | null
+          target_market?: string
+          top_competitors?: Json | null
+          total_competitors?: number | null
+          underserved_segments?: Json | null
           user_id?: string
         }
         Relationships: []
@@ -5105,6 +5375,74 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "premium_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      price_adjustments: {
+        Row: {
+          actual_impact: Json | null
+          adjustment_reason: string
+          ai_confidence: number | null
+          applied_at: string | null
+          created_at: string | null
+          expected_impact: Json | null
+          expires_at: string | null
+          id: string
+          market_data: Json | null
+          metadata: Json | null
+          new_price: number
+          old_price: number
+          price_change_percent: number | null
+          product_id: string
+          rule_id: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          actual_impact?: Json | null
+          adjustment_reason: string
+          ai_confidence?: number | null
+          applied_at?: string | null
+          created_at?: string | null
+          expected_impact?: Json | null
+          expires_at?: string | null
+          id?: string
+          market_data?: Json | null
+          metadata?: Json | null
+          new_price: number
+          old_price: number
+          price_change_percent?: number | null
+          product_id: string
+          rule_id?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          actual_impact?: Json | null
+          adjustment_reason?: string
+          ai_confidence?: number | null
+          applied_at?: string | null
+          created_at?: string | null
+          expected_impact?: Json | null
+          expires_at?: string | null
+          id?: string
+          market_data?: Json | null
+          metadata?: Json | null
+          new_price?: number
+          old_price?: number
+          price_change_percent?: number | null
+          product_id?: string
+          rule_id?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_adjustments_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "dynamic_pricing_rules"
             referencedColumns: ["id"]
           },
         ]
@@ -8560,6 +8898,90 @@ export type Database = {
         }
         Relationships: []
       }
+      trend_predictions: {
+        Row: {
+          accuracy_score: number | null
+          actual_outcome: number | null
+          confidence_score: number
+          created_at: string | null
+          current_value: number | null
+          entity_id: string | null
+          entity_name: string
+          entity_type: string
+          external_signals: Json | null
+          historical_data: Json | null
+          id: string
+          market_factors: Json | null
+          metadata: Json | null
+          model_version: string | null
+          predicted_value: number
+          prediction_date: string | null
+          prediction_period: string
+          prediction_range: Json | null
+          prediction_type: string
+          seasonality_detected: boolean | null
+          training_accuracy: number | null
+          trend_direction: string | null
+          trend_strength: number | null
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          accuracy_score?: number | null
+          actual_outcome?: number | null
+          confidence_score: number
+          created_at?: string | null
+          current_value?: number | null
+          entity_id?: string | null
+          entity_name: string
+          entity_type: string
+          external_signals?: Json | null
+          historical_data?: Json | null
+          id?: string
+          market_factors?: Json | null
+          metadata?: Json | null
+          model_version?: string | null
+          predicted_value: number
+          prediction_date?: string | null
+          prediction_period: string
+          prediction_range?: Json | null
+          prediction_type: string
+          seasonality_detected?: boolean | null
+          training_accuracy?: number | null
+          trend_direction?: string | null
+          trend_strength?: number | null
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          accuracy_score?: number | null
+          actual_outcome?: number | null
+          confidence_score?: number
+          created_at?: string | null
+          current_value?: number | null
+          entity_id?: string | null
+          entity_name?: string
+          entity_type?: string
+          external_signals?: Json | null
+          historical_data?: Json | null
+          id?: string
+          market_factors?: Json | null
+          metadata?: Json | null
+          model_version?: string | null
+          predicted_value?: number
+          prediction_date?: string | null
+          prediction_period?: string
+          prediction_range?: Json | null
+          prediction_type?: string
+          seasonality_detected?: boolean | null
+          training_accuracy?: number | null
+          trend_direction?: string | null
+          trend_strength?: number | null
+          user_id?: string
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       upsell_rules: {
         Row: {
           ai_generated: boolean
@@ -9133,6 +9555,117 @@ export type Database = {
         }
         Relationships: []
       }
+      winning_products: {
+        Row: {
+          average_competitor_price: number | null
+          best_time_to_launch: string | null
+          catalog_product_id: string | null
+          category: string
+          competition_score: number | null
+          competitor_count: number | null
+          created_at: string | null
+          demand_score: number | null
+          estimated_monthly_revenue: number | null
+          estimated_monthly_sales: number | null
+          estimated_profit_margin: number | null
+          external_id: string | null
+          growth_rate: number | null
+          id: string
+          imported_at: string | null
+          market_saturation: string | null
+          marketing_tips: Json | null
+          metadata: Json | null
+          product_name: string
+          profitability_score: number | null
+          ranking: number | null
+          recommended_markup: number | null
+          recommended_price: number | null
+          reviewed_at: string | null
+          risk_factors: Json | null
+          saturation_score: number | null
+          search_volume_trend: string | null
+          seasonal_factors: Json | null
+          social_media_mentions: number | null
+          status: string | null
+          trend_score: number | null
+          updated_at: string | null
+          user_id: string
+          winning_score: number
+        }
+        Insert: {
+          average_competitor_price?: number | null
+          best_time_to_launch?: string | null
+          catalog_product_id?: string | null
+          category: string
+          competition_score?: number | null
+          competitor_count?: number | null
+          created_at?: string | null
+          demand_score?: number | null
+          estimated_monthly_revenue?: number | null
+          estimated_monthly_sales?: number | null
+          estimated_profit_margin?: number | null
+          external_id?: string | null
+          growth_rate?: number | null
+          id?: string
+          imported_at?: string | null
+          market_saturation?: string | null
+          marketing_tips?: Json | null
+          metadata?: Json | null
+          product_name: string
+          profitability_score?: number | null
+          ranking?: number | null
+          recommended_markup?: number | null
+          recommended_price?: number | null
+          reviewed_at?: string | null
+          risk_factors?: Json | null
+          saturation_score?: number | null
+          search_volume_trend?: string | null
+          seasonal_factors?: Json | null
+          social_media_mentions?: number | null
+          status?: string | null
+          trend_score?: number | null
+          updated_at?: string | null
+          user_id: string
+          winning_score: number
+        }
+        Update: {
+          average_competitor_price?: number | null
+          best_time_to_launch?: string | null
+          catalog_product_id?: string | null
+          category?: string
+          competition_score?: number | null
+          competitor_count?: number | null
+          created_at?: string | null
+          demand_score?: number | null
+          estimated_monthly_revenue?: number | null
+          estimated_monthly_sales?: number | null
+          estimated_profit_margin?: number | null
+          external_id?: string | null
+          growth_rate?: number | null
+          id?: string
+          imported_at?: string | null
+          market_saturation?: string | null
+          marketing_tips?: Json | null
+          metadata?: Json | null
+          product_name?: string
+          profitability_score?: number | null
+          ranking?: number | null
+          recommended_markup?: number | null
+          recommended_price?: number | null
+          reviewed_at?: string | null
+          risk_factors?: Json | null
+          saturation_score?: number | null
+          search_volume_trend?: string | null
+          seasonal_factors?: Json | null
+          social_media_mentions?: number | null
+          status?: string | null
+          trend_score?: number | null
+          updated_at?: string | null
+          user_id?: string
+          winning_score?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       pricing_analytics: {
@@ -9196,6 +9729,16 @@ export type Database = {
       calculate_next_sync: { Args: { integration_id: string }; Returns: string }
       calculate_profit_margin: {
         Args: { cost_price: number; price: number }
+        Returns: number
+      }
+      calculate_winning_score: {
+        Args: {
+          p_competition_score: number
+          p_demand_score: number
+          p_profitability_score: number
+          p_saturation_score: number
+          p_trend_score: number
+        }
         Returns: number
       }
       check_import_rate_limit: {
