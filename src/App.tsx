@@ -103,6 +103,7 @@ const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const AIPage = lazy(() => import('@/pages/AIPage'));
 const MarketplaceIntegrationsPage = lazy(() => import('@/pages/MarketplaceIntegrationsPage'));
 const PremiumSuppliersPage = lazy(() => import('@/pages/PremiumSuppliersPage'));
+const FeedManagerPage = lazy(() => import('@/pages/FeedManagerPage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
@@ -247,6 +248,12 @@ function App() {
                         <Route path="/premium-suppliers" element={
                           <ProtectedRoute>
                             <AppLayout><PremiumSuppliersPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/feed-manager" element={
+                          <ProtectedRoute>
+                            <AppLayout><FeedManagerPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
