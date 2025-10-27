@@ -93,13 +93,13 @@ export default function FeedManager() {
 
   const loadFeeds = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('marketplace_feeds')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setFeeds((data as any) || []);
+      setFeeds(data || []);
     } catch (error: any) {
       toast({
         title: 'Erreur',
