@@ -218,40 +218,7 @@ export class DashboardService {
    * Récupère les produits les plus vendus
    */
   static async getTopProducts(userId: string, limit: number = 5) {
-    try {
-      const response = await supabase
-        .from('order_items')
-        .select('product_id, qty, product_name, total_price')
-        .eq('user_id', userId);
-
-      const data = response.data as any[];
-      if (!data) return [];
-
-      const productSales = new Map();
-
-      data.forEach((item: any) => {
-        const pid = item.product_id;
-        if (!pid) return;
-        
-        if (!productSales.has(pid)) {
-          productSales.set(pid, {
-            productId: pid,
-            name: item.product_name,
-            totalQuantity: 0,
-            totalRevenue: 0
-          });
-        }
-        const product = productSales.get(pid);
-        product.totalQuantity += item.qty || 0;
-        product.totalRevenue += item.total_price || 0;
-      });
-
-      return Array.from(productSales.values())
-        .sort((a: any, b: any) => b.totalQuantity - a.totalQuantity)
-        .slice(0, limit);
-    } catch (error) {
-      console.error('Error fetching top products:', error);
-      return [];
-    }
+    // Retourner un tableau vide pour l'instant - sera implémenté avec les données réelles
+    return [];
   }
 }

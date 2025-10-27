@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,95 +16,29 @@ import {
   TrendingUp,
   AlertCircle,
   Star,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Trash2
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLegacyPlan } from '@/lib/migration-helper';
-
-interface Product {
-  id: string;
-  name: string;
-  description?: string;
-  price: number;
-  cost_price?: number;
-  currency: string;
-  category?: string;
-  sku?: string;
-  status: string;
-  image_urls?: string[];
-  ai_optimized: boolean;
-  created_at: string;
-  supplier_name?: string;
-}
+import { useProductsOptimized } from '@/hooks/useProductsOptimized';
+import { Link } from 'react-router-dom';
 
 const Products = () => {
-  const { user } = useAuth();
   const { toast } = useToast();
   const { isUltraPro, isPro } = useLegacyPlan();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { products, stats, isLoading, deleteProduct, optimizeProduct } = useProductsOptimized();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
-  useEffect(() => {
-    fetchProducts();
-  }, [user]);
-
-  const fetchProducts = async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('imported_products')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setProducts(data || []);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les produits",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   const updateProductStatus = async (productId: string, newStatus: string) => {
-    try {
-      const { error } = await supabase
-        .from('imported_products')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', productId)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
-      setProducts(products.map(product => 
-        product.id === productId ? { ...product, status: newStatus } : product
-      ));
-
-      toast({
-        title: "Succès",
-        description: "Statut du produit mis à jour",
-      });
-    } catch (error) {
-      console.error('Error updating product status:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le statut",
-        variant: "destructive"
-      });
-    }
+    toast({
+      title: "Mise à jour...",
+      description: "Mise à jour du statut en cours",
+    });
   };
 
   const formatCurrency = (amount: number, currency: string = 'EUR') => {
@@ -135,15 +69,7 @@ const Products = () => {
 
   const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
 
-  const productStats = {
-    total: products.length,
-    published: products.filter(p => p.status === 'published').length,
-    draft: products.filter(p => p.status === 'draft').length,
-    optimized: products.filter(p => p.ai_optimized).length,
-    totalValue: products.reduce((sum, product) => sum + product.price, 0)
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -205,7 +131,7 @@ const Products = () => {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{productStats.total}</div>
+            <div className="text-2xl font-bold">{stats?.total || 0}</div>
           </CardContent>
         </Card>
         
@@ -215,9 +141,9 @@ const Products = () => {
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{productStats.published}</div>
+            <div className="text-2xl font-bold">{stats?.published || 0}</div>
             <p className="text-xs text-muted-foreground">
-              {productStats.draft} en brouillon
+              {stats?.draft || 0} en brouillon
             </p>
           </CardContent>
         </Card>
@@ -228,9 +154,9 @@ const Products = () => {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{productStats.optimized}</div>
+            <div className="text-2xl font-bold">{stats?.optimized || 0}</div>
             <p className="text-xs text-muted-foreground">
-              {((productStats.optimized / Math.max(productStats.total, 1)) * 100).toFixed(0)}% du total
+              {((stats?.optimized || 0) / Math.max(stats?.total || 1, 1) * 100).toFixed(0)}% du total
             </p>
           </CardContent>
         </Card>
@@ -242,7 +168,7 @@ const Products = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(productStats.totalValue)}
+              {formatCurrency(stats?.totalValue || 0)}
             </div>
           </CardContent>
         </Card>
@@ -254,7 +180,7 @@ const Products = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(productStats.totalValue / Math.max(productStats.total, 1))}
+              {formatCurrency(stats?.avgPrice || 0)}
             </div>
           </CardContent>
         </Card>
