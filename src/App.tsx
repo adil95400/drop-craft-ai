@@ -101,6 +101,7 @@ const CrmPage = lazy(() => import('@/pages/CrmPage'));
 const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const AIPage = lazy(() => import('@/pages/AIPage'));
+const MarketplaceIntegrationsPage = lazy(() => import('@/pages/MarketplaceIntegrationsPage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
@@ -233,6 +234,12 @@ function App() {
                         <Route path="/integrations" element={
                           <ProtectedRoute>
                             <AppLayout><ModernIntegrationsHub /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/marketplace-integrations" element={
+                          <ProtectedRoute>
+                            <AppLayout><MarketplaceIntegrationsPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         

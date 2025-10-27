@@ -3664,6 +3664,53 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_event_logs: {
+        Row: {
+          created_at: string | null
+          data: Json | null
+          event_source: string
+          event_type: string
+          id: string
+          integration_id: string | null
+          message: string | null
+          severity: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json | null
+          event_source: string
+          event_type: string
+          id?: string
+          integration_id?: string | null
+          message?: string | null
+          severity?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json | null
+          event_source?: string
+          event_type?: string
+          id?: string
+          integration_id?: string | null
+          message?: string | null
+          severity?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_event_logs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_extensions: {
         Row: {
           category: string
@@ -3757,6 +3804,214 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_integrations: {
+        Row: {
+          access_token: string | null
+          api_key: string | null
+          api_secret: string | null
+          auto_sync_enabled: boolean | null
+          config: Json | null
+          created_at: string | null
+          failed_sync_count: number | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          metadata: Json | null
+          next_sync_at: string | null
+          platform: Database["public"]["Enums"]["marketplace_platform"]
+          refresh_token: string | null
+          shop_id: string | null
+          shop_url: string | null
+          status: string | null
+          sync_direction: Database["public"]["Enums"]["sync_direction"] | null
+          sync_frequency_minutes: number | null
+          token_expires_at: string | null
+          total_orders_synced: number | null
+          total_products_synced: number | null
+          total_sync_count: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          api_key?: string | null
+          api_secret?: string | null
+          auto_sync_enabled?: boolean | null
+          config?: Json | null
+          created_at?: string | null
+          failed_sync_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          metadata?: Json | null
+          next_sync_at?: string | null
+          platform: Database["public"]["Enums"]["marketplace_platform"]
+          refresh_token?: string | null
+          shop_id?: string | null
+          shop_url?: string | null
+          status?: string | null
+          sync_direction?: Database["public"]["Enums"]["sync_direction"] | null
+          sync_frequency_minutes?: number | null
+          token_expires_at?: string | null
+          total_orders_synced?: number | null
+          total_products_synced?: number | null
+          total_sync_count?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          api_key?: string | null
+          api_secret?: string | null
+          auto_sync_enabled?: boolean | null
+          config?: Json | null
+          created_at?: string | null
+          failed_sync_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          metadata?: Json | null
+          next_sync_at?: string | null
+          platform?: Database["public"]["Enums"]["marketplace_platform"]
+          refresh_token?: string | null
+          shop_id?: string | null
+          shop_url?: string | null
+          status?: string | null
+          sync_direction?: Database["public"]["Enums"]["sync_direction"] | null
+          sync_frequency_minutes?: number | null
+          token_expires_at?: string | null
+          total_orders_synced?: number | null
+          total_products_synced?: number | null
+          total_sync_count?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      marketplace_product_mappings: {
+        Row: {
+          created_at: string | null
+          external_data: Json | null
+          external_product_id: string
+          external_variant_id: string | null
+          id: string
+          integration_id: string
+          last_synced_at: string | null
+          local_product_id: string | null
+          sync_errors: Json | null
+          sync_status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          external_data?: Json | null
+          external_product_id: string
+          external_variant_id?: string | null
+          id?: string
+          integration_id: string
+          last_synced_at?: string | null
+          local_product_id?: string | null
+          sync_errors?: Json | null
+          sync_status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          external_data?: Json | null
+          external_product_id?: string
+          external_variant_id?: string | null
+          id?: string
+          integration_id?: string
+          last_synced_at?: string | null
+          local_product_id?: string | null
+          sync_errors?: Json | null
+          sync_status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_product_mappings_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_sync_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          duration_ms: number | null
+          errors: Json | null
+          failed_items: number | null
+          id: string
+          integration_id: string
+          processed_items: number | null
+          results: Json | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["sync_status"] | null
+          successful_items: number | null
+          sync_direction: Database["public"]["Enums"]["sync_direction"]
+          sync_type: string
+          total_items: number | null
+          updated_at: string | null
+          user_id: string
+          warnings: Json | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          errors?: Json | null
+          failed_items?: number | null
+          id?: string
+          integration_id: string
+          processed_items?: number | null
+          results?: Json | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["sync_status"] | null
+          successful_items?: number | null
+          sync_direction: Database["public"]["Enums"]["sync_direction"]
+          sync_type: string
+          total_items?: number | null
+          updated_at?: string | null
+          user_id: string
+          warnings?: Json | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_ms?: number | null
+          errors?: Json | null
+          failed_items?: number | null
+          id?: string
+          integration_id?: string
+          processed_items?: number | null
+          results?: Json | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["sync_status"] | null
+          successful_items?: number | null
+          sync_direction?: Database["public"]["Enums"]["sync_direction"]
+          sync_type?: string
+          total_items?: number | null
+          updated_at?: string | null
+          user_id?: string
+          warnings?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_sync_jobs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_sync_logs: {
         Row: {
           completed_at: string | null
@@ -3804,6 +4059,62 @@ export type Database = {
           },
         ]
       }
+      marketplace_webhooks: {
+        Row: {
+          callback_url: string
+          created_at: string | null
+          event_type: string
+          id: string
+          integration_id: string
+          is_active: boolean | null
+          last_called_at: string | null
+          topic: string
+          total_calls: number | null
+          updated_at: string | null
+          user_id: string
+          verified: boolean | null
+          webhook_id: string | null
+        }
+        Insert: {
+          callback_url: string
+          created_at?: string | null
+          event_type: string
+          id?: string
+          integration_id: string
+          is_active?: boolean | null
+          last_called_at?: string | null
+          topic: string
+          total_calls?: number | null
+          updated_at?: string | null
+          user_id: string
+          verified?: boolean | null
+          webhook_id?: string | null
+        }
+        Update: {
+          callback_url?: string
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          integration_id?: string
+          is_active?: boolean | null
+          last_called_at?: string | null
+          topic?: string
+          total_calls?: number | null
+          updated_at?: string | null
+          user_id?: string
+          verified?: boolean | null
+          webhook_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_webhooks_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monitoring_metrics: {
         Row: {
           created_at: string
@@ -3837,7 +4148,7 @@ export type Database = {
       newsletters: {
         Row: {
           created_at: string | null
-          created_ip: unknown | null
+          created_ip: unknown
           email: string
           id: string
           rate_limit_key: string | null
@@ -3845,7 +4156,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          created_ip?: unknown | null
+          created_ip?: unknown
           email: string
           id?: string
           rate_limit_key?: string | null
@@ -3853,7 +4164,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
-          created_ip?: unknown | null
+          created_ip?: unknown
           email?: string
           id?: string
           rate_limit_key?: string | null
@@ -5525,7 +5836,7 @@ export type Database = {
           created_at: string | null
           error_message: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           record_id: string | null
           success: boolean
           table_name: string | null
@@ -5537,7 +5848,7 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           record_id?: string | null
           success: boolean
           table_name?: string | null
@@ -5549,7 +5860,7 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           record_id?: string | null
           success?: boolean
           table_name?: string | null
@@ -7939,7 +8250,7 @@ export type Database = {
       user_api_keys: {
         Row: {
           created_at: string
-          created_ip: unknown | null
+          created_ip: unknown
           encrypted_value: string
           id: string
           is_active: boolean
@@ -7952,7 +8263,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          created_ip?: unknown | null
+          created_ip?: unknown
           encrypted_value: string
           id?: string
           is_active?: boolean
@@ -7965,7 +8276,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          created_ip?: unknown | null
+          created_ip?: unknown
           encrypted_value?: string
           id?: string
           is_active?: boolean
@@ -8201,7 +8512,7 @@ export type Database = {
           device_info: Json | null
           expires_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_active: boolean | null
           last_activity_at: string | null
           location: Json | null
@@ -8215,7 +8526,7 @@ export type Database = {
           device_info?: Json | null
           expires_at: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean | null
           last_activity_at?: string | null
           location?: Json | null
@@ -8229,7 +8540,7 @@ export type Database = {
           device_info?: Json | null
           expires_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_active?: boolean | null
           last_activity_at?: string | null
           location?: Json | null
@@ -8472,7 +8783,7 @@ export type Database = {
         Returns: Json
       }
       admin_get_all_users: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           email: string
@@ -8486,15 +8797,15 @@ export type Database = {
           updated_at: string
         }[]
       }
-      admin_set_role: {
-        Args:
-          | {
+      admin_set_role:
+        | { Args: { new_role: string; target_user_id: string }; Returns: Json }
+        | {
+            Args: {
               new_role: Database["public"]["Enums"]["app_role"]
               target_user_id: string
             }
-          | { new_role: string; target_user_id: string }
-        Returns: Json
-      }
+            Returns: Json
+          }
       admin_set_user_role: {
         Args: {
           new_role: Database["public"]["Enums"]["user_role"]
@@ -8510,14 +8821,9 @@ export type Database = {
         Args: { new_role: string; target_user_id: string }
         Returns: Json
       }
-      archive_old_import_jobs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      auto_unlock_stuck_imports: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      archive_old_import_jobs: { Args: never; Returns: undefined }
+      auto_unlock_stuck_imports: { Args: never; Returns: undefined }
+      calculate_next_sync: { Args: { integration_id: string }; Returns: string }
       calculate_profit_margin: {
         Args: { cost_price: number; price: number }
         Returns: number
@@ -8535,12 +8841,9 @@ export type Database = {
         Args: { quota_key_param: string; user_id_param: string }
         Returns: boolean
       }
-      check_security_configuration: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      check_security_configuration: { Args: never; Returns: Json }
       check_security_definer_functions: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           function_name: string
           has_search_path: boolean
@@ -8551,46 +8854,19 @@ export type Database = {
         Args: { increment_by?: number; quota_key_param: string }
         Returns: boolean
       }
-      clean_expired_cache: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_and_secure_all_policies: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      cleanup_expired_sessions: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_old_import_jobs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_old_security_events: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_revoked_tokens: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      configure_auth_security_settings: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      clean_expired_cache: { Args: never; Returns: undefined }
+      cleanup_and_secure_all_policies: { Args: never; Returns: string }
+      cleanup_expired_sessions: { Args: never; Returns: undefined }
+      cleanup_old_import_jobs: { Args: never; Returns: undefined }
+      cleanup_old_security_events: { Args: never; Returns: undefined }
+      cleanup_revoked_tokens: { Args: never; Returns: undefined }
+      configure_auth_security_settings: { Args: never; Returns: Json }
       create_imported_reviews_table_if_not_exists: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: undefined
       }
-      detect_suspicious_activity: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      generate_api_key: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      detect_suspicious_activity: { Args: never; Returns: Json }
+      generate_api_key: { Args: never; Returns: string }
       get_admin_catalog_intelligence: {
         Args: { category_filter?: string; limit_count?: number }
         Returns: {
@@ -8696,14 +8972,8 @@ export type Database = {
           updated_at: string
         }[]
       }
-      get_current_user_admin_mode: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_user_admin_mode: { Args: never; Returns: string }
+      get_current_user_role: { Args: never; Returns: string }
       get_customer_sensitive_info: {
         Args: { customer_id: string }
         Returns: {
@@ -8715,7 +8985,7 @@ export type Database = {
         }[]
       }
       get_customers_secure: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           address: Json
           created_at: string
@@ -8742,10 +9012,7 @@ export type Database = {
         }
         Returns: Database["public"]["Enums"]["plan_type"]
       }
-      get_final_security_status: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      get_final_security_status: { Args: never; Returns: Json }
       get_marketplace_analytics: {
         Args: { user_id_param: string }
         Returns: Json
@@ -8781,7 +9048,7 @@ export type Database = {
         }[]
       }
       get_masked_customers: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           address: Json
           created_at: string
@@ -8860,7 +9127,7 @@ export type Database = {
         }[]
       }
       get_safe_integrations: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           connection_status: string
           created_at: string
@@ -8922,7 +9189,7 @@ export type Database = {
         }[]
       }
       get_secure_suppliers: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           access_count: number
           api_endpoint: string
@@ -8943,12 +9210,9 @@ export type Database = {
           website: string
         }[]
       }
-      get_security_configuration_status: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      get_security_configuration_status: { Args: never; Returns: Json }
       get_subscription_status_secure: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           expires_at: string
           has_subscription: boolean
@@ -8966,22 +9230,13 @@ export type Database = {
           id: string
         }[]
       }
-      get_supplier_stats: {
-        Args: { user_id_param: string }
-        Returns: Json
-      }
-      get_user_plan: {
-        Args: { user_id_param: string }
-        Returns: string
-      }
+      get_supplier_stats: { Args: { user_id_param: string }; Returns: Json }
+      get_user_plan: { Args: { user_id_param: string }; Returns: string }
       get_user_primary_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
-      get_user_role: {
-        Args: { check_user_id?: string }
-        Returns: string
-      }
+      get_user_role: { Args: { check_user_id?: string }; Returns: string }
       get_user_role_secure: {
         Args: { check_user_id?: string }
         Returns: string
@@ -9017,42 +9272,20 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: { user_id_param?: string }
-        Returns: boolean
-      }
-      is_admin_user: {
-        Args: { user_id?: string }
-        Returns: boolean
-      }
-      is_authenticated_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_authenticated_admin_secure: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_current_user_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_own_profile: {
-        Args: { profile_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { user_id_param?: string }; Returns: boolean }
+      is_admin_user: { Args: { user_id?: string }; Returns: boolean }
+      is_authenticated_admin: { Args: never; Returns: boolean }
+      is_authenticated_admin_secure: { Args: never; Returns: boolean }
+      is_current_user_admin: { Args: never; Returns: boolean }
+      is_own_profile: { Args: { profile_id: string }; Returns: boolean }
       is_supplier_owner: {
         Args: { _supplier_id: string; _user_id: string }
         Returns: boolean
       }
-      is_token_revoked: {
-        Args: { check_user_id: string }
-        Returns: boolean
-      }
-      is_user_admin: {
-        Args: Record<PropertyKey, never> | { check_user_id?: string }
-        Returns: boolean
-      }
+      is_token_revoked: { Args: { check_user_id: string }; Returns: boolean }
+      is_user_admin:
+        | { Args: { check_user_id?: string }; Returns: boolean }
+        | { Args: never; Returns: boolean }
       is_user_admin_secure: {
         Args: { check_user_id: string }
         Returns: boolean
@@ -9066,38 +9299,32 @@ export type Database = {
         }
         Returns: undefined
       }
+      log_marketplace_event: {
+        Args: {
+          p_data?: Json
+          p_event_type: string
+          p_integration_id: string
+          p_message?: string
+          p_severity?: string
+          p_title: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       log_sensitive_access_secure: {
         Args: { access_type: string; record_id?: string; table_name: string }
         Returns: undefined
       }
-      log_sensitive_data_access: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      mask_customer_email: {
-        Args: { email: string }
-        Returns: string
-      }
-      mask_customer_phone: {
-        Args: { phone: string }
-        Returns: string
-      }
+      log_sensitive_data_access: { Args: never; Returns: undefined }
+      mask_customer_email: { Args: { email: string }; Returns: string }
+      mask_customer_phone: { Args: { phone: string }; Returns: string }
       process_automation_trigger: {
         Args: { context_data?: Json; trigger_id: string }
         Returns: Json
       }
-      process_pending_imports: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      public_newsletter_signup: {
-        Args: { email_param: string }
-        Returns: Json
-      }
-      retry_failed_import: {
-        Args: { job_id: string }
-        Returns: Json
-      }
+      process_pending_imports: { Args: never; Returns: undefined }
+      public_newsletter_signup: { Args: { email_param: string }; Returns: Json }
+      retry_failed_import: { Args: { job_id: string }; Returns: Json }
       revoke_user_sessions: {
         Args: { session_ids?: string[]; target_user_id: string }
         Returns: Json
@@ -9110,10 +9337,7 @@ export type Database = {
         }
         Returns: Json
       }
-      rotate_api_key: {
-        Args: { key_id: string }
-        Returns: Json
-      }
+      rotate_api_key: { Args: { key_id: string }; Returns: Json }
       search_suppliers: {
         Args: {
           country_filter?: string
@@ -9142,44 +9366,26 @@ export type Database = {
         Args: { new_role: string; target_user_id: string }
         Returns: Json
       }
-      secure_all_user_tables: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      secure_all_user_tables: { Args: never; Returns: string }
       secure_newsletter_signup: {
         Args: { email_param: string; source_param?: string; user_ip?: unknown }
         Returns: Json
       }
-      seed_sample_data: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      simple_mask_email: {
-        Args: { email: string }
-        Returns: string
-      }
-      simple_mask_phone: {
-        Args: { phone: string }
-        Returns: string
-      }
-      unlock_stuck_import_jobs: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      user_has_role: {
-        Args:
-          | { _role: Database["public"]["Enums"]["app_role"] }
-          | { required_role: string; user_id: string }
-        Returns: boolean
-      }
+      seed_sample_data: { Args: never; Returns: Json }
+      simple_mask_email: { Args: { email: string }; Returns: string }
+      simple_mask_phone: { Args: { phone: string }; Returns: string }
+      unlock_stuck_import_jobs: { Args: never; Returns: number }
+      user_has_role:
+        | { Args: { required_role: string; user_id: string }; Returns: boolean }
+        | {
+            Args: { _role: Database["public"]["Enums"]["app_role"] }
+            Returns: boolean
+          }
       validate_customer_access: {
         Args: { customer_id: string }
         Returns: boolean
       }
-      verify_security_status: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      verify_security_status: { Args: never; Returns: Json }
       verify_supplier_ownership: {
         Args: { supplier_id: string; user_id: string }
         Returns: boolean
@@ -9188,7 +9394,18 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user" | "staff"
       enhanced_app_role: "admin" | "manager" | "user"
+      marketplace_platform:
+        | "shopify"
+        | "woocommerce"
+        | "etsy"
+        | "cdiscount"
+        | "allegro"
+        | "manomano"
+        | "amazon"
+        | "ebay"
       plan_type: "standard" | "pro" | "ultra_pro" | "free"
+      sync_direction: "push" | "pull" | "bidirectional"
+      sync_status: "idle" | "syncing" | "completed" | "failed" | "paused"
       user_role: "user" | "admin" | "manager"
     }
     CompositeTypes: {
@@ -9319,7 +9536,19 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user", "staff"],
       enhanced_app_role: ["admin", "manager", "user"],
+      marketplace_platform: [
+        "shopify",
+        "woocommerce",
+        "etsy",
+        "cdiscount",
+        "allegro",
+        "manomano",
+        "amazon",
+        "ebay",
+      ],
       plan_type: ["standard", "pro", "ultra_pro", "free"],
+      sync_direction: ["push", "pull", "bidirectional"],
+      sync_status: ["idle", "syncing", "completed", "failed", "paused"],
       user_role: ["user", "admin", "manager"],
     },
   },

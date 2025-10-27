@@ -1,0 +1,421 @@
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Store,
+  ShoppingBag,
+  Package,
+  TrendingUp,
+  RefreshCw,
+  Plus,
+  Settings,
+  Zap,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  ExternalLink,
+} from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/integrations/supabase/client'
+import { motion } from 'framer-motion'
+
+interface MarketplaceIntegration {
+  id: string
+  platform: string
+  shop_url: string
+  status: string
+  is_active: boolean
+  last_sync_at: string
+  next_sync_at: string
+  total_products_synced: number
+  total_orders_synced: number
+  total_sync_count: number
+  failed_sync_count: number
+}
+
+const MARKETPLACE_CONFIGS = {
+  etsy: {
+    name: 'Etsy',
+    icon: Store,
+    color: 'from-orange-500 to-red-500',
+    description: 'Handmade & vintage marketplace',
+  },
+  cdiscount: {
+    name: 'Cdiscount',
+    icon: ShoppingBag,
+    color: 'from-green-500 to-emerald-500',
+    description: 'French e-commerce leader',
+  },
+  allegro: {
+    name: 'Allegro',
+    icon: Package,
+    color: 'from-purple-500 to-pink-500',
+    description: 'Polish marketplace leader',
+  },
+  manomano: {
+    name: 'ManoMano',
+    icon: TrendingUp,
+    color: 'from-blue-500 to-cyan-500',
+    description: 'DIY & home improvement',
+  },
+  shopify: {
+    name: 'Shopify',
+    icon: Store,
+    color: 'from-green-600 to-green-400',
+    description: 'E-commerce platform',
+  },
+  woocommerce: {
+    name: 'WooCommerce',
+    icon: ShoppingBag,
+    color: 'from-purple-600 to-purple-400',
+    description: 'WordPress e-commerce',
+  },
+}
+
+export function MarketplaceIntegrationsHub() {
+  const { toast } = useToast()
+  const [integrations, setIntegrations] = useState<MarketplaceIntegration[]>([])
+  const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchIntegrations()
+  }, [])
+
+  const fetchIntegrations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('marketplace_integrations')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setIntegrations(data || [])
+    } catch (error) {
+      console.error('Error fetching integrations:', error)
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de charger les intégrations',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSync = async (integrationId: string) => {
+    setSyncing(integrationId)
+    try {
+      const { data, error } = await supabase.functions.invoke('marketplace-sync', {
+        body: {
+          integration_id: integrationId,
+          sync_type: 'full',
+        },
+      })
+
+      if (error) throw error
+
+      toast({
+        title: 'Synchronisation lancée',
+        description: `La synchronisation a été lancée avec succès`,
+      })
+
+      await fetchIntegrations()
+    } catch (error) {
+      console.error('Sync error:', error)
+      toast({
+        title: 'Erreur',
+        description: 'Échec de la synchronisation',
+        variant: 'destructive',
+      })
+    } finally {
+      setSyncing(null)
+    }
+  }
+
+  const handleDisconnect = async (integrationId: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('marketplace-disconnect', {
+        body: { integration_id: integrationId },
+      })
+
+      if (error) throw error
+
+      toast({
+        title: 'Déconnexion réussie',
+        description: 'L\'intégration a été déconnectée',
+      })
+
+      await fetchIntegrations()
+    } catch (error) {
+      console.error('Disconnect error:', error)
+      toast({
+        title: 'Erreur',
+        description: 'Échec de la déconnexion',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const getStatusBadge = (status: string, isActive: boolean) => {
+    if (!isActive) {
+      return <Badge variant="secondary">Déconnecté</Badge>
+    }
+
+    switch (status) {
+      case 'connected':
+        return (
+          <Badge className="bg-gradient-to-r from-green-500 to-emerald-500">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Connecté
+          </Badge>
+        )
+      case 'syncing':
+        return (
+          <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500">
+            <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+            Synchronisation
+          </Badge>
+        )
+      case 'error':
+        return (
+          <Badge variant="destructive">
+            <AlertCircle className="h-3 w-3 mr-1" />
+            Erreur
+          </Badge>
+        )
+      default:
+        return (
+          <Badge variant="outline">
+            <Clock className="h-3 w-3 mr-1" />
+            En attente
+          </Badge>
+        )
+    }
+  }
+
+  const availablePlatforms = Object.entries(MARKETPLACE_CONFIGS).filter(
+    ([key]) => !integrations.some((i) => i.platform === key)
+  )
+
+  return (
+    <div className="container mx-auto p-6 max-w-7xl">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Intégrations Marketplace</h1>
+          <p className="text-muted-foreground">
+            Connectez et synchronisez vos boutiques sur différentes plateformes
+          </p>
+        </div>
+
+        <Tabs defaultValue="connected" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="connected">
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Connectées ({integrations.filter((i) => i.is_active).length})
+            </TabsTrigger>
+            <TabsTrigger value="available">
+              <Plus className="h-4 w-4 mr-2" />
+              Disponibles ({availablePlatforms.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="connected" className="space-y-4">
+            {loading ? (
+              <div className="grid md:grid-cols-2 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardHeader className="space-y-2">
+                      <div className="h-6 bg-muted rounded w-3/4"></div>
+                      <div className="h-4 bg-muted rounded w-1/2"></div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="h-4 bg-muted rounded"></div>
+                        <div className="h-4 bg-muted rounded w-2/3"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : integrations.filter((i) => i.is_active).length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <Store className="h-12 w-12 text-muted-foreground mb-4" />
+                  <p className="text-lg font-medium mb-2">Aucune intégration connectée</p>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Connectez votre première marketplace pour commencer
+                  </p>
+                  <Button onClick={() => {
+                    const tab = document.querySelector('[value="available"]') as HTMLButtonElement
+                    tab?.click()
+                  }}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Ajouter une intégration
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                {integrations
+                  .filter((i) => i.is_active)
+                  .map((integration) => {
+                    const config = MARKETPLACE_CONFIGS[integration.platform]
+                    const Icon = config.icon
+
+                    return (
+                      <motion.div
+                        key={integration.id}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Card className="hover:shadow-lg transition-shadow">
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`p-2 rounded-lg bg-gradient-to-r ${config.color}`}
+                                >
+                                  <Icon className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                  <CardTitle className="text-lg">{config.name}</CardTitle>
+                                  <CardDescription className="text-xs">
+                                    {integration.shop_url}
+                                  </CardDescription>
+                                </div>
+                              </div>
+                              {getStatusBadge(integration.status, integration.is_active)}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="text-muted-foreground">Produits</p>
+                                <p className="font-semibold">
+                                  {integration.total_products_synced.toLocaleString()}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Commandes</p>
+                                <p className="font-semibold">
+                                  {integration.total_orders_synced.toLocaleString()}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Syncs</p>
+                                <p className="font-semibold">
+                                  {integration.total_sync_count}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Échecs</p>
+                                <p className="font-semibold text-destructive">
+                                  {integration.failed_sync_count}
+                                </p>
+                              </div>
+                            </div>
+
+                            {integration.last_sync_at && (
+                              <p className="text-xs text-muted-foreground">
+                                Dernière sync:{' '}
+                                {new Date(integration.last_sync_at).toLocaleString('fr-FR')}
+                              </p>
+                            )}
+
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => handleSync(integration.id)}
+                                disabled={syncing === integration.id}
+                              >
+                                {syncing === integration.id ? (
+                                  <>
+                                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                    Synchronisation...
+                                  </>
+                                ) : (
+                                  <>
+                                    <RefreshCw className="h-4 w-4 mr-2" />
+                                    Synchroniser
+                                  </>
+                                )}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDisconnect(integration.id)}
+                              >
+                                <Settings className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    )
+                  })}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="available" className="space-y-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {availablePlatforms.map(([key, config]) => {
+                const Icon = config.icon
+
+                return (
+                  <motion.div
+                    key={key}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`p-3 rounded-lg bg-gradient-to-r ${config.color} group-hover:scale-110 transition-transform`}
+                          >
+                            <Icon className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <CardTitle>{config.name}</CardTitle>
+                            <CardDescription className="text-xs">
+                              {config.description}
+                            </CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <Button
+                          className="w-full bg-gradient-primary"
+                          onClick={() => {
+                            toast({
+                              title: 'Connexion à ' + config.name,
+                              description: 'Configuration en cours...',
+                            })
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Connecter
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </motion.div>
+    </div>
+  )
+}
