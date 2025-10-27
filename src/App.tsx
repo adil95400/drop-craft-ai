@@ -110,6 +110,7 @@ const ExtensionAPIPage = lazy(() => import('@/pages/ExtensionAPIPage'));
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 const CollaborationPage = lazy(() => import('@/pages/CollaborationPage'));
 const GlobalIntelligencePage = lazy(() => import('@/pages/GlobalIntelligencePage'));
+const CompetitorAnalysisPage = lazy(() => import('@/pages/CompetitorAnalysisPage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
@@ -296,6 +297,12 @@ function App() {
                         <Route path="/global-intelligence" element={
                           <ProtectedRoute>
                             <AppLayout><GlobalIntelligencePage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/competitor-analysis" element={
+                          <ProtectedRoute>
+                            <AppLayout><CompetitorAnalysisPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
