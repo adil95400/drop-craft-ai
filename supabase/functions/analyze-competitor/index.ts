@@ -1,4 +1,6 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { validateInput, analyzeCompetitorInputSchema } from "../_shared/validation.ts";
+import { checkRateLimit, createRateLimitResponse, RATE_LIMITS } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,19 +18,29 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  try {
-    const { url, userId, competitorName }: AnalyzeRequest = await req.json()
+  // Initialize Supabase client
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const supabase = createClient(supabaseUrl, supabaseKey)
 
-    if (!url || !userId || !competitorName) {
-      throw new Error('URL, userId, and competitorName are required')
+  try {
+    // Parse and validate input
+    const rawBody = await req.json();
+    const { url, userId, competitorName } = validateInput(analyzeCompetitorInputSchema, rawBody);
+
+    // Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      userId,
+      'analyze_competitor',
+      RATE_LIMITS.ANALYZE_COMPETITOR
+    );
+
+    if (!rateLimitResult.allowed) {
+      return createRateLimitResponse(rateLimitResult, corsHeaders);
     }
 
-    console.log(`Analyzing competitor: ${competitorName} at ${url}`)
-
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    console.log(`Analyzing competitor: ${competitorName} at ${url}`);
 
     // Fetch the webpage
     const response = await fetch(url, {

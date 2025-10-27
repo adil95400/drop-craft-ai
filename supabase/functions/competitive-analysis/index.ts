@@ -1,6 +1,8 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { validateInput, competitiveAnalysisInputSchema } from "../_shared/validation.ts";
+import { checkRateLimit, createRateLimitResponse, addRateLimitHeaders, RATE_LIMITS } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,13 +22,33 @@ serve(async (req) => {
   try {
     console.log('[COMPETITIVE-ANALYSIS] Starting competitive analysis');
 
-    const authHeader = req.headers.get('Authorization')!;
+    // Authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Authorization header required');
+    }
+
     const token = authHeader.replace('Bearer ', '');
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
     if (!user) throw new Error('User not authenticated');
 
-    const { competitorName, productId, analysisType } = await req.json();
+    // Rate limiting
+    const rateLimitResult = await checkRateLimit(
+      supabaseClient,
+      user.id,
+      'competitive_analysis',
+      RATE_LIMITS.COMPETITIVE_ANALYSIS
+    );
+
+    if (!rateLimitResult.allowed) {
+      return createRateLimitResponse(rateLimitResult, corsHeaders);
+    }
+
+    // Input validation
+    const rawBody = await req.json();
+    const validatedInput = validateInput(competitiveAnalysisInputSchema, rawBody);
+    const { competitorName, productId, analysisType } = validatedInput;
 
     // Get product and market data
     const { data: products } = await supabaseClient
