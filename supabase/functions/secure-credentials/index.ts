@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const encryptionKey = Deno.env.get('SUPPLIER_ENCRYPTION_KEY')!
+const ENCRYPTION_KEY_NAME = 'CREDENTIALS_ENCRYPTION_KEY'
 
 interface CredentialData {
   integrationId: string
@@ -45,7 +45,7 @@ serve(async (req) => {
     console.log(`Processing ${action} request for integration ${integrationId} by user ${user.id}`)
 
     if (action === 'store' || action === 'update') {
-      // Encrypt and store credentials
+      // Encrypt credentials using AES-256-GCM
       const encryptedCredentials = await encryptCredentials(credentials)
       
       const { data, error } = await supabase
@@ -79,7 +79,7 @@ serve(async (req) => {
 
       return new Response(JSON.stringify({ 
         success: true, 
-        message: 'Credentials securely stored',
+        message: 'Credentials securely stored with AES-256-GCM encryption',
         integration: {
           ...data,
           encrypted_credentials: null // Never return encrypted data
@@ -142,42 +142,105 @@ serve(async (req) => {
   }
 })
 
-async function encryptCredentials(credentials: Record<string, string>): Promise<Record<string, string>> {
-  const encrypted: Record<string, string> = {}
+/**
+ * Get or generate encryption key from environment
+ */
+async function getEncryptionKey(): Promise<CryptoKey> {
+  const keyString = Deno.env.get(ENCRYPTION_KEY_NAME);
   
-  for (const [key, value] of Object.entries(credentials)) {
-    if (value) {
-      // Simple encryption using base64 + encryption key rotation
-      // In production, use proper encryption like AES-GCM
-      const combined = `${encryptionKey}:${value}`
-      encrypted[key] = btoa(combined)
-    }
+  if (!keyString) {
+    throw new Error('CREDENTIALS_ENCRYPTION_KEY not configured in environment');
   }
+
+  // Convert base64 key to ArrayBuffer
+  const keyData = Uint8Array.from(atob(keyString), c => c.charCodeAt(0));
   
-  return encrypted
+  // Import the key for AES-GCM
+  return await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
 }
 
-async function decryptCredentials(encryptedCredentials: Record<string, string>): Promise<Record<string, string>> {
-  const decrypted: Record<string, string> = {}
-  
-  for (const [key, encryptedValue] of Object.entries(encryptedCredentials)) {
-    if (encryptedValue) {
-      try {
-        const decoded = atob(encryptedValue)
-        const [keyPart, ...valueParts] = decoded.split(':')
-        
-        if (keyPart === encryptionKey) {
-          decrypted[key] = valueParts.join(':')
-        } else {
-          console.error(`Invalid encryption key for credential ${key}`)
-          throw new Error('Credential decryption failed')
-        }
-      } catch (error) {
-        console.error(`Failed to decrypt credential ${key}:`, error)
-        throw new Error('Credential decryption failed')
-      }
+/**
+ * Encrypt credentials using AES-256-GCM
+ * Returns base64-encoded: IV + encrypted data + auth tag
+ */
+async function encryptCredentials(
+  credentials: Record<string, string>
+): Promise<Record<string, string>> {
+  const key = await getEncryptionKey();
+  const encrypted: Record<string, string> = {};
+
+  for (const [field, value] of Object.entries(credentials)) {
+    if (!value) {
+      encrypted[field] = '';
+      continue;
+    }
+
+    // Generate random 12-byte IV (recommended for GCM)
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    
+    // Encrypt the value
+    const encodedValue = new TextEncoder().encode(value);
+    const encryptedData = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      encodedValue
+    );
+
+    // Combine IV + encrypted data for storage
+    const combined = new Uint8Array(iv.length + encryptedData.byteLength);
+    combined.set(iv, 0);
+    combined.set(new Uint8Array(encryptedData), iv.length);
+
+    // Encode as base64 for storage
+    encrypted[field] = btoa(String.fromCharCode(...combined));
+  }
+
+  return encrypted;
+}
+
+/**
+ * Decrypt credentials using AES-256-GCM
+ * Expects base64-encoded: IV + encrypted data + auth tag
+ */
+async function decryptCredentials(
+  encryptedCredentials: Record<string, string>
+): Promise<Record<string, string>> {
+  const key = await getEncryptionKey();
+  const decrypted: Record<string, string> = {};
+
+  for (const [field, encryptedValue] of Object.entries(encryptedCredentials)) {
+    if (!encryptedValue) {
+      decrypted[field] = '';
+      continue;
+    }
+
+    try {
+      // Decode from base64
+      const combined = Uint8Array.from(atob(encryptedValue), c => c.charCodeAt(0));
+      
+      // Extract IV (first 12 bytes) and encrypted data
+      const iv = combined.slice(0, 12);
+      const encryptedData = combined.slice(12);
+
+      // Decrypt
+      const decryptedData = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv },
+        key,
+        encryptedData
+      );
+
+      decrypted[field] = new TextDecoder().decode(decryptedData);
+    } catch (error) {
+      console.error(`Failed to decrypt field ${field}:`, error);
+      throw new Error(`Decryption failed for ${field} - possible key mismatch or data corruption`);
     }
   }
-  
-  return decrypted
+
+  return decrypted;
 }

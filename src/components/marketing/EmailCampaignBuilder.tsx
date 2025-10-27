@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import DOMPurify from 'dompurify'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -539,7 +540,7 @@ export function EmailCampaignBuilder() {
                 <div className="p-4 bg-white min-h-[200px]">
                   {campaignData.content ? (
                     <div dangerouslySetInnerHTML={{ 
-                      __html: campaignData.content.replace(/\{\{(\w+)\}\}/g, '<strong>[$1]</strong>') 
+                      __html: DOMPurify.sanitize(campaignData.content.replace(/\{\{(\w+)\}\}/g, '<strong>[$1]</strong>')) 
                     }} />
                   ) : (
                     <div className="text-center text-muted-foreground py-8">

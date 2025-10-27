@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -222,7 +223,7 @@ export function BlogPostDetail() {
         {/* Article Body */}
         <div className="prose prose-lg max-w-none mb-12">
           <div 
-            dangerouslySetInnerHTML={{ __html: mockPost.content }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(mockPost.content) }}
             className="[&>h2]:text-2xl [&>h2]:font-bold [&>h2]:mt-8 [&>h2]:mb-4 [&>h2]:text-foreground
                      [&>p]:mb-4 [&>p]:leading-relaxed [&>p]:text-foreground
                      [&>ul]:mb-4 [&>ul]:pl-6 [&>li]:mb-2 [&>li]:text-foreground
