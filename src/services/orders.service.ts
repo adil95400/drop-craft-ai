@@ -1,0 +1,220 @@
+import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
+
+type Order = Database['public']['Tables']['orders']['Row'];
+type OrderInsert = Database['public']['Tables']['orders']['Insert'];
+type OrderUpdate = Database['public']['Tables']['orders']['Update'];
+
+export class OrdersService {
+  /**
+   * Récupère toutes les commandes
+   */
+  static async getOrders(userId: string) {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        customer:customers(*)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Récupère une commande par ID
+   */
+  static async getOrder(id: string, userId: string) {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        customer:customers(*),
+        items:order_items(
+          *,
+          product:imported_products(*)
+        )
+      `)
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Crée une nouvelle commande
+   */
+  static async createOrder(order: OrderInsert, items?: any[]) {
+    const { data: newOrder, error: orderError } = await supabase
+      .from('orders')
+      .insert(order)
+      .select()
+      .single();
+
+    if (orderError) throw orderError;
+
+    // Créer les items de commande si fournis
+    if (items && items.length > 0) {
+      const orderItems = items.map(item => ({
+        ...item,
+        order_id: newOrder.id,
+        user_id: order.user_id
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+    }
+
+    return newOrder;
+  }
+
+  /**
+   * Met à jour une commande
+   */
+  static async updateOrder(id: string, userId: string, updates: OrderUpdate) {
+    const { data, error } = await supabase
+      .from('orders')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Met à jour le statut d'une commande
+   */
+  static async updateOrderStatus(id: string, userId: string, status: string) {
+    return this.updateOrder(id, userId, { status });
+  }
+
+  /**
+   * Supprime une commande
+   */
+  static async deleteOrder(id: string, userId: string) {
+    // Supprimer d'abord les items
+    await supabase
+      .from('order_items')
+      .delete()
+      .eq('order_id', id);
+
+    const { error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+  }
+
+  /**
+   * Statistiques commandes
+   */
+  static async getOrderStats(userId: string) {
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('total_amount, status, created_at')
+      .eq('user_id', userId);
+
+    if (error) throw error;
+
+    const now = new Date();
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const ordersThisMonth = orders.filter(o => new Date(o.created_at) >= thisMonth);
+    const ordersLastMonth = orders.filter(o => 
+      new Date(o.created_at) >= lastMonth && new Date(o.created_at) < thisMonth
+    );
+
+    const stats = {
+      total: orders.length,
+      pending: orders.filter(o => o.status === 'pending').length,
+      processing: orders.filter(o => o.status === 'processing').length,
+      shipped: orders.filter(o => o.status === 'shipped').length,
+      delivered: orders.filter(o => o.status === 'delivered').length,
+      cancelled: orders.filter(o => o.status === 'cancelled').length,
+      revenue: orders.reduce((sum, o) => sum + (o.total_amount || 0), 0),
+      avgOrderValue: orders.length > 0 
+        ? orders.reduce((sum, o) => sum + (o.total_amount || 0), 0) / orders.length 
+        : 0,
+      revenueThisMonth: ordersThisMonth.reduce((sum, o) => sum + (o.total_amount || 0), 0),
+      revenueLastMonth: ordersLastMonth.reduce((sum, o) => sum + (o.total_amount || 0), 0),
+      ordersThisMonth: ordersThisMonth.length,
+      ordersLastMonth: ordersLastMonth.length
+    };
+
+    // Calculer les pourcentages de croissance
+    const revenueGrowth = stats.revenueLastMonth > 0
+      ? ((stats.revenueThisMonth - stats.revenueLastMonth) / stats.revenueLastMonth) * 100
+      : 0;
+
+    const ordersGrowth = stats.ordersLastMonth > 0
+      ? ((stats.ordersThisMonth - stats.ordersLastMonth) / stats.ordersLastMonth) * 100
+      : 0;
+
+    return { ...stats, revenueGrowth, ordersGrowth };
+  }
+
+  /**
+   * Recherche de commandes
+   */
+  static async searchOrders(userId: string, searchTerm: string) {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        customer:customers(*)
+      `)
+      .eq('user_id', userId)
+      .or(`order_number.ilike.%${searchTerm}%,customer_email.ilike.%${searchTerm}%`)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Filtrer par statut
+   */
+  static async filterByStatus(userId: string, status: string) {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        customer:customers(*)
+      `)
+      .eq('user_id', userId)
+      .eq('status', status)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Commandes par période
+   */
+  static async getOrdersByPeriod(userId: string, startDate: Date, endDate: Date) {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('created_at', startDate.toISOString())
+      .lte('created_at', endDate.toISOString())
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+}
