@@ -176,7 +176,14 @@ const Products = () => {
         </div>
         <div className="flex gap-2">
           {isUltraPro && (
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => toast({
+                title: "Analyse IA disponible prochainement",
+                description: "L'analyse avancée par IA de votre catalogue sera bientôt disponible"
+              })}
+            >
               <TrendingUp className="mr-2 h-4 w-4" />
               Analyse AI
             </Button>

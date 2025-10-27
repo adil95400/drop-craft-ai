@@ -32,7 +32,15 @@ export default function Customers() {
               Gérez vos clients, analysez leur comportement et optimisez vos relations
             </p>
           </div>
-          <Button className="gap-2">
+          <Button 
+            className="gap-2"
+            onClick={() => {
+              const email = prompt('Entrez l\'email du nouveau client:')
+              if (email) {
+                window.location.href = `/customers/new?email=${encodeURIComponent(email)}`
+              }
+            }}
+          >
             <Plus className="w-4 h-4" />
             Nouveau Client
           </Button>

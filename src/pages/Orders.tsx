@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +12,7 @@ import { useOrders } from '@/hooks/useOrders'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function Orders() {
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string | undefined>()
   
@@ -47,7 +49,10 @@ export default function Orders() {
               Suivez et gérez toutes vos commandes en temps réel
             </p>
           </div>
-          <Button className="gap-2">
+          <Button 
+            className="gap-2"
+            onClick={() => window.location.href = '/import'}
+          >
             <Plus className="w-4 h-4" />
             Nouvelle Commande
           </Button>
@@ -193,7 +198,12 @@ export default function Orders() {
                         <div className="text-right">
                           <p className="text-xl font-bold">{order.total_amount?.toFixed(2) || 0}€</p>
                         </div>
-                        <Button variant="outline" size="sm" className="gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="gap-2"
+                          onClick={() => navigate(`/orders/${order.id}`)}
+                        >
                           <Eye className="w-4 h-4" />
                           Détails
                         </Button>
