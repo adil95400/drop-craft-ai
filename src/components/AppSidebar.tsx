@@ -64,14 +64,16 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'Plug': Plug,
   'ShoppingCart': ShoppingCart,
   'Bot': Bot,
-  'Settings': Settings
+  'Settings': Settings,
+  'Sparkles': Sparkles,
+  'Crown': Crown
 };
 
 // Regroupements logiques des modules
 const moduleGroups = [
   {
     title: "🚀 ESSENTIELS",
-    modules: ['dashboard', 'products', 'suppliers', 'import', 'winners']
+    modules: ['dashboard', 'products', 'suppliers', 'import', 'winners', 'marketplace', 'network']
   },
   {
     title: "📊 ANALYTICS & AUTOMATION",

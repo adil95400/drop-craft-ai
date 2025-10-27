@@ -64,6 +64,26 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['product-research', 'trend-analysis', 'competitor-analysis'],
     description: 'Découvrez les produits gagnants'
   },
+  marketplace: {
+    id: 'marketplace',
+    name: 'AI Marketplace',
+    icon: 'Sparkles',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/ai-marketplace',
+    features: ['ai-validated-products', 'virality-score', 'winning-database'],
+    description: '10,000+ produits analysés par IA'
+  },
+  network: {
+    id: 'network',
+    name: 'Fournisseurs Premium',
+    icon: 'Crown',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/premium-network',
+    features: ['premium-suppliers', 'exclusive-deals', 'fast-shipping'],
+    description: 'Réseau de fournisseurs premium'
+  },
 
   // Modules Pro
   analytics: {
