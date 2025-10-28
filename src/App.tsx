@@ -114,6 +114,7 @@ const CompetitorAnalysisPage = lazy(() => import('@/pages/CompetitorAnalysisPage
 const AIMarketplacePage = lazy(() => import('@/pages/AIMarketplacePage'));
 const PremiumNetworkPage = lazy(() => import('@/pages/PremiumNetworkPage'));
 const ProductResearchPage = lazy(() => import('@/pages/ProductResearchPage'));
+const AutoFulfillmentPage = lazy(() => import('@/pages/AutoFulfillmentPage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
@@ -324,6 +325,12 @@ function App() {
                         <Route path="/product-research" element={
                           <ProtectedRoute>
                             <AppLayout><ProductResearchPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/auto-fulfillment" element={
+                          <ProtectedRoute>
+                            <AppLayout><AutoFulfillmentPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
