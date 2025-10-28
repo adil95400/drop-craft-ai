@@ -318,3 +318,6 @@ verify_jwt = false
 
 [functions.bulk-content-generator]
 verify_jwt = true
+
+[functions.profit-optimizer]
+verify_jwt = true

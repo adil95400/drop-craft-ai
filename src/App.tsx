@@ -116,6 +116,7 @@ const PremiumNetworkPage = lazy(() => import('@/pages/PremiumNetworkPage'));
 const ProductResearchPage = lazy(() => import('@/pages/ProductResearchPage'));
 const AutoFulfillmentPage = lazy(() => import('@/pages/AutoFulfillmentPage'));
 const BulkContentCreationPage = lazy(() => import('@/pages/BulkContentCreationPage'));
+const ProfitCalculatorPage = lazy(() => import('@/pages/ProfitCalculatorPage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
@@ -338,6 +339,12 @@ function App() {
                         <Route path="/bulk-content" element={
                           <ProtectedRoute>
                             <AppLayout><BulkContentCreationPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/profit-calculator" element={
+                          <ProtectedRoute>
+                            <AppLayout><ProfitCalculatorPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         

@@ -6516,6 +6516,45 @@ export type Database = {
         }
         Relationships: []
       }
+      profit_configurations: {
+        Row: {
+          created_at: string
+          currency: string | null
+          default_ad_cost_percent: number | null
+          default_packaging_cost: number | null
+          default_shipping_cost: number | null
+          default_transaction_fee_percent: number | null
+          default_vat_percent: number | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string | null
+          default_ad_cost_percent?: number | null
+          default_packaging_cost?: number | null
+          default_shipping_cost?: number | null
+          default_transaction_fee_percent?: number | null
+          default_vat_percent?: number | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string | null
+          default_ad_cost_percent?: number | null
+          default_packaging_cost?: number | null
+          default_shipping_cost?: number | null
+          default_transaction_fee_percent?: number | null
+          default_vat_percent?: number | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       quick_import_history: {
         Row: {
           catalog_product_id: string | null
