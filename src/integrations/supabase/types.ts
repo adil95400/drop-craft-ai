@@ -1198,6 +1198,57 @@ export type Database = {
         }
         Relationships: []
       }
+      bulk_content_jobs: {
+        Row: {
+          completed_at: string | null
+          completed_items: number
+          created_at: string
+          error_log: Json | null
+          failed_items: number
+          id: string
+          input_data: Json
+          job_type: string
+          results: Json | null
+          started_at: string | null
+          status: string
+          total_items: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_items?: number
+          created_at?: string
+          error_log?: Json | null
+          failed_items?: number
+          id?: string
+          input_data: Json
+          job_type: string
+          results?: Json | null
+          started_at?: string | null
+          status?: string
+          total_items?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_items?: number
+          created_at?: string
+          error_log?: Json | null
+          failed_items?: number
+          id?: string
+          input_data?: Json
+          job_type?: string
+          results?: Json | null
+          started_at?: string | null
+          status?: string
+          total_items?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       business_intelligence_insights: {
         Row: {
           acknowledged_at: string | null

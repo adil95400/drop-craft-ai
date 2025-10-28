@@ -312,3 +312,9 @@ verify_jwt = true
 
 [functions.product-research-scanner]
 verify_jwt = true
+
+[functions.auto-fulfillment-processor]
+verify_jwt = false
+
+[functions.bulk-content-generator]
+verify_jwt = true
