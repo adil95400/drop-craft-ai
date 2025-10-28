@@ -321,3 +321,6 @@ verify_jwt = true
 
 [functions.profit-optimizer]
 verify_jwt = true
+
+[functions.ads-creative-generator]
+verify_jwt = true
