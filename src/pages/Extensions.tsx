@@ -8,14 +8,17 @@ import { ExtensionInstallGuide } from '@/components/extensions/ExtensionInstallG
 import { ExtensionDashboard } from '@/components/extensions/ExtensionDashboard'
 import { ReviewImporterConfig } from '@/components/extensions/ReviewImporterConfig'
 import { AliExpressImporter } from '@/components/extensions/AliExpressImporter'
-import { Puzzle, Zap, Grid, Chrome, BookOpen, Activity, Star, ShoppingCart } from 'lucide-react'
+import { PriceMonitoring } from '@/components/autods/PriceMonitoring'
+import { StockAlerts } from '@/components/autods/StockAlerts'
+import { AutoOrders } from '@/components/autods/AutoOrders'
+import { Puzzle, Zap, Grid, Chrome, BookOpen, Activity, Star, ShoppingCart, TrendingUp, Package, ShoppingBag } from 'lucide-react'
 
 export default function Extensions() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/80 to-background">
       <div className="container mx-auto p-6">
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-11">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <Activity className="w-4 h-4" />
               Dashboard
@@ -47,6 +50,18 @@ export default function Extensions() {
             <TabsTrigger value="aliexpress" className="flex items-center gap-2">
               <ShoppingCart className="w-4 h-4" />
               AliExpress
+            </TabsTrigger>
+            <TabsTrigger value="price-monitoring" className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Prix
+            </TabsTrigger>
+            <TabsTrigger value="stock-alerts" className="flex items-center gap-2">
+              <Package className="w-4 h-4" />
+              Stock
+            </TabsTrigger>
+            <TabsTrigger value="auto-orders" className="flex items-center gap-2">
+              <ShoppingBag className="w-4 h-4" />
+              Auto-Orders
             </TabsTrigger>
           </TabsList>
           
@@ -80,6 +95,18 @@ export default function Extensions() {
           
           <TabsContent value="aliexpress">
             <AliExpressImporter />
+          </TabsContent>
+          
+          <TabsContent value="price-monitoring">
+            <PriceMonitoring />
+          </TabsContent>
+          
+          <TabsContent value="stock-alerts">
+            <StockAlerts />
+          </TabsContent>
+          
+          <TabsContent value="auto-orders">
+            <AutoOrders />
           </TabsContent>
         </Tabs>
       </div>
