@@ -1,112 +1,88 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Chrome, Download, Settings, Zap, Play, BookOpen, BarChart3, History, Key } from "lucide-react"
-import { ExtensionAuthManager } from "@/components/browser-extension/ExtensionAuthManager"
-import { ExtensionUpdateNotification } from "@/components/extensions/ExtensionUpdateNotification"
-import { ExtensionHealthMonitor } from "@/components/extensions/ExtensionHealthMonitor"
-import { ExtensionInstallGuide } from "@/components/extensions/ExtensionInstallGuide"
-import { toast } from "@/hooks/use-toast"
-
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Chrome, Download, Settings, Zap, Play, BookOpen, BarChart3, History, Key } from "lucide-react";
+import { ExtensionAuthManager } from "@/components/browser-extension/ExtensionAuthManager";
+import { ExtensionUpdateNotification } from "@/components/extensions/ExtensionUpdateNotification";
+import { ExtensionHealthMonitor } from "@/components/extensions/ExtensionHealthMonitor";
+import { ExtensionInstallGuide } from "@/components/extensions/ExtensionInstallGuide";
+import { toast } from "@/hooks/use-toast";
 export default function Extension() {
-  const [activeTab, setActiveTab] = useState("install")
-  
+  const [activeTab, setActiveTab] = useState("install");
   const handleAddToChrome = () => {
-    window.open('https://chromewebstore.google.com', '_blank')
+    window.open('https://chromewebstore.google.com', '_blank');
     toast({
       title: "Redirection vers Chrome Web Store",
-      description: "Vous allez être redirigé vers le Chrome Web Store pour installer l'extension",
-    })
-  }
-
+      description: "Vous allez être redirigé vers le Chrome Web Store pour installer l'extension"
+    });
+  };
   const handleDownloadExtension = () => {
-    const extensionPath = '/chrome-extension'
-    const link = document.createElement('a')
-    link.href = extensionPath
-    link.download = 'shopopti-extension'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    
+    const extensionPath = '/chrome-extension';
+    const link = document.createElement('a');
+    link.href = extensionPath;
+    link.download = 'shopopti-extension';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     toast({
       title: "Téléchargement de l'extension",
-      description: "L'extension est disponible dans le dossier public/chrome-extension du projet",
-    })
-  }
-
+      description: "L'extension est disponible dans le dossier public/chrome-extension du projet"
+    });
+  };
   const handleViewDemo = () => {
-    window.open('https://www.youtube.com/watch?v=demo', '_blank')
+    window.open('https://www.youtube.com/watch?v=demo', '_blank');
     toast({
       title: "Démo de l'extension",
-      description: "Visionnez la vidéo de démonstration pour découvrir toutes les fonctionnalités",
-    })
-  }
-
+      description: "Visionnez la vidéo de démonstration pour découvrir toutes les fonctionnalités"
+    });
+  };
   const handleOpenGuide = () => {
-    setActiveTab("guide")
+    setActiveTab("guide");
     toast({
       title: "Guide d'installation",
-      description: "Consultez le guide pour installer et configurer l'extension",
-    })
-  }
-
+      description: "Consultez le guide pour installer et configurer l'extension"
+    });
+  };
   const handleConfigure = () => {
-    setActiveTab("auth")
+    setActiveTab("auth");
     toast({
       title: "Configuration",
-      description: "Configurez votre authentification pour l'extension",
-    })
-  }
-  const features = [
-    {
-      title: "Import en 1 clic",
-      description: "Importez des produits directement depuis n'importe quel site e-commerce",
-      icon: Zap
-    },
-    {
-      title: "Analyse automatique",
-      description: "Analyse des prix, avis et données concurrentielles en temps réel",
-      icon: BarChart3
-    },
-    {
-      title: "Synchronisation",
-      description: "Synchronisation automatique avec votre catalogue Shopopti",
-      icon: Chrome
-    }
-  ]
-
-  const supportedSites = [
-    "AliExpress", "Amazon", "eBay", "Wish", "Banggood", 
-    "DHgate", "Shopify stores", "WooCommerce stores",
-    "Bigcommerce stores", "Et bien d'autres..."
-  ]
-
-  const recentImports = [
-    {
-      site: "AliExpress",
-      product: "Montre Sport Pro",
-      time: "Il y a 2h",
-      status: "success"
-    },
-    {
-      site: "Amazon",
-      product: "Écouteurs Bluetooth",
-      time: "Il y a 5h",
-      status: "success"
-    },
-    {
-      site: "eBay",
-      product: "Câble USB-C",
-      time: "Il y a 1j",
-      status: "pending"
-    }
-  ]
-
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
+      description: "Configurez votre authentification pour l'extension"
+    });
+  };
+  const features = [{
+    title: "Import en 1 clic",
+    description: "Importez des produits directement depuis n'importe quel site e-commerce",
+    icon: Zap
+  }, {
+    title: "Analyse automatique",
+    description: "Analyse des prix, avis et données concurrentielles en temps réel",
+    icon: BarChart3
+  }, {
+    title: "Synchronisation",
+    description: "Synchronisation automatique avec votre catalogue Shopopti",
+    icon: Chrome
+  }];
+  const supportedSites = ["AliExpress", "Amazon", "eBay", "Wish", "Banggood", "DHgate", "Shopify stores", "WooCommerce stores", "Bigcommerce stores", "Et bien d'autres..."];
+  const recentImports = [{
+    site: "AliExpress",
+    product: "Montre Sport Pro",
+    time: "Il y a 2h",
+    status: "success"
+  }, {
+    site: "Amazon",
+    product: "Écouteurs Bluetooth",
+    time: "Il y a 5h",
+    status: "success"
+  }, {
+    site: "eBay",
+    product: "Câble USB-C",
+    time: "Il y a 1j",
+    status: "pending"
+  }];
+  return <div className="p-6 max-w-7xl mx-auto">
         {/* Update Notification */}
         <div className="mb-6">
           <ExtensionUpdateNotification />
@@ -122,10 +98,7 @@ export default function Extension() {
           </div>
           
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleOpenGuide}>
-              <BookOpen className="w-4 h-4 mr-2" />
-              Guide
-            </Button>
+            
             <Button className="bg-primary hover:bg-primary/90" onClick={handleDownloadExtension}>
               <Download className="w-4 h-4 mr-2" />
               Télécharger Extension
@@ -182,8 +155,7 @@ export default function Extension() {
 
         {/* Features */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {features.map((feature, index) => (
-            <Card key={index}>
+          {features.map((feature, index) => <Card key={index}>
               <CardHeader>
                 <feature.icon className="w-8 h-8 text-primary mb-2" />
                 <CardTitle className="text-lg">{feature.title}</CardTitle>
@@ -191,8 +163,7 @@ export default function Extension() {
               <CardContent>
                 <CardDescription>{feature.description}</CardDescription>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
 
         {/* Tabs */}
@@ -321,12 +292,10 @@ export default function Extension() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {supportedSites.map((site, index) => (
-                    <div key={index} className="flex items-center space-x-2 p-3 border rounded-lg">
+                  {supportedSites.map((site, index) => <div key={index} className="flex items-center space-x-2 p-3 border rounded-lg">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <span className="text-sm font-medium">{site}</span>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
                 
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg">
@@ -356,8 +325,7 @@ export default function Extension() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentImports.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                  {recentImports.map((item, index) => <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-3">
                         <Chrome className="w-5 h-5 text-blue-600" />
                         <div>
@@ -367,19 +335,14 @@ export default function Extension() {
                           </p>
                         </div>
                       </div>
-                      <Badge 
-                        variant={item.status === 'success' ? 'default' : 'secondary'}
-                        className={item.status === 'success' ? 'bg-green-500' : ''}
-                      >
+                      <Badge variant={item.status === 'success' ? 'default' : 'secondary'} className={item.status === 'success' ? 'bg-green-500' : ''}>
                         {item.status === 'success' ? 'Importé' : 'En cours'}
                       </Badge>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
-    </div>
-  )
+    </div>;
 }
