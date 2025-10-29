@@ -895,6 +895,45 @@ export type Database = {
         }
         Relationships: []
       }
+      api_analytics: {
+        Row: {
+          avg_response_time_ms: number | null
+          bandwidth_bytes: number | null
+          created_at: string | null
+          date: string
+          failed_requests: number | null
+          id: string
+          successful_requests: number | null
+          total_requests: number | null
+          unique_endpoints: number | null
+          user_id: string
+        }
+        Insert: {
+          avg_response_time_ms?: number | null
+          bandwidth_bytes?: number | null
+          created_at?: string | null
+          date: string
+          failed_requests?: number | null
+          id?: string
+          successful_requests?: number | null
+          total_requests?: number | null
+          unique_endpoints?: number | null
+          user_id: string
+        }
+        Update: {
+          avg_response_time_ms?: number | null
+          bandwidth_bytes?: number | null
+          created_at?: string | null
+          date?: string
+          failed_requests?: number | null
+          id?: string
+          successful_requests?: number | null
+          total_requests?: number | null
+          unique_endpoints?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       api_cache: {
         Row: {
           cache_key: string
@@ -924,42 +963,148 @@ export type Database = {
       }
       api_keys: {
         Row: {
+          allowed_ips: string[] | null
           created_at: string
+          environment: string | null
           expires_at: string | null
           id: string
           is_active: boolean
           key: string
           last_used_at: string | null
+          last_used_ip: string | null
           name: string
           permissions: Json
+          rate_limit: number | null
+          rate_limit_window: string | null
+          scopes: string[] | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          allowed_ips?: string[] | null
           created_at?: string
+          environment?: string | null
           expires_at?: string | null
           id?: string
           is_active?: boolean
           key: string
           last_used_at?: string | null
+          last_used_ip?: string | null
           name: string
           permissions?: Json
+          rate_limit?: number | null
+          rate_limit_window?: string | null
+          scopes?: string[] | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          allowed_ips?: string[] | null
           created_at?: string
+          environment?: string | null
           expires_at?: string | null
           id?: string
           is_active?: boolean
           key?: string
           last_used_at?: string | null
+          last_used_ip?: string | null
           name?: string
           permissions?: Json
+          rate_limit?: number | null
+          rate_limit_window?: string | null
+          scopes?: string[] | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      api_logs: {
+        Row: {
+          api_key_id: string | null
+          created_at: string | null
+          endpoint: string
+          error_message: string | null
+          id: string
+          ip_address: string | null
+          method: string
+          request_body: Json | null
+          response_body: Json | null
+          response_time_ms: number | null
+          status_code: number
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string | null
+          endpoint: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          method: string
+          request_body?: Json | null
+          response_body?: Json | null
+          response_time_ms?: number | null
+          status_code: number
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string | null
+          endpoint?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          method?: string
+          request_body?: Json | null
+          response_body?: Json | null
+          response_time_ms?: number | null
+          status_code?: number
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_logs_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_rate_limits: {
+        Row: {
+          api_key_id: string | null
+          created_at: string | null
+          id: string
+          request_count: number | null
+          window_start: string
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string | null
+          id?: string
+          request_count?: number | null
+          window_start: string
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string | null
+          id?: string
+          request_count?: number | null
+          window_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_rate_limits_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       audit_trail: {
         Row: {
@@ -10595,6 +10740,53 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_delivery_logs: {
+        Row: {
+          attempt_number: number | null
+          created_at: string | null
+          delivered_at: string | null
+          error_message: string | null
+          event_type: string
+          id: string
+          payload: Json
+          response_body: string | null
+          status_code: number | null
+          subscription_id: string | null
+        }
+        Insert: {
+          attempt_number?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          event_type: string
+          id?: string
+          payload: Json
+          response_body?: string | null
+          status_code?: number | null
+          subscription_id?: string | null
+        }
+        Update: {
+          attempt_number?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json
+          response_body?: string | null
+          status_code?: number | null
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_delivery_logs_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_events: {
         Row: {
           created_at: string | null
@@ -10638,6 +10830,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      webhook_subscriptions: {
+        Row: {
+          created_at: string | null
+          custom_headers: Json | null
+          events: string[]
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          name: string
+          retry_count: number | null
+          secret: string
+          timeout_seconds: number | null
+          updated_at: string | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          custom_headers?: Json | null
+          events: string[]
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name: string
+          retry_count?: number | null
+          secret: string
+          timeout_seconds?: number | null
+          updated_at?: string | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          custom_headers?: Json | null
+          events?: string[]
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name?: string
+          retry_count?: number | null
+          secret?: string
+          timeout_seconds?: number | null
+          updated_at?: string | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       winner_products: {
         Row: {
@@ -10897,6 +11137,14 @@ export type Database = {
         }
         Returns: number
       }
+      check_api_rate_limit: {
+        Args: {
+          p_api_key_id: string
+          p_limit: number
+          p_window_minutes: number
+        }
+        Returns: boolean
+      }
       check_import_rate_limit: {
         Args: {
           p_action_type: string
@@ -10926,6 +11174,7 @@ export type Database = {
       clean_expired_cache: { Args: never; Returns: undefined }
       cleanup_and_secure_all_policies: { Args: never; Returns: string }
       cleanup_expired_sessions: { Args: never; Returns: undefined }
+      cleanup_old_api_logs: { Args: never; Returns: undefined }
       cleanup_old_import_jobs: { Args: never; Returns: undefined }
       cleanup_old_security_events: { Args: never; Returns: undefined }
       cleanup_revoked_tokens: { Args: never; Returns: undefined }
