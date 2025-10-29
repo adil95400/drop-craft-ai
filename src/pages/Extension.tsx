@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Chrome, Download, Settings, Zap, Play, BookOpen, BarChart3, History } from "lucide-react"
+import { Chrome, Download, Settings, Zap, Play, BookOpen, BarChart3, History, Key } from "lucide-react"
+import { ExtensionAuthManager } from "@/components/browser-extension/ExtensionAuthManager"
 
 export default function Extension() {
   const features = [
@@ -140,6 +141,7 @@ export default function Extension() {
         <Tabs defaultValue="install" className="space-y-6">
           <TabsList>
             <TabsTrigger value="install">Installation</TabsTrigger>
+            <TabsTrigger value="auth">Authentification</TabsTrigger>
             <TabsTrigger value="usage">Utilisation</TabsTrigger>
             <TabsTrigger value="sites">Sites Supportés</TabsTrigger>
             <TabsTrigger value="history">Historique</TabsTrigger>
@@ -201,6 +203,10 @@ export default function Extension() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="auth">
+            <ExtensionAuthManager />
           </TabsContent>
 
           <TabsContent value="usage">

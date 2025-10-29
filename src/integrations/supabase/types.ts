@@ -3082,6 +3082,69 @@ export type Database = {
         }
         Relationships: []
       }
+      extension_analytics: {
+        Row: {
+          created_at: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          source_url: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          source_url?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          source_url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      extension_auth_tokens: {
+        Row: {
+          created_at: string
+          device_info: Json | null
+          expires_at: string
+          id: string
+          is_active: boolean | null
+          last_used_at: string | null
+          token: string
+          usage_count: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_info?: Json | null
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          token: string
+          usage_count?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_info?: Json | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          token?: string
+          usage_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       extension_data: {
         Row: {
           ai_enhanced: boolean | null
@@ -11173,6 +11236,7 @@ export type Database = {
       }
       clean_expired_cache: { Args: never; Returns: undefined }
       cleanup_and_secure_all_policies: { Args: never; Returns: string }
+      cleanup_expired_extension_tokens: { Args: never; Returns: undefined }
       cleanup_expired_sessions: { Args: never; Returns: undefined }
       cleanup_old_api_logs: { Args: never; Returns: undefined }
       cleanup_old_import_jobs: { Args: never; Returns: undefined }

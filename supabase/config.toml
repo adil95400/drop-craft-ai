@@ -336,3 +336,9 @@ verify_jwt = false
 
 [functions.webhook-handler]
 verify_jwt = false
+
+[functions.extension-auth]
+verify_jwt = false
+
+[functions.extension-sync-realtime]
+verify_jwt = false
