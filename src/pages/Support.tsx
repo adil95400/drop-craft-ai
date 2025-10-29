@@ -6,9 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, HelpCircle, MessageSquare, Phone, Mail, Clock, CheckCircle, AlertCircle, Bot, Sparkles } from "lucide-react"
+import { Search, HelpCircle, MessageSquare, Phone, Mail, Clock, CheckCircle, AlertCircle, Bot, Sparkles, TrendingUp, Users, Zap } from "lucide-react"
 import { useRealSupport } from "@/hooks/useRealSupport"
-import { LiveChat } from "@/components/support/LiveChat"
+import { AdvancedLiveChat } from "@/components/support/AdvancedLiveChat"
 
 export default function Support() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -47,9 +47,15 @@ export default function Support() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Support & Centre d'aide</h1>
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+              Support & Centre d'aide
+              <Badge variant="secondary" className="text-xs">
+                <Sparkles className="h-3 w-3 mr-1" />
+                IA Intégrée
+              </Badge>
+            </h1>
             <p className="text-muted-foreground mt-2">
-              Trouvez des réponses à vos questions ou contactez notre équipe
+              Assistance 24/7 avec IA • Support humain prioritaire • Base de connaissances complète
             </p>
           </div>
           
@@ -58,11 +64,84 @@ export default function Support() {
               <Phone className="w-4 h-4 mr-2" />
               Demander un rappel
             </Button>
-            <Button className="bg-primary hover:bg-primary/90">
+            <Button className="bg-gradient-to-r from-primary to-primary/80 hover:opacity-90">
               <MessageSquare className="w-4 h-4 mr-2" />
               Nouveau Ticket
             </Button>
           </div>
+        </div>
+
+        {/* Stats Dashboard */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Tickets Ouverts</p>
+                  <p className="text-2xl font-bold">{stats.openTickets}</p>
+                </div>
+                <AlertCircle className="h-8 w-8 text-orange-500" />
+              </div>
+              <div className="mt-2">
+                <Badge variant="secondary" className="text-xs">
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  Rapide
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Tickets Résolus</p>
+                  <p className="text-2xl font-bold">{stats.resolvedTickets}</p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-green-500" />
+              </div>
+              <div className="mt-2">
+                <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                  98% satisfaction
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Temps de réponse</p>
+                  <p className="text-2xl font-bold">{stats.averageResponseTime}</p>
+                </div>
+                <Clock className="h-8 w-8 text-blue-500" />
+              </div>
+              <div className="mt-2">
+                <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
+                  <Zap className="h-3 w-3 mr-1" />
+                  Ultra rapide
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Satisfaction</p>
+                  <p className="text-2xl font-bold">{stats.satisfaction}/5</p>
+                </div>
+                <Users className="h-8 w-8 text-purple-500" />
+              </div>
+              <div className="mt-2">
+                <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-800">
+                  Excellent
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Quick Contact */}
@@ -373,8 +452,8 @@ export default function Support() {
           </TabsContent>
         </Tabs>
 
-        {/* Live Chat Widget */}
-        <LiveChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+        {/* Advanced Live Chat Widget */}
+        <AdvancedLiveChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   )
 }

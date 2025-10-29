@@ -12,6 +12,7 @@ import { NotificationBell } from '@/components/notifications/NotificationService
 import { ExtensionMenu } from '@/components/navigation/ExtensionMenu';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { UnifiedSidebar } from '@/components/layout/UnifiedSidebar';
+import { SupportWidget } from '@/components/layout/SupportWidget';
 interface AppLayoutProps {
   children: React.ReactNode;
 }
@@ -32,6 +33,7 @@ export function AppLayout({
           </div>
         </main>
         <MobileNav notifications={2} />
+        <SupportWidget />
       </div>
     );
   }
@@ -117,6 +119,8 @@ export function AppLayout({
             </div>
           </div>
         </SidebarInset>
+        
+        <SupportWidget />
       </div>
     </SidebarProvider>
   );
