@@ -8,6 +8,7 @@ import { Chrome, Download, Settings, Zap, Play, BookOpen, BarChart3, History, Ke
 import { ExtensionAuthManager } from "@/components/browser-extension/ExtensionAuthManager"
 import { ExtensionUpdateNotification } from "@/components/extensions/ExtensionUpdateNotification"
 import { ExtensionHealthMonitor } from "@/components/extensions/ExtensionHealthMonitor"
+import { ExtensionInstallGuide } from "@/components/extensions/ExtensionInstallGuide"
 import { toast } from "@/hooks/use-toast"
 
 export default function Extension() {
@@ -206,61 +207,7 @@ export default function Extension() {
           </TabsList>
 
           <TabsContent value="install">
-            <Card>
-              <CardHeader>
-                <CardTitle>Installation & Configuration</CardTitle>
-                <CardDescription>
-                  Guide étape par étape pour installer l'extension
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
-                      1
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-2">Télécharger l'extension</h3>
-                      <p className="text-muted-foreground mb-3">
-                        Cliquez sur le bouton ci-dessous pour installer l'extension depuis le Chrome Web Store
-                      </p>
-                      <Button onClick={handleAddToChrome}>
-                        <Chrome className="w-4 h-4 mr-2" />
-                        Ajouter à Chrome
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-4">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
-                      2
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-2">Se connecter</h3>
-                      <p className="text-muted-foreground mb-3">
-                        Utilisez vos identifiants Shopopti pour connecter l'extension à votre compte
-                      </p>
-                      <Button variant="outline" size="sm" onClick={handleConfigure}>
-                        <Settings className="w-4 h-4 mr-2" />
-                        Configurer
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-4">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
-                      3
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-2">Commencer l'import</h3>
-                      <p className="text-muted-foreground">
-                        Naviguez sur un site e-commerce et cliquez sur l'icône Shopopti pour importer un produit
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <ExtensionInstallGuide />
           </TabsContent>
 
           <TabsContent value="auth">
