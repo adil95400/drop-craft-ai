@@ -3,25 +3,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Chrome, Download, Settings, Zap, Play, BookOpen, BarChart3, History, Key } from "lucide-react";
+import { Chrome, Download, Settings, Zap, Play, BookOpen, BarChart3, History, Database } from "lucide-react";
 import { ExtensionAuthManager } from "@/components/browser-extension/ExtensionAuthManager";
 import { ExtensionUpdateNotification } from "@/components/extensions/ExtensionUpdateNotification";
 import { ExtensionHealthMonitor } from "@/components/extensions/ExtensionHealthMonitor";
 import { ExtensionInstallGuide } from "@/components/extensions/ExtensionInstallGuide";
 import { toast } from "@/hooks/use-toast";
+import { useRealisticData } from "@/hooks/useRealisticData";
 export default function Extension() {
   const [activeTab, setActiveTab] = useState("install");
+  const { generateRealisticData, loading } = useRealisticData();
   const handleAddToChrome = () => {
-    const extensionPath = '/chrome-extension';
-    const link = document.createElement('a');
-    link.href = extensionPath;
-    link.download = 'drop-craft-ai-extension.zip';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    setActiveTab("guide");
     toast({
-      title: "Téléchargement de l'extension",
-      description: "L'extension Chrome va être téléchargée. Consultez le guide d'installation pour l'installer."
+      title: "Guide d'installation",
+      description: "Consultez le guide complet pour installer l'extension Chrome en mode développeur"
     });
   };
   const handleDownloadExtension = () => {
@@ -193,6 +189,7 @@ export default function Extension() {
             <TabsTrigger value="sites">Sites Supportés</TabsTrigger>
             <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
             <TabsTrigger value="history">Historique</TabsTrigger>
+            <TabsTrigger value="data">Données Test</TabsTrigger>
           </TabsList>
 
           <TabsContent value="install">
@@ -356,6 +353,58 @@ export default function Extension() {
                         {item.status === 'success' ? 'Importé' : 'En cours'}
                       </Badge>
                     </div>)}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="data">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Database className="w-5 h-5 mr-2" />
+                  Données de Test Réalistes
+                </CardTitle>
+                <CardDescription>
+                  Générez des données réalistes pour tester l'extension
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h3 className="font-semibold text-blue-900 mb-2">Pourquoi générer des données de test ?</h3>
+                    <p className="text-sm text-blue-800 mb-3">
+                      Les données de test réalistes vous permettent de tester l'extension avec des produits, commandes et clients fictifs mais réalistes.
+                    </p>
+                    <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
+                      <li>Fournisseurs et produits variés</li>
+                      <li>Clients et commandes complètes</li>
+                      <li>Données d'analyse et statistiques</li>
+                      <li>Historique d'imports réaliste</li>
+                    </ul>
+                  </div>
+
+                  <div className="flex flex-col items-center space-y-4">
+                    <Button 
+                      size="lg" 
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      onClick={generateRealisticData}
+                      disabled={loading}
+                    >
+                      <Database className="w-5 h-5 mr-2" />
+                      {loading ? "Génération en cours..." : "Générer des Données Réalistes"}
+                    </Button>
+                    <p className="text-sm text-muted-foreground text-center max-w-md">
+                      Cette action créera automatiquement des fournisseurs, produits, clients et commandes réalistes dans votre base de données pour tester l'extension.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <h3 className="font-semibold text-yellow-900 mb-2">⚠️ Attention</h3>
+                    <p className="text-sm text-yellow-800">
+                      Les données générées sont fictives et destinées uniquement aux tests. Elles seront ajoutées à votre compte actuel.
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
