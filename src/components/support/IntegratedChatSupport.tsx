@@ -53,18 +53,30 @@ export const IntegratedChatSupport = () => {
     setIsLoading(true);
 
     try {
-      // Simulate AI response for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data, error } = await supabase.functions.invoke('ai-chatbot-support', {
+        body: { 
+          messages: [
+            ...messages.map(m => ({
+              role: m.sender === 'user' ? 'user' : 'assistant',
+              content: m.content
+            })),
+            { role: 'user', content: inputValue }
+          ]
+        }
+      });
+
+      if (error) throw error;
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: generateResponse(inputValue),
+        content: data.response || 'Désolé, je n\'ai pas pu générer de réponse.',
         sender: 'assistant',
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
+      console.error('Chat error:', error);
       toast({
         title: 'Erreur',
         description: 'Impossible d\'envoyer le message',
@@ -75,31 +87,6 @@ export const IntegratedChatSupport = () => {
     }
   };
 
-  const generateResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase();
-    
-    if (input.includes('commande') || input.includes('order')) {
-      return 'Pour gérer vos commandes, rendez-vous dans la section "Commandes" du menu. Vous y trouverez toutes vos commandes avec leurs statuts et pourrez effectuer le suivi.';
-    }
-    
-    if (input.includes('produit') || input.includes('catalogue')) {
-      return 'Pour ajouter ou modifier des produits, utilisez la section "Catalogue". Vous pouvez importer des produits depuis vos fournisseurs ou les ajouter manuellement.';
-    }
-    
-    if (input.includes('stock') || input.includes('inventaire')) {
-      return 'Le suivi de stock se trouve dans "Inventaire". Vous pouvez y voir les niveaux de stock, définir des alertes et gérer les approvisionnements.';
-    }
-    
-    if (input.includes('import') || input.includes('fournisseur')) {
-      return 'Dans la section "Import", vous pouvez connecter vos fournisseurs (Shopify, AliExpress, etc.) et automatiser l\'importation de produits.';
-    }
-    
-    if (input.includes('aide') || input.includes('help')) {
-      return 'Je peux vous aider avec toutes les fonctionnalités de ShopOpti : gestion des commandes, catalogue produits, suivi de stock, imports, analytics et bien plus !';
-    }
-    
-    return 'Merci pour votre message ! Pour une assistance personnalisée, n\'hésitez pas à être plus spécifique sur ce que vous recherchez. Je peux vous aider avec la gestion des commandes, produits, stock, imports, et toutes les fonctionnalités ShopOpti.';
-  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

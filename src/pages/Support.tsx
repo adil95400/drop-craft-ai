@@ -6,11 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, HelpCircle, MessageSquare, Phone, Mail, Clock, CheckCircle, AlertCircle } from "lucide-react"
+import { Search, HelpCircle, MessageSquare, Phone, Mail, Clock, CheckCircle, AlertCircle, Bot, Sparkles } from "lucide-react"
 import { useRealSupport } from "@/hooks/useRealSupport"
+import { LiveChat } from "@/components/support/LiveChat"
 
 export default function Support() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [isChatOpen, setIsChatOpen] = useState(false)
   const { tickets, faqItems, stats, isLoading, createTicket, markFAQHelpful, isCreatingTicket } = useRealSupport()
 
   const getStatusColor = (status: string) => {
@@ -65,13 +67,23 @@ export default function Support() {
 
         {/* Quick Contact */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-blue-50 border-blue-200">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-shadow cursor-pointer">
             <CardContent className="p-6 text-center">
-              <MessageSquare className="w-8 h-8 text-blue-600 mx-auto mb-3" />
-              <h3 className="font-semibold mb-2">Chat en Direct</h3>
-              <p className="text-sm text-muted-foreground mb-3">Réponse immédiate</p>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                Démarrer le Chat
+              <div className="relative inline-block mb-3">
+                <Bot className="w-10 h-10 text-blue-600" />
+                <Sparkles className="w-4 h-4 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
+              </div>
+              <h3 className="font-semibold mb-2 flex items-center justify-center gap-2">
+                Chat IA en Direct
+                <Badge variant="secondary" className="text-xs">Nouveau</Badge>
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">Assistant IA instantané</p>
+              <Button 
+                size="sm" 
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={() => setIsChatOpen(true)}
+              >
+                Démarrer le Chat IA
               </Button>
             </CardContent>
           </Card>
@@ -360,6 +372,9 @@ export default function Support() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Live Chat Widget */}
+        <LiveChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   )
 }
