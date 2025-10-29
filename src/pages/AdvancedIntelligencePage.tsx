@@ -12,7 +12,7 @@ import {
   Shield
 } from 'lucide-react';
 import { SalesIntelligenceDashboard } from '@/components/intelligence/SalesIntelligenceDashboard';
-import { CustomerBehaviorDashboard } from '@/components/intelligence/CustomerBehaviorDashboard';
+import { BehaviorAnalysisDashboard } from '@/components/customer-intelligence/BehaviorAnalysisDashboard';
 import { EnhancedPlanGuard } from '@/components/plan/EnhancedPlanGuard';
 
 export default function AdvancedIntelligencePage() {
@@ -118,7 +118,7 @@ export default function AdvancedIntelligencePage() {
             </TabsContent>
 
             <TabsContent value="customer-behavior">
-              <CustomerBehaviorDashboard />
+              <BehaviorAnalysisDashboard />
             </TabsContent>
 
             <TabsContent value="marketing-intelligence">

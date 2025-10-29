@@ -1,4 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
+
+type CustomerBehaviorRow = Database['public']['Tables']['customer_behavior_analytics']['Row'];
 
 export interface BehaviorAnalysisRequest {
   customer_id: string;
@@ -11,9 +14,10 @@ export interface BehaviorAnalysisRequest {
   first_order_date?: string;
 }
 
+// Map database row to a more usable format
 export interface CustomerBehaviorData {
   id: string;
-  customer_id: string;
+  customer_id: string | null;
   customer_email: string;
   customer_name?: string;
   analysis_date: string;
@@ -29,9 +33,9 @@ export interface CustomerBehaviorData {
   predicted_next_purchase_days?: number;
   churn_probability?: number;
   churn_risk_level?: 'low' | 'medium' | 'high' | 'critical';
-  key_insights?: any;
-  recommended_actions?: any;
-  preferences?: any;
+  key_insights?: string[];
+  recommended_actions?: string[];
+  preferences?: string[];
   created_at: string;
   updated_at: string;
 }
@@ -44,6 +48,34 @@ export class CustomerBehaviorAnalytics {
       CustomerBehaviorAnalytics.instance = new CustomerBehaviorAnalytics();
     }
     return CustomerBehaviorAnalytics.instance;
+  }
+
+  private mapRowToData(row: CustomerBehaviorRow): CustomerBehaviorData {
+    const analysisData = row.analysis_data as any || {};
+    return {
+      id: row.id,
+      customer_id: row.customer_id,
+      customer_email: analysisData.customer_email || '',
+      customer_name: analysisData.customer_name,
+      analysis_date: row.created_at,
+      behavioral_score: row.behavioral_score,
+      engagement_level: analysisData.engagement_level || 'medium',
+      purchase_frequency: analysisData.purchase_frequency,
+      avg_order_value: analysisData.avg_order_value,
+      total_orders: analysisData.total_orders || 0,
+      total_spent: analysisData.total_spent || 0,
+      customer_segment: analysisData.customer_segment || 'new',
+      segment_confidence: analysisData.segment_confidence,
+      lifetime_value: row.lifetime_value || undefined,
+      predicted_next_purchase_days: analysisData.predicted_next_purchase_days,
+      churn_probability: row.churn_probability || undefined,
+      churn_risk_level: analysisData.churn_risk_level,
+      key_insights: (row.recommendations as any)?.key_insights || [],
+      recommended_actions: (row.recommendations as any)?.recommended_actions || [],
+      preferences: analysisData.preferences || [],
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    };
   }
 
   async analyzeBehavior(params: BehaviorAnalysisRequest): Promise<CustomerBehaviorData> {
@@ -62,7 +94,7 @@ export class CustomerBehaviorAnalytics {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(row => this.mapRowToData(row));
   }
 
   async getBehaviorById(id: string): Promise<CustomerBehaviorData> {
@@ -73,7 +105,7 @@ export class CustomerBehaviorAnalytics {
       .single();
 
     if (error) throw error;
-    return data;
+    return this.mapRowToData(data);
   }
 
   async deleteBehaviorAnalysis(id: string): Promise<void> {

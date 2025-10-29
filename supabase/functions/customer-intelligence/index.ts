@@ -43,6 +43,8 @@ serve(async (req) => {
 
     const { customerData } = await req.json() as { customerData: CustomerData };
 
+    console.log('Analyzing customer behavior for:', customerData.customer_email);
+
     // Build AI analysis prompt
     const prompt = `Analyze this customer's behavior and provide insights:
 
@@ -126,28 +128,36 @@ Respond in JSON format with these exact fields:
       throw new Error('Invalid AI response format');
     }
 
-    // Save analysis to database
+    console.log('AI Analysis completed:', analysis);
+
+    // Save analysis to database using existing schema
     const { data: savedAnalysis, error: saveError } = await supabase
       .from('customer_behavior_analytics')
       .insert({
+        user_id: user.id,
         customer_id: customerData.customer_id,
-        customer_email: customerData.customer_email,
-        customer_name: customerData.customer_name,
-        behavioral_score: analysis.behavioral_score,
-        engagement_level: analysis.engagement_level,
-        purchase_frequency: analysis.purchase_frequency,
-        avg_order_value: customerData.avg_order_value,
-        total_orders: customerData.total_orders,
-        total_spent: customerData.total_spent,
-        customer_segment: analysis.customer_segment,
-        segment_confidence: analysis.segment_confidence,
-        lifetime_value: analysis.lifetime_value,
-        predicted_next_purchase_days: analysis.predicted_next_purchase_days,
+        behavior_type: 'general',
+        behavioral_score: analysis.behavioral_score || 50,
         churn_probability: analysis.churn_probability,
-        churn_risk_level: analysis.churn_risk_level,
-        key_insights: analysis.key_insights,
-        recommended_actions: analysis.recommended_actions,
-        preferences: analysis.preferences,
+        lifetime_value: analysis.lifetime_value,
+        analysis_data: {
+          customer_email: customerData.customer_email,
+          customer_name: customerData.customer_name,
+          engagement_level: analysis.engagement_level,
+          customer_segment: analysis.customer_segment,
+          segment_confidence: analysis.segment_confidence,
+          purchase_frequency: analysis.purchase_frequency,
+          avg_order_value: customerData.avg_order_value,
+          total_orders: customerData.total_orders,
+          total_spent: customerData.total_spent,
+          predicted_next_purchase_days: analysis.predicted_next_purchase_days,
+          churn_risk_level: analysis.churn_risk_level,
+          preferences: analysis.preferences,
+        },
+        recommendations: {
+          key_insights: analysis.key_insights || [],
+          recommended_actions: analysis.recommended_actions || [],
+        },
       })
       .select()
       .single();
@@ -157,8 +167,36 @@ Respond in JSON format with these exact fields:
       throw saveError;
     }
 
+    console.log('Analysis saved to database');
+
+    // Map response to match expected interface
+    const mappedAnalysis = {
+      id: savedAnalysis.id,
+      customer_id: savedAnalysis.customer_id,
+      customer_email: customerData.customer_email,
+      customer_name: customerData.customer_name,
+      analysis_date: savedAnalysis.created_at,
+      behavioral_score: savedAnalysis.behavioral_score,
+      engagement_level: analysis.engagement_level,
+      purchase_frequency: analysis.purchase_frequency,
+      avg_order_value: customerData.avg_order_value,
+      total_orders: customerData.total_orders || 0,
+      total_spent: customerData.total_spent || 0,
+      customer_segment: analysis.customer_segment,
+      segment_confidence: analysis.segment_confidence,
+      lifetime_value: savedAnalysis.lifetime_value,
+      predicted_next_purchase_days: analysis.predicted_next_purchase_days,
+      churn_probability: savedAnalysis.churn_probability,
+      churn_risk_level: analysis.churn_risk_level,
+      key_insights: analysis.key_insights || [],
+      recommended_actions: analysis.recommended_actions || [],
+      preferences: analysis.preferences || [],
+      created_at: savedAnalysis.created_at,
+      updated_at: savedAnalysis.updated_at,
+    };
+
     return new Response(
-      JSON.stringify({ success: true, analysis: savedAnalysis }),
+      JSON.stringify({ success: true, analysis: mappedAnalysis }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
