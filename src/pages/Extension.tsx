@@ -8,8 +8,57 @@ import { Chrome, Download, Settings, Zap, Play, BookOpen, BarChart3, History, Ke
 import { ExtensionAuthManager } from "@/components/browser-extension/ExtensionAuthManager"
 import { ExtensionUpdateNotification } from "@/components/extensions/ExtensionUpdateNotification"
 import { ExtensionHealthMonitor } from "@/components/extensions/ExtensionHealthMonitor"
+import { toast } from "@/hooks/use-toast"
 
 export default function Extension() {
+  const [activeTab, setActiveTab] = useState("install")
+  
+  const handleAddToChrome = () => {
+    window.open('https://chromewebstore.google.com', '_blank')
+    toast({
+      title: "Redirection vers Chrome Web Store",
+      description: "Vous allez être redirigé vers le Chrome Web Store pour installer l'extension",
+    })
+  }
+
+  const handleDownloadExtension = () => {
+    const extensionPath = '/chrome-extension'
+    const link = document.createElement('a')
+    link.href = extensionPath
+    link.download = 'shopopti-extension'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    toast({
+      title: "Téléchargement de l'extension",
+      description: "L'extension est disponible dans le dossier public/chrome-extension du projet",
+    })
+  }
+
+  const handleViewDemo = () => {
+    window.open('https://www.youtube.com/watch?v=demo', '_blank')
+    toast({
+      title: "Démo de l'extension",
+      description: "Visionnez la vidéo de démonstration pour découvrir toutes les fonctionnalités",
+    })
+  }
+
+  const handleOpenGuide = () => {
+    setActiveTab("install")
+    toast({
+      title: "Guide d'installation",
+      description: "Consultez le guide pour installer et configurer l'extension",
+    })
+  }
+
+  const handleConfigure = () => {
+    setActiveTab("auth")
+    toast({
+      title: "Configuration",
+      description: "Configurez votre authentification pour l'extension",
+    })
+  }
   const features = [
     {
       title: "Import en 1 clic",
@@ -72,11 +121,11 @@ export default function Extension() {
           </div>
           
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleOpenGuide}>
               <BookOpen className="w-4 h-4 mr-2" />
               Guide
             </Button>
-            <Button className="bg-primary hover:bg-primary/90">
+            <Button className="bg-primary hover:bg-primary/90" onClick={handleDownloadExtension}>
               <Download className="w-4 h-4 mr-2" />
               Télécharger Extension
             </Button>
@@ -96,11 +145,11 @@ export default function Extension() {
                   Importez, analysez et synchronisez vos produits depuis n'importe quel site e-commerce.
                 </p>
                 <div className="flex gap-4">
-                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700" onClick={handleAddToChrome}>
                     <Chrome className="w-5 h-5 mr-2" />
                     Ajouter à Chrome
                   </Button>
-                  <Button variant="outline" size="lg">
+                  <Button variant="outline" size="lg" onClick={handleViewDemo}>
                     <Play className="w-5 h-5 mr-2" />
                     Voir Démo
                   </Button>
@@ -146,7 +195,7 @@ export default function Extension() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="install" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList>
             <TabsTrigger value="install">Installation</TabsTrigger>
             <TabsTrigger value="auth">Authentification</TabsTrigger>
@@ -175,7 +224,7 @@ export default function Extension() {
                       <p className="text-muted-foreground mb-3">
                         Cliquez sur le bouton ci-dessous pour installer l'extension depuis le Chrome Web Store
                       </p>
-                      <Button>
+                      <Button onClick={handleAddToChrome}>
                         <Chrome className="w-4 h-4 mr-2" />
                         Ajouter à Chrome
                       </Button>
@@ -191,7 +240,7 @@ export default function Extension() {
                       <p className="text-muted-foreground mb-3">
                         Utilisez vos identifiants Shopopti pour connecter l'extension à votre compte
                       </p>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={handleConfigure}>
                         <Settings className="w-4 h-4 mr-2" />
                         Configurer
                       </Button>
