@@ -12,10 +12,16 @@ import { toast } from "@/hooks/use-toast";
 export default function Extension() {
   const [activeTab, setActiveTab] = useState("install");
   const handleAddToChrome = () => {
-    window.open('https://chromewebstore.google.com', '_blank');
+    const extensionPath = '/chrome-extension';
+    const link = document.createElement('a');
+    link.href = extensionPath;
+    link.download = 'drop-craft-ai-extension.zip';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     toast({
-      title: "Redirection vers Chrome Web Store",
-      description: "Vous allez être redirigé vers le Chrome Web Store pour installer l'extension"
+      title: "Téléchargement de l'extension",
+      description: "L'extension Chrome va être téléchargée. Consultez le guide d'installation pour l'installer."
     });
   };
   const handleDownloadExtension = () => {
@@ -50,6 +56,14 @@ export default function Extension() {
     toast({
       title: "Configuration",
       description: "Configurez votre authentification pour l'extension"
+    });
+  };
+
+  const handleInstall = () => {
+    setActiveTab("guide");
+    toast({
+      title: "Guide d'installation",
+      description: "Suivez les instructions pour installer l'extension dans Chrome"
     });
   };
   const features = [{
@@ -98,7 +112,10 @@ export default function Extension() {
           </div>
           
           <div className="flex gap-2">
-            
+            <Button variant="outline" onClick={handleInstall}>
+              <BookOpen className="w-4 h-4 mr-2" />
+              Installer
+            </Button>
             <Button className="bg-primary hover:bg-primary/90" onClick={handleDownloadExtension}>
               <Download className="w-4 h-4 mr-2" />
               Télécharger Extension
