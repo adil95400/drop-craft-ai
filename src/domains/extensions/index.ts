@@ -2,3 +2,4 @@
 export { ExtensionMarketplace } from './components/ExtensionMarketplace'
 export { ExtensionCard } from './components/ExtensionCard'
 export { DeveloperDashboard } from './components/DeveloperDashboard'
+export { ExtensionDashboard } from './components/ExtensionDashboard'

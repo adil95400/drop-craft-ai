@@ -5,14 +5,19 @@ import { ExtensionStore } from '@/components/extensions/ExtensionStore'
 import { ExtensionNavigator } from '@/components/extensions/ExtensionNavigator'
 import { ExtensionAuthManager } from '@/components/extensions/ExtensionAuthManager'
 import { ExtensionInstallGuide } from '@/components/extensions/ExtensionInstallGuide'
-import { Puzzle, Zap, Grid, Chrome, BookOpen } from 'lucide-react'
+import { ExtensionDashboard } from '@/components/extensions/ExtensionDashboard'
+import { Puzzle, Zap, Grid, Chrome, BookOpen, Activity } from 'lucide-react'
 
 export default function Extensions() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/80 to-background">
       <div className="container mx-auto p-6">
-        <Tabs defaultValue="navigator" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs defaultValue="dashboard" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2">
+              <Activity className="w-4 h-4" />
+              Dashboard
+            </TabsTrigger>
             <TabsTrigger value="navigator" className="flex items-center gap-2">
               <Grid className="w-4 h-4" />
               Centre
@@ -34,6 +39,10 @@ export default function Extensions() {
               Guide
             </TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="dashboard">
+            <ExtensionDashboard />
+          </TabsContent>
           
           <TabsContent value="navigator">
             <ExtensionNavigator />
