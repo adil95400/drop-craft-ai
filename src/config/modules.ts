@@ -94,6 +94,36 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['video-courses', 'guides', 'webinars', 'certifications'],
     description: 'Formation dropshipping complète'
   },
+  stores: {
+    id: 'stores',
+    name: 'Mes Boutiques',
+    icon: 'Store',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/stores',
+    features: ['store-management', 'multi-store', 'store-sync'],
+    description: 'Gestion de vos boutiques e-commerce'
+  },
+  marketplaceHub: {
+    id: 'marketplaceHub',
+    name: 'Marketplace Hub',
+    icon: 'Globe',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/marketplace-hub',
+    features: ['marketplace-listing', 'multi-marketplace', 'centralized-management'],
+    description: 'Hub centralisé pour vos marketplaces'
+  },
+  importSources: {
+    id: 'importSources',
+    name: 'Sources d\'Import',
+    icon: 'Database',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/import/sources',
+    features: ['source-management', 'custom-sources', 'api-connectors'],
+    description: 'Gestion des sources d\'importation'
+  },
 
   // Modules Pro
   analytics: {
@@ -136,6 +166,16 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['seo-optimization', 'keyword-tracking', 'content-analysis'],
     description: 'Optimisation SEO avancée'
   },
+  extension: {
+    id: 'extension',
+    name: 'Extension Navigateur',
+    icon: 'PuzzlePiece',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/extension',
+    features: ['browser-extension', 'quick-import', 'extension-marketplace', 'real-time-sync'],
+    description: 'Extension Chrome pour import rapide'
+  },
 
   // Modules Ultra Pro
   ai: {
@@ -177,6 +217,36 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     route: '/integrations',
     features: ['premium-apis', 'custom-connectors', 'webhooks'],
     description: 'Intégrations avancées et API premium'
+  },
+  multiTenant: {
+    id: 'multiTenant',
+    name: 'Multi-Tenant',
+    icon: 'Building2',
+    enabled: true,
+    minPlan: 'ultra_pro',
+    route: '/multi-tenant',
+    features: ['tenant-management', 'white-label', 'tenant-isolation'],
+    description: 'Gestion multi-tenant enterprise'
+  },
+  observability: {
+    id: 'observability',
+    name: 'Observabilité',
+    icon: 'Activity',
+    enabled: true,
+    minPlan: 'ultra_pro',
+    route: '/observability',
+    features: ['advanced-monitoring', 'real-time-metrics', 'alerts', 'logs-analytics'],
+    description: 'Monitoring et métriques avancés'
+  },
+  adminPanel: {
+    id: 'adminPanel',
+    name: 'Admin Panel',
+    icon: 'Settings',
+    enabled: true,
+    minPlan: 'ultra_pro',
+    route: '/admin-panel',
+    features: ['admin-access', 'user-management', 'system-config', 'advanced-settings'],
+    description: 'Panneau d\'administration système'
   }
 };
 
