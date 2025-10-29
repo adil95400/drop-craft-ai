@@ -1,10 +1,13 @@
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Chrome, Download, Settings, Zap, Play, BookOpen, BarChart3, History, Key } from "lucide-react"
 import { ExtensionAuthManager } from "@/components/browser-extension/ExtensionAuthManager"
+import { ExtensionUpdateNotification } from "@/components/extensions/ExtensionUpdateNotification"
+import { ExtensionHealthMonitor } from "@/components/extensions/ExtensionHealthMonitor"
 
 export default function Extension() {
   const features = [
@@ -54,6 +57,11 @@ export default function Extension() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
+        {/* Update Notification */}
+        <div className="mb-6">
+          <ExtensionUpdateNotification />
+        </div>
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
@@ -144,6 +152,7 @@ export default function Extension() {
             <TabsTrigger value="auth">Authentification</TabsTrigger>
             <TabsTrigger value="usage">Utilisation</TabsTrigger>
             <TabsTrigger value="sites">Sites Supportés</TabsTrigger>
+            <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
             <TabsTrigger value="history">Historique</TabsTrigger>
           </TabsList>
 
@@ -273,6 +282,10 @@ export default function Extension() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="monitoring">
+            <ExtensionHealthMonitor />
           </TabsContent>
 
           <TabsContent value="history">
