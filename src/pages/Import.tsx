@@ -6,16 +6,17 @@ import { ImportMethods } from '@/components/import/ImportMethods'
 import { ImportTemplates } from '@/components/import/ImportTemplates'
 import { ImportStatsRealTime } from '@/components/import/ImportStatsRealTime'
 import { ImportHub } from '@/components/import/ImportHub'
+import { ImportJobHistory } from '@/components/import/ImportJobHistory'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Sparkles, Zap, TrendingUp, ArrowLeft, FileText, BarChart3 } from 'lucide-react'
+import { Sparkles, Zap, TrendingUp, ArrowLeft, FileText, BarChart3, History } from 'lucide-react'
 
 export default function Import() {
   const { isUltraPro, isPro } = useUnifiedPlan()
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState('')
-  const [currentView, setCurrentView] = useState<'quick' | 'templates' | 'stats' | 'advanced' | 'hub'>('hub')
+  const [currentView, setCurrentView] = useState<'quick' | 'templates' | 'stats' | 'advanced' | 'hub' | 'history'>('hub')
   const [selectedCategory, setSelectedCategory] = useState('')
 
   // Gérer les paramètres d'URL
@@ -50,7 +51,7 @@ export default function Import() {
     }
   }
 
-  const handleViewChange = (view: 'quick' | 'templates' | 'stats' | 'advanced' | 'hub') => {
+  const handleViewChange = (view: 'quick' | 'templates' | 'stats' | 'advanced' | 'hub' | 'history') => {
     setCurrentView(view)
   }
 
@@ -155,8 +156,42 @@ export default function Import() {
                   Accédez rapidement aux 22+ méthodes d'import organisées par catégorie
                 </p>
               </div>
+              <Button
+                variant="outline"
+                onClick={() => setCurrentView('history')}
+                className="flex items-center gap-2"
+              >
+                <History className="w-4 h-4" />
+                Historique
+              </Button>
             </div>
             <ImportHub onViewChange={handleViewChange} onCategorySelect={handleCategorySelect} />
+          </div>
+        )
+
+      case 'history':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <History className="w-6 h-6 text-primary" />
+                  Historique des Imports
+                </h2>
+                <p className="text-muted-foreground">
+                  Consultez tous vos jobs d'import et leurs résultats
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setCurrentView('hub')}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Retour
+              </Button>
+            </div>
+            <ImportJobHistory />
           </div>
         )
 

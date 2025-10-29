@@ -1,69 +1,46 @@
-import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { Skeleton } from '@/components/ui/skeleton'
 import { 
   TrendingUp, 
   Package, 
   Clock, 
   CheckCircle, 
-  XCircle, 
   Zap,
-  Users,
   Globe,
   Activity
 } from 'lucide-react'
+import { useImportStatsReal } from '@/hooks/useImportJobsReal'
+import { formatDistanceToNow } from 'date-fns'
+import { fr } from 'date-fns/locale'
 
 interface ImportStatsRealTimeProps {
   refreshInterval?: number
 }
 
 export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealTimeProps) => {
-  const [stats, setStats] = useState({
-    totalImportsToday: 1247,
-    successRate: 94.2,
-    activeUsers: 89,
-    averageTime: 23,
-    topSources: [
-      { name: 'Amazon', count: 456, percentage: 36.6 },
-      { name: 'AliExpress', count: 298, percentage: 23.9 },
-      { name: 'Shopify', count: 187, percentage: 15.0 },
-      { name: 'eBay', count: 134, percentage: 10.7 }
-    ],
-    recentActivity: [
-      { time: 'Il y a 2s', action: 'Import réussi', source: 'Amazon.fr', user: 'user_a2b3' },
-      { time: 'Il y a 15s', action: 'Import réussi', source: 'AliExpress', user: 'user_c4d5' },
-      { time: 'Il y a 28s', action: 'Import réussi', source: 'Shopify', user: 'user_e6f7' },
-      { time: 'Il y a 45s', action: 'Import réussi', source: 'Amazon.com', user: 'user_g8h9' }
-    ]
-  })
+  const { stats, isLoading } = useImportStatsReal()
 
-  const [lastUpdate, setLastUpdate] = useState(new Date())
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <Skeleton key={i} className="h-32" />
+          ))}
+        </div>
+      </div>
+    )
+  }
 
-  // Simuler des données en temps réel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStats(prevStats => ({
-        ...prevStats,
-        totalImportsToday: prevStats.totalImportsToday + Math.floor(Math.random() * 3),
-        successRate: 92 + Math.random() * 6, // Entre 92% et 98%
-        activeUsers: 80 + Math.floor(Math.random() * 20),
-        averageTime: 20 + Math.floor(Math.random() * 10),
-        recentActivity: [
-          {
-            time: 'Il y a 2s',
-            action: 'Import réussi',
-            source: ['Amazon.fr', 'AliExpress', 'Shopify', 'eBay'][Math.floor(Math.random() * 4)],
-            user: `user_${Math.random().toString(36).substring(2, 6)}`
-          },
-          ...prevStats.recentActivity.slice(0, 3)
-        ]
-      }))
-      setLastUpdate(new Date())
-    }, refreshInterval)
-
-    return () => clearInterval(interval)
-  }, [refreshInterval])
+  if (!stats) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        Aucune donnée disponible
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -72,7 +49,7 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-green-500 animate-pulse" />
           <span className="text-sm text-muted-foreground">
-            Mis à jour {lastUpdate.toLocaleTimeString()}
+            Données réelles
           </span>
         </div>
       </div>
@@ -91,8 +68,8 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
               <Package className="w-8 h-8 text-blue-500" />
             </div>
             <div className="flex items-center gap-1 mt-2">
-              <TrendingUp className="w-3 h-3 text-green-500" />
-              <span className="text-xs text-green-600">+23% vs hier</span>
+              <TrendingUp className="w-3 h-3 text-blue-500" />
+              <span className="text-xs text-blue-600">Produits importés</span>
             </div>
           </CardContent>
         </Card>
@@ -117,15 +94,21 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl font-bold text-purple-600">
-                  {stats.activeUsers}
+                  {stats.activeJobs}
                 </div>
-                <div className="text-sm text-muted-foreground">Utilisateurs actifs</div>
+                <div className="text-sm text-muted-foreground">Jobs actifs</div>
               </div>
-              <Users className="w-8 h-8 text-purple-500" />
+              <Activity className="w-8 h-8 text-purple-500" />
             </div>
             <div className="flex items-center gap-1 mt-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs text-muted-foreground">En ligne maintenant</span>
+              {stats.activeJobs > 0 ? (
+                <>
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-muted-foreground">En cours</span>
+                </>
+              ) : (
+                <span className="text-xs text-muted-foreground">Aucun job actif</span>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -135,15 +118,15 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-2xl font-bold text-orange-600">
-                  {stats.averageTime}s
+                  {stats.topSources.length}
                 </div>
-                <div className="text-sm text-muted-foreground">Temps moyen</div>
+                <div className="text-sm text-muted-foreground">Sources actives</div>
               </div>
-              <Clock className="w-8 h-8 text-orange-500" />
+              <Globe className="w-8 h-8 text-orange-500" />
             </div>
             <div className="flex items-center gap-1 mt-2">
               <Zap className="w-3 h-3 text-orange-500" />
-              <span className="text-xs text-orange-600">Ultra rapide</span>
+              <span className="text-xs text-orange-600">Multi-sources</span>
             </div>
           </CardContent>
         </Card>
@@ -159,25 +142,32 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {stats.topSources.map((source, index) => (
-              <div key={source.name} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      #{index + 1}
-                    </Badge>
-                    <span className="font-medium">{source.name}</span>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-semibold">{source.count}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {source.percentage}%
+            {stats.topSources.length > 0 ? (
+              stats.topSources.map((source, index) => (
+                <div key={source.name} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        #{index + 1}
+                      </Badge>
+                      <span className="font-medium capitalize">{source.name}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-semibold">{source.count}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {source.percentage.toFixed(1)}%
+                      </div>
                     </div>
                   </div>
+                  <Progress value={source.percentage} className="h-2" />
                 </div>
-                <Progress value={source.percentage} className="h-2" />
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Globe className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Aucune source active aujourd'hui</p>
               </div>
-            ))}
+            )}
           </CardContent>
         </Card>
 
@@ -186,30 +176,42 @@ export const ImportStatsRealTime = ({ refreshInterval = 5000 }: ImportStatsRealT
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="w-5 h-5" />
-              Activité en Direct
+              Jobs Récents
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {stats.recentActivity.map((activity, index) => (
-                <div 
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <div>
-                      <div className="font-medium text-sm">{activity.action}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {activity.source} • {activity.user}
+              {stats.recentJobs.length > 0 ? (
+                stats.recentJobs.map((job: any) => (
+                  <div 
+                    key={job.id}
+                    className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full ${
+                        job.status === 'completed' ? 'bg-green-500' :
+                        job.status === 'processing' ? 'bg-blue-500 animate-pulse' :
+                        job.status === 'failed' ? 'bg-red-500' :
+                        'bg-yellow-500'
+                      }`}></div>
+                      <div>
+                        <div className="font-medium text-sm capitalize">{job.source_type || 'Import'}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {job.success_rows || 0} produits • {job.status}
+                        </div>
                       </div>
                     </div>
+                    <Badge variant="outline" className="text-xs">
+                      {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: fr })}
+                    </Badge>
                   </div>
-                  <Badge variant="outline" className="text-xs">
-                    {activity.time}
-                  </Badge>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Activity className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Aucun job récent</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
