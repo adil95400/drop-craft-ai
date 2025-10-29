@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useAdsManager } from '@/hooks/useAdsManager';
+import { useAdsManagerNew } from '@/hooks/useAdsManagerNew';
 import { 
   TrendingUp, 
   DollarSign, 
@@ -23,12 +23,21 @@ import { PlatformConnectionCard } from './PlatformConnectionCard';
 export function AdsAutomationDashboard() {
   const { 
     campaigns, 
-    connections, 
-    stats, 
-    isLoadingCampaigns,
-    syncCampaigns,
-    isSyncing 
-  } = useAdsManager();
+    isLoadingCampaigns
+  } = useAdsManagerNew();
+
+  // Mock data for now
+  const connections: any[] = [];
+  const stats = {
+    totalCampaigns: campaigns?.length || 0,
+    activeCampaigns: campaigns?.filter((c: any) => c.status === 'active')?.length || 0,
+    totalSpent: campaigns?.reduce((acc: number, c: any) => acc + (c.spent_amount || 0), 0) || 0,
+    totalBudget: campaigns?.reduce((acc: number, c: any) => acc + (c.budget_amount || 0), 0) || 0,
+    avgROAS: campaigns?.length > 0 ? campaigns.reduce((acc: number, c: any) => acc + (c.performance_metrics?.roas || 0), 0) / campaigns.length : 0,
+    connectedPlatforms: 0
+  };
+  const syncCampaigns = () => {};
+  const isSyncing = false;
   
   const [showAdCreator, setShowAdCreator] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
@@ -126,7 +135,7 @@ export function AdsAutomationDashboard() {
           <Plus className="mr-2 h-4 w-4" />
           Create Campaign
         </Button>
-        <Button variant="outline" onClick={() => syncCampaigns('facebook')} disabled={isSyncing}>
+        <Button variant="outline" onClick={() => syncCampaigns()} disabled={isSyncing}>
           <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
           Sync All Platforms
         </Button>

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { useAdsManager } from '@/hooks/useAdsManager';
+import { useAdsManagerNew } from '@/hooks/useAdsManagerNew';
 import { Sparkles, Wand2 } from 'lucide-react';
 
 interface AdCreatorModalProps {
@@ -15,7 +15,7 @@ interface AdCreatorModalProps {
 }
 
 export function AdCreatorModal({ open, onOpenChange }: AdCreatorModalProps) {
-  const { createCampaign, generateAIAd, generateCompleteAIAd, isCreating, isGenerating, isGeneratingComplete } = useAdsManager();
+  const { createCampaign, generateCreative, isCreatingCampaign, isGeneratingCreative } = useAdsManagerNew();
   const [useAI, setUseAI] = useState(false);
   const [enableABTest, setEnableABTest] = useState(false);
   const [generateVisuals, setGenerateVisuals] = useState(false);
@@ -42,94 +42,57 @@ export function AdCreatorModal({ open, onOpenChange }: AdCreatorModalProps) {
 
   const handleGenerateAI = async () => {
     const productData = {
-      name: formData.productName,
-      description: formData.productDescription,
-      price: formData.productPrice,
-      currency: 'USD'
+      productName: formData.productName,
+      productDescription: formData.productDescription,
+      productPrice: formData.productPrice,
+      platform: formData.platform,
+      objective: formData.campaignType,
+      targetAudience: formData.targetAudience.interests,
+      generateVisuals
     };
 
-    if (generateVisuals) {
-      generateCompleteAIAd(
-        {
-          productData,
-          platform: formData.platform,
-          campaignType: formData.campaignType,
-          targetAudience: formData.targetAudience,
-          generateVariants: enableABTest,
-          generateVisuals: true
-        },
-        {
-          onSuccess: (data: any) => {
-            setFormData(prev => ({
-              ...prev,
-              headline: data.adCreative.primary.headline,
-              body: data.adCreative.primary.body,
-              cta: data.adCreative.primary.cta
-            }));
-            if (data.generatedImage) {
-              setGeneratedImageUrl(data.generatedImage);
-            }
-          }
+    try {
+      const result = await generateCreative(productData);
+      if (result?.creative) {
+        setFormData(prev => ({
+          ...prev,
+          headline: result.creative.headline || prev.headline,
+          body: result.creative.description || prev.body,
+          cta: result.creative.callToAction || prev.cta
+        }));
+        if (result.creative.imageUrl) {
+          setGeneratedImageUrl(result.creative.imageUrl);
         }
-      );
-    } else {
-      generateAIAd(
-        {
-          productData,
-          platform: formData.platform,
-          campaignType: formData.campaignType,
-          targetAudience: formData.targetAudience,
-          generateVariants: enableABTest
-        },
-        {
-          onSuccess: (data: any) => {
-            setFormData(prev => ({
-              ...prev,
-              headline: data.adCreative.primary.headline,
-              body: data.adCreative.primary.body,
-              cta: data.adCreative.primary.cta
-            }));
-          }
-        }
-      );
+      }
+    } catch (error) {
+      console.error('Error generating AI content:', error);
     }
   };
 
   const handleSubmit = () => {
-    const campaignData = {
-      campaignName: formData.campaignName,
+    createCampaign({
+      name: formData.campaignName,
       platform: formData.platform,
-      campaignType: formData.campaignType,
-      budgetDaily: parseFloat(formData.budgetDaily),
-      budgetTotal: parseFloat(formData.budgetTotal),
-      targetAudience: formData.targetAudience,
-      adCreative: {
-        headline: formData.headline,
-        body: formData.body,
-        cta: formData.cta
-      },
-      aiGenerated: useAI,
-      abTestConfig: enableABTest ? { enabled: true } : {}
-    };
-
-    createCampaign(campaignData, {
-      onSuccess: () => {
-        onOpenChange(false);
-        setFormData({
-          campaignName: '',
-          platform: 'facebook',
-          campaignType: 'conversion',
-          budgetDaily: '',
-          budgetTotal: '',
-          productName: '',
-          productDescription: '',
-          productPrice: '',
-          targetAudience: { age: '18-65', interests: '', location: '' },
-          headline: '',
-          body: '',
-          cta: ''
-        });
-      }
+      objective: formData.campaignType,
+      budgetType: 'daily',
+      budgetAmount: parseFloat(formData.budgetDaily),
+      targetAudience: formData.targetAudience.interests,
+      aiOptimizationEnabled: useAI
+    });
+    onOpenChange(false);
+    setFormData({
+      campaignName: '',
+      platform: 'facebook',
+      campaignType: 'conversion',
+      budgetDaily: '',
+      budgetTotal: '',
+      productName: '',
+      productDescription: '',
+      productPrice: '',
+      targetAudience: { age: '18-65', interests: '', location: '' },
+      headline: '',
+      body: '',
+      cta: ''
     });
   };
 
@@ -289,11 +252,11 @@ export function AdCreatorModal({ open, onOpenChange }: AdCreatorModalProps) {
 
                 <Button 
                   onClick={handleGenerateAI} 
-                  disabled={isGenerating || isGeneratingComplete}
+                  disabled={isGeneratingCreative}
                   className="w-full"
                 >
                   <Wand2 className="mr-2 h-4 w-4" />
-                  {(isGenerating || isGeneratingComplete) ? 'Generating...' : 
+                  {isGeneratingCreative ? 'Generating...' : 
                     generateVisuals ? 'Generate Complete Ad with AI (Text + Visuals)' : 'Generate Ad Content with AI'}
                 </Button>
               </div>
@@ -347,8 +310,8 @@ export function AdCreatorModal({ open, onOpenChange }: AdCreatorModalProps) {
           </div>
 
           <div className="flex gap-4">
-            <Button onClick={handleSubmit} disabled={isCreating} className="flex-1">
-              {isCreating ? 'Creating...' : 'Create Campaign'}
+            <Button onClick={handleSubmit} disabled={isCreatingCampaign} className="flex-1">
+              {isCreatingCampaign ? 'Creating...' : 'Create Campaign'}
             </Button>
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
