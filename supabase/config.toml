@@ -324,3 +324,6 @@ verify_jwt = true
 
 [functions.ads-creative-generator]
 verify_jwt = true
+
+[functions.inventory-predictor]
+verify_jwt = true

@@ -118,6 +118,7 @@ const AutoFulfillmentPage = lazy(() => import('@/pages/AutoFulfillmentPage'));
 const BulkContentCreationPage = lazy(() => import('@/pages/BulkContentCreationPage'));
 const ProfitCalculatorPage = lazy(() => import('@/pages/ProfitCalculatorPage'));
 const AdsManagerPage = lazy(() => import('@/pages/AdsManagerPage'));
+const InventoryPredictorPage = lazy(() => import('@/pages/InventoryPredictorPage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
@@ -352,6 +353,12 @@ function App() {
                         <Route path="/ads-manager" element={
                           <ProtectedRoute>
                             <AppLayout><AdsManagerPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/inventory-predictor" element={
+                          <ProtectedRoute>
+                            <AppLayout><InventoryPredictorPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
