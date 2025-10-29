@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Star, Upload, FileJson, Globe } from 'lucide-react'
 
 export const ReviewImporterConfig: React.FC = () => {
-  const [source, setSource] = useState<'csv' | 'json' | 'trustpilot' | 'google' | 'amazon'>('csv')
+  const [source, setSource] = useState<'csv' | 'json' | 'trustpilot' | 'google' | 'amazon' | 'aliexpress'>('csv')
   const [file, setFile] = useState<File | null>(null)
   const [apiUrl, setApiUrl] = useState('')
   const [apiKey, setApiKey] = useState('')
@@ -138,11 +138,17 @@ export const ReviewImporterConfig: React.FC = () => {
                   Amazon
                 </div>
               </SelectItem>
+              <SelectItem value="aliexpress">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  AliExpress
+                </div>
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {(source === 'csv' || source === 'json' || source === 'amazon') && (
+        {(source === 'csv' || source === 'json' || source === 'amazon' || source === 'aliexpress') && (
           <div>
             <Label>Fichier</Label>
             <Input
@@ -189,7 +195,7 @@ export const ReviewImporterConfig: React.FC = () => {
           onClick={handleImport}
           disabled={
             loading ||
-            (!file && ['csv', 'json', 'amazon'].includes(source)) ||
+            (!file && ['csv', 'json', 'amazon', 'aliexpress'].includes(source)) ||
             (['trustpilot', 'google'].includes(source) && (!apiUrl || !apiKey))
           }
           className="w-full"

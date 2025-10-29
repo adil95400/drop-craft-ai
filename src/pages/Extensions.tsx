@@ -6,14 +6,16 @@ import { ExtensionNavigator } from '@/components/extensions/ExtensionNavigator'
 import { ExtensionAuthManager } from '@/components/extensions/ExtensionAuthManager'
 import { ExtensionInstallGuide } from '@/components/extensions/ExtensionInstallGuide'
 import { ExtensionDashboard } from '@/components/extensions/ExtensionDashboard'
-import { Puzzle, Zap, Grid, Chrome, BookOpen, Activity } from 'lucide-react'
+import { ReviewImporterConfig } from '@/components/extensions/ReviewImporterConfig'
+import { AliExpressImporter } from '@/components/extensions/AliExpressImporter'
+import { Puzzle, Zap, Grid, Chrome, BookOpen, Activity, Star, ShoppingCart } from 'lucide-react'
 
 export default function Extensions() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/80 to-background">
       <div className="container mx-auto p-6">
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <Activity className="w-4 h-4" />
               Dashboard
@@ -37,6 +39,14 @@ export default function Extensions() {
             <TabsTrigger value="guide" className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
               Guide
+            </TabsTrigger>
+            <TabsTrigger value="reviews" className="flex items-center gap-2">
+              <Star className="w-4 h-4" />
+              Avis
+            </TabsTrigger>
+            <TabsTrigger value="aliexpress" className="flex items-center gap-2">
+              <ShoppingCart className="w-4 h-4" />
+              AliExpress
             </TabsTrigger>
           </TabsList>
           
@@ -62,6 +72,14 @@ export default function Extensions() {
           
           <TabsContent value="guide">
             <ExtensionInstallGuide />
+          </TabsContent>
+          
+          <TabsContent value="reviews">
+            <ReviewImporterConfig />
+          </TabsContent>
+          
+          <TabsContent value="aliexpress">
+            <AliExpressImporter />
           </TabsContent>
         </Tabs>
       </div>
