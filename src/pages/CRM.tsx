@@ -17,6 +17,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 
 import { useRealCustomers } from '@/hooks/useRealCustomers'
+import { LeadsManager } from '@/components/crm/LeadsManager'
+import { SalesPipeline } from '@/components/crm/SalesPipeline'
 import { Link } from 'react-router-dom'
 
 export default function CRM() {
