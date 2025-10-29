@@ -330,3 +330,9 @@ verify_jwt = true
 
 [functions.customer-intelligence]
 verify_jwt = false
+
+[functions.webhook-delivery]
+verify_jwt = false
+
+[functions.webhook-handler]
+verify_jwt = false
