@@ -35,18 +35,22 @@ export const ExtensionAuthManager = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const response = await supabase.functions.invoke('extension-auth', {
-        body: {
-          action: 'generate_token',
-          data: {
-            userId: user.id,
-            deviceInfo: navigator.userAgent
-          }
-        }
-      })
+      // Generate a unique token
+      const token = 'ext_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
-      if (response.error) throw response.error
-      return response.data
+      // Insert token into database
+      const { error } = await supabase
+        .from('extension_auth_tokens')
+        .insert([{
+          user_id: user.id,
+          token: token,
+          is_active: true,
+          expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year
+          device_info: { userAgent: navigator.userAgent }
+        }]);
+
+      if (error) throw error;
+      return { token };
     },
     onSuccess: (data) => {
       setNewToken(data.token)
@@ -67,16 +71,14 @@ export const ExtensionAuthManager = () => {
 
   // Revoke token
   const revokeToken = useMutation({
-    mutationFn: async (token: string) => {
-      const response = await supabase.functions.invoke('extension-auth', {
-        body: {
-          action: 'revoke_token',
-          data: { token }
-        }
-      })
+    mutationFn: async (tokenId: string) => {
+      const { error } = await supabase
+        .from('extension_auth_tokens')
+        .update({ is_active: false })
+        .eq('id', tokenId);
 
-      if (response.error) throw response.error
-      return response.data
+      if (error) throw error;
+      return { success: true };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['extension-tokens'] })
@@ -204,7 +206,7 @@ export const ExtensionAuthManager = () => {
                     <Button
                       size="icon"
                       variant="destructive"
-                      onClick={() => revokeToken.mutate(token.token)}
+                      onClick={() => revokeToken.mutate(token.id)}
                       disabled={!token.is_active}
                     >
                       <Trash2 className="w-4 h-4" />

@@ -76,6 +76,7 @@ class DropCraftPopup {
     document.getElementById('scrapAllProducts').addEventListener('click', () => this.scrapAllProducts());
     document.getElementById('importReviews').addEventListener('click', () => this.importReviews());
     document.getElementById('sendToApp').addEventListener('click', () => this.sendToApp());
+    document.getElementById('authenticate').addEventListener('click', () => this.openAuth());
     document.getElementById('openDashboard').addEventListener('click', () => this.openDashboard());
     document.getElementById('reviewSettings').addEventListener('click', () => this.openReviewSettings());
     document.getElementById('openSettings').addEventListener('click', () => this.openSettings());
@@ -521,14 +522,16 @@ class DropCraftPopup {
       return result.extensionToken;
     }
     
-    // Generate a new token (in production, this should be obtained from login)
-    const token = 'ext_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    await chrome.storage.local.set({ extensionToken: token });
-    
-    // Show message to user about authentication
-    this.showNotification('⚠️ Première utilisation: veuillez vous connecter sur l\'app', 'warning');
-    
-    return token;
+    // No token found, show authentication page
+    this.showNotification('⚠️ Veuillez vous authentifier', 'warning');
+    this.openAuth();
+    throw new Error('Non authentifié');
+  }
+
+  openAuth() {
+    chrome.tabs.create({
+      url: chrome.runtime.getURL('auth.html')
+    });
   }
 
   async sendReviewsToApp() {
@@ -831,7 +834,7 @@ class DropCraftPopup {
     try {
       const token = await chrome.storage.local.get(['extensionToken']);
       if (!token.extensionToken) {
-        document.getElementById('connectionStatus').textContent = 'Non authentifié';
+        document.getElementById('connectionStatus').textContent = '🔒 Non authentifié';
         return;
       }
       
@@ -848,12 +851,12 @@ class DropCraftPopup {
       });
       
       if (response.ok) {
-        document.getElementById('connectionStatus').textContent = 'Connecté';
+        document.getElementById('connectionStatus').textContent = '✓ Connecté';
       } else {
-        document.getElementById('connectionStatus').textContent = 'Erreur de connexion';
+        document.getElementById('connectionStatus').textContent = '⚠️ Token invalide';
       }
     } catch (error) {
-      document.getElementById('connectionStatus').textContent = 'Hors ligne';
+      document.getElementById('connectionStatus').textContent = '✗ Hors ligne';
     }
   }
 
