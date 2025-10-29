@@ -119,6 +119,7 @@ const BulkContentCreationPage = lazy(() => import('@/pages/BulkContentCreationPa
 const ProfitCalculatorPage = lazy(() => import('@/pages/ProfitCalculatorPage'));
 const AdsManagerPage = lazy(() => import('@/pages/AdsManagerPage'));
 const InventoryPredictorPage = lazy(() => import('@/pages/InventoryPredictorPage'));
+const CustomerIntelligencePage = lazy(() => import('@/pages/CustomerIntelligencePage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
