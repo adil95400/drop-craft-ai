@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   BarChart3, Package, Truck, Upload, Trophy, Sparkles, Crown,
   TrendingUp, Zap, Users, Search, Brain, ShoppingCart, Shield, Plug,
-  Settings, Home, ChevronDown
+  Settings, Home, ChevronDown, GraduationCap
 } from 'lucide-react';
 import {
   Sidebar,
@@ -30,7 +30,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 const iconMap: Record<string, any> = {
   BarChart3, Package, Truck, Upload, Trophy, Sparkles, Crown,
   TrendingUp, Zap, Users, Search, Brain, ShoppingCart, Shield, Plug,
-  Settings, Home
+  Settings, Home, GraduationCap
 };
 
 export function UnifiedSidebar() {

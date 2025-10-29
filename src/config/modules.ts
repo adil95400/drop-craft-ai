@@ -84,6 +84,16 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['premium-suppliers', 'exclusive-deals', 'fast-shipping'],
     description: 'Réseau de fournisseurs premium'
   },
+  academy: {
+    id: 'academy',
+    name: 'Academy',
+    icon: 'GraduationCap',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/academy',
+    features: ['video-courses', 'guides', 'webinars', 'certifications'],
+    description: 'Formation dropshipping complète'
+  },
 
   // Modules Pro
   analytics: {

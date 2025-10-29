@@ -121,6 +121,7 @@ const AdsManagerPage = lazy(() => import('@/pages/AdsManagerPage'));
 const InventoryPredictorPage = lazy(() => import('@/pages/InventoryPredictorPage'));
 const CustomerIntelligencePage = lazy(() => import('@/pages/CustomerIntelligencePage'));
 const UnifiedDashboardPage = lazy(() => import('@/pages/UnifiedDashboardPage'));
+const AcademyPage = lazy(() => import('@/pages/AcademyPage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
@@ -373,6 +374,12 @@ function App() {
                         <Route path="/unified-dashboard" element={
                           <ProtectedRoute>
                             <AppLayout><UnifiedDashboardPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/academy" element={
+                          <ProtectedRoute>
+                            <AppLayout><AcademyPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
