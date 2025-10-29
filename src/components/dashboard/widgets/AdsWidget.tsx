@@ -51,9 +51,11 @@ export function AdsWidget({ isCustomizing }: AdsWidgetProps) {
         </div>
 
         <div className="pt-2 border-t">
-          <p className="text-sm text-muted-foreground">
-            Campagnes actives: <span className="font-semibold">12</span>
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">Campagnes actives</p>
+            <span className="font-semibold">12</span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">Données simulées</p>
         </div>
       </CardContent>
     </Card>

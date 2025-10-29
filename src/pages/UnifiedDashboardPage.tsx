@@ -16,9 +16,17 @@ import {
 } from 'lucide-react';
 import { DashboardGrid } from '@/components/dashboard/DashboardGrid';
 import { WidgetSelector } from '@/components/dashboard/WidgetSelector';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { useDashboard } from '@/hooks/useDashboard';
 
 export default function UnifiedDashboardPage() {
   const [isCustomizing, setIsCustomizing] = useState(false);
+  const { data: stats } = useDashboardStats();
+  const { alerts } = useDashboard();
+
+  const salesChange = stats?.ordersChange || 0;
+  const stockPercentage = stats?.productsCount ? 98 : 0;
+  const alertsCount = alerts?.length || 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-muted/20">
@@ -62,7 +70,7 @@ export default function UnifiedDashboardPage() {
                   <TrendingUp className="h-4 w-4 text-blue-600" />
                   <p className="text-xs text-muted-foreground">Ventes</p>
                 </div>
-                <p className="text-2xl font-bold">+24%</p>
+                <p className="text-2xl font-bold">{salesChange >= 0 ? '+' : ''}{salesChange.toFixed(1)}%</p>
               </CardContent>
             </Card>
             
@@ -72,7 +80,7 @@ export default function UnifiedDashboardPage() {
                   <DollarSign className="h-4 w-4 text-green-600" />
                   <p className="text-xs text-muted-foreground">Revenus</p>
                 </div>
-                <p className="text-2xl font-bold">52.4K€</p>
+                <p className="text-2xl font-bold">{((stats?.monthlyRevenue || 0) / 1000).toFixed(1)}K€</p>
               </CardContent>
             </Card>
 
@@ -82,7 +90,7 @@ export default function UnifiedDashboardPage() {
                   <Users className="h-4 w-4 text-purple-600" />
                   <p className="text-xs text-muted-foreground">Clients</p>
                 </div>
-                <p className="text-2xl font-bold">1,284</p>
+                <p className="text-2xl font-bold">{stats?.customersCount || 0}</p>
               </CardContent>
             </Card>
 
@@ -92,7 +100,7 @@ export default function UnifiedDashboardPage() {
                   <ShoppingCart className="h-4 w-4 text-orange-600" />
                   <p className="text-xs text-muted-foreground">Commandes</p>
                 </div>
-                <p className="text-2xl font-bold">842</p>
+                <p className="text-2xl font-bold">{stats?.ordersCount || 0}</p>
               </CardContent>
             </Card>
 
@@ -100,9 +108,9 @@ export default function UnifiedDashboardPage() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Package className="h-4 w-4 text-yellow-600" />
-                  <p className="text-xs text-muted-foreground">Stock</p>
+                  <p className="text-xs text-muted-foreground">Produits</p>
                 </div>
-                <p className="text-2xl font-bold">98%</p>
+                <p className="text-2xl font-bold">{stats?.productsCount || 0}</p>
               </CardContent>
             </Card>
 
@@ -112,7 +120,7 @@ export default function UnifiedDashboardPage() {
                   <AlertCircle className="h-4 w-4 text-red-600" />
                   <p className="text-xs text-muted-foreground">Alertes</p>
                 </div>
-                <p className="text-2xl font-bold">3</p>
+                <p className="text-2xl font-bold">{alertsCount}</p>
               </CardContent>
             </Card>
           </div>
