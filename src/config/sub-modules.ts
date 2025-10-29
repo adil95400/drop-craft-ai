@@ -540,3 +540,14 @@ export function getAccessibleSubModules(
     sm => planHierarchy[currentPlan] >= planHierarchy[sm.minPlan]
   );
 }
+
+/**
+ * Obtenir un sous-module par son ID seul (recherche dans tous les modules)
+ */
+export function getSubModuleById(subModuleId: string): SubModule | undefined {
+  for (const parentModuleId in SUB_MODULES_REGISTRY) {
+    const subModule = SUB_MODULES_REGISTRY[parentModuleId].find(sm => sm.id === subModuleId);
+    if (subModule) return subModule;
+  }
+  return undefined;
+}

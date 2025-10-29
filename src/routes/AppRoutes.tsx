@@ -8,12 +8,14 @@ import MarketplaceHubPage from '@/pages/MarketplaceHubPage'
 import MultiTenantPage from '@/pages/MultiTenantPage'
 import AdvancedMonitoringPage from '@/pages/AdvancedMonitoringPage'
 import ImportSourcesPage from '@/pages/ImportSourcesPage'
+import ModulesOverview from '@/pages/ModulesOverview'
 
 export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Navigate to="/stores" replace />} />
+        <Route path="modules" element={<ModulesOverview />} />
         <Route path="stores" element={<StoreDashboard />} />
         <Route path="stores/connect" element={<ConnectStorePage />} />
         <Route path="stores/integrations" element={<IntegrationsPage />} />
