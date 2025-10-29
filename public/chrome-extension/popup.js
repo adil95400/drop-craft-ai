@@ -195,7 +195,6 @@ class DropCraftPopup {
         this.scrapedProducts.push(...products);
         await this.saveData();
         this.updateUI();
-        this.sendToApp(products);
         this.showNotification(`${products.length} produits scrapés avec succès!`);
       }
     } catch (error) {
@@ -472,35 +471,64 @@ class DropCraftPopup {
     try {
       this.showLoading(true);
       
-      const response = await fetch('https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/api/extension/import', {
+      // Get or create extension token
+      const token = await this.getExtensionToken();
+      
+      const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-sync-realtime', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-extension-token': token
         },
         body: JSON.stringify({
-          products: products,
-          source: 'chrome_extension',
-          timestamp: new Date().toISOString()
+          action: 'import_products',
+          products: products.map(p => ({
+            title: p.name,
+            name: p.name,
+            price: p.price,
+            description: p.description || '',
+            image: p.image,
+            url: p.url,
+            source: 'chrome_extension'
+          }))
         })
       });
 
       if (response.ok) {
         const result = await response.json();
-        this.showNotification(`${products.length} produit(s) envoyé(s) avec succès!`);
+        this.showNotification(`${result.imported || products.length} produit(s) envoyé(s) avec succès!`);
         
         // Clear sent products
         this.scrapedProducts = [];
         await this.saveData();
         this.updateUI();
       } else {
-        throw new Error('Erreur du serveur');
+        const error = await response.json();
+        throw new Error(error.error || 'Erreur du serveur');
       }
     } catch (error) {
       console.error('Error sending to app:', error);
-      this.showNotification('Erreur lors de l\'envoi à l\'application', 'error');
+      this.showNotification('Erreur: ' + error.message, 'error');
     } finally {
       this.showLoading(false);
     }
+  }
+
+  async getExtensionToken() {
+    // Try to get existing token
+    const result = await chrome.storage.local.get(['extensionToken']);
+    if (result.extensionToken) {
+      return result.extensionToken;
+    }
+    
+    // Generate a new token (in production, this should be obtained from login)
+    const token = 'ext_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    await chrome.storage.local.set({ extensionToken: token });
+    
+    // Show message to user about authentication
+    this.showNotification('⚠️ Première utilisation: veuillez vous connecter sur l\'app', 'warning');
+    
+    return token;
   }
 
   async sendReviewsToApp() {
@@ -512,15 +540,17 @@ class DropCraftPopup {
     try {
       this.showLoading(true);
       
-      const response = await fetch('https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/api/extension/reviews', {
+      const token = await this.getExtensionToken();
+      
+      const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-review-importer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-extension-token': token
         },
         body: JSON.stringify({
           reviews: this.importedReviews,
-          source: 'chrome_extension',
-          timestamp: new Date().toISOString()
+          source: 'chrome_extension'
         })
       });
 
@@ -533,11 +563,12 @@ class DropCraftPopup {
         await this.saveData();
         this.updateUI();
       } else {
-        throw new Error('Erreur du serveur');
+        const error = await response.json();
+        throw new Error(error.error || 'Erreur du serveur');
       }
     } catch (error) {
       console.error('Error sending reviews to app:', error);
-      this.showNotification('Erreur lors de l\'envoi des avis', 'error');
+      this.showNotification('Erreur: ' + error.message, 'error');
     } finally {
       this.showLoading(false);
     }
@@ -545,7 +576,7 @@ class DropCraftPopup {
 
   openDashboard() {
     chrome.tabs.create({
-      url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com'
+      url: 'https://dtozyrmmekdnvekissuh.supabase.co'
     });
   }
 
@@ -778,9 +809,7 @@ class DropCraftPopup {
   }
 
   openSettings() {
-    chrome.tabs.create({
-      url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/settings'
-    });
+    chrome.runtime.openOptionsPage();
   }
 
   clearData() {
@@ -798,15 +827,34 @@ class DropCraftPopup {
     }
   }
 
-  checkConnection() {
-    // Check if main app is accessible
-    fetch('https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com')
-      .then(() => {
-        document.getElementById('connectionStatus').textContent = 'Connecté à l\'application';
-      })
-      .catch(() => {
-        document.getElementById('connectionStatus').textContent = 'Connexion impossible';
+  async checkConnection() {
+    try {
+      const token = await chrome.storage.local.get(['extensionToken']);
+      if (!token.extensionToken) {
+        document.getElementById('connectionStatus').textContent = 'Non authentifié';
+        return;
+      }
+      
+      // Check connection to Supabase
+      const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-sync-realtime', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': token.extensionToken
+        },
+        body: JSON.stringify({
+          action: 'sync_status'
+        })
       });
+      
+      if (response.ok) {
+        document.getElementById('connectionStatus').textContent = 'Connecté';
+      } else {
+        document.getElementById('connectionStatus').textContent = 'Erreur de connexion';
+      }
+    } catch (error) {
+      document.getElementById('connectionStatus').textContent = 'Hors ligne';
+    }
   }
 
   showLoading(show) {
