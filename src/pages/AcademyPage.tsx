@@ -75,8 +75,18 @@ export default function AcademyPage() {
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-[400px] bg-muted rounded-lg animate-pulse" />
+                  <div key={i} className="space-y-3">
+                    <div className="h-48 bg-gradient-to-br from-muted via-muted to-accent/10 rounded-lg animate-pulse" />
+                    <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+                    <div className="h-3 bg-muted rounded w-1/2 animate-pulse" />
+                  </div>
                 ))}
+              </div>
+            ) : courses.length === 0 ? (
+              <div className="text-center py-12 space-y-4">
+                <div className="text-6xl">📚</div>
+                <h3 className="text-xl font-semibold">Aucun cours disponible</h3>
+                <p className="text-muted-foreground">Les cours seront bientôt disponibles</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

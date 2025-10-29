@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Play, 
   Clock, 
@@ -20,12 +21,16 @@ import {
   Download,
   MessageSquare,
   Star,
-  ArrowLeft
+  ArrowLeft,
+  FileText,
+  Video,
+  HelpCircle
 } from 'lucide-react';
 import { VideoPlayer } from '@/components/academy/VideoPlayer';
 import { QuizComponent } from '@/components/academy/QuizComponent';
 import { CommentsSection } from '@/components/academy/CommentsSection';
-import { useState } from 'react';
+import { LessonSkeleton } from '@/components/academy/LessonSkeleton';
+import { useState, useMemo } from 'react';
 
 export default function CourseDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -77,12 +82,32 @@ export default function CourseDetailPage() {
     return lessonProgress?.some(p => p.lesson_id === lessonId && p.is_completed) || false;
   };
 
+  const lessonTypeIcon = useMemo(() => {
+    if (!currentLesson) return null;
+    switch (currentLesson.content_type) {
+      case 'video': return <Video className="h-5 w-5" />;
+      case 'quiz': return <HelpCircle className="h-5 w-5" />;
+      case 'text': return <FileText className="h-5 w-5" />;
+      default: return <BookOpen className="h-5 w-5" />;
+    }
+  }, [currentLesson]);
+
   if (courseLoading || lessonsLoading) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-muted rounded w-1/3"></div>
-          <div className="h-96 bg-muted rounded"></div>
+      <div className="container mx-auto p-6 space-y-6">
+        <Skeleton className="h-10 w-48" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <LessonSkeleton />
+          </div>
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="p-6 space-y-4">
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -133,66 +158,91 @@ export default function CourseDetailPage() {
                     lessonId={currentLesson.id}
                     onComplete={handleLessonComplete}
                   />
-                ) : (
-                  <div className="aspect-video bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <div className="text-6xl">{course.thumbnail_emoji || '📚'}</div>
-                      <h2 className="text-2xl font-bold">{currentLesson?.title}</h2>
-                      <p className="text-muted-foreground max-w-md">
-                        {currentLesson?.description}
-                      </p>
-                    </div>
-                  </div>
-                )}
+                 ) : (
+                   <div className="aspect-video bg-gradient-to-br from-primary/10 via-purple-500/10 to-blue-500/10 border border-border flex items-center justify-center">
+                     <div className="text-center space-y-6 p-8">
+                       <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-primary to-purple-500 text-white text-5xl">
+                         {lessonTypeIcon}
+                       </div>
+                       <div className="space-y-2">
+                         <h2 className="text-3xl font-bold">{currentLesson?.title}</h2>
+                         {currentLesson?.description && (
+                           <p className="text-muted-foreground max-w-md mx-auto text-lg">
+                             {currentLesson.description}
+                           </p>
+                         )}
+                       </div>
+                       {currentLesson?.content_type === 'text' && (
+                         <Button size="lg" onClick={() => document.getElementById('lesson-content')?.scrollIntoView({ behavior: 'smooth' })}>
+                           Commencer la lecture
+                         </Button>
+                       )}
+                     </div>
+                   </div>
+                 )}
               </CardContent>
             </Card>
 
             {/* Lesson Content */}
             {currentLesson && (
-              <Card>
+              <Card id="lesson-content">
                 <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-2xl">{currentLesson.title}</CardTitle>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        {lessonTypeIcon}
+                        <CardTitle className="text-2xl">{currentLesson.title}</CardTitle>
+                      </div>
                       {currentLesson.description && (
-                        <CardDescription className="mt-2">{currentLesson.description}</CardDescription>
+                        <CardDescription className="text-base">{currentLesson.description}</CardDescription>
                       )}
                     </div>
                     {isLessonCompleted(currentLesson.id) && (
-                      <Badge className="bg-green-500">
+                      <Badge className="bg-green-500 shrink-0">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
                         Complété
                       </Badge>
                     )}
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                   {currentLesson.content_text && (
-                    <div className="prose dark:prose-invert max-w-none">
-                      {currentLesson.content_text}
+                    <div className="prose prose-lg dark:prose-invert max-w-none">
+                      <div className="whitespace-pre-line leading-relaxed">
+                        {currentLesson.content_text}
+                      </div>
                     </div>
                   )}
 
                   <Separator />
 
-                  <div className="flex gap-3">
-                    {!isLessonCompleted(currentLesson.id) && (
-                      <Button onClick={handleLessonComplete} className="gap-2">
-                        <CheckCircle2 className="h-4 w-4" />
-                        Marquer comme complété
-                      </Button>
-                    )}
-                    
-                    {currentLesson.content_type === 'quiz' && (
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setShowQuiz(!showQuiz)}
-                        className="gap-2"
-                      >
-                        {showQuiz ? 'Masquer' : 'Afficher'} le Quiz
-                      </Button>
-                    )}
-                  </div>
+                   <div className="flex flex-wrap gap-3">
+                     {!isLessonCompleted(currentLesson.id) && (
+                       <Button onClick={handleLessonComplete} className="gap-2" size="lg">
+                         <CheckCircle2 className="h-4 w-4" />
+                         Marquer comme complété
+                       </Button>
+                     )}
+                     
+                     {currentLesson.content_type === 'quiz' && (
+                       <Button 
+                         variant="outline" 
+                         onClick={() => setShowQuiz(!showQuiz)}
+                         className="gap-2"
+                         size="lg"
+                       >
+                         <HelpCircle className="h-4 w-4" />
+                         {showQuiz ? 'Masquer' : 'Commencer'} le Quiz
+                       </Button>
+                     )}
+
+                     {isLessonCompleted(currentLesson.id) && (
+                       <Button variant="secondary" size="lg" className="gap-2">
+                         <CheckCircle2 className="h-4 w-4 text-green-500" />
+                         Leçon complétée
+                       </Button>
+                     )}
+                   </div>
 
                   {showQuiz && currentQuiz && (
                     <QuizComponent
@@ -291,35 +341,57 @@ export default function CourseDetailPage() {
                 <CardTitle>Contenu du cours</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="divide-y">
-                  {lessons.map((lesson, index) => (
-                    <button
-                      key={lesson.id}
-                      onClick={() => setCurrentLessonId(lesson.id)}
-                      className={`w-full p-4 text-left hover:bg-accent transition-colors ${
-                        currentLesson?.id === lesson.id ? 'bg-accent' : ''
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center">
-                          {isLessonCompleted(lesson.id) ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          ) : lesson.is_preview ? (
-                            <Play className="h-4 w-4" />
-                          ) : (
-                            <Lock className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm">{index + 1}. {lesson.title}</p>
-                          {lesson.duration_minutes && (
-                            <p className="text-xs text-muted-foreground">{lesson.duration_minutes} min</p>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                 <div className="divide-y">
+                   {lessons.map((lesson, index) => {
+                     const lessonIcon = lesson.content_type === 'video' ? Video : 
+                                       lesson.content_type === 'quiz' ? HelpCircle : FileText;
+                     const LessonIcon = lessonIcon;
+                     
+                     return (
+                       <button
+                         key={lesson.id}
+                         onClick={() => setCurrentLessonId(lesson.id)}
+                         className={`w-full p-4 text-left hover:bg-accent/50 transition-all ${
+                           currentLesson?.id === lesson.id ? 'bg-accent border-l-4 border-primary' : ''
+                         }`}
+                       >
+                         <div className="flex items-start gap-3">
+                           <div className={`flex-shrink-0 w-10 h-10 rounded-lg border-2 flex items-center justify-center ${
+                             isLessonCompleted(lesson.id) 
+                               ? 'bg-green-500/10 border-green-500' 
+                               : currentLesson?.id === lesson.id 
+                               ? 'bg-primary/10 border-primary'
+                               : 'border-border'
+                           }`}>
+                             {isLessonCompleted(lesson.id) ? (
+                               <CheckCircle2 className="h-5 w-5 text-green-500" />
+                             ) : (
+                               <LessonIcon className="h-5 w-5 text-muted-foreground" />
+                             )}
+                           </div>
+                           <div className="flex-1 min-w-0">
+                             <p className="font-semibold text-sm mb-1">
+                               {index + 1}. {lesson.title}
+                             </p>
+                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                               {lesson.duration_minutes && (
+                                 <span className="flex items-center gap-1">
+                                   <Clock className="h-3 w-3" />
+                                   {lesson.duration_minutes} min
+                                 </span>
+                               )}
+                               {lesson.is_preview && (
+                                 <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                                   Aperçu
+                                 </Badge>
+                               )}
+                             </div>
+                           </div>
+                         </div>
+                       </button>
+                     );
+                   })}
+                 </div>
               </CardContent>
             </Card>
           </div>

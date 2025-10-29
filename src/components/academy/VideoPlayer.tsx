@@ -135,6 +135,9 @@ export function VideoPlayer({ videoUrl, lessonId, onComplete }: VideoPlayerProps
           src={videoUrl}
           className="w-full aspect-video"
           onClick={togglePlay}
+          preload="metadata"
+          playsInline
+          crossOrigin="anonymous"
         />
 
         {/* Overlay Controls */}
