@@ -136,6 +136,13 @@ const navigationItems = [
         icon: Truck,
         badge: { text: "API", variant: "outline" as const },
         status: "connected"
+      },
+      {
+        title: "Gestion Plateformes",
+        url: "/platform-management",
+        icon: Globe,
+        badge: { text: "Auto", variant: "default" as const },
+        status: "active"
       }
     ]
   },
