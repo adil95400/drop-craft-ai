@@ -368,6 +368,11 @@ async function publishGeneric(products: any[], platform: string): Promise<any[]>
 }
 
 // Product adaptation function based on platform rules
+// NOTE: L'adaptation principale se fait côté client avec le ProductAdapter qui inclut:
+// - Mapping automatique des catégories avec cache DB
+// - Mapping intelligent des champs avec field-mapper
+// - Validation des attributs spécifiques requis par plateforme
+// Cette fonction est un complément basique pour l'edge function
 function adaptProductForPlatform(product: any, platform: PlatformType): any {
   const adapted = { ...product }
   

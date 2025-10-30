@@ -39,7 +39,7 @@ export class ProductAdapter {
     let mappedCategory = product.category
     if (product.category) {
       try {
-        const categoryResult = await mapCategory(product.category, this.config.platform || this.config.name.toLowerCase())
+        const categoryResult = await mapCategory(product.category, this.config.name.toLowerCase())
         mappedCategory = categoryResult.category
         
         if (!categoryResult.cached) {
@@ -57,19 +57,19 @@ export class ProductAdapter {
     const enrichedProduct = { ...product, category: mappedCategory }
     const productWithAttributes = fillDefaultAttributes(
       enrichedProduct,
-      this.config.platform || this.config.name.toLowerCase(),
+      this.config.name.toLowerCase(),
       mappedCategory
     )
     
     const mapped = mapProductFields(
       productWithAttributes,
-      this.config.platform || this.config.name.toLowerCase(),
+      this.config.name.toLowerCase(),
       customMappings
     )
     
     const fieldValidation = validateRequiredFields(
       productWithAttributes,
-      this.config.platform || this.config.name.toLowerCase()
+      this.config.name.toLowerCase()
     )
     
     if (!fieldValidation.valid) {
@@ -84,7 +84,7 @@ export class ProductAdapter {
     
     const attrValidation = validateAttributes(
       productWithAttributes,
-      this.config.platform || this.config.name.toLowerCase(),
+      this.config.name.toLowerCase(),
       mappedCategory
     )
     
@@ -118,7 +118,7 @@ export class ProductAdapter {
 
     const mapped = mapProductFields(
       product,
-      this.config.platform || this.config.name.toLowerCase()
+      this.config.name.toLowerCase()
     )
 
     const result = this.applyStandardAdaptationsSync(mapped, warnings, errors)
