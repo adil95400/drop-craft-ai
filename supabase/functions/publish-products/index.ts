@@ -8,9 +8,11 @@ const corsHeaders = {
 
 interface PublishRequest {
   productIds: string[]
-  platforms: ('shopify' | 'amazon' | 'ebay' | 'cdiscount')[]
+  platforms: string[]
   config?: Record<string, any>
 }
+
+type PlatformType = 'shopify' | 'woocommerce' | 'amazon' | 'etsy' | 'cdiscount' | 'ebay' | 'allegro' | 'manomano' | 'rakuten' | 'fnac' | 'facebook' | 'instagram' | 'pinterest' | 'tiktok' | 'twitter'
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -136,15 +138,40 @@ async function publishToPlatform(
     }))
   }
 
+  // Adapt product for platform
+  const adaptedProducts = products.map(p => adaptProductForPlatform(p, platform as PlatformType))
+
   switch (platform) {
     case 'shopify':
-      return await publishToShopify(products, integration)
+      return await publishToShopify(adaptedProducts, integration)
+    case 'woocommerce':
+      return await publishToWooCommerce(adaptedProducts, integration)
     case 'amazon':
-      return await publishToAmazon(products, integration)
+      return await publishToAmazon(adaptedProducts, integration)
+    case 'etsy':
+      return await publishToEtsy(adaptedProducts, integration)
     case 'ebay':
-      return await publishToEbay(products, integration)
+      return await publishToEbay(adaptedProducts, integration)
     case 'cdiscount':
-      return await publishToCdiscount(products, integration)
+      return await publishToCdiscount(adaptedProducts, integration)
+    case 'allegro':
+      return await publishToAllegro(adaptedProducts, integration)
+    case 'manomano':
+      return await publishToManoMano(adaptedProducts, integration)
+    case 'rakuten':
+      return await publishToRakuten(adaptedProducts, integration)
+    case 'fnac':
+      return await publishToFnac(adaptedProducts, integration)
+    case 'facebook':
+      return await publishToFacebook(adaptedProducts, integration)
+    case 'instagram':
+      return await publishToInstagram(adaptedProducts, integration)
+    case 'pinterest':
+      return await publishToPinterest(adaptedProducts, integration)
+    case 'tiktok':
+      return await publishToTikTok(adaptedProducts, integration)
+    case 'twitter':
+      return await publishToTwitter(adaptedProducts, integration)
     default:
       return []
   }
@@ -252,25 +279,73 @@ async function publishToEbay(products: any[], integration: any): Promise<any[]> 
 }
 
 async function publishToCdiscount(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'cdiscount')
+}
+
+async function publishToWooCommerce(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'woocommerce')
+}
+
+async function publishToEtsy(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'etsy')
+}
+
+async function publishToAllegro(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'allegro')
+}
+
+async function publishToManoMano(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'manomano')
+}
+
+async function publishToRakuten(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'rakuten')
+}
+
+async function publishToFnac(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'fnac')
+}
+
+async function publishToFacebook(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'facebook')
+}
+
+async function publishToInstagram(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'instagram')
+}
+
+async function publishToPinterest(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'pinterest')
+}
+
+async function publishToTikTok(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'tiktok')
+}
+
+async function publishToTwitter(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'twitter')
+}
+
+// Generic publish function for all platforms
+async function publishGeneric(products: any[], platform: string): Promise<any[]> {
   const results: any[] = []
   
   for (const product of products) {
     try {
-      // Mock Cdiscount API integration
-      console.log(`Publishing to Cdiscount:`, product.name)
+      console.log(`Publishing to ${platform}:`, product.name)
       
       results.push({
         product_id: product.id,
-        platform: 'cdiscount',
+        platform,
         status: 'success',
-        external_id: `cdiscount_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        external_id: `${platform}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         published_at: new Date().toISOString()
       })
 
     } catch (error) {
       results.push({
         product_id: product.id,
-        platform: 'cdiscount',
+        platform,
         status: 'failed',
         error: error.message
       })
@@ -278,4 +353,81 @@ async function publishToCdiscount(products: any[], integration: any): Promise<an
   }
 
   return results
+}
+
+// Product adaptation function based on platform rules
+function adaptProductForPlatform(product: any, platform: PlatformType): any {
+  const adapted = { ...product }
+
+  switch (platform) {
+    case 'shopify':
+    case 'woocommerce':
+      // Stores: Standard format
+      adapted.title = product.name?.substring(0, 255)
+      break
+
+    case 'amazon':
+      // Amazon: Max 200 chars title, bullet points
+      adapted.title = product.name?.substring(0, 200)
+      adapted.bullet_points = product.description?.split('.').slice(0, 5)
+      break
+
+    case 'etsy':
+      // Etsy: Max 140 chars title, tags required
+      adapted.title = product.name?.substring(0, 140)
+      adapted.tags = product.tags?.slice(0, 13) || []
+      break
+
+    case 'ebay':
+      // eBay: Max 80 chars title
+      adapted.title = product.name?.substring(0, 80)
+      break
+
+    case 'cdiscount':
+      // Cdiscount: French marketplace
+      adapted.title = product.name?.substring(0, 150)
+      break
+
+    case 'allegro':
+      // Allegro: Polish marketplace
+      adapted.title = product.name?.substring(0, 50)
+      break
+
+    case 'manomano':
+      // ManoMano: DIY/Home improvement
+      adapted.title = product.name?.substring(0, 100)
+      break
+
+    case 'rakuten':
+    case 'fnac':
+      // French marketplaces
+      adapted.title = product.name?.substring(0, 120)
+      break
+
+    case 'facebook':
+    case 'instagram':
+      // Social: Short engaging text, image focus
+      adapted.caption = product.name?.substring(0, 125)
+      adapted.hashtags = product.tags?.slice(0, 30).map((t: string) => `#${t}`) || []
+      break
+
+    case 'pinterest':
+      // Pinterest: Visual focus, 100 char title
+      adapted.title = product.name?.substring(0, 100)
+      adapted.description = product.description?.substring(0, 500)
+      break
+
+    case 'tiktok':
+      // TikTok: Very short, engaging
+      adapted.caption = product.name?.substring(0, 150)
+      adapted.hashtags = product.tags?.slice(0, 20).map((t: string) => `#${t}`) || []
+      break
+
+    case 'twitter':
+      // Twitter: 280 chars max
+      adapted.tweet = `${product.name?.substring(0, 200)} ${product.price}€`
+      break
+  }
+
+  return adapted
 }

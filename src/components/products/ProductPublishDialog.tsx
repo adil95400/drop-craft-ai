@@ -95,12 +95,11 @@ export function ProductPublishDialog({ open, onOpenChange, product }: ProductPub
 
     setIsPublishing(true)
     try {
-      const { error } = await supabase.functions.invoke('store-product-export', {
+      const { error } = await supabase.functions.invoke('publish-products', {
         body: {
-          storeId,
-          platform,
-          product: result.adapted, // Utiliser le produit adapté
-          action: 'export'
+          productIds: [product.id],
+          platforms: [platform],
+          config: {}
         }
       })
 
@@ -125,17 +124,113 @@ export function ProductPublishDialog({ open, onOpenChange, product }: ProductPub
   }
 
   const handlePublishToMarketplace = async (marketplace: string) => {
-    toast({
-      title: "Bientôt disponible",
-      description: `Publication sur ${marketplace} arrive prochainement`
-    })
+    const config = getPlatformConfig(marketplace)
+    if (!config) {
+      toast({
+        title: "Configuration manquante",
+        description: `Configuration pour ${marketplace} non trouvée`,
+        variant: "destructive"
+      })
+      return
+    }
+
+    const adapter = new ProductAdapter(config)
+    const result = adapter.adapt(product)
+
+    if (!result.isValid) {
+      toast({
+        title: "Produit invalide",
+        description: `Le produit ne respecte pas les règles de ${marketplace}. Vérifiez les erreurs.`,
+        variant: "destructive"
+      })
+      setSelectedPlatform(marketplace)
+      setAdaptationResult(result)
+      return
+    }
+
+    setIsPublishing(true)
+    try {
+      const { error } = await supabase.functions.invoke('publish-products', {
+        body: {
+          productIds: [product.id],
+          platforms: [marketplace],
+          config: {}
+        }
+      })
+
+      if (error) throw error
+
+      toast({
+        title: "✅ Publié avec succès !",
+        description: `Le produit a été adapté et publié sur ${marketplace}${result.warnings.length > 0 ? ` (${result.warnings.length} avertissement(s))` : ''}`
+      })
+      
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Publish error:', error)
+      toast({
+        title: "Erreur de publication",
+        description: "Impossible de publier le produit",
+        variant: "destructive"
+      })
+    } finally {
+      setIsPublishing(false)
+    }
   }
 
   const handlePublishToSocial = async (platform: string) => {
-    toast({
-      title: "Bientôt disponible",
-      description: `Partage sur ${platform} arrive prochainement`
-    })
+    const config = getPlatformConfig(platform)
+    if (!config) {
+      toast({
+        title: "Configuration manquante",
+        description: `Configuration pour ${platform} non trouvée`,
+        variant: "destructive"
+      })
+      return
+    }
+
+    const adapter = new ProductAdapter(config)
+    const result = adapter.adapt(product)
+
+    if (!result.isValid) {
+      toast({
+        title: "Produit invalide",
+        description: `Le produit ne respecte pas les règles de ${platform}. Vérifiez les erreurs.`,
+        variant: "destructive"
+      })
+      setSelectedPlatform(platform)
+      setAdaptationResult(result)
+      return
+    }
+
+    setIsPublishing(true)
+    try {
+      const { error } = await supabase.functions.invoke('publish-products', {
+        body: {
+          productIds: [product.id],
+          platforms: [platform],
+          config: {}
+        }
+      })
+
+      if (error) throw error
+
+      toast({
+        title: "✅ Publié avec succès !",
+        description: `Le produit a été partagé sur ${platform}${result.warnings.length > 0 ? ` (${result.warnings.length} avertissement(s))` : ''}`
+      })
+      
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Publish error:', error)
+      toast({
+        title: "Erreur de publication",
+        description: "Impossible de partager le produit",
+        variant: "destructive"
+      })
+    } finally {
+      setIsPublishing(false)
+    }
   }
 
   return (
