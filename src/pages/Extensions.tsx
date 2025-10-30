@@ -11,14 +11,15 @@ import { AliExpressImporter } from '@/components/extensions/AliExpressImporter'
 import { PriceMonitoring } from '@/components/autods/PriceMonitoring'
 import { StockAlerts } from '@/components/autods/StockAlerts'
 import { AutoOrders } from '@/components/autods/AutoOrders'
-import { Puzzle, Zap, Grid, Chrome, BookOpen, Activity, Star, ShoppingCart, TrendingUp, Package, ShoppingBag } from 'lucide-react'
+import { MonitoringConfig } from '@/components/autods/MonitoringConfig'
+import { Puzzle, Zap, Grid, Chrome, BookOpen, Activity, Star, ShoppingCart, TrendingUp, Package, ShoppingBag, Settings } from 'lucide-react'
 
 export default function Extensions() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/80 to-background">
       <div className="container mx-auto p-6">
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-11">
+          <TabsList className="grid w-full grid-cols-12">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <Activity className="w-4 h-4" />
               Dashboard
@@ -62,6 +63,10 @@ export default function Extensions() {
             <TabsTrigger value="auto-orders" className="flex items-center gap-2">
               <ShoppingBag className="w-4 h-4" />
               Auto-Orders
+            </TabsTrigger>
+            <TabsTrigger value="monitoring-config" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Config
             </TabsTrigger>
           </TabsList>
           
@@ -107,6 +112,10 @@ export default function Extensions() {
           
           <TabsContent value="auto-orders">
             <AutoOrders />
+          </TabsContent>
+          
+          <TabsContent value="monitoring-config">
+            <MonitoringConfig />
           </TabsContent>
         </Tabs>
       </div>
