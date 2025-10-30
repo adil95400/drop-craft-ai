@@ -143,6 +143,20 @@ const navigationItems = [
         icon: Globe,
         badge: { text: "Auto", variant: "default" as const },
         status: "active"
+      },
+      {
+        title: "Mode Dropshipping",
+        url: "/quick-dropshipping",
+        icon: Zap,
+        badge: { text: "Rapide", variant: "default" as const },
+        status: "new"
+      },
+      {
+        title: "Fournisseurs Premium",
+        url: "/premium-suppliers",
+        icon: Shield,
+        badge: { text: "US/EU", variant: "secondary" as const },
+        status: "new"
       }
     ]
   },
