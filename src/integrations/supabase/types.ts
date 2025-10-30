@@ -2134,6 +2134,42 @@ export type Database = {
         }
         Relationships: []
       }
+      category_mappings: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          id: string
+          is_verified: boolean | null
+          platform: string
+          source_category: string
+          target_category: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          is_verified?: boolean | null
+          platform: string
+          source_category: string
+          target_category: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          is_verified?: boolean | null
+          platform?: string
+          source_category?: string
+          target_category?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       competitive_intelligence: {
         Row: {
           competitive_data: Json
@@ -3847,6 +3883,45 @@ export type Database = {
           updated_at?: string
           user_id?: string
           version?: string
+        }
+        Relationships: []
+      }
+      field_mappings: {
+        Row: {
+          created_at: string
+          default_value: string | null
+          id: string
+          is_required: boolean | null
+          platform: string
+          source_field: string
+          target_field: string
+          transform_function: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_value?: string | null
+          id?: string
+          is_required?: boolean | null
+          platform: string
+          source_field: string
+          target_field: string
+          transform_function?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_value?: string | null
+          id?: string
+          is_required?: boolean | null
+          platform?: string
+          source_field?: string
+          target_field?: string
+          transform_function?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

@@ -3,6 +3,9 @@
  */
 
 import { PlatformConfig } from './platform-configs'
+import { mapProductFields, validateRequiredFields, type FieldMapping } from './platform-field-mapper'
+import { mapCategory } from './category-mapper'
+import { fillDefaultAttributes, validateAttributes } from './platform-attributes'
 
 export interface ValidationError {
   field: string
@@ -26,79 +29,76 @@ export class ProductAdapter {
   }
 
   /**
-   * Adapte un produit aux specs de la plateforme
+   * Adapte un produit avec mapping automatique (async)
    */
-  adapt(product: any): AdaptedProduct {
+  async adaptAsync(product: any, customMappings?: FieldMapping[]): Promise<AdaptedProduct> {
     const warnings: ValidationError[] = []
     const errors: ValidationError[] = []
-    const adapted: Record<string, any> = {}
-
-    // Adapter le titre
-    const titleResult = this.adaptTitle(product.name || product.title)
-    adapted.title = titleResult.value
-    if (titleResult.warnings) warnings.push(...titleResult.warnings)
-    if (titleResult.errors) errors.push(...titleResult.errors)
-
-    // Adapter la description
-    const descResult = this.adaptDescription(product.description)
-    adapted.description = descResult.value
-    if (descResult.warnings) warnings.push(...descResult.warnings)
-    if (descResult.errors) errors.push(...descResult.errors)
-
-    // Adapter les images
-    const imagesResult = this.adaptImages(product.image_url, product.image_urls)
-    adapted.images = imagesResult.value
-    if (imagesResult.warnings) warnings.push(...imagesResult.warnings)
-    if (imagesResult.errors) errors.push(...imagesResult.errors)
-
-    // Adapter le prix
-    const priceResult = this.adaptPrice(product.price, product.currency)
-    adapted.price = priceResult.value
-    adapted.currency = priceResult.currency
-    if (priceResult.warnings) warnings.push(...priceResult.warnings)
-    if (priceResult.errors) errors.push(...priceResult.errors)
-
-    // Adapter les tags
-    if (product.tags) {
-      const tagsResult = this.adaptTags(product.tags)
-      adapted.tags = tagsResult.value
-      if (tagsResult.warnings) warnings.push(...tagsResult.warnings)
-    }
-
-    // Adapter le SKU
-    if (product.sku) {
-      const skuResult = this.adaptSKU(product.sku)
-      adapted.sku = skuResult.value
-      if (skuResult.warnings) warnings.push(...skuResult.warnings)
-    }
-
-    // Adapter la marque (brand)
-    const brandResult = this.adaptBrand(product.brand || product.supplier_name)
-    adapted.brand = brandResult.value
-    if (brandResult.warnings) warnings.push(...brandResult.warnings)
-    if (brandResult.errors) errors.push(...brandResult.errors)
-
-    // Adapter la catégorie
-    const categoryResult = this.adaptCategory(product.category)
-    adapted.category = categoryResult.value
-    if (categoryResult.warnings) warnings.push(...categoryResult.warnings)
-    if (categoryResult.errors) errors.push(...categoryResult.errors)
-
-    // Adapter le stock/inventaire
-    const stockResult = this.adaptStock(product.stock_quantity || product.inventory_quantity)
-    adapted.inventory_quantity = stockResult.value
-    adapted.stock_status = stockResult.status
-    if (stockResult.warnings) warnings.push(...stockResult.warnings)
-    if (stockResult.errors) errors.push(...stockResult.errors)
     
-    // Champs custom par plateforme
-    if (this.config.customFields) {
-      Object.keys(this.config.customFields).forEach(field => {
-        if (product[field] !== undefined) {
-          adapted[field] = product[field]
+    // Mapper automatiquement la catégorie
+    let mappedCategory = product.category
+    if (product.category) {
+      try {
+        const categoryResult = await mapCategory(product.category, this.config.platform || this.config.name.toLowerCase())
+        mappedCategory = categoryResult.category
+        
+        if (!categoryResult.cached) {
+          warnings.push({
+            field: 'category',
+            message: `Catégorie automatiquement mappée vers "${categoryResult.category}" (${Math.round(categoryResult.confidence * 100)}% confiance)`,
+            severity: 'warning'
+          })
         }
+      } catch (error) {
+        console.error('Category mapping error:', error)
+      }
+    }
+    
+    const enrichedProduct = { ...product, category: mappedCategory }
+    const productWithAttributes = fillDefaultAttributes(
+      enrichedProduct,
+      this.config.platform || this.config.name.toLowerCase(),
+      mappedCategory
+    )
+    
+    const mapped = mapProductFields(
+      productWithAttributes,
+      this.config.platform || this.config.name.toLowerCase(),
+      customMappings
+    )
+    
+    const fieldValidation = validateRequiredFields(
+      productWithAttributes,
+      this.config.platform || this.config.name.toLowerCase()
+    )
+    
+    if (!fieldValidation.valid) {
+      fieldValidation.missingFields.forEach(field => {
+        errors.push({
+          field,
+          message: `Champ requis manquant: ${field}`,
+          severity: 'error'
+        })
       })
     }
+    
+    const attrValidation = validateAttributes(
+      productWithAttributes,
+      this.config.platform || this.config.name.toLowerCase(),
+      mappedCategory
+    )
+    
+    if (!attrValidation.valid) {
+      attrValidation.missingAttributes.forEach(attr => {
+        errors.push({
+          field: attr.name,
+          message: `Attribut requis manquant: ${attr.label}`,
+          severity: 'error'
+        })
+      })
+    }
+    
+    const adapted = this.applyStandardAdaptationsSync(mapped, warnings, errors)
 
     return {
       original: product,
@@ -109,12 +109,94 @@ export class ProductAdapter {
     }
   }
 
+  /**
+   * Version synchrone pour compatibilité
+   */
+  adapt(product: any): AdaptedProduct {
+    const warnings: ValidationError[] = []
+    const errors: ValidationError[] = []
+
+    const mapped = mapProductFields(
+      product,
+      this.config.platform || this.config.name.toLowerCase()
+    )
+
+    const result = this.applyStandardAdaptationsSync(mapped, warnings, errors)
+
+    return {
+      original: product,
+      adapted: result,
+      warnings,
+      errors,
+      isValid: errors.length === 0
+    }
+  }
+
+  private applyStandardAdaptationsSync(mapped: Record<string, any>, warnings: ValidationError[], errors: ValidationError[]): Record<string, any> {
+    const adapted: Record<string, any> = { ...mapped }
+
+    const titleResult = this.adaptTitle(adapted.title || adapted.name)
+    adapted.title = titleResult.value
+    if (titleResult.warnings) warnings.push(...titleResult.warnings)
+    if (titleResult.errors) errors.push(...titleResult.errors)
+
+    const descResult = this.adaptDescription(adapted.description)
+    adapted.description = descResult.value
+    if (descResult.warnings) warnings.push(...descResult.warnings)
+    if (descResult.errors) errors.push(...descResult.errors)
+
+    const imagesResult = this.adaptImages(adapted.image_url, adapted.image_urls || adapted.images)
+    adapted.images = imagesResult.value
+    if (imagesResult.warnings) warnings.push(...imagesResult.warnings)
+    if (imagesResult.errors) errors.push(...imagesResult.errors)
+
+    const priceResult = this.adaptPrice(adapted.price, adapted.currency)
+    adapted.price = priceResult.value
+    adapted.currency = priceResult.currency
+    if (priceResult.warnings) warnings.push(...priceResult.warnings)
+    if (priceResult.errors) errors.push(...priceResult.errors)
+
+    // Adapter les tags
+    if (mapped.tags) {
+      const tagsResult = this.adaptTags(mapped.tags)
+      adapted.tags = tagsResult.value
+      if (tagsResult.warnings) warnings.push(...tagsResult.warnings)
+    }
+
+    // Adapter le SKU
+    if (mapped.sku) {
+      const skuResult = this.adaptSKU(mapped.sku)
+      adapted.sku = skuResult.value
+      if (skuResult.warnings) warnings.push(...skuResult.warnings)
+    }
+
+    // Adapter la marque (brand)
+    const brandResult = this.adaptBrand(mapped.brand || mapped.supplier_name)
+    adapted.brand = brandResult.value
+    if (brandResult.warnings) warnings.push(...brandResult.warnings)
+    if (brandResult.errors) errors.push(...brandResult.errors)
+
+    // Adapter la catégorie
+    const categoryResult = this.adaptCategory(mapped.category)
+    adapted.category = categoryResult.value
+    if (categoryResult.warnings) warnings.push(...categoryResult.warnings)
+    if (categoryResult.errors) errors.push(...categoryResult.errors)
+
+    // Adapter le stock/inventaire
+    const stockResult = this.adaptStock(mapped.stock_quantity || mapped.inventory_quantity)
+    adapted.inventory_quantity = stockResult.value
+    adapted.stock_status = stockResult.status
+    if (stockResult.warnings) warnings.push(...stockResult.warnings)
+    if (stockResult.errors) errors.push(...stockResult.errors)
+
+    return adapted
+  }
+
   private adaptTitle(title: string): { value: string; warnings?: ValidationError[]; errors?: ValidationError[] } {
     const warnings: ValidationError[] = []
     const errors: ValidationError[] = []
     let value = title || ''
 
-    // Vérifier la longueur minimale
     if (value.length < this.config.title.minLength) {
       if (this.config.title.required) {
         errors.push({
@@ -125,7 +207,6 @@ export class ProductAdapter {
       }
     }
 
-    // Tronquer si trop long
     if (value.length > this.config.title.maxLength) {
       warnings.push({
         field: 'title',
@@ -135,7 +216,6 @@ export class ProductAdapter {
       value = value.substring(0, this.config.title.maxLength)
     }
 
-    // Vérifier les mots interdits
     if (this.config.title.forbidden) {
       const lowerValue = value.toLowerCase()
       this.config.title.forbidden.forEach(word => {
@@ -157,7 +237,6 @@ export class ProductAdapter {
     const errors: ValidationError[] = []
     let value = description || ''
 
-    // Retirer le HTML si non supporté
     if (!this.config.description.allowsHTML && value.includes('<')) {
       value = value.replace(/<[^>]*>/g, '')
       warnings.push({
@@ -167,7 +246,6 @@ export class ProductAdapter {
       })
     }
 
-    // Vérifier longueur minimale
     if (value.length < this.config.description.minLength && this.config.description.required) {
       errors.push({
         field: 'description',
@@ -176,7 +254,6 @@ export class ProductAdapter {
       })
     }
 
-    // Tronquer si trop long
     if (value.length > this.config.description.maxLength) {
       warnings.push({
         field: 'description',
@@ -197,7 +274,6 @@ export class ProductAdapter {
     if (mainImage) images.push(mainImage)
     if (additionalImages) images.push(...additionalImages)
 
-    // Vérifier le nombre minimum d'images
     if (images.length < this.config.images.minCount) {
       errors.push({
         field: 'images',
@@ -206,7 +282,6 @@ export class ProductAdapter {
       })
     }
 
-    // Limiter le nombre d'images
     if (images.length > this.config.images.maxCount) {
       warnings.push({
         field: 'images',
@@ -223,7 +298,6 @@ export class ProductAdapter {
     const warnings: ValidationError[] = []
     const errors: ValidationError[] = []
     
-    // Vérifier le prix minimum
     if (this.config.pricing.minPrice && price < this.config.pricing.minPrice) {
       errors.push({
         field: 'price',
@@ -232,7 +306,6 @@ export class ProductAdapter {
       })
     }
 
-    // Vérifier le prix maximum
     if (this.config.pricing.maxPrice && price > this.config.pricing.maxPrice) {
       errors.push({
         field: 'price',
@@ -241,7 +314,6 @@ export class ProductAdapter {
       })
     }
 
-    // Vérifier la devise
     const useCurrency = currency || 'EUR'
     if (!this.config.pricing.currency.includes(useCurrency)) {
       warnings.push({
@@ -390,9 +462,6 @@ export class ProductAdapter {
     }
   }
 
-  /**
-   * Valide un produit sans l'adapter
-   */
   validate(product: any): { isValid: boolean; errors: ValidationError[]; warnings: ValidationError[] } {
     const result = this.adapt(product)
     return {
