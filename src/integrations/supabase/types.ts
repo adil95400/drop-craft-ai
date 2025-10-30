@@ -2311,6 +2311,60 @@ export type Database = {
         }
         Relationships: []
       }
+      content_optimizations: {
+        Row: {
+          ai_suggestions: Json | null
+          applied_at: string | null
+          created_at: string | null
+          id: string
+          is_applied: boolean | null
+          optimization_score: number | null
+          optimization_type: string
+          optimized_content: Json
+          original_content: Json
+          performance_after: Json | null
+          performance_before: Json | null
+          platform: string
+          product_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_suggestions?: Json | null
+          applied_at?: string | null
+          created_at?: string | null
+          id?: string
+          is_applied?: boolean | null
+          optimization_score?: number | null
+          optimization_type: string
+          optimized_content: Json
+          original_content: Json
+          performance_after?: Json | null
+          performance_before?: Json | null
+          platform: string
+          product_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_suggestions?: Json | null
+          applied_at?: string | null
+          created_at?: string | null
+          id?: string
+          is_applied?: boolean | null
+          optimization_score?: number | null
+          optimization_type?: string
+          optimized_content?: Json
+          original_content?: Json
+          performance_after?: Json | null
+          performance_before?: Json | null
+          platform?: string
+          product_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversion_events: {
         Row: {
           conversion_value: number | null
@@ -5394,6 +5448,96 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_orders: {
+        Row: {
+          carrier: string | null
+          created_at: string | null
+          currency: string | null
+          customer_email: string | null
+          customer_name: string | null
+          external_order_id: string
+          fees: number | null
+          fulfilled_at: string | null
+          fulfillment_status: string | null
+          id: string
+          items: Json
+          notes: string | null
+          order_date: string
+          order_number: string
+          payment_status: string | null
+          platform: string
+          raw_data: Json | null
+          shipping_address: Json | null
+          shipping_cost: number | null
+          status: string
+          subtotal: number
+          synced_at: string | null
+          tax: number | null
+          total_amount: number
+          tracking_number: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          carrier?: string | null
+          created_at?: string | null
+          currency?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          external_order_id: string
+          fees?: number | null
+          fulfilled_at?: string | null
+          fulfillment_status?: string | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          order_date: string
+          order_number: string
+          payment_status?: string | null
+          platform: string
+          raw_data?: Json | null
+          shipping_address?: Json | null
+          shipping_cost?: number | null
+          status: string
+          subtotal: number
+          synced_at?: string | null
+          tax?: number | null
+          total_amount: number
+          tracking_number?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          carrier?: string | null
+          created_at?: string | null
+          currency?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          external_order_id?: string
+          fees?: number | null
+          fulfilled_at?: string | null
+          fulfillment_status?: string | null
+          id?: string
+          items?: Json
+          notes?: string | null
+          order_date?: string
+          order_number?: string
+          payment_status?: string | null
+          platform?: string
+          raw_data?: Json | null
+          shipping_address?: Json | null
+          shipping_cost?: number | null
+          status?: string
+          subtotal?: number
+          synced_at?: string | null
+          tax?: number | null
+          total_amount?: number
+          tracking_number?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketplace_product_mappings: {
         Row: {
           created_at: string | null
@@ -6193,6 +6337,159 @@ export type Database = {
           platform_type?: string
           sync_status?: string | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      platform_performance_metrics: {
+        Row: {
+          active_listings: number | null
+          additional_metrics: Json | null
+          avg_order_value: number | null
+          clicks: number | null
+          conversion_rate: number | null
+          created_at: string | null
+          ctr: number | null
+          id: string
+          impressions: number | null
+          metric_date: string
+          platform: string
+          roas: number | null
+          total_fees: number | null
+          total_orders: number | null
+          total_profit: number | null
+          total_revenue: number | null
+          total_sales: number | null
+          user_id: string
+          views: number | null
+        }
+        Insert: {
+          active_listings?: number | null
+          additional_metrics?: Json | null
+          avg_order_value?: number | null
+          clicks?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          id?: string
+          impressions?: number | null
+          metric_date: string
+          platform: string
+          roas?: number | null
+          total_fees?: number | null
+          total_orders?: number | null
+          total_profit?: number | null
+          total_revenue?: number | null
+          total_sales?: number | null
+          user_id: string
+          views?: number | null
+        }
+        Update: {
+          active_listings?: number | null
+          additional_metrics?: Json | null
+          avg_order_value?: number | null
+          clicks?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          ctr?: number | null
+          id?: string
+          impressions?: number | null
+          metric_date?: string
+          platform?: string
+          roas?: number | null
+          total_fees?: number | null
+          total_orders?: number | null
+          total_profit?: number | null
+          total_revenue?: number | null
+          total_sales?: number | null
+          user_id?: string
+          views?: number | null
+        }
+        Relationships: []
+      }
+      platform_sync_configs: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          next_sync_at: string | null
+          platform: string
+          sync_frequency: string
+          sync_settings: Json | null
+          sync_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          next_sync_at?: string | null
+          platform: string
+          sync_frequency: string
+          sync_settings?: Json | null
+          sync_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          next_sync_at?: string | null
+          platform?: string
+          sync_frequency?: string
+          sync_settings?: Json | null
+          sync_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      platform_sync_logs: {
+        Row: {
+          completed_at: string | null
+          duration_ms: number | null
+          error_details: Json | null
+          id: string
+          items_failed: number | null
+          items_synced: number | null
+          platform: string
+          started_at: string | null
+          status: string
+          sync_details: Json | null
+          sync_type: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          duration_ms?: number | null
+          error_details?: Json | null
+          id?: string
+          items_failed?: number | null
+          items_synced?: number | null
+          platform: string
+          started_at?: string | null
+          status: string
+          sync_details?: Json | null
+          sync_type: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          duration_ms?: number | null
+          error_details?: Json | null
+          id?: string
+          items_failed?: number | null
+          items_synced?: number | null
+          platform?: string
+          started_at?: string | null
+          status?: string
+          sync_details?: Json | null
+          sync_type?: string
           user_id?: string
         }
         Relationships: []

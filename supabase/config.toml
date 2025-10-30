@@ -369,3 +369,18 @@ verify_jwt = false
 
 [functions.auto-order-processor]
 verify_jwt = false
+
+[functions.platform-sync]
+verify_jwt = true
+
+[functions.optimize-product-content]
+verify_jwt = true
+
+[functions.fetch-platform-metrics]
+verify_jwt = true
+
+[functions.dynamic-pricing-optimizer]
+verify_jwt = true
+
+[functions.publish-products]
+verify_jwt = true
