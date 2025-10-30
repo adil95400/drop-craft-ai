@@ -118,6 +118,7 @@ const AutoFulfillmentPage = lazy(() => import('@/pages/AutoFulfillmentPage'));
 const BulkContentCreationPage = lazy(() => import('@/pages/BulkContentCreationPage'));
 const ProfitCalculatorPage = lazy(() => import('@/pages/ProfitCalculatorPage'));
 const AdsManagerPage = lazy(() => import('@/pages/AdsManagerPage'));
+const PlatformManagementPage = lazy(() => import('@/pages/PlatformManagementPage'));
 const InventoryPredictorPage = lazy(() => import('@/pages/InventoryPredictorPage'));
 const CustomerIntelligencePage = lazy(() => import('@/pages/CustomerIntelligencePage'));
 const UnifiedDashboardPage = lazy(() => import('@/pages/UnifiedDashboardPage'));
@@ -286,6 +287,12 @@ function App() {
                         <Route path="/ai-intelligence" element={
                           <ProtectedRoute>
                             <AppLayout><AIIntelligencePage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+
+                        <Route path="/platform-management" element={
+                          <ProtectedRoute>
+                            <AppLayout><PlatformManagementPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
