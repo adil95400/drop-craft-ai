@@ -408,6 +408,319 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     limits: {
       tags: 50
     }
+  },
+
+  tiktok: {
+    id: 'tiktok',
+    name: 'TikTok Shop',
+    type: 'social',
+    icon: '🎵',
+    title: {
+      minLength: 1,
+      maxLength: 34,
+      required: true
+    },
+    description: {
+      minLength: 1,
+      maxLength: 5000,
+      allowsHTML: false,
+      required: true
+    },
+    images: {
+      minCount: 1,
+      maxCount: 9,
+      minWidth: 800,
+      minHeight: 800,
+      maxSize: 10240,
+      formats: ['jpg', 'jpeg', 'png'],
+      aspectRatio: '1:1'
+    },
+    pricing: {
+      currency: ['EUR', 'USD', 'GBP'],
+      minPrice: 1,
+      requiresShipping: true,
+      taxInclusive: true
+    },
+    requiredFields: ['title', 'description', 'price', 'category', 'images', 'stock'],
+    optionalFields: ['brand', 'size', 'color', 'weight', 'dimensions'],
+    categories: {
+      usePlatformCategories: true,
+      mappingRequired: true
+    },
+    limits: {
+      variants: 50,
+      tags: 20
+    },
+    customFields: {
+      video_required: true,
+      min_video_duration: 5,
+      max_video_duration: 60
+    }
+  },
+
+  twitter: {
+    id: 'twitter',
+    name: 'Twitter/X',
+    type: 'social',
+    icon: '🐦',
+    title: {
+      minLength: 1,
+      maxLength: 70,
+      required: true
+    },
+    description: {
+      minLength: 1,
+      maxLength: 280,
+      allowsHTML: false,
+      required: true
+    },
+    images: {
+      minCount: 1,
+      maxCount: 4,
+      minWidth: 600,
+      minHeight: 335,
+      maxSize: 5120,
+      formats: ['jpg', 'jpeg', 'png', 'gif'],
+      aspectRatio: '16:9'
+    },
+    pricing: {
+      currency: ['EUR', 'USD', 'GBP'],
+      requiresShipping: false,
+      taxInclusive: true
+    },
+    requiredFields: ['title', 'description', 'link', 'image'],
+    optionalFields: ['price', 'brand'],
+    categories: {
+      usePlatformCategories: false,
+      mappingRequired: false
+    },
+    limits: {
+      tags: 5
+    }
+  },
+
+  ebay: {
+    id: 'ebay',
+    name: 'eBay',
+    type: 'marketplace',
+    icon: '🛒',
+    title: {
+      minLength: 1,
+      maxLength: 80,
+      required: true,
+      forbidden: ['wholesale', 'bulk', 'lot']
+    },
+    description: {
+      minLength: 200,
+      maxLength: 500000,
+      allowsHTML: true,
+      required: true
+    },
+    images: {
+      minCount: 1,
+      maxCount: 12,
+      minWidth: 500,
+      minHeight: 500,
+      maxSize: 12288,
+      formats: ['jpg', 'jpeg', 'png'],
+      aspectRatio: '1:1'
+    },
+    pricing: {
+      currency: ['EUR', 'USD', 'GBP', 'AUD', 'CAD'],
+      requiresShipping: true,
+      taxInclusive: false
+    },
+    requiredFields: ['title', 'description', 'category', 'price', 'condition', 'quantity', 'images'],
+    optionalFields: ['upc', 'ean', 'isbn', 'brand', 'mpn', 'shipping_service', 'return_policy'],
+    categories: {
+      usePlatformCategories: true,
+      mappingRequired: true
+    },
+    limits: {
+      variants: 250,
+      skuLength: 50
+    },
+    customFields: {
+      condition_required: true,
+      shipping_policy_required: true,
+      return_policy_required: true,
+      item_specifics: true
+    }
+  },
+
+  allegro: {
+    id: 'allegro',
+    name: 'Allegro',
+    type: 'marketplace',
+    icon: '🇵🇱',
+    title: {
+      minLength: 1,
+      maxLength: 75,
+      required: true
+    },
+    description: {
+      minLength: 20,
+      maxLength: 50000,
+      allowsHTML: true,
+      required: true
+    },
+    images: {
+      minCount: 1,
+      maxCount: 16,
+      minWidth: 500,
+      minHeight: 500,
+      maxSize: 10240,
+      formats: ['jpg', 'jpeg', 'png']
+    },
+    pricing: {
+      currency: ['PLN', 'EUR'],
+      requiresShipping: true,
+      taxInclusive: true
+    },
+    requiredFields: ['title', 'description', 'category', 'price', 'images', 'location'],
+    optionalFields: ['ean', 'brand', 'condition', 'delivery_time'],
+    categories: {
+      usePlatformCategories: true,
+      mappingRequired: true
+    },
+    limits: {
+      variants: 5,
+      tags: 50
+    },
+    customFields: {
+      location_required: true,
+      delivery_options: ['courier', 'post', 'pickup']
+    }
+  },
+
+  manomano: {
+    id: 'manomano',
+    name: 'ManoMano',
+    type: 'marketplace',
+    icon: '🔨',
+    title: {
+      minLength: 1,
+      maxLength: 150,
+      required: true
+    },
+    description: {
+      minLength: 50,
+      maxLength: 8000,
+      allowsHTML: false,
+      required: true
+    },
+    images: {
+      minCount: 1,
+      maxCount: 10,
+      minWidth: 500,
+      minHeight: 500,
+      maxSize: 5120,
+      formats: ['jpg', 'jpeg', 'png']
+    },
+    pricing: {
+      currency: ['EUR', 'GBP'],
+      requiresShipping: true,
+      taxInclusive: true
+    },
+    requiredFields: ['title', 'description', 'category', 'brand', 'ean', 'price', 'images'],
+    optionalFields: ['warranty', 'technical_specs', 'dimensions', 'weight'],
+    categories: {
+      usePlatformCategories: true,
+      mappingRequired: true
+    },
+    limits: {
+      variants: 20
+    },
+    customFields: {
+      technical_sheet_required: true,
+      ean_required: true,
+      brand_required: true,
+      delivery_time_required: true
+    }
+  },
+
+  rakuten: {
+    id: 'rakuten',
+    name: 'Rakuten',
+    type: 'marketplace',
+    icon: '🛍️',
+    title: {
+      minLength: 1,
+      maxLength: 100,
+      required: true
+    },
+    description: {
+      minLength: 20,
+      maxLength: 10000,
+      allowsHTML: true,
+      required: true
+    },
+    images: {
+      minCount: 1,
+      maxCount: 10,
+      minWidth: 500,
+      minHeight: 500,
+      maxSize: 10240,
+      formats: ['jpg', 'jpeg', 'png']
+    },
+    pricing: {
+      currency: ['EUR'],
+      requiresShipping: true,
+      taxInclusive: true
+    },
+    requiredFields: ['title', 'description', 'category', 'price', 'ean', 'images'],
+    optionalFields: ['brand', 'color', 'size', 'material'],
+    categories: {
+      usePlatformCategories: true,
+      mappingRequired: true
+    },
+    limits: {
+      variants: 30
+    }
+  },
+
+  fnac: {
+    id: 'fnac',
+    name: 'Fnac',
+    type: 'marketplace',
+    icon: '📚',
+    title: {
+      minLength: 1,
+      maxLength: 200,
+      required: true
+    },
+    description: {
+      minLength: 50,
+      maxLength: 5000,
+      allowsHTML: false,
+      required: true
+    },
+    images: {
+      minCount: 1,
+      maxCount: 5,
+      minWidth: 500,
+      minHeight: 500,
+      maxSize: 5120,
+      formats: ['jpg', 'jpeg', 'png']
+    },
+    pricing: {
+      currency: ['EUR'],
+      requiresShipping: true,
+      taxInclusive: true
+    },
+    requiredFields: ['title', 'description', 'ean', 'price', 'brand', 'category'],
+    optionalFields: ['warranty', 'delivery_time'],
+    categories: {
+      usePlatformCategories: true,
+      mappingRequired: true
+    },
+    limits: {
+      variants: 10
+    },
+    customFields: {
+      ean_mandatory: true,
+      brand_mandatory: true
+    }
   }
 }
 

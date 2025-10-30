@@ -291,23 +291,24 @@ export function ProductPublishDialog({ open, onOpenChange, product }: ProductPub
               <div className="flex items-center gap-2 mb-3">
                 <ShoppingBag className="h-5 w-5 text-success" />
                 <h3 className="font-semibold">Marketplaces</h3>
+                <Badge variant="outline" className="text-xs">8 plateformes</Badge>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                {['amazon', 'etsy', 'cdiscount'].map(platformId => {
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {['amazon', 'etsy', 'cdiscount', 'ebay', 'allegro', 'manomano', 'rakuten', 'fnac'].map(platformId => {
                   const config = getPlatformConfig(platformId)
                   if (!config) return null
                   return (
-                    <div key={platformId} className="border rounded-lg p-3 space-y-2">
+                    <div key={platformId} className="border rounded-lg p-3 space-y-2 hover:border-primary transition-colors">
                       <div className="flex items-center gap-2">
                         <span className="text-xl">{config.icon}</span>
-                        <span className="font-medium">{config.name}</span>
+                        <span className="font-medium text-sm">{config.name}</span>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => previewAdaptation(platformId)}
-                          className="flex-1"
+                          className="flex-1 text-xs h-7"
                         >
                           <Info className="h-3 w-3 mr-1" />
                           Aperçu
@@ -315,14 +316,14 @@ export function ProductPublishDialog({ open, onOpenChange, product }: ProductPub
                         <Button
                           size="sm"
                           onClick={() => handlePublishToMarketplace(config.name)}
-                          className="flex-1"
+                          className="flex-1 text-xs h-7"
                         >
                           Publier
                         </Button>
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground space-y-0.5">
                         <p>• {config.images.minCount}-{config.images.maxCount} images</p>
-                        <p>• Titre max: {config.title.maxLength} car.</p>
+                        <p>• Titre: {config.title.maxLength} car. max</p>
                         <p>• {config.requiredFields.length} champs requis</p>
                       </div>
                     </div>
@@ -336,13 +337,14 @@ export function ProductPublishDialog({ open, onOpenChange, product }: ProductPub
               <div className="flex items-center gap-2 mb-3">
                 <Share2 className="h-5 w-5 text-warning" />
                 <h3 className="font-semibold">Réseaux Sociaux</h3>
+                <Badge variant="outline" className="text-xs">5 plateformes</Badge>
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                {['facebook', 'instagram', 'pinterest'].map(platformId => {
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {['facebook', 'instagram', 'pinterest', 'tiktok', 'twitter'].map(platformId => {
                   const config = getPlatformConfig(platformId)
                   if (!config) return null
                   return (
-                    <div key={platformId} className="border rounded-lg p-3 space-y-2">
+                    <div key={platformId} className="border rounded-lg p-3 space-y-2 hover:border-primary transition-colors">
                       <div className="flex items-center gap-2">
                         <span className="text-xl">{config.icon}</span>
                         <span className="font-medium text-sm">{config.name}</span>
@@ -352,21 +354,24 @@ export function ProductPublishDialog({ open, onOpenChange, product }: ProductPub
                           size="sm"
                           variant="outline"
                           onClick={() => previewAdaptation(platformId)}
-                          className="flex-1 text-xs"
+                          className="flex-1 text-xs h-7"
                         >
                           Aperçu
                         </Button>
                         <Button
                           size="sm"
                           onClick={() => handlePublishToSocial(config.name)}
-                          className="flex-1 text-xs"
+                          className="flex-1 text-xs h-7"
                         >
                           Publier
                         </Button>
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground space-y-0.5">
                         <p>• Ratio: {config.images.aspectRatio || '1:1'}</p>
-                        <p>• {config.title.maxLength} car. max</p>
+                        <p>• Titre: {config.title.maxLength} car. max</p>
+                        {config.customFields?.video_required && (
+                          <p>• 🎥 Vidéo requise</p>
+                        )}
                       </div>
                     </div>
                   )
@@ -378,13 +383,29 @@ export function ProductPublishDialog({ open, onOpenChange, product }: ProductPub
             <Alert>
               <CheckCircle2 className="h-4 w-4" />
               <AlertDescription>
-                <p className="font-semibold mb-2">✨ Adaptation Automatique Activée</p>
+                <p className="font-semibold mb-2">✨ Adaptation Automatique pour 18 Plateformes</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm mb-3">
+                  <div>
+                    <p className="font-medium">Stores (2):</p>
+                    <p className="text-xs">Shopify, WooCommerce</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Marketplaces (8):</p>
+                    <p className="text-xs">Amazon, eBay, Etsy, Cdiscount, Allegro, ManoMano, Rakuten, Fnac</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Social (5):</p>
+                    <p className="text-xs">Facebook, Instagram, TikTok, Pinterest, Twitter</p>
+                  </div>
+                </div>
                 <ul className="text-sm space-y-1">
-                  <li>✓ Formats d'images adaptés (tailles, ratios)</li>
-                  <li>✓ Titres et descriptions optimisés par plateforme</li>
-                  <li>✓ Prix convertis selon les devises supportées</li>
-                  <li>✓ Tags et catégories mappés automatiquement</li>
-                  <li>✓ Validation automatique avant publication</li>
+                  <li>✓ Formats d'images adaptés automatiquement (ratios, tailles, compression)</li>
+                  <li>✓ Titres optimisés selon les limites de chaque plateforme</li>
+                  <li>✓ Descriptions tronquées intelligemment ou HTML retiré si nécessaire</li>
+                  <li>✓ Prix convertis selon devises supportées avec taxes incluses/exclues</li>
+                  <li>✓ Tags et catégories mappés selon règles spécifiques</li>
+                  <li>✓ Champs obligatoires vérifiés (EAN, Brand, etc.)</li>
+                  <li>✓ Validation complète avant publication avec aperçu détaillé</li>
                 </ul>
               </AlertDescription>
             </Alert>
