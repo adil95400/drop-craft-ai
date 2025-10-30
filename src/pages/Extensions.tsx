@@ -8,11 +8,8 @@ import { ExtensionInstallGuide } from '@/components/extensions/ExtensionInstallG
 import { ExtensionDashboard } from '@/components/extensions/ExtensionDashboard'
 import { ReviewImporterConfig } from '@/components/extensions/ReviewImporterConfig'
 import { AliExpressImporter } from '@/components/extensions/AliExpressImporter'
-import { PriceMonitoring } from '@/components/autods/PriceMonitoring'
-import { StockAlerts } from '@/components/autods/StockAlerts'
-import { AutoOrders } from '@/components/autods/AutoOrders'
-import { MonitoringConfig } from '@/components/autods/MonitoringConfig'
-import { Puzzle, Zap, Grid, Chrome, BookOpen, Activity, Star, ShoppingCart, TrendingUp, Package, ShoppingBag, Settings } from 'lucide-react'
+import { PriceMonitoring, StockAlerts, AutoOrders, MonitoringConfig, AutomationDashboard } from '@/components/autods'
+import { Puzzle, Zap, Grid, Chrome, BookOpen, Activity, Star, ShoppingCart, TrendingUp, Package, ShoppingBag, Settings, Bot } from 'lucide-react'
 
 export default function Extensions() {
   return (
@@ -68,6 +65,10 @@ export default function Extensions() {
               <Settings className="w-4 h-4" />
               Config
             </TabsTrigger>
+            <TabsTrigger value="automation-dashboard" className="flex items-center gap-2">
+              <Bot className="w-4 h-4" />
+              Automation
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="dashboard">
@@ -116,6 +117,10 @@ export default function Extensions() {
           
           <TabsContent value="monitoring-config">
             <MonitoringConfig />
+          </TabsContent>
+          
+          <TabsContent value="automation-dashboard">
+            <AutomationDashboard />
           </TabsContent>
         </Tabs>
       </div>
