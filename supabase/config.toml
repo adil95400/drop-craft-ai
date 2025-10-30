@@ -351,3 +351,21 @@ verify_jwt = false
 
 [functions.extension-health-monitor]
 verify_jwt = false
+
+[functions.price-stock-cron]
+verify_jwt = false
+
+[functions.auto-order-fulfillment]
+verify_jwt = false
+
+[functions.supplier-webhook-handler]
+verify_jwt = false
+
+[functions.stock-monitor]
+verify_jwt = false
+
+[functions.cron-sync]
+verify_jwt = false
+
+[functions.auto-order-processor]
+verify_jwt = false
