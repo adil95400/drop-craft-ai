@@ -1,97 +1,52 @@
-import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Package, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Package, AlertTriangle, CheckCircle, Bell } from 'lucide-react';
+import { usePriceStockMonitor } from '@/hooks/usePriceStockMonitor';
 
 export function StockAlerts() {
-  const queryClient = useQueryClient();
-  const [isChecking, setIsChecking] = useState(false);
+  const { alerts, alertsLoading, markAsRead, resolveAlert } = usePriceStockMonitor();
 
-  const { data: alerts, isLoading } = useQuery({
-    queryKey: ['stock-alerts'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stock_alerts')
-        .select('*, catalog_products(*)')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  const checkStockMutation = useMutation({
-    mutationFn: async (alertId?: string) => {
-      setIsChecking(true);
-      const { data, error } = await supabase.functions.invoke('stock-monitor', {
-        body: { action: 'check_stock', alertId }
-      });
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data) => {
-      toast({
-        title: 'Stocks vérifiés',
-        description: `${data.checked} produits vérifiés`
-      });
-      queryClient.invalidateQueries({ queryKey: ['stock-alerts'] });
-      setIsChecking(false);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Erreur',
-        description: error.message,
-        variant: 'destructive'
-      });
-      setIsChecking(false);
-    }
-  });
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'in_stock':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'low_stock':
-        return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
-      case 'out_of_stock':
+  const getSeverityIcon = (severity: string) => {
+    switch (severity) {
+      case 'critical':
         return <AlertTriangle className="w-5 h-5 text-red-500" />;
+      case 'high':
+        return <AlertTriangle className="w-5 h-5 text-orange-500" />;
+      case 'medium':
+        return <Bell className="w-5 h-5 text-yellow-500" />;
       default:
-        return <Package className="w-5 h-5" />;
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
     }
   };
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'in_stock':
-        return 'En stock';
-      case 'low_stock':
-        return 'Stock faible';
-      case 'out_of_stock':
-        return 'Rupture de stock';
+  const getSeverityLabel = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return 'Critique';
+      case 'high':
+        return 'Élevée';
+      case 'medium':
+        return 'Moyenne';
       default:
-        return 'Inconnu';
+        return 'Faible';
     }
   };
 
-  const getStatusVariant = (status: string): "default" | "destructive" | "secondary" => {
-    switch (status) {
-      case 'in_stock':
-        return 'default';
-      case 'low_stock':
-        return 'secondary';
-      case 'out_of_stock':
+  const getSeverityVariant = (severity: string): "default" | "destructive" | "secondary" => {
+    switch (severity) {
+      case 'critical':
         return 'destructive';
-      default:
+      case 'high':
+        return 'destructive';
+      case 'medium':
         return 'secondary';
+      default:
+        return 'default';
     }
   };
 
-  if (isLoading) {
+  if (alertsLoading) {
     return <div className="flex items-center justify-center p-8">Chargement...</div>;
   }
 
@@ -99,83 +54,79 @@ export function StockAlerts() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Alertes de Stock</h2>
-          <p className="text-muted-foreground">Surveillance automatique des niveaux de stock</p>
+          <h2 className="text-2xl font-bold">Alertes Actives</h2>
+          <p className="text-muted-foreground">Notifications de prix et stock</p>
         </div>
-        <Button
-          onClick={() => checkStockMutation.mutate()}
-          disabled={isChecking}
-          className="gap-2"
-        >
-          <RefreshCw className={`w-4 h-4 ${isChecking ? 'animate-spin' : ''}`} />
-          Vérifier tous les stocks
-        </Button>
       </div>
 
       <div className="grid gap-4">
-        {alerts?.map((alert) => (
-          <Card key={alert.id}>
+        {alerts?.filter((alert: any) => !alert.is_resolved).map((alert: any) => (
+          <Card key={alert.id} className={alert.is_read ? 'opacity-60' : ''}>
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    {getStatusIcon(alert.stock_status)}
-                    {alert.catalog_products?.name || 'Produit'}
+                    {getSeverityIcon(alert.severity)}
+                    {alert.alert_type === 'price_increase' && 'Augmentation de prix'}
+                    {alert.alert_type === 'price_decrease' && 'Baisse de prix'}
+                    {alert.alert_type === 'stock_low' && 'Stock faible'}
+                    {alert.alert_type === 'stock_out' && 'Rupture de stock'}
                   </CardTitle>
-                  <CardDescription>{alert.supplier_url}</CardDescription>
+                  <CardDescription className="mt-2">{alert.message}</CardDescription>
                 </div>
-                <Badge variant={getStatusVariant(alert.stock_status)}>
-                  {getStatusLabel(alert.stock_status)}
+                <Badge variant={getSeverityVariant(alert.severity)}>
+                  {getSeverityLabel(alert.severity)}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-sm text-muted-foreground">Stock actuel</div>
-                    <div className="text-2xl font-bold">
-                      {alert.current_stock || 0} unités
+                    <div className="text-sm text-muted-foreground">Date</div>
+                    <div className="text-sm font-medium">
+                      {new Date(alert.created_at).toLocaleString('fr-FR')}
                     </div>
                   </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Seuil d'alerte</div>
-                    <div className="text-2xl font-bold">
-                      {alert.alert_threshold} unités
+                  {alert.previous_value && alert.new_value && (
+                    <div>
+                      <div className="text-sm text-muted-foreground">Changement</div>
+                      <div className="text-sm font-medium">
+                        {alert.previous_value} → {alert.new_value}
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Dernière vérification</div>
-                    <div className="text-sm">
-                      {alert.last_checked_at
-                        ? new Date(alert.last_checked_at).toLocaleString('fr-FR')
-                        : 'Jamais'}
-                    </div>
-                  </div>
+                  )}
                 </div>
 
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => checkStockMutation.mutate(alert.id)}
-                  disabled={isChecking}
-                  className="gap-2"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  Vérifier maintenant
-                </Button>
+                <div className="flex gap-2">
+                  {!alert.is_read && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => markAsRead(alert.id)}
+                    >
+                      Marquer comme lu
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    onClick={() => resolveAlert(alert.id)}
+                  >
+                    Résoudre
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
         ))}
 
-        {alerts?.length === 0 && (
+        {alerts?.filter((alert: any) => !alert.is_resolved).length === 0 && (
           <Card>
             <CardContent className="flex flex-col items-center justify-center p-8 text-center">
               <Package className="w-12 h-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium">Aucune alerte configurée</p>
+              <p className="text-lg font-medium">Aucune alerte active</p>
               <p className="text-sm text-muted-foreground mt-2">
-                Configurez des alertes pour surveiller vos stocks
+                Toutes vos alertes ont été résolues
               </p>
             </CardContent>
           </Card>
