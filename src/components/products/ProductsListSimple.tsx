@@ -12,11 +12,14 @@ interface ProductsListSimpleProps {
   selectedProducts: string[]
   onSelectionChange: (products: string[]) => void
   onProductSelect?: (productId: string) => void
+  searchTerm?: string
 }
 
-export function ProductsListSimple({ selectedProducts, onSelectionChange, onProductSelect }: ProductsListSimpleProps) {
+export function ProductsListSimple({ selectedProducts, onSelectionChange, onProductSelect, searchTerm: externalSearchTerm }: ProductsListSimpleProps) {
   const { products, isLoading } = useRealProducts()
-  const [searchTerm, setSearchTerm] = useState('')
+  const [localSearchTerm, setLocalSearchTerm] = useState('')
+  
+  const searchTerm = externalSearchTerm ?? localSearchTerm
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -38,27 +41,30 @@ export function ProductsListSimple({ selectedProducts, onSelectionChange, onProd
   }
 
   return (
-    <Card>
+    <Card className="border-primary/20 shadow-lg">
       <CardContent className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div className="relative">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher des produits..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-80"
-            />
+        {!externalSearchTerm && (
+          <div className="flex justify-between items-center mb-6">
+            <div className="relative">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher des produits..."
+                value={localSearchTerm}
+                onChange={(e) => setLocalSearchTerm(e.target.value)}
+                className="pl-10 w-80 border-primary/20 focus:border-primary"
+              />
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {filteredProducts.length} produit(s)
+            </div>
           </div>
-          <div className="text-sm text-muted-foreground">
-            {filteredProducts.length} produit(s)
-          </div>
-        </div>
+        )}
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12">
+        <div className="rounded-lg border border-primary/20 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50 hover:bg-muted/70">
+                <TableHead className="w-12">
                 <Checkbox 
                   checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
                   onCheckedChange={(checked) => {
@@ -82,7 +88,10 @@ export function ProductsListSimple({ selectedProducts, onSelectionChange, onProd
             {filteredProducts.map((product) => {
               const stockStatus = getStockStatus(product.stock_quantity || 0)
               return (
-                <TableRow key={product.id}>
+                <TableRow 
+                  key={product.id}
+                  className="hover:bg-primary/5 transition-colors duration-200"
+                >
                   <TableCell>
                     <Checkbox 
                       checked={selectedProducts.includes(product.id)}
@@ -98,24 +107,30 @@ export function ProductsListSimple({ selectedProducts, onSelectionChange, onProd
                   <TableCell>
                     <div className="flex items-center gap-3">
                       {product.image_url ? (
-                        <img src={product.image_url} alt={product.name} className="w-10 h-10 rounded object-cover" />
+                        <img 
+                          src={product.image_url} 
+                          alt={product.name} 
+                          className="w-12 h-12 rounded-lg object-cover shadow-md ring-2 ring-primary/10" 
+                        />
                       ) : (
-                        <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">
-                          <Package className="h-4 w-4 text-muted-foreground" />
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center shadow-md ring-2 ring-primary/10">
+                          <Package className="h-5 w-5 text-primary" />
                         </div>
                       )}
                       <div>
-                        <div className="font-medium">{product.name}</div>
+                        <div className="font-semibold text-foreground">{product.name}</div>
                         <div className="text-sm text-muted-foreground">{product.category}</div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <code className="text-xs bg-muted px-2 py-1 rounded">
+                    <code className="text-xs bg-primary/10 text-primary px-2 py-1 rounded font-mono">
                       {product.sku || 'N/A'}
                     </code>
                   </TableCell>
-                  <TableCell>{product.price}€</TableCell>
+                  <TableCell>
+                    <span className="font-semibold text-foreground">{product.price}€</span>
+                  </TableCell>
                   <TableCell>
                     <Badge variant={stockStatus.color as any}>
                       {product.stock_quantity || 0} - {stockStatus.label}
@@ -132,13 +147,22 @@ export function ProductsListSimple({ selectedProducts, onSelectionChange, onProd
                         variant="ghost" 
                         size="sm"
                         onClick={() => onProductSelect?.(product.id)}
+                        className="hover:bg-primary/10 hover:text-primary transition-all duration-200"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="hover:bg-info/10 hover:text-info transition-all duration-200"
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="hover:bg-muted transition-all duration-200"
+                      >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </div>
@@ -148,6 +172,7 @@ export function ProductsListSimple({ selectedProducts, onSelectionChange, onProd
             })}
           </TableBody>
         </Table>
+        </div>
       </CardContent>
     </Card>
   )
