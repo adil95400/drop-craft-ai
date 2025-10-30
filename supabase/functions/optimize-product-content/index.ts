@@ -1,9 +1,10 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!
+const openaiApiKey = Deno.env.get('OPENAI_API_KEY')!
 
 interface OptimizationRequest {
   userId: string
@@ -68,16 +69,16 @@ Deno.serve(async (req) => {
         break
     }
 
-    // Appeler l'API Lovable AI
-    console.log('Calling Lovable AI for optimization...')
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // Appeler l'API OpenAI
+    console.log('Calling OpenAI for optimization...')
+    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
+        'Authorization': `Bearer ${openaiApiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
