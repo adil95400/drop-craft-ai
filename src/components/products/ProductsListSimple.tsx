@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+import { Package, Eye, Edit, Search } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { ProductActionMenu } from './ProductActionMenu'
 import { useRealProducts } from '@/hooks/useRealProducts'
-import { Search, Package, Eye, Edit, MoreHorizontal } from 'lucide-react'
 
 interface ProductsListSimpleProps {
   selectedProducts: string[]
@@ -158,13 +159,7 @@ export function ProductsListSimple({ selectedProducts, onSelectionChange, onProd
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="hover:bg-muted transition-all duration-200"
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
+                      <ProductActionMenu product={product} />
                     </div>
                   </TableCell>
                 </TableRow>
