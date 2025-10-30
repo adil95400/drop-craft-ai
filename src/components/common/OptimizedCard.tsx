@@ -81,11 +81,15 @@ export const OptimizedCard = memo(function OptimizedCard({
   const cardProps = onClick 
     ? { 
         variant: 'ghost' as const, 
-        className: cn(cardVariants, 'h-auto p-0 justify-start'),
+        className: cn(cardVariants, 'h-auto p-0 justify-start w-full'),
         onClick: handleClick,
-        disabled: loading
+        disabled: loading,
+        asChild: false
       }
-    : { className: cardVariants, onClick: handleClick };
+    : { 
+        className: cardVariants, 
+        onClick: handleClick 
+      };
 
   const content = (
     <>
@@ -122,15 +126,20 @@ export const OptimizedCard = memo(function OptimizedCard({
   );
 
   return onClick ? (
-    <CardComponent {...cardProps}>
-      <Card className="w-full">
+    <Button 
+      variant="ghost" 
+      className={cn(cardVariants, 'h-auto p-0 justify-start w-full')}
+      onClick={handleClick}
+      disabled={loading}
+    >
+      <div className="w-full">
         {content}
-      </Card>
-    </CardComponent>
+      </div>
+    </Button>
   ) : (
-    <CardComponent {...cardProps}>
+    <Card className={cardVariants} onClick={handleClick}>
       {content}
-    </CardComponent>
+    </Card>
   );
 });
 
