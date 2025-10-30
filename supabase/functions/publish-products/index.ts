@@ -12,7 +12,7 @@ interface PublishRequest {
   config?: Record<string, any>
 }
 
-type PlatformType = 'shopify' | 'woocommerce' | 'amazon' | 'etsy' | 'cdiscount' | 'ebay' | 'allegro' | 'manomano' | 'rakuten' | 'fnac' | 'facebook' | 'instagram' | 'pinterest' | 'tiktok' | 'twitter'
+type PlatformType = 'shopify' | 'woocommerce' | 'amazon' | 'etsy' | 'cdiscount' | 'ebay' | 'allegro' | 'manomano' | 'rakuten' | 'fnac' | 'facebook' | 'instagram' | 'pinterest' | 'tiktok' | 'twitter' | 'bigbuy' | 'aliexpress'
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -172,6 +172,10 @@ async function publishToPlatform(
       return await publishToTikTok(adaptedProducts, integration)
     case 'twitter':
       return await publishToTwitter(adaptedProducts, integration)
+    case 'bigbuy':
+      return await publishToBigBuy(adaptedProducts, integration)
+    case 'aliexpress':
+      return await publishToAliExpress(adaptedProducts, integration)
     default:
       return []
   }
@@ -326,6 +330,14 @@ async function publishToTwitter(products: any[], integration: any): Promise<any[
   return publishGeneric(products, 'twitter')
 }
 
+async function publishToBigBuy(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'bigbuy')
+}
+
+async function publishToAliExpress(products: any[], integration: any): Promise<any[]> {
+  return publishGeneric(products, 'aliexpress')
+}
+
 // Generic publish function for all platforms
 async function publishGeneric(products: any[], platform: string): Promise<any[]> {
   const results: any[] = []
@@ -426,6 +438,21 @@ function adaptProductForPlatform(product: any, platform: PlatformType): any {
     case 'twitter':
       // Twitter: 280 chars max
       adapted.tweet = `${product.name?.substring(0, 200)} ${product.price}€`
+      break
+
+    case 'bigbuy':
+      // BigBuy: Dropshipping/Wholesale format
+      adapted.title = product.name?.substring(0, 120)
+      adapted.description = product.description
+      adapted.wholesale_price = product.cost_price || product.price * 0.5
+      adapted.barcode = product.sku
+      break
+
+    case 'aliexpress':
+      // AliExpress: International marketplace
+      adapted.title = product.name?.substring(0, 128)
+      adapted.description = product.description?.substring(0, 8000)
+      adapted.shipping_time = '15-30 days'
       break
   }
 

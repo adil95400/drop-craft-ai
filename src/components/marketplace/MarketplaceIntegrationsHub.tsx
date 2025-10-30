@@ -36,6 +36,27 @@ interface MarketplaceIntegration {
 }
 
 const MARKETPLACE_CONFIGS = {
+  // Stores
+  shopify: {
+    name: 'Shopify',
+    icon: Store,
+    color: 'from-green-600 to-green-400',
+    description: 'E-commerce platform',
+  },
+  woocommerce: {
+    name: 'WooCommerce',
+    icon: ShoppingBag,
+    color: 'from-purple-600 to-purple-400',
+    description: 'WordPress e-commerce',
+  },
+  
+  // Marketplaces
+  amazon: {
+    name: 'Amazon',
+    icon: ShoppingBag,
+    color: 'from-orange-600 to-yellow-500',
+    description: 'Global marketplace leader',
+  },
   etsy: {
     name: 'Etsy',
     icon: Store,
@@ -47,6 +68,12 @@ const MARKETPLACE_CONFIGS = {
     icon: ShoppingBag,
     color: 'from-green-500 to-emerald-500',
     description: 'French e-commerce leader',
+  },
+  ebay: {
+    name: 'eBay',
+    icon: Package,
+    color: 'from-blue-600 to-blue-400',
+    description: 'Online auction & shopping',
   },
   allegro: {
     name: 'Allegro',
@@ -60,17 +87,31 @@ const MARKETPLACE_CONFIGS = {
     color: 'from-blue-500 to-cyan-500',
     description: 'DIY & home improvement',
   },
-  shopify: {
-    name: 'Shopify',
+  rakuten: {
+    name: 'Rakuten',
     icon: Store,
-    color: 'from-green-600 to-green-400',
-    description: 'E-commerce platform',
+    color: 'from-red-600 to-pink-500',
+    description: 'Japanese e-commerce giant',
   },
-  woocommerce: {
-    name: 'WooCommerce',
+  fnac: {
+    name: 'Fnac',
     icon: ShoppingBag,
-    color: 'from-purple-600 to-purple-400',
-    description: 'WordPress e-commerce',
+    color: 'from-yellow-600 to-orange-500',
+    description: 'French cultural & tech retailer',
+  },
+  
+  // Suppliers
+  bigbuy: {
+    name: 'BigBuy',
+    icon: Package,
+    color: 'from-indigo-600 to-blue-500',
+    description: 'European dropshipping wholesale',
+  },
+  aliexpress: {
+    name: 'AliExpress',
+    icon: TrendingUp,
+    color: 'from-red-500 to-orange-500',
+    description: 'Global dropshipping platform',
   },
 }
 

@@ -5,7 +5,7 @@
 export interface PlatformConfig {
   id: string
   name: string
-  type: 'store' | 'marketplace' | 'social'
+  type: 'store' | 'marketplace' | 'social' | 'supplier'
   icon: string
   
   // Règles de contenu
@@ -721,6 +721,102 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
       ean_mandatory: true,
       brand_mandatory: true
     }
+  },
+
+  bigbuy: {
+    id: 'bigbuy',
+    name: 'BigBuy',
+    type: 'supplier',
+    icon: '📦',
+    title: {
+      minLength: 1,
+      maxLength: 120,
+      required: true
+    },
+    description: {
+      minLength: 100,
+      maxLength: 5000,
+      allowsHTML: true,
+      required: true
+    },
+    images: {
+      minCount: 1,
+      maxCount: 10,
+      minWidth: 800,
+      minHeight: 800,
+      maxSize: 10240,
+      formats: ['jpg', 'jpeg', 'png']
+    },
+    pricing: {
+      currency: ['EUR', 'USD', 'GBP'],
+      requiresShipping: true,
+      taxInclusive: false
+    },
+    requiredFields: ['title', 'description', 'price', 'sku', 'barcode', 'weight', 'brand', 'category'],
+    optionalFields: ['dimensions', 'warranty', 'color', 'size', 'material'],
+    categories: {
+      usePlatformCategories: true,
+      mappingRequired: true
+    },
+    limits: {
+      variants: 50,
+      tags: 10,
+      skuLength: 50
+    },
+    customFields: {
+      wholesale_price: true,
+      min_order_quantity: true,
+      supplier_sku: true,
+      dropshipping_enabled: true
+    }
+  },
+
+  aliexpress: {
+    id: 'aliexpress',
+    name: 'AliExpress',
+    type: 'marketplace',
+    icon: '🛒',
+    title: {
+      minLength: 1,
+      maxLength: 128,
+      required: true
+    },
+    description: {
+      minLength: 100,
+      maxLength: 8000,
+      allowsHTML: true,
+      required: true
+    },
+    images: {
+      minCount: 1,
+      maxCount: 6,
+      minWidth: 800,
+      minHeight: 800,
+      maxSize: 5120,
+      formats: ['jpg', 'jpeg', 'png']
+    },
+    pricing: {
+      currency: ['USD', 'EUR', 'GBP', 'CNY'],
+      requiresShipping: true,
+      taxInclusive: false
+    },
+    requiredFields: ['title', 'description', 'price', 'stock', 'category', 'images'],
+    optionalFields: ['brand', 'color', 'size', 'material', 'weight'],
+    categories: {
+      usePlatformCategories: true,
+      mappingRequired: true
+    },
+    limits: {
+      variants: 100,
+      tags: 10,
+      skuLength: 50
+    },
+    customFields: {
+      shipping_time: true,
+      dropshipping_enabled: true,
+      bulk_pricing: true,
+      supplier_rating: true
+    }
   }
 }
 
@@ -732,6 +828,6 @@ export function getAllPlatforms(): PlatformConfig[] {
   return Object.values(PLATFORM_CONFIGS)
 }
 
-export function getPlatformsByType(type: 'store' | 'marketplace' | 'social'): PlatformConfig[] {
+export function getPlatformsByType(type: 'store' | 'marketplace' | 'social' | 'supplier'): PlatformConfig[] {
   return Object.values(PLATFORM_CONFIGS).filter(p => p.type === type)
 }
