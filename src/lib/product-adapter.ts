@@ -72,9 +72,24 @@ export class ProductAdapter {
       if (skuResult.warnings) warnings.push(...skuResult.warnings)
     }
 
-    // Ajouter les champs spécifiques à la plateforme
-    adapted.inventory_quantity = product.stock_quantity || 0
-    adapted.category = product.category
+    // Adapter la marque (brand)
+    const brandResult = this.adaptBrand(product.brand || product.supplier_name)
+    adapted.brand = brandResult.value
+    if (brandResult.warnings) warnings.push(...brandResult.warnings)
+    if (brandResult.errors) errors.push(...brandResult.errors)
+
+    // Adapter la catégorie
+    const categoryResult = this.adaptCategory(product.category)
+    adapted.category = categoryResult.value
+    if (categoryResult.warnings) warnings.push(...categoryResult.warnings)
+    if (categoryResult.errors) errors.push(...categoryResult.errors)
+
+    // Adapter le stock/inventaire
+    const stockResult = this.adaptStock(product.stock_quantity || product.inventory_quantity)
+    adapted.inventory_quantity = stockResult.value
+    adapted.stock_status = stockResult.status
+    if (stockResult.warnings) warnings.push(...stockResult.warnings)
+    if (stockResult.errors) errors.push(...stockResult.errors)
     
     // Champs custom par plateforme
     if (this.config.customFields) {
@@ -275,6 +290,104 @@ export class ProductAdapter {
     }
 
     return { value, warnings: warnings.length > 0 ? warnings : undefined }
+  }
+
+  private adaptBrand(brand?: string): { value: string; warnings?: ValidationError[]; errors?: ValidationError[] } {
+    const warnings: ValidationError[] = []
+    const errors: ValidationError[] = []
+    let value = brand || ''
+
+    // Vérifier si la marque est requise
+    const brandRequired = this.config.requiredFields.includes('brand')
+    
+    if (!value && brandRequired) {
+      errors.push({
+        field: 'brand',
+        message: `La marque est obligatoire sur ${this.config.name}`,
+        severity: 'error'
+      })
+    }
+
+    // Limiter la longueur si nécessaire
+    if (value.length > 100) {
+      warnings.push({
+        field: 'brand',
+        message: 'La marque a été tronquée à 100 caractères',
+        severity: 'warning'
+      })
+      value = value.substring(0, 100)
+    }
+
+    return { value, warnings: warnings.length > 0 ? warnings : undefined, errors: errors.length > 0 ? errors : undefined }
+  }
+
+  private adaptCategory(category?: string): { value: string; warnings?: ValidationError[]; errors?: ValidationError[] } {
+    const warnings: ValidationError[] = []
+    const errors: ValidationError[] = []
+    let value = category || ''
+
+    // Vérifier si la catégorie est requise
+    const categoryRequired = this.config.requiredFields.includes('category')
+    
+    if (!value && categoryRequired) {
+      errors.push({
+        field: 'category',
+        message: `La catégorie est obligatoire sur ${this.config.name}`,
+        severity: 'error'
+      })
+    }
+
+    // Vérifier le mapping de catégories si nécessaire
+    if (this.config.categories?.mappingRequired && value) {
+      warnings.push({
+        field: 'category',
+        message: 'Assurez-vous que la catégorie correspond aux catégories de la plateforme',
+        severity: 'warning'
+      })
+    }
+
+    return { value, warnings: warnings.length > 0 ? warnings : undefined, errors: errors.length > 0 ? errors : undefined }
+  }
+
+  private adaptStock(stock?: number): { value: number; status: string; warnings?: ValidationError[]; errors?: ValidationError[] } {
+    const warnings: ValidationError[] = []
+    const errors: ValidationError[] = []
+    let value = stock || 0
+
+    // Vérifier stock négatif
+    if (value < 0) {
+      warnings.push({
+        field: 'stock',
+        message: 'Le stock ne peut pas être négatif, ajusté à 0',
+        severity: 'warning'
+      })
+      value = 0
+    }
+
+    // Déterminer le statut du stock
+    let status = 'in_stock'
+    if (value === 0) {
+      status = 'out_of_stock'
+      warnings.push({
+        field: 'stock',
+        message: 'Produit en rupture de stock',
+        severity: 'warning'
+      })
+    } else if (value < 10) {
+      status = 'low_stock'
+      warnings.push({
+        field: 'stock',
+        message: 'Stock faible (moins de 10 unités)',
+        severity: 'warning'
+      })
+    }
+
+    return { 
+      value, 
+      status,
+      warnings: warnings.length > 0 ? warnings : undefined, 
+      errors: errors.length > 0 ? errors : undefined 
+    }
   }
 
   /**

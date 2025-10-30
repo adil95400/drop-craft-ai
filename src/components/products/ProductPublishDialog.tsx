@@ -249,16 +249,31 @@ export function ProductPublishDialog({ open, onOpenChange, product }: ProductPub
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                <strong>{product.name}</strong> - {product.price}€
-                {adaptationResult && (
-                  <span className="ml-2">
-                    {adaptationResult.isValid ? (
-                      <Badge variant="secondary" className="ml-2">✓ Compatible</Badge>
-                    ) : (
-                      <Badge variant="destructive" className="ml-2">⚠ Corrections requises</Badge>
+                <div className="space-y-1">
+                  <p><strong>{product.name}</strong> - {product.price}€</p>
+                  <div className="flex flex-wrap gap-2 mt-2 text-xs">
+                    {product.brand && (
+                      <Badge variant="outline">Marque: {product.brand}</Badge>
                     )}
-                  </span>
-                )}
+                    {product.category && (
+                      <Badge variant="outline">Catégorie: {product.category}</Badge>
+                    )}
+                    {product.stock_quantity !== undefined && (
+                      <Badge variant={product.stock_quantity > 10 ? "secondary" : product.stock_quantity > 0 ? "outline" : "destructive"}>
+                        Stock: {product.stock_quantity}
+                      </Badge>
+                    )}
+                  </div>
+                  {adaptationResult && (
+                    <span className="ml-2">
+                      {adaptationResult.isValid ? (
+                        <Badge variant="secondary" className="ml-2">✓ Compatible</Badge>
+                      ) : (
+                        <Badge variant="destructive" className="ml-2">⚠ Corrections requises</Badge>
+                      )}
+                    </span>
+                  )}
+                </div>
               </AlertDescription>
             </Alert>
 
@@ -314,6 +329,24 @@ export function ProductPublishDialog({ open, onOpenChange, product }: ProductPub
                       <p><strong>Description:</strong> {adaptationResult.adapted.description.substring(0, 100)}...</p>
                       <p><strong>Prix:</strong> {adaptationResult.adapted.price} {adaptationResult.adapted.currency}</p>
                       <p><strong>Images:</strong> {adaptationResult.adapted.images.length} image(s)</p>
+                      {adaptationResult.adapted.brand && (
+                        <p><strong>Marque:</strong> {adaptationResult.adapted.brand}</p>
+                      )}
+                      {adaptationResult.adapted.category && (
+                        <p><strong>Catégorie:</strong> {adaptationResult.adapted.category}</p>
+                      )}
+                      {adaptationResult.adapted.inventory_quantity !== undefined && (
+                        <p>
+                          <strong>Stock:</strong> {adaptationResult.adapted.inventory_quantity} unité(s)
+                          <Badge variant={adaptationResult.adapted.stock_status === 'in_stock' ? 'secondary' : 'destructive'} className="ml-2 text-xs">
+                            {adaptationResult.adapted.stock_status === 'in_stock' ? 'En stock' : 
+                             adaptationResult.adapted.stock_status === 'low_stock' ? 'Stock faible' : 'Rupture'}
+                          </Badge>
+                        </p>
+                      )}
+                      {adaptationResult.adapted.sku && (
+                        <p><strong>SKU:</strong> {adaptationResult.adapted.sku}</p>
+                      )}
                       {adaptationResult.adapted.tags && (
                         <p><strong>Tags:</strong> {adaptationResult.adapted.tags.length} tag(s)</p>
                       )}

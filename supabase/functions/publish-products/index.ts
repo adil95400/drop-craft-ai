@@ -370,6 +370,12 @@ async function publishGeneric(products: any[], platform: string): Promise<any[]>
 // Product adaptation function based on platform rules
 function adaptProductForPlatform(product: any, platform: PlatformType): any {
   const adapted = { ...product }
+  
+  // Champs communs pour toutes les plateformes
+  adapted.brand = product.brand || product.supplier_name || 'Generic'
+  adapted.category = product.category || 'General'
+  adapted.stock = product.stock_quantity || product.inventory_quantity || 0
+  adapted.stock_status = adapted.stock > 10 ? 'in_stock' : adapted.stock > 0 ? 'low_stock' : 'out_of_stock'
 
   switch (platform) {
     case 'shopify':

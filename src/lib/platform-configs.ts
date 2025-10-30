@@ -94,7 +94,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
       taxInclusive: false
     },
     requiredFields: ['title', 'price', 'description'],
-    optionalFields: ['sku', 'barcode', 'weight', 'variants', 'tags'],
+    optionalFields: ['sku', 'barcode', 'weight', 'variants', 'tags', 'brand', 'category', 'stock'],
     categories: {
       usePlatformCategories: false,
       mappingRequired: false
@@ -136,7 +136,7 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
       taxInclusive: true
     },
     requiredFields: ['name', 'regular_price'],
-    optionalFields: ['sku', 'description', 'short_description', 'categories', 'tags', 'images'],
+    optionalFields: ['sku', 'description', 'short_description', 'categories', 'tags', 'images', 'brand', 'stock'],
     categories: {
       usePlatformCategories: true,
       mappingRequired: true
