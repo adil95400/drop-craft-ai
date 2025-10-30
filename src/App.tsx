@@ -123,6 +123,7 @@ const CustomerIntelligencePage = lazy(() => import('@/pages/CustomerIntelligence
 const UnifiedDashboardPage = lazy(() => import('@/pages/UnifiedDashboardPage'));
 const AcademyPage = lazy(() => import('@/pages/AcademyPage'));
 const CourseDetailPage = lazy(() => import('@/pages/CourseDetailPage'));
+const ProductDetailsPage = lazy(() => import('@/pages/ProductDetailsPage'));
 
 // Priority pages (from QuickActions)
 const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
@@ -231,6 +232,12 @@ function App() {
                         <Route path="/products" element={
                           <ProtectedRoute>
                             <AppLayout><ModernProductsPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/products/:id" element={
+                          <ProtectedRoute>
+                            <ProductDetailsPage />
                           </ProtectedRoute>
                         } />
                         

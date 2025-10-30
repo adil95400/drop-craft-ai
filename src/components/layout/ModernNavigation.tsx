@@ -63,6 +63,14 @@ const modernPages: NavItem[] = [
     badgeVariant: 'secondary'
   },
   {
+    title: 'Détails Produit Avancés',
+    description: 'Traductions multi-langues, avis clients et galerie d\'images',
+    href: '/products/demo',
+    icon: Package,
+    badge: '✨ Nouveau',
+    badgeVariant: 'default'
+  },
+  {
     title: 'Clients',
     description: 'Gestion avancée de votre base clients avec segmentation',
     href: '/modern/customers',
