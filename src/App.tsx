@@ -311,9 +311,9 @@ function App() {
                         } />
 
                         <Route path="/supplier-admin" element={
-                          <ProtectedRoute>
+                          <AdminRoute>
                             <AppLayout><SupplierAdminPage /></AppLayout>
-                          </ProtectedRoute>
+                          </AdminRoute>
                         } />
                         
                         <Route path="/pwa-install" element={
