@@ -26,20 +26,25 @@ export function CompetitivePositioning({ analyses }: CompetitivePositioningProps
     );
   };
 
+  // Extract positioning from real data
+  const firstAnalysis = analyses[0];
+  const competitiveData = firstAnalysis?.competitive_data || {};
+  const priceAnalysis = firstAnalysis?.price_analysis || {};
+
   const yourPosition = {
-    market_position: 'challenger',
-    price_position: 'competitive',
-    quality_score: 78,
-    strengths: [
+    market_position: competitiveData.market_position || 'challenger',
+    price_position: competitiveData.price_position || 'competitive',
+    quality_score: competitiveData.quality_score || 78,
+    strengths: competitiveData.differentiation_factors || [
       'Interface utilisateur moderne',
       'Excellent service client',
       'Fonctionnalités IA avancées',
       'Prix compétitifs'
     ],
-    weaknesses: [
-      'Catalogue produits limité',
-      'Présence sur les réseaux sociaux à améliorer',
-      'Temps de livraison à optimiser'
+    weaknesses: priceAnalysis.pricing_recommendations?.slice(0, 3) || [
+      'Optimisation des prix recommandée',
+      'Amélioration de la présence en ligne',
+      'Expansion du catalogue produits'
     ]
   };
 

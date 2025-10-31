@@ -8,55 +8,66 @@ interface MarketGapsAnalysisProps {
 }
 
 export function MarketGapsAnalysis({ analyses }: MarketGapsAnalysisProps) {
-  const opportunities = [
-    {
-      title: 'Produits éco-responsables',
-      description: 'Segment en forte croissance, faible concurrence actuellement',
-      potential: 'high',
-      difficulty: 'medium',
-      estimatedRevenue: 15000,
-      competitors: 2
-    },
-    {
-      title: 'Livraison express 24h',
-      description: 'Forte demande client, peu de concurrents proposent ce service',
-      potential: 'high',
-      difficulty: 'high',
-      estimatedRevenue: 25000,
-      competitors: 3
-    },
-    {
-      title: 'Programme de fidélité innovant',
-      description: 'Aucun concurrent n\'a de système de points gamifié',
-      potential: 'medium',
-      difficulty: 'low',
-      estimatedRevenue: 8000,
-      competitors: 0
-    },
-    {
-      title: 'Collections capsules limitées',
-      description: 'Créer du FOMO et augmenter l\'engagement',
-      potential: 'medium',
-      difficulty: 'medium',
-      estimatedRevenue: 12000,
-      competitors: 4
+  // Extract opportunities from real data
+  const opportunities = analyses.flatMap(analysis => {
+    if (analysis.market_position && Array.isArray(analysis.market_position)) {
+      return analysis.market_position.map((opp: any) => ({
+        title: opp.category || opp.opportunity || 'Opportunité de marché',
+        description: opp.opportunity || opp.description || '',
+        potential: opp.difficulty === 'low' ? 'high' : opp.difficulty === 'high' ? 'low' : 'medium',
+        difficulty: opp.difficulty || 'medium',
+        estimatedRevenue: opp.potential_revenue || 10000,
+        competitors: 0
+      }));
     }
-  ];
+    return [];
+  }).slice(0, 6);
 
-  const threats = [
-    {
-      title: 'Guerre des prix agressive',
-      description: '3 concurrents ont baissé leurs prix de 20% ce mois',
-      severity: 'high',
-      impact: 'Perte de parts de marché estimée à 15%'
-    },
-    {
-      title: 'Nouveaux entrants marketplace',
-      description: '2 nouvelles plateformes avec levées de fonds importantes',
-      severity: 'medium',
-      impact: 'Concurrence accrue sur l\'acquisition client'
+  // Extract threats from gap_opportunities and competitive data
+  const threats = analyses.flatMap(analysis => {
+    const threats: any[] = [];
+    
+    // From gap_opportunities
+    if (analysis.gap_opportunities && Array.isArray(analysis.gap_opportunities)) {
+      analysis.gap_opportunities.forEach((gap: any) => {
+        if (gap.competitor_advantage) {
+          threats.push({
+            title: gap.missing_feature || 'Écart concurrentiel',
+            description: gap.competitor_advantage,
+            severity: gap.implementation_priority === 'high' ? 'high' : 'medium',
+            impact: `Priorité d'implémentation: ${gap.implementation_priority || 'medium'}`
+          });
+        }
+      });
     }
-  ];
+    
+    // Add general threat level
+    if (analysis.threat_level && (analysis.threat_level === 'high' || analysis.threat_level === 'critical')) {
+      threats.push({
+        title: `Menace de ${analysis.competitor_name}`,
+        description: `Concurrent identifié comme menace ${analysis.threat_level}`,
+        severity: analysis.threat_level,
+        impact: 'Surveillance et action requises'
+      });
+    }
+    
+    return threats;
+  }).slice(0, 5);
+
+  // Fallback if no data
+  if (opportunities.length === 0 && threats.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-12">
+          <div className="text-center space-y-4">
+            <p className="text-muted-foreground">
+              Aucune donnée d'opportunité ou de menace disponible. Lancez des analyses concurrentielles pour voir les résultats.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const getPotentialBadge = (potential: string) => {
     const variants = {

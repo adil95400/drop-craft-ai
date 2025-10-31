@@ -8,54 +8,65 @@ interface ComparisonChartsProps {
 export function ComparisonCharts({ analyses }: ComparisonChartsProps) {
   const competitors = analyses.slice(0, 5);
 
+  // Calculate user's average price from first analysis
+  const userAvgPrice = analyses[0]?.price_analysis?.user_avg_price || 50;
+  const marketAvgPrice = analyses[0]?.price_analysis?.market_avg_price || 60;
+
   const priceData = [
-    { name: 'Votre App', price: 45, color: '#8b5cf6' },
+    { name: 'Votre App', price: userAvgPrice, color: '#8b5cf6' },
     ...competitors.map((comp, idx) => ({
       name: comp.competitor_name,
-      price: comp.price_analysis?.user_avg_price || Math.floor(Math.random() * 100) + 20,
+      price: comp.price_analysis?.market_avg_price || comp.price_analysis?.avg_price || marketAvgPrice,
       color: `hsl(${idx * 60}, 70%, 50%)`
     }))
   ];
 
+  // Calculate radar scores from competitive data
+  const calculateScore = (data: any, key: string, defaultValue: number = 70) => {
+    if (data?.competitive_data?.[key]) return data.competitive_data[key];
+    if (data?.price_analysis?.competitiveness) return data.price_analysis.competitiveness;
+    return defaultValue;
+  };
+
   const radarData = [
     {
       metric: 'Prix',
-      'Votre App': 75,
-      ...competitors.reduce((acc, comp) => ({
+      'Votre App': 100 - ((userAvgPrice / marketAvgPrice) * 100 - 100),
+      ...competitors.slice(0, 2).reduce((acc, comp) => ({
         ...acc,
-        [comp.competitor_name]: Math.floor(Math.random() * 40) + 60
+        [comp.competitor_name]: calculateScore(comp, 'price_score', 60)
       }), {})
     },
     {
       metric: 'Qualité',
-      'Votre App': 85,
-      ...competitors.reduce((acc, comp) => ({
+      'Votre App': analyses[0]?.competitive_data?.quality_score || 85,
+      ...competitors.slice(0, 2).reduce((acc, comp) => ({
         ...acc,
-        [comp.competitor_name]: Math.floor(Math.random() * 40) + 50
+        [comp.competitor_name]: comp.competitive_data?.quality_score || 70
       }), {})
     },
     {
       metric: 'SEO',
-      'Votre App': 70,
-      ...competitors.reduce((acc, comp) => ({
+      'Votre App': calculateScore(analyses[0], 'seo_score', 70),
+      ...competitors.slice(0, 2).reduce((acc, comp) => ({
         ...acc,
-        [comp.competitor_name]: Math.floor(Math.random() * 40) + 40
+        [comp.competitor_name]: calculateScore(comp, 'seo_score', 65)
       }), {})
     },
     {
       metric: 'UX',
-      'Votre App': 80,
-      ...competitors.reduce((acc, comp) => ({
+      'Votre App': calculateScore(analyses[0], 'ux_score', 80),
+      ...competitors.slice(0, 2).reduce((acc, comp) => ({
         ...acc,
-        [comp.competitor_name]: Math.floor(Math.random() * 40) + 45
+        [comp.competitor_name]: calculateScore(comp, 'ux_score', 70)
       }), {})
     },
     {
       metric: 'Service',
-      'Votre App': 90,
-      ...competitors.reduce((acc, comp) => ({
+      'Votre App': calculateScore(analyses[0], 'service_score', 90),
+      ...competitors.slice(0, 2).reduce((acc, comp) => ({
         ...acc,
-        [comp.competitor_name]: Math.floor(Math.random() * 40) + 50
+        [comp.competitor_name]: calculateScore(comp, 'service_score', 75)
       }), {})
     }
   ];

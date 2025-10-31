@@ -124,6 +124,63 @@ export function useCompetitiveAnalysis() {
     },
   });
 
+  // Extract comparative metrics from analyses
+  const getComparativeMetrics = () => {
+    if (!analyses || analyses.length === 0) return null;
+
+    const firstAnalysis = analyses[0];
+    const priceAnalysis = firstAnalysis?.price_analysis;
+    const competitiveData = firstAnalysis?.competitive_data;
+
+    return {
+      myApp: {
+        avgPrice: priceAnalysis?.user_avg_price || 0,
+        position: competitiveData?.market_position || 'challenger',
+        pricePosition: competitiveData?.price_position || 'competitive',
+        qualityScore: competitiveData?.quality_score || 75,
+        differentiationFactors: competitiveData?.differentiation_factors || [],
+      },
+      marketAvgPrice: priceAnalysis?.market_avg_price || 0,
+      priceGap: priceAnalysis?.price_gap_percentage || 0,
+    };
+  };
+
+  // Extract all opportunities from analyses
+  const getMarketOpportunities = () => {
+    if (!analyses || analyses.length === 0) return [];
+    
+    const allOpportunities: any[] = [];
+    analyses.forEach(analysis => {
+      if (analysis.market_position && Array.isArray(analysis.market_position)) {
+        allOpportunities.push(...analysis.market_position);
+      }
+    });
+    
+    return allOpportunities.slice(0, 10);
+  };
+
+  // Extract all threats from analyses
+  const getCompetitiveThreats = () => {
+    if (!analyses || analyses.length === 0) return [];
+    
+    const allThreats: any[] = [];
+    analyses.forEach(analysis => {
+      if (analysis.gap_opportunities && Array.isArray(analysis.gap_opportunities)) {
+        const threats = analysis.gap_opportunities
+          .filter((item: any) => item.threat_level || item.competitor_advantage)
+          .map((item: any) => ({
+            title: item.missing_feature || item.competitor || 'Menace concurrentielle',
+            description: item.competitor_advantage || item.description || '',
+            severity: item.threat_level || analysis.threat_level || 'medium',
+            impact: item.mitigation_strategy || `Priorité: ${item.implementation_priority || 'medium'}`,
+          }));
+        allThreats.push(...threats);
+      }
+    });
+    
+    return allThreats.slice(0, 10);
+  };
+
   return {
     analyses,
     isLoading,
@@ -132,5 +189,8 @@ export function useCompetitiveAnalysis() {
     deleteAnalysis,
     isAnalyzing: analyzeCompetitor.isPending,
     isTracking: trackCompetitorPrices.isPending,
+    getComparativeMetrics,
+    getMarketOpportunities,
+    getCompetitiveThreats,
   };
 }
