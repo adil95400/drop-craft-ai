@@ -1,13 +1,22 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Lightbulb, AlertCircle } from 'lucide-react';
+import { OpportunityDetailModal } from '@/components/competitive/OpportunityDetailModal';
 
 interface MarketGapsAnalysisProps {
   analyses: any[];
 }
 
 export function MarketGapsAnalysis({ analyses }: MarketGapsAnalysisProps) {
+  const [selectedOpportunity, setSelectedOpportunity] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleExplore = (opportunity: any) => {
+    setSelectedOpportunity(opportunity);
+    setIsModalOpen(true);
+  };
   // Extract opportunities from real data
   const opportunities = analyses.flatMap(analysis => {
     if (analysis.market_position && Array.isArray(analysis.market_position)) {
@@ -88,7 +97,14 @@ export function MarketGapsAnalysis({ analyses }: MarketGapsAnalysisProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <>
+      <OpportunityDetailModal 
+        opportunity={selectedOpportunity}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
+      
+      <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -109,7 +125,7 @@ export function MarketGapsAnalysis({ analyses }: MarketGapsAnalysisProps) {
                     </div>
                     <p className="text-sm text-muted-foreground">{opp.description}</p>
                   </div>
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" onClick={() => handleExplore(opp)}>
                     Explorer
                   </Button>
                 </div>
@@ -169,6 +185,7 @@ export function MarketGapsAnalysis({ analyses }: MarketGapsAnalysisProps) {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }

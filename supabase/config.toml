@@ -286,6 +286,12 @@ verify_jwt = false
 [functions.analyze-competitor]
 verify_jwt = false
 
+[functions.competitive-analysis]
+verify_jwt = true
+
+[functions.compare-competitors]
+verify_jwt = true
+
 [functions.public-api]
 verify_jwt = false
 

@@ -2,15 +2,19 @@ import { Helmet } from 'react-helmet-async';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { useCompetitiveAnalysis } from '@/hooks/useCompetitiveAnalysis';
 import { ComparisonTable } from '@/components/competitive/comparison/ComparisonTable';
 import { ComparisonCharts } from '@/components/competitive/comparison/ComparisonCharts';
 import { CompetitivePositioning } from '@/components/competitive/comparison/CompetitivePositioning';
 import { MarketGapsAnalysis } from '@/components/competitive/comparison/MarketGapsAnalysis';
 import { CompetitorSelector } from '@/components/competitive/CompetitorSelector';
-import { BarChart3, Target, TrendingUp, AlertTriangle } from 'lucide-react';
+import { ComparisonResultCard } from '@/components/competitive/ComparisonResultCard';
+import { BarChart3, Target, TrendingUp, AlertTriangle, PlusCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function CompetitiveComparisonPage() {
+  const navigate = useNavigate();
   const { analyses, isLoading, compareCompetitors, isComparing } = useCompetitiveAnalysis();
   const [comparisonResult, setComparisonResult] = useState<any>(null);
 
@@ -49,15 +53,48 @@ export default function CompetitiveComparisonPage() {
           </div>
         ) : !analyses || analyses.length === 0 ? (
           <Card>
-            <CardContent className="py-12">
-              <div className="text-center space-y-4">
-                <AlertTriangle className="w-12 h-12 mx-auto text-muted-foreground" />
-                <div>
-                  <h3 className="text-lg font-semibold">Aucune analyse disponible</h3>
+            <CardContent className="py-16">
+              <div className="text-center space-y-6 max-w-md mx-auto">
+                <div className="flex justify-center">
+                  <div className="p-4 bg-primary/10 rounded-full">
+                    <AlertTriangle className="w-12 h-12 text-primary" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-semibold">Aucune analyse disponible</h3>
                   <p className="text-muted-foreground">
-                    Commencez par analyser vos concurrents dans la section Analyse Concurrentielle
+                    Pour comparer votre application avec vos concurrents, vous devez d'abord lancer des analyses concurrentielles.
                   </p>
                 </div>
+                <div className="space-y-3 pt-4">
+                  <p className="text-sm font-medium">Comment démarrer :</p>
+                  <ol className="text-sm text-muted-foreground space-y-2 text-left">
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-primary">1.</span>
+                      <span>Allez dans la section "Analyse Concurrentielle"</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-primary">2.</span>
+                      <span>Ajoutez les URLs de vos principaux concurrents</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-primary">3.</span>
+                      <span>Lancez les analyses IA pour chaque concurrent</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-primary">4.</span>
+                      <span>Revenez ici pour voir la comparaison détaillée</span>
+                    </li>
+                  </ol>
+                </div>
+                <Button 
+                  size="lg" 
+                  className="gap-2"
+                  onClick={() => navigate('/competitor-analysis')}
+                >
+                  <PlusCircle className="w-5 h-5" />
+                  Analyser mes concurrents
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -93,20 +130,10 @@ export default function CompetitiveComparisonPage() {
                 isComparing={isComparing}
               />
               
-              {comparisonResult && (
-                <Card className="mt-6">
-                  <CardHeader>
-                    <CardTitle>Résultat de la Comparaison</CardTitle>
-                    <CardDescription>
-                      Analyse comparative de {comparisonResult.analyzedCompetitors?.length || 0} concurrents
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <pre className="text-xs bg-muted p-4 rounded-lg overflow-auto max-h-96">
-                      {JSON.stringify(comparisonResult.comparison, null, 2)}
-                    </pre>
-                  </CardContent>
-                </Card>
+              {comparisonResult && comparisonResult.comparison && (
+                <div className="mt-6">
+                  <ComparisonResultCard comparison={comparisonResult.comparison} />
+                </div>
               )}
             </TabsContent>
 
