@@ -12453,6 +12453,8 @@ export type Database = {
       log_sensitive_data_access: { Args: never; Returns: undefined }
       mask_customer_email: { Args: { email: string }; Returns: string }
       mask_customer_phone: { Args: { phone: string }; Returns: string }
+      mask_email: { Args: { email: string }; Returns: string }
+      mask_phone: { Args: { phone: string }; Returns: string }
       process_automation_trigger: {
         Args: { context_data?: Json; trigger_id: string }
         Returns: Json
