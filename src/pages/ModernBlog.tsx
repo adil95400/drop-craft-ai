@@ -203,7 +203,7 @@ export default function ModernBlog() {
   }));
 
   return (
-    <>
+    <PublicLayout>
       <SEO
         title="Blog E-commerce Pro | Stratégies Dropshipping, IA & Marketing Digital"
         description="Découvrez les stratégies gagnantes du dropshipping, les outils IA révolutionnaires et les techniques marketing qui font la différence. +50 guides experts."
@@ -487,8 +487,6 @@ export default function ModernBlog() {
           </div>
         </section>
       </div>
-    </PublicLayout>
+     </PublicLayout>
   );
 }
-
-export default ModernBlog

@@ -146,239 +146,238 @@ export default function FAQ() {
   })
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="flex justify-center">
-          <HelpCircle className="h-16 w-16 text-primary" />
+    <PublicLayout>
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <div className="flex justify-center">
+            <HelpCircle className="h-16 w-16 text-primary" />
+          </div>
+          <h1 className="text-4xl font-bold text-foreground">Centre d'Aide</h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Trouvez rapidement les réponses à vos questions ou contactez notre équipe support
+          </p>
         </div>
-        <h1 className="text-4xl font-bold text-foreground">Centre d'Aide</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Trouvez rapidement les réponses à vos questions ou contactez notre équipe support
-        </p>
-      </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
-          <TabsTrigger value="faq">FAQ</TabsTrigger>
-          <TabsTrigger value="guides">Guides</TabsTrigger>
-          <TabsTrigger value="contact">Contact</TabsTrigger>
-        </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
+            <TabsTrigger value="faq">FAQ</TabsTrigger>
+            <TabsTrigger value="guides">Guides</TabsTrigger>
+            <TabsTrigger value="contact">Contact</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="faq" className="space-y-6">
-          {/* Search & Filters */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    placeholder="Rechercher dans la FAQ..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant={selectedCategory === 'all' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setSelectedCategory('all')}
-                  >
-                    Toutes les catégories
-                  </Button>
-                  {faqCategories.map(category => (
+          <TabsContent value="faq" className="space-y-6">
+            {/* Search & Filters */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      placeholder="Rechercher dans la FAQ..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2">
                     <Button
-                      key={category.id}
-                      variant={selectedCategory === category.id ? 'default' : 'outline'}
+                      variant={selectedCategory === 'all' ? 'default' : 'outline'}
                       size="sm"
-                      onClick={() => setSelectedCategory(category.id)}
+                      onClick={() => setSelectedCategory('all')}
                     >
-                      {category.title} ({category.count})
+                      Toutes les catégories
                     </Button>
-                  ))}
+                    {faqCategories.map(category => (
+                      <Button
+                        key={category.id}
+                        variant={selectedCategory === category.id ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setSelectedCategory(category.id)}
+                      >
+                        {category.title} ({category.count})
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* FAQ Categories Overview */}
-          {!searchTerm && selectedCategory === 'all' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {faqCategories.map(category => (
-                <Card key={category.id} className="cursor-pointer hover:shadow-lg transition-shadow">
+            {/* FAQ Categories Overview */}
+            {!searchTerm && selectedCategory === 'all' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {faqCategories.map(category => (
+                  <Card key={category.id} className="cursor-pointer hover:shadow-lg transition-shadow">
+                    <CardHeader className="text-center">
+                      <CardTitle className="text-lg">{category.title}</CardTitle>
+                      <CardDescription>{category.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <Badge variant="outline">{category.count} questions</Badge>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {/* FAQ Questions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {searchTerm ? `Résultats pour "${searchTerm}"` : 'Questions Fréquentes'}
+                </CardTitle>
+                <CardDescription>
+                  {filteredQuestions.length} question(s) trouvée(s)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Accordion type="single" collapsible className="space-y-4">
+                  {filteredQuestions.map((question) => (
+                    <AccordionItem key={question.id} value={question.id.toString()}>
+                      <AccordionTrigger className="text-left">
+                        <div className="space-y-1">
+                          <div>{question.question}</div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              {question.category}
+                            </Badge>
+                            {question.tags.slice(0, 2).map(tag => (
+                              <Badge key={tag} variant="secondary" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="text-muted-foreground">
+                        {question.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+
+                {filteredQuestions.length === 0 && (
+                  <div className="text-center py-8">
+                    <HelpCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">
+                      Aucune question trouvée. Essayez d'autres mots-clés ou contactez notre support.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="guides" className="space-y-6">
+            <Card>
+              <CardContent className="text-center py-8">
+                <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h2 className="text-xl font-semibold mb-2">Guides Détaillés</h2>
+                <p className="text-muted-foreground mb-6">
+                  Accédez à nos guides complets et tutoriels vidéo
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                  <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Guide de Démarrage</CardTitle>
+                      <CardDescription>Configuration complète en 10 étapes</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Badge className="bg-green-100 text-green-800">Recommandé</Badge>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Import Avancé</CardTitle>
+                      <CardDescription>Maîtrisez tous les outils d'import</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Badge variant="outline">Avancé</Badge>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Optimisation SEO</CardTitle>
+                      <CardDescription>Boostez votre référencement</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Badge variant="secondary">Marketing</Badge>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="contact" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {contactOptions.map((option, index) => (
+                <Card key={index} className={`${!option.available ? 'opacity-50' : 'cursor-pointer hover:shadow-lg'} transition-all`}>
                   <CardHeader className="text-center">
-                    <CardTitle className="text-lg">{category.title}</CardTitle>
-                    <CardDescription>{category.description}</CardDescription>
+                    <div className="flex justify-center mb-4">
+                      <option.icon className="h-12 w-12 text-primary" />
+                    </div>
+                    <CardTitle>{option.title}</CardTitle>
+                    <CardDescription>{option.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="text-center">
-                    <Badge variant="outline">{category.count} questions</Badge>
+                    <Button 
+                      className="w-full" 
+                      disabled={!option.available}
+                      variant={option.available ? 'default' : 'outline'}
+                    >
+                      {option.action}
+                    </Button>
+                    {!option.available && (
+                      <p className="text-xs text-muted-foreground mt-2">Bientôt disponible</p>
+                    )}
                   </CardContent>
                 </Card>
               ))}
             </div>
-          )}
 
-          {/* FAQ Questions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {searchTerm ? `Résultats pour "${searchTerm}"` : 'Questions Fréquentes'}
-              </CardTitle>
-              <CardDescription>
-                {filteredQuestions.length} question(s) trouvée(s)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Accordion type="single" collapsible className="space-y-4">
-                {filteredQuestions.map((question) => (
-                  <AccordionItem key={question.id} value={question.id.toString()}>
-                    <AccordionTrigger className="text-left">
-                      <div className="space-y-1">
-                        <div>{question.question}</div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
-                            {question.category}
-                          </Badge>
-                          {question.tags.slice(0, 2).map(tag => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground">
-                      {question.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-
-              {filteredQuestions.length === 0 && (
-                <div className="text-center py-8">
-                  <HelpCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    Aucune question trouvée. Essayez d'autres mots-clés ou contactez notre support.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="guides" className="space-y-6">
-          <Card>
-            <CardContent className="text-center py-8">
-              <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Guides Détaillés</h2>
-              <p className="text-muted-foreground mb-6">
-                Accédez à nos guides complets et tutoriels vidéo
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
-                <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Guide de Démarrage</CardTitle>
-                    <CardDescription>Configuration complète en 10 étapes</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Badge className="bg-green-100 text-green-800">Recommandé</Badge>
-                  </CardContent>
-                </Card>
-                
-                <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Import Avancé</CardTitle>
-                    <CardDescription>Maîtrisez tous les outils d'import</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Badge variant="outline">Avancé</Badge>
-                  </CardContent>
-                </Card>
-                
-                <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Optimisation SEO</CardTitle>
-                    <CardDescription>Boostez votre référencement</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Badge variant="secondary">Marketing</Badge>
-                  </CardContent>
-                </Card>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="contact" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {contactOptions.map((option, index) => (
-              <Card key={index} className={`${!option.available ? 'opacity-50' : 'cursor-pointer hover:shadow-lg'} transition-all`}>
-                <CardHeader className="text-center">
-                  <div className="flex justify-center mb-4">
-                    <option.icon className="h-12 w-12 text-primary" />
+            {/* Quick Contact Form */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Contact Rapide</CardTitle>
+                <CardDescription>Envoyez-nous votre question directement</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium">Nom</label>
+                      <Input placeholder="Votre nom" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Email</label>
+                      <Input type="email" placeholder="votre@email.com" />
+                    </div>
                   </div>
-                  <CardTitle>{option.title}</CardTitle>
-                  <CardDescription>{option.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <Button 
-                    className="w-full" 
-                    disabled={!option.available}
-                    variant={option.available ? 'default' : 'outline'}
-                  >
-                    {option.action}
+                  <div>
+                    <label className="text-sm font-medium">Sujet</label>
+                    <Input placeholder="Sujet de votre demande" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Message</label>
+                    <textarea 
+                      className="w-full min-h-32 p-3 border rounded-md resize-none"
+                      placeholder="Décrivez votre problème ou question..."
+                    />
+                  </div>
+                  <Button className="w-full">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Envoyer le Message
                   </Button>
-                  {!option.available && (
-                    <p className="text-xs text-muted-foreground mt-2">Bientôt disponible</p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Quick Contact Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact Rapide</CardTitle>
-              <CardDescription>Envoyez-nous votre question directement</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">Nom</label>
-                    <Input placeholder="Votre nom" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Email</label>
-                    <Input type="email" placeholder="votre@email.com" />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Sujet</label>
-                  <Input placeholder="Sujet de votre demande" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Message</label>
-                  <textarea 
-                    className="w-full min-h-32 p-3 border rounded-md resize-none"
-                    placeholder="Décrivez votre problème ou question..."
-                  />
-                </div>
-                <Button className="w-full">
-                  <Mail className="h-4 w-4 mr-2" />
-                  Envoyer le Message
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </PublicLayout>
   )
 }
-
-export default FAQ
