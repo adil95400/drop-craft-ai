@@ -56,7 +56,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.unified-integrations]
-verify_jwt = false
+verify_jwt = true
 
 [functions.unified-payments]
 verify_jwt = true
@@ -68,10 +68,10 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.unified-import]
-verify_jwt = false
+verify_jwt = true
 
 [functions.marketing-integration]
-verify_jwt = false
+verify_jwt = true
 
 [functions.shopify-webhook]
 verify_jwt = false
@@ -92,31 +92,31 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.store-product-fetch]
-verify_jwt = false
+verify_jwt = true
 
 [functions.profit-calculator]
-verify_jwt = false
+verify_jwt = true
 
 [functions.competitor-tracker]
-verify_jwt = false
+verify_jwt = true
 
 [functions.pricing-rules-engine]
-verify_jwt = false
+verify_jwt = true
 
 [functions.store-product-import]
-verify_jwt = false
+verify_jwt = true
 
 [functions.store-product-export]
-verify_jwt = false
+verify_jwt = true
 
 [functions.store-connection-test]
-verify_jwt = false
+verify_jwt = true
 
 [functions.shopify-locations]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-realistic-data]
-verify_jwt = false
+verify_jwt = true
 
 [functions.creative-generation]
 verify_jwt = true
@@ -212,19 +212,19 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.ai-product-description]
-verify_jwt = false
+verify_jwt = true
 
 [functions.ai-marketing-content]
-verify_jwt = false
+verify_jwt = true
 
 [functions.ai-price-optimizer]
-verify_jwt = false
+verify_jwt = true
 
 [functions.ai-sentiment-analysis]
-verify_jwt = false
+verify_jwt = true
 
 [functions.ai-chatbot-support]
-verify_jwt = false
+verify_jwt = true
 
 [functions.multi-tenant]
 verify_jwt = true
