@@ -106,6 +106,33 @@ export function useCompetitiveAnalysis() {
     },
   });
 
+  const compareCompetitors = useMutation({
+    mutationFn: async ({ competitorIds }: { competitorIds: string[] }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Non authentifié');
+
+      const { data, error } = await supabase.functions.invoke('compare-competitors', {
+        body: { competitorIds },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Comparaison terminée',
+        description: 'Le rapport comparatif a été généré',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Impossible de comparer les concurrents',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const deleteAnalysis = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -186,9 +213,11 @@ export function useCompetitiveAnalysis() {
     isLoading,
     analyzeCompetitor,
     trackCompetitorPrices,
+    compareCompetitors,
     deleteAnalysis,
     isAnalyzing: analyzeCompetitor.isPending,
     isTracking: trackCompetitorPrices.isPending,
+    isComparing: compareCompetitors.isPending,
     getComparativeMetrics,
     getMarketOpportunities,
     getCompetitiveThreats,

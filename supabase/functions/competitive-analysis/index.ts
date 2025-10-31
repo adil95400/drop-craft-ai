@@ -80,26 +80,37 @@ ANALYSE DEMANDÉE:
 - Produit: ${productId || 'Tous les produits'}
 - Type: ${analysisType || 'competitive_positioning'}
 
-Analysez et fournissez:
+Analysez et fournissez une analyse complète incluant:
 1. Positionnement concurrentiel par prix et qualité
 2. Analyse des gaps de marché et opportunités
 3. Benchmark des prix et features
-4. Stratégies de différenciation recommandées
-5. Niveau de menace concurrentielle
-6. Recommandations d'actions stratégiques
+4. Scores détaillés (SEO, UX, Service, Mobile)
+5. Stratégies de différenciation recommandées
+6. Niveau de menace concurrentielle
+7. Recommandations d'actions stratégiques
+
+IMPORTANT: Calculez des scores réalistes basés sur les données fournies.
 
 Répondez UNIQUEMENT en JSON valide:
 {
   "competitive_positioning": {
     "market_position": "leader|challenger|follower|niche",
     "price_position": "premium|competitive|budget",
-    "quality_score": number,
+    "quality_score": number (0-100),
+    "seo_score": number (0-100),
+    "ux_score": number (0-100),
+    "service_score": number (0-100),
+    "mobile_optimized": boolean,
+    "fast_shipping": boolean,
+    "customer_reviews": boolean,
+    "product_count": number,
     "differentiation_factors": [string]
   },
   "price_analysis": {
     "user_avg_price": number,
     "market_avg_price": number,
     "price_gap_percentage": number,
+    "competitiveness": number (0-100),
     "pricing_recommendations": [string]
   },
   "market_opportunities": [
@@ -107,7 +118,8 @@ Répondez UNIQUEMENT en JSON valide:
       "category": string,
       "opportunity": string,
       "potential_revenue": number,
-      "difficulty": "low|medium|high"
+      "difficulty": "low|medium|high",
+      "description": string
     }
   ],
   "competitive_threats": [
@@ -152,7 +164,7 @@ Répondez UNIQUEMENT en JSON valide:
       body: JSON.stringify({
         model: 'gpt-5-2025-08-07',
         messages: [{ role: 'user', content: prompt }],
-        max_completion_tokens: 2500,
+        max_completion_tokens: 3000,
       }),
     });
 

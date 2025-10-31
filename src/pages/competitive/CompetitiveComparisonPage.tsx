@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCompetitiveAnalysis } from '@/hooks/useCompetitiveAnalysis';
@@ -6,10 +7,21 @@ import { ComparisonTable } from '@/components/competitive/comparison/ComparisonT
 import { ComparisonCharts } from '@/components/competitive/comparison/ComparisonCharts';
 import { CompetitivePositioning } from '@/components/competitive/comparison/CompetitivePositioning';
 import { MarketGapsAnalysis } from '@/components/competitive/comparison/MarketGapsAnalysis';
+import { CompetitorSelector } from '@/components/competitive/CompetitorSelector';
 import { BarChart3, Target, TrendingUp, AlertTriangle } from 'lucide-react';
 
 export default function CompetitiveComparisonPage() {
-  const { analyses, isLoading } = useCompetitiveAnalysis();
+  const { analyses, isLoading, compareCompetitors, isComparing } = useCompetitiveAnalysis();
+  const [comparisonResult, setComparisonResult] = useState<any>(null);
+
+  const handleCompare = async (selectedIds: string[]) => {
+    try {
+      const result = await compareCompetitors.mutateAsync({ competitorIds: selectedIds });
+      setComparisonResult(result);
+    } catch (error) {
+      console.error('Error comparing competitors:', error);
+    }
+  };
 
   return (
     <>
@@ -50,8 +62,12 @@ export default function CompetitiveComparisonPage() {
             </CardContent>
           </Card>
         ) : (
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+          <Tabs defaultValue="selector" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="selector" className="flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                Sélection
+              </TabsTrigger>
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Vue d'ensemble
@@ -69,6 +85,30 @@ export default function CompetitiveComparisonPage() {
                 Détails
               </TabsTrigger>
             </TabsList>
+
+            <TabsContent value="selector">
+              <CompetitorSelector 
+                analyses={analyses} 
+                onCompare={handleCompare}
+                isComparing={isComparing}
+              />
+              
+              {comparisonResult && (
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle>Résultat de la Comparaison</CardTitle>
+                    <CardDescription>
+                      Analyse comparative de {comparisonResult.analyzedCompetitors?.length || 0} concurrents
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <pre className="text-xs bg-muted p-4 rounded-lg overflow-auto max-h-96">
+                      {JSON.stringify(comparisonResult.comparison, null, 2)}
+                    </pre>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
 
             <TabsContent value="overview">
               <div className="space-y-6">
