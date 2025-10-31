@@ -1,97 +1,15 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Helmet } from 'react-helmet-async';
-import { SidebarLayout } from '@/layouts/SidebarLayout';
+import { PublicLayout } from '@/layouts/PublicLayout';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Crown, Zap, Users, Star, ArrowRight, TrendingUp, Shield, Globe, CheckCircle2, Package, ShoppingCart, BarChart3, Sparkles, Clock, MessageSquare, DollarSign, Settings, Rocket, Target, Menu, X } from "lucide-react";
+import { Loader2, Crown, Zap, Users, Star, ArrowRight, TrendingUp, Shield, Globe, CheckCircle2, Package, ShoppingCart, BarChart3, Sparkles, Clock, MessageSquare, DollarSign, Settings, Rocket, Target } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import { useState } from "react";
-import FooterNavigation from "@/components/navigation/FooterNavigation";
 import heroImage from "@/assets/hero-automation.jpg";
 import featureAI from "@/assets/feature-ai.jpg";
 import featureIntegration from "@/assets/feature-integration.jpg";
 import featureAnalytics from "@/assets/feature-analytics.jpg";
-
-// Navigation Header Component
-const LandingHeader = () => {
-  const navigate = useNavigate();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
-  return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-hero rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
-            </div>
-            <span className="text-lg sm:text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">ShopOpti+</span>
-          </div>
-          
-          <nav className="hidden md:flex items-center gap-6">
-            <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Tarifs
-            </Link>
-            <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              À propos
-            </Link>
-            <Link to="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Blog
-            </Link>
-            <Link to="/contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Contact
-            </Link>
-          </nav>
-          
-          <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" onClick={() => navigate('/auth')}>
-              Connexion
-            </Button>
-            <Button onClick={() => navigate('/auth')}>
-              Commencer
-            </Button>
-          </div>
-          
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="md:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
-        </div>
-        
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-3 border-t">
-            <Link to="/pricing" className="block px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Tarifs
-            </Link>
-            <Link to="/about" className="block px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              À propos
-            </Link>
-            <Link to="/blog" className="block px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Blog
-            </Link>
-            <Link to="/contact" className="block px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Contact
-            </Link>
-            <div className="px-4 pt-2 space-y-2">
-              <Button variant="ghost" className="w-full" onClick={() => navigate('/auth')}>
-                Connexion
-              </Button>
-              <Button className="w-full" onClick={() => navigate('/auth')}>
-                Commencer
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-    </header>
-  );
-};
 
 // Hero Section
 const HeroSection = () => {
@@ -715,28 +633,24 @@ const Index = () => {
   }
 
   return (
-    <>
+    <PublicLayout>
       <Helmet>
         <title>ShopOpti+ | Plateforme SaaS de Dropshipping Intelligent avec IA</title>
         <meta name="description" content="Automatisez votre e-commerce avec ShopOpti+. 99+ fournisseurs, IA avancée, gestion multi-plateformes. Essai gratuit 14 jours sans engagement." />
         <meta name="keywords" content="dropshipping, e-commerce, automatisation, IA, SaaS, Shopify, AliExpress, BigBuy, gestion produits, analytics" />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        <LandingHeader />
-        <main>
-          <HeroSection />
-          <StatsSection />
-          <FeaturesSection />
-          <BenefitsSection />
-          <UseCasesSection />
-          <PricingPreviewSection />
-          <TestimonialsSection />
-          <FinalCTASection />
-        </main>
-        <FooterNavigation />
-      </div>
-    </>
+      <main>
+        <HeroSection />
+        <StatsSection />
+        <FeaturesSection />
+        <BenefitsSection />
+        <UseCasesSection />
+        <PricingPreviewSection />
+        <TestimonialsSection />
+        <FinalCTASection />
+      </main>
+    </PublicLayout>
   );
 };
 
