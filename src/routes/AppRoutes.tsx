@@ -17,6 +17,9 @@ import ImportAdvancedPage from '@/pages/ImportAdvancedPage'
 import SyncManagerPage from '@/pages/SyncManagerPage'
 import OrdersCenterPage from '@/pages/OrdersCenterPage'
 import MarketingPage from '@/pages/MarketingPage'
+import AIOptimizationPage from '@/pages/features/AIOptimizationPage'
+import MultiMarketplacePage from '@/pages/features/MultiMarketplacePage'
+import AnalyticsPage from '@/pages/features/AnalyticsPage'
 
 export function AppRoutes() {
   return (

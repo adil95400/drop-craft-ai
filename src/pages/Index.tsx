@@ -140,27 +140,32 @@ const StatsSection = () => {
 
 // Features Section with Images
 const FeaturesSection = () => {
+  const navigate = useNavigate()
+  
   const features = [
     {
       icon: Sparkles,
       title: "IA d'optimisation",
       description: "Optimisez automatiquement vos prix, descriptions produits et SEO grâce à l'intelligence artificielle avancée.",
       image: featureAI,
-      color: "from-purple-500 to-pink-500"
+      color: "from-purple-500 to-pink-500",
+      link: "/features/ai-optimization"
     },
     {
       icon: Globe,
       title: "Multi-marketplace",
       description: "Gérez Shopify, WooCommerce, PrestaShop et plus depuis une seule plateforme centralisée.",
       image: featureIntegration,
-      color: "from-blue-500 to-cyan-500"
+      color: "from-blue-500 to-cyan-500",
+      link: "/features/multi-marketplace"
     },
     {
       icon: BarChart3,
       title: "Analytics avancés",
       description: "Tableaux de bord en temps réel avec insights business et prévisions de ventes powered by AI.",
       image: featureAnalytics,
-      color: "from-green-500 to-emerald-500"
+      color: "from-green-500 to-emerald-500",
+      link: "/features/analytics"
     }
   ];
   
@@ -211,7 +216,7 @@ const FeaturesSection = () => {
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-bold">{feature.title}</h3>
                   <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">{feature.description}</p>
-                  <Button variant="outline" className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate(feature.link)}>
                     En savoir plus
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>

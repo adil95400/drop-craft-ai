@@ -33,6 +33,9 @@ const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
 const About = lazy(() => import('@/pages/About'));
 const Features = lazy(() => import('@/pages/Features'));
 const Documentation = lazy(() => import('@/pages/Documentation'));
+const AIOptimizationPage = lazy(() => import('@/pages/features/AIOptimizationPage'));
+const MultiMarketplacePage = lazy(() => import('@/pages/features/MultiMarketplacePage'));
+const AnalyticsPage = lazy(() => import('@/pages/features/AnalyticsPage'));
 
 // Lazy load all other pages for performance
 const DashboardHome = lazy(() => import('@/pages/DashboardHome'));
@@ -193,6 +196,9 @@ function App() {
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<TermsOfService />} />
                         <Route path="/about" element={<About />} />
+                        <Route path="/features/ai-optimization" element={<AIOptimizationPage />} />
+                        <Route path="/features/multi-marketplace" element={<MultiMarketplacePage />} />
+                        <Route path="/features/analytics" element={<AnalyticsPage />} />
                         
                         {/* Redirect old paths */}
                         <Route path="/guides" element={<Navigate to="/documentation" replace />} />
