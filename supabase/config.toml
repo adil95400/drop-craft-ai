@@ -331,6 +331,15 @@ verify_jwt = true
 [functions.customer-intelligence]
 verify_jwt = false
 
+[functions.quick-dropshipping-setup]
+verify_jwt = true
+
+[functions.premium-supplier-connect]
+verify_jwt = true
+
+[functions.dropshipping-automation]
+verify_jwt = true
+
 [functions.webhook-delivery]
 verify_jwt = false
 

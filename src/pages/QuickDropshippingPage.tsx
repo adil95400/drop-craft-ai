@@ -7,14 +7,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
-import { Zap, ShoppingCart, TrendingUp, Package, Settings, PlayCircle, ChevronRight } from 'lucide-react'
+import { useQuickDropshipping } from '@/hooks/useQuickDropshipping'
+import { Zap, ShoppingCart, TrendingUp, Package, Settings, PlayCircle, ChevronRight, Loader2 } from 'lucide-react'
 
 export default function QuickDropshippingPage() {
   const { toast } = useToast()
-  const [autoImport, setAutoImport] = useState(false)
-  const [autoFulfill, setAutoFulfill] = useState(false)
-  const [priceOptimization, setPriceOptimization] = useState(true)
+  const { 
+    config, 
+    stats, 
+    setupStore, 
+    isSettingUp, 
+    updateAutomationRules, 
+    isUpdatingRules,
+    syncInventory,
+    isSyncing,
+    optimizePrices,
+    isOptimizing
+  } = useQuickDropshipping()
+  
+  const [autoImport, setAutoImport] = useState(config?.auto_import || false)
+  const [autoFulfill, setAutoFulfill] = useState(config?.auto_fulfill || false)
+  const [priceOptimization, setPriceOptimization] = useState(config?.price_optimization ?? true)
+  const [targetMargin, setTargetMargin] = useState(config?.target_margin || 30)
+  const [syncFrequency, setSyncFrequency] = useState(config?.sync_frequency || '1hour')
   const [selectedSupplier, setSelectedSupplier] = useState<string>('')
+  const [minPrice, setMinPrice] = useState<number>()
+  const [maxPrice, setMaxPrice] = useState<number>()
+  const [minRating, setMinRating] = useState('4.5')
+  const [maxShippingDays, setMaxShippingDays] = useState('30')
 
   const suppliers = [
     { id: 'aliexpress', name: 'AliExpress', products: '100M+' },
@@ -47,7 +67,7 @@ export default function QuickDropshippingPage() {
     },
   ]
 
-  const handleQuickStart = async (template: typeof quickTemplates[0]) => {
+  const handleQuickStart = (template: typeof quickTemplates[0]) => {
     if (!selectedSupplier) {
       toast({
         title: "Fournisseur requis",
@@ -57,18 +77,39 @@ export default function QuickDropshippingPage() {
       return
     }
 
-    toast({
-      title: "Démarrage en cours...",
-      description: `Configuration du store avec ${template.title}`,
+    setupStore({
+      template,
+      supplier: selectedSupplier,
+      automationRules: {
+        autoImport,
+        autoFulfill,
+        priceOptimization,
+        targetMargin,
+        syncFrequency
+      }
     })
+  }
 
-    // Simulation - En production, appeler l'edge function
-    setTimeout(() => {
-      toast({
-        title: "Store configuré !",
-        description: "Import des produits en cours...",
-      })
-    }, 2000)
+  const handleSaveRules = () => {
+    updateAutomationRules({
+      autoImport,
+      autoFulfill,
+      priceOptimization,
+      targetMargin,
+      syncFrequency,
+      filters: { minPrice, maxPrice, minRating: parseFloat(minRating), maxShippingDays: parseInt(maxShippingDays) }
+    })
+  }
+
+  const handleApplyFilters = () => {
+    updateAutomationRules({
+      autoImport,
+      autoFulfill,
+      priceOptimization,
+      targetMargin,
+      syncFrequency,
+      filters: { minPrice, maxPrice, minRating: parseFloat(minRating), maxShippingDays: parseInt(maxShippingDays) }
+    })
   }
 
   return (
@@ -173,9 +214,18 @@ export default function QuickDropshippingPage() {
                       <Button 
                         className="w-full gap-2" 
                         onClick={() => handleQuickStart(template)}
-                        disabled={!selectedSupplier}
+                        disabled={!selectedSupplier || isSettingUp}
                       >
-                        Démarrer <ChevronRight className="h-4 w-4" />
+                        {isSettingUp ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Configuration...
+                          </>
+                        ) : (
+                          <>
+                            Démarrer <ChevronRight className="h-4 w-4" />
+                          </>
+                        )}
                       </Button>
                     </Card>
                   )
@@ -222,14 +272,19 @@ export default function QuickDropshippingPage() {
                 <div className="space-y-3">
                   <Label>Marge bénéficiaire cible</Label>
                   <div className="flex gap-4 items-center">
-                    <Input type="number" defaultValue="30" className="w-32" />
+                    <Input 
+                      type="number" 
+                      value={targetMargin} 
+                      onChange={(e) => setTargetMargin(parseFloat(e.target.value))}
+                      className="w-32" 
+                    />
                     <span className="text-sm text-muted-foreground">%</span>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <Label>Fréquence de synchronisation</Label>
-                  <Select defaultValue="1hour">
+                  <Select value={syncFrequency} onValueChange={setSyncFrequency}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -243,9 +298,20 @@ export default function QuickDropshippingPage() {
                 </div>
               </div>
 
-              <Button className="w-full" size="lg">
-                Sauvegarder les règles
-              </Button>
+              <div className="flex gap-3">
+                <Button className="flex-1" size="lg" onClick={handleSaveRules} disabled={isUpdatingRules}>
+                  {isUpdatingRules ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Sauvegarder les règles
+                </Button>
+                <Button variant="outline" size="lg" onClick={() => syncInventory()} disabled={isSyncing}>
+                  {isSyncing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Sync Stock
+                </Button>
+                <Button variant="outline" size="lg" onClick={() => optimizePrices()} disabled={isOptimizing}>
+                  {isOptimizing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Optimiser Prix
+                </Button>
+              </div>
             </Card>
           </TabsContent>
 
@@ -256,17 +322,27 @@ export default function QuickDropshippingPage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <Label>Filtre de prix minimum</Label>
-                  <Input type="number" placeholder="10" />
+                  <Input 
+                    type="number" 
+                    placeholder="10" 
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(parseFloat(e.target.value))}
+                  />
                 </div>
 
                 <div className="space-y-3">
                   <Label>Filtre de prix maximum</Label>
-                  <Input type="number" placeholder="1000" />
+                  <Input 
+                    type="number" 
+                    placeholder="1000"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(parseFloat(e.target.value))}
+                  />
                 </div>
 
                 <div className="space-y-3">
                   <Label>Note minimum du fournisseur</Label>
-                  <Select defaultValue="4.5">
+                  <Select value={minRating} onValueChange={setMinRating}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -280,7 +356,7 @@ export default function QuickDropshippingPage() {
 
                 <div className="space-y-3">
                   <Label>Délai de livraison max</Label>
-                  <Select defaultValue="30">
+                  <Select value={maxShippingDays} onValueChange={setMaxShippingDays}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -293,7 +369,8 @@ export default function QuickDropshippingPage() {
                 </div>
               </div>
 
-              <Button className="w-full" size="lg">
+              <Button className="w-full" size="lg" onClick={handleApplyFilters} disabled={isUpdatingRules}>
+                {isUpdatingRules ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Appliquer les filtres
               </Button>
             </Card>
@@ -306,7 +383,7 @@ export default function QuickDropshippingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Produits importés</p>
-                <p className="text-2xl font-bold">0</p>
+                <p className="text-2xl font-bold">{stats?.products || 0}</p>
               </div>
               <Package className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -316,7 +393,7 @@ export default function QuickDropshippingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Commandes auto</p>
-                <p className="text-2xl font-bold">0</p>
+                <p className="text-2xl font-bold">{stats?.autoOrders || 0}</p>
               </div>
               <ShoppingCart className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -326,7 +403,9 @@ export default function QuickDropshippingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Taux de conversion</p>
-                <p className="text-2xl font-bold">0%</p>
+                <p className="text-2xl font-bold">
+                  {stats?.products ? Math.round((stats.autoOrders / stats.products) * 100) : 0}%
+                </p>
               </div>
               <TrendingUp className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -336,9 +415,9 @@ export default function QuickDropshippingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Syncs actives</p>
-                <p className="text-2xl font-bold">0</p>
+                <p className="text-2xl font-bold">{stats?.syncs || 0}</p>
               </div>
-              <Settings className="h-8 w-8 text-muted-foreground animate-spin" />
+              <Settings className={`h-8 w-8 text-muted-foreground ${isSyncing ? 'animate-spin' : ''}`} />
             </div>
           </Card>
         </div>

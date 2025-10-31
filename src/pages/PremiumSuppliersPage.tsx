@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
-import { Star, MapPin, Clock, Shield, Package, Search } from 'lucide-react'
+import { usePremiumSuppliers } from '@/hooks/usePremiumSuppliers'
+import { Star, MapPin, Clock, Shield, Package, Search, Loader2 } from 'lucide-react'
 
 interface Supplier {
   id: string
@@ -22,6 +23,14 @@ interface Supplier {
 
 export default function PremiumSuppliersPage() {
   const { toast } = useToast()
+  const { 
+    suppliers: realSuppliers, 
+    connections, 
+    connectSupplier, 
+    isConnecting,
+    isLoadingSuppliers 
+  } = usePremiumSuppliers()
+  
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCountry, setSelectedCountry] = useState<string>('all')
 
@@ -102,18 +111,41 @@ export default function PremiumSuppliersPage() {
 
   const countries = ['all', 'USA', 'France', 'Allemagne', 'UK', 'Italie', 'Suède']
 
-  const filteredSuppliers = premiumSuppliers.filter(supplier => {
+  // Utiliser les vrais fournisseurs ou les mock data
+  const displaySuppliers = (realSuppliers && realSuppliers.length > 0) ? 
+    realSuppliers.map(s => ({
+      id: s.id,
+      name: s.name,
+      country: s.country,
+      rating: 4.7,
+      reviews: s.product_count || 0,
+      products: s.product_count || 0,
+      shipping_time: `${s.avg_delivery_days}-${s.avg_delivery_days + 2} jours`,
+      verified: s.is_active,
+      specialties: s.categories || [],
+      avg_price: `${s.minimum_order_value || 15}-${s.minimum_order_value ? s.minimum_order_value * 5 : 100}€`
+    })) : premiumSuppliers
+
+  const filteredSuppliers = displaySuppliers.filter(supplier => {
     const matchesSearch = supplier.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          supplier.specialties.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
     const matchesCountry = selectedCountry === 'all' || supplier.country === selectedCountry
     return matchesSearch && matchesCountry
   })
 
-  const handleConnect = (supplier: Supplier) => {
-    toast({
-      title: "Connexion en cours...",
-      description: `Connexion avec ${supplier.name}`,
-    })
+  const handleConnect = (supplierId: string) => {
+    connectSupplier(supplierId)
+  }
+
+  if (isLoadingSuppliers) {
+    return (
+      <div className="min-h-screen bg-background p-6 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Chargement des fournisseurs premium...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -203,7 +235,7 @@ export default function PremiumSuppliersPage() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="suppliers">Fournisseurs ({filteredSuppliers.length})</TabsTrigger>
             <TabsTrigger value="trending">Tendances</TabsTrigger>
-            <TabsTrigger value="connected">Mes Connexions (0)</TabsTrigger>
+            <TabsTrigger value="connected">Mes Connexions ({connections?.length || 0})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="suppliers" className="space-y-4">
@@ -257,9 +289,17 @@ export default function PremiumSuppliersPage() {
                       </p>
                       <Button 
                         className="w-full" 
-                        onClick={() => handleConnect(supplier)}
+                        onClick={() => handleConnect(supplier.id)}
+                        disabled={isConnecting}
                       >
-                        Connecter ce fournisseur
+                        {isConnecting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Connexion...
+                          </>
+                        ) : (
+                          'Connecter ce fournisseur'
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -298,16 +338,37 @@ export default function PremiumSuppliersPage() {
           </TabsContent>
 
           <TabsContent value="connected" className="space-y-4">
-            <Card className="p-12 text-center">
-              <Shield className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Aucune connexion active</h3>
-              <p className="text-muted-foreground mb-6">
-                Connectez-vous à des fournisseurs premium pour commencer
-              </p>
-              <Button>
-                Parcourir les fournisseurs
-              </Button>
-            </Card>
+            {connections && connections.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {connections.map((connection: any) => (
+                  <Card key={connection.id} className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold">{connection.supplier?.name}</h3>
+                      <Badge variant={connection.status === 'active' ? 'default' : 'secondary'}>
+                        {connection.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Connecté depuis {new Date(connection.created_at).toLocaleDateString('fr-FR')}
+                    </p>
+                    <Button variant="outline" className="w-full">
+                      Gérer la connexion
+                    </Button>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="p-12 text-center">
+                <Shield className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Aucune connexion active</h3>
+                <p className="text-muted-foreground mb-6">
+                  Connectez-vous à des fournisseurs premium pour commencer
+                </p>
+                <Button>
+                  Parcourir les fournisseurs
+                </Button>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
 

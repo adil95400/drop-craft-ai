@@ -3182,6 +3182,54 @@ export type Database = {
         }
         Relationships: []
       }
+      dropshipping_configs: {
+        Row: {
+          auto_fulfill: boolean | null
+          auto_import: boolean | null
+          created_at: string | null
+          filter_settings: Json | null
+          id: string
+          price_optimization: boolean | null
+          status: string | null
+          supplier_platform: string
+          sync_frequency: string | null
+          target_margin: number | null
+          template_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_fulfill?: boolean | null
+          auto_import?: boolean | null
+          created_at?: string | null
+          filter_settings?: Json | null
+          id?: string
+          price_optimization?: boolean | null
+          status?: string | null
+          supplier_platform: string
+          sync_frequency?: string | null
+          target_margin?: number | null
+          template_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_fulfill?: boolean | null
+          auto_import?: boolean | null
+          created_at?: string | null
+          filter_settings?: Json | null
+          id?: string
+          price_optimization?: boolean | null
+          status?: string | null
+          supplier_platform?: string
+          sync_frequency?: string | null
+          target_margin?: number | null
+          template_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       dynamic_discounts: {
         Row: {
           conditions: Json
