@@ -9,21 +9,46 @@ import MultiTenantPage from '@/pages/MultiTenantPage'
 import AdvancedMonitoringPage from '@/pages/AdvancedMonitoringPage'
 import ImportSourcesPage from '@/pages/ImportSourcesPage'
 import ModulesOverview from '@/pages/ModulesOverview'
+import Dashboard from '@/pages/Dashboard'
+import OrdersPage from '@/pages/OrdersPage'
+import CustomersPage from '@/pages/CustomersPage'
+import ProductsPage from '@/pages/ProductsPage'
+import ImportAdvancedPage from '@/pages/ImportAdvancedPage'
+import SyncManagerPage from '@/pages/SyncManagerPage'
+import OrdersCenterPage from '@/pages/OrdersCenterPage'
+import MarketingPage from '@/pages/MarketingPage'
 
 export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Navigate to="/stores" replace />} />
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        
+        {/* Main Pages */}
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="orders" element={<OrdersPage />} />
+        <Route path="customers" element={<CustomersPage />} />
+        <Route path="products" element={<ProductsPage />} />
+        
+        {/* Import & Sync */}
+        <Route path="import" element={<ImportSourcesPage />} />
+        <Route path="import/advanced" element={<ImportAdvancedPage />} />
+        <Route path="import/sources" element={<ImportSourcesPage />} />
+        <Route path="sync-manager" element={<SyncManagerPage />} />
+        <Route path="orders-center" element={<OrdersCenterPage />} />
+        
+        {/* Stores & Modules */}
         <Route path="modules" element={<ModulesOverview />} />
         <Route path="stores" element={<StoreDashboard />} />
         <Route path="stores/connect" element={<ConnectStorePage />} />
         <Route path="stores/integrations" element={<IntegrationsPage />} />
         <Route path="stores/integrations/:id" element={<ManageIntegrationPage />} />
+        
+        {/* Advanced Features */}
+        <Route path="marketing" element={<MarketingPage />} />
         <Route path="marketplace-hub" element={<MarketplaceHubPage />} />
         <Route path="multi-tenant" element={<MultiTenantPage />} />
         <Route path="observability" element={<AdvancedMonitoringPage />} />
-        <Route path="import/sources" element={<ImportSourcesPage />} />
       </Route>
     </Routes>
   )

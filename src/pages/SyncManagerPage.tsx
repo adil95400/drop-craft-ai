@@ -1,373 +1,219 @@
-import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { useToast } from '@/hooks/use-toast'
-import { Helmet } from 'react-helmet-async'
-import { 
-  RefreshCw, CheckCircle, AlertCircle, Clock,
-  Activity, Zap, Settings, TrendingUp,
-  Database, Package, ShoppingCart, Users
-} from 'lucide-react'
-
-interface SyncSource {
-  id: string
-  name: string
-  type: 'products' | 'orders' | 'inventory' | 'customers'
-  platform: string
-  status: 'active' | 'paused' | 'error'
-  lastSync: string
-  nextSync: string
-  autoSync: boolean
-  syncFrequency: string
-  recordsSynced: number
-}
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { RefreshCw, Check, AlertCircle, Settings, Play } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
+import { useToast } from '@/hooks/use-toast';
 
 export default function SyncManagerPage() {
-  const { toast } = useToast()
-  const [sources, setSources] = useState<SyncSource[]>([
+  const { toast } = useToast();
+  const [syncing, setSyncing] = useState(false);
+
+  const syncSources = [
     {
-      id: '1',
-      name: 'Shopify Store',
-      type: 'products',
-      platform: 'Shopify',
+      id: 1,
+      name: 'WooCommerce',
       status: 'active',
-      lastSync: 'Il y a 15 min',
-      nextSync: 'Dans 45 min',
-      autoSync: true,
-      syncFrequency: 'Toutes les heures',
-      recordsSynced: 1250
+      lastSync: '2025-10-31 10:30',
+      products: 234,
+      orders: 45
     },
     {
-      id: '2',
-      name: 'WooCommerce Orders',
-      type: 'orders',
-      platform: 'WooCommerce',
+      id: 2,
+      name: 'Shopify',
       status: 'active',
-      lastSync: 'Il y a 5 min',
-      nextSync: 'Dans 25 min',
-      autoSync: true,
-      syncFrequency: 'Toutes les 30 min',
-      recordsSynced: 342
+      lastSync: '2025-10-31 09:15',
+      products: 156,
+      orders: 28
     },
     {
-      id: '3',
-      name: 'AliExpress Inventory',
-      type: 'inventory',
-      platform: 'AliExpress',
+      id: 3,
+      name: 'PrestaShop',
       status: 'error',
-      lastSync: 'Il y a 2h',
-      nextSync: 'Pause',
-      autoSync: false,
-      syncFrequency: 'Manuel',
-      recordsSynced: 0
-    },
-    {
-      id: '4',
-      name: 'Amazon Customers',
-      type: 'customers',
-      platform: 'Amazon',
-      status: 'paused',
-      lastSync: 'Il y a 1j',
-      nextSync: 'Pause',
-      autoSync: false,
-      syncFrequency: 'Quotidien',
-      recordsSynced: 89
+      lastSync: '2025-10-30 16:20',
+      products: 89,
+      orders: 12
     }
-  ])
+  ];
 
-  const [syncing, setSyncing] = useState<string | null>(null)
-
-  const handleSync = async (sourceId: string) => {
-    setSyncing(sourceId)
-    
-    setTimeout(() => {
-      setSyncing(null)
-      setSources(prev => prev.map(source => 
-        source.id === sourceId 
-          ? { ...source, lastSync: 'À l\'instant', status: 'active' as const }
-          : source
-      ))
+  const handleSync = async (sourceId: number) => {
+    setSyncing(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
       toast({
         title: "Synchronisation réussie",
         description: "Les données ont été synchronisées avec succès"
-      })
-    }, 2000)
-  }
-
-  const handleToggleAutoSync = (sourceId: string, enabled: boolean) => {
-    setSources(prev => prev.map(source =>
-      source.id === sourceId
-        ? { ...source, autoSync: enabled, status: enabled ? 'active' as const : 'paused' as const }
-        : source
-    ))
-    
-    toast({
-      title: enabled ? "Sync auto activée" : "Sync auto désactivée",
-      description: `La synchronisation automatique a été ${enabled ? 'activée' : 'désactivée'}`
-    })
-  }
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'products': return <Package className="h-5 w-5" />
-      case 'orders': return <ShoppingCart className="h-5 w-5" />
-      case 'inventory': return <Database className="h-5 w-5" />
-      case 'customers': return <Users className="h-5 w-5" />
-      default: return <Activity className="h-5 w-5" />
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur de synchronisation",
+        description: "Une erreur est survenue",
+        variant: "destructive"
+      });
+    } finally {
+      setSyncing(false);
     }
-  }
+  };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active':
-        return <Badge className="gap-1"><CheckCircle className="h-3 w-3" />Actif</Badge>
-      case 'paused':
-        return <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" />En pause</Badge>
-      case 'error':
-        return <Badge variant="destructive" className="gap-1"><AlertCircle className="h-3 w-3" />Erreur</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
+      case 'active': return 'default';
+      case 'error': return 'destructive';
+      case 'syncing': return 'secondary';
+      default: return 'outline';
     }
-  }
+  };
 
-  const stats = {
-    totalSyncs: sources.length,
-    activeSyncs: sources.filter(s => s.status === 'active').length,
-    totalRecords: sources.reduce((acc, s) => acc + s.recordsSynced, 0),
-    errorSyncs: sources.filter(s => s.status === 'error').length
-  }
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active': return Check;
+      case 'error': return AlertCircle;
+      case 'syncing': return RefreshCw;
+      default: return RefreshCw;
+    }
+  };
 
   return (
     <>
       <Helmet>
-        <title>Sync Manager - Drop Craft AI</title>
-        <meta name="description" content="Gérez vos synchronisations bidirectionnelles automatiques" />
+        <title>Sync Manager - Synchronisation | Drop Craft AI</title>
+        <meta name="description" content="Gérez et synchronisez vos données entre différentes plateformes e-commerce." />
       </Helmet>
 
-      <div className="container mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
+      <div className="space-y-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
             <h1 className="text-3xl font-bold tracking-tight">Sync Manager</h1>
             <p className="text-muted-foreground">
-              Synchronisation bidirectionnelle automatique de vos données
+              Synchronisez vos données entre plateformes
             </p>
           </div>
-          <Button variant="outline">
-            <Settings className="h-4 w-4 mr-2" />
-            Paramètres
+          <Button onClick={() => handleSync(0)} disabled={syncing}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? 'Synchronisation...' : 'Tout synchroniser'}
           </Button>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid gap-4 md:grid-cols-4">
+        {/* Stats */}
+        <div className="grid gap-4 md:grid-cols-3">
           <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <Activity className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Syncs</p>
-                  <p className="text-2xl font-bold">{stats.totalSyncs}</p>
-                </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Sources actives</CardTitle>
+              <Check className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {syncSources.filter(s => s.status === 'active').length}
               </div>
+              <p className="text-xs text-muted-foreground">
+                Sur {syncSources.length} sources
+              </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-green-500/10">
-                  <CheckCircle className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Actifs</p>
-                  <p className="text-2xl font-bold">{stats.activeSyncs}</p>
-                </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Produits synchronisés</CardTitle>
+              <RefreshCw className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {syncSources.reduce((sum, s) => sum + s.products, 0)}
               </div>
+              <p className="text-xs text-muted-foreground">
+                Total de tous les magasins
+              </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-blue-500/10">
-                  <TrendingUp className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Enregistrements</p>
-                  <p className="text-2xl font-bold">{stats.totalRecords.toLocaleString()}</p>
-                </div>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Commandes sync</CardTitle>
+              <RefreshCw className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {syncSources.reduce((sum, s) => sum + s.orders, 0)}
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-lg bg-red-500/10">
-                  <AlertCircle className="h-6 w-6 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Erreurs</p>
-                  <p className="text-2xl font-bold">{stats.errorSyncs}</p>
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground">
+                Dernières 24h
+              </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Sync Sources List */}
+        {/* Sources de synchronisation */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Sources de synchronisation</h2>
+          
+          {syncSources.map((source) => {
+            const StatusIcon = getStatusIcon(source.status);
+            return (
+              <Card key={source.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <StatusIcon className={`h-6 w-6 ${source.status === 'active' ? 'text-green-600' : source.status === 'error' ? 'text-red-600' : 'text-primary'}`} />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-lg">{source.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Dernière sync: {source.lastSync}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">{source.products}</div>
+                        <div className="text-xs text-muted-foreground">Produits</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">{source.orders}</div>
+                        <div className="text-xs text-muted-foreground">Commandes</div>
+                      </div>
+                      <Badge variant={getStatusColor(source.status)}>
+                        {source.status}
+                      </Badge>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleSync(source.id)}
+                          disabled={syncing}
+                        >
+                          <RefreshCw className={`h-4 w-4 mr-1 ${syncing ? 'animate-spin' : ''}`} />
+                          Sync
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
         <Card>
           <CardHeader>
-            <CardTitle>Sources de synchronisation</CardTitle>
+            <CardTitle>Ajouter une nouvelle source</CardTitle>
             <CardDescription>
-              Gérez vos connexions et planifications de synchronisation
+              Connectez une nouvelle plateforme e-commerce
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {sources.map((source) => (
-                <Card key={source.id} className="overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      {/* Header Row */}
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-4">
-                          <div className="p-3 rounded-lg bg-muted">
-                            {getTypeIcon(source.type)}
-                          </div>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">{source.name}</h3>
-                              {getStatusBadge(source.status)}
-                            </div>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Database className="h-3 w-3" />
-                                {source.platform}
-                              </span>
-                              <span>•</span>
-                              <span className="capitalize">{source.type}</span>
-                              <span>•</span>
-                              <span>{source.syncFrequency}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSync(source.id)}
-                            disabled={syncing === source.id}
-                          >
-                            <RefreshCw className={`h-4 w-4 mr-2 ${syncing === source.id ? 'animate-spin' : ''}`} />
-                            {syncing === source.id ? 'Sync...' : 'Sync'}
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Stats Row */}
-                      <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Dernière sync</p>
-                          <p className="text-sm font-medium">{source.lastSync}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Prochaine sync</p>
-                          <p className="text-sm font-medium">{source.nextSync}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Enregistrements</p>
-                          <p className="text-sm font-medium">{source.recordsSynced.toLocaleString()}</p>
-                        </div>
-                      </div>
-
-                      {/* Auto Sync Toggle */}
-                      <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <Zap className="h-5 w-5 text-muted-foreground" />
-                          <div>
-                            <Label htmlFor={`auto-sync-${source.id}`} className="text-sm font-medium cursor-pointer">
-                              Synchronisation automatique
-                            </Label>
-                            <p className="text-xs text-muted-foreground">
-                              Synchroniser automatiquement selon la fréquence définie
-                            </p>
-                          </div>
-                        </div>
-                        <Switch
-                          id={`auto-sync-${source.id}`}
-                          checked={source.autoSync}
-                          onCheckedChange={(checked) => handleToggleAutoSync(source.id, checked)}
-                        />
-                      </div>
-
-                      {/* Error Message */}
-                      {source.status === 'error' && (
-                        <div className="p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg">
-                          <div className="flex items-start gap-2">
-                            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-sm font-medium text-red-900 dark:text-red-100">
-                                Erreur de synchronisation
-                              </p>
-                              <p className="text-xs text-red-700 dark:text-red-300 mt-1">
-                                La connexion API a échoué. Vérifiez vos identifiants.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Activité récente</CardTitle>
-            <CardDescription>Historique des synchronisations</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {[
-                { source: 'Shopify Store', action: 'Products synced', count: 45, time: 'Il y a 15 min', status: 'success' },
-                { source: 'WooCommerce Orders', action: 'Orders synced', count: 12, time: 'Il y a 20 min', status: 'success' },
-                { source: 'AliExpress Inventory', action: 'Sync failed', count: 0, time: 'Il y a 2h', status: 'error' },
-                { source: 'Amazon Customers', action: 'Customers synced', count: 8, time: 'Il y a 1j', status: 'success' }
-              ].map((activity, i) => (
-                <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    {activity.status === 'success' ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                    ) : (
-                      <AlertCircle className="h-5 w-5 text-red-600" />
-                    )}
-                    <div>
-                      <p className="text-sm font-medium">{activity.source}</p>
-                      <p className="text-xs text-muted-foreground">{activity.action}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{activity.count > 0 ? `${activity.count} items` : 'Failed'}</p>
-                    <p className="text-xs text-muted-foreground">{activity.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Button>
+              <Play className="mr-2 h-4 w-4" />
+              Ajouter une source
+            </Button>
           </CardContent>
         </Card>
       </div>
     </>
-  )
+  );
 }
