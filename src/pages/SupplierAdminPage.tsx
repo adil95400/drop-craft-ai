@@ -33,6 +33,13 @@ export default function SupplierAdminPage() {
   const [editingSupplier, setEditingSupplier] = useState<any>(null)
   const [apiProvider, setApiProvider] = useState<string>('')
   const [apiKey, setApiKey] = useState<string>('')
+  
+  // Filtres
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterCountry, setFilterCountry] = useState<string>('all')
+  const [filterTier, setFilterTier] = useState<string>('all')
+  const [filterCategory, setFilterCategory] = useState<string>('all')
+  const [filterActive, setFilterActive] = useState<string>('all')
 
   // Form state
   const [formData, setFormData] = useState({
@@ -165,6 +172,45 @@ export default function SupplierAdminPage() {
         : [...prev.categories, category]
     }))
   }
+
+  // Filtrage des fournisseurs
+  const filteredSuppliers = suppliers?.filter(supplier => {
+    // Recherche par nom
+    if (searchQuery && !supplier.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false
+    }
+    
+    // Filtre par pays
+    if (filterCountry !== 'all' && supplier.country !== filterCountry) {
+      return false
+    }
+    
+    // Filtre par tier
+    if (filterTier !== 'all' && supplier.tier !== filterTier) {
+      return false
+    }
+    
+    // Filtre par catégorie
+    if (filterCategory !== 'all' && !supplier.categories?.includes(filterCategory)) {
+      return false
+    }
+    
+    // Filtre par statut actif
+    if (filterActive === 'active' && !supplier.is_active) {
+      return false
+    }
+    if (filterActive === 'inactive' && supplier.is_active) {
+      return false
+    }
+    
+    return true
+  })
+
+  // Obtenir les pays uniques
+  const uniqueCountries = Array.from(new Set(suppliers?.map(s => s.country) || [])).sort()
+  
+  // Obtenir les catégories uniques
+  const uniqueCategories = Array.from(new Set(suppliers?.flatMap(s => s.categories || []) || [])).sort()
 
   if (isLoading) {
     return (
@@ -414,9 +460,104 @@ export default function SupplierAdminPage() {
           </TabsList>
 
           <TabsContent value="list" className="space-y-4">
-            {suppliers && suppliers.length > 0 ? (
+            {/* Filtres */}
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Filtres</h3>
+              <div className="grid md:grid-cols-5 gap-4">
+                <div className="space-y-2">
+                  <Label>Recherche</Label>
+                  <Input
+                    placeholder="Nom du fournisseur..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Pays</Label>
+                  <Select value={filterCountry} onValueChange={setFilterCountry}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les pays</SelectItem>
+                      {uniqueCountries.map(country => (
+                        <SelectItem key={country} value={country}>{country}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Catégorie</Label>
+                  <Select value={filterCategory} onValueChange={setFilterCategory}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes catégories</SelectItem>
+                      {uniqueCategories.map(category => (
+                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Tier</Label>
+                  <Select value={filterTier} onValueChange={setFilterTier}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous tiers</SelectItem>
+                      <SelectItem value="gold">Gold</SelectItem>
+                      <SelectItem value="platinum">Platinum</SelectItem>
+                      <SelectItem value="diamond">Diamond</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Statut</Label>
+                  <Select value={filterActive} onValueChange={setFilterActive}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous</SelectItem>
+                      <SelectItem value="active">Actifs</SelectItem>
+                      <SelectItem value="inactive">Inactifs</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              {(searchQuery || filterCountry !== 'all' || filterTier !== 'all' || filterCategory !== 'all' || filterActive !== 'all') && (
+                <div className="mt-4 flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    {filteredSuppliers?.length || 0} fournisseur(s) trouvé(s)
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSearchQuery('')
+                      setFilterCountry('all')
+                      setFilterTier('all')
+                      setFilterCategory('all')
+                      setFilterActive('all')
+                    }}
+                  >
+                    Réinitialiser les filtres
+                  </Button>
+                </div>
+              )}
+            </Card>
+
+            {filteredSuppliers && filteredSuppliers.length > 0 ? (
               <div className="grid gap-4">
-                {suppliers.map((supplier) => (
+                {filteredSuppliers.map((supplier) => (
                   <Card key={supplier.id} className="p-6">
                     <div className="flex items-start justify-between">
                       <div className="flex gap-4 flex-1">
