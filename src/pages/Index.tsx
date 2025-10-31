@@ -4,13 +4,19 @@ import { SidebarLayout } from '@/layouts/SidebarLayout';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Crown, Zap, Users, Star, ArrowRight, TrendingUp, Shield, Globe, CheckCircle2, Package, ShoppingCart, BarChart3, Sparkles, Clock, MessageSquare, DollarSign, Settings, Rocket, Target } from "lucide-react";
+import { Loader2, Crown, Zap, Users, Star, ArrowRight, TrendingUp, Shield, Globe, CheckCircle2, Package, ShoppingCart, BarChart3, Sparkles, Clock, MessageSquare, DollarSign, Settings, Rocket, Target, Menu, X } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
 import FooterNavigation from "@/components/navigation/FooterNavigation";
+import heroImage from "@/assets/hero-automation.jpg";
+import featureAI from "@/assets/feature-ai.jpg";
+import featureIntegration from "@/assets/feature-integration.jpg";
+import featureAnalytics from "@/assets/feature-analytics.jpg";
 
 // Navigation Header Component
 const LandingHeader = () => {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -20,7 +26,7 @@ const LandingHeader = () => {
             <div className="w-10 h-10 bg-gradient-hero rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">S</span>
             </div>
-            <span className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">ShopOpti+</span>
+            <span className="text-lg sm:text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">ShopOpti+</span>
           </div>
           
           <nav className="hidden md:flex items-center gap-6">
@@ -38,7 +44,7 @@ const LandingHeader = () => {
             </Link>
           </nav>
           
-          <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3">
             <Button variant="ghost" onClick={() => navigate('/auth')}>
               Connexion
             </Button>
@@ -46,7 +52,42 @@ const LandingHeader = () => {
               Commencer
             </Button>
           </div>
+          
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
         </div>
+        
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden py-4 space-y-3 border-t">
+            <Link to="/pricing" className="block px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Tarifs
+            </Link>
+            <Link to="/about" className="block px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              À propos
+            </Link>
+            <Link to="/blog" className="block px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Blog
+            </Link>
+            <Link to="/contact" className="block px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Contact
+            </Link>
+            <div className="px-4 pt-2 space-y-2">
+              <Button variant="ghost" className="w-full" onClick={() => navigate('/auth')}>
+                Connexion
+              </Button>
+              <Button className="w-full" onClick={() => navigate('/auth')}>
+                Commencer
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );
@@ -57,52 +98,87 @@ const HeroSection = () => {
   const navigate = useNavigate();
   
   return (
-    <section className="relative py-20 md:py-32 overflow-hidden">
+    <section className="relative py-12 md:py-20 lg:py-32 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
       <div className="absolute inset-0 bg-grid-white/10 bg-grid-16 [mask-image:radial-gradient(white,transparent_70%)]" />
       
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
-        <div className="text-center space-y-8 max-w-4xl mx-auto">
-          <Badge className="px-4 py-2 text-sm bg-primary/10 text-primary border-primary/20">
-            <Sparkles className="h-4 w-4 mr-2" />
-            La plateforme n°1 du dropshipping intelligent
-          </Badge>
-          
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-            Automatisez votre
-            <span className="block bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
-              e-commerce avec l'IA
-            </span>
-          </h1>
-          
-          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Importez des produits de 99+ fournisseurs internationaux, automatisez votre gestion 
-            et développez votre business avec notre plateforme SaaS propulsée par l'intelligence artificielle.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-            <Button size="lg" className="px-8 py-6 text-lg group" onClick={() => navigate('/auth')}>
-              <Crown className="w-5 h-5 mr-2" />
-              Essai gratuit 14 jours
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button variant="outline" size="lg" className="px-8 py-6 text-lg" onClick={() => navigate('/dashboard')}>
-              Voir la démo
-            </Button>
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          {/* Left Content */}
+          <div className="space-y-6 lg:space-y-8 text-center lg:text-left">
+            <Badge className="px-4 py-2 text-xs sm:text-sm bg-primary/10 text-primary border-primary/20 inline-flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              La plateforme n°1 du dropshipping intelligent
+            </Badge>
+            
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight">
+              Automatisez votre
+              <span className="block bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
+                e-commerce avec l'IA
+              </span>
+            </h1>
+            
+            <p className="text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed">
+              Importez des produits de 99+ fournisseurs internationaux, automatisez votre gestion 
+              et développez votre business avec notre plateforme SaaS propulsée par l'intelligence artificielle.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 justify-center lg:justify-start">
+              <Button size="lg" className="px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg group w-full sm:w-auto" onClick={() => navigate('/auth')}>
+                <Crown className="w-5 h-5 mr-2" />
+                Essai gratuit 14 jours
+                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button variant="outline" size="lg" className="px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg w-full sm:w-auto" onClick={() => navigate('/dashboard')}>
+                Voir la démo
+              </Button>
+            </div>
+            
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 pt-4 text-xs sm:text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-success flex-shrink-0" />
+                <span>Sans carte bancaire</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-success flex-shrink-0" />
+                <span>Installation en 2 min</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-success flex-shrink-0" />
+                <span>Support 24/7</span>
+              </div>
+            </div>
           </div>
           
-          <div className="flex flex-wrap items-center justify-center gap-8 pt-8 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success" />
-              <span>Sans carte bancaire</span>
+          {/* Right Image */}
+          <div className="relative lg:order-last order-first">
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border/50">
+              <img 
+                src={heroImage} 
+                alt="Dashboard e-commerce automatisé avec gestion produits et analytics" 
+                className="w-full h-auto object-cover"
+                loading="eager"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success" />
-              <span>Installation en 2 min</span>
+            {/* Floating badges */}
+            <div className="absolute -bottom-4 -left-4 bg-background border border-border rounded-lg p-3 shadow-lg hidden sm:block">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-success" />
+                <div>
+                  <div className="text-xs text-muted-foreground">Croissance</div>
+                  <div className="text-sm font-bold">+127%</div>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success" />
-              <span>Support 24/7</span>
+            <div className="absolute -top-4 -right-4 bg-background border border-border rounded-lg p-3 shadow-lg hidden sm:block">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="text-xs text-muted-foreground">IA Active</div>
+                  <div className="text-sm font-bold">24/7</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -121,20 +197,20 @@ const StatsSection = () => {
   ];
   
   return (
-    <section className="py-16 bg-secondary/30">
+    <section className="py-12 sm:py-16 bg-secondary/30">
       <div className="container mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           {stats.map((stat, index) => {
             const IconComponent = stat.icon;
             return (
               <div key={index} className="text-center space-y-2">
-                <div className="flex justify-center mb-3">
-                  <div className="p-3 bg-primary/10 rounded-full">
-                    <IconComponent className="h-6 w-6 text-primary" />
+                <div className="flex justify-center mb-2 sm:mb-3">
+                  <div className="p-2 sm:p-3 bg-primary/10 rounded-full">
+                    <IconComponent className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   </div>
                 </div>
-                <div className="text-3xl md:text-4xl font-bold text-foreground">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">{stat.value}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">{stat.label}</div>
               </div>
             );
           })}
@@ -144,32 +220,38 @@ const StatsSection = () => {
   );
 };
 
-// Features Section
+// Features Section with Images
 const FeaturesSection = () => {
   const features = [
     {
-      icon: Zap,
-      title: "Import automatique",
-      description: "Importez des milliers de produits en quelques clics depuis AliExpress, BigBuy, Spocket et plus de 99 fournisseurs.",
-      color: "from-yellow-500 to-orange-500"
+      icon: Sparkles,
+      title: "IA d'optimisation",
+      description: "Optimisez automatiquement vos prix, descriptions produits et SEO grâce à l'intelligence artificielle avancée.",
+      image: featureAI,
+      color: "from-purple-500 to-pink-500"
     },
     {
       icon: Globe,
       title: "Multi-marketplace",
       description: "Gérez Shopify, WooCommerce, PrestaShop et plus depuis une seule plateforme centralisée.",
+      image: featureIntegration,
       color: "from-blue-500 to-cyan-500"
-    },
-    {
-      icon: Sparkles,
-      title: "IA d'optimisation",
-      description: "Optimisez automatiquement vos prix, descriptions produits et SEO grâce à l'intelligence artificielle.",
-      color: "from-purple-500 to-pink-500"
     },
     {
       icon: BarChart3,
       title: "Analytics avancés",
       description: "Tableaux de bord en temps réel avec insights business et prévisions de ventes powered by AI.",
+      image: featureAnalytics,
       color: "from-green-500 to-emerald-500"
+    }
+  ];
+  
+  const otherFeatures = [
+    {
+      icon: Zap,
+      title: "Import automatique",
+      description: "Importez des milliers de produits en quelques clics depuis AliExpress, BigBuy, Spocket et plus de 99 fournisseurs.",
+      color: "from-yellow-500 to-orange-500"
     },
     {
       icon: ShoppingCart,
@@ -186,31 +268,65 @@ const FeaturesSection = () => {
   ];
   
   return (
-    <section className="py-20">
+    <section className="py-12 sm:py-16 lg:py-20">
       <div className="container mx-auto px-4 sm:px-6">
-        <div className="text-center space-y-4 mb-16">
-          <Badge className="px-4 py-2 bg-primary/10 text-primary border-primary/20">
+        <div className="text-center space-y-3 sm:space-y-4 mb-12 sm:mb-16">
+          <Badge className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-primary/10 text-primary border-primary/20">
             Fonctionnalités
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold">Tout ce dont vous avez besoin</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">Tout ce dont vous avez besoin</h2>
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             Une suite complète d'outils pour développer votre e-commerce
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Main Features with Images */}
+        <div className="space-y-16 sm:space-y-20 mb-12 sm:mb-16">
           {features.map((feature, index) => {
+            const IconComponent = feature.icon;
+            const isReversed = index % 2 !== 0;
+            return (
+              <div key={index} className={`grid lg:grid-cols-2 gap-8 lg:gap-12 items-center ${isReversed ? 'lg:grid-flow-dense' : ''}`}>
+                <div className={`space-y-4 sm:space-y-6 ${isReversed ? 'lg:col-start-2' : ''}`}>
+                  <div className={`p-3 sm:p-4 rounded-xl bg-gradient-to-br ${feature.color} w-fit`}>
+                    <IconComponent className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl font-bold">{feature.title}</h3>
+                  <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">{feature.description}</p>
+                  <Button variant="outline" className="w-full sm:w-auto">
+                    En savoir plus
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+                <div className={`relative ${isReversed ? 'lg:col-start-1 lg:row-start-1' : ''}`}>
+                  <div className="relative rounded-xl overflow-hidden shadow-xl border border-border">
+                    <img 
+                      src={feature.image} 
+                      alt={`${feature.title} - Interface de ${feature.title.toLowerCase()}`}
+                      className="w-full h-auto object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        {/* Other Features */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {otherFeatures.map((feature, index) => {
             const IconComponent = feature.icon;
             return (
               <Card key={index} className="border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
                 <CardHeader>
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${feature.color} w-fit mb-4`}>
-                    <IconComponent className="h-6 w-6 text-white" />
+                  <div className={`p-2.5 sm:p-3 rounded-xl bg-gradient-to-br ${feature.color} w-fit mb-3 sm:mb-4`}>
+                    <IconComponent className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  <CardTitle className="text-lg sm:text-xl">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-base">{feature.description}</CardDescription>
+                  <CardDescription className="text-sm sm:text-base">{feature.description}</CardDescription>
                 </CardContent>
               </Card>
             );
@@ -247,31 +363,31 @@ const BenefitsSection = () => {
   ];
   
   return (
-    <section className="py-20 bg-secondary/30">
+    <section className="py-12 sm:py-16 lg:py-20 bg-secondary/30">
       <div className="container mx-auto px-4 sm:px-6">
-        <div className="text-center space-y-4 mb-16">
-          <Badge className="px-4 py-2 bg-success/10 text-success border-success/20">
+        <div className="text-center space-y-3 sm:space-y-4 mb-12 sm:mb-16">
+          <Badge className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-success/10 text-success border-success/20">
             Avantages
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold">Pourquoi ShopOpti+ ?</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">Pourquoi ShopOpti+ ?</h2>
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             Rejoignez les entrepreneurs qui ont transformé leur e-commerce
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto">
           {benefits.map((benefit, index) => {
             const IconComponent = benefit.icon;
             return (
-              <div key={index} className="flex gap-4">
+              <div key={index} className="flex gap-3 sm:gap-4">
                 <div className="flex-shrink-0">
-                  <div className="p-3 bg-primary/10 rounded-lg">
-                    <IconComponent className="h-6 w-6 text-primary" />
+                  <div className="p-2.5 sm:p-3 bg-primary/10 rounded-lg">
+                    <IconComponent className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <h3 className="text-xl font-semibold">{benefit.title}</h3>
-                  <p className="text-muted-foreground">{benefit.description}</p>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <h3 className="text-lg sm:text-xl font-semibold">{benefit.title}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">{benefit.description}</p>
                 </div>
               </div>
             );
