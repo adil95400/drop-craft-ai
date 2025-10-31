@@ -31,6 +31,8 @@ const GuidePage = lazy(() => import('@/pages/GuidePage'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
 const About = lazy(() => import('@/pages/About'));
+const Features = lazy(() => import('@/pages/Features'));
+const Documentation = lazy(() => import('@/pages/Documentation'));
 
 // Lazy load all other pages for performance
 const DashboardHome = lazy(() => import('@/pages/DashboardHome'));
@@ -182,6 +184,8 @@ function App() {
                         <Route path="/" element={<Index />} />
                         <Route path="/auth" element={<AuthPage />} />
                         <Route path="/pricing" element={<Pricing />} />
+                        <Route path="/features" element={<Features />} />
+                        <Route path="/documentation" element={<Documentation />} />
                         <Route path="/blog" element={<ModernBlog />} />
                         <Route path="/blog/:id" element={<ModernBlog />} />
                         <Route path="/contact" element={<Contact />} />
@@ -189,6 +193,19 @@ function App() {
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<TermsOfService />} />
                         <Route path="/about" element={<About />} />
+                        
+                        {/* Redirect old paths */}
+                        <Route path="/guides" element={<Navigate to="/documentation" replace />} />
+                        <Route path="/changelog" element={<Navigate to="/blog" replace />} />
+                        <Route path="/community" element={<Navigate to="/blog" replace />} />
+                        <Route path="/webinars" element={<Navigate to="/academy" replace />} />
+                        <Route path="/company" element={<Navigate to="/about" replace />} />
+                        <Route path="/careers" element={<Navigate to="/about" replace />} />
+                        <Route path="/partners" element={<Navigate to="/about" replace />} />
+                        <Route path="/press" element={<Navigate to="/about" replace />} />
+                        <Route path="/legal" element={<Navigate to="/terms" replace />} />
+                        <Route path="/gdpr" element={<Navigate to="/privacy" replace />} />
+                        <Route path="/cookies" element={<Navigate to="/privacy" replace />} />
                         
                         {/* Payment Routes */}
                         <Route path="/payment/success" element={<PaymentSuccess />} />

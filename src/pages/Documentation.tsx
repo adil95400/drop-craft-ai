@@ -1,365 +1,229 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { 
-  Search,
-  Book,
-  Code,
-  Zap,
-  Shield,
-  Settings,
-  Users,
-  BarChart3,
-  Package,
-  CreditCard,
-  MessageSquare,
-  ExternalLink
-} from 'lucide-react';
-import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Book, Search, FileText, Code, Lightbulb, Video, ArrowRight, ExternalLink } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
+import FooterNavigation from "@/components/navigation/FooterNavigation";
 
 const Documentation = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const documentationSections = [
+  const docCategories = [
     {
-      title: "Démarrage rapide",
-      icon: Zap,
-      description: "Configurez votre compte en quelques minutes",
-      items: [
-        { title: "Configuration initiale", href: "#setup", time: "5 min" },
-        { title: "Premier import", href: "#first-import", time: "10 min" },
-        { title: "Intégration e-commerce", href: "#integration", time: "15 min" }
-      ]
+      icon: Book,
+      title: "Guide de démarrage",
+      description: "Apprenez les bases pour commencer avec ShopOpti+",
+      articles: [
+        "Installation et configuration",
+        "Première connexion",
+        "Créer votre première boutique",
+        "Importer vos premiers produits"
+      ],
+      color: "from-blue-500 to-cyan-500"
     },
     {
-      title: "API et Intégrations",
+      icon: FileText,
+      title: "Guides d'utilisation",
+      description: "Documentation détaillée de toutes les fonctionnalités",
+      articles: [
+        "Gestion des produits",
+        "Traitement des commandes",
+        "Synchronisation multi-plateformes",
+        "Configuration des intégrations"
+      ],
+      color: "from-purple-500 to-pink-500"
+    },
+    {
       icon: Code,
-      description: "Connectez vos outils préférés",
-      items: [
-        { title: "API REST", href: "#api-rest", time: "Guide complet" },
-        { title: "Webhooks", href: "#webhooks", time: "Guide avancé" },
-        { title: "SDK JavaScript", href: "#sdk", time: "Documentation" }
-      ]
+      title: "API & Développeurs",
+      description: "Documentation technique pour les développeurs",
+      articles: [
+        "Référence API",
+        "Webhooks",
+        "Authentification",
+        "Exemples de code"
+      ],
+      color: "from-green-500 to-emerald-500",
+      link: "/api-documentation"
     },
     {
-      title: "Gestion des produits",
-      icon: Package,
-      description: "Optimisez votre catalogue",
-      items: [
-        { title: "Import en masse", href: "#bulk-import", time: "Guide" },
-        { title: "Optimisation IA", href: "#ai-optimization", time: "Tutoriel" },
-        { title: "Gestion du stock", href: "#inventory", time: "Manuel" }
-      ]
+      icon: Lightbulb,
+      title: "Bonnes pratiques",
+      description: "Conseils et astuces pour optimiser votre utilisation",
+      articles: [
+        "Optimisation SEO",
+        "Stratégies de pricing",
+        "Gestion des stocks",
+        "Service client"
+      ],
+      color: "from-yellow-500 to-orange-500"
     },
     {
-      title: "Analytics et Rapports",
-      icon: BarChart3,
-      description: "Analysez vos performances",
-      items: [
-        { title: "Tableaux de bord", href: "#dashboards", time: "Guide" },
-        { title: "Métriques avancées", href: "#metrics", time: "Documentation" },
-        { title: "Export de données", href: "#export", time: "Tutoriel" }
-      ]
-    },
-    {
-      title: "Sécurité",
-      icon: Shield,
-      description: "Protégez vos données",
-      items: [
-        { title: "Authentification 2FA", href: "#2fa", time: "Configuration" },
-        { title: "Gestion des permissions", href: "#permissions", time: "Guide" },
-        { title: "Audit de sécurité", href: "#audit", time: "Documentation" }
-      ]
-    },
-    {
-      title: "Facturation",
-      icon: CreditCard,
-      description: "Gérez vos abonnements",
-      items: [
-        { title: "Plans et tarifs", href: "#pricing", time: "Information" },
-        { title: "Gestion des factures", href: "#billing", time: "Guide" },
-        { title: "Limites d'utilisation", href: "#limits", time: "Référence" }
-      ]
+      icon: Video,
+      title: "Tutoriels vidéo",
+      description: "Apprenez visuellement avec nos vidéos",
+      articles: [
+        "Import de produits en masse",
+        "Configuration des automatisations",
+        "Analytics et reporting",
+        "Gestion multi-boutiques"
+      ],
+      color: "from-red-500 to-rose-500"
     }
   ];
-
-  const popularArticles = [
-    {
-      title: "Comment configurer votre première intégration ?",
-      category: "Démarrage",
-      readTime: "8 min",
-      views: "15.2k"
-    },
-    {
-      title: "Optimisation IA : maximiser vos conversions",
-      category: "Advanced",
-      readTime: "12 min",
-      views: "8.7k"
-    },
-    {
-      title: "Résolution des erreurs d'import courantes",
-      category: "Dépannage",
-      readTime: "6 min",
-      views: "12.4k"
-    },
-    {
-      title: "API REST : Guide complet avec exemples",
-      category: "Développement",
-      readTime: "20 min",
-      views: "6.3k"
-    }
-  ];
-
-  const filteredSections = documentationSections.filter(section =>
-    section.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    section.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <Book className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl font-bold tracking-tight">Documentation</h1>
-        </div>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Tout ce que vous devez savoir pour tirer le meilleur parti de notre plateforme
-        </p>
-        
-        {/* Search */}
-        <div className="max-w-md mx-auto mt-8">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher dans la documentation..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-      </div>
+    <>
+      <Helmet>
+        <title>Documentation | ShopOpti+ - Centre d'aide et guides</title>
+        <meta name="description" content="Consultez la documentation complète de ShopOpti+ : guides, tutoriels, API, bonnes pratiques et plus encore." />
+      </Helmet>
 
-      <Tabs defaultValue="guides" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="guides">Guides</TabsTrigger>
-          <TabsTrigger value="api">API Reference</TabsTrigger>
-          <TabsTrigger value="faq">FAQ</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="guides" className="space-y-8">
-          {/* Quick Links */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5" />
-                Démarrage rapide
-              </CardTitle>
-              <CardDescription>
-                Configurez votre compte en moins de 10 minutes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button variant="outline" className="justify-start h-auto p-4">
-                  <div className="text-left">
-                    <div className="font-semibold">1. Configuration</div>
-                    <div className="text-sm text-muted-foreground">Paramétrez votre compte</div>
-                  </div>
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="flex h-16 items-center justify-between">
+              <Link to="/" className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-gradient-hero rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">S</span>
+                </div>
+                <span className="text-lg sm:text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">ShopOpti+</span>
+              </Link>
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+                  Dashboard
                 </Button>
-                <Button variant="outline" className="justify-start h-auto p-4">
-                  <div className="text-left">
-                    <div className="font-semibold">2. Intégration</div>
-                    <div className="text-sm text-muted-foreground">Connectez vos outils</div>
-                  </div>
-                </Button>
-                <Button variant="outline" className="justify-start h-auto p-4">
-                  <div className="text-left">
-                    <div className="font-semibold">3. Premier import</div>
-                    <div className="text-sm text-muted-foreground">Importez vos produits</div>
-                  </div>
+                <Button onClick={() => navigate('/auth')}>
+                  Commencer
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Documentation Sections */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredSections.map((section, index) => {
-              const IconComponent = section.icon;
-              return (
-                <Card key={index} className="hover:shadow-lg transition-all duration-300">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <IconComponent className="h-5 w-5 text-primary" />
-                      {section.title}
-                    </CardTitle>
-                    <CardDescription>{section.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {section.items.map((item, itemIndex) => (
-                        <div key={itemIndex} className="flex items-center justify-between p-2 rounded hover:bg-muted/50 cursor-pointer">
-                          <span className="text-sm font-medium">{item.title}</span>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">{item.time}</Badge>
-                            <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Popular Articles */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Articles populaires</CardTitle>
-              <CardDescription>
-                Les guides les plus consultés par notre communauté
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {popularArticles.map((article, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 cursor-pointer">
-                    <div className="space-y-1">
-                      <h4 className="font-semibold">{article.title}</h4>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <Badge variant="outline">{article.category}</Badge>
-                        <span>{article.readTime}</span>
-                        <span>{article.views} vues</span>
-                      </div>
-                    </div>
-                    <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="api" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Code className="h-5 w-5" />
-                API Reference
-              </CardTitle>
-              <CardDescription>
-                Documentation technique complète pour les développeurs
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Endpoints principaux</h3>
-                  <div className="space-y-2">
-                    <div className="p-3 border rounded">
-                      <div className="flex items-center gap-2">
-                        <Badge>GET</Badge>
-                        <code className="text-sm">/api/products</code>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">Récupérer la liste des produits</p>
-                    </div>
-                    <div className="p-3 border rounded">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">POST</Badge>
-                        <code className="text-sm">/api/products</code>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">Créer un nouveau produit</p>
-                    </div>
-                    <div className="p-3 border rounded">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">PUT</Badge>
-                        <code className="text-sm">/api/products/:id</code>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">Mettre à jour un produit</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Authentification</h3>
-                  <div className="p-4 bg-muted rounded-lg">
-                    <code className="text-sm">
-                      Authorization: Bearer YOUR_API_KEY
-                    </code>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Incluez votre clé API dans l'en-tête Authorization de chaque requête.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="faq" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Questions fréquentes
-              </CardTitle>
-              <CardDescription>
-                Réponses aux questions les plus courantes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-semibold mb-2">Comment puis-je importer mes produits en masse ?</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Utilisez notre outil d'import en masse dans la section "Import". Vous pouvez importer via CSV, 
-                    URL de flux ou API directement depuis vos fournisseurs.
-                  </p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-semibold mb-2">L'IA peut-elle optimiser automatiquement mes descriptions ?</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Oui, notre IA analyse vos produits et génère des descriptions optimisées pour le SEO, 
-                    traduit dans plusieurs langues et adaptées à votre audience.
-                  </p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-semibold mb-2">Combien de produits puis-je importer ?</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Les limites dépendent de votre plan : Standard (1000), Pro (10000), Ultra Pro (illimité).
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* Contact Support */}
-      <Card className="bg-gradient-to-r from-primary/10 to-secondary/10">
-        <CardContent className="p-6">
-          <div className="text-center space-y-4">
-            <h3 className="text-xl font-semibold">Besoin d'aide supplémentaire ?</h3>
-            <p className="text-muted-foreground">
-              Notre équipe support est là pour vous accompagner
-            </p>
-            <div className="flex justify-center gap-4">
-              <Button>
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Contacter le support
-              </Button>
-              <Button variant="outline">
-                Rejoindre la communauté
-              </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </header>
+
+        <main>
+          {/* Hero Section with Search */}
+          <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
+            <div className="container mx-auto px-4 sm:px-6">
+              <div className="text-center space-y-6 max-w-3xl mx-auto">
+                <Badge className="px-4 py-2 bg-primary/10 text-primary border-primary/20">
+                  Documentation
+                </Badge>
+                <h1 className="text-4xl md:text-6xl font-bold">
+                  Centre d'aide
+                  <span className="block bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                    ShopOpti+
+                  </span>
+                </h1>
+                <p className="text-xl text-muted-foreground">
+                  Trouvez rapidement les réponses à toutes vos questions
+                </p>
+                <div className="relative max-w-2xl mx-auto pt-4">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Rechercher dans la documentation..."
+                    className="pl-12 py-6 text-lg"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Documentation Categories */}
+          <section className="py-20">
+            <div className="container mx-auto px-4 sm:px-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {docCategories.map((category, index) => {
+                  const IconComponent = category.icon;
+                  return (
+                    <Card 
+                      key={index} 
+                      className="border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-xl cursor-pointer"
+                      onClick={() => category.link ? navigate(category.link) : null}
+                    >
+                      <CardHeader>
+                        <div className={`p-3 rounded-xl bg-gradient-to-br ${category.color} w-fit mb-4`}>
+                          <IconComponent className="h-6 w-6 text-white" />
+                        </div>
+                        <CardTitle className="text-xl flex items-center justify-between">
+                          {category.title}
+                          {category.link && <ExternalLink className="h-4 w-4" />}
+                        </CardTitle>
+                        <CardDescription className="text-base">{category.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-2">
+                          {category.articles.map((article, idx) => (
+                            <li key={idx} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                              <ArrowRight className="h-3 w-3 flex-shrink-0" />
+                              <span>{article}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          {/* Quick Links */}
+          <section className="py-20 bg-secondary/30">
+            <div className="container mx-auto px-4 sm:px-6">
+              <div className="text-center space-y-4 mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold">Liens utiles</h2>
+              </div>
+              <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <Card className="text-center hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle>Support</CardTitle>
+                    <CardDescription>Contactez notre équipe d'assistance</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="outline" className="w-full" onClick={() => navigate('/support')}>
+                      Accéder au support
+                    </Button>
+                  </CardContent>
+                </Card>
+                <Card className="text-center hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle>API Documentation</CardTitle>
+                    <CardDescription>Documentation technique complète</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="outline" className="w-full" onClick={() => navigate('/api-documentation')}>
+                      Voir l'API
+                    </Button>
+                  </CardContent>
+                </Card>
+                <Card className="text-center hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle>Blog</CardTitle>
+                    <CardDescription>Actualités et conseils</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="outline" className="w-full" onClick={() => navigate('/blog')}>
+                      Lire le blog
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <FooterNavigation />
+      </div>
+    </>
   );
 };
 

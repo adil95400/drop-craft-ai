@@ -1,86 +1,203 @@
-import React from 'react'
-import { Helmet } from 'react-helmet-async'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Link } from 'react-router-dom'
-import { Bot, TrendingUp, Zap, BarChart3, Shield, Globe, ArrowRight, Sparkles, CheckCircle } from 'lucide-react'
+import { Helmet } from 'react-helmet-async';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, Globe, BarChart3, Zap, ShoppingCart, Shield, Package, TrendingUp, Users, Star, ArrowRight } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import FooterNavigation from "@/components/navigation/FooterNavigation";
 
 const Features = () => {
-  const features = [
+  const navigate = useNavigate();
+
+  const mainFeatures = [
     {
-      icon: <Bot className="w-8 h-8" />,
-      title: "IA Avancée",
-      description: "Intelligence artificielle pour optimiser automatiquement vos produits",
-      details: ["Analyse prédictive", "SEO automatique", "Scoring de vente"],
-      color: "bg-gradient-to-r from-purple-500 to-pink-600"
+      icon: Sparkles,
+      title: "IA d'optimisation",
+      description: "Optimisez automatiquement vos prix, descriptions produits et SEO grâce à l'intelligence artificielle avancée.",
+      features: [
+        "Génération automatique de descriptions SEO",
+        "Optimisation des prix en temps réel",
+        "Suggestions de mots-clés",
+        "Analyse de la concurrence"
+      ],
+      color: "from-purple-500 to-pink-500"
     },
     {
-      icon: <TrendingUp className="w-8 h-8" />,
-      title: "Produits Gagnants",
-      description: "Découvrez les tendances avec notre algorithme exclusif",
-      details: ["10M+ produits analysés", "Prédictions temps réel", "Score de performance"],
-      color: "bg-gradient-to-r from-green-500 to-emerald-600"
+      icon: Globe,
+      title: "Multi-marketplace",
+      description: "Gérez Shopify, WooCommerce, PrestaShop et plus depuis une seule plateforme centralisée.",
+      features: [
+        "Synchronisation multi-plateformes",
+        "Gestion centralisée des stocks",
+        "Import/Export en masse",
+        "API robuste et documentée"
+      ],
+      color: "from-blue-500 to-cyan-500"
     },
     {
-      icon: <Zap className="w-8 h-8" />,
-      title: "Import Ultra-Rapide",
-      description: "Importez depuis 50+ fournisseurs en 1 clic",
-      details: ["API automatisées", "Sync temps réel", "Mapping intelligent"],
-      color: "bg-gradient-to-r from-blue-500 to-cyan-600"
+      icon: BarChart3,
+      title: "Analytics avancés",
+      description: "Tableaux de bord en temps réel avec insights business et prévisions de ventes powered by AI.",
+      features: [
+        "Tableaux de bord personnalisables",
+        "Prévisions de ventes par IA",
+        "Analyse des performances produits",
+        "Rapports automatisés"
+      ],
+      color: "from-green-500 to-emerald-500"
+    },
+    {
+      icon: Zap,
+      title: "Import automatique",
+      description: "Importez des milliers de produits en quelques clics depuis AliExpress, BigBuy, Spocket et 99+ fournisseurs.",
+      features: [
+        "99+ fournisseurs connectés",
+        "Import en 1 clic",
+        "Mapping automatique des catégories",
+        "Synchronisation des stocks en temps réel"
+      ],
+      color: "from-yellow-500 to-orange-500"
+    },
+    {
+      icon: ShoppingCart,
+      title: "Gestion commandes",
+      description: "Automatisez le traitement des commandes et le tracking avec synchronisation multi-plateformes.",
+      features: [
+        "Traitement automatique des commandes",
+        "Suivi des expéditions en temps réel",
+        "Notifications clients automatiques",
+        "Gestion des retours simplifiée"
+      ],
+      color: "from-red-500 to-rose-500"
+    },
+    {
+      icon: Shield,
+      title: "Sécurité garantie",
+      description: "Protection des données, conformité RGPD et sauvegarde automatique de toutes vos informations.",
+      features: [
+        "Conformité RGPD complète",
+        "Chiffrement des données",
+        "Sauvegardes automatiques quotidiennes",
+        "Authentification à deux facteurs"
+      ],
+      color: "from-indigo-500 to-blue-500"
     }
-  ]
+  ];
 
   return (
     <>
       <Helmet>
-        <title>Fonctionnalités - ShopOpti | Plateforme E-commerce IA</title>
-        <meta name="description" content="Découvrez les fonctionnalités de ShopOpti : IA avancée, produits gagnants, import rapide, analytics temps réel." />
+        <title>Fonctionnalités | ShopOpti+ - Plateforme E-commerce Complète</title>
+        <meta name="description" content="Découvrez toutes les fonctionnalités de ShopOpti+ : IA, multi-marketplace, analytics avancés, import automatique et bien plus encore." />
       </Helmet>
 
-      <div className="min-h-screen bg-background py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold mb-6">Fonctionnalités Avancées</h1>
-            <p className="text-xl text-muted-foreground">Des outils puissants pour votre réussite</p>
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="flex h-16 items-center justify-between">
+              <Link to="/" className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-gradient-hero rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">S</span>
+                </div>
+                <span className="text-lg sm:text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">ShopOpti+</span>
+              </Link>
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" onClick={() => navigate('/auth')}>
+                  Connexion
+                </Button>
+                <Button onClick={() => navigate('/auth')}>
+                  Commencer
+                </Button>
+              </div>
+            </div>
           </div>
+        </header>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="hover:shadow-lg transition-all">
-                <CardHeader>
-                  <div className={`w-16 h-16 rounded-xl ${feature.color} flex items-center justify-center text-white mb-4`}>
-                    {feature.icon}
-                  </div>
-                  <CardTitle>{feature.title}</CardTitle>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {feature.details.map((detail, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                        <span className="text-sm">{detail}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        <main>
+          {/* Hero Section */}
+          <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
+            <div className="container mx-auto px-4 sm:px-6">
+              <div className="text-center space-y-6 max-w-3xl mx-auto">
+                <Badge className="px-4 py-2 bg-primary/10 text-primary border-primary/20">
+                  Fonctionnalités
+                </Badge>
+                <h1 className="text-4xl md:text-6xl font-bold">
+                  Tout ce dont vous avez besoin
+                  <span className="block bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                    pour réussir en e-commerce
+                  </span>
+                </h1>
+                <p className="text-xl text-muted-foreground">
+                  Une suite complète d'outils professionnels pour automatiser, gérer et développer votre business en ligne.
+                </p>
+                <Button size="lg" onClick={() => navigate('/auth')}>
+                  Essayer gratuitement
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </div>
+          </section>
 
-          <div className="text-center mt-16">
-            <Link to="/auth">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600">
-                Commencer Gratuitement
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
-        </div>
+          {/* Features Grid */}
+          <section className="py-20">
+            <div className="container mx-auto px-4 sm:px-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {mainFeatures.map((feature, index) => {
+                  const IconComponent = feature.icon;
+                  return (
+                    <Card key={index} className="border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
+                      <CardHeader>
+                        <div className={`p-3 rounded-xl bg-gradient-to-br ${feature.color} w-fit mb-4`}>
+                          <IconComponent className="h-6 w-6 text-white" />
+                        </div>
+                        <CardTitle className="text-xl">{feature.title}</CardTitle>
+                        <CardDescription className="text-base">{feature.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-2">
+                          {feature.features.map((item, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm">
+                              <Star className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          {/* CTA Section */}
+          <section className="py-20 bg-gradient-to-br from-primary to-primary-dark text-primary-foreground">
+            <div className="container mx-auto px-4 sm:px-6">
+              <div className="text-center space-y-6 max-w-3xl mx-auto">
+                <h2 className="text-3xl md:text-5xl font-bold">
+                  Prêt à démarrer ?
+                </h2>
+                <p className="text-xl opacity-90">
+                  Rejoignez des milliers d'entrepreneurs qui utilisent ShopOpti+ pour développer leur business.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                  <Button size="lg" variant="secondary" onClick={() => navigate('/auth')}>
+                    Essai gratuit 14 jours
+                  </Button>
+                  <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10" onClick={() => navigate('/pricing')}>
+                    Voir les tarifs
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <FooterNavigation />
       </div>
     </>
-  )
-}
+  );
+};
 
-export default Features
+export default Features;

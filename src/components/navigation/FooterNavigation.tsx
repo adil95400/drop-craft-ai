@@ -21,7 +21,7 @@ const FooterNavigation = () => {
         { name: "Fonctionnalités", href: "/features" },
         { name: "Tarifs", href: "/pricing" },
         { name: "Documentation", href: "/documentation" },
-        { name: "API", href: "/api-docs" },
+        { name: "API", href: "/api-documentation" },
         { name: "Changelog", href: "/changelog" }
       ]
     },
