@@ -1,4 +1,4 @@
-import { useParams, NavLink } from 'react-router-dom'
+import { useParams, NavLink, useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -18,12 +18,37 @@ import { StoreProducts } from './StoreProducts'
 import { StoreOrders } from './StoreOrders'
 import { StoreAnalytics } from './StoreAnalytics'
 import { ShopifyImportExportManager } from '@/components/stores/ShopifyImportExportManager'
+import { QuickActions } from './components/QuickActions'
+import { toast } from 'sonner'
 
 export function StoreDashboardPage() {
   const { storeId } = useParams()
+  const navigate = useNavigate()
   const { stores, syncStore } = useStores()
   
   const store = stores.find(s => s.id === storeId)
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'sync-products':
+        syncStore(store!.id)
+        toast.success('Synchronisation des produits démarrée')
+        break
+      case 'sync-orders':
+        syncStore(store!.id)
+        toast.success('Synchronisation des commandes démarrée')
+        break
+      case 'view-analytics':
+        // Tab is already in the page, scroll to it
+        document.querySelector('[value="analytics"]')?.dispatchEvent(new MouseEvent('click'))
+        break
+      case 'help':
+        navigate('/support')
+        break
+      default:
+        toast.info('Action en cours de développement')
+    }
+  }
 
   if (!store) {
     return (
@@ -179,6 +204,9 @@ export function StoreDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Quick Actions */}
+      <QuickActions store={store} onAction={handleQuickAction} />
 
       {/* Import/Export Manager for Shopify */}
       {store.platform === 'shopify' && store.status === 'connected' && (

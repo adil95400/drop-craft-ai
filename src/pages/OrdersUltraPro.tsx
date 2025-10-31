@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { ShoppingCart, Package, Truck, CheckCircle2, Clock, AlertTriangle, Eye, Edit, Trash2, MoreHorizontal, Search, Filter, Download, RefreshCw, Plus, BarChart3, Bot, Zap, Target, Award, Users, Euro, Calendar, Globe, MapPin } from 'lucide-react'
+import { OrderDetailsDialog } from './orders/components/OrderDetailsDialog'
+import { OrderEditDialog } from './orders/components/OrderEditDialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -147,7 +149,10 @@ export default function OrdersUltraPro() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [dateRange, setDateRange] = useState('7d')
-  const [selectedOrder, setSelectedOrder] = useState(null)
+  const [selectedOrder, setSelectedOrder] = useState<any>(null)
+  const [viewDialogOpen, setViewDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [orders, setOrders] = useState(ordersData)
   const [currentFilters, setCurrentFilters] = useState({})
   
   const modalHelpers = useModalHelpers()
@@ -159,6 +164,31 @@ export default function OrdersUltraPro() {
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
   const pendingOrders = realStats.pending || ordersData.filter(order => order.status === 'pending').length
   const processingOrders = realStats.processing || ordersData.filter(order => order.status === 'processing').length
+
+  const handleUpdateOrder = (orderId: string, updates: any) => {
+    setOrders(prevOrders => 
+      prevOrders.map(order => 
+        order.id === orderId ? { ...order, ...updates } : order
+      )
+    )
+  }
+
+  const handleViewOrder = (order: any) => {
+    setSelectedOrder(order)
+    setViewDialogOpen(true)
+  }
+
+  const handleEditOrder = (order: any) => {
+    setSelectedOrder(order)
+    setEditDialogOpen(true)
+  }
+
+  const handleShipOrder = (order: any) => {
+    if (order.status === 'processing') {
+      handleUpdateOrder(order.id, { status: 'shipped' })
+      toast.success('Commande marquée comme expédiée')
+    }
+  }
 
   // Filtrage des données - utilise les vraies données si disponibles
   const ordersToFilter = realOrders.length > 0 ? realOrders.map(order => ({
@@ -571,13 +601,29 @@ export default function OrdersUltraPro() {
                         <TableCell>{getPriorityBadge(order.priority)}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleViewOrder(order)}
+                              title="Voir les détails"
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleEditOrder(order)}
+                              title="Modifier"
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleShipOrder(order)}
+                              disabled={order.status !== 'processing'}
+                              title="Marquer comme expédiée"
+                            >
                               <Package className="h-4 w-4" />
                             </Button>
                           </div>
