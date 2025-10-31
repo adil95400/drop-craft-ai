@@ -10,13 +10,15 @@ import { CompetitivePositioning } from '@/components/competitive/comparison/Comp
 import { MarketGapsAnalysis } from '@/components/competitive/comparison/MarketGapsAnalysis';
 import { CompetitorSelector } from '@/components/competitive/CompetitorSelector';
 import { ComparisonResultCard } from '@/components/competitive/ComparisonResultCard';
-import { BarChart3, Target, TrendingUp, AlertTriangle, PlusCircle } from 'lucide-react';
+import { ExportComparisonButton } from '@/components/competitive/ExportComparisonButton';
+import { BarChart3, Target, TrendingUp, AlertTriangle, PlusCircle, GitCompare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function CompetitiveComparisonPage() {
   const navigate = useNavigate();
   const { analyses, isLoading, compareCompetitors, isComparing } = useCompetitiveAnalysis();
   const [comparisonResult, setComparisonResult] = useState<any>(null);
+  const [selectedForVs, setSelectedForVs] = useState<string[]>([]);
 
   const handleCompare = async (selectedIds: string[]) => {
     try {
@@ -25,6 +27,24 @@ export default function CompetitiveComparisonPage() {
     } catch (error) {
       console.error('Error comparing competitors:', error);
     }
+  };
+
+  const handleVsComparison = () => {
+    if (selectedForVs.length === 2) {
+      navigate(`/competitive-comparison/${selectedForVs[0]}/vs/${selectedForVs[1]}`);
+    }
+  };
+
+  const toggleVsSelection = (id: string) => {
+    setSelectedForVs(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(i => i !== id);
+      }
+      if (prev.length < 2) {
+        return [...prev, id];
+      }
+      return [prev[1], id];
+    });
   };
 
   return (
@@ -39,12 +59,19 @@ export default function CompetitiveComparisonPage() {
 
       <div className="container mx-auto py-8 px-4 space-y-6">
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">
-            Comparaison Concurrentielle
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Analysez votre positionnement par rapport à vos concurrents
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight">
+                Comparaison Concurrentielle
+              </h1>
+              <p className="text-xl text-muted-foreground">
+                Analysez votre positionnement par rapport à vos concurrents
+              </p>
+            </div>
+            {analyses && analyses.length > 0 && (
+              <ExportComparisonButton analyses={analyses} comparisonResult={comparisonResult} />
+            )}
+          </div>
         </div>
 
         {isLoading ? (
@@ -139,6 +166,53 @@ export default function CompetitiveComparisonPage() {
 
             <TabsContent value="overview">
               <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <GitCompare className="w-5 h-5" />
+                      Comparaison 1 vs 1
+                    </CardTitle>
+                    <CardDescription>
+                      Sélectionnez deux concurrents pour une analyse approfondie
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid gap-3">
+                        {analyses.slice(0, 5).map(analysis => (
+                          <div
+                            key={analysis.id}
+                            className={`flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer ${
+                              selectedForVs.includes(analysis.id) ? 'bg-primary/10 border-primary' : ''
+                            }`}
+                            onClick={() => toggleVsSelection(analysis.id)}
+                          >
+                            <div className="flex-1">
+                              <p className="font-medium">{analysis.competitor_name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {analysis.competitive_data?.market_position || 'N/A'}
+                              </p>
+                            </div>
+                            {selectedForVs.includes(analysis.id) && (
+                              <div className="text-xs font-medium text-primary">
+                                Sélectionné {selectedForVs.indexOf(analysis.id) + 1}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <Button
+                        onClick={handleVsComparison}
+                        disabled={selectedForVs.length !== 2}
+                        className="w-full gap-2"
+                      >
+                        <GitCompare className="w-4 h-4" />
+                        Comparer en détail ({selectedForVs.length}/2 sélectionnés)
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 <ComparisonCharts analyses={analyses} />
               </div>
             </TabsContent>

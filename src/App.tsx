@@ -117,6 +117,7 @@ const CollaborationPage = lazy(() => import('@/pages/CollaborationPage'));
 const GlobalIntelligencePage = lazy(() => import('@/pages/GlobalIntelligencePage'));
 const CompetitorAnalysisPage = lazy(() => import('@/pages/CompetitorAnalysisPage'));
 const CompetitiveComparisonPage = lazy(() => import('@/pages/competitive/CompetitiveComparisonPage'));
+const CompetitorVsCompetitorPage = lazy(() => import('@/pages/competitive/CompetitorVsCompetitorPage'));
 const AIMarketplacePage = lazy(() => import('@/pages/AIMarketplacePage'));
 const PremiumNetworkPage = lazy(() => import('@/pages/PremiumNetworkPage'));
 const ProductResearchPage = lazy(() => import('@/pages/ProductResearchPage'));
@@ -379,6 +380,12 @@ function App() {
                         <Route path="/competitive-comparison" element={
                           <ProtectedRoute>
                             <AppLayout><CompetitiveComparisonPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/competitive-comparison/:id1/vs/:id2" element={
+                          <ProtectedRoute>
+                            <AppLayout><CompetitorVsCompetitorPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
