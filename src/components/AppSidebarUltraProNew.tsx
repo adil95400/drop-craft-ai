@@ -28,6 +28,7 @@ import {
   Crown,
   Flame,
   Sparkles,
+  Database,
   Target,
   TrendingUp,
   Mail,
@@ -156,6 +157,13 @@ const navigationItems = [
         url: "/premium-suppliers",
         icon: Shield,
         badge: { text: "US/EU", variant: "secondary" as const },
+        status: "new"
+      },
+      {
+        title: "Admin Fournisseurs",
+        url: "/supplier-admin",
+        icon: Database,
+        badge: { text: "Gestion", variant: "default" as const },
         status: "new"
       }
     ]

@@ -120,6 +120,7 @@ const ProfitCalculatorPage = lazy(() => import('@/pages/ProfitCalculatorPage'));
 const AdsManagerPage = lazy(() => import('@/pages/AdsManagerPage'));
 const PlatformManagementPage = lazy(() => import('@/pages/PlatformManagementPage'));
 const QuickDropshippingPage = lazy(() => import('@/pages/QuickDropshippingPage'));
+const SupplierAdminPage = lazy(() => import('@/pages/SupplierAdminPage'));
 const InventoryPredictorPage = lazy(() => import('@/pages/InventoryPredictorPage'));
 const CustomerIntelligencePage = lazy(() => import('@/pages/CustomerIntelligencePage'));
 const UnifiedDashboardPage = lazy(() => import('@/pages/UnifiedDashboardPage'));
@@ -303,9 +304,15 @@ function App() {
                           </ProtectedRoute>
                         } />
 
-                        <Route path="/premium-suppliers" element={
+                         <Route path="/premium-suppliers" element={
                           <ProtectedRoute>
                             <AppLayout><PremiumSuppliersPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+
+                        <Route path="/supplier-admin" element={
+                          <ProtectedRoute>
+                            <AppLayout><SupplierAdminPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
