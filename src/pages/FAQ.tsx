@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PublicLayout } from '@/layouts/PublicLayout'
+import { Helmet } from 'react-helmet-async'
 
 const faqCategories = [
   {
@@ -375,5 +377,8 @@ export default function FAQ() {
         </TabsContent>
       </Tabs>
     </div>
+    </PublicLayout>
   )
 }
+
+export default FAQ

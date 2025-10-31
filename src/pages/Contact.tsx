@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Sparkles, Mail, Phone, Send } from 'lucide-react'
 import { toast } from 'sonner'
+import { PublicLayout } from '@/layouts/PublicLayout'
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -20,13 +21,13 @@ const Contact = () => {
   }
 
   return (
-    <>
+    <PublicLayout>
       <Helmet>
         <title>Contact - ShopOpti | Support et Assistance</title>
         <meta name="description" content="Contactez l'équipe ShopOpti pour toute question. Support réactif, conseils personnalisés." />
       </Helmet>
 
-      <div className="min-h-screen bg-background py-16">
+      <div className="bg-background py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h1 className="text-4xl font-bold mb-6">Contactez-nous</h1>
@@ -92,7 +93,7 @@ const Contact = () => {
           </div>
         </div>
       </div>
-    </>
+    </PublicLayout>
   )
 }
 

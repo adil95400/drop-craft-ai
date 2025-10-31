@@ -1,6 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Shield, Eye, Lock, UserCheck, Database, Globe, Mail, AlertTriangle } from 'lucide-react';
+import { PublicLayout } from '@/layouts/PublicLayout';
+import { Helmet } from 'react-helmet-async';
 
 const PrivacyPolicy = () => {
   const lastUpdated = "15 janvier 2024";
@@ -134,7 +136,13 @@ const PrivacyPolicy = () => {
   ];
 
   return (
-    <div className="space-y-8">
+    <PublicLayout>
+      <Helmet>
+        <title>Politique de Confidentialité | ShopOpti+</title>
+        <meta name="description" content="Politique de confidentialité de ShopOpti+ - Protection des données, RGPD, et utilisation de vos informations personnelles." />
+      </Helmet>
+      <div className="container mx-auto px-4 py-12 max-w-6xl">
+        <div className="space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center gap-3 mb-4">
@@ -247,6 +255,8 @@ const PrivacyPolicy = () => {
         </CardContent>
       </Card>
     </div>
+      </div>
+    </PublicLayout>
   );
 };
 

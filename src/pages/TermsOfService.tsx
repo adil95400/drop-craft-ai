@@ -13,6 +13,8 @@ import {
   Mail,
   Eye
 } from 'lucide-react';
+import { PublicLayout } from '@/layouts/PublicLayout';
+import { Helmet } from 'react-helmet-async';
 
 const TermsOfService = () => {
   const lastUpdated = "15 janvier 2024";
@@ -201,7 +203,13 @@ const TermsOfService = () => {
   ];
 
   return (
-    <div className="space-y-8">
+    <PublicLayout>
+      <Helmet>
+        <title>Conditions d'Utilisation | ShopOpti+</title>
+        <meta name="description" content="Conditions générales d'utilisation de ShopOpti+ - Règles, obligations et droits des utilisateurs." />
+      </Helmet>
+      <div className="container mx-auto px-4 py-12 max-w-6xl">
+        <div className="space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center gap-3 mb-4">
@@ -337,6 +345,8 @@ const TermsOfService = () => {
         </CardContent>
       </Card>
     </div>
+      </div>
+    </PublicLayout>
   );
 };
 

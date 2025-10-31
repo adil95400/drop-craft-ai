@@ -8,6 +8,7 @@ import { CheckCircle, Crown } from 'lucide-react';
 import { useStripeCheckout } from '@/hooks/useStripeCheckout';
 import { STRIPE_CONFIG, StripePlanType } from '@/lib/stripe-config';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
+import { PublicLayout } from '@/layouts/PublicLayout';
 
 const Pricing = () => {
   const { createCheckoutSession, loading } = useStripeCheckout();
@@ -29,13 +30,13 @@ const Pricing = () => {
   };
 
   return (
-    <>
+    <PublicLayout>
       <Helmet>
         <title>Tarifs - ShopOpti | Plans et Pricing</title>
         <meta name="description" content="Plans tarifaires ShopOpti : Starter 29€, Pro 79€, Ultra Pro 199€. 14 jours d'essai gratuit." />
       </Helmet>
 
-      <div className="min-h-screen bg-background py-16">
+      <div className="bg-background py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h1 className="text-4xl font-bold mb-6">Choisissez votre plan</h1>
@@ -89,7 +90,7 @@ const Pricing = () => {
           </div>
         </div>
       </div>
-    </>
+    </PublicLayout>
   )
 }
 

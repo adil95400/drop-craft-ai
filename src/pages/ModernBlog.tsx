@@ -22,6 +22,7 @@ import {
   BookOpen,
   ChevronRight
 } from 'lucide-react';
+import { PublicLayout } from '@/layouts/PublicLayout';
 
 // Mock data - Inspiré des concurrents comme Oberlo, Dropshipping.fr, etc.
 const mockPosts = [
@@ -486,6 +487,8 @@ export default function ModernBlog() {
           </div>
         </section>
       </div>
-    </>
+    </PublicLayout>
   );
 }
+
+export default ModernBlog

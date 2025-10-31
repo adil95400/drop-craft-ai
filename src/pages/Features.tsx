@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Globe, BarChart3, Zap, ShoppingCart, Shield, Package, TrendingUp, Users, Star, ArrowRight } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import FooterNavigation from "@/components/navigation/FooterNavigation";
+import { PublicLayout } from "@/layouts/PublicLayout";
 
 const Features = () => {
   const navigate = useNavigate();
@@ -85,36 +85,11 @@ const Features = () => {
   ];
 
   return (
-    <>
+    <PublicLayout>
       <Helmet>
         <title>Fonctionnalités | ShopOpti+ - Plateforme E-commerce Complète</title>
         <meta name="description" content="Découvrez toutes les fonctionnalités de ShopOpti+ : IA, multi-marketplace, analytics avancés, import automatique et bien plus encore." />
       </Helmet>
-
-      <div className="min-h-screen bg-background">
-        {/* Header */}
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-          <div className="container mx-auto px-4 sm:px-6">
-            <div className="flex h-16 items-center justify-between">
-              <Link to="/" className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-gradient-hero rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">S</span>
-                </div>
-                <span className="text-lg sm:text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">ShopOpti+</span>
-              </Link>
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" onClick={() => navigate('/auth')}>
-                  Connexion
-                </Button>
-                <Button onClick={() => navigate('/auth')}>
-                  Commencer
-                </Button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <main>
           {/* Hero Section */}
           <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
             <div className="container mx-auto px-4 sm:px-6">
@@ -192,11 +167,7 @@ const Features = () => {
               </div>
             </div>
           </section>
-        </main>
-
-        <FooterNavigation />
-      </div>
-    </>
+    </PublicLayout>
   );
 };
 

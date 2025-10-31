@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
+import { PublicLayout } from "@/layouts/PublicLayout";
 
 const About = () => {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ const About = () => {
   ];
 
   return (
-    <>
+    <PublicLayout>
       <SEO
         title="À Propos | Shopopti Pro - L'équipe derrière la révolution e-commerce"
         description="Découvrez l'histoire de Shopopti Pro, notre mission de révolutionner le dropshipping avec l'IA, et l'équipe d'experts qui développent les solutions de demain."
@@ -60,7 +61,7 @@ const About = () => {
         keywords="équipe Shopopti, histoire entreprise, mission dropshipping IA"
       />
 
-      <div className="min-h-screen bg-background">
+      <div className="bg-background">
         {/* Hero Section */}
         <section className="relative py-20 px-6 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/5" />
@@ -194,7 +195,7 @@ const About = () => {
           </div>
         </section>
       </div>
-    </>
+    </PublicLayout>
   );
 };
 
