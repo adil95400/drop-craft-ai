@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, ShoppingCart } from 'lucide-react';
 import FooterNavigation from '@/components/navigation/FooterNavigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PublicLayoutProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface PublicLayoutProps {
 export function PublicLayout({ children }: PublicLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const navigation = [
     { name: 'Fonctionnalités', href: '/features' },
@@ -24,15 +26,15 @@ export function PublicLayout({ children }: PublicLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4">
-          <div className="flex h-16 items-center justify-between">
+      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pt-safe">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-6">
+          <div className="flex h-14 sm:h-16 items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-hero rounded-lg flex items-center justify-center">
-                <ShoppingCart className="h-5 w-5 text-white" />
+            <Link to="/" className="flex items-center space-x-1.5 sm:space-x-2">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-hero rounded-lg flex items-center justify-center">
+                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
-              <span className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">
+              <span className="text-base sm:text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">
                 ShopOpti+
               </span>
             </Link>
@@ -51,11 +53,12 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             </nav>
 
             {/* CTA Buttons */}
-            <div className="hidden md:flex items-center space-x-3">
-              <Button variant="ghost" onClick={() => navigate('/auth')}>
+            <div className="hidden md:flex items-center space-x-2 lg:space-x-3">
+              <Button variant="ghost" size={isMobile ? "sm" : "default"} onClick={() => navigate('/auth')}>
                 Connexion
               </Button>
               <Button 
+                size={isMobile ? "sm" : "default"}
                 onClick={() => navigate('/auth')}
                 className="bg-gradient-hero hover:opacity-90 transition-opacity"
               >
@@ -66,12 +69,13 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent"
+              className="md:hidden p-1.5 sm:p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
             >
               {mobileMenuOpen ? (
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5 sm:h-6 sm:w-6" />
               ) : (
-                <Menu className="h-6 w-6" />
+                <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
               )}
             </button>
           </div>
@@ -79,22 +83,23 @@ export function PublicLayout({ children }: PublicLayoutProps) {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t">
-            <div className="container mx-auto px-4 py-4 space-y-2">
+          <div className="md:hidden border-t bg-background">
+            <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 space-y-1.5 sm:space-y-2 max-h-[calc(100vh-4rem)] overflow-y-auto pb-safe">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   to={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  className="block px-3 py-2.5 rounded-md text-sm sm:text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors active:scale-95"
                 >
                   {item.name}
                 </Link>
               ))}
-              <div className="pt-4 space-y-2">
+              <div className="pt-3 sm:pt-4 space-y-2 border-t">
                 <Button 
                   variant="outline" 
-                  className="w-full"
+                  size="lg"
+                  className="w-full h-11 sm:h-12 text-sm sm:text-base"
                   onClick={() => {
                     setMobileMenuOpen(false);
                     navigate('/auth');
@@ -103,7 +108,8 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                   Connexion
                 </Button>
                 <Button 
-                  className="w-full bg-gradient-hero"
+                  size="lg"
+                  className="w-full h-11 sm:h-12 text-sm sm:text-base bg-gradient-hero hover:opacity-90"
                   onClick={() => {
                     setMobileMenuOpen(false);
                     navigate('/auth');
@@ -118,8 +124,10 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
-        {children}
+      <main className="flex-1 w-full">
+        <div className="w-full max-w-full overflow-x-hidden">
+          {children}
+        </div>
       </main>
 
       {/* Footer */}
