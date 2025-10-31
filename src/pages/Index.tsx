@@ -1,161 +1,584 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Helmet } from 'react-helmet-async';
-import { OnboardingWizard } from '@/components/commercial/OnboardingWizard';
-import { QuotaDisplay } from '@/components/commercial/QuotaDisplay';
-import { SmartPlanSelector } from '@/components/plan/SmartPlanSelector';
 import { SidebarLayout } from '@/layouts/SidebarLayout';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Crown, Zap, Users, Star, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Crown, Zap, Users, Star, ArrowRight, TrendingUp, Shield, Globe, CheckCircle2, Package, ShoppingCart, BarChart3, Sparkles, Clock, MessageSquare, DollarSign, Settings, Rocket, Target } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import FooterNavigation from "@/components/navigation/FooterNavigation";
 
-// Composant Hero temporaire
-const Hero = () => {
+// Navigation Header Component
+const LandingHeader = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   
   return (
-    <div className="text-center space-y-4 sm:space-y-6 py-8 sm:py-16 px-4">
-      <div className="space-y-3 sm:space-y-4">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-          <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Shopopti+
-          </span>
-        </h1>
-        <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-          Plateforme de dropshipping intelligent. Automatisez vos imports produits, 
-          gérez vos fournisseurs et optimisez votre e-commerce avec l'IA.
-        </p>
-      </div>
-      
-      {!user && (
-        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
-          <Button size="lg" onClick={() => navigate('/auth')} className="w-full sm:w-auto">
-            <Crown className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            Commencer gratuitement
-          </Button>
-          <Button variant="outline" size="lg" onClick={() => navigate('/pricing')} className="w-full sm:w-auto">
-            Voir les tarifs
-          </Button>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-gradient-hero rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">S</span>
+            </div>
+            <span className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">ShopOpti+</span>
+          </div>
+          
+          <nav className="hidden md:flex items-center gap-6">
+            <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Tarifs
+            </Link>
+            <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              À propos
+            </Link>
+            <Link to="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Blog
+            </Link>
+            <Link to="/contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Contact
+            </Link>
+          </nav>
+          
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" onClick={() => navigate('/auth')}>
+              Connexion
+            </Button>
+            <Button onClick={() => navigate('/auth')}>
+              Commencer
+            </Button>
+          </div>
         </div>
-      )}
-    </div>
+      </div>
+    </header>
   );
 };
 
-// Composant Features temporaire
-const Features = () => {
+// Hero Section
+const HeroSection = () => {
+  const navigate = useNavigate();
+  
+  return (
+    <section className="relative py-20 md:py-32 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
+      <div className="absolute inset-0 bg-grid-white/10 bg-grid-16 [mask-image:radial-gradient(white,transparent_70%)]" />
+      
+      <div className="container mx-auto px-4 sm:px-6 relative z-10">
+        <div className="text-center space-y-8 max-w-4xl mx-auto">
+          <Badge className="px-4 py-2 text-sm bg-primary/10 text-primary border-primary/20">
+            <Sparkles className="h-4 w-4 mr-2" />
+            La plateforme n°1 du dropshipping intelligent
+          </Badge>
+          
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
+            Automatisez votre
+            <span className="block bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
+              e-commerce avec l'IA
+            </span>
+          </h1>
+          
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            Importez des produits de 99+ fournisseurs internationaux, automatisez votre gestion 
+            et développez votre business avec notre plateforme SaaS propulsée par l'intelligence artificielle.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+            <Button size="lg" className="px-8 py-6 text-lg group" onClick={() => navigate('/auth')}>
+              <Crown className="w-5 h-5 mr-2" />
+              Essai gratuit 14 jours
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+            <Button variant="outline" size="lg" className="px-8 py-6 text-lg" onClick={() => navigate('/dashboard')}>
+              Voir la démo
+            </Button>
+          </div>
+          
+          <div className="flex flex-wrap items-center justify-center gap-8 pt-8 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-success" />
+              <span>Sans carte bancaire</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-success" />
+              <span>Installation en 2 min</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-success" />
+              <span>Support 24/7</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Stats Section
+const StatsSection = () => {
+  const stats = [
+    { value: "99+", label: "Fournisseurs connectés", icon: Users },
+    { value: "10M+", label: "Produits disponibles", icon: Package },
+    { value: "15k+", label: "Utilisateurs actifs", icon: TrendingUp },
+    { value: "98%", label: "Satisfaction client", icon: Star },
+  ];
+  
+  return (
+    <section className="py-16 bg-secondary/30">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          {stats.map((stat, index) => {
+            const IconComponent = stat.icon;
+            return (
+              <div key={index} className="text-center space-y-2">
+                <div className="flex justify-center mb-3">
+                  <div className="p-3 bg-primary/10 rounded-full">
+                    <IconComponent className="h-6 w-6 text-primary" />
+                  </div>
+                </div>
+                <div className="text-3xl md:text-4xl font-bold text-foreground">{stat.value}</div>
+                <div className="text-sm text-muted-foreground">{stat.label}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Features Section
+const FeaturesSection = () => {
   const features = [
     {
-      icon: <Zap className="w-5 h-5 sm:w-6 sm:h-6" />,
+      icon: Zap,
       title: "Import automatique",
-      description: "Importez des milliers de produits en quelques clics"
+      description: "Importez des milliers de produits en quelques clics depuis AliExpress, BigBuy, Spocket et plus de 99 fournisseurs.",
+      color: "from-yellow-500 to-orange-500"
     },
     {
-      icon: <Users className="w-5 h-5 sm:w-6 sm:h-6" />,
-      title: "Gestion fournisseurs",
-      description: "Connectez et gérez tous vos fournisseurs en un lieu"
+      icon: Globe,
+      title: "Multi-marketplace",
+      description: "Gérez Shopify, WooCommerce, PrestaShop et plus depuis une seule plateforme centralisée.",
+      color: "from-blue-500 to-cyan-500"
     },
     {
-      icon: <Star className="w-5 h-5 sm:w-6 sm:h-6" />,
+      icon: Sparkles,
       title: "IA d'optimisation",
-      description: "Optimisez vos prix et descriptions avec l'IA"
+      description: "Optimisez automatiquement vos prix, descriptions produits et SEO grâce à l'intelligence artificielle.",
+      color: "from-purple-500 to-pink-500"
+    },
+    {
+      icon: BarChart3,
+      title: "Analytics avancés",
+      description: "Tableaux de bord en temps réel avec insights business et prévisions de ventes powered by AI.",
+      color: "from-green-500 to-emerald-500"
+    },
+    {
+      icon: ShoppingCart,
+      title: "Gestion commandes",
+      description: "Automatisez le traitement des commandes et le tracking avec synchronisation multi-plateformes.",
+      color: "from-red-500 to-rose-500"
+    },
+    {
+      icon: Shield,
+      title: "Sécurité garantie",
+      description: "Protection des données, conformité RGPD et sauvegarde automatique de toutes vos informations.",
+      color: "from-indigo-500 to-blue-500"
     }
   ];
-
+  
   return (
-    <section className="py-8 sm:py-12 md:py-16 px-4">
-      <div className="text-center space-y-3 sm:space-y-4 mb-8 sm:mb-12">
-        <h2 className="text-2xl sm:text-3xl font-bold">Fonctionnalités puissantes</h2>
-        <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
-          Tous les outils dont vous avez besoin pour réussir votre e-commerce
-        </p>
+    <section className="py-20">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="text-center space-y-4 mb-16">
+          <Badge className="px-4 py-2 bg-primary/10 text-primary border-primary/20">
+            Fonctionnalités
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-bold">Tout ce dont vous avez besoin</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Une suite complète d'outils pour développer votre e-commerce
+          </p>
+        </div>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((feature, index) => {
+            const IconComponent = feature.icon;
+            return (
+              <Card key={index} className="border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
+                <CardHeader>
+                  <div className={`p-3 rounded-xl bg-gradient-to-br ${feature.color} w-fit mb-4`}>
+                    <IconComponent className="h-6 w-6 text-white" />
+                  </div>
+                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base">{feature.description}</CardDescription>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-        {features.map((feature, index) => (
-          <Card key={index}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg text-primary flex-shrink-0">
-                  {feature.icon}
+    </section>
+  );
+};
+
+// Benefits Section
+const BenefitsSection = () => {
+  const benefits = [
+    {
+      icon: Clock,
+      title: "Gagnez du temps",
+      description: "Automatisez vos tâches répétitives et concentrez-vous sur la croissance de votre business. Économisez jusqu'à 20h par semaine."
+    },
+    {
+      icon: DollarSign,
+      title: "Augmentez vos revenus",
+      description: "Optimisation des prix par IA, suggestions de produits gagnants et stratégies de pricing dynamiques pour maximiser vos profits."
+    },
+    {
+      icon: Target,
+      title: "Réduisez les erreurs",
+      description: "Synchronisation automatique des stocks, prix et commandes entre toutes vos plateformes. Zéro erreur manuelle."
+    },
+    {
+      icon: Rocket,
+      title: "Scalez rapidement",
+      description: "Infrastructure cloud qui s'adapte à votre croissance. De 10 à 10 000 commandes par jour sans limite technique."
+    }
+  ];
+  
+  return (
+    <section className="py-20 bg-secondary/30">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="text-center space-y-4 mb-16">
+          <Badge className="px-4 py-2 bg-success/10 text-success border-success/20">
+            Avantages
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-bold">Pourquoi ShopOpti+ ?</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Rejoignez les entrepreneurs qui ont transformé leur e-commerce
+          </p>
+        </div>
+        
+        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {benefits.map((benefit, index) => {
+            const IconComponent = benefit.icon;
+            return (
+              <div key={index} className="flex gap-4">
+                <div className="flex-shrink-0">
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <IconComponent className="h-6 w-6 text-primary" />
+                  </div>
                 </div>
-                <CardTitle className="text-base sm:text-lg">{feature.title}</CardTitle>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold">{benefit.title}</h3>
+                  <p className="text-muted-foreground">{benefit.description}</p>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">{feature.description}</p>
-            </CardContent>
-          </Card>
-        ))}
+            );
+          })}
+        </div>
       </div>
     </section>
   );
 };
 
-// Composant Testimonials temporaire
-const Testimonials = () => {
+// Use Cases Section
+const UseCasesSection = () => {
+  const useCases = [
+    {
+      title: "Débutant en dropshipping",
+      description: "Lancez votre boutique en ligne en quelques heures avec nos templates et guides étape par étape.",
+      features: ["Templates prêts à l'emploi", "Formation incluse", "Support dédié"]
+    },
+    {
+      title: "E-commerçant confirmé",
+      description: "Automatisez votre gestion et connectez toutes vos plateformes pour gérer efficacement votre croissance.",
+      features: ["Automatisation avancée", "Multi-plateformes", "Analytics pro"]
+    },
+    {
+      title: "Agence e-commerce",
+      description: "Gérez plusieurs clients depuis un seul dashboard avec notre solution multi-tenant professionnelle.",
+      features: ["Multi-tenant", "White label", "API complète"]
+    }
+  ];
+  
   return (
-    <section className="py-8 sm:py-12 md:py-16 px-4">
-      <div className="text-center space-y-3 sm:space-y-4 mb-8 sm:mb-12">
-        <h2 className="text-2xl sm:text-3xl font-bold">Ce que disent nos clients</h2>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          Rejoignez des milliers d'entrepreneurs qui nous font confiance
-        </p>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        <Card>
-          <CardContent className="pt-4 sm:pt-6">
-            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
-              "Shopopti+ a révolutionné ma façon de gérer mes imports. J'économise 10h par semaine !"
-            </p>
-            <div className="text-sm sm:text-base font-medium">Marie L. - E-commerçante</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4 sm:pt-6">
-            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
-              "L'IA d'optimisation a augmenté mes conversions de 30%. Un outil indispensable."
-            </p>
-            <div className="text-sm sm:text-base font-medium">Pierre M. - Dropshipper</div>
-          </CardContent>
-        </Card>
+    <section className="py-20">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="text-center space-y-4 mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold">Pour tous les profils</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Que vous débutiez ou soyez expert, nous avons la solution adaptée
+          </p>
+        </div>
+        
+        <div className="grid md:grid-cols-3 gap-6">
+          {useCases.map((useCase, index) => (
+            <Card key={index} className="border-2">
+              <CardHeader>
+                <CardTitle className="text-xl">{useCase.title}</CardTitle>
+                <CardDescription className="text-base">{useCase.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {useCase.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-center gap-2 text-sm">
+                      <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </section>
   );
 };
 
-// Composant CTA temporaire
-const CTA = () => {
+// Pricing Preview Section
+const PricingPreviewSection = () => {
   const navigate = useNavigate();
   
   return (
-    <section className="py-8 sm:py-12 md:py-16 px-4">
-      <Card className="bg-gradient-to-r from-primary to-secondary text-white">
-        <CardContent className="text-center py-8 sm:py-12 space-y-4 sm:space-y-6">
-          <h2 className="text-2xl sm:text-3xl font-bold">Prêt à démarrer ?</h2>
-          <p className="text-base sm:text-lg md:text-xl opacity-90 max-w-2xl mx-auto px-4">
-            Rejoignez des milliers d'entrepreneurs qui utilisent Shopopti+ 
-            pour développer leur e-commerce
+    <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="text-center space-y-4 mb-16">
+          <Badge className="px-4 py-2 bg-primary/10 text-primary border-primary/20">
+            Tarifs
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-bold">Plans adaptés à votre croissance</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Commencez gratuitement et évoluez selon vos besoins
           </p>
-          <Button 
-            size="lg" 
-            variant="secondary"
-            onClick={() => navigate('/auth')}
-            className="w-full sm:w-auto"
-          >
-            Commencer maintenant
-            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+        </div>
+        
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <Card>
+            <CardHeader>
+              <CardTitle>Starter</CardTitle>
+              <CardDescription>Pour débuter</CardDescription>
+              <div className="pt-4">
+                <span className="text-4xl font-bold">0€</span>
+                <span className="text-muted-foreground">/mois</span>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>100 produits</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>1 boutique connectée</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>Support email</span>
+                </li>
+              </ul>
+              <Button variant="outline" className="w-full" onClick={() => navigate('/auth')}>
+                Commencer gratuitement
+              </Button>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-primary border-2 relative">
+            <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
+              Populaire
+            </Badge>
+            <CardHeader>
+              <CardTitle>Pro</CardTitle>
+              <CardDescription>Pour scale votre business</CardDescription>
+              <div className="pt-4">
+                <span className="text-4xl font-bold">49€</span>
+                <span className="text-muted-foreground">/mois</span>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>10 000 produits</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>Boutiques illimitées</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>IA avancée + Analytics</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>Support prioritaire 24/7</span>
+                </li>
+              </ul>
+              <Button className="w-full" onClick={() => navigate('/auth')}>
+                Essayer 14 jours gratuits
+              </Button>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Enterprise</CardTitle>
+              <CardDescription>Solution sur mesure</CardDescription>
+              <div className="pt-4">
+                <span className="text-4xl font-bold">Sur devis</span>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>Produits illimités</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>Multi-tenant</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>API dédiée</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>Account manager dédié</span>
+                </li>
+              </ul>
+              <Button variant="outline" className="w-full" onClick={() => navigate('/contact')}>
+                Nous contacter
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div className="text-center mt-8">
+          <Button variant="link" onClick={() => navigate('/pricing')}>
+            Voir tous les détails des tarifs
+            <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </section>
   );
 };
 
+// Testimonials Section
+const TestimonialsSection = () => {
+  const testimonials = [
+    {
+      quote: "ShopOpti+ a complètement transformé ma façon de gérer mes imports. Je gagne facilement 15h par semaine et mes ventes ont augmenté de 40% !",
+      author: "Marie Dupont",
+      role: "E-commerçante",
+      avatar: "M"
+    },
+    {
+      quote: "L'automatisation des commandes et la synchronisation multi-plateformes sont juste incroyables. Plus d'erreurs, plus de stress. Je recommande à 200% !",
+      author: "Thomas Martin",
+      role: "Dropshipper Pro",
+      avatar: "T"
+    },
+    {
+      quote: "En tant qu'agence, nous gérons 30+ clients sur ShopOpti+. Le multi-tenant et l'API sont parfaits. Support réactif. Excellent investissement.",
+      author: "Sophie Laurent",
+      role: "CEO - Digital Agency",
+      avatar: "S"
+    }
+  ];
+  
+  return (
+    <section className="py-20">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="text-center space-y-4 mb-16">
+          <Badge className="px-4 py-2 bg-warning/10 text-warning border-warning/20">
+            Témoignages
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-bold">Ils nous font confiance</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Découvrez ce que nos utilisateurs disent de ShopOpti+
+          </p>
+        </div>
+        
+        <div className="grid md:grid-cols-3 gap-6">
+          {testimonials.map((testimonial, index) => (
+            <Card key={index}>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-warning text-warning" />
+                  ))}
+                </div>
+                <p className="text-muted-foreground mb-6 italic">"{testimonial.quote}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+                    {testimonial.avatar}
+                  </div>
+                  <div>
+                    <div className="font-semibold">{testimonial.author}</div>
+                    <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Final CTA Section
+const FinalCTASection = () => {
+  const navigate = useNavigate();
+  
+  return (
+    <section className="py-20 bg-gradient-to-br from-primary to-primary-dark text-primary-foreground">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="text-center space-y-8 max-w-3xl mx-auto">
+          <h2 className="text-3xl md:text-5xl font-bold">
+            Prêt à transformer votre e-commerce ?
+          </h2>
+          <p className="text-lg md:text-xl opacity-90">
+            Rejoignez plus de 15 000 entrepreneurs qui font confiance à ShopOpti+ 
+            pour automatiser et développer leur business en ligne.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+            <Button 
+              size="lg" 
+              variant="secondary"
+              className="px-8 py-6 text-lg"
+              onClick={() => navigate('/auth')}
+            >
+              <Crown className="w-5 h-5 mr-2" />
+              Commencer gratuitement
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="px-8 py-6 text-lg bg-transparent border-white text-white hover:bg-white/10"
+              onClick={() => navigate('/contact')}
+            >
+              <MessageSquare className="w-5 h-5 mr-2" />
+              Parler à un expert
+            </Button>
+          </div>
+          <p className="text-sm opacity-75">
+            ✓ Essai gratuit 14 jours • ✓ Sans engagement • ✓ Annulation en 1 clic
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Main Index Component
 const Index = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   // Show loading while auth is being determined
   if (loading) {
@@ -169,48 +592,34 @@ const Index = () => {
     );
   }
 
+  // If user is logged in, redirect to dashboard
+  if (user) {
+    navigate('/dashboard');
+    return null;
+  }
+
   return (
     <>
       <Helmet>
-        <title>Import Pro - Plateforme d'import et de sourcing e-commerce</title>
-        <meta name="description" content="Automatisez vos imports produits, trouvez les meilleurs fournisseurs et optimisez votre e-commerce avec l'IA. Solution complète pour les entrepreneurs." />
+        <title>ShopOpti+ | Plateforme SaaS de Dropshipping Intelligent avec IA</title>
+        <meta name="description" content="Automatisez votre e-commerce avec ShopOpti+. 99+ fournisseurs, IA avancée, gestion multi-plateformes. Essai gratuit 14 jours sans engagement." />
+        <meta name="keywords" content="dropshipping, e-commerce, automatisation, IA, SaaS, Shopify, AliExpress, BigBuy, gestion produits, analytics" />
       </Helmet>
 
-      {user ? (
-        <SidebarLayout>
-          <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6">
-              {/* Colonne principale avec onboarding */}
-              <div className="xl:col-span-3 space-y-4 sm:space-y-6">
-                <OnboardingWizard />
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                  <div>
-                    <Hero />
-                  </div>
-                  <div>
-                    <Features />
-                  </div>
-                </div>
-                <Testimonials />
-              </div>
-              
-              {/* Colonne sidebar avec quotas */}
-              <div className="xl:col-span-1 space-y-4 sm:space-y-6">
-                <QuotaDisplay />
-              </div>
-            </div>
-          </div>
-        </SidebarLayout>
-      ) : (
-        <main className="min-h-screen">
-          <div className="container mx-auto max-w-7xl px-4 sm:px-6">
-            <Hero />
-            <Features />
-            <Testimonials />
-            <CTA />
-          </div>
+      <div className="min-h-screen bg-background">
+        <LandingHeader />
+        <main>
+          <HeroSection />
+          <StatsSection />
+          <FeaturesSection />
+          <BenefitsSection />
+          <UseCasesSection />
+          <PricingPreviewSection />
+          <TestimonialsSection />
+          <FinalCTASection />
         </main>
-      )}
+        <FooterNavigation />
+      </div>
     </>
   );
 };
