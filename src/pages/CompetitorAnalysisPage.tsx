@@ -1,11 +1,15 @@
 import { Helmet } from 'react-helmet-async';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { CompetitorAnalyzer } from '@/components/competitive/CompetitorAnalyzer';
 import { CompetitorList } from '@/components/competitive/CompetitorList';
 import { PriceTracker } from '@/components/competitive/PriceTracker';
-import { Target, DollarSign, TrendingUp } from 'lucide-react';
+import { Target, DollarSign, TrendingUp, BarChart3 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function CompetitorAnalysisPage() {
+  const navigate = useNavigate();
+  
   return (
     <>
       <Helmet>
@@ -18,12 +22,20 @@ export default function CompetitorAnalysisPage() {
 
       <div className="container mx-auto py-8 px-4 space-y-6">
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">
-            Analyse Concurrentielle
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Surveillez vos concurrents et restez compétitif sur le marché
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight">
+                Analyse Concurrentielle
+              </h1>
+              <p className="text-xl text-muted-foreground">
+                Surveillez vos concurrents et restez compétitif sur le marché
+              </p>
+            </div>
+            <Button onClick={() => navigate('/competitive-comparison')} size="lg">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Voir la Comparaison
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="analysis" className="space-y-6">
