@@ -52,17 +52,45 @@ export function AdvancedProductCatalog() {
   const [showExportModal, setShowExportModal] = useState(false)
   const { toast } = useToast()
 
-  // Fetch catalog products
+  // Fetch catalog products + imported products
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['catalog-products'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      // Récupérer les produits du catalogue
+      const { data: catalogData, error: catalogError } = await supabase
         .from('catalog_products')
         .select('*')
         .order('created_at', { ascending: false })
       
-      if (error) throw error
-      return data
+      if (catalogError) throw catalogError
+
+      // Récupérer les produits importés de l'utilisateur
+      const { data: importedData, error: importedError } = await supabase
+        .from('imported_products')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false })
+      
+      if (importedError) throw importedError
+
+      // Transformer les produits importés pour correspondre au format catalog_products
+      const transformedImported = (importedData || []).map(p => ({
+        ...p,
+        supplier_name: p.supplier_name || 'Importé',
+        availability_status: p.status === 'published' ? 'in_stock' : 'out_of_stock',
+        rating: 0,
+        sales_count: 0,
+        trend_score: 0,
+        is_bestseller: false,
+        is_trending: false,
+        is_winner: false,
+        image_url: Array.isArray(p.image_urls) ? p.image_urls[0] : null
+      }))
+
+      // Combiner les deux listes
+      return [...(catalogData || []), ...transformedImported]
     }
   })
 
