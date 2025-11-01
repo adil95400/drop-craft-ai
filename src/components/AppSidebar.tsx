@@ -73,7 +73,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
 const moduleGroups = [
   {
     title: "🚀 ESSENTIELS",
-    modules: ['dashboard', 'products', 'suppliers', 'import', 'winners', 'marketplace', 'network']
+    modules: ['dashboard', 'products', 'suppliers', 'premiumCatalog', 'import', 'winners', 'marketplace', 'network']
   },
   {
     title: "📊 ANALYTICS & AUTOMATION",

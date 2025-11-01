@@ -128,6 +128,7 @@ const AdsManagerPage = lazy(() => import('@/pages/AdsManagerPage'));
 const PlatformManagementPage = lazy(() => import('@/pages/PlatformManagementPage'));
 const QuickDropshippingPage = lazy(() => import('@/pages/QuickDropshippingPage'));
 const SupplierAdminPage = lazy(() => import('@/pages/SupplierAdminPage'));
+const PremiumCatalog = lazy(() => import('@/pages/PremiumCatalog'));
 const InventoryPredictorPage = lazy(() => import('@/pages/InventoryPredictorPage'));
 const CustomerIntelligencePage = lazy(() => import('@/pages/CustomerIntelligencePage'));
 const UnifiedDashboardPage = lazy(() => import('@/pages/UnifiedDashboardPage'));
@@ -398,6 +399,12 @@ function App() {
                         <Route path="/premium-network" element={
                           <ProtectedRoute>
                             <AppLayout><PremiumNetworkPage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/premium-catalog" element={
+                          <ProtectedRoute>
+                            <AppLayout><PremiumCatalog /></AppLayout>
                           </ProtectedRoute>
                         } />
                         

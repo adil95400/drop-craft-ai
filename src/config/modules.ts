@@ -110,6 +110,18 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     category: 'product',
     order: 8
   },
+  premiumCatalog: {
+    id: 'premiumCatalog',
+    name: 'Catalogue Premium',
+    icon: 'ShoppingBag',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/premium-catalog',
+    features: ['premium-products', 'quick-import', 'supplier-catalog'],
+    description: 'Produits premium de vos fournisseurs',
+    category: 'product',
+    order: 9
+  },
   stores: {
     id: 'stores',
     name: 'Mes Boutiques',

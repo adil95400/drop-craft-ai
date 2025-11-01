@@ -188,10 +188,20 @@ export default function PremiumNetworkPage() {
               {stats.totalSuppliers} fournisseurs • {stats.totalProducts.toLocaleString()} produits • Livraison moyenne {stats.avgShipping}
             </p>
           </div>
-          <Badge variant="outline" className="text-lg px-4 py-2">
-            <Shield className="h-4 w-4 mr-2" />
-            Avantage Compétitif Direct
-          </Badge>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/premium-catalog'}
+              className="gap-2"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              Voir le Catalogue
+            </Button>
+            <Badge variant="outline" className="text-lg px-4 py-2">
+              <Shield className="h-4 w-4 mr-2" />
+              Avantage Compétitif Direct
+            </Badge>
+          </div>
         </div>
 
         {/* Stats Cards */}
