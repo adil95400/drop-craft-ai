@@ -66,6 +66,23 @@ const ModernSuppliersHub: React.FC = () => {
   // Mock des connecteurs disponibles - inspiré des leaders du marché
   const [connectors] = useState<SupplierConnector[]>([
     {
+      id: 'btswholesaler',
+      name: 'BTSWholesaler',
+      displayName: 'BTS Wholesaler',
+      description: 'Électronique & High-Tech, smartphones, tablettes, accessoires premium',
+      category: 'Dropshipping Premium',
+      status: 'available',
+      logo: '/logos/btswholesaler.svg',
+      rating: 4.7,
+      products: 15000,
+      countries: ['FR', 'EU'],
+      features: { products: true, inventory: true, orders: true, webhooks: true },
+      pricing: 'free',
+      setupComplexity: 'easy',
+      authType: 'api_key',
+      rateLimits: { requestsPerMinute: 120, requestsPerHour: 7200 }
+    },
+    {
       id: 'bigbuy',
       name: 'BigBuy',
       displayName: 'BigBuy',
