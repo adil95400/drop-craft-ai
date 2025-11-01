@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Crown, ShoppingBag, Truck, Globe, Star, Zap, Shield, TrendingUp, Loader2, Key, CheckCircle2, Settings } from 'lucide-react'
+import { Crown, ShoppingBag, Truck, Globe, Star, Zap, Shield, TrendingUp, Loader2, Key, CheckCircle2, Settings, Award, ExternalLink, RefreshCw, Unlink, MapPin, Package } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { usePremiumSuppliers } from '@/hooks/usePremiumSuppliers'
 import { supabase } from '@/integrations/supabase/client'
@@ -12,6 +12,8 @@ import SupplierConnectionModal from '@/components/suppliers/SupplierConnectionMo
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { useNavigate } from 'react-router-dom'
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
 
 interface Supplier {
   id: string
@@ -35,7 +37,11 @@ export default function PremiumNetworkPage() {
     suppliers, 
     connections,
     connectSupplier,
+    disconnectSupplier,
+    syncSupplier,
     isConnecting,
+    isDisconnecting,
+    isSyncing,
     isLoadingSuppliers 
   } = usePremiumSuppliers()
   
@@ -309,102 +315,170 @@ export default function PremiumNetworkPage() {
 
           <TabsContent value={selectedCategory} className="space-y-4">
             {filteredSuppliers.length === 0 ? (
-              <Card className="p-12 text-center">
-                <ShoppingBag className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Aucun fournisseur trouvé</h3>
-                <p className="text-muted-foreground">
-                  Essayez de sélectionner une autre catégorie
-                </p>
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  Aucun fournisseur trouvé dans cette catégorie.
+                </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-4">
                 {filteredSuppliers.map((supplier) => {
                   const isConnected = connections?.some(c => c.supplier_id === supplier.id && c.status === 'active')
+                  const connection = connections?.find(c => c.supplier_id === supplier.id)
                   
+                  const getTierBadge = (tier?: string) => {
+                    const variants: Record<string, { variant: any; label: string; icon: any }> = {
+                      diamond: { variant: 'default', label: 'Diamond', icon: Crown },
+                      platinum: { variant: 'secondary', label: 'Platinum', icon: Star },
+                      gold: { variant: 'outline', label: 'Gold', icon: Award },
+                    };
+                    
+                    const tierInfo = variants[tier || 'gold'];
+                    const Icon = tierInfo.icon;
+                    
+                    return (
+                      <Badge variant={tierInfo.variant} className="flex items-center gap-1 w-fit">
+                        <Icon className="w-3 h-3" />
+                        {tierInfo.label}
+                      </Badge>
+                    );
+                  };
+
                   return (
-                    <Card key={supplier.id} className="p-6 space-y-4 hover:shadow-lg transition-shadow">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-bold flex items-center gap-2">
-                            {supplier.name}
-                            {(supplier.tier === 'diamond' || supplier.tier === 'platinum') && (
-                              <Crown className="h-4 w-4 text-yellow-500" />
+                    <Card key={supplier.id} className="hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <CardTitle className="text-lg">{supplier.name}</CardTitle>
+                              {supplier.is_active && (
+                                <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                                  Actif
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-4 h-4" />
+                                {supplier.country}
+                              </span>
+                              {supplier.categories && supplier.categories.length > 0 && (
+                                <span className="flex items-center gap-1">
+                                  <Package className="w-4 h-4" />
+                                  {supplier.categories[0]}
+                                </span>
+                              )}
+                            </div>
+                            {supplier.description && (
+                              <p className="text-sm text-muted-foreground max-w-2xl">
+                                {supplier.description}
+                              </p>
                             )}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">{supplier.country}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {getTierBadge(supplier.tier)}
+                            {isConnected && (
+                              <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                                <CheckCircle2 className="w-3 h-3 mr-1" />
+                                Connecté
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                        <Badge variant={supplier.is_active ? 'default' : 'secondary'}>
-                          {supplier.is_active ? 'Actif' : 'Bientôt'}
-                        </Badge>
-                      </div>
+                      </CardHeader>
 
-                      <p className="text-sm line-clamp-2">{supplier.description}</p>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {/* Stats Grid */}
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-sm text-muted-foreground">Produits</p>
+                              <p className="text-2xl font-bold">{supplier.product_count || 0}</p>
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <p className="text-sm text-muted-foreground">Commande min.</p>
+                              <p className="text-2xl font-bold">{supplier.minimum_order_value || 0}€</p>
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <p className="text-sm text-muted-foreground">Livraison</p>
+                              <p className="text-2xl font-bold">{supplier.avg_delivery_days || 0}j</p>
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <p className="text-sm text-muted-foreground">Note</p>
+                              <div className="flex items-center gap-1">
+                                <p className="text-2xl font-bold">{supplier.rating || 4.5}</p>
+                                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                              </div>
+                            </div>
+                          </div>
 
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                          {((supplier.quality_score || 75) / 20).toFixed(1)}
-                        </span>
-                        <span>{(supplier.product_count || 0).toLocaleString()} produits</span>
-                      </div>
-
-                      <div className="flex gap-2 flex-wrap">
-                        {supplier.categories?.slice(0, 3).map(cat => (
-                          <Badge key={cat} variant="outline" className="text-xs">
-                            {cat}
-                          </Badge>
-                        ))}
-                      </div>
-
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Truck className="h-3 w-3 text-primary" />
-                          <span>Livraison {supplier.avg_delivery_days}-{supplier.avg_delivery_days + 2} jours</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Key className="h-3 w-3 text-primary" />
-                          <span>API Disponible</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Shield className="h-3 w-3 text-primary" />
-                          <span>Connexion sécurisée</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-2 border-t">
-                        <div>
-                          <p className="text-xs text-muted-foreground">Min. commande</p>
-                          <p className="font-semibold">{supplier.minimum_order_value || 0}€</p>
-                        </div>
-                        <Badge variant={supplier.tier === 'diamond' ? 'default' : 'secondary'}>
-                          {supplier.tier?.toUpperCase() || 'GOLD'}
-                        </Badge>
-                      </div>
-
-                      {isConnected ? (
-                        <Button className="w-full" variant="outline" disabled>
-                          <CheckCircle2 className="h-4 w-4 mr-2" />
-                          Connecté
-                        </Button>
-                      ) : (
-                        <Button 
-                          className="w-full"
-                          onClick={() => handleConnectClick(supplier)}
-                          disabled={!supplier.is_active || isConnecting}
-                        >
-                          {isConnecting ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Connexion...
-                            </>
-                          ) : (
-                            <>
-                              <TrendingUp className="h-4 w-4 mr-2" />
-                              Connecter
-                            </>
+                          {/* Categories */}
+                          {supplier.categories && supplier.categories.length > 0 && (
+                            <div className="flex gap-2 flex-wrap">
+                              {supplier.categories.slice(0, 5).map(cat => (
+                                <Badge key={cat} variant="outline" className="text-xs">
+                                  {cat}
+                                </Badge>
+                              ))}
+                            </div>
                           )}
-                        </Button>
-                      )}
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center justify-between pt-4 border-t">
+                            <div className="flex items-center gap-2">
+                              {supplier.website_url && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => window.open(supplier.website_url, '_blank')}
+                                >
+                                  <ExternalLink className="w-4 h-4 mr-2" />
+                                  Site web
+                                </Button>
+                              )}
+                            </div>
+                            
+                            {isConnected ? (
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => connection && syncSupplier(connection.id)}
+                                  disabled={isSyncing}
+                                >
+                                  {isSyncing ? (
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  ) : (
+                                    <RefreshCw className="w-4 h-4 mr-2" />
+                                  )}
+                                  Synchroniser
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => connection && disconnectSupplier(connection.id)}
+                                  disabled={isDisconnecting}
+                                >
+                                  <Unlink className="w-4 h-4 mr-2" />
+                                  Déconnecter
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                onClick={() => handleConnectClick(supplier)}
+                                disabled={isConnecting || !supplier.is_active}
+                                className="bg-gradient-to-r from-primary to-primary/80"
+                              >
+                                <TrendingUp className="w-4 h-4 mr-2" />
+                                Connecter
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
                     </Card>
                   )
                 })}
