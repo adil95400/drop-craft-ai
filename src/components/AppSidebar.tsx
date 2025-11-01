@@ -85,7 +85,7 @@ const moduleGroups = [
   },
   {
     title: "⚡ ADVANCED",
-    modules: ['ai', 'commerce', 'security', 'integrations']
+    modules: ['ai', 'commerce', 'security', 'integrations', 'supplierAdmin']
   }
 ];
 

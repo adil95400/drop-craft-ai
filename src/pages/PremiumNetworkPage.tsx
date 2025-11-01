@@ -4,11 +4,14 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Crown, ShoppingBag, Truck, Globe, Star, Zap, Shield, TrendingUp, Loader2, Key, CheckCircle2 } from 'lucide-react'
+import { Crown, ShoppingBag, Truck, Globe, Star, Zap, Shield, TrendingUp, Loader2, Key, CheckCircle2, Settings } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { usePremiumSuppliers } from '@/hooks/usePremiumSuppliers'
 import { supabase } from '@/integrations/supabase/client'
 import SupplierConnectionModal from '@/components/suppliers/SupplierConnectionModal'
+import { useAuth } from '@/contexts/AuthContext'
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
+import { useNavigate } from 'react-router-dom'
 
 interface Supplier {
   id: string
@@ -40,6 +43,7 @@ export default function PremiumNetworkPage() {
   const [isImporting, setIsImporting] = useState(false)
   const [selectedSupplier, setSelectedSupplier] = useState<any>(null)
   const [showConnectionModal, setShowConnectionModal] = useState(false)
+  const { profile, isAdmin } = useUnifiedAuth()
 
   // Importer les fournisseurs au chargement
   useEffect(() => {
@@ -144,10 +148,35 @@ export default function PremiumNetworkPage() {
     <>
       <Helmet>
         <title>Réseau Fournisseurs Premium - Deals Exclusifs</title>
-        <meta name="description" content="10+ fournisseurs premium avec marges exclusives et livraison rapide EU/US" />
+        <meta name="description" content="15+ fournisseurs premium avec marges exclusives et livraison rapide EU/US" />
       </Helmet>
 
       <div className="container mx-auto p-6 space-y-6">
+        {/* Admin Alert */}
+        {isAdmin && (
+          <Card className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/20">
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Shield className="h-6 w-6 text-yellow-600" />
+                <div>
+                  <p className="font-semibold">Mode Administrateur</p>
+                  <p className="text-sm text-muted-foreground">
+                    Vous pouvez gérer, ajouter et modifier les fournisseurs depuis le panneau d'administration
+                  </p>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.href = '/supplier-admin'}
+                className="gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                Gérer les fournisseurs
+              </Button>
+            </div>
+          </Card>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

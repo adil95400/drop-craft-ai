@@ -294,6 +294,18 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     category: 'enterprise',
     order: 20
   },
+  supplierAdmin: {
+    id: 'supplierAdmin',
+    name: 'Admin Fournisseurs',
+    icon: 'Shield',
+    enabled: true,
+    minPlan: 'ultra_pro',
+    route: '/supplier-admin',
+    features: ['supplier-crud', 'import-api', 'export-data', 'advanced-filters'],
+    description: 'Administration complète des fournisseurs',
+    category: 'enterprise',
+    order: 21
+  },
 
   // Catégorie: Integrations
   integrations: {
@@ -306,7 +318,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['premium-apis', 'custom-connectors', 'webhooks'],
     description: 'Intégrations avancées et API premium',
     category: 'integrations',
-    order: 21
+    order: 22
   },
   security: {
     id: 'security',
@@ -318,7 +330,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['security-monitoring', 'audit-logs', 'access-control'],
     description: 'Sécurité et conformité enterprise',
     category: 'integrations',
-    order: 22
+    order: 23
   },
 
   // Catégorie: System
@@ -332,7 +344,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['advanced-monitoring', 'real-time-metrics', 'alerts', 'logs-analytics'],
     description: 'Monitoring et métriques avancés',
     category: 'system',
-    order: 23
+    order: 24
   }
 };
 
