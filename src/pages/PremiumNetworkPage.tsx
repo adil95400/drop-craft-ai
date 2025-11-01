@@ -74,6 +74,38 @@ export default function PremiumNetworkPage() {
     importSuppliers()
   }, [])
 
+  // Fonction pour forcer l'import manuel
+  const handleManualImport = async () => {
+    setIsImporting(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase.functions.invoke('import-suppliers', {
+        body: { provider: 'all', userId: user.id }
+      })
+
+      if (error) throw error
+      
+      toast({
+        title: '✅ Import réussi',
+        description: `${data.imported} fournisseurs premium importés/mis à jour`
+      })
+      
+      // Recharger la page pour voir les nouveaux fournisseurs
+      window.location.reload()
+    } catch (error: any) {
+      console.error('Import error:', error)
+      toast({
+        title: 'Erreur d\'import',
+        description: error.message,
+        variant: 'destructive'
+      })
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
   const displaySuppliers = (suppliers || []) as any[]
 
   const filteredSuppliers = selectedCategory === 'all' 
@@ -189,6 +221,26 @@ export default function PremiumNetworkPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            {isAdmin && (
+              <Button 
+                variant="secondary" 
+                onClick={handleManualImport}
+                disabled={isImporting}
+                className="gap-2"
+              >
+                {isImporting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Import en cours...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="h-4 w-4" />
+                    Forcer Import
+                  </>
+                )}
+              </Button>
+            )}
             <Button 
               variant="outline" 
               onClick={() => window.location.href = '/premium-catalog'}

@@ -24,7 +24,6 @@ const getRealSuppliers = () => [
     return_policy_days: 30,
     featured: true,
     is_active: true,
-    total_products: 50000,
     api_endpoint: 'https://api.spocket.co/api/v2',
     auth_method: 'api_key',
     auth_fields: ['api_key'],
@@ -43,7 +42,6 @@ const getRealSuppliers = () => [
     return_policy_days: 30,
     featured: true,
     is_active: true,
-    total_products: 350,
     api_endpoint: 'https://api.printful.com',
     auth_method: 'api_key',
     auth_fields: ['api_key'],
@@ -62,7 +60,6 @@ const getRealSuppliers = () => [
     return_policy_days: 30,
     featured: true,
     is_active: true,
-    total_products: 500000,
     api_endpoint: 'https://developers.cjdropshipping.com/api2.0',
     auth_method: 'api_key',
     auth_fields: ['email', 'password'],
@@ -81,7 +78,6 @@ const getRealSuppliers = () => [
     return_policy_days: 45,
     featured: true,
     is_active: true,
-    total_products: 15000,
     api_endpoint: 'https://api.modalyst.co/v1',
     auth_method: 'api_key',
     auth_fields: ['api_key'],
@@ -100,7 +96,6 @@ const getRealSuppliers = () => [
     return_policy_days: 30,
     featured: true,
     is_active: true,
-    total_products: 100000,
     api_endpoint: 'https://api.oberlo.com/v2',
     auth_method: 'api_key',
     auth_fields: ['api_token'],
@@ -119,7 +114,6 @@ const getRealSuppliers = () => [
     return_policy_days: 30,
     featured: true,
     is_active: true,
-    total_products: 850,
     api_endpoint: 'https://api.printify.com/v1',
     auth_method: 'api_key',
     auth_fields: ['api_token'],
@@ -138,7 +132,6 @@ const getRealSuppliers = () => [
     return_policy_days: 60,
     featured: true,
     is_active: true,
-    total_products: 120000,
     api_endpoint: 'https://api.bigbuy.eu',
     auth_method: 'api_key',
     auth_fields: ['api_key'],
@@ -157,7 +150,6 @@ const getRealSuppliers = () => [
     return_policy_days: 30,
     featured: true,
     is_active: true,
-    total_products: 500000,
     api_endpoint: 'https://api.syncee.com/v1',
     auth_method: 'api_key',
     auth_fields: ['api_key'],
@@ -176,7 +168,6 @@ const getRealSuppliers = () => [
     return_policy_days: 30,
     featured: false,
     is_active: true,
-    total_products: 1000000,
     api_endpoint: 'https://api.wholesale2b.com',
     auth_method: 'api_key',
     auth_fields: ['api_key', 'account_id'],
@@ -195,7 +186,6 @@ const getRealSuppliers = () => [
     return_policy_days: 30,
     featured: false,
     is_active: true,
-    total_products: 2000000,
     api_endpoint: 'https://api.doba.com/v2',
     auth_method: 'api_key',
     auth_fields: ['api_key'],
@@ -214,7 +204,6 @@ const getRealSuppliers = () => [
     return_policy_days: 30,
     featured: false,
     is_active: true,
-    total_products: 250000,
     api_endpoint: 'https://api.salehoo.com',
     auth_method: 'api_key',
     auth_fields: ['api_key'],
@@ -233,7 +222,6 @@ const getRealSuppliers = () => [
     return_policy_days: 30,
     featured: false,
     is_active: true,
-    total_products: 750000,
     api_endpoint: 'https://api.inventorysource.com',
     auth_method: 'api_key',
     auth_fields: ['api_key'],
@@ -252,7 +240,6 @@ const getRealSuppliers = () => [
     return_policy_days: 30,
     featured: true,
     is_active: true,
-    total_products: 25000,
     api_endpoint: 'https://api.trendsi.com/v1',
     auth_method: 'api_key',
     auth_fields: ['api_key'],
@@ -271,7 +258,6 @@ const getRealSuppliers = () => [
     return_policy_days: 30,
     featured: true,
     is_active: true,
-    total_products: 100000,
     api_endpoint: 'https://api.zendrop.com/v1',
     auth_method: 'api_key',
     auth_fields: ['api_key'],
@@ -290,7 +276,6 @@ const getRealSuppliers = () => [
     return_policy_days: 60,
     featured: true,
     is_active: true,
-    total_products: 500000,
     api_endpoint: 'https://www.faire.com/api',
     auth_method: 'oauth',
     auth_fields: ['client_id', 'client_secret'],
@@ -309,7 +294,6 @@ const getRealSuppliers = () => [
     return_policy_days: 30,
     featured: true,
     is_active: true,
-    total_products: 100000,
     api_endpoint: 'https://www.btswholesaler.com/generatefeedbts',
     auth_method: 'jwt',
     auth_fields: ['jwt_token'],
@@ -327,21 +311,25 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     const { provider, apiKey, userId } = await req.json() as ImportRequest
 
-    console.log(`📥 Importing suppliers from: ${provider}`)
+    console.log(`📥 Starting supplier import from: ${provider}`)
+    console.log(`User ID: ${userId}`)
 
     let suppliersToImport: any[] = []
 
     // Import des vrais fournisseurs
     if (provider === 'all' || provider === 'sample') {
       suppliersToImport = getRealSuppliers()
+      console.log(`✅ Loaded ${suppliersToImport.length} suppliers for import`)
     } else {
       // Filtrer par fournisseur spécifique
       suppliersToImport = getRealSuppliers().filter(s => 
         s.name.toLowerCase().includes(provider.toLowerCase())
       )
+      console.log(`✅ Filtered ${suppliersToImport.length} suppliers matching '${provider}'`)
     }
 
     if (suppliersToImport.length === 0) {
+      console.error(`❌ No suppliers found for provider: ${provider}`)
       throw new Error('No suppliers found for this provider')
     }
 
@@ -355,6 +343,8 @@ Deno.serve(async (req) => {
     }))
 
     // Insérer dans la base de données
+    console.log(`💾 Inserting ${suppliersWithMetadata.length} suppliers into database...`)
+    
     const { data, error } = await supabase
       .from('premium_suppliers')
       .upsert(suppliersWithMetadata, {
@@ -364,9 +354,12 @@ Deno.serve(async (req) => {
       .select()
 
     if (error) {
-      console.error('Insert error:', error)
+      console.error('❌ Database insert error:', error)
+      console.error('Error details:', JSON.stringify(error, null, 2))
       throw error
     }
+    
+    console.log(`✅ Successfully inserted ${data?.length || 0} suppliers`)
 
     // Logger l'import
     await supabase
