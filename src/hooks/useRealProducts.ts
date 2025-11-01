@@ -129,6 +129,7 @@ export const useRealProducts = (filters?: any) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
+      // 1. Récupérer les produits de la table 'products'
       let query = supabase.from('products').select('*').eq('user_id', user.id)
       
       if (filters?.status) {
@@ -144,10 +145,79 @@ export const useRealProducts = (filters?: any) => {
         query = query.lt('stock_quantity', 10)
       }
       
-      const { data, error } = await query.order('created_at', { ascending: false })
+      const { data: productsData, error: productsError } = await query.order('created_at', { ascending: false })
+      if (productsError) throw productsError
+
+      // 2. Récupérer les produits importés
+      const { data: importedData, error: importedError } = await supabase
+        .from('imported_products')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
       
-      if (error) throw error
-      return data as Product[]
+      if (importedError) console.error('Erreur imported_products:', importedError)
+
+      // 3. Récupérer les produits premium via les connexions
+      const { data: premiumData, error: premiumError } = await supabase
+        .from('premium_products')
+        .select(`
+          *,
+          supplier:premium_suppliers!inner(
+            id,
+            connections:premium_supplier_connections!inner(
+              user_id
+            )
+          )
+        `)
+        .eq('supplier.connections.user_id', user.id)
+        .eq('is_active', true)
+      
+      if (premiumError) console.error('Erreur premium_products:', premiumError)
+
+      // Normaliser les produits importés
+      const normalizedImported = (importedData || []).map(p => ({
+        id: p.id,
+        name: p.name || 'Produit sans nom',
+        description: p.description,
+        price: p.price || 0,
+        cost_price: p.cost_price,
+        status: (p.status === 'published' ? 'active' : 'inactive') as 'active' | 'inactive',
+        stock_quantity: p.stock_quantity,
+        sku: p.sku,
+        category: p.category,
+        image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : null,
+        profit_margin: p.cost_price ? ((p.price - p.cost_price) / p.price * 100) : undefined,
+        user_id: p.user_id,
+        created_at: p.created_at,
+        updated_at: p.updated_at
+      }))
+
+      // Normaliser les produits premium
+      const normalizedPremium = (premiumData || []).map(p => ({
+        id: p.id,
+        name: p.name || 'Produit sans nom',
+        description: p.description,
+        price: p.price || 0,
+        cost_price: p.cost_price,
+        status: 'active' as 'active' | 'inactive',
+        stock_quantity: p.stock_quantity,
+        sku: p.sku,
+        category: p.category,
+        image_url: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null,
+        profit_margin: p.profit_margin,
+        user_id: user.id,
+        created_at: p.created_at || new Date().toISOString(),
+        updated_at: p.updated_at || new Date().toISOString()
+      }))
+
+      // Combiner tous les produits
+      const allProducts = [
+        ...(productsData || []),
+        ...normalizedImported,
+        ...normalizedPremium
+      ]
+
+      return allProducts as Product[]
     },
   })
 
