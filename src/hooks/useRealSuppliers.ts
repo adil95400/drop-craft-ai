@@ -139,6 +139,36 @@ export const useRealSuppliers = (filters?: any) => {
     }
   })
 
+  const analyzeSupplier = useMutation({
+    mutationFn: async (url: string) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      
+      const { data, error } = await supabase.functions.invoke('analyze-supplier', {
+        body: { url, userId: user.id }
+      })
+      
+      if (error) throw error
+      if (!data.success) throw new Error(data.error || 'Échec de l\'analyse')
+      
+      return data
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['real-suppliers'] })
+      toast({
+        title: "Fournisseur analysé",
+        description: `${data.analysis.name} a été ajouté avec succès`,
+      })
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur d'analyse",
+        description: error.message || "Impossible d'analyser le fournisseur",
+        variant: "destructive"
+      })
+    }
+  })
+
   const stats = {
     total: suppliers.length,
     active: suppliers.filter(s => s.status === 'active').length,
@@ -162,8 +192,10 @@ export const useRealSuppliers = (filters?: any) => {
     addSupplier: addSupplier.mutate,
     updateSupplier: updateSupplier.mutate,
     deleteSupplier: deleteSupplier.mutate,
+    analyzeSupplier: analyzeSupplier.mutate,
     isAdding: addSupplier.isPending,
     isUpdating: updateSupplier.isPending,
-    isDeleting: deleteSupplier.isPending
+    isDeleting: deleteSupplier.isPending,
+    isAnalyzing: analyzeSupplier.isPending
   }
 }

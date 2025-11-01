@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supplierHub } from '@/services/SupplierHub';
 import { importManager } from '@/services/ImportManager';
 import { supabase } from '@/integrations/supabase/client';
+import { SupplierAnalyzer } from '@/components/suppliers/SupplierAnalyzer';
 import { 
   Plus, 
   Settings, 
@@ -301,6 +302,11 @@ const SupplierHub: React.FC = () => {
             Nouveau Fournisseur
           </Button>
         </div>
+      </div>
+
+      {/* Supplier Analyzer */}
+      <div className="mb-8">
+        <SupplierAnalyzer />
       </div>
 
       {/* Statistics */}
