@@ -402,3 +402,6 @@ verify_jwt = true
 
 [functions.publish-products]
 verify_jwt = true
+
+[functions.btswholesaler-sync]
+verify_jwt = true

@@ -296,6 +296,25 @@ const getRealSuppliers = () => [
     auth_fields: ['client_id', 'client_secret'],
     product_count: 500000,
     rating: 4.9
+  },
+  {
+    name: 'BTSWholesaler',
+    country: 'Espagne',
+    description: 'Grossiste européen avec feed API complet - Électronique, Mode, Beauté et plus',
+    website_url: 'https://www.btswholesaler.com',
+    categories: ['Électronique', 'Mode', 'Beauté', 'Maison', 'Accessoires'],
+    tier: 'platinum',
+    minimum_order_value: 0,
+    avg_delivery_days: 3,
+    return_policy_days: 30,
+    featured: true,
+    is_active: true,
+    total_products: 100000,
+    api_endpoint: 'https://www.btswholesaler.com/generatefeedbts',
+    auth_method: 'jwt',
+    auth_fields: ['jwt_token'],
+    product_count: 100000,
+    rating: 4.7
   }
 ]
 
