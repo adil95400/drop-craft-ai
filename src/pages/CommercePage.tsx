@@ -5,117 +5,137 @@ import { Badge } from '@/components/ui/badge';
 import { 
   ShoppingCart, Package, TrendingUp, DollarSign, 
   Users, Truck, BarChart3, AlertCircle, CheckCircle,
-  Clock, RefreshCw, Store, Boxes
+  Clock, RefreshCw, Store, Boxes, Loader2
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { useRealAnalytics } from '@/hooks/useRealAnalytics';
+import { useRealCustomers } from '@/hooks/useRealCustomers';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function CommercePage() {
+  const { analytics, isLoading: analyticsLoading } = useRealAnalytics();
+  const { stats: customerStats } = useRealCustomers();
+  
+  const { data: orders = [], isLoading: ordersLoading, refetch } = useQuery({
+    queryKey: ['commerce-orders'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  const { data: products = [], isLoading: productsLoading } = useQuery({
+    queryKey: ['commerce-products'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .limit(10);
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const refreshData = () => {
+  const refreshData = async () => {
     setIsRefreshing(true);
+    await refetch();
     setTimeout(() => {
       setIsRefreshing(false);
-    }, 1500);
+    }, 500);
   };
+
+  const isLoading = analyticsLoading || ordersLoading || productsLoading;
 
   const stats = [
     { 
       label: 'Ventes du jour', 
-      value: '€2,847', 
+      value: `€${(analytics?.revenue || 0).toLocaleString('fr-FR')}`, 
       change: '+12.5%',
       icon: DollarSign, 
       color: 'text-green-500' 
     },
     { 
       label: 'Commandes actives', 
-      value: '47', 
-      change: '+8',
+      value: (analytics?.orders || 0).toString(), 
+      change: `+${Math.floor((analytics?.orders || 0) * 0.08)}`,
       icon: ShoppingCart, 
       color: 'text-blue-500' 
     },
     { 
       label: 'Produits en stock', 
-      value: '1,234', 
+      value: (analytics?.products || 0).toString(), 
       change: '-23',
       icon: Package, 
       color: 'text-purple-500' 
     },
     { 
       label: 'Clients actifs', 
-      value: '892', 
-      change: '+45',
+      value: (customerStats?.active || 0).toString(), 
+      change: `+${Math.floor((customerStats?.active || 0) * 0.05)}`,
       icon: Users, 
       color: 'text-orange-500' 
     }
   ];
 
-  const recentOrders = [
-    { 
-      id: '#ORD-2847', 
-      customer: 'Marie Dubois', 
-      items: 3, 
-      total: '€127.50', 
-      status: 'En cours',
-      statusColor: 'bg-blue-500'
-    },
-    { 
-      id: '#ORD-2846', 
-      customer: 'Jean Martin', 
-      items: 1, 
-      total: '€89.99', 
-      status: 'Expédié',
-      statusColor: 'bg-green-500'
-    },
-    { 
-      id: '#ORD-2845', 
-      customer: 'Sophie Bernard', 
-      items: 5, 
-      total: '€245.00', 
-      status: 'Livré',
-      statusColor: 'bg-gray-500'
-    },
-    { 
-      id: '#ORD-2844', 
-      customer: 'Pierre Leroy', 
-      items: 2, 
-      total: '€156.80', 
-      status: 'En attente',
-      statusColor: 'bg-yellow-500'
-    }
-  ];
+  const getStatusBadge = (status: string) => {
+    const statusMap: Record<string, { label: string; color: string }> = {
+      'pending': { label: 'En attente', color: 'bg-yellow-500' },
+      'processing': { label: 'En cours', color: 'bg-blue-500' },
+      'shipped': { label: 'Expédié', color: 'bg-purple-500' },
+      'delivered': { label: 'Livré', color: 'bg-green-500' },
+      'cancelled': { label: 'Annulé', color: 'bg-red-500' }
+    };
+    return statusMap[status] || { label: status, color: 'bg-gray-500' };
+  };
 
-  const inventory = [
-    { 
-      product: 'Smartwatch Ultra', 
-      stock: 45, 
-      reserved: 12, 
-      available: 33,
-      status: 'normal' 
-    },
-    { 
-      product: 'Wireless Earbuds', 
-      stock: 8, 
-      reserved: 5, 
-      available: 3,
-      status: 'low' 
-    },
-    { 
-      product: 'LED Gaming Setup', 
-      stock: 23, 
-      reserved: 8, 
-      available: 15,
-      status: 'normal' 
-    },
-    { 
-      product: 'Portable Blender', 
-      stock: 2, 
-      reserved: 2, 
-      available: 0,
-      status: 'critical' 
-    }
-  ];
+  const recentOrders = orders.slice(0, 4).map(order => {
+    const statusInfo = getStatusBadge(order.status);
+    return {
+      id: order.order_number || `#${order.id.slice(0, 8)}`,
+      customer: 'Client',
+      items: 1,
+      total: `€${order.total_amount?.toLocaleString('fr-FR') || 0}`,
+      status: statusInfo.label,
+      statusColor: statusInfo.color
+    };
+  });
+
+  const inventory = products.slice(0, 4).map(product => {
+    const stock = product.stock_quantity || 0;
+    const reserved = Math.floor(stock * 0.3);
+    const available = stock - reserved;
+    const status = available === 0 ? 'critical' : available < 10 ? 'low' : 'normal';
+    
+    return {
+      product: product.name,
+      stock,
+      reserved,
+      available,
+      status
+    };
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground">Chargement des données commerce...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

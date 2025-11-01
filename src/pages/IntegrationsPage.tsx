@@ -5,14 +5,46 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Plug, CheckCircle, Settings, Plus, Search, Zap, Globe, ShoppingCart, Palette } from 'lucide-react';
+import { Plug, CheckCircle, Settings, Plus, Search, Zap, Globe, ShoppingCart, Palette, Loader2 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { IntegrationsManager } from '@/components/integrations/IntegrationsManager';
 import { LiveAnalyticsDashboard } from '@/components/analytics/LiveAnalyticsDashboard';
 import { OperationalAI } from '@/components/ai/OperationalAI';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function IntegrationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const { data: integrationsData = [], isLoading } = useQuery({
+    queryKey: ['marketplace-integrations'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('marketplace_integrations')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  const { data: apiLogs = [] } = useQuery({
+    queryKey: ['api-logs-count'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('api_logs')
+        .select('id')
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  const activeIntegrations = integrationsData.filter(i => i.status === 'connected').length;
+  const totalApiCalls = apiLogs.length;
+  const webhooksCount = integrationsData.length;
 
   const integrations = [
     {
@@ -141,56 +173,62 @@ export default function IntegrationsPage() {
         </div>
 
         {/* Stats Rapides */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Intégrations Actives</CardTitle>
-              <Plug className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground">
-                +2 depuis le mois dernier
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">API Calls</CardTitle>
-              <Zap className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">45.2K</div>
-              <p className="text-xs text-muted-foreground">
-                Ce mois-ci
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Webhooks</CardTitle>
-              <Settings className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">8</div>
-              <p className="text-xs text-muted-foreground">
-                Configurés
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Disponibilité</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">99.9%</div>
-              <p className="text-xs text-muted-foreground">
-                7 derniers jours
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Intégrations Actives</CardTitle>
+                <Plug className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{activeIntegrations}</div>
+                <p className="text-xs text-muted-foreground">
+                  Sur {integrationsData.length} total
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">API Calls</CardTitle>
+                <Zap className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{(totalApiCalls / 1000).toFixed(1)}K</div>
+                <p className="text-xs text-muted-foreground">
+                  Ce mois-ci
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Webhooks</CardTitle>
+                <Settings className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{webhooksCount}</div>
+                <p className="text-xs text-muted-foreground">
+                  Configurés
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Disponibilité</CardTitle>
+                <CheckCircle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">99.9%</div>
+                <p className="text-xs text-muted-foreground">
+                  7 derniers jours
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Contenu Principal */}
         <Tabs defaultValue="integrations" className="space-y-4">
