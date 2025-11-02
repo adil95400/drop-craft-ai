@@ -86,6 +86,18 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     category: 'product',
     order: 6
   },
+  productResearch: {
+    id: 'productResearch',
+    name: 'Product Research',
+    icon: 'Search',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/product-research',
+    features: ['trend-scanner', 'viral-finder', 'saturation-analyzer', 'winning-score'],
+    description: 'Recherche de produits tendances et analyse',
+    category: 'product',
+    order: 7
+  },
   marketplace: {
     id: 'marketplace',
     name: 'AI Marketplace',
@@ -96,7 +108,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['ai-validated-products', 'virality-score', 'winning-database'],
     description: '10,000+ produits analysés par IA',
     category: 'product',
-    order: 7
+    order: 8
   },
   suppliers: {
     id: 'suppliers',
@@ -108,7 +120,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['supplier-management', 'basic-import'],
     description: 'Gestion des fournisseurs',
     category: 'product',
-    order: 8
+    order: 9
   },
   premiumCatalog: {
     id: 'premiumCatalog',
@@ -120,7 +132,19 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['premium-products', 'quick-import', 'supplier-catalog'],
     description: 'Produits premium de vos fournisseurs',
     category: 'product',
-    order: 9
+    order: 10
+  },
+  profitCalculator: {
+    id: 'profitCalculator',
+    name: 'Calculateur de Marge',
+    icon: 'Calculator',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/profit-calculator',
+    features: ['margin-calculator', 'pricing-optimizer', 'cost-analysis'],
+    description: 'Calculez vos marges et optimisez vos prix',
+    category: 'product',
+    order: 11
   },
   stores: {
     id: 'stores',
@@ -134,6 +158,30 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     category: 'core',
     order: 2
   },
+  orders: {
+    id: 'orders',
+    name: 'Commandes',
+    icon: 'ShoppingCart',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/orders',
+    features: ['order-management', 'tracking', 'fulfillment'],
+    description: 'Gestion de vos commandes',
+    category: 'core',
+    order: 3
+  },
+  customers: {
+    id: 'customers',
+    name: 'Clients',
+    icon: 'Users',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/customers',
+    features: ['customer-management', 'customer-insights'],
+    description: 'Gestion de vos clients',
+    category: 'customer',
+    order: 4
+  },
   marketplaceHub: {
     id: 'marketplaceHub',
     name: 'Marketplace Hub',
@@ -144,7 +192,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['marketplace-listing', 'multi-marketplace', 'centralized-management'],
     description: 'Hub centralisé pour vos marketplaces',
     category: 'core',
-    order: 3
+    order: 5
   },
 
   // Catégorie: Product Management
@@ -158,7 +206,31 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['premium-suppliers', 'exclusive-deals', 'fast-shipping'],
     description: 'Réseau de fournisseurs premium',
     category: 'product',
-    order: 9
+    order: 12
+  },
+  bulkContent: {
+    id: 'bulkContent',
+    name: 'Création de Contenu',
+    icon: 'FileText',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/bulk-content',
+    features: ['bulk-description-ai', 'seo-content', 'product-naming'],
+    description: 'Création en masse de contenu par IA',
+    category: 'product',
+    order: 13
+  },
+  inventoryPredictor: {
+    id: 'inventoryPredictor',
+    name: 'Prédiction Stock',
+    icon: 'TrendingUp',
+    enabled: true,
+    minPlan: 'ultra_pro',
+    route: '/inventory-predictor',
+    features: ['stock-prediction', 'demand-forecasting', 'reorder-alerts'],
+    description: 'Prédiction intelligente des stocks',
+    category: 'product',
+    order: 14
   },
   importSources: {
     id: 'importSources',
@@ -170,7 +242,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['source-management', 'custom-sources', 'api-connectors'],
     description: 'Gestion des sources d\'importation',
     category: 'product',
-    order: 10
+    order: 15
   },
 
   // Catégorie: Learning
@@ -184,10 +256,10 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['video-courses', 'guides', 'webinars', 'certifications'],
     description: 'Formation dropshipping complète',
     category: 'learning',
-    order: 11
+    order: 16
   },
 
-  // ============= MODULES PRO (+5 modules = 16 total) =============
+  // ============= MODULES PRO (+8 modules = 19 total) =============
   
   // Catégorie: Advanced Analytics
   analytics: {
@@ -200,7 +272,19 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['advanced-analytics', 'custom-reports', 'ai-insights'],
     description: 'Analytics avancés avec IA',
     category: 'analytics',
-    order: 12
+    order: 17
+  },
+  customerIntelligence: {
+    id: 'customerIntelligence',
+    name: 'Intelligence Client',
+    icon: 'Brain',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/customer-intelligence',
+    features: ['customer-insights', 'behavior-analysis', 'segmentation'],
+    description: 'Analyse comportementale des clients',
+    category: 'customer',
+    order: 18
   },
 
   // Catégorie: Automation & Tools
@@ -214,7 +298,31 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['workflow-builder', 'auto-pricing', 'inventory-sync'],
     description: 'Automatisation des processus',
     category: 'automation',
-    order: 13
+    order: 19
+  },
+  autoFulfillment: {
+    id: 'autoFulfillment',
+    name: 'Auto-Fulfillment',
+    icon: 'Package',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/auto-fulfillment',
+    features: ['automated-ordering', 'supplier-sync', 'inventory-automation'],
+    description: 'Automatisation du traitement des commandes',
+    category: 'automation',
+    order: 20
+  },
+  adsManager: {
+    id: 'adsManager',
+    name: 'Gestionnaire Pub',
+    icon: 'Megaphone',
+    enabled: true,
+    minPlan: 'ultra_pro',
+    route: '/ads-manager',
+    features: ['ad-campaigns', 'multi-platform', 'performance-tracking'],
+    description: 'Gestion des campagnes publicitaires',
+    category: 'automation',
+    order: 21
   },
   extension: {
     id: 'extension',
@@ -226,7 +334,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['browser-extension', 'quick-import', 'extension-marketplace', 'real-time-sync'],
     description: 'Extension Chrome pour import rapide',
     category: 'automation',
-    order: 14
+    order: 22
   },
 
   // Catégorie: Customer Relations
@@ -240,7 +348,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['customer-management', 'lead-tracking', 'sales-pipeline'],
     description: 'Gestion de la relation client',
     category: 'customer',
-    order: 15
+    order: 23
   },
   seo: {
     id: 'seo',
@@ -252,7 +360,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['seo-optimization', 'keyword-tracking', 'content-analysis'],
     description: 'Optimisation SEO avancée',
     category: 'customer',
-    order: 16
+    order: 24
   },
 
   // ============= MODULES ULTRA PRO (+7 modules = 23 total) =============

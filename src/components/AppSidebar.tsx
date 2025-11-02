@@ -6,7 +6,8 @@ import {
   Search, Bot, ShoppingCart, BarChart3, 
   Truck, Upload, Trophy, TrendingUp, Zap, 
   Users, Brain, Shield, Plug, Settings,
-  ChevronDown, Package, Sparkles, Crown
+  ChevronDown, Package, Sparkles, Crown, Calculator,
+  Megaphone, FileText, Globe, Store, Puzzle
 } from "lucide-react";
 import {
   Sidebar,
@@ -66,7 +67,13 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'Bot': Bot,
   'Settings': Settings,
   'Sparkles': Sparkles,
-  'Crown': Crown
+  'Crown': Crown,
+  'Calculator': Calculator,
+  'Megaphone': Megaphone,
+  'FileText': FileText,
+  'Globe': Globe,
+  'Store': Store,
+  'PuzzlePiece': Puzzle
 };
 
 // Regroupements logiques des modules
