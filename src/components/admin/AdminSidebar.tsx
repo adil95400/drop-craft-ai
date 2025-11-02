@@ -58,11 +58,12 @@ const analyticsItems = [
 
 const crmItems = [
   { title: 'Clients', url: '/admin/customers', icon: Users },
-  { title: 'CRM', url: '/admin/crm', icon: MessageSquare },
+  { title: 'CRM', url: '/crm', icon: MessageSquare },
 ];
 
 const marketingItems = [
   { title: 'Marketing', url: '/admin/marketing', icon: Megaphone },
+  { title: 'Publicités', url: '/ads-manager', icon: Megaphone, badge: 'Ads' },
   { title: 'Blog', url: '/admin/blog', icon: FileText },
   { title: 'SEO', url: '/admin/seo', icon: Search },
 ];

@@ -45,6 +45,8 @@ import SubscriptionManagementPage from '@/pages/SubscriptionManagementPage'
 import AbandonedCartPage from '@/pages/AbandonedCartPage'
 import FlashSalesPage from '@/pages/FlashSalesPage'
 import VendorManagementPage from '@/pages/VendorManagementPage'
+import AdsManagerPage from '@/pages/AdsManagerPage'
+import CRMPage from '@/pages/CRMPage'
 
 export function AppRoutes() {
   return (
@@ -102,6 +104,8 @@ export function AppRoutes() {
         <Route path="marketplace-hub" element={<MarketplaceHubPage />} />
         <Route path="multi-tenant" element={<MultiTenantPage />} />
         <Route path="observability" element={<AdvancedMonitoringPage />} />
+        <Route path="ads-manager" element={<AdsManagerPage />} />
+        <Route path="crm" element={<CRMPage />} />
       </Route>
     </Routes>
   )
