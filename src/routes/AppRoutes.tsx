@@ -20,6 +20,11 @@ import MarketingPage from '@/pages/MarketingPage'
 import AIOptimizationPage from '@/pages/features/AIOptimizationPage'
 import MultiMarketplacePage from '@/pages/features/MultiMarketplacePage'
 import AnalyticsPage from '@/pages/features/AnalyticsPage'
+import MarketingAutomationPage from '@/pages/MarketingAutomationPage'
+import AIAssistantPage from '@/pages/AIAssistantPage'
+import WorkflowBuilderPage from '@/pages/WorkflowBuilderPage'
+import BusinessIntelligencePage from '@/pages/BusinessIntelligencePage'
+import EmailMarketingPage from '@/pages/EmailMarketingPage'
 
 export function AppRoutes() {
   return (
@@ -49,6 +54,11 @@ export function AppRoutes() {
         
         {/* Advanced Features */}
         <Route path="marketing" element={<MarketingPage />} />
+        <Route path="marketing-automation" element={<MarketingAutomationPage />} />
+        <Route path="email-marketing" element={<EmailMarketingPage />} />
+        <Route path="ai-assistant" element={<AIAssistantPage />} />
+        <Route path="workflow-builder" element={<WorkflowBuilderPage />} />
+        <Route path="business-intelligence" element={<BusinessIntelligencePage />} />
         <Route path="marketplace-hub" element={<MarketplaceHubPage />} />
         <Route path="multi-tenant" element={<MultiTenantPage />} />
         <Route path="observability" element={<AdvancedMonitoringPage />} />
