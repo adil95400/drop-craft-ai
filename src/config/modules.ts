@@ -357,6 +357,18 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     description: 'Monitoring et métriques avancés',
     category: 'system',
     order: 24
+  },
+  support: {
+    id: 'support',
+    name: 'Support',
+    icon: 'HelpCircle',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/support',
+    features: ['faq', 'tickets', 'live-chat', 'documentation'],
+    description: 'Centre de support et assistance',
+    category: 'system',
+    order: 25
   }
 };
 

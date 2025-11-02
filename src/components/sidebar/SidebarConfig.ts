@@ -5,7 +5,7 @@ import type { PlanType } from '@/hooks/usePlan';
 import { 
   BarChart3, Package, Truck, TrendingUp, Zap, Users, Search, 
   Brain, Shield, Plug, Settings, Crown, Sparkles, Upload, Trophy,
-  Building, Building2, GraduationCap, LucideIcon
+  Building, Building2, GraduationCap, LucideIcon, HelpCircle
 } from 'lucide-react';
 
 export interface SidebarSubItem {
@@ -77,7 +77,8 @@ const iconMap: Record<string, any> = {
   'Building2': Building2,
   'GraduationCap': GraduationCap,
   'Crown': Crown,
-  'Sparkles': Sparkles
+  'Sparkles': Sparkles,
+  'HelpCircle': HelpCircle
 };
 
 // Génération dynamique des éléments de sidebar basée sur la configuration des modules
