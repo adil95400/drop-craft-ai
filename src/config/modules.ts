@@ -122,6 +122,18 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     category: 'product',
     order: 9
   },
+  premiumSuppliers: {
+    id: 'premiumSuppliers',
+    name: 'Fournisseurs Premium',
+    icon: 'Crown',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/premium-suppliers',
+    features: ['premium-suppliers', 'supplier-sync', 'bts-wholesaler'],
+    description: 'Synchronisez BTS Wholesaler',
+    category: 'product',
+    order: 9.5
+  },
   premiumCatalog: {
     id: 'premiumCatalog',
     name: 'Catalogue Premium',
