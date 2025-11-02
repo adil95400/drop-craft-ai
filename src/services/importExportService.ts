@@ -208,25 +208,43 @@ class ImportExportService {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      // Supprimer de toutes les tables possibles
+      console.log(`Tentative de suppression de ${productIds.length} produit(s):`, productIds)
+
+      // Supprimer de toutes les tables possibles (products, imported_products, premium_products)
       const deletePromises = [
         supabase.from('products').delete().in('id', productIds).eq('user_id', user.id),
-        supabase.from('imported_products').delete().in('id', productIds).eq('user_id', user.id)
+        supabase.from('imported_products').delete().in('id', productIds).eq('user_id', user.id),
+        supabase.from('premium_products').delete().in('id', productIds)
       ]
 
       const results = await Promise.allSettled(deletePromises)
       
-      // Au moins une suppression doit réussir
-      const hasSuccess = results.some(r => r.status === 'fulfilled' && !r.value.error)
+      // Compter les suppressions réussies
+      let deletedCount = 0
+      results.forEach((result, index) => {
+        const tableName = index === 0 ? 'products' : index === 1 ? 'imported_products' : 'premium_products'
+        if (result.status === 'fulfilled') {
+          if (!result.value.error) {
+            console.log(`✓ Suppression réussie de la table ${tableName}`)
+            deletedCount++
+          } else {
+            console.log(`✗ Erreur sur la table ${tableName}:`, result.value.error.message)
+          }
+        } else {
+          console.log(`✗ Échec sur la table ${tableName}:`, result.reason)
+        }
+      })
       
-      if (!hasSuccess) {
-        throw new Error('Aucun produit n\'a pu être supprimé')
+      // Au moins une suppression doit réussir
+      if (deletedCount === 0) {
+        throw new Error('Aucun produit n\'a pu être supprimé. Les produits n\'existent peut-être pas dans la base de données.')
       }
       
+      console.log(`✓ Suppression réussie: ${deletedCount} table(s) mise(s) à jour`)
       return true
     } catch (error) {
       console.error('Error bulk deleting products:', error)
-      throw new Error('Erreur lors de la suppression des produits')
+      throw error
     }
   }
 
