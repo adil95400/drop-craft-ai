@@ -16,7 +16,8 @@ import {
   MessageSquare,
   Search,
   Eye,
-  Calendar
+  Calendar,
+  Edit3
 } from 'lucide-react';
 import { LineChart, Line, AreaChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useRealCRMDashboard } from '@/hooks/useRealCRMDashboard';
