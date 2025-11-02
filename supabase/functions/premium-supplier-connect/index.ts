@@ -44,10 +44,11 @@ Deno.serve(async (req) => {
       throw new Error('Connection not found. Please configure the connection first.')
     }
 
+    // 3. Appeler l'API BTS Wholesaler
     const metadata = connection.metadata as any || {}
     const jwtToken = metadata.jwt_token
     const format = metadata.format || 'json'
-    const language = metadata.language || 'en-US'
+    const language = metadata.language || 'fr-FR'
 
     if (!jwtToken) {
       throw new Error('JWT token not configured in connection metadata')
@@ -55,12 +56,22 @@ Deno.serve(async (req) => {
 
     console.log(`📡 Fetching products from BTS Wholesaler API...`)
 
-    // 3. Appeler l'API BTS Wholesaler
-    const apiUrl = `https://www.btswholesaler.com/generatefeedbts?token=${jwtToken}&format=${format}&lang=${language}`
+    // 3. Appeler l'API BTS Wholesaler avec POST et form-data
+    const apiUrl = `https://www.btswholesaler.com/generatefeedbts`
     
     let apiProducts = []
     try {
-      const apiResponse = await fetch(apiUrl)
+      const apiResponse = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        body: new URLSearchParams({
+          format: format,
+          language_code: language
+        })
+      })
       
       if (!apiResponse.ok) {
         throw new Error(`API returned ${apiResponse.status}: ${apiResponse.statusText}`)

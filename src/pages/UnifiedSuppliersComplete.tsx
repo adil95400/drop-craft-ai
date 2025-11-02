@@ -66,7 +66,7 @@ export default function UnifiedSuppliersComplete() {
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   
   // Connection dialog state
-  const [connectDialog, setConnectDialog] = useState<{ open: boolean; supplierId?: string; type?: 'premium' | 'standard' }>({ open: false })
+  const [connectDialog, setConnectDialog] = useState<{ open: boolean; supplierId?: string; type?: 'premium' | 'standard'; isConfig?: boolean }>({ open: false })
   const [jwtToken, setJwtToken] = useState('')
   
   // Sync state
@@ -77,9 +77,19 @@ export default function UnifiedSuppliersComplete() {
     return premiumConnections?.some(c => c.supplier_id === supplierId && c.status === 'active')
   }
 
-  const handleConnectPremium = (supplierId: string) => {
-    setConnectDialog({ open: true, supplierId, type: 'premium' })
-    setJwtToken('')
+  const handleConnectPremium = (supplierId: string, isConfig = false) => {
+    setConnectDialog({ open: true, supplierId, type: 'premium', isConfig })
+    
+    // Si c'est une reconfiguration, charger le token existant
+    if (isConfig) {
+      const connection = premiumConnections?.find(c => c.supplier_id === supplierId)
+      const metadata = connection?.metadata as { jwt_token?: string; format?: string; language?: string } | null
+      if (metadata?.jwt_token) {
+        setJwtToken(metadata.jwt_token)
+      }
+    } else {
+      setJwtToken('')
+    }
   }
 
   const handleSaveConnection = async () => {
@@ -353,6 +363,7 @@ export default function UnifiedSuppliersComplete() {
               categoryFilter={categoryFilter}
               setCategoryFilter={setCategoryFilter}
               onConnect={handleConnectPremium}
+              onConfig={(supplierId: string) => handleConnectPremium(supplierId, true)}
               onSync={handleSync}
               isConnected={isConnected}
               syncing={syncing}
@@ -369,6 +380,7 @@ export default function UnifiedSuppliersComplete() {
               categoryFilter={categoryFilter}
               setCategoryFilter={setCategoryFilter}
               onConnect={handleConnectPremium}
+              onConfig={(supplierId: string) => handleConnectPremium(supplierId, true)}
               onSync={handleSync}
               isConnected={isConnected}
               syncing={syncing}
@@ -385,6 +397,7 @@ export default function UnifiedSuppliersComplete() {
               categoryFilter={categoryFilter}
               setCategoryFilter={setCategoryFilter}
               onConnect={handleConnectPremium}
+              onConfig={(supplierId: string) => handleConnectPremium(supplierId, true)}
               onSync={handleSync}
               isConnected={isConnected}
               syncing={syncing}
@@ -421,11 +434,14 @@ export default function UnifiedSuppliersComplete() {
             <DialogTitle>
               <div className="flex items-center gap-2">
                 <Shield className="h-5 w-5 text-primary" />
-                Connecter BTS Wholesaler
+                {connectDialog.isConfig ? 'Configurer BTS Wholesaler' : 'Connecter BTS Wholesaler'}
               </div>
             </DialogTitle>
             <DialogDescription>
-              Configurez votre connexion sécurisée pour importer des produits
+              {connectDialog.isConfig 
+                ? 'Modifiez les paramètres de votre connexion'
+                : 'Configurez votre connexion sécurisée pour importer des produits'
+              }
             </DialogDescription>
           </DialogHeader>
           
@@ -534,6 +550,7 @@ function SuppliersList({
   categoryFilter,
   setCategoryFilter,
   onConnect,
+  onConfig,
   onSync,
   isConnected,
   syncing,
@@ -682,7 +699,12 @@ function SuppliersList({
                           </>
                         )}
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => onConfig(supplier.id)}
+                        title="Configurer les paramètres de connexion"
+                      >
                         <Settings className="h-4 w-4" />
                       </Button>
                     </>
