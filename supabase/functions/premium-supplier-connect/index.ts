@@ -45,26 +45,27 @@ Deno.serve(async (req) => {
     }
 
     // 3. Appeler l'API BTS Wholesaler
+    // 3. Récupérer les informations de connexion
     const metadata = connection.metadata as any || {}
-    const jwtToken = metadata.jwt_token
+    const apiPassword = metadata.jwt_token || metadata.api_password
     const format = metadata.format || 'json'
     const language = metadata.language || 'fr-FR'
 
-    if (!jwtToken) {
-      throw new Error('JWT token not configured in connection metadata')
+    if (!apiPassword) {
+      throw new Error('API Password not configured in connection metadata')
     }
 
-    console.log(`📡 Fetching products from BTS Wholesaler API...`)
-    console.log(`Using token: ${jwtToken.substring(0, 20)}...`)
+    console.log(`📡 Fetching products from BTS Wholesaler API (v1/api/getListProducts)...`)
 
-    // 3. Appeler l'API BTS Wholesaler avec GET et query params
-    const apiUrl = `https://www.btswholesaler.com/generatefeedbts?token=${encodeURIComponent(jwtToken)}&format=${encodeURIComponent(format)}&language_code=${encodeURIComponent(language)}`
+    // 4. Appeler l'API BTS Wholesaler avec la bonne URL et authentification
+    const apiUrl = `https://api.btswholesaler.com/v1/api/getListProducts`
     
     let apiProducts = []
     try {
       const apiResponse = await fetch(apiUrl, {
         method: 'GET',
         headers: {
+          'Authorization': `Bearer ${apiPassword}`,
           'Accept': 'application/json'
         }
       })

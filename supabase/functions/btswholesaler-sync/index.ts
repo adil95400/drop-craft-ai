@@ -41,20 +41,16 @@ Deno.serve(async (req) => {
     console.log(`Format: ${format}, Language: ${language}`)
 
     // Fetch products from BTSWholesaler API
-    const apiUrl = `https://www.btswholesaler.com/generatefeedbts`
+    const apiUrl = `https://api.btswholesaler.com/v1/api/getListProducts`
     
     console.log('📡 Fetching products from BTSWholesaler API...')
     
     const response = await fetch(apiUrl, {
-      method: 'POST',
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-        token: jwtToken,
-        format: format,
-        language_code: language
-      })
+        'Authorization': `Bearer ${jwtToken}`,
+        'Accept': 'application/json'
+      }
     })
 
     if (!response.ok) {

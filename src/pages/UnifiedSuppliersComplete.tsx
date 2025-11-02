@@ -77,6 +77,38 @@ export default function UnifiedSuppliersComplete() {
     return premiumConnections?.some(c => c.supplier_id === supplierId && c.status === 'active')
   }
 
+  const handleDisconnect = async (supplierId: string) => {
+    if (!confirm('Voulez-vous vraiment déconnecter ce fournisseur ?')) {
+      return
+    }
+
+    try {
+      const connection = premiumConnections?.find(c => c.supplier_id === supplierId)
+      if (!connection) return
+
+      const { error } = await supabase
+        .from('premium_supplier_connections')
+        .update({ status: 'suspended' })
+        .eq('id', connection.id)
+
+      if (error) throw error
+
+      toast({
+        title: 'Fournisseur déconnecté',
+        description: 'La connexion a été suspendue'
+      })
+
+      // Rafraîchir les données
+      window.location.reload()
+    } catch (error: any) {
+      toast({
+        title: 'Erreur',
+        description: error.message,
+        variant: 'destructive'
+      })
+    }
+  }
+
   const handleConnectPremium = (supplierId: string, isConfig = false) => {
     setConnectDialog({ open: true, supplierId, type: 'premium', isConfig })
     
@@ -271,7 +303,17 @@ export default function UnifiedSuppliersComplete() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2">
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={() => {
+                // TODO: Implémenter l'ajout de fournisseur personnalisé
+                toast({
+                  title: "Fonctionnalité à venir",
+                  description: "L'ajout de fournisseur personnalisé sera bientôt disponible"
+                })
+              }}
+            >
               <Plus className="h-4 w-4" />
               Ajouter Fournisseur
             </Button>
@@ -364,6 +406,7 @@ export default function UnifiedSuppliersComplete() {
               setCategoryFilter={setCategoryFilter}
               onConnect={handleConnectPremium}
               onConfig={(supplierId: string) => handleConnectPremium(supplierId, true)}
+              onDisconnect={handleDisconnect}
               onSync={handleSync}
               isConnected={isConnected}
               syncing={syncing}
@@ -381,6 +424,7 @@ export default function UnifiedSuppliersComplete() {
               setCategoryFilter={setCategoryFilter}
               onConnect={handleConnectPremium}
               onConfig={(supplierId: string) => handleConnectPremium(supplierId, true)}
+              onDisconnect={handleDisconnect}
               onSync={handleSync}
               isConnected={isConnected}
               syncing={syncing}
@@ -398,6 +442,7 @@ export default function UnifiedSuppliersComplete() {
               setCategoryFilter={setCategoryFilter}
               onConnect={handleConnectPremium}
               onConfig={(supplierId: string) => handleConnectPremium(supplierId, true)}
+              onDisconnect={handleDisconnect}
               onSync={handleSync}
               isConnected={isConnected}
               syncing={syncing}
@@ -462,32 +507,32 @@ export default function UnifiedSuppliersComplete() {
                 <div className="rounded-lg bg-blue-50 dark:bg-blue-950 p-4 space-y-2">
                   <p className="text-sm font-medium flex items-center gap-2">
                     <Shield className="h-4 w-4" />
-                    Comment obtenir votre JWT Token BTS Wholesaler?
+                    Comment obtenir votre mot de passe API BTS Wholesaler?
                   </p>
                   <ol className="text-sm text-muted-foreground space-y-2 ml-6 list-decimal">
-                    <li>Connectez-vous à votre compte <a href="https://www.btswholesaler.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">BTS Wholesaler</a></li>
-                    <li>Allez dans <strong>Mon compte → API Feed</strong></li>
-                    <li>Copiez votre <strong>JWT Token</strong> (commence par eyJ...)</li>
-                    <li>Le token est valide indéfiniment jusqu'à régénération</li>
+                    <li>Connectez-vous à <a href="https://www.btswholesaler.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">www.btswholesaler.com</a></li>
+                    <li>Allez dans <strong>Mon compte → API</strong></li>
+                    <li>Créez un nouveau mot de passe (il remplacera l'ancien)</li>
+                    <li>Copiez et collez le mot de passe ci-dessous</li>
                   </ol>
                   <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950 rounded text-xs">
                     <p className="font-medium mb-1">⚠️ Important:</p>
-                    <p>Le token JWT doit commencer par "eyJ" et contenir plusieurs segments séparés par des points. Si votre token ne ressemble pas à cela, vérifiez que vous utilisez bien le JWT Token et non une autre clé API.</p>
+                    <p>Ce n'est pas un JWT Token mais un mot de passe API que vous créez dans votre compte BTS Wholesaler. Si vous pensez que votre mot de passe a été compromis, générez-en un nouveau.</p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="jwt-token">JWT Token BTS Wholesaler</Label>
+                  <Label htmlFor="jwt-token">Mot de passe API BTS Wholesaler</Label>
                   <Input
                     id="jwt-token"
-                    type="text"
-                    placeholder="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                    type="password"
+                    placeholder="Entrez votre mot de passe API..."
                     value={jwtToken}
                     onChange={(e) => setJwtToken(e.target.value)}
                     className="font-mono text-sm"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Format attendu: eyJ... (JWT Token depuis Mon compte → API Feed)
+                    Le mot de passe créé dans Mon compte → API
                   </p>
                 </div>
 
@@ -546,6 +591,7 @@ function SuppliersList({
   setCategoryFilter,
   onConnect,
   onConfig,
+  onDisconnect,
   onSync,
   isConnected,
   syncing,
@@ -696,11 +742,12 @@ function SuppliersList({
                       </Button>
                       <Button 
                         size="sm" 
-                        variant="outline"
-                        onClick={() => onConfig(supplier.id)}
-                        title="Configurer les paramètres de connexion"
+                        variant="destructive"
+                        onClick={() => onDisconnect(supplier.id)}
+                        title="Déconnecter ce fournisseur"
                       >
-                        <Settings className="h-4 w-4" />
+                        <Zap className="h-4 w-4" />
+                        Déconnecter
                       </Button>
                     </>
                   ) : (
