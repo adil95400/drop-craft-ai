@@ -69,6 +69,10 @@ export default function UnifiedSuppliersComplete() {
   const [connectDialog, setConnectDialog] = useState<{ open: boolean; supplierId?: string; type?: 'premium' | 'standard'; isConfig?: boolean }>({ open: false })
   const [jwtToken, setJwtToken] = useState('')
   
+  // CSV Import dialog state
+  const [csvImportDialog, setCsvImportDialog] = useState<{ open: boolean; supplierId?: string; supplierName?: string }>({ open: false })
+  const [uploading, setUploading] = useState(false)
+  
   // Sync state
   const [syncing, setSyncing] = useState<string | null>(null)
   const [syncProgress, setSyncProgress] = useState<Record<string, number>>({})
@@ -263,6 +267,78 @@ export default function UnifiedSuppliersComplete() {
     }
   }
 
+  const handleCsvImport = async (file: File, supplierId: string) => {
+    setUploading(true)
+    setSyncing(supplierId)
+    setSyncProgress(prev => ({ ...prev, [supplierId]: 0 }))
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+
+      // Read file content
+      const csvContent = await file.text()
+      
+      // Simuler la progression
+      const progressInterval = setInterval(() => {
+        setSyncProgress(prev => {
+          const current = prev[supplierId] || 0
+          if (current < 90) {
+            return { ...prev, [supplierId]: current + 10 }
+          }
+          return prev
+        })
+      }, 500)
+      
+      // Call edge function
+      const { data, error } = await supabase.functions.invoke('bts-csv-import', {
+        body: {
+          userId: user.id,
+          supplierId,
+          csvContent
+        }
+      })
+
+      clearInterval(progressInterval)
+
+      if (error) throw error
+
+      setSyncProgress(prev => ({ ...prev, [supplierId]: 100 }))
+      setCsvImportDialog({ open: false })
+      
+      toast({
+        title: 'Import CSV réussi ! 🎉',
+        description: `${data.imported} produits importés depuis le fichier CSV`
+      })
+
+      // Nettoyer après 2 secondes
+      setTimeout(() => {
+        setSyncProgress(prev => {
+          const newProgress = { ...prev }
+          delete newProgress[supplierId]
+          return newProgress
+        })
+        setSyncing(null)
+        window.location.reload()
+      }, 2000)
+
+    } catch (error: any) {
+      toast({
+        title: 'Erreur d\'import CSV',
+        description: error.message,
+        variant: 'destructive'
+      })
+      setSyncProgress(prev => {
+        const newProgress = { ...prev }
+        delete newProgress[supplierId]
+        return newProgress
+      })
+      setSyncing(null)
+    } finally {
+      setUploading(false)
+    }
+  }
+
   // Fusionner les fournisseurs premium et standard
   const allSuppliers = [
     ...(premiumSuppliers || []).map(s => ({ ...s, type: 'premium' as const })),
@@ -439,6 +515,7 @@ export default function UnifiedSuppliersComplete() {
               onConfig={(supplierId: string) => handleConnectPremium(supplierId, true)}
               onDisconnect={handleDisconnect}
               onSync={handleSync}
+              onCsvImport={(supplierId: string, supplierName: string) => setCsvImportDialog({ open: true, supplierId, supplierName })}
               isConnected={isConnected}
               syncing={syncing}
               syncProgress={syncProgress}
@@ -457,6 +534,7 @@ export default function UnifiedSuppliersComplete() {
               onConfig={(supplierId: string) => handleConnectPremium(supplierId, true)}
               onDisconnect={handleDisconnect}
               onSync={handleSync}
+              onCsvImport={(supplierId: string, supplierName: string) => setCsvImportDialog({ open: true, supplierId, supplierName })}
               isConnected={isConnected}
               syncing={syncing}
               syncProgress={syncProgress}
@@ -475,6 +553,7 @@ export default function UnifiedSuppliersComplete() {
               onConfig={(supplierId: string) => handleConnectPremium(supplierId, true)}
               onDisconnect={handleDisconnect}
               onSync={handleSync}
+              onCsvImport={(supplierId: string, supplierName: string) => setCsvImportDialog({ open: true, supplierId, supplierName })}
               isConnected={isConnected}
               syncing={syncing}
               syncProgress={syncProgress}
@@ -609,6 +688,74 @@ export default function UnifiedSuppliersComplete() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* CSV Import Dialog */}
+      <Dialog open={csvImportDialog.open} onOpenChange={(open) => setCsvImportDialog({ open })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              <div className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-primary" />
+                Importer CSV - {csvImportDialog.supplierName}
+              </div>
+            </DialogTitle>
+            <DialogDescription>
+              Importez le fichier CSV des produits BTS Wholesaler pour synchroniser votre catalogue automatiquement
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="rounded-lg bg-blue-50 dark:bg-blue-950 p-4 space-y-2">
+              <p className="text-sm font-medium flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Comment obtenir le fichier CSV?
+              </p>
+              <ol className="text-sm text-muted-foreground space-y-2 ml-6 list-decimal">
+                <li>Connectez-vous à <a href="https://www.btswholesaler.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">www.btswholesaler.com</a></li>
+                <li>Allez dans <strong>Mon compte → API Feed</strong></li>
+                <li>Téléchargez le fichier <strong>bts_products.csv</strong></li>
+                <li>Importez-le ci-dessous</li>
+              </ol>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="csv-file">Fichier CSV des produits</Label>
+              <Input
+                id="csv-file"
+                type="file"
+                accept=".csv"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file && csvImportDialog.supplierId) {
+                    handleCsvImport(file, csvImportDialog.supplierId)
+                  }
+                }}
+                disabled={uploading}
+              />
+              <p className="text-xs text-muted-foreground">
+                Format attendu : CSV avec colonnes id, ean, name, price, stock, image, etc.
+              </p>
+            </div>
+            
+            {uploading && (
+              <div className="flex items-center gap-2 text-sm text-primary">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Import en cours... Veuillez patienter
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setCsvImportDialog({ open: false })}
+              disabled={uploading}
+            >
+              Fermer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
@@ -624,6 +771,7 @@ function SuppliersList({
   onConfig,
   onDisconnect,
   onSync,
+  onCsvImport,
   isConnected,
   syncing,
   syncProgress,
@@ -767,9 +915,18 @@ function SuppliersList({
                         ) : (
                           <>
                             <RefreshCw className="h-4 w-4 mr-2" />
-                            Synchroniser
+                            Sync API
                           </>
                         )}
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => onCsvImport(supplier.id, supplier.name)}
+                        disabled={isSyncing}
+                        title="Importer via fichier CSV"
+                      >
+                        <Package className="h-4 w-4" />
                       </Button>
                       <Button 
                         size="sm" 
@@ -778,7 +935,6 @@ function SuppliersList({
                         title="Déconnecter ce fournisseur"
                       >
                         <Zap className="h-4 w-4" />
-                        Déconnecter
                       </Button>
                     </>
                   ) : (
