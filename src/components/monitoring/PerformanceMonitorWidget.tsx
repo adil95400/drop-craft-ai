@@ -2,6 +2,8 @@ import { memo, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { usePerformanceStore } from '@/stores/performanceStore';
 import { useCacheStore } from '@/stores/cacheStore';
 import { Activity, Zap, Database, AlertTriangle, CheckCircle } from 'lucide-react';
@@ -21,6 +23,7 @@ export const PerformanceMonitorWidget = memo(function PerformanceMonitorWidget({
   const { metrics, alerts, isMonitoring } = usePerformanceStore();
   const { stats } = useCacheStore();
   const [isVisible, setIsVisible] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     // Afficher seulement en dev ou si explicitement activé
@@ -60,17 +63,47 @@ export const PerformanceMonitorWidget = memo(function PerformanceMonitorWidget({
 
   if (compact) {
     return (
-      <div className={cn('flex items-center gap-2 text-sm', className)}>
-        <Activity className="h-4 w-4 text-primary animate-pulse" />
-        <span className="font-mono">{Math.round(metrics.fps)} FPS</span>
-        <Database className="h-4 w-4 text-primary" />
-        <span className="font-mono">{stats.hitRate.toFixed(0)}%</span>
-        {alerts.length > 0 && (
-          <Badge variant="destructive" className="h-5 px-1 text-xs">
-            {alerts.length}
-          </Badge>
-        )}
-      </div>
+      <>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowDetails(true)}
+          className={cn('flex items-center gap-2 text-sm h-auto py-1.5 px-3', className)}
+        >
+          <Activity className="h-4 w-4 text-primary animate-pulse" />
+          <span className="font-mono">{Math.round(metrics.fps)} FPS</span>
+          <Database className="h-4 w-4 text-primary" />
+          <span className="font-mono">{stats.hitRate.toFixed(0)}%</span>
+          {alerts.length > 0 && (
+            <Badge variant="destructive" className="h-5 px-1 text-xs">
+              {alerts.length}
+            </Badge>
+          )}
+        </Button>
+
+        <Dialog open={showDetails} onOpenChange={setShowDetails}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-primary" />
+                Monitoring de Performance
+              </DialogTitle>
+            </DialogHeader>
+            <PerformanceDetailsView
+              metrics={metrics}
+              stats={stats}
+              alerts={alerts}
+              isMonitoring={isMonitoring}
+              fpsStatus={getMetricStatus(metrics.fps, { warning: 30, critical: 15 })}
+              memoryStatus={getMetricStatus(metrics.memoryUsage, { warning: 100, critical: 200 })}
+              cacheStatus={getMetricStatus(100 - stats.hitRate, { warning: 50, critical: 70 })}
+              getStatusColor={getStatusColor}
+              getStatusIcon={getStatusIcon}
+              showAlerts={showAlerts}
+            />
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
@@ -187,3 +220,118 @@ export const PerformanceMonitorWidget = memo(function PerformanceMonitorWidget({
 });
 
 PerformanceMonitorWidget.displayName = 'PerformanceMonitorWidget';
+
+// Sous-composant pour les détails de performance
+const PerformanceDetailsView = memo(function PerformanceDetailsView({
+  metrics,
+  stats,
+  alerts,
+  isMonitoring,
+  fpsStatus,
+  memoryStatus,
+  cacheStatus,
+  getStatusColor,
+  getStatusIcon,
+  showAlerts
+}: any) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Badge variant={isMonitoring ? 'default' : 'secondary'}>
+          {isMonitoring ? 'Actif' : 'Standby'}
+        </Badge>
+      </div>
+
+      {/* FPS */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="flex items-center gap-2">
+            <span className={cn('font-medium', getStatusColor(fpsStatus))}>
+              {getStatusIcon(fpsStatus)}
+            </span>
+            FPS
+          </span>
+          <span className="font-mono font-medium">{Math.round(metrics.fps)}</span>
+        </div>
+        <Progress value={(metrics.fps / 60) * 100} className="h-1" />
+      </div>
+
+      {/* Memory */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="flex items-center gap-2">
+            <span className={cn('font-medium', getStatusColor(memoryStatus))}>
+              {getStatusIcon(memoryStatus)}
+            </span>
+            Mémoire
+          </span>
+          <span className="font-mono font-medium">{metrics.memoryUsage.toFixed(1)} MB</span>
+        </div>
+        <Progress value={(metrics.memoryUsage / 200) * 100} className="h-1" />
+      </div>
+
+      {/* Cache Hit Rate */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="flex items-center gap-2">
+            <span className={cn('font-medium', getStatusColor(cacheStatus))}>
+              {getStatusIcon(cacheStatus)}
+            </span>
+            Taux de Cache
+          </span>
+          <span className="font-mono font-medium">{stats.hitRate.toFixed(1)}%</span>
+        </div>
+        <Progress value={stats.hitRate} className="h-1" />
+      </div>
+
+      {/* Connections */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span>Connexions Actives</span>
+          <span className="font-mono font-medium">{metrics.activeConnections}</span>
+        </div>
+      </div>
+
+      {/* Cache Stats */}
+      <div className="pt-2 border-t">
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <div className="text-muted-foreground">Entrées Cache</div>
+            <div className="font-mono font-medium">{stats.totalEntries}</div>
+          </div>
+          <div>
+            <div className="text-muted-foreground">Taille Cache</div>
+            <div className="font-mono font-medium">
+              {(stats.totalSize / 1024 / 1024).toFixed(2)} MB
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Alerts */}
+      {showAlerts && alerts.length > 0 && (
+        <div className="pt-2 border-t space-y-2">
+          <div className="text-sm font-medium">Alertes Récentes</div>
+          <div className="space-y-1 max-h-32 overflow-y-auto">
+            {alerts.slice(-3).map((alert: any) => (
+              <div
+                key={alert.id}
+                className={cn(
+                  'text-xs p-2 rounded-md flex items-start gap-2',
+                  alert.type === 'critical' && 'bg-red-500/10 text-red-500',
+                  alert.type === 'warning' && 'bg-yellow-500/10 text-yellow-500',
+                  alert.type === 'error' && 'bg-orange-500/10 text-orange-500'
+                )}
+              >
+                <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+                <span className="flex-1">{alert.message}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+
+PerformanceDetailsView.displayName = 'PerformanceDetailsView';
