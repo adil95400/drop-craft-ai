@@ -25,6 +25,11 @@ import AIAssistantPage from '@/pages/AIAssistantPage'
 import WorkflowBuilderPage from '@/pages/WorkflowBuilderPage'
 import BusinessIntelligencePage from '@/pages/BusinessIntelligencePage'
 import EmailMarketingPage from '@/pages/EmailMarketingPage'
+import InventoryManagementPage from '@/pages/InventoryManagementPage'
+import PriceOptimizationPage from '@/pages/PriceOptimizationPage'
+import CustomerSegmentationPage from '@/pages/CustomerSegmentationPage'
+import SocialCommercePage from '@/pages/SocialCommercePage'
+import LiveChatSupportPage from '@/pages/LiveChatSupportPage'
 
 export function AppRoutes() {
   return (
@@ -59,6 +64,11 @@ export function AppRoutes() {
         <Route path="ai-assistant" element={<AIAssistantPage />} />
         <Route path="workflow-builder" element={<WorkflowBuilderPage />} />
         <Route path="business-intelligence" element={<BusinessIntelligencePage />} />
+        <Route path="inventory-management" element={<InventoryManagementPage />} />
+        <Route path="price-optimization" element={<PriceOptimizationPage />} />
+        <Route path="customer-segmentation" element={<CustomerSegmentationPage />} />
+        <Route path="social-commerce" element={<SocialCommercePage />} />
+        <Route path="live-chat-support" element={<LiveChatSupportPage />} />
         <Route path="marketplace-hub" element={<MarketplaceHubPage />} />
         <Route path="multi-tenant" element={<MultiTenantPage />} />
         <Route path="observability" element={<AdvancedMonitoringPage />} />
