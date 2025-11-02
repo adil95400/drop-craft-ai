@@ -221,9 +221,8 @@ export const useRealProducts = (filters?: any) => {
     },
   })
 
-  // Utiliser des données de démo si aucun produit réel ou si tous sont vides
-  const hasRealData = realProducts.some(p => p.name !== 'Produit sans nom' && p.price > 0)
-  const products = hasRealData ? realProducts : mockProducts
+  // Utiliser des données de démo uniquement si aucun produit n'existe
+  const products = realProducts.length > 0 ? realProducts : mockProducts.slice(0, 3) // Limiter à 3 produits de démo
 
   const addProduct = useMutation({
     mutationFn: async (newProduct: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
@@ -271,18 +270,42 @@ export const useRealProducts = (filters?: any) => {
 
   const deleteProduct = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+
+      console.log(`Tentative de suppression du produit ${id}`)
+
+      // Essayer de supprimer de toutes les tables
+      const deletePromises = [
+        supabase.from('products').delete().eq('id', id).eq('user_id', user.id),
+        supabase.from('imported_products').delete().eq('id', id).eq('user_id', user.id),
+        supabase.from('premium_products').delete().eq('id', id)
+      ]
+
+      const results = await Promise.allSettled(deletePromises)
       
-      if (error) throw error
+      // Vérifier si au moins une suppression a réussi
+      const successCount = results.filter(r => r.status === 'fulfilled' && !r.value.error).length
+      
+      if (successCount === 0) {
+        throw new Error('Impossible de supprimer le produit')
+      }
+      
+      console.log(`✓ Produit ${id} supprimé avec succès`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-products'] })
       toast({
         title: "Produit supprimé",
         description: "Le produit a été supprimé avec succès",
+      })
+    },
+    onError: (error) => {
+      console.error('Erreur lors de la suppression:', error)
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le produit",
+        variant: "destructive",
       })
     }
   })

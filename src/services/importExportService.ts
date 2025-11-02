@@ -201,16 +201,16 @@ class ImportExportService {
   }
 
   /**
-   * Bulk delete products from all tables
+   * Bulk delete products from all tables (products, imported_products, premium_products)
    */
   async bulkDelete(productIds: string[]): Promise<boolean> {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      console.log(`Tentative de suppression de ${productIds.length} produit(s):`, productIds)
+      console.log(`🗑️ Suppression en masse de ${productIds.length} produit(s):`, productIds)
 
-      // Supprimer de toutes les tables possibles (products, imported_products, premium_products)
+      // Supprimer de toutes les tables possibles en parallèle
       const deletePromises = [
         supabase.from('products').delete().in('id', productIds).eq('user_id', user.id),
         supabase.from('imported_products').delete().in('id', productIds).eq('user_id', user.id),
@@ -219,31 +219,29 @@ class ImportExportService {
 
       const results = await Promise.allSettled(deletePromises)
       
-      // Compter les suppressions réussies
-      let deletedCount = 0
+      // Compter et logger les résultats
+      let totalDeleted = 0
+      const tableNames = ['products', 'imported_products', 'premium_products']
+      
       results.forEach((result, index) => {
-        const tableName = index === 0 ? 'products' : index === 1 ? 'imported_products' : 'premium_products'
-        if (result.status === 'fulfilled') {
-          if (!result.value.error) {
-            console.log(`✓ Suppression réussie de la table ${tableName}`)
-            deletedCount++
-          } else {
-            console.log(`✗ Erreur sur la table ${tableName}:`, result.value.error.message)
-          }
-        } else {
-          console.log(`✗ Échec sur la table ${tableName}:`, result.reason)
+        if (result.status === 'fulfilled' && !result.value.error) {
+          console.log(`✓ Suppression réussie de la table ${tableNames[index]}`)
+          totalDeleted++
+        } else if (result.status === 'fulfilled' && result.value.error) {
+          console.log(`✗ Erreur sur la table ${tableNames[index]}:`, result.value.error.message)
         }
       })
       
       // Au moins une suppression doit réussir
-      if (deletedCount === 0) {
-        throw new Error('Aucun produit n\'a pu être supprimé. Les produits n\'existent peut-être pas dans la base de données.')
+      if (totalDeleted === 0) {
+        console.error('❌ Aucune table n\'a pu être modifiée')
+        throw new Error('Les produits sélectionnés n\'existent pas dans la base de données ou vous n\'avez pas les permissions nécessaires.')
       }
       
-      console.log(`✓ Suppression réussie: ${deletedCount} table(s) mise(s) à jour`)
+      console.log(`✅ Suppression réussie: ${productIds.length} produit(s) supprimé(s) de ${totalDeleted} table(s)`)
       return true
     } catch (error) {
-      console.error('Error bulk deleting products:', error)
+      console.error('❌ Erreur lors de la suppression en masse:', error)
       throw error
     }
   }

@@ -21,13 +21,13 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLegacyPlan } from '@/lib/migration-helper';
-import { useProductsOptimized } from '@/hooks/useProductsOptimized';
+import { useRealProducts } from '@/hooks/useRealProducts';
 import { Link } from 'react-router-dom';
 
 const Products = () => {
   const { toast } = useToast();
   const { isUltraPro, isPro } = useLegacyPlan();
-  const { products, stats, isLoading, deleteProduct, optimizeProduct } = useProductsOptimized();
+  const { products, stats, isLoading, deleteProduct } = useRealProducts();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -141,22 +141,22 @@ const Products = () => {
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.published || 0}</div>
+            <div className="text-2xl font-bold">{stats?.active || 0}</div>
             <p className="text-xs text-muted-foreground">
-              {stats?.draft || 0} en brouillon
+              {stats?.inactive || 0} inactifs
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Optimisés AI</CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Stock faible</CardTitle>
+            <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.optimized || 0}</div>
+            <div className="text-2xl font-bold">{stats?.lowStock || 0}</div>
             <p className="text-xs text-muted-foreground">
-              {((stats?.optimized || 0) / Math.max(stats?.total || 1, 1) * 100).toFixed(0)}% du total
+              Besoin de réappro
             </p>
           </CardContent>
         </Card>
@@ -180,7 +180,7 @@ const Products = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(stats?.avgPrice || 0)}
+              {formatCurrency((stats?.totalValue || 0) / Math.max(stats?.total || 1, 1))}
             </div>
           </CardContent>
         </Card>
@@ -240,9 +240,9 @@ const Products = () => {
             {filteredProducts.map((product) => (
               <Card key={product.id} className="overflow-hidden hover:shadow-md transition-shadow">
                 <div className="aspect-square bg-muted relative">
-                  {product.image_urls?.[0] ? (
+                  {product.image_url ? (
                     <img 
-                      src={product.image_urls[0]} 
+                      src={product.image_url} 
                       alt={product.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -251,7 +251,7 @@ const Products = () => {
                       }}
                     />
                   ) : null}
-                  <div className={`absolute inset-0 flex items-center justify-center ${product.image_urls?.[0] ? 'hidden' : ''}`}>
+                  <div className={`absolute inset-0 flex items-center justify-center ${product.image_url ? 'hidden' : ''}`}>
                     <ImageIcon className="h-12 w-12 text-muted-foreground" />
                   </div>
                   
@@ -259,12 +259,6 @@ const Products = () => {
                     <Badge variant={getStatusColor(product.status)} className="text-xs">
                       {product.status}
                     </Badge>
-                    {product.ai_optimized && (
-                      <Badge variant="default" className="text-xs">
-                        <Star className="h-3 w-3 mr-1" />
-                        AI
-                      </Badge>
-                    )}
                   </div>
                 </div>
                 
@@ -274,10 +268,10 @@ const Products = () => {
                     
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-lg font-bold">{formatCurrency(product.price, product.currency)}</p>
+                        <p className="text-lg font-bold">{formatCurrency(product.price)}</p>
                         {isPro && product.cost_price && (
                           <p className="text-xs text-muted-foreground">
-                            Coût: {formatCurrency(product.cost_price, product.currency)}
+                            Coût: {formatCurrency(product.cost_price)}
                           </p>
                         )}
                       </div>
@@ -294,12 +288,6 @@ const Products = () => {
                       <span>{product.category || 'Sans catégorie'}</span>
                       <span>{product.sku || 'Sans SKU'}</span>
                     </div>
-                    
-                    {product.supplier_name && (
-                      <p className="text-xs text-muted-foreground">
-                        Fournisseur: {product.supplier_name}
-                      </p>
-                    )}
                   </div>
                   
                   <div className="flex items-center gap-2 mt-4">
@@ -324,9 +312,9 @@ const Products = () => {
                               <div>
                                 <h4 className="font-medium mb-2">Informations générales</h4>
                                 <div className="space-y-2 text-sm">
-                                  <div><strong>Prix:</strong> {formatCurrency(selectedProduct.price, selectedProduct.currency)}</div>
+                                  <div><strong>Prix:</strong> {formatCurrency(selectedProduct.price)}</div>
                                   {isPro && selectedProduct.cost_price && (
-                                    <div><strong>Prix de revient:</strong> {formatCurrency(selectedProduct.cost_price, selectedProduct.currency)}</div>
+                                    <div><strong>Prix de revient:</strong> {formatCurrency(selectedProduct.cost_price)}</div>
                                   )}
                                   <div><strong>Catégorie:</strong> {selectedProduct.category || 'N/A'}</div>
                                   <div><strong>SKU:</strong> {selectedProduct.sku || 'N/A'}</div>
@@ -339,20 +327,12 @@ const Products = () => {
                               </div>
                               
                               <div>
-                                <h4 className="font-medium mb-2">Optimisation</h4>
+                                <h4 className="font-medium mb-2">Stock & Marges</h4>
                                 <div className="space-y-2 text-sm">
-                                  <div>
-                                    <strong>IA Optimisé:</strong> 
-                                    {selectedProduct.ai_optimized ? (
-                                      <Badge variant="default" className="ml-2">
-                                        <Star className="h-3 w-3 mr-1" />
-                                        Oui
-                                      </Badge>
-                                    ) : (
-                                      <Badge variant="secondary" className="ml-2">Non</Badge>
-                                    )}
-                                  </div>
-                                  <div><strong>Fournisseur:</strong> {selectedProduct.supplier_name || 'N/A'}</div>
+                                  <div><strong>Stock:</strong> {selectedProduct.stock_quantity || 0} unités</div>
+                                  {selectedProduct.profit_margin && (
+                                    <div><strong>Marge:</strong> {selectedProduct.profit_margin.toFixed(1)}%</div>
+                                  )}
                                   <div><strong>Créé le:</strong> {new Date(selectedProduct.created_at).toLocaleDateString()}</div>
                                 </div>
                               </div>
@@ -368,20 +348,14 @@ const Products = () => {
                             )}
                             
                             <div className="flex justify-between items-center pt-4 border-t">
-                              <Select
-                                value={selectedProduct.status}
-                                onValueChange={(value) => updateProductStatus(selectedProduct.id, value)}
+                              <Button 
+                                variant="destructive" 
+                                size="sm"
+                                onClick={() => deleteProduct(selectedProduct.id)}
                               >
-                                <SelectTrigger className="w-[150px]">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="bg-background border shadow-md z-50">
-                                  <SelectItem value="published">Publié</SelectItem>
-                                  <SelectItem value="draft">Brouillon</SelectItem>
-                                  <SelectItem value="pending">En attente</SelectItem>
-                                  <SelectItem value="archived">Archivé</SelectItem>
-                                </SelectContent>
-                              </Select>
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Supprimer
+                              </Button>
                               
                               <Button variant="outline">
                                 <Edit className="h-4 w-4 mr-2" />
@@ -393,20 +367,13 @@ const Products = () => {
                       </DialogContent>
                     </Dialog>
                     
-                    <Select
-                      value={product.status}
-                      onValueChange={(value) => updateProductStatus(product.id, value)}
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => deleteProduct(product.id)}
                     >
-                      <SelectTrigger className="w-[100px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border shadow-md z-50">
-                        <SelectItem value="published">Publié</SelectItem>
-                        <SelectItem value="draft">Brouillon</SelectItem>
-                        <SelectItem value="pending">En attente</SelectItem>
-                        <SelectItem value="archived">Archivé</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
