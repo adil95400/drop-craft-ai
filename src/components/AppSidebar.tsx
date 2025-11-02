@@ -7,7 +7,7 @@ import {
   Truck, Upload, Trophy, TrendingUp, Zap, 
   Users, Brain, Shield, Plug, Settings,
   ChevronDown, Package, Sparkles, Crown, Calculator,
-  Megaphone, FileText, Globe, Store, Puzzle
+  Megaphone, FileText, Globe, Store, Puzzle, GitCompare
 } from "lucide-react";
 import {
   Sidebar,
@@ -73,7 +73,8 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'FileText': FileText,
   'Globe': Globe,
   'Store': Store,
-  'PuzzlePiece': Puzzle
+  'PuzzlePiece': Puzzle,
+  'GitCompare': GitCompare
 };
 
 // Regroupements logiques des modules

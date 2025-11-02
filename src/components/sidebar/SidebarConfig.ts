@@ -6,7 +6,7 @@ import {
   BarChart3, Package, Truck, TrendingUp, Zap, Users, Search, 
   Brain, Shield, Plug, Settings, Crown, Sparkles, Upload, Trophy,
   Building, Building2, GraduationCap, LucideIcon, HelpCircle, Calculator,
-  Megaphone, FileText, ShoppingCart, Globe, Store, Puzzle
+  Megaphone, FileText, ShoppingCart, Globe, Store, Puzzle, GitCompare
 } from 'lucide-react';
 
 export interface SidebarSubItem {
@@ -85,7 +85,8 @@ const iconMap: Record<string, any> = {
   'FileText': FileText,
   'Globe': Globe,
   'Store': Store,
-  'PuzzlePiece': Puzzle
+  'PuzzlePiece': Puzzle,
+  'GitCompare': GitCompare
 };
 
 // Génération dynamique des éléments de sidebar basée sur la configuration des modules

@@ -286,6 +286,18 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     category: 'customer',
     order: 18
   },
+  competitiveComparison: {
+    id: 'competitiveComparison',
+    name: 'Comparaison Concurrentielle',
+    icon: 'GitCompare',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/competitive-comparison',
+    features: ['competitor-comparison', 'market-positioning', 'competitive-insights'],
+    description: 'Comparez vos concurrents',
+    category: 'analytics',
+    order: 18.5
+  },
 
   // Catégorie: Automation & Tools
   automation: {
