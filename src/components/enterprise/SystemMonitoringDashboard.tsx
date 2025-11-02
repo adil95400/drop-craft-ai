@@ -3,20 +3,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useSystemMonitoring } from "@/hooks/useSystemMonitoring"
+import { useRealSystemMonitoring } from "@/hooks/useRealSystemMonitoring"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
 import { Activity, Server, Cpu, HardDrive, Wifi, AlertTriangle, CheckCircle, Zap } from "lucide-react"
 
 export function SystemMonitoringDashboard() {
-  const {
-    healthMetrics,
-    performanceMetrics,
-    isLoading,
-    runHealthCheck,
-    optimizePerformance,
-    isRunningHealthCheck,
-    isOptimizingPerformance
-  } = useSystemMonitoring()
+  const { logs, alerts, health, isLoading, refetch } = useRealSystemMonitoring()
 
   if (isLoading) {
     return (
@@ -65,19 +57,11 @@ export function SystemMonitoringDashboard() {
         </div>
         <div className="flex gap-2">
           <Button 
-            onClick={() => runHealthCheck()}
-            disabled={isRunningHealthCheck}
+            onClick={() => refetch()}
             variant="outline"
           >
             <Activity className="w-4 h-4 mr-2" />
-            {isRunningHealthCheck ? "Vérification..." : "Contrôle Santé"}
-          </Button>
-          <Button 
-            onClick={() => optimizePerformance()}
-            disabled={isOptimizingPerformance}
-          >
-            <Zap className="w-4 h-4 mr-2" />
-            {isOptimizingPerformance ? "Optimisation..." : "Optimiser"}
+            Actualiser
           </Button>
         </div>
       </div>
@@ -90,116 +74,131 @@ export function SystemMonitoringDashboard() {
         </TabsList>
 
         <TabsContent value="health" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {healthMetrics?.map((metric, index) => (
-              <Card key={index}>
+          {health && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    {metric.component_name === 'database' && <Server className="h-4 w-4" />}
-                    {metric.component_name === 'api' && <Wifi className="h-4 w-4" />}
-                    {metric.component_name === 'storage' && <HardDrive className="h-4 w-4" />}
-                    {metric.component_name === 'cpu' && <Cpu className="h-4 w-4" />}
-                    {metric.component_name || 'Composant'}
+                    <Server className="h-4 w-4" />
+                    Base de données
                   </CardTitle>
-                  {getStatusIcon(metric.health_status)}
+                  {getStatusIcon(health.database_health)}
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                  <Badge variant={metric.health_status === 'healthy' ? 'default' : 'destructive'}>
-                      {metric.health_status}
+                    <Badge variant={health.database_health === 'good' ? 'default' : 'destructive'}>
+                      {health.database_health}
                     </Badge>
-                    <div className="text-sm text-muted-foreground">
-                      Dernière vérification: {new Date(metric.last_check_at).toLocaleTimeString()}
-                    </div>
-                    {metric.metrics_data && (
-                      <div className="text-xs">
-                        Données: {JSON.stringify(metric.metrics_data).slice(0, 50)}...
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Wifi className="h-4 w-4" />
+                    API
+                  </CardTitle>
+                  {getStatusIcon(health.api_health)}
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <Badge variant={health.api_health === 'good' ? 'default' : 'destructive'}>
+                      {health.api_health}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {healthMetrics && healthMetrics.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Évolution de la Santé Système</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={healthMetrics}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="component_name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Area 
-                      type="monotone" 
-                      dataKey="uptime_percentage" 
-                      stroke="hsl(var(--primary))" 
-                      fill="hsl(var(--primary))"
-                      fillOpacity={0.1}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Activity className="h-4 w-4" />
+                    Temps de réponse
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{health.response_time.toFixed(0)}ms</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    Taux d'erreur
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{health.error_rate.toFixed(1)}%</div>
+                </CardContent>
+              </Card>
+            </div>
           )}
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Logs Récents</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {logs.slice(0, 10).map((log, index) => (
+              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Badge variant={
+                    log.level === 'error' ? 'destructive' :
+                    log.level === 'warning' ? 'secondary' :
+                    log.level === 'success' ? 'default' : 'outline'
+                  }>
+                    {log.level}
+                  </Badge>
+                  <div>
+                    <div className="font-medium">{log.category}</div>
+                    <div className="text-sm text-muted-foreground">{log.message}</div>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {new Date(log.timestamp).toLocaleTimeString()}
+                </div>
+              </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {performanceMetrics?.map((metric, index) => (
-              <Card key={index}>
+          {health && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
                 <CardHeader>
-                <CardTitle className="text-sm">{metric.metric_name}</CardTitle>
-                  <CardDescription>
-                    Type: {metric.metric_type}
-                  </CardDescription>
+                  <CardTitle className="text-sm">Uptime</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <div className="text-2xl font-bold">{Number(metric.metric_value).toFixed(2)}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {metric.metric_unit}
-                    </div>
-                    <Progress 
-                      value={Number(metric.metric_value)} 
-                      max={100} 
-                      className="h-2"
-                    />
-                    <div className="text-xs text-muted-foreground">
-                      Limite: {metric.metric_unit}
-                    </div>
-                  </div>
+                  <div className="text-2xl font-bold">{health.uptime}%</div>
+                  <Progress value={health.uptime} className="h-2 mt-2" />
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Temps de réponse</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{health.response_time.toFixed(0)}ms</div>
+                </CardContent>
+              </Card>
 
-          {performanceMetrics && performanceMetrics.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Métriques de Performance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={performanceMetrics}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="metric_name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="metric_value" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Taux d'erreur</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{health.error_rate.toFixed(1)}%</div>
+                  <Progress value={health.error_rate} className="h-2 mt-2" />
+                </CardContent>
+              </Card>
+            </div>
           )}
         </TabsContent>
 
@@ -211,22 +210,28 @@ export function SystemMonitoringDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {healthMetrics?.filter(m => m.health_status !== 'healthy').map((alert, index) => (
+                  {alerts.map((alert, index) => (
                     <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center gap-2">
-                        {getStatusIcon(alert.health_status)}
+                        <AlertTriangle className={`w-4 h-4 ${
+                          alert.severity === 'critical' ? 'text-red-500' :
+                          alert.severity === 'high' ? 'text-orange-500' :
+                          'text-yellow-500'
+                        }`} />
                         <div>
-                          <div className="font-medium">{alert.component_name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            Statut: {alert.health_status}
-                          </div>
+                          <div className="font-medium">{alert.title}</div>
+                          <div className="text-sm text-muted-foreground">{alert.description}</div>
                         </div>
                       </div>
-                      <Badge variant={getStatusColor(alert.health_status)}>
-                        {alert.health_status}
+                      <Badge variant={
+                        alert.severity === 'critical' ? 'destructive' :
+                        alert.severity === 'high' ? 'secondary' : 'outline'
+                      }>
+                        {alert.severity}
                       </Badge>
                     </div>
-                  )) || (
+                  ))}
+                  {alerts.length === 0 && (
                     <div className="text-center py-8 text-muted-foreground">
                       <CheckCircle className="w-12 h-12 mx-auto mb-2 text-green-500" />
                       Aucune alerte système
@@ -242,29 +247,28 @@ export function SystemMonitoringDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span>Uptime moyen</span>
-                    <span className="font-medium">
-                      {healthMetrics ? 
-                        (healthMetrics.reduce((acc, m) => acc + (m.uptime_percentage || 0), 0) / healthMetrics.length).toFixed(1) + '%'
-                        : '0%'
-                      }
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Composants surveillés</span>
-                    <span className="font-medium">{healthMetrics?.length || 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Alertes actives</span>
-                    <span className="font-medium text-red-500">
-                      {healthMetrics?.filter(m => m.health_status !== 'healthy').length || 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Dernière optimisation</span>
-                    <span className="font-medium">Il y a 2h</span>
-                  </div>
+                  {health && (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <span>Uptime</span>
+                        <span className="font-medium">{health.uptime}%</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Statut</span>
+                        <Badge variant={health.status === 'healthy' ? 'default' : 'destructive'}>
+                          {health.status}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Alertes actives</span>
+                        <span className="font-medium text-red-500">{alerts.length}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span>Utilisateurs actifs</span>
+                        <span className="font-medium">{health.active_users}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>

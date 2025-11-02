@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { logError } from '@/utils/consoleCleanup';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,16 +10,10 @@ import {
   Brain, 
   Target, 
   AlertTriangle,
-  CheckCircle,
-  Calendar,
-  BarChart3,
-  LineChart,
-  PieChart,
-  Zap
+  CheckCircle
 } from 'lucide-react';
-import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Cell } from 'recharts';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts';
+import { useRealPredictiveAnalytics } from '@/hooks/useRealPredictiveAnalytics';
 
 interface PredictiveInsight {
   id: string;
@@ -44,137 +37,35 @@ interface PredictiveData {
 }
 
 export function PredictiveAnalytics() {
-  const [insights, setInsights] = useState<PredictiveInsight[]>([]);
-  const [data, setData] = useState<PredictiveData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [selectedTimeframe, setSelectedTimeframe] = useState<'7d' | '30d' | '90d'>('30d');
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const { insights, metrics, isLoading } = useRealPredictiveAnalytics();
 
-  useEffect(() => {
-    if (user) {
-      fetchPredictiveData();
-    }
-  }, [user, selectedTimeframe]);
-
-  const fetchPredictiveData = async () => {
-    try {
-      setLoading(true);
-
-      // Simuler des données prédictives
-      const mockInsights: PredictiveInsight[] = [
-        {
-          id: '1',
-          type: 'revenue',
-          title: 'Croissance du CA prévue',
-          description: 'Une augmentation de 23% des revenus est attendue dans les 30 prochains jours',
-          confidence: 89,
-          impact: 'high',
-          timeframe: '30d',
-          predicted_value: 45230,
-          current_value: 36750,
-          change_percent: 23,
-          recommendations: [
-            'Augmenter le stock des produits tendance',
-            'Préparer une campagne marketing ciblée',
-            'Optimiser la chaîne logistique'
-          ]
-        },
-        {
-          id: '2',
-          type: 'demand',
-          title: 'Pic de demande détecté',
-          description: 'La catégorie Électronique va connaître un pic dans 7 jours',
-          confidence: 94,
-          impact: 'high',
-          timeframe: '7d',
-          predicted_value: 156,
-          current_value: 89,
-          change_percent: 75,
-          recommendations: [
-            'Réapprovisionner en urgence',
-            'Ajuster les prix dynamiquement',
-            'Préparer le service client'
-          ]
-        },
-        {
-          id: '3',
-          type: 'inventory',
-          title: 'Risque de rupture stock',
-          description: '5 produits risquent une rupture dans les 14 jours',
-          confidence: 76,
-          impact: 'medium',
-          timeframe: '30d',
-          predicted_value: 5,
-          current_value: 8,
-          change_percent: -38,
-          recommendations: [
-            'Commande automatique activée',
-            'Contacter les fournisseurs prioritaires',
-            'Mettre en place des substituts'
-          ]
-        },
-        {
-          id: '4',
-          type: 'trend',
-          title: 'Nouvelle tendance émergente',
-          description: 'La niche "Maison connectée" montre un potentiel élevé',
-          confidence: 82,
-          impact: 'medium',
-          timeframe: '90d',
-          predicted_value: 120,
-          current_value: 45,
-          change_percent: 167,
-          recommendations: [
-            'Explorer les produits IoT',
-            'Analyser la concurrence',
-            'Tester avec un petit catalogue'
-          ]
-        }
-      ];
-
-      const mockData: PredictiveData = {
-        revenue_forecast: [
-          { date: '2024-01', predicted: 32000, actual: 31500, confidence: 95 },
-          { date: '2024-02', predicted: 35000, actual: 34200, confidence: 92 },
-          { date: '2024-03', predicted: 38000, actual: 37800, confidence: 94 },
-          { date: '2024-04', predicted: 42000, confidence: 89 },
-          { date: '2024-05', predicted: 45000, confidence: 86 },
-          { date: '2024-06', predicted: 48000, confidence: 83 }
-        ],
-        demand_forecast: [
-          { product: 'iPhone 15', predicted_sales: 45, current_sales: 32, growth: 41 },
-          { product: 'Samsung TV', predicted_sales: 23, current_sales: 18, growth: 28 },
-          { product: 'AirPods Pro', predicted_sales: 67, current_sales: 52, growth: 29 },
-          { product: 'MacBook Air', predicted_sales: 34, current_sales: 28, growth: 21 }
-        ],
-        inventory_alerts: [
-          { product: 'iPhone 15', current_stock: 12, predicted_stockout: '2024-01-15', urgency: 'high' },
-          { product: 'AirPods Pro', current_stock: 8, predicted_stockout: '2024-01-20', urgency: 'medium' },
-          { product: 'Samsung TV', current_stock: 15, predicted_stockout: '2024-01-25', urgency: 'low' }
-        ],
-        trend_analysis: [
-          { category: 'Maison connectée', trend_score: 95, market_potential: 87 },
-          { category: 'Électronique portable', trend_score: 88, market_potential: 92 },
-          { category: 'Gaming', trend_score: 82, market_potential: 78 },
-          { category: 'Fitness Tech', trend_score: 76, market_potential: 85 }
-        ]
-      };
-
-      setInsights(mockInsights);
-      setData(mockData);
-
-    } catch (error) {
-      logError(error, 'PredictiveAnalytics.fetchPredictiveData');
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les analyses prédictives",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+  // Transform insights into the format needed by the charts
+  const predictions = insights;
+  const forecasts = {
+    revenue: insights.filter(i => i.type === 'revenue').map((i, idx) => ({
+      date: new Date(Date.now() + idx * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      predicted: i.value,
+      confidence: i.confidence
+    })),
+    demand: insights.filter(i => i.type === 'inventory').map(i => ({
+      product: i.title,
+      predicted_sales: i.value,
+      current_sales: Math.floor(i.value / (1 + i.change / 100)),
+      growth: i.change
+    })),
+    inventory: insights.filter(i => i.type === 'inventory').map(i => ({
+      product: i.title,
+      current_stock: Math.floor(i.value),
+      predicted_stockout: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+      urgency: i.impact
+    }))
   };
+  const trends = insights.filter(i => i.type === 'trend').map(i => ({
+    category: i.title,
+    trend_score: i.confidence,
+    market_potential: i.value
+  }));
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -198,13 +89,12 @@ export function PredictiveAnalytics() {
       case 'demand': return Target;
       case 'inventory': return AlertTriangle;
       case 'trend': return Brain;
-      default: return BarChart3;
+      case 'customer': return Target;
+      default: return Brain;
     }
   };
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2">
@@ -254,7 +144,7 @@ export function PredictiveAnalytics() {
 
       {/* Key Insights */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {insights.map((insight) => {
+        {predictions.map((insight) => {
           const Icon = getTypeIcon(insight.type);
           return (
             <Card key={insight.id} className={`border-l-4 ${
@@ -276,12 +166,12 @@ export function PredictiveAnalytics() {
                   <p className="text-xs text-muted-foreground">{insight.description}</p>
                   <div className="flex items-center justify-between">
                     <div className="text-lg font-bold flex items-center">
-                      {insight.change_percent > 0 ? (
+                      {insight.change > 0 ? (
                         <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
                       ) : (
                         <TrendingDown className="h-4 w-4 text-red-500 mr-1" />
                       )}
-                      {Math.abs(insight.change_percent)}%
+                      {Math.abs(insight.change)}%
                     </div>
                     <Badge variant="secondary" className="text-xs">
                       {insight.timeframe}
@@ -313,7 +203,7 @@ export function PredictiveAnalytics() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={data?.revenue_forecast}>
+                <AreaChart data={forecasts.revenue}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
@@ -354,7 +244,7 @@ export function PredictiveAnalytics() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data?.demand_forecast.map((item, index) => (
+                {forecasts.demand.map((item, index) => (
                   <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="space-y-1">
                       <h4 className="font-medium">{item.product}</h4>
@@ -386,7 +276,7 @@ export function PredictiveAnalytics() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data?.inventory_alerts.map((alert, index) => (
+                {forecasts.inventory.map((alert, index) => (
                   <div key={index} className={`p-4 border rounded-lg ${
                     alert.urgency === 'high' ? 'border-red-200 bg-red-50' :
                     alert.urgency === 'medium' ? 'border-orange-200 bg-orange-50' :
@@ -432,7 +322,7 @@ export function PredictiveAnalytics() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data?.trend_analysis}>
+                <BarChart data={trends}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="category" />
                   <YAxis />

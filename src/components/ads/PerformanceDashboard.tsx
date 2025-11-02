@@ -1,10 +1,12 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useAdsManagerNew } from '@/hooks/useAdsManagerNew';
+import { useRealAdsManager } from '@/hooks/useRealAdsManager';
 import { TrendingUp, TrendingDown, DollarSign, MousePointerClick, Eye, Target, Lightbulb } from 'lucide-react';
 
 export function PerformanceDashboard() {
-  const { campaigns, suggestions, isLoadingSuggestions, applySuggestion } = useAdsManagerNew();
+  const { campaigns, metrics, platformPerformance } = useRealAdsManager();
+
+  if (!metrics) return null;
 
   const totalStats = campaigns?.reduce((acc: any, campaign: any) => ({
     spent: acc.spent + (campaign.spent_amount || 0),
@@ -84,51 +86,30 @@ export function PerformanceDashboard() {
       <Card className="p-6">
         <h3 className="text-xl font-bold flex items-center gap-2 mb-4">
           <Lightbulb className="h-6 w-6 text-yellow-500" />
-          Suggestions d'Optimisation IA
+          Performance par Plateforme
         </h3>
 
-        {isLoadingSuggestions ? (
-          <p className="text-center py-8 text-muted-foreground">Chargement des suggestions...</p>
-        ) : (!suggestions || suggestions.length === 0) ? (
-          <p className="text-center py-8 text-muted-foreground">
-            Aucune suggestion pour le moment. L'IA analyse vos campagnes en continu.
-          </p>
-        ) : (
+        {platformPerformance.length > 0 && (
           <div className="space-y-4">
-            {suggestions.map((suggestion: any) => (
-              <div key={suggestion.id} className="border rounded-lg p-4 space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="font-semibold">{suggestion.title}</h4>
-                      {getPriorityBadge(suggestion.priority)}
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {suggestion.description}
-                    </p>
-                    
-                    {suggestion.expected_impact && (
-                      <div className="flex items-center gap-4 text-sm">
-                        <div className="flex items-center gap-1">
-                          <TrendingUp className="h-4 w-4 text-green-600" />
-                          <span className="text-muted-foreground">Impact estimé:</span>
-                          <span className="font-semibold text-green-600">
-                            +{suggestion.expected_impact.improvement}%
-                          </span>
-                        </div>
-                      </div>
-                    )}
+            {platformPerformance.map((platform, index) => (
+              <div key={index} className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium capitalize">{platform.platform}</h4>
+                  <Badge variant="outline">{platform.campaigns} campagnes</Badge>
+                </div>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Dépensé</p>
+                    <p className="font-medium">{formatCurrency(platform.spent)}</p>
                   </div>
-                  
-                  {!suggestion.is_applied && (
-                    <Badge 
-                      variant="outline" 
-                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                      onClick={() => applySuggestion(suggestion.id)}
-                    >
-                      Appliquer
-                    </Badge>
-                  )}
+                  <div>
+                    <p className="text-muted-foreground">Revenue</p>
+                    <p className="font-medium">{formatCurrency(platform.revenue)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">ROAS</p>
+                    <p className="font-medium">{platform.roas.toFixed(2)}x</p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -138,3 +119,10 @@ export function PerformanceDashboard() {
     </div>
   );
 }
+
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR'
+  }).format(amount);
+};

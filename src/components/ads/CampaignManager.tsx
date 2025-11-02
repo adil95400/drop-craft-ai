@@ -3,12 +3,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useAdsManagerNew } from '@/hooks/useAdsManagerNew';
+import { useRealAdsManager } from '@/hooks/useRealAdsManager';
 import { Plus, Play, Pause, TrendingUp, DollarSign, Megaphone, Sparkles } from 'lucide-react';
 import { CreateCampaignDialog } from './CreateCampaignDialog';
 
 export function CampaignManager() {
-  const { campaigns, isLoadingCampaigns, updateCampaignStatus } = useAdsManagerNew();
+  const { campaigns, isLoading } = useRealAdsManager();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const getStatusBadge = (status: string) => {
@@ -26,7 +26,7 @@ export function CampaignManager() {
     }
   };
 
-  if (isLoadingCampaigns) {
+  if (isLoading) {
     return <div className="text-center py-12">Chargement...</div>;
   }
 
@@ -82,7 +82,7 @@ export function CampaignManager() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => updateCampaignStatus(campaign.id, 'paused')}
+                        onClick={() => console.log('Pause', campaign.id)}
                       >
                         <Pause className="h-4 w-4" />
                       </Button>
@@ -91,7 +91,7 @@ export function CampaignManager() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => updateCampaignStatus(campaign.id, 'active')}
+                        onClick={() => console.log('Play', campaign.id)}
                       >
                         <Play className="h-4 w-4" />
                       </Button>
