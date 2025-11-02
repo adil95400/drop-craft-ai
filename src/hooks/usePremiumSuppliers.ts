@@ -15,7 +15,7 @@ export function usePremiumSuppliers() {
         .select('*')
         .eq('is_active', true)
         .order('featured', { ascending: false })
-        .order('rating', { ascending: false })
+        .order('quality_score', { ascending: false })
 
       if (error) throw error
       return data
