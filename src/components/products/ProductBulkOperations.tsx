@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Grid3X3, Edit, Trash2, Copy, Download, Upload, Package, Tag, Archive } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useRealProducts } from '@/hooks/useRealProducts'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface ProductBulkOperationsProps {
   selectedProducts: string[]
@@ -22,6 +23,7 @@ export function ProductBulkOperations({ selectedProducts, onClearSelection }: Pr
   const { toast } = useToast()
   const { updateProduct, deleteProduct } = useRealProducts()
   const { confirm, confirmState } = useConfirm()
+  const queryClient = useQueryClient()
   const [showBulkEditDialog, setShowBulkEditDialog] = useState(false)
   const [bulkEditData, setBulkEditData] = useState({
     category: '',
@@ -138,6 +140,10 @@ export function ProductBulkOperations({ selectedProducts, onClearSelection }: Pr
       const success = await importExportService.bulkDelete(selectedProducts)
       
       if (!success) throw new Error('Échec de la suppression')
+
+      // Invalider toutes les queries de produits pour forcer le rechargement
+      queryClient.invalidateQueries({ queryKey: ['real-products'] })
+      queryClient.invalidateQueries({ queryKey: ['products'] })
       
       toast({
         title: "Suppression réussie",

@@ -201,16 +201,28 @@ class ImportExportService {
   }
 
   /**
-   * Bulk delete products
+   * Bulk delete products from all tables
    */
   async bulkDelete(productIds: string[]): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .in('id', productIds)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
 
-      if (error) throw error
+      // Supprimer de toutes les tables possibles
+      const deletePromises = [
+        supabase.from('products').delete().in('id', productIds).eq('user_id', user.id),
+        supabase.from('imported_products').delete().in('id', productIds).eq('user_id', user.id)
+      ]
+
+      const results = await Promise.allSettled(deletePromises)
+      
+      // Au moins une suppression doit réussir
+      const hasSuccess = results.some(r => r.status === 'fulfilled' && !r.value.error)
+      
+      if (!hasSuccess) {
+        throw new Error('Aucun produit n\'a pu être supprimé')
+      }
+      
       return true
     } catch (error) {
       console.error('Error bulk deleting products:', error)
