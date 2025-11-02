@@ -48,10 +48,10 @@ Deno.serve(async (req) => {
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Bearer ${jwtToken}`
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: new URLSearchParams({
+        token: jwtToken,
         format: format,
         language_code: language
       })
