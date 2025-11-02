@@ -57,27 +57,21 @@ Deno.serve(async (req) => {
     console.log(`📡 Fetching products from BTS Wholesaler API...`)
     console.log(`Using token: ${jwtToken.substring(0, 20)}...`)
 
-    // 3. Appeler l'API BTS Wholesaler avec POST et form-data
-    const apiUrl = `https://www.btswholesaler.com/generatefeedbts`
+    // 3. Appeler l'API BTS Wholesaler avec GET et query params
+    const apiUrl = `https://www.btswholesaler.com/generatefeedbts?token=${encodeURIComponent(jwtToken)}&format=${encodeURIComponent(format)}&language_code=${encodeURIComponent(language)}`
     
     let apiProducts = []
     try {
-      // Essayer d'abord avec le token dans le body (méthode courante pour BTS)
       const apiResponse = await fetch(apiUrl, {
-        method: 'POST',
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-          token: jwtToken,
-          format: format,
-          language_code: language
-        })
+          'Accept': 'application/json'
+        }
       })
       
       if (!apiResponse.ok) {
         const errorText = await apiResponse.text()
-        console.error(`API Error Response: ${errorText}`)
+        console.error(`API Error Response (${apiResponse.status}):`, errorText.substring(0, 500))
         throw new Error(`API returned ${apiResponse.status}: ${apiResponse.statusText}`)
       }
 

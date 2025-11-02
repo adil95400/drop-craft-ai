@@ -462,37 +462,32 @@ export default function UnifiedSuppliersComplete() {
                 <div className="rounded-lg bg-blue-50 dark:bg-blue-950 p-4 space-y-2">
                   <p className="text-sm font-medium flex items-center gap-2">
                     <Shield className="h-4 w-4" />
-                    Comment obtenir votre clé API?
+                    Comment obtenir votre JWT Token BTS Wholesaler?
                   </p>
-                  <ol className="text-sm text-muted-foreground space-y-1 ml-6 list-decimal">
-                    <li>Connectez-vous à votre compte BTS Wholesaler</li>
-                    <li>Allez dans Paramètres → API / Développeur</li>
-                    <li>Créez une nouvelle clé API avec les permissions requises</li>
-                    <li>Copiez et collez la clé ci-dessous</li>
+                  <ol className="text-sm text-muted-foreground space-y-2 ml-6 list-decimal">
+                    <li>Connectez-vous à votre compte <a href="https://www.btswholesaler.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">BTS Wholesaler</a></li>
+                    <li>Allez dans <strong>Mon compte → API Feed</strong></li>
+                    <li>Copiez votre <strong>JWT Token</strong> (commence par eyJ...)</li>
+                    <li>Le token est valide indéfiniment jusqu'à régénération</li>
                   </ol>
-                  <Button 
-                    variant="link" 
-                    size="sm" 
-                    className="pl-0"
-                    onClick={() => window.open('https://www.btswholesaler.com', '_blank')}
-                  >
-                    Ouvrir BTS Wholesaler
-                    <ExternalLink className="h-3 w-3 ml-1" />
-                  </Button>
+                  <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950 rounded text-xs">
+                    <p className="font-medium mb-1">⚠️ Important:</p>
+                    <p>Le token JWT doit commencer par "eyJ" et contenir plusieurs segments séparés par des points. Si votre token ne ressemble pas à cela, vérifiez que vous utilisez bien le JWT Token et non une autre clé API.</p>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="jwt-token">Clé API</Label>
+                  <Label htmlFor="jwt-token">JWT Token BTS Wholesaler</Label>
                   <Input
                     id="jwt-token"
                     type="text"
-                    placeholder="eyJ0eXAi0iJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                    placeholder="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
                     value={jwtToken}
                     onChange={(e) => setJwtToken(e.target.value)}
                     className="font-mono text-sm"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Point d'accès API: https://www.btswholesaler.com/generatefeedbts
+                    Format attendu: eyJ... (JWT Token depuis Mon compte → API Feed)
                   </p>
                 </div>
 
