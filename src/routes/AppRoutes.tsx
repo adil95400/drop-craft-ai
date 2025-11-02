@@ -35,6 +35,11 @@ import LoyaltyProgramPage from '@/pages/LoyaltyProgramPage'
 import AffiliateMarketingPage from '@/pages/AffiliateMarketingPage'
 import ProductRecommendationsPage from '@/pages/ProductRecommendationsPage'
 import DropshippingCenterPage from '@/pages/DropshippingCenterPage'
+import ContentManagementPage from '@/pages/ContentManagementPage'
+import ShippingManagementPage from '@/pages/ShippingManagementPage'
+import ReviewsManagementPage from '@/pages/ReviewsManagementPage'
+import TaxManagementPage from '@/pages/TaxManagementPage'
+import CouponManagementPage from '@/pages/CouponManagementPage'
 
 export function AppRoutes() {
   return (
@@ -79,6 +84,11 @@ export function AppRoutes() {
         <Route path="affiliate-marketing" element={<AffiliateMarketingPage />} />
         <Route path="product-recommendations" element={<ProductRecommendationsPage />} />
         <Route path="dropshipping-center" element={<DropshippingCenterPage />} />
+        <Route path="content-management" element={<ContentManagementPage />} />
+        <Route path="shipping-management" element={<ShippingManagementPage />} />
+        <Route path="reviews-management" element={<ReviewsManagementPage />} />
+        <Route path="tax-management" element={<TaxManagementPage />} />
+        <Route path="coupon-management" element={<CouponManagementPage />} />
         <Route path="marketplace-hub" element={<MarketplaceHubPage />} />
         <Route path="multi-tenant" element={<MultiTenantPage />} />
         <Route path="observability" element={<AdvancedMonitoringPage />} />
