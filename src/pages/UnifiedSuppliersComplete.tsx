@@ -128,7 +128,7 @@ export default function UnifiedSuppliersComplete() {
     if (!connectDialog.supplierId || !jwtToken) {
       toast({
         title: 'Erreur',
-        description: 'Veuillez entrer le JWT token',
+        description: 'Veuillez entrer le mot de passe API',
         variant: 'destructive'
       })
       return
@@ -138,21 +138,48 @@ export default function UnifiedSuppliersComplete() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      // Créer ou mettre à jour la connexion avec le token dans metadata
-      const { error } = await supabase
+      // Vérifier si une connexion existe déjà
+      const { data: existingConnection } = await supabase
         .from('premium_supplier_connections')
-        .upsert({
-          user_id: user.id,
-          supplier_id: connectDialog.supplierId,
-          status: 'active',
-          metadata: { 
-            jwt_token: jwtToken,
-            format: 'json',
-            language: 'fr-FR'
-          }
-        })
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('supplier_id', connectDialog.supplierId)
+        .single()
 
-      if (error) throw error
+      if (existingConnection) {
+        // Mettre à jour la connexion existante
+        const { error } = await supabase
+          .from('premium_supplier_connections')
+          .update({
+            status: 'active',
+            metadata: { 
+              jwt_token: jwtToken,
+              api_password: jwtToken,
+              format: 'json',
+              language: 'fr-FR'
+            }
+          })
+          .eq('id', existingConnection.id)
+
+        if (error) throw error
+      } else {
+        // Créer une nouvelle connexion
+        const { error } = await supabase
+          .from('premium_supplier_connections')
+          .insert({
+            user_id: user.id,
+            supplier_id: connectDialog.supplierId,
+            status: 'active',
+            metadata: { 
+              jwt_token: jwtToken,
+              api_password: jwtToken,
+              format: 'json',
+              language: 'fr-FR'
+            }
+          })
+
+        if (error) throw error
+      }
 
       setConnectDialog({ open: false })
       
@@ -160,7 +187,11 @@ export default function UnifiedSuppliersComplete() {
         title: 'Connexion réussie',
         description: 'Vous pouvez maintenant synchroniser les produits'
       })
+
+      // Rafraîchir la page pour voir les changements
+      window.location.reload()
     } catch (error: any) {
+      console.error('Connection error:', error)
       toast({
         title: 'Erreur de connexion',
         description: error.message,
