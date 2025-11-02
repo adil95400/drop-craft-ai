@@ -40,6 +40,11 @@ import ShippingManagementPage from '@/pages/ShippingManagementPage'
 import ReviewsManagementPage from '@/pages/ReviewsManagementPage'
 import TaxManagementPage from '@/pages/TaxManagementPage'
 import CouponManagementPage from '@/pages/CouponManagementPage'
+import MultiChannelManagementPage from '@/pages/MultiChannelManagementPage'
+import SubscriptionManagementPage from '@/pages/SubscriptionManagementPage'
+import AbandonedCartPage from '@/pages/AbandonedCartPage'
+import FlashSalesPage from '@/pages/FlashSalesPage'
+import VendorManagementPage from '@/pages/VendorManagementPage'
 
 export function AppRoutes() {
   return (
@@ -89,6 +94,11 @@ export function AppRoutes() {
         <Route path="reviews-management" element={<ReviewsManagementPage />} />
         <Route path="tax-management" element={<TaxManagementPage />} />
         <Route path="coupon-management" element={<CouponManagementPage />} />
+        <Route path="multi-channel-management" element={<MultiChannelManagementPage />} />
+        <Route path="subscription-management" element={<SubscriptionManagementPage />} />
+        <Route path="abandoned-cart" element={<AbandonedCartPage />} />
+        <Route path="flash-sales" element={<FlashSalesPage />} />
+        <Route path="vendor-management" element={<VendorManagementPage />} />
         <Route path="marketplace-hub" element={<MarketplaceHubPage />} />
         <Route path="multi-tenant" element={<MultiTenantPage />} />
         <Route path="observability" element={<AdvancedMonitoringPage />} />
