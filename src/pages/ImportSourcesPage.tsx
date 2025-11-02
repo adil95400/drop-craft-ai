@@ -13,6 +13,7 @@ import {
   CheckCircle
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { SourceConfigurationDialog } from '@/components/import/SourceConfigurationDialog'
 
 interface ImportSource {
   id: string
@@ -80,6 +81,8 @@ export default function ImportSourcesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('Toutes')
   const [showOnlySupported, setShowOnlySupported] = useState(false)
+  const [selectedSource, setSelectedSource] = useState<any>(null)
+  const [showConfigDialog, setShowConfigDialog] = useState(false)
 
   const filteredSources = IMPORT_SOURCES.filter(source => {
     const matchesSearch = source.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -268,7 +271,10 @@ export default function ImportSourcesPage() {
                 className="w-full" 
                 variant={source.supported ? "default" : "outline"}
                 disabled={!source.supported}
-                onClick={() => navigate('/import/advanced')}
+                onClick={() => {
+                  setSelectedSource(source)
+                  setShowConfigDialog(true)
+                }}
               >
                 {source.supported ? 'Configurer l\'import' : 'Bientôt disponible'}
               </Button>
@@ -282,6 +288,12 @@ export default function ImportSourcesPage() {
           <p className="text-muted-foreground">Aucune source trouvée pour vos critères de recherche</p>
         </Card>
       )}
+
+      <SourceConfigurationDialog
+        open={showConfigDialog}
+        onOpenChange={setShowConfigDialog}
+        source={selectedSource}
+      />
     </div>
   )
 }
