@@ -96,15 +96,17 @@ Deno.serve(async (req) => {
         cost_price: parseFloat(product.cost_price || product.wholesale_price) || 0,
         sku: product.sku || product.id || `BTS-${Date.now()}`,
         category: product.category || 'General',
-        stock_quantity: parseInt(product.stock || product.quantity) || 0,
+        stock: parseInt(product.stock || product.quantity) || 0,
         status: 'active' as const,
         supplier: supplier.name,
         supplier_id: supplierId,
-        image_url: product.image_url || product.image || product.images?.[0] || null,
+        images: product.image ? [product.image] : (product.images || []),
         tags: ['premium', 'BTS Wholesaler', product.category].filter(Boolean),
-        profit_margin: product.price && product.cost_price 
-          ? Math.round(((parseFloat(product.price) - parseFloat(product.cost_price)) / parseFloat(product.cost_price)) * 100)
-          : 0
+        supplier_info: {
+          profit_margin: product.price && product.cost_price 
+            ? Math.round(((parseFloat(product.price) - parseFloat(product.cost_price)) / parseFloat(product.cost_price)) * 100)
+            : 0
+        }
       }))
 
       const { data: imported, error: importError } = await supabase
