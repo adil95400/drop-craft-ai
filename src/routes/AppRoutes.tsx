@@ -30,6 +30,11 @@ import PriceOptimizationPage from '@/pages/PriceOptimizationPage'
 import CustomerSegmentationPage from '@/pages/CustomerSegmentationPage'
 import SocialCommercePage from '@/pages/SocialCommercePage'
 import LiveChatSupportPage from '@/pages/LiveChatSupportPage'
+import ReturnManagementPage from '@/pages/ReturnManagementPage'
+import LoyaltyProgramPage from '@/pages/LoyaltyProgramPage'
+import AffiliateMarketingPage from '@/pages/AffiliateMarketingPage'
+import ProductRecommendationsPage from '@/pages/ProductRecommendationsPage'
+import DropshippingCenterPage from '@/pages/DropshippingCenterPage'
 
 export function AppRoutes() {
   return (
@@ -69,6 +74,11 @@ export function AppRoutes() {
         <Route path="customer-segmentation" element={<CustomerSegmentationPage />} />
         <Route path="social-commerce" element={<SocialCommercePage />} />
         <Route path="live-chat-support" element={<LiveChatSupportPage />} />
+        <Route path="return-management" element={<ReturnManagementPage />} />
+        <Route path="loyalty-program" element={<LoyaltyProgramPage />} />
+        <Route path="affiliate-marketing" element={<AffiliateMarketingPage />} />
+        <Route path="product-recommendations" element={<ProductRecommendationsPage />} />
+        <Route path="dropshipping-center" element={<DropshippingCenterPage />} />
         <Route path="marketplace-hub" element={<MarketplaceHubPage />} />
         <Route path="multi-tenant" element={<MultiTenantPage />} />
         <Route path="observability" element={<AdvancedMonitoringPage />} />
