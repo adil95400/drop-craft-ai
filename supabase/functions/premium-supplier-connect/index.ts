@@ -31,71 +31,96 @@ Deno.serve(async (req) => {
       throw new Error('Supplier not found')
     }
 
-    // 2. Créer ou mettre à jour la connexion
+    // 2. Récupérer la connexion existante avec les metadata (JWT token)
     const { data: connection, error: connectionError } = await supabase
       .from('premium_supplier_connections')
-      .upsert({
-        user_id: userId,
-        supplier_id: supplierId,
-        status: 'active', // En production, serait 'pending' avec validation
-        approved_at: new Date().toISOString(),
-        connection_config: {
-          auto_sync: true,
-          sync_frequency: 'daily',
-          import_on_connect: true
-        }
-      }, {
-        onConflict: 'user_id,supplier_id'
-      })
-      .select()
+      .select('*, metadata')
+      .eq('user_id', userId)
+      .eq('supplier_id', supplierId)
       .single()
 
-    if (connectionError) {
-      console.error('Connection error:', connectionError)
-      throw connectionError
+    if (connectionError || !connection) {
+      console.error('Connection not found:', connectionError)
+      throw new Error('Connection not found. Please configure the connection first.')
     }
 
-    // 3. Importer les produits premium du fournisseur
-    const { data: premiumProducts, error: productsError } = await supabase
-      .from('premium_products')
-      .select('*')
-      .eq('supplier_id', supplierId)
-      .eq('is_active', true)
-      .limit(50)
+    const metadata = connection.metadata as any || {}
+    const jwtToken = metadata.jwt_token
+    const format = metadata.format || 'json'
+    const language = metadata.language || 'en-US'
 
-    if (productsError) {
-      console.error('Products fetch error:', productsError)
+    if (!jwtToken) {
+      throw new Error('JWT token not configured in connection metadata')
+    }
+
+    console.log(`📡 Fetching products from BTS Wholesaler API...`)
+
+    // 3. Appeler l'API BTS Wholesaler
+    const apiUrl = `https://www.btswholesaler.com/generatefeedbts?token=${jwtToken}&format=${format}&lang=${language}`
+    
+    let apiProducts = []
+    try {
+      const apiResponse = await fetch(apiUrl)
+      
+      if (!apiResponse.ok) {
+        throw new Error(`API returned ${apiResponse.status}: ${apiResponse.statusText}`)
+      }
+
+      const apiData = await apiResponse.json()
+      apiProducts = Array.isArray(apiData) ? apiData : apiData.products || []
+      
+      console.log(`✅ Fetched ${apiProducts.length} products from API`)
+    } catch (apiError) {
+      console.error('API fetch error:', apiError)
+      throw new Error(`Failed to fetch from BTS Wholesaler: ${apiError.message}`)
     }
 
     // 4. Importer les produits dans la table imported_products
-    if (premiumProducts && premiumProducts.length > 0) {
-      const productsToImport = premiumProducts.map(product => ({
+    let importedCount = 0
+    if (apiProducts.length > 0) {
+      const productsToImport = apiProducts.slice(0, 100).map((product: any) => ({
         user_id: userId,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        cost_price: product.cost,
-        sku: product.sku,
-        category: product.category,
-        stock_quantity: product.stock,
+        name: product.name || product.title || 'Unnamed Product',
+        description: product.description || '',
+        price: parseFloat(product.price) || 0,
+        cost_price: parseFloat(product.cost_price || product.wholesale_price) || 0,
+        sku: product.sku || product.id || `BTS-${Date.now()}`,
+        category: product.category || 'General',
+        stock_quantity: parseInt(product.stock || product.quantity) || 0,
         status: 'active' as const,
         supplier: supplier.name,
         supplier_id: supplierId,
-        image_url: product.image_url,
-        tags: ['premium', supplier.country, product.category],
-        profit_margin: Math.round(((product.price - product.cost) / product.cost) * 100)
+        image_url: product.image_url || product.image || product.images?.[0] || null,
+        tags: ['premium', 'BTS Wholesaler', product.category].filter(Boolean),
+        profit_margin: product.price && product.cost_price 
+          ? Math.round(((parseFloat(product.price) - parseFloat(product.cost_price)) / parseFloat(product.cost_price)) * 100)
+          : 0
       }))
 
-      const { error: importError } = await supabase
+      const { data: imported, error: importError } = await supabase
         .from('imported_products')
         .insert(productsToImport)
+        .select()
 
       if (importError) {
         console.error('Import error:', importError)
+        throw new Error(`Failed to import products: ${importError.message}`)
       }
+
+      importedCount = imported?.length || 0
+      console.log(`✅ Imported ${importedCount} products`)
     }
 
-    // 5. Créer un log de synchronisation
+    // 5. Mettre à jour le statut de la connexion
+    await supabase
+      .from('premium_supplier_connections')
+      .update({
+        status: 'active',
+        last_sync_at: new Date().toISOString()
+      })
+      .eq('id', connection.id)
+
+    // 6. Créer un log de synchronisation
     await supabase
       .from('premium_sync_logs')
       .insert({
@@ -104,11 +129,12 @@ Deno.serve(async (req) => {
         supplier_id: supplierId,
         sync_type: 'full',
         status: 'completed',
-        items_synced: premiumProducts?.length || 0,
+        items_synced: importedCount,
         items_failed: 0,
         sync_details: {
           initial_import: true,
-          products_available: premiumProducts?.length || 0
+          products_available: apiProducts.length,
+          products_imported: importedCount
         },
         completed_at: new Date().toISOString()
       })
@@ -120,7 +146,7 @@ Deno.serve(async (req) => {
         data: {
           connection_id: connection.id,
           supplier_name: supplier.name,
-          products_imported: premiumProducts?.length || 0,
+          products_imported: importedCount,
           status: 'active'
         }
       }),
