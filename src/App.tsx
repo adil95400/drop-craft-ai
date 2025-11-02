@@ -107,7 +107,7 @@ const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const AIPage = lazy(() => import('@/pages/AIPage'));
 const MarketplaceIntegrationsPage = lazy(() => import('@/pages/MarketplaceIntegrationsPage'));
-const PremiumSuppliersPage = lazy(() => import('@/pages/PremiumSuppliersPage'));
+const UnifiedSuppliersComplete = lazy(() => import('@/pages/UnifiedSuppliersComplete'));
 const FeedManagerPage = lazy(() => import('@/pages/FeedManagerPage'));
 const AIIntelligencePage = lazy(() => import('@/pages/AIIntelligencePage'));
 const PWAInstallPage = lazy(() => import('@/pages/PWAInstallPage'));
@@ -302,7 +302,7 @@ function App() {
                         
                         <Route path="/premium-suppliers" element={
                           <ProtectedRoute>
-                            <AppLayout><PremiumSuppliersPage /></AppLayout>
+                            <AppLayout><UnifiedSuppliersComplete /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
@@ -330,11 +330,6 @@ function App() {
                           </ProtectedRoute>
                         } />
 
-                         <Route path="/premium-suppliers" element={
-                          <ProtectedRoute>
-                            <AppLayout><PremiumSuppliersPage /></AppLayout>
-                          </ProtectedRoute>
-                        } />
 
                         <Route path="/supplier-admin" element={
                           <AdminRoute>

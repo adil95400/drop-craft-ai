@@ -137,16 +137,17 @@ export default function PremiumNetworkPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Stocker les credentials de manière sécurisée
+      // Stocker les credentials de manière sécurisée dans metadata
       const { error } = await supabase
         .from('premium_supplier_connections')
         .upsert({
           user_id: user.id,
           supplier_id: selectedSupplier.id,
           status: 'active',
-          connection_config: {
+          metadata: {
             credentials,
-            auth_method: selectedSupplier.auth_method
+            auth_method: selectedSupplier.auth_method,
+            jwt_token: credentials.api_key || credentials.jwt_token
           }
         })
 
