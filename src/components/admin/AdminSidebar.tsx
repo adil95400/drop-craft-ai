@@ -24,7 +24,18 @@ import {
   Shield,
   Settings,
   ChevronLeft,
-  Crown
+  Crown,
+  Trophy,
+  Sparkles,
+  Truck,
+  Globe,
+  Database,
+  GraduationCap,
+  Brain,
+  Building2,
+  Plug,
+  Activity,
+  type LucideIcon
 } from 'lucide-react';
 import {
   Sidebar,
@@ -40,55 +51,54 @@ import {
 } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
+import { MODULE_REGISTRY, type ModuleConfig } from '@/config/modules';
+import { getAllCategories, type ModuleCategory } from '@/config/module-categories';
+import { useUnifiedModules } from '@/hooks/useUnifiedModules';
 
-const mainItems = [
-  { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
-  { title: 'Boutiques', url: '/admin/stores', icon: Store, badge: 'Stores' },
-  { title: 'Produits', url: '/admin/products', icon: Package },
-  { title: 'Catalogue', url: '/admin/catalog', icon: BookOpen },
-  { title: 'Commandes', url: '/admin/orders', icon: ShoppingCart },
-  { title: 'Import', url: '/admin/import', icon: Upload },
-  { title: 'Fournisseurs', url: '/admin/suppliers', icon: Users2 },
-];
-
-const analyticsItems = [
-  { title: 'Analytics', url: '/admin/analytics', icon: LineChart },
-  { title: 'Monitoring', url: '/admin/monitoring', icon: Monitor },
-];
-
-const crmItems = [
-  { title: 'Clients', url: '/admin/customers', icon: Users },
-  { title: 'CRM', url: '/crm', icon: MessageSquare },
-];
-
-const marketingItems = [
-  { title: 'Marketing', url: '/admin/marketing', icon: Megaphone },
-  { title: 'Publicités', url: '/ads-manager', icon: Megaphone, badge: 'Ads' },
-  { title: 'Blog', url: '/admin/blog', icon: FileText },
-  { title: 'SEO', url: '/admin/seo', icon: Search },
-];
-
-const toolsItems = [
-  { title: 'Extensions', url: '/admin/extensions', icon: Puzzle, badge: 'Nouveau' },
-  { title: 'IA Assistant', url: '/admin/ai', icon: Bot, badge: 'AI' },
-  { title: 'AI Studio', url: '/admin/ai-studio', icon: Palette, badge: 'Studio' },
-  { title: 'Automation Studio', url: '/admin/automation-studio', icon: Zap, badge: 'Studio' },
-  { title: 'Analytics Studio', url: '/admin/analytics-studio', icon: TrendingUp, badge: 'Studio' },
-];
-
-const adminItems = [
-  { title: 'Automation', url: '/admin/automation', icon: Workflow },
-  { title: 'Sécurité', url: '/admin/security', icon: Shield, badge: 'Admin' },
-  { title: 'Intégrations', url: '/admin/integrations', icon: Settings },
-  { title: 'Abonnements', url: '/admin/subscriptions', icon: Crown, badge: 'Admin' },
-];
+// Map des icônes pour la résolution dynamique
+const iconMap: Record<string, LucideIcon> = {
+  BarChart3: LayoutDashboard,
+  Package: Package,
+  Upload: Upload,
+  Trophy: Trophy,
+  Sparkles: Sparkles,
+  Truck: Truck,
+  ShoppingBag: Package,
+  Store: Store,
+  Globe: Globe,
+  Crown: Crown,
+  Database: Database,
+  GraduationCap: GraduationCap,
+  TrendingUp: TrendingUp,
+  Zap: Zap,
+  PuzzlePiece: Puzzle,
+  Users: Users,
+  Search: Search,
+  Brain: Brain,
+  ShoppingCart: ShoppingCart,
+  Building2: Building2,
+  Settings: Settings,
+  Shield: Shield,
+  Plug: Plug,
+  Activity: Activity,
+};
 
 export function AdminSidebar() {
   const { open: sidebarOpen } = useSidebar();
   const location = useLocation();
   const { profile, effectivePlan } = useUnifiedAuth();
+  const { canAccess, plan } = useUnifiedModules();
   const currentPath = location.pathname;
   const collapsed = !sidebarOpen;
+
+  // Obtenir tous les modules organisés par catégorie
+  const categories = getAllCategories();
+  const modulesByCategory = categories.map(category => ({
+    category,
+    modules: Object.values(MODULE_REGISTRY)
+      .filter(module => module.category === category.id && module.enabled)
+      .sort((a, b) => a.order - b.order)
+  })).filter(group => group.modules.length > 0);
 
   const isActive = (path: string) => {
     if (path === '/admin') return currentPath === '/admin';
@@ -100,39 +110,55 @@ export function AdminSidebar() {
       ? 'bg-primary text-primary-foreground font-medium shadow-sm' 
       : 'hover:bg-muted/50 text-muted-foreground hover:text-foreground';
 
-  const renderMenuGroup = (items: typeof mainItems, groupLabel: string) => (
-    <SidebarGroup key={groupLabel}>
+  const getPlanBadge = (minPlan: string) => {
+    if (minPlan === 'ultra_pro') return { text: 'ULTRA', variant: 'destructive' as const };
+    if (minPlan === 'pro') return { text: 'PRO', variant: 'default' as const };
+    return null;
+  };
+
+  const renderModuleItem = (module: ModuleConfig) => {
+    const Icon = iconMap[module.icon] || Settings;
+    const hasAccess = canAccess(module.id);
+    const badge = getPlanBadge(module.minPlan);
+
+    return (
+      <SidebarMenuItem key={module.id}>
+        <SidebarMenuButton asChild className="h-10">
+          <NavLink 
+            to={module.route}
+            end={module.route === '/dashboard'}
+            className={({ isActive: navIsActive }) => `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${getNavCls({ isActive: navIsActive || isActive(module.route) })} ${!hasAccess ? 'opacity-50 cursor-not-allowed' : ''}`}
+            onClick={(e) => {
+              if (!hasAccess) {
+                e.preventDefault();
+              }
+            }}
+          >
+            <Icon className="h-4 w-4 shrink-0" />
+            {!collapsed && (
+              <div className="flex items-center justify-between w-full">
+                <span className="truncate">{module.name}</span>
+                {badge && !hasAccess && (
+                  <Badge variant={badge.variant} className="text-xs h-5">
+                    {badge.text}
+                  </Badge>
+                )}
+              </div>
+            )}
+          </NavLink>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  };
+
+  const renderMenuGroup = (category: ModuleCategory, modules: ModuleConfig[]) => (
+    <SidebarGroup key={category.id}>
       <SidebarGroupLabel className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-        {!collapsed && groupLabel}
+        {!collapsed && category.name}
       </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild className="h-10">
-                <NavLink 
-                  to={item.url} 
-                  end={item.url === '/admin'}
-                  className={({ isActive: navIsActive }) => `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${getNavCls({ isActive: navIsActive || isActive(item.url) })}`}
-                >
-                  <item.icon className="h-4 w-4 shrink-0" />
-                  {!collapsed && (
-                    <div className="flex items-center justify-between w-full">
-                      <span className="truncate">{item.title}</span>
-                      {item.badge && (
-                        <Badge 
-                          variant={item.badge === 'Admin' ? 'destructive' : 'secondary'} 
-                          className="text-xs h-5"
-                        >
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                </NavLink>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {modules.map(module => renderModuleItem(module))}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
@@ -176,12 +202,9 @@ export function AdminSidebar() {
         </div>
 
         <SidebarContent className="flex-1 overflow-auto">
-          {renderMenuGroup(mainItems, 'Principal')}
-          {renderMenuGroup(analyticsItems, 'Analytics')}
-          {renderMenuGroup(crmItems, 'Relations Client')}
-          {renderMenuGroup(marketingItems, 'Marketing')}
-          {renderMenuGroup(toolsItems, 'Outils IA')}
-          {renderMenuGroup(adminItems, 'Administration')}
+          {modulesByCategory.map(({ category, modules }) => 
+            renderMenuGroup(category, modules)
+          )}
         </SidebarContent>
       </div>
     </Sidebar>
