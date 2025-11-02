@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { logError } from '@/utils/consoleCleanup';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Brain, 
   Zap, 
@@ -14,145 +13,34 @@ import {
   CheckCircle,
   AlertTriangle,
   Clock,
-  RefreshCw,
-  ArrowRight,
   DollarSign,
   Package
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-
-interface OptimizationTask {
-  id: string;
-  type: 'pricing' | 'seo' | 'inventory' | 'marketing';
-  title: string;
-  description: string;
-  impact: 'high' | 'medium' | 'low';
-  effort: 'low' | 'medium' | 'high';
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  progress: number;
-  estimated_revenue: number;
-  estimated_time: number; // in minutes
-  ai_confidence: number;
-}
-
-interface OptimizationStats {
-  total_optimizations: number;
-  completed_optimizations: number;
-  revenue_generated: number;
-  time_saved_hours: number;
-  success_rate: number;
-  avg_impact: number;
-}
+import { useRealAIOptimizer, OptimizationTask, OptimizationStats } from '@/hooks/useRealAIOptimizer';
 
 export function AIOptimizer() {
-  const [tasks, setTasks] = useState<OptimizationTask[]>([]);
-  const [stats, setStats] = useState<OptimizationStats | null>(null);
-  const [loading, setLoading] = useState(true);
   const [runningTask, setRunningTask] = useState<string | null>(null);
-  const { user } = useAuth();
+  const [localTasks, setLocalTasks] = useState<OptimizationTask[]>([]);
   const { toast } = useToast();
+  const { tasks, stats, isLoading: loading, refetch } = useRealAIOptimizer();
 
-  useEffect(() => {
-    if (user) {
-      fetchOptimizationData();
+  // Use local tasks for progress tracking
+  React.useEffect(() => {
+    if (tasks.length > 0) {
+      setLocalTasks(tasks);
     }
-  }, [user]);
-
-  const fetchOptimizationData = async () => {
-    try {
-      setLoading(true);
-
-      // Simuler des tâches d'optimisation
-      const mockTasks: OptimizationTask[] = [
-        {
-          id: '1',
-          type: 'pricing',
-          title: 'Optimisation des Prix IA',
-          description: 'Ajuster 23 prix selon l\'analyse concurrentielle et la demande',
-          impact: 'high',
-          effort: 'low',
-          status: 'pending',
-          progress: 0,
-          estimated_revenue: 2450,
-          estimated_time: 5,
-          ai_confidence: 94
-        },
-        {
-          id: '2',
-          type: 'seo',
-          title: 'Optimisation SEO Automatique',
-          description: 'Améliorer les titres et descriptions de 156 produits',
-          impact: 'medium',
-          effort: 'medium',
-          status: 'pending',
-          progress: 0,
-          estimated_revenue: 1250,
-          estimated_time: 15,
-          ai_confidence: 87
-        },
-        {
-          id: '3',
-          type: 'inventory',
-          title: 'Optimisation Stock Intelligent',
-          description: 'Réajuster les quantités selon les prévisions de vente',
-          impact: 'high',
-          effort: 'low',
-          status: 'completed',
-          progress: 100,
-          estimated_revenue: 1850,
-          estimated_time: 3,
-          ai_confidence: 91
-        },
-        {
-          id: '4',
-          type: 'marketing',
-          title: 'Campagnes Marketing IA',
-          description: 'Créer et lancer 5 campagnes ciblées selon les segments clients',
-          impact: 'medium',
-          effort: 'high',
-          status: 'running',
-          progress: 65,
-          estimated_revenue: 3200,
-          estimated_time: 45,
-          ai_confidence: 82
-        }
-      ];
-
-      const mockStats: OptimizationStats = {
-        total_optimizations: 47,
-        completed_optimizations: 42,
-        revenue_generated: 28450,
-        time_saved_hours: 156,
-        success_rate: 89.3,
-        avg_impact: 7.8
-      };
-
-      setTasks(mockTasks);
-      setStats(mockStats);
-
-    } catch (error) {
-      logError(error, 'AIOptimizer.fetchOptimizationData');
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les données d'optimisation",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [tasks]);
 
   const runOptimization = async (taskId: string) => {
     setRunningTask(taskId);
     
     try {
       // Simuler le processus d'optimisation
-      const task = tasks.find(t => t.id === taskId);
+      const task = localTasks.find(t => t.id === taskId);
       if (!task) return;
 
-      setTasks(prev => prev.map(t => 
+      setLocalTasks(prev => prev.map(t => 
         t.id === taskId 
           ? { ...t, status: 'running' as const, progress: 0 }
           : t
@@ -161,14 +49,14 @@ export function AIOptimizer() {
       // Simuler la progression
       for (let i = 0; i <= 100; i += 10) {
         await new Promise(resolve => setTimeout(resolve, 200));
-        setTasks(prev => prev.map(t => 
+        setLocalTasks(prev => prev.map(t => 
           t.id === taskId 
             ? { ...t, progress: i }
             : t
         ));
       }
 
-      setTasks(prev => prev.map(t => 
+      setLocalTasks(prev => prev.map(t => 
         t.id === taskId 
           ? { ...t, status: 'completed' as const, progress: 100 }
           : t
@@ -179,18 +67,12 @@ export function AIOptimizer() {
         description: `${task.title} a été exécutée avec succès. Revenus estimés: +${formatCurrency(task.estimated_revenue)}`,
       });
 
-      // Mettre à jour les stats
-      if (stats) {
-        setStats(prev => prev ? {
-          ...prev,
-          completed_optimizations: prev.completed_optimizations + 1,
-          revenue_generated: prev.revenue_generated + task.estimated_revenue
-        } : null);
-      }
+      // Refresh data to get updated stats
+      await refetch();
 
     } catch (error) {
       logError(error, 'AIOptimizer.runOptimization');
-      setTasks(prev => prev.map(t => 
+      setLocalTasks(prev => prev.map(t => 
         t.id === taskId 
           ? { ...t, status: 'failed' as const }
           : t
@@ -351,7 +233,7 @@ export function AIOptimizer() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {tasks.map((task) => {
+            {localTasks.map((task) => {
               const TypeIcon = getTypeIcon(task.type);
               return (
                 <div key={task.id} className="border rounded-lg p-4 space-y-4">

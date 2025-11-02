@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -13,180 +13,10 @@ import {
   Zap,
   Clock
 } from 'lucide-react';
-
-interface RealTimeMetric {
-  id: string;
-  label: string;
-  value: number;
-  previousValue: number;
-  format: 'currency' | 'number' | 'percentage';
-  trend: 'up' | 'down' | 'stable';
-  change: number;
-  icon: any;
-  color: string;
-}
-
-interface RealTimeEvent {
-  id: string;
-  type: 'sale' | 'visitor' | 'signup' | 'product_view';
-  message: string;
-  value?: number;
-  timestamp: Date;
-  location?: string;
-}
+import { useRealTimeMetrics } from '@/hooks/useRealTimeMetrics';
 
 export function RealTimeAnalytics() {
-  const [metrics, setMetrics] = useState<RealTimeMetric[]>([]);
-  const [events, setEvents] = useState<RealTimeEvent[]>([]);
-  const [isLive, setIsLive] = useState(true);
-
-  useEffect(() => {
-    // Initialiser les métriques
-    const initialMetrics: RealTimeMetric[] = [
-      {
-        id: 'revenue',
-        label: 'CA Temps Réel',
-        value: 2847.50,
-        previousValue: 2690.20,
-        format: 'currency',
-        trend: 'up',
-        change: 5.8,
-        icon: DollarSign,
-        color: 'text-green-600'
-      },
-      {
-        id: 'visitors',
-        label: 'Visiteurs Actifs',
-        value: 127,
-        previousValue: 98,
-        format: 'number',
-        trend: 'up',
-        change: 29.6,
-        icon: Users,
-        color: 'text-blue-600'
-      },
-      {
-        id: 'conversion',
-        label: 'Taux de Conversion',
-        value: 3.8,
-        previousValue: 3.2,
-        format: 'percentage',
-        trend: 'up',
-        change: 18.7,
-        icon: TrendingUp,
-        color: 'text-purple-600'
-      },
-      {
-        id: 'cart_abandonment',
-        label: 'Abandon Panier',
-        value: 68.2,
-        previousValue: 72.1,
-        format: 'percentage',
-        trend: 'down',
-        change: -5.4,
-        icon: ShoppingCart,
-        color: 'text-orange-600'
-      }
-    ];
-
-    setMetrics(initialMetrics);
-
-    // Simuler les événements en temps réel
-    const eventInterval = setInterval(() => {
-      if (isLive) {
-        generateRandomEvent();
-        updateMetrics();
-      }
-    }, 3000 + Math.random() * 4000); // Entre 3-7 secondes
-
-    return () => clearInterval(eventInterval);
-  }, [isLive]);
-
-  const generateRandomEvent = () => {
-    const eventTypes = [
-      {
-        type: 'sale' as const,
-        messages: [
-          'Nouvelle commande de €{value} depuis Paris',
-          'Vente de €{value} confirmée - Lyon',
-          'Commande €{value} finalisée - Marseille',
-          'Achat de €{value} depuis Toulouse'
-        ],
-        valueRange: [25, 350]
-      },
-      {
-        type: 'visitor' as const,
-        messages: [
-          'Nouveau visiteur depuis {location}',
-          'Visiteur actif de {location}',
-          'Session démarrée depuis {location}'
-        ],
-        locations: ['France', 'Belgique', 'Suisse', 'Canada', 'Allemagne']
-      },
-      {
-        type: 'product_view' as const,
-        messages: [
-          'Produit "Smart Watch Pro" consulté',
-          'Produit "Gaming Headset" vu 5x',
-          'Article "Wireless Charger" populaire',
-          'Produit "Fitness Tracker" en tendance'
-        ]
-      },
-      {
-        type: 'signup' as const,
-        messages: [
-          'Nouvelle inscription newsletter',
-          'Nouveau compte client créé',
-          'Inscription compte pro'
-        ]
-      }
-    ];
-
-    const selectedType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-    const message = selectedType.messages[Math.floor(Math.random() * selectedType.messages.length)];
-    
-    let finalMessage = message;
-    let eventValue = undefined;
-
-    if (selectedType.type === 'sale' && 'valueRange' in selectedType) {
-      eventValue = Math.floor(
-        Math.random() * (selectedType.valueRange[1] - selectedType.valueRange[0]) 
-        + selectedType.valueRange[0]
-      );
-      finalMessage = message.replace('{value}', eventValue.toString());
-    }
-
-    if ('locations' in selectedType) {
-      const location = selectedType.locations[Math.floor(Math.random() * selectedType.locations.length)];
-      finalMessage = message.replace('{location}', location);
-    }
-
-    const newEvent: RealTimeEvent = {
-      id: Date.now().toString(),
-      type: selectedType.type,
-      message: finalMessage,
-      value: eventValue,
-      timestamp: new Date()
-    };
-
-    setEvents(prev => [newEvent, ...prev.slice(0, 9)]); // Garder seulement les 10 derniers
-  };
-
-  const updateMetrics = () => {
-    setMetrics(prev => prev.map(metric => {
-      // Simuler de légères variations
-      const variation = (Math.random() - 0.5) * 0.1; // ±5%
-      const newValue = Math.max(0, metric.value * (1 + variation));
-      const change = ((newValue - metric.previousValue) / metric.previousValue) * 100;
-
-      return {
-        ...metric,
-        value: Number(newValue.toFixed(metric.format === 'currency' ? 2 : 1)),
-        change: Number(change.toFixed(1)),
-        trend: change > 0 ? 'up' : change < 0 ? 'down' : 'stable'
-      };
-    }));
-  };
+  const { metrics, events, isLive, setIsLive, isLoading } = useRealTimeMetrics();
 
   const formatValue = (value: number, format: string) => {
     switch (format) {
@@ -219,6 +49,36 @@ export function RealTimeAnalytics() {
     }
   };
 
+  const getIconComponent = (iconName: string) => {
+    const icons: Record<string, any> = {
+      DollarSign,
+      Users,
+      TrendingUp,
+      ShoppingCart
+    };
+    return icons[iconName] || Activity;
+  };
+
+  if (isLoading && metrics.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Chargement...</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                <div className="h-8 bg-muted rounded w-1/2"></div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -250,7 +110,10 @@ export function RealTimeAnalytics() {
       {/* Métriques temps réel */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {metrics.map((metric) => {
-          const Icon = metric.icon;
+          const Icon = metric.color === 'text-green-600' ? DollarSign :
+                       metric.color === 'text-blue-600' ? Users :
+                       metric.color === 'text-purple-600' ? TrendingUp :
+                       ShoppingCart;
           return (
             <Card key={metric.id} className="relative overflow-hidden">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

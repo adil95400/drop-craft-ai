@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useEnhancedAuth } from '@/hooks/useEnhancedAuth';
-import { useUnifiedSystem } from '@/hooks/useUnifiedSystem';
+import { useRealAdminStats } from '@/hooks/useRealAdminStats';
 import { 
   Users, 
   Package, 
@@ -26,38 +26,21 @@ import {
 export const AdminDashboard = () => {
   const { toast } = useToast();
   const { isAdmin, profile } = useEnhancedAuth();
-  const { dashboardStats, loading, refresh } = useUnifiedSystem();
-  const [systemStats, setSystemStats] = useState({
-    totalUsers: 1247,
-    activeUsers: 892,
-    totalOrders: 5432,
-    revenue: 127490,
-    productsCount: 8943,
-    suppliersCount: 156,
-    importJobs: 23,
-    systemHealth: 98.5
-  });
+  const { stats: systemStats, isLoading: loading, refetch, getRecentActivities } = useRealAdminStats();
+  const [recentActivitiesData, setRecentActivitiesData] = useState<any[]>([]);
 
   useEffect(() => {
     if (isAdmin) {
-      loadAdminStats();
+      loadRecentActivities();
     }
   }, [isAdmin]);
 
-  const loadAdminStats = async () => {
+  const loadRecentActivities = async () => {
     try {
-      // Simulate loading admin-specific stats
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSystemStats(prev => ({
-        ...prev,
-        totalUsers: Math.floor(Math.random() * 2000) + 1000,
-        activeUsers: Math.floor(Math.random() * 1000) + 500,
-        totalOrders: Math.floor(Math.random() * 10000) + 5000,
-        revenue: Math.floor(Math.random() * 200000) + 100000,
-      }));
+      const activities = await getRecentActivities();
+      setRecentActivitiesData(activities);
     } catch (error) {
-      console.error('Error loading admin stats:', error);
+      console.error('Error loading recent activities:', error);
     }
   };
 
@@ -128,46 +111,33 @@ export const AdminDashboard = () => {
     }
   ];
 
-  const recentActivities = [
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'user_signup': return Users;
+      case 'order_placed': return ShoppingCart;
+      case 'import_completed': return Upload;
+      case 'security_alert': return Shield;
+      case 'system_backup': return Database;
+      default: return Activity;
+    }
+  };
+
+  const recentActivities = recentActivitiesData.length > 0 ? recentActivitiesData : [
     {
       type: "user_signup",
       message: "Nouvel utilisateur inscrit",
-      user: "marie.dubois@email.com",
+      user: "Utilisateur",
       time: "Il y a 2 min",
       icon: Users,
       color: "text-green-600"
     },
     {
       type: "order_placed",
-      message: "Nouvelle commande #ORD-1234",
-      user: "Client Premium",
+      message: "Nouvelle commande",
+      user: "Client",
       time: "Il y a 5 min",
       icon: ShoppingCart,
       color: "text-blue-600"
-    },
-    {
-      type: "import_completed",
-      message: "Import terminé - 150 produits",
-      user: "Supplier ABC",
-      time: "Il y a 8 min",
-      icon: Upload,
-      color: "text-purple-600"
-    },
-    {
-      type: "security_alert",
-      message: "Tentative de connexion suspecte",
-      user: "Système de sécurité",
-      time: "Il y a 12 min",
-      icon: Shield,
-      color: "text-red-600"
-    },
-    {
-      type: "system_backup",
-      message: "Sauvegarde automatique réussie",
-      user: "Système",
-      time: "Il y a 15 min",
-      icon: Database,
-      color: "text-gray-600"
     }
   ];
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { logError } from '@/utils/consoleCleanup';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,29 +17,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-
-interface AIRecommendation {
-  id: string;
-  type: 'product' | 'pricing' | 'marketing' | 'inventory' | 'seo';
-  priority: 'high' | 'medium' | 'low';
-  title: string;
-  description: string;
-  impact: string;
-  confidence: number;
-  actions: Array<{
-    label: string;
-    action: string;
-    data?: any;
-  }>;
-  metrics?: {
-    potential_revenue?: number;
-    time_savings?: string;
-    conversion_lift?: number;
-  };
-  createdAt: string;
-}
+import { useRealAIRecommendations, AIRecommendation } from '@/hooks/useRealAIRecommendations';
 
 interface AIRecommendationsProps {
   limit?: number;
@@ -47,156 +25,24 @@ interface AIRecommendationsProps {
 }
 
 export function AIRecommendations({ limit = 6, types }: AIRecommendationsProps) {
-  const [recommendations, setRecommendations] = useState<AIRecommendation[]>([]);
-  const [loading, setLoading] = useState(true);
   const [generatingNew, setGeneratingNew] = useState(false);
-  const { user } = useAuth();
   const { toast } = useToast();
-
-  useEffect(() => {
-    fetchRecommendations();
-  }, [user]);
-
-  const fetchRecommendations = async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      
-      // Simuler des recommandations IA intelligentes basées sur les données utilisateur
-      const mockRecommendations: AIRecommendation[] = [
-        {
-          id: '1',
-          type: 'pricing',
-          priority: 'high',
-          title: 'Optimisation Prix Automatique Détectée',
-          description: 'L\'IA a identifié 12 produits avec un potentiel d\'augmentation de marge de 15-23%',
-          impact: 'Augmentation estimée du CA : +€2,340/mois',
-          confidence: 87,
-          actions: [
-            { label: 'Appliquer les prix optimisés', action: 'apply_pricing' },
-            { label: 'Voir les détails', action: 'view_pricing_details' }
-          ],
-          metrics: {
-            potential_revenue: 2340,
-            conversion_lift: 15
-          },
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: '2',
-          type: 'product',
-          priority: 'high',
-          title: 'Produits Tendances Détectés',
-          description: 'Nouveaux produits à forte croissance dans votre niche identifiés par l\'IA',
-          impact: '3 produits gagnants potentiels',
-          confidence: 92,
-          actions: [
-            { label: 'Voir les produits', action: 'view_trending_products' },
-            { label: 'Importer automatiquement', action: 'auto_import' }
-          ],
-          metrics: {
-            potential_revenue: 4200
-          },
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: '3',
-          type: 'inventory',
-          priority: 'medium',
-          title: 'Risque de Rupture de Stock',
-          description: 'L\'IA prédit des ruptures de stock sur 5 produits performants dans les 7 prochains jours',
-          impact: 'Éviter une perte de €1,890 en ventes',
-          confidence: 78,
-          actions: [
-            { label: 'Réapprovisionner maintenant', action: 'restock_products' },
-            { label: 'Configurer les alertes', action: 'setup_alerts' }
-          ],
-          metrics: {
-            potential_revenue: 1890,
-            time_savings: '2h par semaine'
-          },
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: '4',
-          type: 'seo',
-          priority: 'medium',
-          title: 'Optimisation SEO Intelligente',
-          description: 'L\'IA a généré des descriptions optimisées pour 28 produits avec faible visibilité',
-          impact: 'Amélioration estimée du trafic organique : +35%',
-          confidence: 83,
-          actions: [
-            { label: 'Appliquer les descriptions IA', action: 'apply_seo_content' },
-            { label: 'Prévisualiser les changements', action: 'preview_seo' }
-          ],
-          metrics: {
-            conversion_lift: 35,
-            time_savings: '5h de rédaction'
-          },
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: '5',
-          type: 'marketing',
-          priority: 'low',
-          title: 'Opportunité de Segmentation Client',
-          description: 'L\'IA a identifié 3 segments clients distincts pour des campagnes ciblées',
-          impact: 'Amélioration ROI marketing : +28%',
-          confidence: 71,
-          actions: [
-            { label: 'Créer les segments', action: 'create_segments' },
-            { label: 'Lancer campagne test', action: 'test_campaign' }
-          ],
-          metrics: {
-            conversion_lift: 28,
-            potential_revenue: 850
-          },
-          createdAt: new Date().toISOString()
-        }
-      ];
-
-      // Filtrer par types si spécifié
-      let filteredRecommendations = mockRecommendations;
-      if (types && types.length > 0) {
-        filteredRecommendations = mockRecommendations.filter(r => types.includes(r.type));
-      }
-
-      // Limiter le nombre de résultats
-      setRecommendations(filteredRecommendations.slice(0, limit));
-      
-    } catch (error) {
-      logError(error, 'AIRecommendations.fetchRecommendations');
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les recommandations IA",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { recommendations, isLoading: loading, refetch } = useRealAIRecommendations(limit, types);
 
   const generateNewRecommendations = async () => {
     setGeneratingNew(true);
     try {
-      // Appeler l'edge function pour générer de nouvelles recommandations
-      const { data, error } = await supabase.functions.invoke('ai-recommendations', {
-        body: { 
-          userId: user?.id,
-          types: types || ['product', 'pricing', 'marketing', 'inventory', 'seo'],
-          refresh: true
-        }
+      toast({
+        title: "Actualisation en cours",
+        description: "Analyse des données en cours...",
       });
 
-      if (error) throw error;
+      await refetch();
 
       toast({
-        title: "Nouvelles recommandations générées",
-        description: "L'IA a analysé vos données et généré de nouveaux insights",
+        title: "Recommandations actualisées",
+        description: "L'IA a analysé vos données et mis à jour les insights",
       });
-
-      await fetchRecommendations();
     } catch (error) {
       logError(error, 'AIRecommendations.generateRecommendations');
       toast({
