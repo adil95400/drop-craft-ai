@@ -45,6 +45,7 @@ const Profile = lazy(() => import('@/pages/Profile'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const ModernSuppliersHub = lazy(() => import('@/pages/ModernSuppliersHub'));
 const ModernProductsPage = lazy(() => import('@/pages/ModernProductsPage'));
+const ProductPublishing = lazy(() => import('@/pages/ProductPublishing'));
 const ModernOrdersPage = lazy(() => import('@/pages/ModernOrdersPage'));
 const ModernCustomersPage = lazy(() => import('@/pages/ModernCustomersPage'));
 const ModernAnalyticsPage = lazy(() => import('@/pages/ModernAnalyticsPage'));
@@ -267,6 +268,12 @@ function App() {
                         <Route path="/products/:id" element={
                           <ProtectedRoute>
                             <ProductDetailsPage />
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/product-publishing" element={
+                          <ProtectedRoute>
+                            <AppLayout><ProductPublishing /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
