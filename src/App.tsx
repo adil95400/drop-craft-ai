@@ -46,6 +46,7 @@ const Settings = lazy(() => import('@/pages/Settings'));
 const ModernSuppliersHub = lazy(() => import('@/pages/ModernSuppliersHub'));
 const ModernProductsPage = lazy(() => import('@/pages/ModernProductsPage'));
 const ProductPublishing = lazy(() => import('@/pages/ProductPublishing'));
+const MarketplaceSyncDashboard = lazy(() => import('@/pages/MarketplaceSyncDashboard'));
 const ModernOrdersPage = lazy(() => import('@/pages/ModernOrdersPage'));
 const ModernCustomersPage = lazy(() => import('@/pages/ModernCustomersPage'));
 const ModernAnalyticsPage = lazy(() => import('@/pages/ModernAnalyticsPage'));
