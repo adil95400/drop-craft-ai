@@ -20,11 +20,16 @@ import {
   ShoppingCart,
   TrendingUp
 } from 'lucide-react'
+import { PublishStatsCard } from '@/components/products/PublishStatsCard'
+import { PublishProductButton } from '@/components/products/PublishProductButton'
+import { usePublishProducts } from '@/hooks/usePublishProducts'
 
 export default function MyProducts() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
+  const [selectedImportedProducts, setSelectedImportedProducts] = useState<string[]>([])
   const [activeTab, setActiveTab] = useState('products')
+  const { bulkPublish } = usePublishProducts()
 
   // Fetch user's products
   const { data: products = [], isLoading, refetch } = useQuery({
@@ -176,8 +181,11 @@ export default function MyProducts() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="products">Mes Produits</TabsTrigger>
+          <TabsTrigger value="imported">
+            Produits Importés ({importedProducts.length})
+          </TabsTrigger>
           <TabsTrigger value="import">Import</TabsTrigger>
           <TabsTrigger value="export">Export</TabsTrigger>
         </TabsList>
@@ -337,10 +345,154 @@ export default function MyProducts() {
           )}
         </TabsContent>
 
+        <TabsContent value="imported" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              {/* Search */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Rechercher dans les produits importés..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                {selectedImportedProducts.length > 0 && (
+                  <Button 
+                    onClick={() => bulkPublish(selectedImportedProducts)}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Publier ({selectedImportedProducts.length})
+                  </Button>
+                )}
+              </div>
+
+              {/* Imported Products Grid */}
+              {importedProducts.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Aucun produit importé</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Commencez par importer des produits depuis l'onglet Import
+                    </p>
+                    <Button onClick={() => setActiveTab('import')}>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Importer des produits
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {importedProducts.map((product) => (
+                    <Card 
+                      key={product.id} 
+                      className={`group hover:shadow-lg transition-shadow ${
+                        selectedImportedProducts.includes(product.id) ? 'ring-2 ring-primary' : ''
+                      }`}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-2 flex-1">
+                            <input
+                              type="checkbox"
+                              checked={selectedImportedProducts.includes(product.id)}
+                              onChange={(e) => {
+                                e.stopPropagation()
+                                setSelectedImportedProducts(prev =>
+                                  prev.includes(product.id)
+                                    ? prev.filter(id => id !== product.id)
+                                    : [...prev, product.id]
+                                )
+                              }}
+                              className="mt-1"
+                            />
+                            <div className="flex-1">
+                              <CardTitle className="text-base line-clamp-2">
+                                {product.name}
+                              </CardTitle>
+                              {product.sku && (
+                                <p className="text-sm text-muted-foreground mt-1">SKU: {product.sku}</p>
+                              )}
+                            </div>
+                          </div>
+                          {getStatusBadge(product.status || 'draft')}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Product Image */}
+                        {product.image_urls?.[0] && (
+                          <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+                            <img
+                              src={product.image_urls[0]}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src = '/placeholder.svg'
+                              }}
+                            />
+                          </div>
+                        )}
+
+                        {/* Product Info */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg font-semibold text-primary">
+                              {product.price}€
+                            </span>
+                            {product.cost_price && (
+                              <span className="text-sm text-muted-foreground">
+                                Coût: {product.cost_price}€
+                              </span>
+                            )}
+                          </div>
+                          
+                          {product.category && (
+                            <Badge variant="outline" className="text-xs">
+                              {product.category}
+                            </Badge>
+                          )}
+
+                          {product.supplier_name && (
+                            <p className="text-sm text-muted-foreground">
+                              Fournisseur: {product.supplier_name}
+                            </p>
+                          )}
+
+                          {product.stock_quantity !== null && (
+                            <p className="text-sm text-muted-foreground">
+                              Stock: {product.stock_quantity}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Publish Button */}
+                        <PublishProductButton
+                          productId={product.id}
+                          isPublished={!!product.published_product_id}
+                          syncStatus={product.sync_status as 'pending' | 'synced' | 'error' | 'outdated' | null}
+                          compact={false}
+                        />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Stats Sidebar */}
+            <div className="lg:col-span-1">
+              <PublishStatsCard />
+            </div>
+          </div>
+        </TabsContent>
+
         <TabsContent value="import">
           <ImportInterface onImportComplete={() => {
             refetch()
-            setActiveTab('products')
+            setActiveTab('imported')
           }} />
         </TabsContent>
 

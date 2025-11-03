@@ -4480,6 +4480,7 @@ export type Database = {
           import_quality_score: number | null
           keywords: string[] | null
           language: string | null
+          last_synced_at: string | null
           length: number | null
           material: string | null
           max_order: number | null
@@ -4490,6 +4491,7 @@ export type Database = {
           name: string
           price: number
           published_at: string | null
+          published_product_id: string | null
           review_status: string | null
           reviewed_at: string | null
           seo_description: string | null
@@ -4509,6 +4511,7 @@ export type Database = {
           supplier_product_id: string | null
           supplier_sku: string | null
           supplier_url: string | null
+          sync_status: string | null
           tags: string[] | null
           upc: string | null
           updated_at: string | null
@@ -4548,6 +4551,7 @@ export type Database = {
           import_quality_score?: number | null
           keywords?: string[] | null
           language?: string | null
+          last_synced_at?: string | null
           length?: number | null
           material?: string | null
           max_order?: number | null
@@ -4558,6 +4562,7 @@ export type Database = {
           name: string
           price: number
           published_at?: string | null
+          published_product_id?: string | null
           review_status?: string | null
           reviewed_at?: string | null
           seo_description?: string | null
@@ -4577,6 +4582,7 @@ export type Database = {
           supplier_product_id?: string | null
           supplier_sku?: string | null
           supplier_url?: string | null
+          sync_status?: string | null
           tags?: string[] | null
           upc?: string | null
           updated_at?: string | null
@@ -4616,6 +4622,7 @@ export type Database = {
           import_quality_score?: number | null
           keywords?: string[] | null
           language?: string | null
+          last_synced_at?: string | null
           length?: number | null
           material?: string | null
           max_order?: number | null
@@ -4626,6 +4633,7 @@ export type Database = {
           name?: string
           price?: number
           published_at?: string | null
+          published_product_id?: string | null
           review_status?: string | null
           reviewed_at?: string | null
           seo_description?: string | null
@@ -4645,6 +4653,7 @@ export type Database = {
           supplier_product_id?: string | null
           supplier_sku?: string | null
           supplier_url?: string | null
+          sync_status?: string | null
           tags?: string[] | null
           upc?: string | null
           updated_at?: string | null
@@ -4663,6 +4672,13 @@ export type Database = {
             columns: ["import_id"]
             isOneToOne: false
             referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imported_products_published_product_id_fkey"
+            columns: ["published_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
