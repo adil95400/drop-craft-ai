@@ -277,6 +277,12 @@ function App() {
                           </ProtectedRoute>
                         } />
                         
+                        <Route path="/marketplace-sync" element={
+                          <ProtectedRoute>
+                            <AppLayout><MarketplaceSyncDashboard /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
                         <Route path="/orders" element={
                           <ProtectedRoute>
                             <AppLayout><ModernOrdersPage /></AppLayout>
