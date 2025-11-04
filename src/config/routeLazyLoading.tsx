@@ -21,7 +21,6 @@ export const LazyDashboardHome = lazyWithRetry(() => import('@/pages/DashboardHo
 export const LazyModernProductsPage = lazyWithRetry(() => import('@/pages/ModernProductsPage'));
 export const LazyModernOrdersPage = lazyWithRetry(() => import('@/pages/ModernOrdersPage'));
 export const LazyModernCustomersPage = lazyWithRetry(() => import('@/pages/ModernCustomersPage'));
-export const LazyModernSuppliersHub = lazyWithRetry(() => import('@/pages/ModernSuppliersHub'));
 
 // Pages d'analytics - Lazy load car moins critiques
 export const LazyAIPredictiveAnalyticsPage = lazyWithRetry(() => import('@/pages/AIPredictiveAnalyticsPage'));
@@ -80,6 +79,5 @@ export const LazyIntegrations = lazyWithRetry(() => import('@/pages/Integrations
 export const LazyCatalog = lazyWithRetry(() => import('@/pages/CatalogueReal'));
 export const LazyReports = lazyWithRetry(() => import('@/pages/Reports'));
 export const LazyMarketplace = lazyWithRetry(() => import('@/pages/Marketplace'));
-export const LazySuppliers = lazyWithRetry(() => import('@/pages/ModernSuppliersHub'));
 export const LazyOrders = lazyWithRetry(() => import('@/pages/ModernOrdersPage'));
 export const LazyCustomers = lazyWithRetry(() => import('@/pages/ModernCustomersPage'));

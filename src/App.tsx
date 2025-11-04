@@ -43,7 +43,6 @@ const SuperDashboard = lazy(() => import('@/pages/SuperDashboard'));
 const OptimizedClientDashboard = lazy(() => import('@/components/dashboard/OptimizedClientDashboard'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const Settings = lazy(() => import('@/pages/Settings'));
-const ModernSuppliersHub = lazy(() => import('@/pages/ModernSuppliersHub'));
 const ModernProductsPage = lazy(() => import('@/pages/ModernProductsPage'));
 const ProductPublishing = lazy(() => import('@/pages/ProductPublishing'));
 const MarketplaceSyncDashboard = lazy(() => import('@/pages/MarketplaceSyncDashboard'));
@@ -92,13 +91,22 @@ const ManageIntegrationPage = lazy(() => import('@/pages/stores/ManageIntegratio
 const MarketplaceHubPage = lazy(() => import('@/pages/MarketplaceHubPage'));
 const MultiTenantPage = lazy(() => import('@/pages/MultiTenantPage'));
 const AdvancedMonitoringPage = lazy(() => import('@/pages/AdvancedMonitoringPage'));
+
 // Import pages - New organized structure
-const ImportHub = lazy(() => import('@/pages/import/ImportHub'));
-const QuickImport = lazy(() => import('@/pages/import/QuickImport'));
-const AdvancedImport = lazy(() => import('@/pages/import/AdvancedImport'));
-const ImportManagement = lazy(() => import('@/pages/import/ImportManagement'));
-const ImportedProductsList = lazy(() => import('@/pages/import/manage/ImportedProductsList'));
-const ImportHistoryPage = lazy(() => import('@/pages/import/manage/ImportHistoryPage'));
+const ImportHub = lazy(() => import('./pages/import/ImportHub'))
+const QuickImport = lazy(() => import('./pages/import/QuickImport'))
+const AdvancedImport = lazy(() => import('./pages/import/AdvancedImport'))
+const ImportManagement = lazy(() => import('./pages/import/ImportManagement'))
+const ImportedProductsList = lazy(() => import('./pages/import/manage/ImportedProductsList'))
+const ImportHistoryPage = lazy(() => import('./pages/import/manage/ImportHistoryPage'))
+
+// Supplier pages - New organized structure
+const SuppliersHub = lazy(() => import('./pages/suppliers/SuppliersHub'))
+const ManageSuppliers = lazy(() => import('./pages/suppliers/ManageSuppliers'))
+const SupplierMarketplace = lazy(() => import('./pages/SupplierMarketplace'))
+const SuppliersList = lazy(() => import('./pages/suppliers/manage/SuppliersList'))
+const SuppliersConnectors = lazy(() => import('./pages/suppliers/manage/SuppliersConnectors'))
+
 const Tracking = lazy(() => import('@/pages/Tracking'));
 const Reviews = lazy(() => import('@/pages/Reviews'));
 const Inventory = lazy(() => import('@/pages/Inventory'));
@@ -114,7 +122,6 @@ const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const AIPage = lazy(() => import('@/pages/AIPage'));
 const MarketplaceIntegrationsPage = lazy(() => import('@/pages/MarketplaceIntegrationsPage'));
-const UnifiedSuppliersComplete = lazy(() => import('@/pages/UnifiedSuppliersComplete'));
 const FeedManagerPage = lazy(() => import('@/pages/FeedManagerPage'));
 const AIIntelligencePage = lazy(() => import('@/pages/AIIntelligencePage'));
 const PWAInstallPage = lazy(() => import('@/pages/PWAInstallPage'));
@@ -260,7 +267,7 @@ function App() {
                         {/* Core features */}
                         <Route path="/suppliers" element={
                           <ProtectedRoute>
-                            <AppLayout><ModernSuppliersHub /></AppLayout>
+                            <AppLayout><SuppliersHub /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
@@ -320,7 +327,7 @@ function App() {
                         
                         <Route path="/premium-suppliers" element={
                           <ProtectedRoute>
-                            <AppLayout><UnifiedSuppliersComplete /></AppLayout>
+                            <AppLayout><SupplierMarketplace /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
