@@ -496,6 +496,65 @@ export const SUB_MODULES_REGISTRY: Record<string, SubModule[]> = {
       order: 4,
       minPlan: 'ultra_pro'
     }
+  ],
+
+  // Sous-modules de "Fournisseurs"
+  suppliers: [
+    {
+      id: 'suppliers-marketplace',
+      name: 'Marketplace',
+      route: '/suppliers/marketplace',
+      icon: 'Store',
+      description: 'Découvrir et comparer des fournisseurs',
+      features: ['supplier-discovery', 'comparison-tool', 'reviews'],
+      parentModule: 'suppliers',
+      order: 1,
+      minPlan: 'standard'
+    },
+    {
+      id: 'suppliers-manage',
+      name: 'Mes Fournisseurs',
+      route: '/suppliers/manage',
+      icon: 'Users',
+      description: 'Gérer vos fournisseurs actifs',
+      features: ['supplier-management', 'performance-tracking', 'orders'],
+      parentModule: 'suppliers',
+      order: 2,
+      minPlan: 'standard'
+    },
+    {
+      id: 'suppliers-list',
+      name: 'Liste des Fournisseurs',
+      route: '/suppliers/manage/list',
+      icon: 'List',
+      description: 'Voir tous vos fournisseurs',
+      features: ['supplier-list', 'filters', 'search'],
+      parentModule: 'suppliers',
+      order: 3,
+      minPlan: 'standard'
+    },
+    {
+      id: 'suppliers-connectors',
+      name: 'Connecteurs',
+      route: '/suppliers/manage/connectors',
+      icon: 'Plug',
+      description: 'Connecteurs et intégrations fournisseurs',
+      features: ['api-connectors', 'sync-settings', 'webhooks'],
+      parentModule: 'suppliers',
+      order: 4,
+      minPlan: 'pro'
+    },
+    {
+      id: 'suppliers-admin',
+      name: 'Administration',
+      route: '/suppliers/admin',
+      icon: 'Shield',
+      description: 'Administration avancée des fournisseurs',
+      features: ['supplier-crud', 'advanced-settings', 'bulk-operations'],
+      parentModule: 'suppliers',
+      order: 5,
+      minPlan: 'ultra_pro'
+    }
   ]
 };
 

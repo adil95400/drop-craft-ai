@@ -28,6 +28,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { cn } from "@/lib/utils";
 import { MODULE_REGISTRY, type ModuleConfig } from "@/config/modules";
 import { useModules } from "@/hooks/useModules";
+import { getSubModules } from "@/config/sub-modules";
 
 // Logo mémoïsé pour éviter les re-renders inutiles
 const ShopoptiLogo = memo(() => (
@@ -106,6 +107,7 @@ export function AppSidebar() {
   const [openGroups, setOpenGroups] = useState<string[]>(
     moduleGroups.map(g => g.title) // Tous les groupes ouverts par défaut
   );
+  const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
   
   // Utiliser le système de modules
   const modulesData = useModules();
@@ -123,19 +125,31 @@ export function AppSidebar() {
     );
   }, [location.pathname, availableModules]);
 
-  // Garder le groupe actif ouvert
+  const isActive = useCallback((path: string) => {
+    return location.pathname === path || location.pathname.startsWith(path + '/');
+  }, [location.pathname]);
+
+  // Garder le groupe actif et sous-menu actif ouverts
   useEffect(() => {
     if (activeModule) {
       const group = moduleGroups.find(g => g.modules.includes(activeModule.id));
       if (group && !openGroups.includes(group.title)) {
         setOpenGroups(prev => [...prev, group.title]);
       }
+      
+      // Ouvrir le sous-menu si une route de sous-module est active
+      const subModules = getSubModules(activeModule.id);
+      if (subModules.length > 0) {
+        const hasActiveSubModule = subModules.some(sm => isActive(sm.route));
+        if (hasActiveSubModule && !openSubMenus[activeModule.id]) {
+          setOpenSubMenus(prev => ({
+            ...prev,
+            [activeModule.id]: true
+          }));
+        }
+      }
     }
-  }, [activeModule, openGroups]);
-
-  const isActive = useCallback((path: string) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
-  }, [location.pathname]);
+  }, [activeModule, openGroups, openSubMenus, isActive]);
 
   const toggleGroup = useCallback((groupTitle: string) => {
     setOpenGroups(prev => 
@@ -150,6 +164,13 @@ export function AppSidebar() {
       navigate(url);
     }
   }, [navigate, canAccess]);
+
+  const toggleSubMenu = useCallback((moduleId: string) => {
+    setOpenSubMenus(prev => ({
+      ...prev,
+      [moduleId]: !prev[moduleId]
+    }));
+  }, []);
 
   // Filtrer les modules par recherche
   const filteredModuleGroups = useMemo(() => {
@@ -250,46 +271,124 @@ export function AppSidebar() {
                         const Icon = iconMap[module.icon] || Settings;
                         const active = isActive(module.route);
                         const accessible = canAccess(module.id);
+                        const subModules = getSubModules(module.id);
+                        const hasSubItems = subModules.length > 0;
+                        const subMenuOpen = openSubMenus[module.id] || false;
 
                         return (
                           <SidebarMenuItem key={module.id} className="animate-fade-in">
-                            <SidebarMenuButton
-                              onClick={() => handleNavigate(module.route, module.id)}
-                              tooltip={state === "collapsed" ? module.name : undefined}
-                              className={cn(
-                                "w-full justify-start transition-all duration-300 group relative overflow-hidden",
-                                active 
-                                  ? "bg-primary text-primary-foreground shadow-md hover:shadow-lg" 
-                                  : "hover:bg-accent hover:text-accent-foreground hover:shadow-sm",
-                                !accessible && "opacity-50 cursor-not-allowed",
-                                "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700"
-                              )}
-                              disabled={!accessible}
-                              isActive={active}
-                            >
-                              <Icon className={cn(
-                                "h-4 w-4 transition-all duration-300",
-                                active && "scale-110"
-                              )} />
-                              {state !== "collapsed" && (
-                                <div className="flex items-center justify-between w-full gap-2">
-                                  <span className="truncate transition-transform duration-200 group-hover:translate-x-0.5">
-                                    {module.name}
-                                  </span>
-                                  {module.minPlan !== 'standard' && (
-                                    <Badge 
-                                      variant="secondary"
-                                      className={cn(
-                                        "text-xs h-5 px-2 font-medium transition-all duration-200 group-hover:scale-105",
-                                        getBadgeVariant(module.minPlan)
-                                      )}
-                                    >
-                                      {module.minPlan === 'ultra_pro' ? 'ULTRA' : 'PRO'}
-                                    </Badge>
-                                  )}
-                                </div>
-                              )}
-                            </SidebarMenuButton>
+                            {!hasSubItems ? (
+                              <SidebarMenuButton
+                                onClick={() => handleNavigate(module.route, module.id)}
+                                tooltip={state === "collapsed" ? module.name : undefined}
+                                className={cn(
+                                  "w-full justify-start transition-all duration-300 group relative overflow-hidden",
+                                  active 
+                                    ? "bg-primary text-primary-foreground shadow-md hover:shadow-lg" 
+                                    : "hover:bg-accent hover:text-accent-foreground hover:shadow-sm",
+                                  !accessible && "opacity-50 cursor-not-allowed",
+                                  "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700"
+                                )}
+                                disabled={!accessible}
+                                isActive={active}
+                              >
+                                <Icon className={cn(
+                                  "h-4 w-4 transition-all duration-300",
+                                  active && "scale-110"
+                                )} />
+                                {state !== "collapsed" && (
+                                  <div className="flex items-center justify-between w-full gap-2">
+                                    <span className="truncate transition-transform duration-200 group-hover:translate-x-0.5">
+                                      {module.name}
+                                    </span>
+                                    {module.minPlan !== 'standard' && (
+                                      <Badge 
+                                        variant="secondary"
+                                        className={cn(
+                                          "text-xs h-5 px-2 font-medium transition-all duration-200 group-hover:scale-105",
+                                          getBadgeVariant(module.minPlan)
+                                        )}
+                                      >
+                                        {module.minPlan === 'ultra_pro' ? 'ULTRA' : 'PRO'}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                )}
+                              </SidebarMenuButton>
+                            ) : (
+                              <Collapsible open={subMenuOpen} onOpenChange={() => toggleSubMenu(module.id)}>
+                                <CollapsibleTrigger asChild>
+                                  <SidebarMenuButton
+                                    onClick={() => handleNavigate(module.route, module.id)}
+                                    tooltip={state === "collapsed" ? module.name : undefined}
+                                    className={cn(
+                                      "w-full justify-start transition-all duration-300 group relative overflow-hidden",
+                                      active 
+                                        ? "bg-primary text-primary-foreground shadow-md hover:shadow-lg" 
+                                        : "hover:bg-accent hover:text-accent-foreground hover:shadow-sm",
+                                      !accessible && "opacity-50 cursor-not-allowed"
+                                    )}
+                                    disabled={!accessible}
+                                    isActive={active}
+                                  >
+                                    <Icon className={cn(
+                                      "h-4 w-4 transition-all duration-300",
+                                      active && "scale-110"
+                                    )} />
+                                    {state !== "collapsed" && (
+                                      <div className="flex items-center justify-between w-full gap-2">
+                                        <span className="truncate transition-transform duration-200 group-hover:translate-x-0.5">
+                                          {module.name}
+                                        </span>
+                                        <div className="flex items-center gap-1">
+                                          {module.minPlan !== 'standard' && (
+                                            <Badge 
+                                              variant="secondary"
+                                              className={cn(
+                                                "text-xs h-5 px-2 font-medium transition-all duration-200",
+                                                getBadgeVariant(module.minPlan)
+                                              )}
+                                            >
+                                              {module.minPlan === 'ultra_pro' ? 'ULTRA' : 'PRO'}
+                                            </Badge>
+                                          )}
+                                          <ChevronDown className={cn(
+                                            "h-4 w-4 transition-transform duration-300",
+                                            subMenuOpen && "rotate-180"
+                                          )} />
+                                        </div>
+                                      </div>
+                                    )}
+                                  </SidebarMenuButton>
+                                </CollapsibleTrigger>
+                                
+                                {state !== "collapsed" && (
+                                  <CollapsibleContent className="ml-4 mt-1 space-y-1">
+                                    {subModules.map((subModule) => {
+                                      const SubIcon = iconMap[subModule.icon] || Settings;
+                                      const subActive = isActive(subModule.route);
+                                      
+                                      return (
+                                        <SidebarMenuButton
+                                          key={subModule.id}
+                                          onClick={() => handleNavigate(subModule.route, module.id)}
+                                          className={cn(
+                                            "w-full justify-start text-sm transition-all duration-200",
+                                            subActive 
+                                              ? "bg-primary/20 text-primary font-medium" 
+                                              : "hover:bg-accent/50"
+                                          )}
+                                          isActive={subActive}
+                                        >
+                                          <SubIcon className="h-3.5 w-3.5" />
+                                          <span className="truncate">{subModule.name}</span>
+                                        </SidebarMenuButton>
+                                      );
+                                    })}
+                                  </CollapsibleContent>
+                                )}
+                              </Collapsible>
+                            )}
                           </SidebarMenuItem>
                         );
                       })}
