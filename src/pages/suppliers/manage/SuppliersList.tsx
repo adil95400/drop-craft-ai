@@ -34,7 +34,7 @@ import {
 } from 'lucide-react'
 import { useRealSuppliers } from '@/hooks/useRealSuppliers'
 
-export function SuppliersList() {
+export default function SuppliersList() {
   const {
     suppliers,
     isLoading,

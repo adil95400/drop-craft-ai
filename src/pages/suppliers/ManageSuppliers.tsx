@@ -48,7 +48,7 @@ import {
 import { useRealSuppliers } from '@/hooks/useRealSuppliers'
 import { useNavigate } from 'react-router-dom'
 
-export function ManageSuppliers() {
+export default function ManageSuppliers() {
   const navigate = useNavigate()
   const {
     suppliers,

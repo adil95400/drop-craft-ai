@@ -104,7 +104,7 @@ const sectors = ['Tous', 'Electronics', 'Fashion', 'Home', 'Beauty', 'Sports', '
 const countries = ['Tous', 'France', 'China', 'USA', 'Germany', 'Netherlands', 'UK'];
 const complexities = ['Tous', 'easy', 'medium', 'hard'];
 
-export const SupplierMarketplace: React.FC = () => {
+export default function SupplierMarketplace() {
   const { openModal } = useModals();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState('Tous');
@@ -396,5 +396,5 @@ export const SupplierMarketplace: React.FC = () => {
         </CardContent>
       </Card>
     </div>
-  );
-};
+  )
+}
