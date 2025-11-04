@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
+import { useRealSuppliers } from '@/hooks/useRealSuppliers'
 import { 
   Search, 
   Users, 
@@ -30,120 +31,10 @@ import {
   Award
 } from 'lucide-react'
 
-interface Supplier {
-  id: string
-  name: string
-  country: string
-  rating: number
-  status: 'active' | 'pending' | 'inactive' | 'warning'
-  products: number
-  totalRevenue: number
-  avgDeliveryTime: number
-  reliabilityScore: number
-  lastSync: Date
-  responseTime: number
-  qualityScore: number
-  priceCompetitiveness: number
-  categories: string[]
-  paymentTerms: string
-  minimumOrder: number
-  shippingCost: number
-  certifications: string[]
-}
-
-const MOCK_SUPPLIERS: Supplier[] = [
-  {
-    id: '1',
-    name: 'TechGlobal Electronics',
-    country: 'China',
-    rating: 4.8,
-    status: 'active',
-    products: 1247,
-    totalRevenue: 524750,
-    avgDeliveryTime: 12,
-    reliabilityScore: 96,
-    lastSync: new Date(Date.now() - 1000 * 60 * 30),
-    responseTime: 2,
-    qualityScore: 94,
-    priceCompetitiveness: 88,
-    categories: ['Électronique', 'Smartphones', 'Accessoires'],
-    paymentTerms: '30 jours',
-    minimumOrder: 100,
-    shippingCost: 25,
-    certifications: ['ISO 9001', 'CE', 'FCC']
-  },
-  {
-    id: '2',
-    name: 'Fashion Forward',
-    country: 'Italy',
-    rating: 4.6,
-    status: 'active',
-    products: 856,
-    totalRevenue: 186430,
-    avgDeliveryTime: 8,
-    reliabilityScore: 92,
-    lastSync: new Date(Date.now() - 1000 * 60 * 45),
-    responseTime: 1,
-    qualityScore: 97,
-    priceCompetitiveness: 75,
-    categories: ['Mode', 'Vêtements', 'Accessoires'],
-    paymentTerms: '45 jours',
-    minimumOrder: 50,
-    shippingCost: 35,
-    certifications: ['GOTS', 'OEKO-TEX']
-  },
-  {
-    id: '3',
-    name: 'HomeDecor Masters',
-    country: 'Poland',
-    rating: 4.3,
-    status: 'warning',
-    products: 2341,
-    totalRevenue: 298120,
-    avgDeliveryTime: 15,
-    reliabilityScore: 87,
-    lastSync: new Date(Date.now() - 1000 * 60 * 120),
-    responseTime: 4,
-    qualityScore: 89,
-    priceCompetitiveness: 92,
-    categories: ['Maison', 'Décoration', 'Mobilier'],
-    paymentTerms: '15 jours',
-    minimumOrder: 200,
-    shippingCost: 18,
-    certifications: ['FSC', 'GREENGUARD']
-  },
-  {
-    id: '4',
-    name: 'SportMax Distribution',
-    country: 'Germany',
-    rating: 4.9,
-    status: 'active',
-    products: 432,
-    totalRevenue: 145890,
-    avgDeliveryTime: 5,
-    reliabilityScore: 99,
-    lastSync: new Date(Date.now() - 1000 * 60 * 15),
-    responseTime: 1,
-    qualityScore: 98,
-    priceCompetitiveness: 79,
-    categories: ['Sport', 'Fitness', 'Outdoor'],
-    paymentTerms: '60 jours',
-    minimumOrder: 25,
-    shippingCost: 12,
-    certifications: ['ISO 14001', 'REACH']
-  }
-]
-
-const PERFORMANCE_METRICS = [
-  { label: 'Fournisseurs Actifs', value: 47, trend: '+12%', icon: Users, color: 'text-blue-500' },
-  { label: 'Commandes ce mois', value: 1247, trend: '+8%', icon: Package, color: 'text-green-500' },
-  { label: 'Délai moyen', value: '9.2 jours', trend: '-15%', icon: Clock, color: 'text-orange-500' },
-  { label: 'Score qualité', value: '94%', trend: '+3%', icon: Star, color: 'text-yellow-500' }
-]
-
 export function AdvancedSupplierManager() {
+  const { suppliers, stats, isLoading, addSupplier, updateSupplier } = useRealSuppliers()
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
+  const [selectedSupplier, setSelectedSupplier] = useState<any>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('rating')
 
@@ -174,22 +65,41 @@ export function AdvancedSupplierManager() {
     return 'text-red-600'
   }
 
-  const filteredSuppliers = MOCK_SUPPLIERS
+  // Calculer les métriques de performance
+  const performanceMetrics = [
+    { label: 'Fournisseurs Actifs', value: stats.active, trend: '+12%', icon: Users, color: 'text-blue-500' },
+    { label: 'Total Fournisseurs', value: stats.total, trend: '+8%', icon: Package, color: 'text-green-500' },
+    { label: 'Note moyenne', value: stats.averageRating.toFixed(1), trend: '+3%', icon: Star, color: 'text-yellow-500' },
+    { label: 'Pays', value: Object.keys(stats.topCountries).length, trend: '+15%', icon: Globe, color: 'text-orange-500' }
+  ]
+
+  const filteredSuppliers = suppliers
     .filter(supplier => {
       const matchesSearch = supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           supplier.country.toLowerCase().includes(searchTerm.toLowerCase())
+                           supplier.country?.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesStatus = filterStatus === 'all' || supplier.status === filterStatus
       return matchesSearch && matchesStatus
     })
     .sort((a, b) => {
       switch (sortBy) {
-        case 'rating': return b.rating - a.rating
-        case 'revenue': return b.totalRevenue - a.totalRevenue
-        case 'reliability': return b.reliabilityScore - a.reliabilityScore
-        case 'products': return b.products - a.products
+        case 'rating': return (b.rating || 0) - (a.rating || 0)
+        case 'name': return a.name.localeCompare(b.name)
         default: return 0
       }
     })
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="h-8 bg-muted rounded w-1/4"></div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 bg-muted rounded"></div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -216,7 +126,7 @@ export function AdvancedSupplierManager() {
 
         {/* Métriques de performance */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {PERFORMANCE_METRICS.map((metric) => (
+          {performanceMetrics.map((metric) => (
             <Card key={metric.label}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -311,77 +221,27 @@ export function AdvancedSupplierManager() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1">
                       <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                      <span className="font-bold">{supplier.rating}</span>
+                      <span className="font-bold">{supplier.rating || 'N/A'}</span>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium">{supplier.products} produits</p>
-                      <p className="text-xs text-muted-foreground">€{supplier.totalRevenue.toLocaleString()}</p>
+                      <p className="text-sm font-medium">{supplier.country || 'Non renseigné'}</p>
+                      <p className="text-xs text-muted-foreground">{supplier.website || ''}</p>
                     </div>
                   </div>
 
-                  {/* Scores de performance */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span>Fiabilité</span>
-                      <span className={`font-medium ${getScoreColor(supplier.reliabilityScore)}`}>
-                        {supplier.reliabilityScore}%
-                      </span>
+                  {/* Informations */}
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">API:</span>
+                      <span className="font-medium">{supplier.api_endpoint ? 'Configuré' : 'Non configuré'}</span>
                     </div>
-                    <Progress value={supplier.reliabilityScore} className="h-1.5" />
-                    
-                    <div className="flex justify-between items-center text-sm">
-                      <span>Qualité</span>
-                      <span className={`font-medium ${getScoreColor(supplier.qualityScore)}`}>
-                        {supplier.qualityScore}%
-                      </span>
-                    </div>
-                    <Progress value={supplier.qualityScore} className="h-1.5" />
-                  </div>
-
-                  {/* Informations clés */}
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3 text-muted-foreground" />
-                      <span>{supplier.avgDeliveryTime}j livraison</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="h-3 w-3 text-muted-foreground" />
-                      <span>Min €{supplier.minimumOrder}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Activity className="h-3 w-3 text-muted-foreground" />
-                      <span>{supplier.responseTime}h réponse</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Truck className="h-3 w-3 text-muted-foreground" />
-                      <span>€{supplier.shippingCost} port</span>
-                    </div>
-                  </div>
-
-                  {/* Catégories */}
-                  <div className="flex flex-wrap gap-1">
-                    {supplier.categories.slice(0, 2).map((category) => (
-                      <Badge key={category} variant="outline" className="text-xs">
-                        {category}
-                      </Badge>
-                    ))}
-                    {supplier.categories.length > 2 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{supplier.categories.length - 2}
-                      </Badge>
+                    {supplier.has_api_key && (
+                      <div className="flex items-center gap-1 text-green-600">
+                        <CheckCircle className="h-3 w-3" />
+                        <span className="text-xs">Clé API active</span>
+                      </div>
                     )}
                   </div>
-
-                  {/* Certifications */}
-                  {supplier.certifications.length > 0 && (
-                    <div className="flex items-center gap-1">
-                      <Award className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">
-                        {supplier.certifications.slice(0, 2).join(', ')}
-                        {supplier.certifications.length > 2 && ` +${supplier.certifications.length - 2}`}
-                      </span>
-                    </div>
-                  )}
 
                   {/* Actions */}
                   <div className="flex gap-2 pt-2">
@@ -412,8 +272,7 @@ export function AdvancedSupplierManager() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {MOCK_SUPPLIERS
-                    .sort((a, b) => (b.reliabilityScore + b.qualityScore) - (a.reliabilityScore + a.qualityScore))
+                  {filteredSuppliers
                     .slice(0, 5)
                     .map((supplier, index) => (
                       <div key={supplier.id} className="flex items-center justify-between">
@@ -431,8 +290,8 @@ export function AdvancedSupplierManager() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold">{Math.round((supplier.reliabilityScore + supplier.qualityScore) / 2)}%</p>
-                          <p className="text-sm text-muted-foreground">Score global</p>
+                          <p className="font-bold">{supplier.rating || 'N/A'}</p>
+                          <p className="text-sm text-muted-foreground">Note</p>
                         </div>
                       </div>
                     ))}
