@@ -92,8 +92,13 @@ const ManageIntegrationPage = lazy(() => import('@/pages/stores/ManageIntegratio
 const MarketplaceHubPage = lazy(() => import('@/pages/MarketplaceHubPage'));
 const MultiTenantPage = lazy(() => import('@/pages/MultiTenantPage'));
 const AdvancedMonitoringPage = lazy(() => import('@/pages/AdvancedMonitoringPage'));
-const ImportSourcesPage = lazy(() => import('@/pages/ImportSourcesPage'));
-const UnifiedImport = lazy(() => import('@/pages/UnifiedImport'));
+// Import pages - New organized structure
+const ImportHub = lazy(() => import('@/pages/import/ImportHub'));
+const QuickImport = lazy(() => import('@/pages/import/QuickImport'));
+const AdvancedImport = lazy(() => import('@/pages/import/AdvancedImport'));
+const ImportManagement = lazy(() => import('@/pages/import/ImportManagement'));
+const ImportedProductsList = lazy(() => import('@/pages/import/manage/ImportedProductsList'));
+const ImportHistoryPage = lazy(() => import('@/pages/import/manage/ImportHistoryPage'));
 const Tracking = lazy(() => import('@/pages/Tracking'));
 const Reviews = lazy(() => import('@/pages/Reviews'));
 const Inventory = lazy(() => import('@/pages/Inventory'));
@@ -139,7 +144,6 @@ const CourseDetailPage = lazy(() => import('@/pages/CourseDetailPage'));
 const ProductDetailsPage = lazy(() => import('@/pages/ProductDetailsPage'));
 
 // Priority pages (from QuickActions)
-const AdvancedImportPage = lazy(() => import('@/pages/AdvancedImportPage'));
 const SyncManagerPage = lazy(() => import('@/pages/SyncManagerPage'));
 const OrdersCenterPage = lazy(() => import('@/pages/OrdersCenterPage'));
 
@@ -525,15 +529,52 @@ function App() {
                           </ProtectedRoute>
                         } />
                         
+                        {/* Import Hub - New organized structure */}
                         <Route path="/import" element={
                           <ProtectedRoute>
-                            <AppLayout><UnifiedImport /></AppLayout>
+                            <AppLayout><ImportHub /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
-                        <Route path="/import/sources" element={
+                        <Route path="/import/quick" element={
                           <ProtectedRoute>
-                            <AppLayout><ImportSourcesPage /></AppLayout>
+                            <AppLayout><QuickImport /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/import/advanced" element={
+                          <ProtectedRoute>
+                            <AppLayout><AdvancedImport /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/import/manage" element={
+                          <ProtectedRoute>
+                            <AppLayout><ImportManagement /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/import/manage/products" element={
+                          <ProtectedRoute>
+                            <AppLayout><ImportedProductsList /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/import/manage/publishing" element={
+                          <ProtectedRoute>
+                            <AppLayout><ProductPublishing /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/import/manage/marketplace" element={
+                          <ProtectedRoute>
+                            <AppLayout><MarketplaceSyncDashboard /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/import/manage/history" element={
+                          <ProtectedRoute>
+                            <AppLayout><ImportHistoryPage /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
@@ -629,7 +670,7 @@ function App() {
                         
                         <Route path="/import/advanced" element={
                           <ProtectedRoute>
-                            <AppLayout><AdvancedImportPage /></AppLayout>
+                            <AppLayout><AdvancedImport /></AppLayout>
                           </ProtectedRoute>
                         } />
                         

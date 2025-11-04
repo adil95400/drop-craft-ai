@@ -7,7 +7,6 @@ import { StoreDashboard } from '@/pages/stores/StoreDashboard'
 import MarketplaceHubPage from '@/pages/MarketplaceHubPage'
 import MultiTenantPage from '@/pages/MultiTenantPage'
 import AdvancedMonitoringPage from '@/pages/AdvancedMonitoringPage'
-import ImportSourcesPage from '@/pages/ImportSourcesPage'
 import ModulesOverview from '@/pages/ModulesOverview'
 import Dashboard from '@/pages/Dashboard'
 import OrdersPage from '@/pages/OrdersPage'
@@ -61,9 +60,6 @@ export function AppRoutes() {
         <Route path="products" element={<ProductsPage />} />
         
         {/* Import & Sync */}
-        <Route path="import" element={<ImportSourcesPage />} />
-        <Route path="import/advanced" element={<ImportAdvancedPage />} />
-        <Route path="import/sources" element={<ImportSourcesPage />} />
         <Route path="sync-manager" element={<SyncManagerPage />} />
         <Route path="orders-center" element={<OrdersCenterPage />} />
         
