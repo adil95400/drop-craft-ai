@@ -1,8 +1,13 @@
 /**
- * Re-export unified performance optimizations
- * This file maintains backwards compatibility
+ * Centralized performance optimizations
+ * All performance utilities in one place
  */
 
+// Core services
+export { performanceMonitoring } from '@/utils/performanceMonitoring';
+export { performanceService } from '@/services/performance/PerformanceService';
+
+// Monitoring utilities
 export {
   measurePerformance,
   reportWebVitals,
@@ -14,6 +19,7 @@ export {
   monitorNetworkSpeed
 } from '@/utils/performanceMonitoring';
 
+// Code optimizations
 export {
   loadChartLibrary,
   preloadCriticalChunks,
@@ -23,7 +29,7 @@ export {
   batchStateUpdates
 } from '@/utils/codeOptimizations';
 
-// Re-export from performance components
+// UI components
 export {
   LazyLoadWrapper,
   MemoizedListItem,
@@ -32,39 +38,9 @@ export {
   useDebounce
 } from '@/components/performance/PerformanceOptimizations';
 
-// Performance cache with improved typing
-export class PerformanceCache<T = any> {
-  private static cache = new Map<string, any>();
-  private static maxSize = 100;
-  
-  static get<T>(key: string): T | undefined {
-    return this.cache.get(key);
-  }
-  
-  static set<T>(key: string, value: T): void {
-    if (this.cache.size >= this.maxSize) {
-      const firstKey = this.cache.keys().next().value;
-      if (firstKey) this.cache.delete(firstKey);
-    }
-    this.cache.set(key, value);
-  }
-  
-  static clear(): void {
-    this.cache.clear();
-  }
-  
-  static has(key: string): boolean {
-    return this.cache.has(key);
-  }
-  
-  static delete(key: string): boolean {
-    return this.cache.delete(key);
-  }
-  
-  static size(): number {
-    return this.cache.size;
-  }
-}
+// Cache utilities
+export { cacheService as PerformanceCache } from '@/services/cache/CacheService';
+export { cacheService } from '@/services/cache/CacheService';
 
 // Improved debounce with TypeScript generics
 export const debounce = <T extends (...args: any[]) => any>(
