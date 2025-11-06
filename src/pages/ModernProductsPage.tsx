@@ -9,8 +9,8 @@ import { ProductSettings } from '@/components/products/ProductSettings'
 import { ProductTemplates } from '@/components/products/ProductTemplates'
 import { ProductInventory } from '@/components/products/ProductInventory'
 import { ProductSEO } from '@/components/products/ProductSEO'
-import { ProductTable } from '@/components/products/ProductTable'
-import { ProductGridView } from '@/components/products/ProductGridView'
+import { VirtualizedProductTable } from '@/components/products/VirtualizedProductTable'
+import { VirtualizedProductGrid } from '@/components/products/VirtualizedProductGrid'
 import { ProductFilters, ProductFiltersState } from '@/components/products/ProductFilters'
 import { CreateProductDialog } from '@/components/modals/CreateProductDialog'
 import { EditProductDialog } from '@/components/products/EditProductDialog'
@@ -393,9 +393,9 @@ export default function ModernProductsPage() {
                   />
                 )}
 
-                {/* Vue Tableau ou Grille */}
+                {/* Vue Tableau ou Grille - Virtualisée */}
                 {viewMode === 'table' ? (
-                  <ProductTable
+                  <VirtualizedProductTable
                     products={sortedProducts}
                     selectedIds={selectedIds}
                     onSelectAll={handleSelectAll}
@@ -410,7 +410,7 @@ export default function ModernProductsPage() {
                     isPro={isPro()}
                   />
                 ) : (
-                  <ProductGridView
+                  <VirtualizedProductGrid
                     products={sortedProducts}
                     selectedIds={selectedIds}
                     onSelectOne={handleSelectOne}

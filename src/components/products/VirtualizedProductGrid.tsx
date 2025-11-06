@@ -1,0 +1,288 @@
+import { useVirtualizer } from '@tanstack/react-virtual'
+import { useRef } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from '@/components/ui/dropdown-menu'
+import { 
+  MoreVertical, 
+  Eye, 
+  Edit, 
+  Copy, 
+  Trash2,
+  Package
+} from 'lucide-react'
+import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
+import { cn } from '@/lib/utils'
+
+interface VirtualizedProductGridProps {
+  products: UnifiedProduct[]
+  selectedIds: string[]
+  onSelectOne: (id: string, checked: boolean) => void
+  onView: (product: UnifiedProduct) => void
+  onEdit: (product: UnifiedProduct) => void
+  onDuplicate: (product: UnifiedProduct) => void
+  onDelete: (id: string) => void
+  isPro?: boolean
+}
+
+export function VirtualizedProductGrid({
+  products,
+  selectedIds,
+  onSelectOne,
+  onView,
+  onEdit,
+  onDuplicate,
+  onDelete,
+  isPro = false
+}: VirtualizedProductGridProps) {
+  const parentRef = useRef<HTMLDivElement>(null)
+
+  const rowVirtualizer = useVirtualizer({
+    count: Math.ceil(products.length / 4), // 4 colonnes
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 400, // Hauteur estimée d'une carte
+    overscan: 2
+  })
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(amount)
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'default'
+      case 'inactive': return 'secondary'
+      default: return 'outline'
+    }
+  }
+
+  const getSourceBadge = (source: string) => {
+    switch (source) {
+      case 'imported':
+        return <Badge variant="secondary" className="text-xs">Importé</Badge>
+      case 'catalog':
+        return <Badge variant="outline" className="text-xs">Catalogue</Badge>
+      case 'premium':
+        return <Badge className="text-xs bg-gradient-to-r from-purple-500 to-pink-500">Premium</Badge>
+      case 'products':
+        return <Badge variant="default" className="text-xs">Manuel</Badge>
+      default:
+        return null
+    }
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+        <Package className="h-16 w-16 mb-4" />
+        <p className="text-lg font-medium">Aucun produit trouvé</p>
+        <p className="text-sm">Essayez d'ajuster vos filtres</p>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <div
+        ref={parentRef}
+        className="h-[600px] overflow-auto"
+      >
+        <div
+          style={{
+            height: `${rowVirtualizer.getTotalSize()}px`,
+            width: '100%',
+            position: 'relative'
+          }}
+        >
+          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+            const startIndex = virtualRow.index * 4
+            const rowProducts = products.slice(startIndex, startIndex + 4)
+
+            return (
+              <div
+                key={virtualRow.key}
+                data-index={virtualRow.index}
+                ref={rowVirtualizer.measureElement}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  transform: `translateY(${virtualRow.start}px)`
+                }}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
+                  {rowProducts.map((product) => (
+                    <Card 
+                      key={product.id}
+                      className={cn(
+                        "overflow-hidden hover:shadow-lg transition-all duration-200",
+                        selectedIds.includes(product.id) && "ring-2 ring-primary"
+                      )}
+                    >
+                      {/* Image avec sélection */}
+                      <div className="relative aspect-square bg-muted group">
+                        {(product.images && product.images[0]) || product.image_url ? (
+                          <img 
+                            src={(product.images && product.images[0]) || product.image_url || ''} 
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Package className="h-16 w-16 text-muted-foreground" />
+                          </div>
+                        )}
+                        
+                        {/* Overlay avec actions */}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="secondary"
+                            onClick={() => onView(product)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Voir
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="secondary"
+                            onClick={() => onEdit(product)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Modifier
+                          </Button>
+                        </div>
+
+                        {/* Checkbox sélection */}
+                        <div className="absolute top-2 left-2">
+                          <Checkbox
+                            checked={selectedIds.includes(product.id)}
+                            onCheckedChange={(checked) => onSelectOne(product.id, checked as boolean)}
+                            className="bg-white border-2"
+                          />
+                        </div>
+
+                        {/* Menu actions */}
+                        <div className="absolute top-2 right-2">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button size="sm" variant="secondary" className="h-8 w-8 p-0">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => onView(product)}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                Voir les détails
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => onEdit(product)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Modifier
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => onDuplicate(product)}>
+                                <Copy className="mr-2 h-4 w-4" />
+                                Dupliquer
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => onDelete(product.id)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Supprimer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+
+                        {/* Badge statut */}
+                        <div className="absolute bottom-2 left-2">
+                          <Badge variant={getStatusColor(product.status)}>
+                            {product.status}
+                          </Badge>
+                        </div>
+
+                        {/* Badge stock faible */}
+                        {(product.stock_quantity || 0) < 10 && (
+                          <div className="absolute bottom-2 right-2">
+                            <Badge variant="destructive">
+                              Stock faible
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Contenu */}
+                      <CardContent className="p-4 space-y-2">
+                        <div className="space-y-1">
+                          <h3 className="font-semibold line-clamp-2 min-h-[2.5rem]">
+                            {product.name}
+                          </h3>
+                          <div className="flex items-center gap-1 flex-wrap">
+                            {product.category && (
+                              <Badge variant="outline" className="text-xs">
+                                {product.category}
+                              </Badge>
+                            )}
+                            {getSourceBadge(product.source)}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t">
+                          <div>
+                            <p className="text-lg font-bold">
+                              {formatCurrency(product.price)}
+                            </p>
+                            {isPro && product.cost_price && (
+                              <p className="text-xs text-muted-foreground">
+                                Coût: {formatCurrency(product.cost_price)}
+                              </p>
+                            )}
+                          </div>
+                          
+                          {isPro && product.profit_margin && (
+                            <div className="text-right">
+                              <Badge 
+                                variant={product.profit_margin > 0 ? 'default' : 'destructive'}
+                                className="font-mono"
+                              >
+                                +{product.profit_margin.toFixed(1)}%
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs text-muted-foreground pt-2">
+                          <span>SKU: {product.sku || 'N/A'}</span>
+                          <Badge variant="secondary" className="font-mono">
+                            Stock: {product.stock_quantity || 0}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+      <div className="p-2 border-t text-xs text-muted-foreground text-center mt-4">
+        Affichage de {products.length} produit(s) • Virtualisation activée
+      </div>
+    </div>
+  )
+}
