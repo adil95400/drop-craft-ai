@@ -13,6 +13,8 @@ import { ProductTable } from '@/components/products/ProductTable'
 import { ProductGridView } from '@/components/products/ProductGridView'
 import { ProductFilters, ProductFiltersState } from '@/components/products/ProductFilters'
 import { CreateProductDialog } from '@/components/modals/CreateProductDialog'
+import { EditProductDialog } from '@/components/products/EditProductDialog'
+import { useUnifiedProducts } from '@/hooks/useUnifiedProducts'
 import { useRealProducts, Product } from '@/hooks/useRealProducts'
 import { useNavigate } from 'react-router-dom'
 import { useLegacyPlan } from '@/lib/migration-helper'
@@ -45,7 +47,7 @@ export default function ModernProductsPage() {
     lowStock: false
   })
   
-  const { products, stats, isLoading, deleteProduct, addProduct } = useRealProducts()
+  const { products, stats, isLoading, deleteProduct, addProduct, updateProduct } = useRealProducts()
   const { isPro } = useLegacyPlan()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -150,11 +152,10 @@ export default function ModernProductsPage() {
     setShowProductModal(true)
   }
 
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+
   const handleEdit = (product: Product) => {
-    toast({
-      title: "Édition",
-      description: "Fonctionnalité en cours de développement"
-    })
+    setEditingProduct(product)
   }
 
   const handleDuplicate = async (product: Product) => {
