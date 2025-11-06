@@ -26,6 +26,7 @@ export interface ProductFiltersState {
   priceMax: string
   stockMin: string
   lowStock: boolean
+  source: string
 }
 
 interface ProductFiltersProps {
@@ -57,7 +58,8 @@ export function ProductFilters({
       priceMin: '',
       priceMax: '',
       stockMin: '',
-      lowStock: false
+      lowStock: false,
+      source: 'all'
     })
   }
 
@@ -100,6 +102,20 @@ export function ProductFilters({
           <SelectItem value="all">Tous statuts</SelectItem>
           <SelectItem value="active">Actif</SelectItem>
           <SelectItem value="inactive">Inactif</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {/* Source */}
+      <Select value={filters.source} onValueChange={(value) => updateFilter('source', value)}>
+        <SelectTrigger className="w-[150px]">
+          <SelectValue placeholder="Source" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Toutes sources</SelectItem>
+          <SelectItem value="products">Manuels</SelectItem>
+          <SelectItem value="imported">Importés</SelectItem>
+          <SelectItem value="catalog">Catalogue</SelectItem>
+          <SelectItem value="premium">Premium</SelectItem>
         </SelectContent>
       </Select>
 

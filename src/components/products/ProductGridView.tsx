@@ -17,16 +17,16 @@ import {
   Trash2,
   Package
 } from 'lucide-react'
-import { Product } from '@/hooks/useRealProducts'
+import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { cn } from '@/lib/utils'
 
 interface ProductGridViewProps {
-  products: Product[]
+  products: UnifiedProduct[]
   selectedIds: string[]
   onSelectOne: (id: string, checked: boolean) => void
-  onView: (product: Product) => void
-  onEdit: (product: Product) => void
-  onDuplicate: (product: Product) => void
+  onView: (product: UnifiedProduct) => void
+  onEdit: (product: UnifiedProduct) => void
+  onDuplicate: (product: UnifiedProduct) => void
   onDelete: (id: string) => void
   isPro?: boolean
 }
@@ -56,6 +56,21 @@ export function ProductGridView({
     }
   }
 
+  const getSourceBadge = (source: string) => {
+    switch (source) {
+      case 'imported':
+        return <Badge variant="secondary" className="text-xs">Importé</Badge>
+      case 'catalog':
+        return <Badge variant="outline" className="text-xs">Catalogue</Badge>
+      case 'premium':
+        return <Badge className="text-xs bg-gradient-to-r from-purple-500 to-pink-500">Premium</Badge>
+      case 'products':
+        return <Badge variant="default" className="text-xs">Manuel</Badge>
+      default:
+        return null
+    }
+  }
+
   if (products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
@@ -78,11 +93,12 @@ export function ProductGridView({
         >
           {/* Image avec sélection */}
           <div className="relative aspect-square bg-muted group">
-            {product.image_url ? (
+            {(product.images && product.images[0]) || product.image_url ? (
               <img 
-                src={product.image_url} 
+                src={(product.images && product.images[0]) || product.image_url || ''} 
                 alt={product.name}
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
@@ -175,11 +191,14 @@ export function ProductGridView({
               <h3 className="font-semibold line-clamp-2 min-h-[2.5rem]">
                 {product.name}
               </h3>
-              {product.category && (
-                <Badge variant="outline" className="text-xs">
-                  {product.category}
-                </Badge>
-              )}
+              <div className="flex items-center gap-1 flex-wrap">
+                {product.category && (
+                  <Badge variant="outline" className="text-xs">
+                    {product.category}
+                  </Badge>
+                )}
+                {getSourceBadge(product.source)}
+              </div>
             </div>
 
             <div className="flex items-center justify-between pt-2 border-t">

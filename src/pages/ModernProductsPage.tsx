@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ProductCategories } from '@/components/products/ProductCategories'
 import ProductAnalytics from '@/components/products/ProductAnalytics'
 import { ProductBulkOperations } from '@/components/products/ProductBulkOperations'
@@ -14,9 +14,19 @@ import { ProductGridView } from '@/components/products/ProductGridView'
 import { ProductFilters, ProductFiltersState } from '@/components/products/ProductFilters'
 import { CreateProductDialog } from '@/components/modals/CreateProductDialog'
 import { EditProductDialog } from '@/components/products/EditProductDialog'
-import { useRealProducts, Product } from '@/hooks/useRealProducts'
+import { useUnifiedProducts, UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { useNavigate } from 'react-router-dom'
 import { useLegacyPlan } from '@/lib/migration-helper'
+import { useDebounce } from '@/components/performance/PerformanceOptimizations'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { 
+  Package, BarChart3, Grid3X3, Settings, 
+  Tag, Warehouse, Search, FileText, Plus, TrendingUp, AlertCircle, DollarSign, AlertTriangle,
+  LayoutList, LayoutGrid, Download, Upload, Database
+} from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { importExportService } from '@/services/importExportService'
+import { useToast } from '@/hooks/use-toast'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { 
   Package, BarChart3, Grid3X3, Settings, 
@@ -28,14 +38,15 @@ import { importExportService } from '@/services/importExportService'
 import { useToast } from '@/hooks/use-toast'
 
 export default function ModernProductsPage() {
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([])
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-  const [showProductModal, setShowProductModal] = useState(false)
+  const navigate = useNavigate()
+  const { isPro } = useLegacyPlan()
+  const { toast } = useToast()
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
-  const [sortField, setSortField] = useState<string>('name')
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-  
+  const [editingProduct, setEditingProduct] = useState<UnifiedProduct | null>(null)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [sortField, setSortField] = useState('created_at')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [filters, setFilters] = useState<ProductFiltersState>({
     search: '',
     category: 'all',
@@ -43,95 +54,73 @@ export default function ModernProductsPage() {
     priceMin: '',
     priceMax: '',
     stockMin: '',
-    lowStock: false
+    lowStock: false,
+    source: 'all'
   })
-  
-  const { products, stats, isLoading, deleteProduct, addProduct, updateProduct } = useRealProducts()
-  const { isPro } = useLegacyPlan()
-  const { toast } = useToast()
-  const navigate = useNavigate()
 
-  // Filtrage et tri des produits
-  const filteredAndSortedProducts = useMemo(() => {
-    let result = [...products]
+  // Debounce search for performance
+  const debouncedSearch = useDebounce(filters.search, 300)
 
-    // Filtres de recherche
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase()
-      result = result.filter(p => 
-        p.name.toLowerCase().includes(searchLower) ||
-        p.sku?.toLowerCase().includes(searchLower) ||
-        p.category?.toLowerCase().includes(searchLower)
-      )
-    }
+  // Fetch unified products data with debounced search
+  const unifiedFilters = useMemo(() => ({
+    status: filters.status !== 'all' ? filters.status as 'active' | 'inactive' : undefined,
+    category: filters.category !== 'all' ? filters.category : undefined,
+    search: debouncedSearch,
+    minPrice: filters.priceMin ? parseFloat(filters.priceMin) : undefined,
+    maxPrice: filters.priceMax ? parseFloat(filters.priceMax) : undefined,
+    lowStock: filters.lowStock
+  }), [filters, debouncedSearch])
 
-    // Filtre catégorie
-    if (filters.category !== 'all') {
-      result = result.filter(p => p.category === filters.category)
-    }
-
-    // Filtre statut
-    if (filters.status !== 'all') {
-      result = result.filter(p => p.status === filters.status)
-    }
-
-    // Filtre prix
-    if (filters.priceMin) {
-      result = result.filter(p => p.price >= parseFloat(filters.priceMin))
-    }
-    if (filters.priceMax) {
-      result = result.filter(p => p.price <= parseFloat(filters.priceMax))
-    }
-
-    // Filtre stock
-    if (filters.stockMin) {
-      result = result.filter(p => (p.stock_quantity || 0) >= parseInt(filters.stockMin))
-    }
-    if (filters.lowStock) {
-      result = result.filter(p => (p.stock_quantity || 0) < 10)
-    }
-
-    // Tri
-    result.sort((a, b) => {
-      let aVal: any = a[sortField as keyof Product]
-      let bVal: any = b[sortField as keyof Product]
-      
-      if (typeof aVal === 'string') aVal = aVal.toLowerCase()
-      if (typeof bVal === 'string') bVal = bVal.toLowerCase()
-      
-      if (aVal === undefined || aVal === null) return 1
-      if (bVal === undefined || bVal === null) return -1
-      
-      if (sortDirection === 'asc') {
-        return aVal > bVal ? 1 : -1
-      } else {
-        return aVal < bVal ? 1 : -1
-      }
+  const { 
+    products, 
+    stats,
+    isLoading, 
+    updateProduct,
+    deleteProduct,
+    consolidateProducts,
+    isUpdating,
+    isDeleting,
+    isConsolidating
+  } = useUnifiedProducts(unifiedFilters)
+  // Apply frontend filters (source, stockMin) with memoization
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      if (filters.source !== 'all' && product.source !== filters.source) return false
+      if (filters.stockMin && (product.stock_quantity || 0) < parseInt(filters.stockMin)) return false
+      return true
     })
+  }, [products, filters.source, filters.stockMin])
 
-    return result
-  }, [products, filters, sortField, sortDirection])
+  // Sort products with memoization
+  const sortedProducts = useMemo(() => {
+    return [...filteredProducts].sort((a, b) => {
+      const aValue = a[sortField as keyof UnifiedProduct]
+      const bValue = b[sortField as keyof UnifiedProduct]
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
+  }, [filteredProducts, sortField, sortDirection])
 
-  // Catégories disponibles
+  // Get unique categories for filter with memoization
   const categories = useMemo(() => 
-    [...new Set(products.map(p => p.category).filter(Boolean))] as string[],
-    [products]
-  )
+    Array.from(new Set(products.map(p => p.category).filter(Boolean))) as string[]
+  , [products])
 
   // Gestionnaires de sélection
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedProducts(filteredAndSortedProducts.map(p => p.id))
+      setSelectedIds(sortedProducts.map(p => p.id))
     } else {
-      setSelectedProducts([])
+      setSelectedIds([])
     }
   }
 
   const handleSelectOne = (id: string, checked: boolean) => {
     if (checked) {
-      setSelectedProducts([...selectedProducts, id])
+      setSelectedIds([...selectedIds, id])
     } else {
-      setSelectedProducts(selectedProducts.filter(sid => sid !== id))
+      setSelectedIds(selectedIds.filter(sid => sid !== id))
     }
   }
 
@@ -146,43 +135,36 @@ export default function ModernProductsPage() {
   }
 
   // Actions produit
-  const handleView = (product: Product) => {
-    setSelectedProduct(product)
-    setShowProductModal(true)
+  const handleView = (product: UnifiedProduct) => {
+    navigate(`/products/${product.id}`)
   }
 
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
-
-  const handleEdit = (product: Product) => {
+  const handleEdit = (product: UnifiedProduct) => {
     setEditingProduct(product)
   }
 
-  const handleDuplicate = async (product: Product) => {
-    try {
-      const { id, created_at, updated_at, user_id, ...productData } = product
-      await addProduct({
-        ...productData,
-        name: `${product.name} (copie)`,
-        sku: product.sku ? `${product.sku}-COPY` : undefined
-      })
-    } catch (error) {
-      // Géré par le hook
-    }
+  const handleDuplicate = (product: UnifiedProduct) => {
+    toast({
+      title: "Fonctionnalité à venir",
+      description: "La duplication de produits sera disponible prochainement"
+    })
   }
 
   const handleDelete = (id: string) => {
-    deleteProduct(id)
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
+      deleteProduct(id)
+    }
   }
 
   // Export
   const handleExport = () => {
     importExportService.exportToCSV(
-      filteredAndSortedProducts,
+      sortedProducts,
       `produits_${new Date().toISOString().split('T')[0]}.csv`
     )
     toast({
       title: "Export réussi",
-      description: `${filteredAndSortedProducts.length} produits exportés`
+      description: `${sortedProducts.length} produits exportés`
     })
   }
 
@@ -221,7 +203,7 @@ export default function ModernProductsPage() {
                   Gestion des Produits
                 </h1>
                 <p className="text-muted-foreground text-lg">
-                  {filteredAndSortedProducts.length} sur {products.length} produits • Gestion professionnelle
+                  {sortedProducts.length} sur {products.length} produits • Gestion professionnelle
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -272,11 +254,28 @@ export default function ModernProductsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Stock faible</p>
-                  <p className="text-3xl font-bold text-warning">{stats.lowStock}</p>
+                  <p className="text-sm text-muted-foreground mb-1">Sources</p>
+                  <div className="space-y-1 text-xs mt-2">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Importés:</span>
+                      <span className="font-medium">{stats.bySource.imported}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Catalogue:</span>
+                      <span className="font-medium">{stats.bySource.catalog}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Premium:</span>
+                      <span className="font-medium">{stats.bySource.premium}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Manuels:</span>
+                      <span className="font-medium">{stats.bySource.products}</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="p-3 bg-warning/10 rounded-xl group-hover:bg-warning/20 transition-colors">
-                  <AlertCircle className="h-6 w-6 text-warning" />
+                  <Database className="h-6 w-6 text-warning" />
                 </div>
               </div>
             </CardContent>
@@ -338,9 +337,9 @@ export default function ModernProductsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Button
-                      variant={viewMode === 'list' ? 'default' : 'outline'}
+                      variant={viewMode === 'table' ? 'default' : 'outline'}
                       size="sm"
-                      onClick={() => setViewMode('list')}
+                      onClick={() => setViewMode('table')}
                     >
                       <LayoutList className="h-4 w-4 mr-2" />
                       Liste
@@ -353,13 +352,31 @@ export default function ModernProductsPage() {
                       <LayoutGrid className="h-4 w-4 mr-2" />
                       Grille
                     </Button>
-                    {selectedProducts.length > 0 && (
+                    {selectedIds.length > 0 && (
                       <Badge variant="secondary" className="ml-2">
-                        {selectedProducts.length} sélectionné(s)
+                        {selectedIds.length} sélectionné(s)
                       </Badge>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
+                    {/* Bouton consolidation */}
+                    {stats.bySource.imported > 0 && (
+                      <Button
+                        onClick={() => {
+                          if (confirm(`Voulez-vous migrer ${stats.bySource.imported} produits importés vers la table principale ?`)) {
+                            consolidateProducts()
+                          }
+                        }}
+                        disabled={isConsolidating}
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <Database className="h-4 w-4" />
+                        {isConsolidating ? 'Consolidation...' : `Consolider ${stats.bySource.imported}`}
+                      </Button>
+                    )}
+                    
                     <Button variant="outline" size="sm" onClick={handleExport}>
                       <Download className="h-4 w-4 mr-2" />
                       Exporter
@@ -379,18 +396,18 @@ export default function ModernProductsPage() {
                 />
 
                 {/* Actions groupées */}
-                {selectedProducts.length > 0 && (
+                {selectedIds.length > 0 && (
                   <ProductBulkOperations
-                    selectedProducts={selectedProducts}
-                    onClearSelection={() => setSelectedProducts([])}
+                    selectedProducts={selectedIds}
+                    onClearSelection={() => setSelectedIds([])}
                   />
                 )}
 
                 {/* Vue Tableau ou Grille */}
-                {viewMode === 'list' ? (
+                {viewMode === 'table' ? (
                   <ProductTable
-                    products={filteredAndSortedProducts}
-                    selectedIds={selectedProducts}
+                    products={sortedProducts}
+                    selectedIds={selectedIds}
                     onSelectAll={handleSelectAll}
                     onSelectOne={handleSelectOne}
                     onSort={handleSort}
@@ -404,8 +421,8 @@ export default function ModernProductsPage() {
                   />
                 ) : (
                   <ProductGridView
-                    products={filteredAndSortedProducts}
-                    selectedIds={selectedProducts}
+                    products={sortedProducts}
+                    selectedIds={selectedIds}
                     onSelectOne={handleSelectOne}
                     onView={handleView}
                     onEdit={handleEdit}
@@ -416,7 +433,7 @@ export default function ModernProductsPage() {
                 )}
 
                 {/* Message vide */}
-                {filteredAndSortedProducts.length === 0 && products.length > 0 && (
+                {sortedProducts.length === 0 && products.length > 0 && (
                   <div className="text-center py-12">
                     <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-semibold mb-2">Aucun produit trouvé</h3>
@@ -588,7 +605,7 @@ export default function ModernProductsPage() {
       {/* Dialog édition produit */}
       {editingProduct && (
         <EditProductDialog
-          product={{ ...editingProduct, source: 'products', images: editingProduct.image_url ? [editingProduct.image_url] : [] }}
+          product={editingProduct}
           open={!!editingProduct}
           onOpenChange={(open) => !open && setEditingProduct(null)}
           onSave={async (updates) => {

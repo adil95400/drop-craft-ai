@@ -28,20 +28,20 @@ import {
   TrendingUp,
   Package
 } from 'lucide-react'
-import { Product } from '@/hooks/useRealProducts'
+import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { cn } from '@/lib/utils'
 
 interface ProductTableProps {
-  products: Product[]
+  products: UnifiedProduct[]
   selectedIds: string[]
   onSelectAll: (checked: boolean) => void
   onSelectOne: (id: string, checked: boolean) => void
   onSort: (field: string) => void
   sortField: string
   sortDirection: 'asc' | 'desc'
-  onView: (product: Product) => void
-  onEdit: (product: Product) => void
-  onDuplicate: (product: Product) => void
+  onView: (product: UnifiedProduct) => void
+  onEdit: (product: UnifiedProduct) => void
+  onDuplicate: (product: UnifiedProduct) => void
   onDelete: (id: string) => void
   isPro?: boolean
 }
@@ -72,6 +72,21 @@ export function ProductTable({
       case 'active': return 'default'
       case 'inactive': return 'secondary'
       default: return 'outline'
+    }
+  }
+
+  const getSourceBadge = (source: string) => {
+    switch (source) {
+      case 'imported':
+        return <Badge variant="secondary" className="text-xs">Importé</Badge>
+      case 'catalog':
+        return <Badge variant="outline" className="text-xs">Catalogue</Badge>
+      case 'premium':
+        return <Badge className="text-xs bg-gradient-to-r from-purple-500 to-pink-500">Premium</Badge>
+      case 'products':
+        return <Badge variant="default" className="text-xs">Manuel</Badge>
+      default:
+        return null
     }
   }
 
@@ -154,11 +169,12 @@ export function ProductTable({
                 </TableCell>
                 <TableCell>
                   <div className="w-12 h-12 rounded-md border bg-muted flex items-center justify-center overflow-hidden">
-                    {product.image_url ? (
+                    {(product.images && product.images[0]) || product.image_url ? (
                       <img 
-                        src={product.image_url} 
+                        src={(product.images && product.images[0]) || product.image_url || ''} 
                         alt={product.name}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     ) : (
                       <Package className="h-5 w-5 text-muted-foreground" />
@@ -166,13 +182,14 @@ export function ProductTable({
                   </div>
                 </TableCell>
                 <TableCell className="font-medium">
-                  <div className="flex flex-col">
+                  <div className="flex flex-col gap-1">
                     <span className="line-clamp-1">{product.name}</span>
                     {product.description && (
                       <span className="text-xs text-muted-foreground line-clamp-1">
                         {product.description}
                       </span>
                     )}
+                    {getSourceBadge(product.source)}
                   </div>
                 </TableCell>
                 <TableCell>

@@ -52,7 +52,8 @@ const Products = () => {
     priceMin: '',
     priceMax: '',
     stockMin: '',
-    lowStock: false
+    lowStock: false,
+    source: 'all'
   })
 
   // Filtrage et tri des produits
@@ -425,15 +426,16 @@ const Products = () => {
               </p>
               <Button 
                 variant="outline" 
-                onClick={() => setFilters({
-                  search: '',
-                  category: 'all',
-                  status: 'all',
-                  priceMin: '',
-                  priceMax: '',
-                  stockMin: '',
-                  lowStock: false
-                })}
+              onClick={() => setFilters({
+                search: '',
+                category: 'all',
+                status: 'all',
+                priceMin: '',
+                priceMax: '',
+                stockMin: '',
+                lowStock: false,
+                source: 'all'
+              })}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Réinitialiser les filtres

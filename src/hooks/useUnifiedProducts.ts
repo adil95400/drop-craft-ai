@@ -3,6 +3,8 @@ import { useToast } from '@/hooks/use-toast'
 import { ProductsUnifiedService, UnifiedProduct } from '@/services/ProductsUnifiedService'
 import { supabase } from '@/integrations/supabase/client'
 
+export type { UnifiedProduct }
+
 export function useUnifiedProducts(filters?: {
   search?: string
   category?: string
