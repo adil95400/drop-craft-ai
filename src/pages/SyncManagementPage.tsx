@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AutoSyncManager } from '@/components/sync/AutoSyncManager'
+import { ConnectMarketplaceDialog } from '@/components/marketplace/ConnectMarketplaceDialog'
 import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections'
 import { RefreshCw, CheckCircle, XCircle, Clock, Play } from 'lucide-react'
 
@@ -94,7 +95,7 @@ export default function SyncManagementPage() {
             <p className="text-muted-foreground mb-4">
               Connectez des marketplaces pour gérer leur synchronisation
             </p>
-            <Button>Ajouter une marketplace</Button>
+            <ConnectMarketplaceDialog />
           </Card>
         )}
       </div>

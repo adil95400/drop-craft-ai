@@ -28,7 +28,11 @@ type Product = {
   updated_at: string
 }
 
-export const useProducts = () => {
+export const useProducts = (filters?: {
+  category?: string
+  search?: string
+  status?: 'active' | 'inactive' | 'archived'
+}) => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
@@ -37,12 +41,26 @@ export const useProducts = () => {
     isLoading,
     error
   } = useQuery({
-    queryKey: ['products'],
+    queryKey: ['products', filters],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select('*')
         .order('created_at', { ascending: false })
+
+      if (filters?.status) {
+        query = query.eq('status', filters.status)
+      }
+
+      if (filters?.category) {
+        query = query.eq('category', filters.category)
+      }
+
+      if (filters?.search) {
+        query = query.ilike('name', `%${filters.search}%`)
+      }
+      
+      const { data, error } = await query
       
       if (error) throw error
       return data as Product[]
