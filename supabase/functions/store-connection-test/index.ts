@@ -196,22 +196,23 @@ serve(async (req) => {
       throw new Error('No authorization header')
     }
 
-    // Initialize Supabase client
-    const supabaseClient = createClient(
+    // Initialize Supabase admin client with service role key
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: authHeader },
-        },
-      }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Verify the user is authenticated
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    // Verify the user is authenticated by validating the JWT
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    )
+    
     if (authError || !user) {
+      console.error('Auth error:', authError)
       throw new Error('User not authenticated')
     }
+    
+    console.log('User authenticated:', user.id)
 
     // Parse the request body
     const requestBody: TestRequest = await req.json()
@@ -226,7 +227,7 @@ serve(async (req) => {
     const result = await tester.testConnection(requestBody)
 
     // Log the connection test attempt
-    await supabaseClient.from('activity_logs').insert({
+    await supabaseAdmin.from('activity_logs').insert({
       user_id: user.id,
       action: 'connection_test',
       description: `Test de connexion ${requestBody.platform}: ${result.success ? 'Succès' : 'Échec'}`,
