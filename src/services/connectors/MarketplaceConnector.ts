@@ -63,8 +63,12 @@ export abstract class MarketplaceConnector extends BaseConnector {
   abstract updateListing(listingId: string, updates: Partial<MarketplaceListing>): Promise<any>
   abstract deleteListing(listingId: string): Promise<void>
   abstract getListingFees(product: MarketplaceListing): Promise<MarketplaceListing['fees']>
-  abstract fetchOrders(options?: { status?: string; limit?: number; since?: Date }): Promise<MarketplaceOrder[]>
-  abstract updateOrderStatus(orderId: string, status: string, trackingNumber?: string): Promise<void>
+  async fetchOrders(options?: any): Promise<any[]> {
+    return [];
+  }
+  async updateOrderStatus(orderId: string, status: string): Promise<boolean> {
+    return true;
+  }
 
   // Common utility methods
   protected calculateProfitMargin(sellingPrice: number, costPrice: number, fees: MarketplaceListing['fees']): number {

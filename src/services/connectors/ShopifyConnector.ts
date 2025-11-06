@@ -55,16 +55,17 @@ export class ShopifyConnector extends BaseConnector {
     }
   }
 
-  async updateInventory(products: SupplierProduct[]): Promise<SyncResult> {
+  async updateInventory(products: any[]): Promise<SyncResult> {
     const result: SyncResult = { total: products.length, imported: 0, duplicates: 0, errors: [] };
 
     for (const product of products) {
       try {
+        const quantity = product.quantity || product.stock;
         await this.makeRequest(`/inventory_levels/set.json`, {
           method: 'POST',
           body: JSON.stringify({
-            inventory_item_id: product.id,
-            available: product.stock,
+            inventory_item_id: product.id || product.sku,
+            available: quantity,
           }),
         });
         result.imported++;
@@ -75,6 +76,70 @@ export class ShopifyConnector extends BaseConnector {
     }
 
     return result;
+  }
+
+  async fetchOrders(options?: any): Promise<any[]> {
+    try {
+      const params = new URLSearchParams({
+        limit: String(options?.limit || 50),
+        status: options?.status || 'any',
+      });
+
+      const response = await this.makeRequest(`/orders.json?${params}`);
+      return response.orders || [];
+    } catch (error) {
+      this.handleError(error, 'Fetch orders');
+      return [];
+    }
+  }
+
+  async updatePrices(products: { sku: string; price: number }[]): Promise<SyncResult> {
+    const result: SyncResult = { total: products.length, imported: 0, duplicates: 0, errors: [] };
+
+    for (const product of products) {
+      try {
+        await this.makeRequest(`/variants/${product.sku}.json`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            variant: { price: product.price },
+          }),
+        });
+        result.imported++;
+      } catch (error: any) {
+        result.errors.push(`${product.sku}: ${error.message}`);
+      }
+      await this.delay();
+    }
+
+    return result;
+  }
+
+  async createOrder(order: any): Promise<string> {
+    try {
+      const response = await this.makeRequest('/orders.json', {
+        method: 'POST',
+        body: JSON.stringify({ order }),
+      });
+      return response.order.id;
+    } catch (error) {
+      this.handleError(error, 'Create order');
+      throw error;
+    }
+  }
+
+  async updateOrderStatus(orderId: string, status: string): Promise<boolean> {
+    try {
+      await this.makeRequest(`/orders/${orderId}.json`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          order: { status },
+        }),
+      });
+      return true;
+    } catch (error) {
+      this.handleError(error, 'Update order status');
+      return false;
+    }
   }
 
   private normalizeShopifyProduct(product: any): SupplierProduct {

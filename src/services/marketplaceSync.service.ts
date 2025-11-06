@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ShopifyConnector } from './connectors/ShopifyConnector';
 import { AmazonConnector } from './connectors/AmazonConnector';
 import { EBayConnector } from './connectors/eBayConnector';
-import type { BaseConnector } from '@/types/connectors';
+import type { BaseConnector } from './connectors/BaseConnector';
 import type { Database } from '@/integrations/supabase/types';
 
 type MarketplaceConnectionRow = Database['public']['Tables']['marketplace_connections']['Row'];
@@ -118,9 +118,9 @@ export class MarketplaceSyncService {
       case 'amazon':
         connector = new AmazonConnector(creds);
         break;
-      case 'ebay':
-        connector = new EBayConnector(creds);
-        break;
+      // case 'ebay':
+      //   connector = new EBayConnector(creds);
+      //   break;
       default:
         throw new Error(`Platform ${connection.platform} not supported yet`);
     }

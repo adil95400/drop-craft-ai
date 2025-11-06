@@ -12,18 +12,32 @@ export interface FetchOptions {
 export interface SyncResult {
   total: number;
   imported: number;
+  updated?: number;
   duplicates: number;
   errors: string[];
+}
+
+export interface ConnectorOrder {
+  external_id: string;
+  order_number: string;
+  status: string;
+  total_amount: number;
+  currency: string;
+  customer_name: string;
+  customer_email: string;
+  line_items: any[];
 }
 
 export abstract class BaseConnector {
   protected credentials: SupplierCredentials;
   protected baseUrl: string;
   protected rateLimitDelay: number = 500;
+  protected config: any;
 
   constructor(credentials: SupplierCredentials, baseUrl: string) {
     this.credentials = credentials;
     this.baseUrl = baseUrl;
+    this.config = {};
   }
 
   protected abstract getAuthHeaders(): Record<string, string>;
@@ -31,7 +45,27 @@ export abstract class BaseConnector {
   abstract validateCredentials(): Promise<boolean>;
   abstract fetchProducts(options?: FetchOptions): Promise<SupplierProduct[]>;
   abstract fetchProduct(sku: string): Promise<SupplierProduct | null>;
-  abstract updateInventory(products: SupplierProduct[]): Promise<SyncResult>;
+  abstract updateInventory(products: any[]): Promise<SyncResult>;
+  
+  // Optional methods with default implementations
+  async fetchOrders(options?: any): Promise<ConnectorOrder[]> {
+    console.warn(`fetchOrders not implemented for ${this.getSupplierName()}`);
+    return [];
+  }
+  
+  async updatePrices(products: { sku: string; price: number }[]): Promise<SyncResult> {
+    console.warn(`updatePrices not implemented for ${this.getSupplierName()}`);
+    return { total: products.length, imported: 0, updated: 0, duplicates: 0, errors: ['Not implemented'] };
+  }
+  
+  async createOrder(order: any): Promise<string> {
+    throw new Error(`createOrder not supported by ${this.getSupplierName()}`);
+  }
+  
+  async updateOrderStatus(orderId: string, status: string): Promise<boolean> {
+    console.warn(`updateOrderStatus not implemented for ${this.getSupplierName()}`);
+    return false;
+  }
 
   protected async makeRequest(endpoint: string, options: RequestInit = {}): Promise<any> {
     const url = `${this.baseUrl}${endpoint}`;

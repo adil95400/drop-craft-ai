@@ -1,15 +1,16 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ShopifyConnector } from './connectors/ShopifyConnector';
 import { AmazonConnector } from './connectors/AmazonConnector';
-import { EBayConnector } from './connectors/eBayConnector';
-import type { BaseConnector, ConnectorProduct, ConnectorOrder } from '@/types/connectors';
+// import { EBayConnector } from './connectors/eBayConnector';
+import type { BaseConnector as BaseConnectorType } from './connectors/BaseConnector';
+import type { ConnectorProduct, ConnectorOrder } from '@/types/connectors';
 
 export class SyncEngine {
-  private connectors: Map<string, BaseConnector> = new Map();
+  private connectors: Map<string, BaseConnectorType> = new Map();
   
   async initializeConnector(platform: string, credentials: any): Promise<boolean> {
     try {
-      let connector: BaseConnector;
+      let connector: BaseConnectorType;
       
       switch (platform.toLowerCase()) {
         case 'shopify':
@@ -18,9 +19,9 @@ export class SyncEngine {
         case 'amazon':
           connector = new AmazonConnector(credentials);
           break;
-        case 'ebay':
-          connector = new EBayConnector(credentials);
-          break;
+        // case 'ebay':
+        //   connector = new EBayConnector(credentials);
+        //   break;
         default:
           throw new Error(`Unknown platform: ${platform}`);
       }
@@ -116,26 +117,26 @@ export class SyncEngine {
     return await connector.updatePrices(products);
   }
   
-  private async saveProductToDatabase(product: ConnectorProduct, userId: string, platform: string) {
+  private async saveProductToDatabase(product: any, userId: string, platform: string) {
     const { error } = await supabase
       .from('imported_products')
       .upsert({
         user_id: userId,
         platform,
-        external_id: product.external_id,
+        external_id: product.external_id || product.id,
         sku: product.sku,
         name: product.title,
         description: product.description,
         price: product.price,
-        cost_price: product.cost_price,
+        cost_price: product.cost_price || product.costPrice,
         currency: product.currency,
-        stock_quantity: product.inventory_quantity,
+        stock_quantity: product.inventory_quantity || product.stock,
         category: product.category,
         brand: product.brand,
-        tags: product.tags,
-        image_url: product.images[0],
-        image_urls: product.images,
-        status: product.status,
+        tags: product.tags || [],
+        image_url: product.images?.[0] || '',
+        image_urls: product.images || [],
+        status: product.status || 'active',
         variants: product.variants,
         seo_title: product.seo_title,
         seo_description: product.seo_description,
@@ -146,8 +147,8 @@ export class SyncEngine {
     if (error) throw error;
   }
   
-  private async saveOrderToDatabase(order: ConnectorOrder, userId: string, platform: string) {
-    const { error } = await supabase
+  private async saveOrderToDatabase(order: any, userId: string, platform: string) {
+    const { error} = await supabase
       .from('orders')
       .upsert({
         user_id: userId,
@@ -160,8 +161,8 @@ export class SyncEngine {
         customer_id: order.customer_id,
         customer_name: order.customer_name,
         customer_email: order.customer_email,
-        billing_address: order.billing_address,
-        shipping_address: order.shipping_address,
+        billing_address: order.billing_address || {},
+        shipping_address: order.shipping_address || {},
         order_items: order.line_items,
         fulfillment_status: order.fulfillment_status,
         tracking_number: order.tracking_number,

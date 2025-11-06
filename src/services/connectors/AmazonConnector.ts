@@ -56,16 +56,17 @@ export class AmazonConnector extends BaseConnector {
     }
   }
 
-  async updateInventory(products: SupplierProduct[]): Promise<SyncResult> {
+  async updateInventory(products: any[]): Promise<SyncResult> {
     const result: SyncResult = { total: products.length, imported: 0, duplicates: 0, errors: [] };
 
     for (const product of products) {
       try {
+        const quantity = product.quantity || product.stock;
         await this.makeRequest('/fba/inventory/v1/summaries', {
           method: 'POST',
           body: JSON.stringify({
             sku: product.sku,
-            quantity: product.stock,
+            quantity: quantity,
           }),
         });
         result.imported++;
@@ -76,6 +77,60 @@ export class AmazonConnector extends BaseConnector {
     }
 
     return result;
+  }
+
+  async fetchOrders(options?: any): Promise<any[]> {
+    try {
+      const params = new URLSearchParams({
+        MarketplaceIds: this.credentials.marketplace_id || '',
+        MaxResultsPerPage: String(options?.limit || 50),
+      });
+
+      const response = await this.makeRequest(`/orders/v0/orders?${params}`);
+      return response.payload?.Orders || [];
+    } catch (error) {
+      this.handleError(error, 'Fetch orders');
+      return [];
+    }
+  }
+
+  async updatePrices(products: { sku: string; price: number }[]): Promise<SyncResult> {
+    const result: SyncResult = { total: products.length, imported: 0, duplicates: 0, errors: [] };
+
+    for (const product of products) {
+      try {
+        await this.makeRequest('/listings/2021-08-01/items', {
+          method: 'PATCH',
+          body: JSON.stringify({
+            sku: product.sku,
+            price: { value: product.price, currency: 'USD' },
+          }),
+        });
+        result.imported++;
+      } catch (error: any) {
+        result.errors.push(`${product.sku}: ${error.message}`);
+      }
+      await this.delay();
+    }
+
+    return result;
+  }
+
+  async createOrder(order: any): Promise<string> {
+    throw new Error('Amazon does not support order creation via API');
+  }
+
+  async updateOrderStatus(orderId: string, status: string): Promise<boolean> {
+    try {
+      await this.makeRequest(`/orders/v0/orders/${orderId}`, {
+        method: 'POST',
+        body: JSON.stringify({ orderStatus: status }),
+      });
+      return true;
+    } catch (error) {
+      this.handleError(error, 'Update order status');
+      return false;
+    }
   }
 
   private normalizeAmazonProduct(item: any): SupplierProduct {

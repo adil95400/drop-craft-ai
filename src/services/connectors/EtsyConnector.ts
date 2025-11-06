@@ -54,18 +54,19 @@ export class EtsyConnector extends BaseConnector {
     }
   }
 
-  async updateInventory(products: SupplierProduct[]): Promise<SyncResult> {
+  async updateInventory(products: any[]): Promise<SyncResult> {
     const result: SyncResult = { total: products.length, imported: 0, duplicates: 0, errors: [] };
 
     for (const product of products) {
       try {
-        await this.makeRequest(`/listings/${product.id}/inventory`, {
+        const quantity = product.quantity || product.stock;
+        await this.makeRequest(`/listings/${product.id || product.sku}/inventory`, {
           method: 'PUT',
           body: JSON.stringify({
             products: [{
               sku: product.sku,
               offerings: [{
-                quantity: product.stock,
+                quantity: quantity,
               }],
             }],
           }),
@@ -78,6 +79,62 @@ export class EtsyConnector extends BaseConnector {
     }
 
     return result;
+  }
+
+  async fetchOrders(options?: any): Promise<any[]> {
+    try {
+      const params = new URLSearchParams({
+        limit: String(options?.limit || 50),
+        offset: String((options?.page || 0) * (options?.limit || 50)),
+      });
+
+      const response = await this.makeRequest(
+        `/shops/${this.credentials.shop_id}/receipts?${params}`
+      );
+      
+      return response.results || [];
+    } catch (error) {
+      this.handleError(error, 'Fetch orders');
+      return [];
+    }
+  }
+
+  async updatePrices(products: { sku: string; price: number }[]): Promise<SyncResult> {
+    const result: SyncResult = { total: products.length, imported: 0, duplicates: 0, errors: [] };
+
+    for (const product of products) {
+      try {
+        await this.makeRequest(`/listings/${product.sku}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            price: product.price,
+          }),
+        });
+        result.imported++;
+      } catch (error: any) {
+        result.errors.push(`${product.sku}: ${error.message}`);
+      }
+      await this.delay();
+    }
+
+    return result;
+  }
+
+  async createOrder(order: any): Promise<string> {
+    throw new Error('Etsy does not support order creation via API');
+  }
+
+  async updateOrderStatus(orderId: string, status: string): Promise<boolean> {
+    try {
+      await this.makeRequest(`/shops/${this.credentials.shop_id}/receipts/${orderId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status }),
+      });
+      return true;
+    } catch (error) {
+      this.handleError(error, 'Update order status');
+      return false;
+    }
   }
 
   private normalizeEtsyProduct(listing: any): SupplierProduct {

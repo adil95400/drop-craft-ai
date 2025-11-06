@@ -65,16 +65,17 @@ export class CdiscountConnector extends BaseConnector {
     }
   }
 
-  async updateInventory(products: SupplierProduct[]): Promise<SyncResult> {
+  async updateInventory(products: any[]): Promise<SyncResult> {
     const result: SyncResult = { total: products.length, imported: 0, duplicates: 0, errors: [] };
 
     for (const product of products) {
       try {
+        const quantity = product.quantity || product.stock;
         await this.makeRequest('/UpdateOfferQuantity', {
           method: 'POST',
           body: JSON.stringify({
             SellerProductId: product.sku,
-            Quantity: product.stock,
+            Quantity: quantity,
           }),
         });
         result.imported++;
@@ -85,6 +86,65 @@ export class CdiscountConnector extends BaseConnector {
     }
 
     return result;
+  }
+
+  async fetchOrders(options?: any): Promise<any[]> {
+    try {
+      const response = await this.makeRequest('/GetOrderList', {
+        method: 'POST',
+        body: JSON.stringify({
+          PageSize: options?.limit || 50,
+          PageNumber: options?.page || 1,
+        }),
+      });
+      
+      return response.OrderList || [];
+    } catch (error) {
+      this.handleError(error, 'Fetch orders');
+      return [];
+    }
+  }
+
+  async updatePrices(products: { sku: string; price: number }[]): Promise<SyncResult> {
+    const result: SyncResult = { total: products.length, imported: 0, duplicates: 0, errors: [] };
+
+    for (const product of products) {
+      try {
+        await this.makeRequest('/UpdateOfferPrice', {
+          method: 'POST',
+          body: JSON.stringify({
+            SellerProductId: product.sku,
+            Price: product.price,
+          }),
+        });
+        result.imported++;
+      } catch (error: any) {
+        result.errors.push(`${product.sku}: ${error.message}`);
+      }
+      await this.delay();
+    }
+
+    return result;
+  }
+
+  async createOrder(order: any): Promise<string> {
+    throw new Error('Cdiscount does not support order creation via API');
+  }
+
+  async updateOrderStatus(orderId: string, status: string): Promise<boolean> {
+    try {
+      await this.makeRequest('/UpdateOrderStatus', {
+        method: 'POST',
+        body: JSON.stringify({
+          OrderNumber: orderId,
+          Status: status,
+        }),
+      });
+      return true;
+    } catch (error) {
+      this.handleError(error, 'Update order status');
+      return false;
+    }
   }
 
   private normalizeCdiscountProduct(offer: any): SupplierProduct {
