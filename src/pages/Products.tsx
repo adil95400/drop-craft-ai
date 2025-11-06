@@ -390,7 +390,7 @@ const Products = () => {
           {/* Liste des produits */}
           {viewMode === 'table' ? (
             <ProductTable
-              products={filteredAndSortedProducts}
+              products={filteredAndSortedProducts.map(p => ({ ...p, source: 'products', images: p.image_url ? [p.image_url] : [] }))}
               selectedIds={selectedIds}
               onSelectAll={handleSelectAll}
               onSelectOne={handleSelectOne}
@@ -405,7 +405,7 @@ const Products = () => {
             />
           ) : (
             <ProductGridView
-              products={filteredAndSortedProducts}
+              products={filteredAndSortedProducts.map(p => ({ ...p, source: 'products', images: p.image_url ? [p.image_url] : [] }))}
               selectedIds={selectedIds}
               onSelectOne={handleSelectOne}
               onView={handleView}

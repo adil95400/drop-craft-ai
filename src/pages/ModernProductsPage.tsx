@@ -18,20 +18,10 @@ import { useUnifiedProducts, UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { useNavigate } from 'react-router-dom'
 import { useLegacyPlan } from '@/lib/migration-helper'
 import { useDebounce } from '@/components/performance/PerformanceOptimizations'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { 
   Package, BarChart3, Grid3X3, Settings, 
   Tag, Warehouse, Search, FileText, Plus, TrendingUp, AlertCircle, DollarSign, AlertTriangle,
   LayoutList, LayoutGrid, Download, Upload, Database
-} from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { importExportService } from '@/services/importExportService'
-import { useToast } from '@/hooks/use-toast'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { 
-  Package, BarChart3, Grid3X3, Settings, 
-  Tag, Warehouse, Search, FileText, Plus, TrendingUp, AlertCircle, DollarSign, 
-  LayoutList, LayoutGrid, Download, Upload
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { importExportService } from '@/services/importExportService'
@@ -491,110 +481,6 @@ export default function ModernProductsPage() {
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Modal détails produit */}
-      <Dialog open={showProductModal} onOpenChange={setShowProductModal}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{selectedProduct?.name}</DialogTitle>
-            <DialogDescription>Détails du produit</DialogDescription>
-          </DialogHeader>
-          
-          {selectedProduct && (
-            <div className="space-y-6">
-              {/* Image */}
-              {selectedProduct.image_url && (
-                <div className="aspect-video rounded-lg overflow-hidden bg-muted">
-                  <img 
-                    src={selectedProduct.image_url} 
-                    alt={selectedProduct.name}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              )}
-
-              {/* Informations */}
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Prix de vente</h4>
-                    <p className="text-2xl font-bold">{formatCurrency(selectedProduct.price)}</p>
-                  </div>
-                  
-                  {isPro() && selectedProduct.cost_price && (
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Prix de revient</h4>
-                      <p className="text-lg">{formatCurrency(selectedProduct.cost_price)}</p>
-                    </div>
-                  )}
-
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Stock</h4>
-                    <p className="text-lg">{selectedProduct.stock_quantity || 0} unités</p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">SKU</h4>
-                    <code className="text-sm bg-muted px-2 py-1 rounded">
-                      {selectedProduct.sku || 'N/A'}
-                    </code>
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Catégorie</h4>
-                    <Badge variant="outline">{selectedProduct.category || 'Non catégorisé'}</Badge>
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Statut</h4>
-                    <Badge variant={selectedProduct.status === 'active' ? 'default' : 'secondary'}>
-                      {selectedProduct.status}
-                    </Badge>
-                  </div>
-
-                  {isPro() && selectedProduct.profit_margin && (
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Marge</h4>
-                      <p className="text-lg font-semibold text-emerald-600">
-                        {selectedProduct.profit_margin.toFixed(1)}%
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Description */}
-              {selectedProduct.description && (
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Description</h4>
-                  <p className="text-sm leading-relaxed">{selectedProduct.description}</p>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex items-center gap-2 pt-4 border-t">
-                <Button onClick={() => handleEdit(selectedProduct)} className="flex-1">
-                  Modifier
-                </Button>
-                <Button variant="outline" onClick={() => handleDuplicate(selectedProduct)}>
-                  Dupliquer
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  onClick={() => {
-                    handleDelete(selectedProduct.id)
-                    setShowProductModal(false)
-                  }}
-                >
-                  Supprimer
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Dialog création produit */}
       <CreateProductDialog 
