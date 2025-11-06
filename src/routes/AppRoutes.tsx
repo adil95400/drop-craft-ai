@@ -53,6 +53,8 @@ import StockSyncDashboard from '@/pages/StockSyncDashboard'
 import ProductSourcingAssistant from '@/pages/ProductSourcingAssistant'
 import ProfitAnalyticsDashboard from '@/pages/ProfitAnalyticsDashboard'
 import MultiStoreCentralDashboard from '@/pages/MultiStoreCentralDashboard'
+import PublicationCenterPage from '@/pages/PublicationCenterPage'
+import SyncManagementPage from '@/pages/SyncManagementPage'
 
 export function AppRoutes() {
   return (
@@ -118,6 +120,10 @@ export function AppRoutes() {
         <Route path="product-sourcing" element={<ProductSourcingAssistant />} />
         <Route path="profit-analytics" element={<ProfitAnalyticsDashboard />} />
         <Route path="multi-store-central" element={<MultiStoreCentralDashboard />} />
+        
+        {/* Publication & Sync */}
+        <Route path="publication-center" element={<PublicationCenterPage />} />
+        <Route path="sync-management" element={<SyncManagementPage />} />
       </Route>
     </Routes>
   )

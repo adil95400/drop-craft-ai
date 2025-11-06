@@ -1,132 +1,111 @@
+import { SupplierConnector, SupplierCredentials } from '@/types/suppliers';
 import { BaseConnector } from './BaseConnector';
-import type { SupplierCredentials } from '@/types/suppliers';
-
-export interface ConnectorInfo {
-  id: string;
-  name: string;
-  displayName: string;
-  description: string;
-  category: string;
-  authType: 'api_key' | 'oauth' | 'credentials';
-  status: 'available' | 'beta' | 'coming_soon';
-  features: {
-    products: boolean;
-    inventory: boolean;
-    orders: boolean;
-    webhooks: boolean;
-  };
-  rateLimits: {
-    requestsPerMinute: number;
-    requestsPerHour: number;
-  };
-  setupComplexity: 'easy' | 'medium' | 'advanced';
-}
+import { ShopifyConnector } from './ShopifyConnector';
+import { WooCommerceConnector } from './WooCommerceConnector';
+import { AmazonConnector } from './AmazonConnector';
+import { EtsyConnector } from './EtsyConnector';
+import { CdiscountConnector } from './CdiscountConnector';
 
 export class ConnectorFactory {
-  private static connectors: Map<string, ConnectorInfo> = new Map([
-    ['cdiscount-pro', {
-      id: 'cdiscount-pro',
-      name: 'Cdiscount Pro',
-      displayName: 'Cdiscount Pro',
-      description: 'Marketplace française leader avec API complète',
-      category: 'Marketplace Française',
+  private static connectors: Map<string, SupplierConnector> = new Map([
+    ['shopify', {
+      id: 'shopify',
+      name: 'shopify',
+      displayName: 'Shopify',
+      description: 'Connectez votre boutique Shopify',
+      category: 'ecommerce',
       authType: 'api_key',
-      status: 'available',
       features: { products: true, inventory: true, orders: true, webhooks: true },
-      rateLimits: { requestsPerMinute: 30, requestsPerHour: 1800 },
-      setupComplexity: 'advanced'
+      rateLimits: { requestsPerMinute: 40, requestsPerHour: 2000 },
     }],
-    ['syncee', {
-      id: 'syncee',
-      name: 'Syncee',
-      displayName: 'Syncee',
-      description: 'Plateforme B2B avec 5M+ produits européens',
-      category: 'Marketplace Globale',
+    ['woocommerce', {
+      id: 'woocommerce',
+      name: 'woocommerce',
+      displayName: 'WooCommerce',
+      description: 'Connectez votre boutique WooCommerce',
+      category: 'ecommerce',
       authType: 'api_key',
-      status: 'available',
-      features: { products: true, inventory: true, orders: false, webhooks: true },
-      rateLimits: { requestsPerMinute: 120, requestsPerHour: 7200 },
-      setupComplexity: 'easy'
+      features: { products: true, inventory: true, orders: true, webhooks: true },
+      rateLimits: { requestsPerMinute: 30, requestsPerHour: 1000 },
     }],
-    ['eprolo', {
-      id: 'eprolo',
-      name: 'Eprolo',
-      displayName: 'Eprolo',
-      description: 'Fournisseur dropshipping avec fulfillment automatique',
-      category: 'Dropshipping Premium',
+    ['amazon', {
+      id: 'amazon',
+      name: 'amazon',
+      displayName: 'Amazon SP-API',
+      description: 'Connectez votre compte Amazon Seller',
+      category: 'marketplace',
       authType: 'oauth',
-      status: 'available',
+      features: { products: true, inventory: true, orders: true, webhooks: false },
+      rateLimits: { requestsPerMinute: 20, requestsPerHour: 500 },
+    }],
+    ['etsy', {
+      id: 'etsy',
+      name: 'etsy',
+      displayName: 'Etsy',
+      description: 'Connectez votre boutique Etsy',
+      category: 'marketplace',
+      authType: 'oauth',
       features: { products: true, inventory: true, orders: true, webhooks: true },
-      rateLimits: { requestsPerMinute: 100, requestsPerHour: 6000 },
-      setupComplexity: 'medium'
-    }]
+      rateLimits: { requestsPerMinute: 10, requestsPerHour: 10000 },
+    }],
+    ['cdiscount', {
+      id: 'cdiscount',
+      name: 'cdiscount',
+      displayName: 'Cdiscount',
+      description: 'Connectez votre compte vendeur Cdiscount',
+      category: 'marketplace',
+      authType: 'api_key',
+      features: { products: true, inventory: true, orders: true, webhooks: false },
+      rateLimits: { requestsPerMinute: 30, requestsPerHour: 1000 },
+    }],
   ]);
 
-  static getAvailableConnectors(): ConnectorInfo[] {
+  static getAvailableConnectors(): SupplierConnector[] {
     return Array.from(this.connectors.values());
   }
 
-  static getConnector(id: string): ConnectorInfo | undefined {
-    return this.connectors.get(id);
+  static getConnector(connectorId: string): SupplierConnector | undefined {
+    return this.connectors.get(connectorId);
+  }
+
+  static async createConnectorInstance(
+    connectorId: string,
+    credentials: SupplierCredentials
+  ): Promise<BaseConnector | null> {
+    switch (connectorId) {
+      case 'shopify':
+        return new ShopifyConnector(credentials);
+      case 'woocommerce':
+        return new WooCommerceConnector(credentials);
+      case 'amazon':
+        return new AmazonConnector(credentials);
+      case 'etsy':
+        return new EtsyConnector(credentials);
+      case 'cdiscount':
+        return new CdiscountConnector(credentials);
+      default:
+        console.warn(`Connector ${connectorId} not found`);
+        return null;
+    }
   }
 
   static validateCredentials(connectorId: string, credentials: SupplierCredentials): boolean {
     const connector = this.connectors.get(connectorId);
     if (!connector) return false;
 
-    switch (connector.authType) {
-      case 'api_key':
+    switch (connectorId) {
+      case 'shopify':
+        return !!(credentials.endpoint || credentials.shop_domain) && !!credentials.accessToken;
+      case 'woocommerce':
+        return !!(credentials.endpoint || credentials.site_url) && !!credentials.apiKey && !!credentials.apiSecret;
+      case 'amazon':
+        return !!credentials.accessToken && !!credentials.marketplace_id;
+      case 'etsy':
+        return !!credentials.apiKey && !!credentials.shop_id && !!credentials.accessToken;
+      case 'cdiscount':
         return !!credentials.apiKey;
-      case 'oauth':
-        return !!(credentials.clientId && credentials.clientSecret);
-      case 'credentials':
-        return !!(credentials.username && credentials.password);
       default:
         return false;
-    }
-  }
-
-  static async createConnectorInstance(connectorId: string, credentials: SupplierCredentials): Promise<BaseConnector | null> {
-    try {
-      // Pour la démo, simuler la création d'instances avec des mocks
-      return {
-        validateCredentials: async () => true,
-        fetchProducts: async (options?: any) => {
-          // Retourner des produits simulés basés sur des données réelles
-          return [
-            {
-              id: "DEMO_001",
-              sku: "DEMO-PROD-001",
-              title: "Produit démo " + connectorId,
-              description: "Description du produit démo",
-              price: 29.99,
-              costPrice: 19.99,
-              currency: "EUR",
-              stock: 50,
-              images: ["https://example.com/image.jpg"],
-              category: "Électronique",
-              brand: "Démo",
-              attributes: {},
-              supplier: {
-                id: connectorId,
-                name: connectorId,
-                sku: "DEMO-SKU"
-              }
-            }
-          ];
-        },
-        fetchProduct: async (sku: string) => null,
-        updateInventory: async (products: any[]) => ({
-          total: products.length,
-          imported: products.length,
-          duplicates: 0,
-          errors: []
-        }),
-        getSupplierName: () => connectorId,
-      } as any;
-    } catch (error) {
-      console.error(`Erreur création connecteur ${connectorId}:`, error);
-      return null;
     }
   }
 }

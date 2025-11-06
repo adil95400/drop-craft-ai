@@ -1,187 +1,112 @@
-import { BaseConnector, FetchOptions, SupplierProduct, SyncResult } from './BaseConnector';
+import { BaseConnector, SupplierProduct, SupplierCredentials, SyncResult, FetchOptions } from './BaseConnector';
 
 export class CdiscountConnector extends BaseConnector {
-  constructor(credentials: any) {
-    super(credentials, 'https://ws.cdiscount.com');
+  constructor(credentials: SupplierCredentials) {
+    super(credentials, 'https://ws.cdiscount.com/MarketplaceAPIService.svc');
   }
 
   protected getAuthHeaders(): Record<string, string> {
     return {
-      'Authorization': `Bearer ${this.credentials.access_token}`,
+      'Authorization': `Bearer ${this.credentials.apiKey}`,
       'Content-Type': 'application/json',
     };
   }
 
   protected getSupplierName(): string {
-    return 'Cdiscount Pro';
+    return 'Cdiscount';
   }
 
   async validateCredentials(): Promise<boolean> {
     try {
-      // Test avec l'API de récupération des catégories
-      const response = await this.makeRequest('/FrontMarketPlace.svc/GetAllowedCategoryTree', {
+      await this.makeRequest('/GetOfferList', {
         method: 'POST',
-        body: JSON.stringify({
-          ApiKey: this.credentials.api_key,
-          Token: this.credentials.access_token
-        })
+        body: JSON.stringify({ PageSize: 1 }),
       });
-      return !!response.OperationSuccess;
+      return true;
     } catch (error) {
-      this.handleError(error, 'credential validation');
+      this.handleError(error, 'Credential validation');
       return false;
     }
   }
 
-  async fetchProducts(options: FetchOptions = {}): Promise<SupplierProduct[]> {
+  async fetchProducts(options?: FetchOptions): Promise<SupplierProduct[]> {
     try {
-      const limit = Math.min(options.limit || 50, 1000);
-      const response = await this.makeRequest('/FrontMarketPlace.svc/GetProductList', {
+      const response = await this.makeRequest('/GetOfferList', {
         method: 'POST',
         body: JSON.stringify({
-          ApiKey: this.credentials.api_key,
-          Token: this.credentials.access_token,
-          ProductFilter: {
-            Pagination: {
-              ItemsPerPage: limit,
-              PageNumber: options.page || 1
-            }
-          }
-        })
+          PageSize: options?.limit || 50,
+          PageNumber: options?.page || 1,
+        }),
       });
       
-      const products = response.ProductList || [];
-      return products.map((product: any) => this.normalizeCdiscountProduct(product));
+      return response.OfferList?.map((offer: any) => this.normalizeCdiscountProduct(offer)) || [];
     } catch (error) {
-      this.handleError(error, 'product fetching');
+      this.handleError(error, 'Fetch products');
       return [];
     }
   }
 
   async fetchProduct(sku: string): Promise<SupplierProduct | null> {
     try {
-      const response = await this.makeRequest('/FrontMarketPlace.svc/GetProductList', {
+      const response = await this.makeRequest('/GetOfferList', {
         method: 'POST',
         body: JSON.stringify({
-          ApiKey: this.credentials.api_key,
-          Token: this.credentials.access_token,
-          ProductFilter: {
-            SellerProductId: sku
-          }
-        })
+          SellerProductId: sku,
+        }),
       });
       
-      const products = response.ProductList || [];
-      if (products.length === 0) return null;
-      
-      return this.normalizeCdiscountProduct(products[0]);
+      if (response.OfferList?.length > 0) {
+        return this.normalizeCdiscountProduct(response.OfferList[0]);
+      }
+      return null;
     } catch (error) {
-      this.handleError(error, 'single product fetching');
+      this.handleError(error, 'Fetch product');
       return null;
     }
   }
 
   async updateInventory(products: SupplierProduct[]): Promise<SyncResult> {
-    const result: SyncResult = {
-      total: products.length,
-      imported: 0,
-      duplicates: 0,
-      errors: []
-    };
+    const result: SyncResult = { total: products.length, imported: 0, duplicates: 0, errors: [] };
 
     for (const product of products) {
       try {
-        await this.delay();
-        
-        const existingProduct = await this.fetchProduct(product.sku);
-        
-        if (existingProduct) {
-          result.duplicates++;
-          continue;
-        }
-
-        await this.createCdiscountOffer(product);
+        await this.makeRequest('/UpdateOfferQuantity', {
+          method: 'POST',
+          body: JSON.stringify({
+            SellerProductId: product.sku,
+            Quantity: product.stock,
+          }),
+        });
         result.imported++;
       } catch (error: any) {
-        result.errors.push(`Erreur pour ${product.sku}: ${error.message}`);
+        result.errors.push(`${product.sku}: ${error.message}`);
       }
+      await this.delay();
     }
 
     return result;
   }
 
-  private normalizeCdiscountProduct(cdiscountProduct: any): SupplierProduct {
+  private normalizeCdiscountProduct(offer: any): SupplierProduct {
     return {
-      id: cdiscountProduct.Id || cdiscountProduct.SellerProductId,
-      sku: cdiscountProduct.SellerProductId || cdiscountProduct.Id,
-      title: cdiscountProduct.Name || 'Produit Cdiscount',
-      description: cdiscountProduct.ShortDescription || cdiscountProduct.LongDescription || '',
-      price: parseFloat(cdiscountProduct.SalePrice) || 0,
-      costPrice: parseFloat(cdiscountProduct.BuyingPrice) || undefined,
+      id: offer.ProductId,
+      sku: offer.SellerProductId,
+      title: offer.ProductName,
+      description: offer.Description || '',
+      price: parseFloat(offer.SalePrice),
       currency: 'EUR',
-      stock: cdiscountProduct.ProductCondition?.StockQuantity || 0,
-      images: cdiscountProduct.MainImageUrl ? [cdiscountProduct.MainImageUrl] : [],
-      category: cdiscountProduct.CategoryCode || 'General',
-      brand: cdiscountProduct.Brand || '',
+      stock: offer.AvailableQuantity || 0,
+      images: offer.Images?.map((img: any) => img.Uri) || [],
+      category: offer.CategoryCode || 'General',
+      brand: offer.BrandName || '',
+      attributes: {
+        ean: offer.Ean,
+      },
       supplier: {
         id: 'cdiscount',
-        name: 'Cdiscount Pro',
-        sku: cdiscountProduct.SellerProductId || cdiscountProduct.Id
+        name: 'Cdiscount',
+        sku: offer.SellerProductId,
       },
-      attributes: {
-        ean: cdiscountProduct.Ean,
-        weight: cdiscountProduct.Size?.Weight,
-        preparationTime: cdiscountProduct.PreparationTime,
-        categoryCode: cdiscountProduct.CategoryCode,
-        condition: cdiscountProduct.ProductCondition?.Condition
-      }
     };
-  }
-
-  private async createCdiscountOffer(product: SupplierProduct): Promise<void> {
-    const cdiscountOffer = {
-      ApiKey: this.credentials.api_key,
-      Token: this.credentials.access_token,
-      OfferIntegration: {
-        ProductPackage: {
-          RefPackage: `package-${product.sku}`,
-          Products: [{
-            SellerProductId: product.sku,
-            Name: product.title,
-            ShortDescription: product.description.substring(0, 200),
-            LongDescription: product.description,
-            Brand: product.brand,
-            Size: {
-              Weight: product.attributes?.weight || 100
-            },
-            Navigation: {
-              CategoryCode: product.attributes?.categoryCode || '10101'
-            },
-            Ean: product.attributes?.ean || ''
-          }]
-        },
-        OfferPackage: {
-          RefPackage: `offer-${product.sku}`,
-          Offers: [{
-            SellerProductId: product.sku,
-            ProductCondition: {
-              Condition: 'NewProduct',
-              StockQuantity: product.stock
-            },
-            Price: product.price,
-            EcoPart: 0,
-            DeliveryInformation: {
-              DeliveryMode: 'Standard',
-              PreparationTime: 5
-            }
-          }]
-        }
-      }
-    };
-
-    await this.makeRequest('/FrontMarketPlace.svc/SubmitOfferPackage', {
-      method: 'POST',
-      body: JSON.stringify(cdiscountOffer)
-    });
   }
 }
