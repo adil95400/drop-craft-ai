@@ -150,6 +150,15 @@ const AcademyPage = lazy(() => import('@/pages/AcademyPage'));
 const CourseDetailPage = lazy(() => import('@/pages/CourseDetailPage'));
 const ProductDetailsPage = lazy(() => import('@/pages/ProductDetailsPage'));
 
+// New competitive features
+const PriceMonitoringPage = lazy(() => import('@/pages/PriceMonitoringPage'));
+const AutoFulfillmentDashboard = lazy(() => import('@/pages/AutoFulfillmentDashboard'));
+const FeedOptimizationPage = lazy(() => import('@/pages/FeedOptimizationPage'));
+const StockSyncDashboard = lazy(() => import('@/pages/StockSyncDashboard'));
+const ProductSourcingAssistant = lazy(() => import('@/pages/ProductSourcingAssistant'));
+const ProfitAnalyticsDashboard = lazy(() => import('@/pages/ProfitAnalyticsDashboard'));
+const MultiStoreCentralDashboard = lazy(() => import('@/pages/MultiStoreCentralDashboard'));
+
 // Priority pages (from QuickActions)
 const SyncManagerPage = lazy(() => import('@/pages/SyncManagerPage'));
 const OrdersCenterPage = lazy(() => import('@/pages/OrdersCenterPage'));
