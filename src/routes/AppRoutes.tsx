@@ -46,6 +46,13 @@ import FlashSalesPage from '@/pages/FlashSalesPage'
 import VendorManagementPage from '@/pages/VendorManagementPage'
 import AdsManagerPage from '@/pages/AdsManagerPage'
 import CRMPage from '@/pages/CRMPage'
+import PriceMonitoringPage from '@/pages/PriceMonitoringPage'
+import AutoFulfillmentDashboard from '@/pages/AutoFulfillmentDashboard'
+import FeedOptimizationPage from '@/pages/FeedOptimizationPage'
+import StockSyncDashboard from '@/pages/StockSyncDashboard'
+import ProductSourcingAssistant from '@/pages/ProductSourcingAssistant'
+import ProfitAnalyticsDashboard from '@/pages/ProfitAnalyticsDashboard'
+import MultiStoreCentralDashboard from '@/pages/MultiStoreCentralDashboard'
 
 export function AppRoutes() {
   return (
@@ -102,6 +109,15 @@ export function AppRoutes() {
         <Route path="observability" element={<AdvancedMonitoringPage />} />
         <Route path="ads-manager" element={<AdsManagerPage />} />
         <Route path="crm" element={<CRMPage />} />
+        
+        {/* Advanced Dropshipping Features */}
+        <Route path="price-monitoring" element={<PriceMonitoringPage />} />
+        <Route path="auto-fulfillment-dashboard" element={<AutoFulfillmentDashboard />} />
+        <Route path="feed-optimization" element={<FeedOptimizationPage />} />
+        <Route path="stock-sync" element={<StockSyncDashboard />} />
+        <Route path="product-sourcing" element={<ProductSourcingAssistant />} />
+        <Route path="profit-analytics" element={<ProfitAnalyticsDashboard />} />
+        <Route path="multi-store-central" element={<MultiStoreCentralDashboard />} />
       </Route>
     </Routes>
   )
