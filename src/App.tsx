@@ -103,9 +103,9 @@ const ImportHistoryPage = lazy(() => import('./pages/import/manage/ImportHistory
 // Supplier pages - New organized structure
 const SuppliersHub = lazy(() => import('./pages/suppliers/SuppliersHub'))
 const ManageSuppliers = lazy(() => import('./pages/suppliers/ManageSuppliers'))
-const SupplierMarketplace = lazy(() => import('./pages/SupplierMarketplace'))
-const SuppliersList = lazy(() => import('./pages/suppliers/manage/SuppliersList'))
-const SuppliersConnectors = lazy(() => import('./pages/suppliers/manage/SuppliersConnectors'))
+const SuppliersMarketplace = lazy(() => import('./pages/suppliers/SuppliersMarketplace'))
+const ManageSuppliersList = lazy(() => import('./pages/suppliers/manage/ManageSuppliersList'))
+const ManageSuppliersConnectors = lazy(() => import('./pages/suppliers/manage/ManageSuppliersConnectors'))
 
 const Tracking = lazy(() => import('@/pages/Tracking'));
 const Reviews = lazy(() => import('@/pages/Reviews'));
@@ -271,6 +271,30 @@ function App() {
                           </ProtectedRoute>
                         } />
                         
+                        <Route path="/suppliers/marketplace" element={
+                          <ProtectedRoute>
+                            <AppLayout><SuppliersMarketplace /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/suppliers/manage" element={
+                          <ProtectedRoute>
+                            <AppLayout><ManageSuppliers /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/suppliers/manage/list" element={
+                          <ProtectedRoute>
+                            <AppLayout><ManageSuppliersList /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/suppliers/manage/connectors" element={
+                          <ProtectedRoute>
+                            <AppLayout><ManageSuppliersConnectors /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
                         <Route path="/products" element={
                           <ProtectedRoute>
                             <AppLayout><ModernProductsPage /></AppLayout>
@@ -327,7 +351,7 @@ function App() {
                         
                         <Route path="/premium-suppliers" element={
                           <ProtectedRoute>
-                            <AppLayout><SupplierMarketplace /></AppLayout>
+                            <AppLayout><SuppliersMarketplace /></AppLayout>
                           </ProtectedRoute>
                         } />
                         
