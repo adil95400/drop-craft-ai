@@ -7816,6 +7816,63 @@ export type Database = {
         }
         Relationships: []
       }
+      published_products: {
+        Row: {
+          created_at: string | null
+          external_listing_id: string | null
+          id: string
+          last_synced_at: string | null
+          listing_data: Json | null
+          marketplace_id: string
+          price_override: number | null
+          product_id: string
+          published_at: string | null
+          status: string
+          stock_override: number | null
+          sync_errors: Json | null
+          sync_status: string | null
+          unpublished_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          external_listing_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          listing_data?: Json | null
+          marketplace_id: string
+          price_override?: number | null
+          product_id: string
+          published_at?: string | null
+          status?: string
+          stock_override?: number | null
+          sync_errors?: Json | null
+          sync_status?: string | null
+          unpublished_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          external_listing_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          listing_data?: Json | null
+          marketplace_id?: string
+          price_override?: number | null
+          product_id?: string
+          published_at?: string | null
+          status?: string
+          stock_override?: number | null
+          sync_errors?: Json | null
+          sync_status?: string | null
+          unpublished_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       quick_import_history: {
         Row: {
           catalog_product_id: string | null

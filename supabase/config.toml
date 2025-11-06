@@ -238,9 +238,6 @@ verify_jwt = true
 [functions.ai-pricing-optimizer]
 verify_jwt = true
 
-[functions.ai-marketing-content]
-verify_jwt = true
-
 [functions.ai-sentiment-analysis]
 verify_jwt = true
 
@@ -291,9 +288,6 @@ verify_jwt = true
 
 [functions.compare-competitors]
 verify_jwt = true
-
-[functions.public-api]
-verify_jwt = false
 
 [functions.extension-product-importer]
 verify_jwt = true
@@ -408,3 +402,12 @@ verify_jwt = true
 
 [functions.analyze-supplier]
 verify_jwt = false
+
+[functions.marketplace-connect]
+verify_jwt = true
+
+[functions.marketplace-sync]
+verify_jwt = true
+
+[functions.marketplace-publish]
+verify_jwt = true

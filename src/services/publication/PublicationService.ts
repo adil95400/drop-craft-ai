@@ -127,20 +127,103 @@ export class PublicationService {
   }
 
   async getPublishedProducts(marketplaceId?: string): Promise<any[]> {
-    // TODO: Implement when published_products table is created
-    console.log('getPublishedProducts not yet implemented')
-    return []
+    let query = supabase
+      .from('published_products')
+      .select(`
+        *,
+        imported_products (
+          id,
+          name,
+          sku,
+          price,
+          stock_quantity,
+          image_urls
+        )
+      `)
+      .order('published_at', { ascending: false })
+
+    if (marketplaceId) {
+      query = query.eq('marketplace_id', marketplaceId)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Error fetching published products:', error)
+      return []
+    }
+
+    return data || []
   }
 
   async unpublishProduct(productId: string, marketplaceId: string): Promise<boolean> {
-    // TODO: Implement when published_products table is created
-    console.log('unpublishProduct not yet implemented')
-    return true
+    try {
+      const { error } = await supabase
+        .from('published_products')
+        .update({ status: 'inactive', unpublished_at: new Date().toISOString() })
+        .eq('product_id', productId)
+        .eq('marketplace_id', marketplaceId)
+
+      if (error) throw error
+
+      // Logger l'activité
+      await supabase.from('activity_logs').insert({
+        user_id: (await supabase.auth.getUser()).data.user?.id || '',
+        action: 'unpublish_product',
+        description: `Unpublished product from ${marketplaceId}`,
+        metadata: { product_id: productId, marketplace_id: marketplaceId }
+      })
+
+      return true
+    } catch (error) {
+      console.error('Error unpublishing product:', error)
+      return false
+    }
   }
 
   async syncInventory(productId: string, marketplaceIds?: string[]): Promise<void> {
-    // TODO: Implement when published_products table is created
-    console.log('syncInventory not yet implemented')
+    try {
+      // Récupérer le stock actuel
+      const { data: product } = await supabase
+        .from('imported_products')
+        .select('stock_quantity')
+        .eq('id', productId)
+        .single()
+
+      if (!product) throw new Error('Product not found')
+
+      // Récupérer les publications
+      let query = supabase
+        .from('published_products')
+        .select('*')
+        .eq('product_id', productId)
+        .eq('status', 'active')
+
+      if (marketplaceIds) {
+        query = query.in('marketplace_id', marketplaceIds)
+      }
+
+      const { data: publications } = await query
+
+      if (!publications || publications.length === 0) return
+
+      // Synchroniser le stock sur chaque marketplace
+      for (const pub of publications) {
+        await supabase.functions.invoke('marketplace-sync', {
+          body: {
+            integrationId: pub.marketplace_id,
+            type: 'stock',
+            products: [{
+              sku: pub.external_listing_id,
+              quantity: product.stock_quantity
+            }]
+          }
+        })
+      }
+    } catch (error) {
+      console.error('Error syncing inventory:', error)
+      throw error
+    }
   }
 
   async getPublicationStats(): Promise<{
@@ -148,12 +231,21 @@ export class PublicationService {
     activeListings: number
     byMarketplace: Record<string, number>
   }> {
-    // TODO: Implement when published_products table is created
-    return {
-      totalPublished: 0,
-      activeListings: 0,
-      byMarketplace: {}
+    const { data: publications } = await supabase
+      .from('published_products')
+      .select('marketplace_id, status')
+
+    const stats = {
+      totalPublished: publications?.length || 0,
+      activeListings: publications?.filter(p => p.status === 'active').length || 0,
+      byMarketplace: {} as Record<string, number>
     }
+
+    publications?.forEach(pub => {
+      stats.byMarketplace[pub.marketplace_id] = (stats.byMarketplace[pub.marketplace_id] || 0) + 1
+    })
+
+    return stats
   }
 
   private delay(ms: number): Promise<void> {
