@@ -15,13 +15,15 @@ import { ProductFilters, ProductFiltersState } from '@/components/products/Produ
 import { CreateProductDialog } from '@/components/modals/CreateProductDialog'
 import { EditProductDialog } from '@/components/products/EditProductDialog'
 import { useUnifiedProducts, UnifiedProduct } from '@/hooks/useUnifiedProducts'
+import { AIProductOptimizer } from '@/components/ai/AIProductOptimizer'
+import { BulkOptimizationPanel } from '@/components/ai/BulkOptimizationPanel'
 import { useNavigate } from 'react-router-dom'
 import { useLegacyPlan } from '@/lib/migration-helper'
 import { useDebounce } from '@/components/performance/PerformanceOptimizations'
 import { 
   Package, BarChart3, Grid3X3, Settings, 
   Tag, Warehouse, Search, FileText, Plus, TrendingUp, AlertCircle, DollarSign, AlertTriangle,
-  LayoutList, LayoutGrid, Download, Upload, Database
+  LayoutList, LayoutGrid, Download, Upload, Database, Sparkles
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { importExportService } from '@/services/importExportService'
@@ -47,6 +49,8 @@ export default function ModernProductsPage() {
     lowStock: false,
     source: 'all'
   })
+  const [selectedProductForAI, setSelectedProductForAI] = useState<UnifiedProduct | null>(null)
+  const [showBulkOptimizer, setShowBulkOptimizer] = useState(false)
 
   // Debounce search for performance
   const debouncedSearch = useDebounce(filters.search, 300)
@@ -375,6 +379,17 @@ export default function ModernProductsPage() {
                       <Upload className="h-4 w-4 mr-2" />
                       Importer
                     </Button>
+                    {selectedIds.length > 0 && (
+                      <Button
+                        onClick={() => setShowBulkOptimizer(true)}
+                        variant="default"
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        Optimiser IA ({selectedIds.length})
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -420,6 +435,50 @@ export default function ModernProductsPage() {
                     onDelete={handleDelete}
                     isPro={isPro()}
                   />
+                )}
+
+                {/* AI Optimization Modals */}
+                {selectedProductForAI && (
+                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-background rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                      <AIProductOptimizer 
+                        product={selectedProductForAI}
+                        onOptimized={() => setSelectedProductForAI(null)}
+                      />
+                      <div className="p-4">
+                        <Button
+                          onClick={() => setSelectedProductForAI(null)}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          Fermer
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {showBulkOptimizer && selectedIds.length > 0 && (
+                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-background rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                      <BulkOptimizationPanel
+                        products={sortedProducts.filter(p => selectedIds.includes(p.id))}
+                        onComplete={() => {
+                          setShowBulkOptimizer(false)
+                          setSelectedIds([])
+                        }}
+                      />
+                      <div className="p-4">
+                        <Button
+                          onClick={() => setShowBulkOptimizer(false)}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          Fermer
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {/* Message vide */}
