@@ -106,12 +106,21 @@ export function useStoreConnection() {
 
   const testStoreConnection = async (data: StoreConnectionData) => {
     try {
+      // Get current session to pass auth headers
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error("Session expirée, veuillez vous reconnecter")
+      }
+
       // Appel à la fonction Edge pour tester la connexion
       const { data: result, error } = await supabase.functions.invoke('store-connection-test', {
         body: {
           platform: data.platform,
           shopDomain: data.domain,
           ...data.credentials
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
         }
       })
 
