@@ -20,7 +20,8 @@ import {
   BarChart3,
   ArrowUpRight,
   ArrowDownRight,
-  Package
+  Package,
+  Trash2
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -105,13 +106,13 @@ export const MarketplaceHub = () => {
     }
   }
 
-  const connectMarketplace = async (platform: string) => {
+  const connectMarketplace = async (platform: string, credentials?: any) => {
     try {
-      const { data, error } = await supabase.functions.invoke('marketplace-hub', {
+      const { data, error } = await supabase.functions.invoke('marketplace-connect', {
         body: { 
-          action: 'connect',
           platform,
-          user_id: user?.id
+          credentials: credentials || {},
+          shop_url: credentials?.shop_url || `https://${platform}.com`
         }
       })
 
@@ -128,6 +129,30 @@ export const MarketplaceHub = () => {
       toast({
         title: "Erreur de connexion",
         description: "Impossible de se connecter à la plateforme",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const disconnectMarketplace = async (connectionId: string, platform: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('marketplace-disconnect', {
+        body: { integration_id: connectionId }
+      })
+
+      if (error) throw error
+
+      toast({
+        title: "Déconnexion réussie",
+        description: `Déconnecté de ${platform}`
+      })
+      
+      await loadConnections()
+    } catch (error) {
+      console.error('Disconnect error:', error)
+      toast({
+        title: "Erreur de déconnexion",
+        description: "Impossible de déconnecter la plateforme",
         variant: "destructive"
       })
     }
@@ -477,8 +502,12 @@ export const MarketplaceHub = () => {
                           <RefreshCw className="h-4 w-4" />
                         )}
                       </Button>
-                      <Button size="sm" variant="outline">
-                        <Settings className="h-4 w-4" />
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => disconnectMarketplace(connection.id, connection.platform)}
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>

@@ -55,6 +55,7 @@ import ProfitAnalyticsDashboard from '@/pages/ProfitAnalyticsDashboard'
 import MultiStoreCentralDashboard from '@/pages/MultiStoreCentralDashboard'
 import PublicationCenterPage from '@/pages/PublicationCenterPage'
 import SyncManagementPage from '@/pages/SyncManagementPage'
+import ConnectorsPage from '@/pages/ConnectorsPage'
 
 export function AppRoutes() {
   return (
@@ -124,6 +125,7 @@ export function AppRoutes() {
         {/* Publication & Sync */}
         <Route path="publication-center" element={<PublicationCenterPage />} />
         <Route path="sync-management" element={<SyncManagementPage />} />
+        <Route path="connectors" element={<ConnectorsPage />} />
       </Route>
     </Routes>
   )

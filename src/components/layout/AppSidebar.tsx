@@ -104,6 +104,7 @@ const navigationGroups = [
       { title: "Stores", url: "/stores", icon: Building2 },
       { title: "Connecter Store", url: "/stores/connect", icon: Globe },
       { title: "Marketplace", url: "/marketplace", icon: Store },
+      { title: "Connecteurs", url: "/connectors", icon: Zap, badge: "Nouveau" },
     ]
   },
   {
