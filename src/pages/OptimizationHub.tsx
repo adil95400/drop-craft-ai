@@ -1,7 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 import { SiteOptimizationDashboard } from '@/components/optimization/SiteOptimizationDashboard';
-import { Sparkles, TrendingUp } from 'lucide-react';
+import { GlobalSEOOptimizer } from '@/components/optimization/GlobalSEOOptimizer';
+import { Sparkles, TrendingUp, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function OptimizationHub() {
   return (
@@ -34,8 +36,27 @@ export default function OptimizationHub() {
             </div>
           </div>
 
-          {/* Main Dashboard */}
-          <SiteOptimizationDashboard />
+          {/* Main Dashboard with Tabs */}
+          <Tabs defaultValue="overview" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="overview" className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                Vue d'ensemble
+              </TabsTrigger>
+              <TabsTrigger value="seo" className="flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                SEO Global
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview">
+              <SiteOptimizationDashboard />
+            </TabsContent>
+
+            <TabsContent value="seo">
+              <GlobalSEOOptimizer />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </>
