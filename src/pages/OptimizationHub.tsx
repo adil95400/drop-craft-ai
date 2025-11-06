@@ -2,7 +2,8 @@ import { Helmet } from 'react-helmet-async';
 import { SiteOptimizationDashboard } from '@/components/optimization/SiteOptimizationDashboard';
 import { GlobalSEOOptimizer } from '@/components/optimization/GlobalSEOOptimizer';
 import { GlobalImageOptimizer } from '@/components/optimization/GlobalImageOptimizer';
-import { Sparkles, TrendingUp, Search, ImageIcon } from 'lucide-react';
+import { GlobalTranslationOptimizer } from '@/components/optimization/GlobalTranslationOptimizer';
+import { Sparkles, TrendingUp, Search, ImageIcon, Languages } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -39,7 +40,7 @@ export default function OptimizationHub() {
 
           {/* Main Dashboard with Tabs */}
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4" />
                 Vue d'ensemble
@@ -51,6 +52,10 @@ export default function OptimizationHub() {
               <TabsTrigger value="images" className="flex items-center gap-2">
                 <ImageIcon className="h-4 w-4" />
                 Images
+              </TabsTrigger>
+              <TabsTrigger value="translations" className="flex items-center gap-2">
+                <Languages className="h-4 w-4" />
+                Traductions
               </TabsTrigger>
             </TabsList>
 
@@ -64,6 +69,10 @@ export default function OptimizationHub() {
 
             <TabsContent value="images">
               <GlobalImageOptimizer />
+            </TabsContent>
+
+            <TabsContent value="translations">
+              <GlobalTranslationOptimizer />
             </TabsContent>
           </Tabs>
         </div>

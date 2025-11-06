@@ -417,3 +417,6 @@ verify_jwt = true
 
 [functions.global-image-optimizer]
 verify_jwt = true
+
+[functions.global-translation-optimizer]
+verify_jwt = true
