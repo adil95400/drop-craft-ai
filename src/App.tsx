@@ -124,6 +124,7 @@ const AIPage = lazy(() => import('@/pages/AIPage'));
 const MarketplaceIntegrationsPage = lazy(() => import('@/pages/MarketplaceIntegrationsPage'));
 const FeedManagerPage = lazy(() => import('@/pages/FeedManagerPage'));
 const AIIntelligencePage = lazy(() => import('@/pages/AIIntelligencePage'));
+const OptimizationHub = lazy(() => import('@/pages/OptimizationHub'));
 const PWAInstallPage = lazy(() => import('@/pages/PWAInstallPage'));
 const ExtensionAPIPage = lazy(() => import('@/pages/ExtensionAPIPage'));
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
@@ -373,6 +374,12 @@ function App() {
                         <Route path="/ai-intelligence" element={
                           <ProtectedRoute>
                             <AppLayout><AIIntelligencePage /></AppLayout>
+                          </ProtectedRoute>
+                        } />
+                        
+                        <Route path="/optimization-hub" element={
+                          <ProtectedRoute>
+                            <AppLayout><OptimizationHub /></AppLayout>
                           </ProtectedRoute>
                         } />
 
