@@ -414,3 +414,6 @@ verify_jwt = true
 
 [functions.global-seo-scanner]
 verify_jwt = true
+
+[functions.global-image-optimizer]
+verify_jwt = true
