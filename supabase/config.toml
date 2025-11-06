@@ -420,3 +420,6 @@ verify_jwt = true
 
 [functions.global-translation-optimizer]
 verify_jwt = true
+
+[functions.global-blog-optimizer]
+verify_jwt = true

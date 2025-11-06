@@ -3,6 +3,7 @@ import { SiteOptimizationDashboard } from '@/components/optimization/SiteOptimiz
 import { GlobalSEOOptimizer } from '@/components/optimization/GlobalSEOOptimizer';
 import { GlobalImageOptimizer } from '@/components/optimization/GlobalImageOptimizer';
 import { GlobalTranslationOptimizer } from '@/components/optimization/GlobalTranslationOptimizer';
+import { GlobalBlogOptimizer } from '@/components/optimization/GlobalBlogOptimizer';
 import { Sparkles, TrendingUp, Search, ImageIcon, Languages } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -40,7 +41,7 @@ export default function OptimizationHub() {
 
           {/* Main Dashboard with Tabs */}
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4" />
                 Vue d'ensemble
@@ -56,6 +57,10 @@ export default function OptimizationHub() {
               <TabsTrigger value="translations" className="flex items-center gap-2">
                 <Languages className="h-4 w-4" />
                 Traductions
+              </TabsTrigger>
+              <TabsTrigger value="blog" className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Blog & Contenu
               </TabsTrigger>
             </TabsList>
 
@@ -73,6 +78,10 @@ export default function OptimizationHub() {
 
             <TabsContent value="translations">
               <GlobalTranslationOptimizer />
+            </TabsContent>
+
+            <TabsContent value="blog">
+              <GlobalBlogOptimizer />
             </TabsContent>
           </Tabs>
         </div>
