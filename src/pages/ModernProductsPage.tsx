@@ -14,7 +14,6 @@ import { ProductGridView } from '@/components/products/ProductGridView'
 import { ProductFilters, ProductFiltersState } from '@/components/products/ProductFilters'
 import { CreateProductDialog } from '@/components/modals/CreateProductDialog'
 import { EditProductDialog } from '@/components/products/EditProductDialog'
-import { useUnifiedProducts } from '@/hooks/useUnifiedProducts'
 import { useRealProducts, Product } from '@/hooks/useRealProducts'
 import { useNavigate } from 'react-router-dom'
 import { useLegacyPlan } from '@/lib/migration-helper'
@@ -585,6 +584,19 @@ export default function ModernProductsPage() {
         open={createDialogOpen} 
         onOpenChange={setCreateDialogOpen}
       />
+
+      {/* Dialog édition produit */}
+      {editingProduct && (
+        <EditProductDialog
+          product={{ ...editingProduct, source: 'products', images: editingProduct.image_url ? [editingProduct.image_url] : [] }}
+          open={!!editingProduct}
+          onOpenChange={(open) => !open && setEditingProduct(null)}
+          onSave={async (updates) => {
+            updateProduct({ id: editingProduct.id, updates })
+            setEditingProduct(null)
+          }}
+        />
+      )}
     </div>
   )
 }

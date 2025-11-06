@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ProductTranslations, ProductReviews, ProductImageGallery } from '@/components/products'
+import { ProductTranslations, ProductReviews } from '@/components/products'
+import { ProductImageManager } from '@/components/products/ProductImageManager'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -52,7 +53,7 @@ export default function ProductDetailsPage() {
               </TabsList>
 
               <TabsContent value="gallery">
-                <ProductImageGallery productId="sample-product-id" />
+                <ProductImageManager productId="sample-product-id" />
               </TabsContent>
 
               <TabsContent value="translations">
