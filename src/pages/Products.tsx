@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge'
 import { ProductsTableView } from '@/components/products/ProductsTableView'
 import { ProductsViewToggle, ViewMode } from '@/components/products/ProductsViewToggle'
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
+import { SavedViewsManager } from '@/components/products/SavedViewsManager'
 
 const Products = () => {
   const { toast } = useToast()
@@ -382,12 +383,21 @@ const Products = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Filtres */}
-          <ProductFilters
-            filters={filters}
-            onFiltersChange={setFilters}
-            categories={categories}
-          />
+          {/* Vues sauvegardées et Filtres */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <ProductFilters
+                filters={filters}
+                onFiltersChange={setFilters}
+                categories={categories}
+                className="flex-1"
+              />
+              <SavedViewsManager 
+                currentFilters={filters}
+                onLoadView={setFilters}
+              />
+            </div>
+          </div>
 
           {/* Liste des produits */}
           {viewMode === 'table' ? (
