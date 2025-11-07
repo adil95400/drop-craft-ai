@@ -1,15 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
   useReactTable,
   SortingState,
   ColumnFiltersState,
   VisibilityState,
   ColumnResizeMode,
   RowSelectionState,
+  PaginationState,
 } from '@tanstack/react-table'
 import {
   Table,
@@ -32,6 +34,8 @@ import { Settings2, Trash2, Edit } from 'lucide-react'
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { createProductsColumns } from './ProductsTableColumns'
 import { cn } from '@/lib/utils'
+import { TablePagination } from './TablePagination'
+import { useUserPreferencesStore } from '@/stores/userPreferencesStore'
 
 interface ProductsTableViewProps {
   products: UnifiedProduct[]
@@ -50,11 +54,23 @@ export function ProductsTableView({
   onBulkDelete,
   onBulkEdit,
 }: ProductsTableViewProps) {
+  const { defaultPageSize, setDefaultPageSize } = useUserPreferencesStore()
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [columnResizeMode] = useState<ColumnResizeMode>('onChange')
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: defaultPageSize,
+  })
+
+  // Synchroniser pageSize avec les préférences utilisateur
+  useEffect(() => {
+    if (pagination.pageSize !== defaultPageSize) {
+      setPagination(prev => ({ ...prev, pageSize: defaultPageSize }))
+    }
+  }, [defaultPageSize])
 
   const columns = createProductsColumns({ onEdit, onDelete, onView })
 
@@ -64,18 +80,30 @@ export function ProductsTableView({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onPaginationChange: setPagination,
     columnResizeMode,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
+      pagination,
     },
   })
+
+  const handlePageChange = (page: number) => {
+    table.setPageIndex(page - 1)
+  }
+
+  const handlePageSizeChange = (pageSize: number) => {
+    setDefaultPageSize(pageSize)
+    table.setPageSize(pageSize)
+  }
 
   const selectedRows = table.getFilteredSelectedRowModel().rows
   const selectedIds = selectedRows.map(row => row.original.id)
@@ -220,14 +248,15 @@ export function ProductsTableView({
         </Table>
       </div>
 
-      {/* Footer info */}
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <div>
-          {selectedRows.length > 0
-            ? `${selectedRows.length} sur ${table.getFilteredRowModel().rows.length} ligne(s) sélectionnée(s)`
-            : `${table.getFilteredRowModel().rows.length} produit(s) au total`}
-        </div>
-      </div>
+      {/* Pagination */}
+      <TablePagination
+        currentPage={table.getState().pagination.pageIndex + 1}
+        totalPages={table.getPageCount()}
+        pageSize={table.getState().pagination.pageSize}
+        totalItems={table.getFilteredRowModel().rows.length}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </div>
   )
 }
