@@ -119,10 +119,22 @@ serve(async (req) => {
                       title
                       sku
                       price
+                      compareAtPrice
                       inventoryQuantity
                       availableForSale
+                      image {
+                        url
+                      }
+                      selectedOptions {
+                        name
+                        value
+                      }
                     }
                   }
+                }
+                options {
+                  name
+                  values
                 }
               }
             }
@@ -214,6 +226,8 @@ serve(async (req) => {
           .eq('user_id', user.id)
           .single();
 
+        let catalogProductId: string;
+
         if (existing) {
           // Update existing product
           const { error: updateError } = await supabase
@@ -224,20 +238,88 @@ serve(async (req) => {
           if (updateError) {
             errors.push(`Update failed for ${product.title}: ${updateError.message}`);
             productsSkipped++;
-          } else {
-            productsUpdated++;
+            continue;
           }
+          catalogProductId = existing.id;
+          productsUpdated++;
         } else {
           // Insert new product
-          const { error: insertError } = await supabase
+          const { data: newProduct, error: insertError } = await supabase
             .from('catalog_products')
-            .insert(productData);
+            .insert(productData)
+            .select('id')
+            .single();
 
-          if (insertError) {
-            errors.push(`Insert failed for ${product.title}: ${insertError.message}`);
+          if (insertError || !newProduct) {
+            errors.push(`Insert failed for ${product.title}: ${insertError?.message}`);
             productsSkipped++;
-          } else {
-            productsCreated++;
+            continue;
+          }
+          catalogProductId = newProduct.id;
+          productsCreated++;
+        }
+
+        // Sync product options
+        if (product.options && product.options.length > 0) {
+          // Delete existing options
+          await supabase
+            .from('product_options')
+            .delete()
+            .eq('product_id', catalogProductId);
+
+          // Insert new options
+          const optionsData = product.options.map((option: any, index: number) => ({
+            product_id: catalogProductId,
+            user_id: user.id,
+            name: option.name,
+            values: option.values,
+            position: index
+          }));
+
+          await supabase
+            .from('product_options')
+            .insert(optionsData);
+        }
+
+        // Sync variants
+        if (product.variants && product.variants.edges.length > 0) {
+          for (const variantEdge of product.variants.edges) {
+            const variant = variantEdge.node;
+            
+            const variantData = {
+              product_id: catalogProductId,
+              user_id: user.id,
+              name: variant.title,
+              variant_sku: variant.sku || `${product.handle}-${variant.title}`,
+              price: parseFloat(variant.price),
+              cost_price: variant.compareAtPrice ? parseFloat(variant.compareAtPrice) : null,
+              stock_quantity: variant.inventoryQuantity || 0,
+              image_url: variant.image?.url || null,
+              shopify_variant_id: variant.id,
+              is_active: variant.availableForSale,
+              options: variant.selectedOptions.reduce((acc: any, opt: any) => {
+                acc[opt.name] = opt.value;
+                return acc;
+              }, {})
+            };
+
+            // Check if variant exists
+            const { data: existingVariant } = await supabase
+              .from('product_variants')
+              .select('id')
+              .eq('shopify_variant_id', variant.id)
+              .single();
+
+            if (existingVariant) {
+              await supabase
+                .from('product_variants')
+                .update(variantData)
+                .eq('id', existingVariant.id);
+            } else {
+              await supabase
+                .from('product_variants')
+                .insert(variantData);
+            }
           }
         }
       } catch (error: any) {

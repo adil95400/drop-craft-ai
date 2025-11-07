@@ -74,10 +74,14 @@ serve(async (req) => {
       throw new Error('Shopify credentials not found');
     }
 
-    // Get products from catalog
+    // Get products from catalog with variants and options
     const { data: products, error: productsError } = await supabase
       .from('catalog_products')
-      .select('*')
+      .select(`
+        *,
+        variants:product_variants(*),
+        options:product_options(*)
+      `)
       .eq('user_id', user.id)
       .not('external_id', 'like', 'shopify_%'); // Only export non-Shopify products
 
@@ -175,13 +179,21 @@ serve(async (req) => {
           }
 
         } else {
-          // Create new product
+          // Create new product with variants
           const createMutation = `
             mutation CreateProduct($input: ProductInput!) {
               productCreate(input: $input) {
                 product {
                   id
                   title
+                  variants(first: 100) {
+                    edges {
+                      node {
+                        id
+                        sku
+                      }
+                    }
+                  }
                 }
                 userErrors {
                   field
@@ -190,6 +202,38 @@ serve(async (req) => {
               }
             }
           `;
+
+          const hasVariants = product.variants && product.variants.length > 0;
+          const productOptions = product.options || [];
+
+          // Prepare variants
+          const variants = hasVariants 
+            ? product.variants.map((v: any) => ({
+                price: v.price?.toString() || product.price.toString(),
+                compareAtPrice: v.cost_price?.toString(),
+                sku: v.variant_sku,
+                inventoryQuantities: {
+                  availableQuantity: v.stock_quantity || 0,
+                  locationId: `gid://shopify/Location/1`
+                },
+                options: Object.values(v.options || {})
+              }))
+            : [{
+                price: product.price.toString(),
+                sku: product.sku,
+                inventoryQuantities: {
+                  availableQuantity: product.stock_quantity || 0,
+                  locationId: `gid://shopify/Location/1`
+                }
+              }];
+
+          // Prepare options
+          const options = productOptions.length > 0 
+            ? productOptions.map((opt: any) => ({
+                name: opt.name,
+                values: opt.values
+              }))
+            : undefined;
 
           const createResponse = await fetch(
             `https://${shopDomain}/admin/api/${SHOPIFY_API_VERSION}/graphql.json`,
@@ -208,14 +252,8 @@ serve(async (req) => {
                     productType: product.category,
                     vendor: product.brand || 'DropCraft',
                     tags: product.tags || [],
-                    variants: [{
-                      sku: product.sku,
-                      price: product.price.toString(),
-                      inventoryQuantities: {
-                        availableQuantity: product.stock_quantity || 0,
-                        locationId: `gid://shopify/Location/1` // Default location
-                      }
-                    }]
+                    options: options,
+                    variants: variants
                   }
                 }
               }),
@@ -230,14 +268,27 @@ serve(async (req) => {
           } else {
             productsCreated++;
             
+            const newProductId = createData.data.productCreate.product.id;
+            
             // Update catalog with Shopify ID
             await supabase
               .from('catalog_products')
               .update({ 
-                external_id: `shopify_${createData.data.productCreate.product.id}`,
+                external_id: `shopify_${newProductId}`,
                 supplier_name: 'Shopify'
               })
               .eq('id', product.id);
+
+            // Update variants with Shopify variant IDs
+            if (hasVariants) {
+              const shopifyVariants = createData.data.productCreate.product.variants.edges;
+              for (let i = 0; i < product.variants.length && i < shopifyVariants.length; i++) {
+                await supabase
+                  .from('product_variants')
+                  .update({ shopify_variant_id: shopifyVariants[i].node.id })
+                  .eq('variant_sku', shopifyVariants[i].node.sku);
+              }
+            }
           }
         }
 
