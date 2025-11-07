@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
   DialogContent,
@@ -17,20 +16,18 @@ import {
   Plus,
   Download,
   Upload,
-  LayoutGrid,
-  LayoutList,
-  RefreshCw,
-  Settings
+  RefreshCw
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useLegacyPlan } from '@/lib/migration-helper'
 import { useRealProducts, Product } from '@/hooks/useRealProducts'
-import { ProductTable } from '@/components/products/ProductTable'
 import { ProductGridView } from '@/components/products/ProductGridView'
 import { ProductFilters, ProductFiltersState } from '@/components/products/ProductFilters'
-import { ProductBulkOperations } from '@/components/products/ProductBulkOperations'
 import { importExportService } from '@/services/importExportService'
 import { Badge } from '@/components/ui/badge'
+import { ProductsTableView } from '@/components/products/ProductsTableView'
+import { ProductsViewToggle, ViewMode } from '@/components/products/ProductsViewToggle'
+import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
 
 const Products = () => {
   const { toast } = useToast()
@@ -38,7 +35,7 @@ const Products = () => {
   const { products, stats, isLoading, deleteProduct, addProduct } = useRealProducts()
   
   // États
-  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
+  const [viewMode, setViewMode] = useState<ViewMode>('table')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [sortField, setSortField] = useState<string>('name')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
@@ -150,16 +147,37 @@ const Products = () => {
     }
   }
 
+  // Convertir Product vers UnifiedProduct
+  const toUnifiedProduct = (product: Product): UnifiedProduct => ({
+    ...product,
+    status: product.status as 'active' | 'inactive',
+    source: 'products' as const,
+    images: product.image_url ? [product.image_url] : []
+  })
+
   // Actions produit
-  const handleView = (product: Product) => {
-    setSelectedProduct(product)
+  const handleView = (product: Product | UnifiedProduct) => {
+    setSelectedProduct(product as Product)
     setShowProductModal(true)
   }
 
-  const handleEdit = (product: Product) => {
+  const handleEdit = (product: Product | UnifiedProduct) => {
     toast({
       title: "Édition",
       description: "Fonctionnalité d'édition en cours de développement"
+    })
+  }
+
+  // Actions en masse
+  const handleBulkDelete = (ids: string[]) => {
+    ids.forEach(id => deleteProduct(id))
+    setSelectedIds([])
+  }
+
+  const handleBulkEdit = (ids: string[]) => {
+    toast({
+      title: "Édition en masse",
+      description: `${ids.length} produit(s) sélectionné(s) pour modification`
     })
   }
 
@@ -356,18 +374,10 @@ const Products = () => {
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'table' | 'grid')}>
-                <TabsList>
-                  <TabsTrigger value="table" className="gap-2">
-                    <LayoutList className="h-4 w-4" />
-                    Tableau
-                  </TabsTrigger>
-                  <TabsTrigger value="grid" className="gap-2">
-                    <LayoutGrid className="h-4 w-4" />
-                    Grille
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <ProductsViewToggle 
+                view={viewMode} 
+                onViewChange={setViewMode}
+              />
             </div>
           </div>
         </CardHeader>
@@ -379,29 +389,15 @@ const Products = () => {
             categories={categories}
           />
 
-          {/* Actions groupées */}
-          {selectedIds.length > 0 && (
-            <ProductBulkOperations
-              selectedProducts={selectedIds}
-              onClearSelection={() => setSelectedIds([])}
-            />
-          )}
-
           {/* Liste des produits */}
           {viewMode === 'table' ? (
-            <ProductTable
-              products={filteredAndSortedProducts.map(p => ({ ...p, source: 'products', images: p.image_url ? [p.image_url] : [] }))}
-              selectedIds={selectedIds}
-              onSelectAll={handleSelectAll}
-              onSelectOne={handleSelectOne}
-              onSort={handleSort}
-              sortField={sortField}
-              sortDirection={sortDirection}
+            <ProductsTableView
+              products={filteredAndSortedProducts.map(toUnifiedProduct)}
               onView={handleView}
               onEdit={handleEdit}
-              onDuplicate={handleDuplicate}
               onDelete={handleDelete}
-              isPro={isPro()}
+              onBulkDelete={handleBulkDelete}
+              onBulkEdit={handleBulkEdit}
             />
           ) : (
             <ProductGridView
