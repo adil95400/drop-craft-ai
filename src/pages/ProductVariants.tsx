@@ -1,12 +1,13 @@
-import { useParams } from 'react-router-dom'
-import { ProductVariantsManager } from '@/components/products/ProductVariantsManager'
+import { useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { ProductVariantsDialog } from '@/components/products/ProductVariantsDialog'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 
 export default function ProductVariants() {
   const { productId } = useParams()
   const navigate = useNavigate()
+  const [open, setOpen] = useState(true)
 
   if (!productId) {
     return <div>Produit non trouvé</div>
@@ -25,7 +26,14 @@ export default function ProductVariants() {
       
       <h1 className="text-3xl font-bold mb-6">Gestion des variantes</h1>
       
-      <ProductVariantsManager productId={productId} />
+      <ProductVariantsDialog 
+        productId={productId} 
+        open={open}
+        onOpenChange={(newOpen) => {
+          setOpen(newOpen)
+          if (!newOpen) navigate('/products')
+        }}
+      />
     </div>
   )
 }

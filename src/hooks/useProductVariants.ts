@@ -24,10 +24,10 @@ export const useProductVariants = (productId?: string) => {
         .from('product_variants')
         .select('*')
         .eq('product_id', productId)
-        .order('position', { ascending: true })
+        .order('created_at', { ascending: true })
 
       if (error) throw error
-      return data as ProductVariant[]
+      return data
     },
     enabled: !!productId
   })
@@ -45,7 +45,7 @@ export const useProductVariants = (productId?: string) => {
         .order('position', { ascending: true })
 
       if (error) throw error
-      return data as ProductOption[]
+      return data
     },
     enabled: !!productId
   })
@@ -170,17 +170,18 @@ export const useProductVariants = (productId?: string) => {
 
     // Create variants
     for (const combo of combinations) {
-      const variantTitle = combo.map(c => c.value).join(' / ')
+      const variantName = combo.map(c => c.value).join(' / ')
       const variantSKU = `${product.sku}-${combo.map(c => c.value.substring(0, 3).toUpperCase()).join('-')}`
       
       const variantData: Omit<ProductVariantInsert, 'user_id'> = {
         product_id: productId,
-        sku: variantSKU,
-        title: variantTitle,
+        name: variantName,
+        variant_sku: variantSKU,
         price: product.price,
         cost_price: product.cost_price,
         stock_quantity: 0,
-        options: combo.reduce((acc, c) => ({ ...acc, [c.name]: c.value }), {})
+        options: combo.reduce((acc, c) => ({ ...acc, [c.name]: c.value }), {}),
+        is_active: true
       }
 
       await createVariant.mutateAsync(variantData)
