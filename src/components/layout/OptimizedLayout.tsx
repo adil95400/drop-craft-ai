@@ -6,6 +6,8 @@ import { Outlet } from 'react-router-dom'
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/AppSidebar'
 import { LoadingSpinner, useAuthOptimized } from '@/shared'
+import { NavigationProvider } from '@/contexts/NavigationContext'
+import { EnhancedNavigationBar } from '@/components/navigation/EnhancedNavigationBar'
 import { cn } from '@/lib/utils'
 
 interface OptimizedLayoutProps {
@@ -24,28 +26,25 @@ const OptimizedLayoutComponent = ({ className }: OptimizedLayoutProps) => {
   }
 
   return (
-    <SidebarProvider>
-      <div className={cn("min-h-screen flex w-full bg-background", className)}>
-        <AppSidebar />
-        
-        <SidebarInset className="md:ml-[--sidebar-width] md:peer-data-[state=collapsed]:ml-[--sidebar-width-icon] transition-[margin] duration-200 ease-linear">
-          {/* Header with sidebar trigger */}
-          <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="flex h-14 items-center gap-4 px-4">
-              <SidebarTrigger className="-ml-1" />
-              <div className="flex-1" />
-            </div>
-          </header>
+    <NavigationProvider>
+      <SidebarProvider>
+        <div className={cn("min-h-screen flex w-full bg-background", className)}>
+          <AppSidebar />
+          
+          <SidebarInset className="md:ml-[--sidebar-width] md:peer-data-[state=collapsed]:ml-[--sidebar-width-icon] transition-[margin] duration-200 ease-linear">
+            {/* Enhanced navigation bar */}
+            <EnhancedNavigationBar />
 
-          {/* Main content area */}
-          <div className="flex-1 overflow-auto">
-            <Suspense fallback={<LoadingSpinner text="Chargement de la page..." />}>
-              <Outlet />
-            </Suspense>
-          </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+            {/* Main content area */}
+            <div className="flex-1 overflow-auto">
+              <Suspense fallback={<LoadingSpinner text="Chargement de la page..." />}>
+                <Outlet />
+              </Suspense>
+            </div>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    </NavigationProvider>
   )
 }
 
