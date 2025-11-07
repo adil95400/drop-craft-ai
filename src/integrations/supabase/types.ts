@@ -8868,6 +8868,118 @@ export type Database = {
         }
         Relationships: []
       }
+      shopify_sync_configs: {
+        Row: {
+          auto_sync_enabled: boolean | null
+          created_at: string | null
+          id: string
+          integration_id: string | null
+          last_sync_at: string | null
+          last_sync_result: Json | null
+          next_sync_at: string | null
+          sync_direction: string
+          sync_frequency: string
+          sync_status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_sync_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          integration_id?: string | null
+          last_sync_at?: string | null
+          last_sync_result?: Json | null
+          next_sync_at?: string | null
+          sync_direction: string
+          sync_frequency: string
+          sync_status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_sync_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          integration_id?: string | null
+          last_sync_at?: string | null
+          last_sync_result?: Json | null
+          next_sync_at?: string | null
+          sync_direction?: string
+          sync_frequency?: string
+          sync_status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopify_sync_configs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopify_sync_logs: {
+        Row: {
+          completed_at: string | null
+          config_id: string | null
+          duration_ms: number | null
+          errors: Json | null
+          id: string
+          products_created: number | null
+          products_skipped: number | null
+          products_synced: number | null
+          products_updated: number | null
+          started_at: string | null
+          status: string
+          sync_direction: string
+          sync_type: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          config_id?: string | null
+          duration_ms?: number | null
+          errors?: Json | null
+          id?: string
+          products_created?: number | null
+          products_skipped?: number | null
+          products_synced?: number | null
+          products_updated?: number | null
+          started_at?: string | null
+          status: string
+          sync_direction: string
+          sync_type: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          config_id?: string | null
+          duration_ms?: number | null
+          errors?: Json | null
+          id?: string
+          products_created?: number | null
+          products_skipped?: number | null
+          products_synced?: number | null
+          products_updated?: number | null
+          started_at?: string | null
+          status?: string
+          sync_direction?: string
+          sync_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopify_sync_logs_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "shopify_sync_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       smart_inventory: {
         Row: {
           auto_reorder_enabled: boolean
@@ -12040,7 +12152,9 @@ export type Database = {
       archive_old_import_jobs: { Args: never; Returns: undefined }
       auto_sync_product_stock: { Args: never; Returns: undefined }
       auto_unlock_stuck_imports: { Args: never; Returns: undefined }
-      calculate_next_sync: { Args: { integration_id: string }; Returns: string }
+      calculate_next_sync:
+        | { Args: { integration_id: string }; Returns: string }
+        | { Args: { base_time: string; frequency: string }; Returns: string }
       calculate_profit_margin: {
         Args: { cost_price: number; price: number }
         Returns: number
