@@ -7,7 +7,9 @@ import {
   Truck, Upload, Trophy, TrendingUp, Zap, 
   Users, Brain, Shield, Plug, Settings,
   ChevronDown, Package, Sparkles, Crown, Calculator,
-  Megaphone, FileText, Globe, Store, Puzzle, GitCompare
+  Megaphone, FileText, Globe, Store, Puzzle, GitCompare,
+  Database, ShoppingBag, GraduationCap, HelpCircle, 
+  Activity, Building2, Building
 } from "lucide-react";
 import {
   Sidebar,
@@ -75,26 +77,51 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'Globe': Globe,
   'Store': Store,
   'PuzzlePiece': Puzzle,
-  'GitCompare': GitCompare
+  'GitCompare': GitCompare,
+  'Database': Database,
+  'ShoppingBag': ShoppingBag,
+  'GraduationCap': GraduationCap,
+  'HelpCircle': HelpCircle,
+  'Activity': Activity,
+  'Building2': Building2,
+  'Building': Building
 };
 
-// Regroupements logiques des modules
+// Regroupements logiques par catégorie (tous les 32 modules)
 const moduleGroups = [
   {
-    title: "🚀 ESSENTIELS",
-    modules: ['dashboard', 'products', 'suppliers', 'premiumCatalog', 'import', 'winners', 'marketplace', 'network']
+    title: "🏠 CORE BUSINESS",
+    modules: ['dashboard', 'stores', 'orders', 'marketplaceHub']
   },
   {
-    title: "📊 ANALYTICS & AUTOMATION",
-    modules: ['analytics', 'automation']
+    title: "📦 PRODUITS & CATALOGUE",
+    modules: ['products', 'import', 'winners', 'productResearch', 'marketplace', 'suppliers', 
+              'premiumSuppliers', 'premiumCatalog', 'profitCalculator', 'network', 'bulkContent', 
+              'inventoryPredictor', 'importSources']
   },
   {
-    title: "💼 BUSINESS",
-    modules: ['crm', 'seo']
+    title: "👥 CLIENTS & CRM",
+    modules: ['customers', 'customerIntelligence', 'crm', 'seo']
   },
   {
-    title: "⚡ ADVANCED",
-    modules: ['ai', 'commerce', 'security', 'integrations', 'supplierAdmin']
+    title: "📊 ANALYTICS & INSIGHTS",
+    modules: ['analytics', 'competitiveComparison']
+  },
+  {
+    title: "⚡ AUTOMATION & TOOLS",
+    modules: ['automation', 'autoFulfillment', 'adsManager', 'extension']
+  },
+  {
+    title: "🎓 FORMATION & SUPPORT",
+    modules: ['academy', 'support']
+  },
+  {
+    title: "🔧 ENTERPRISE & ADMIN",
+    modules: ['ai', 'commerce', 'multiTenant', 'adminPanel', 'supplierAdmin']
+  },
+  {
+    title: "🔌 INTÉGRATIONS & SÉCURITÉ",
+    modules: ['integrations', 'security', 'observability']
   }
 ];
 
