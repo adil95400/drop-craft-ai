@@ -5,13 +5,13 @@ import { ModuleGuard } from '@/components/common/ModuleGuard';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Lazy loading des modules pour optimiser le bundle
-const Analytics = lazy(() => import('@/pages/Analytics'));
+const ModernAnalyticsPage = lazy(() => import('@/pages/ModernAnalyticsPage'));
 const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
 const CrmPage = lazy(() => import('@/pages/CrmPage'));
 const SEOManagerPage = lazy(() => import('@/pages/SEOManagerPage'));
 const AIPage = lazy(() => import('@/pages/AIPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
-const IntegrationsPage = lazy(() => import('@/pages/IntegrationsPage'));
+const ModernIntegrationsHub = lazy(() => import('@/pages/ModernIntegrationsHub'));
 const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
 
 // Composant de chargement
@@ -35,7 +35,7 @@ export function ModuleRoutes() {
           path="/analytics" 
           element={
             <ModuleGuard moduleId="analytics">
-              <Analytics />
+              <ModernAnalyticsPage />
             </ModuleGuard>
           } 
         />
@@ -85,7 +85,7 @@ export function ModuleRoutes() {
           path="/integrations" 
           element={
             <ModuleGuard moduleId="integrations">
-              <IntegrationsPage />
+              <ModernIntegrationsHub />
             </ModuleGuard>
           } 
         />
