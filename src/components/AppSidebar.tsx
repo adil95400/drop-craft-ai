@@ -87,47 +87,72 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'Building': Building
 };
 
-// Regroupements logiques optimisés par workflow business
+// Regroupements logiques - TOUS les 32+ modules organisés par workflow business
 const moduleGroups = [
   {
-    title: "🏠 TABLEAU DE BORD",
+    title: "🏠 ESSENTIEL",
+    description: "Vue d'ensemble et accès rapide",
     modules: ['dashboard']
   },
   {
-    title: "💼 VENTES & COMMANDES",
-    modules: ['orders', 'stores', 'marketplaceHub']
+    title: "🛍️ VENTES & COMMANDES",
+    description: "Gestion des ventes et boutiques",
+    modules: ['orders', 'stores', 'marketplaceHub', 'commerce']
   },
   {
-    title: "📦 CATALOGUE & PRODUITS",
-    modules: ['products', 'import', 'winners', 'productResearch', 'marketplace']
+    title: "📦 PRODUITS",
+    description: "Catalogue et recherche de produits",
+    modules: ['products', 'import', 'winners', 'productResearch', 'marketplace', 'importSources']
   },
   {
-    title: "🚚 FOURNISSEURS & STOCK",
-    modules: ['suppliers', 'premiumSuppliers', 'premiumCatalog', 'inventoryPredictor', 'network']
+    title: "🚚 FOURNISSEURS",
+    description: "Gestion des fournisseurs et stock",
+    modules: ['suppliers', 'premiumSuppliers', 'premiumCatalog', 'network', 'supplierAdmin', 'inventoryPredictor']
   },
   {
-    title: "👥 CLIENTS & MARKETING",
-    modules: ['customers', 'customerIntelligence', 'crm', 'seo', 'adsManager']
+    title: "✍️ CONTENU & SEO",
+    description: "Optimisation et création de contenu",
+    modules: ['bulkContent', 'seo']
   },
   {
-    title: "📊 ANALYTICS & PERFORMANCE",
+    title: "👥 CLIENTS & CRM",
+    description: "Relation client et intelligence",
+    modules: ['customers', 'customerIntelligence', 'crm']
+  },
+  {
+    title: "📊 ANALYTICS",
+    description: "Analyse et performance",
     modules: ['analytics', 'competitiveComparison', 'profitCalculator']
   },
   {
-    title: "⚡ AUTOMATION & OUTILS",
-    modules: ['automation', 'autoFulfillment', 'bulkContent', 'importSources', 'extension']
+    title: "⚡ AUTOMATION",
+    description: "Automatisation et outils",
+    modules: ['automation', 'autoFulfillment', 'adsManager', 'extension']
+  },
+  {
+    title: "🤖 INTELLIGENCE ARTIFICIELLE",
+    description: "IA et prédictions avancées",
+    modules: ['ai']
+  },
+  {
+    title: "🏢 ENTERPRISE",
+    description: "Gestion multi-tenant et admin",
+    modules: ['multiTenant', 'adminPanel']
+  },
+  {
+    title: "🔌 INTÉGRATIONS",
+    description: "API et connecteurs",
+    modules: ['integrations']
+  },
+  {
+    title: "🛡️ SÉCURITÉ & SYSTÈME",
+    description: "Sécurité, monitoring et observabilité",
+    modules: ['security', 'observability']
   },
   {
     title: "🎓 FORMATION & SUPPORT",
+    description: "Apprendre et obtenir de l'aide",
     modules: ['academy', 'support']
-  },
-  {
-    title: "🔧 ADMINISTRATION",
-    modules: ['ai', 'commerce', 'multiTenant', 'adminPanel', 'supplierAdmin']
-  },
-  {
-    title: "🔌 INTÉGRATIONS & SÉCURITÉ",
-    modules: ['integrations', 'security', 'observability']
   }
 ];
 
