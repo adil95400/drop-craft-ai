@@ -37,6 +37,12 @@ const ProfitCalculatorPage = lazy(() => import('@/pages/ProfitCalculatorPage'));
 const BulkContentCreationPage = lazy(() => import('@/pages/BulkContentCreationPage'));
 const InventoryPredictorPage = lazy(() => import('@/pages/InventoryPredictorPage'));
 
+// Product Management
+const ProductVariants = lazy(() => import('@/pages/ProductVariants'));
+const WarehouseManagement = lazy(() => import('@/pages/WarehouseManagement'));
+const DropshippingCenterPage = lazy(() => import('@/pages/DropshippingCenterPage'));
+const VendorManagementPage = lazy(() => import('@/pages/VendorManagementPage'));
+
 export function ProductRoutes() {
   return (
     <Routes>
@@ -72,6 +78,12 @@ export function ProductRoutes() {
       <Route path="profit-calculator" element={<ProfitCalculatorPage />} />
       <Route path="bulk-content" element={<BulkContentCreationPage />} />
       <Route path="inventory-predictor" element={<InventoryPredictorPage />} />
+      
+      {/* Product Management */}
+      <Route path="variants" element={<ProductVariants />} />
+      <Route path="warehouse" element={<WarehouseManagement />} />
+      <Route path="dropshipping-center" element={<DropshippingCenterPage />} />
+      <Route path="vendors" element={<VendorManagementPage />} />
       
       {/* Legacy redirects */}
       <Route path="catalogue-ultra-pro" element={<Navigate to="/products/catalogue" replace />} />

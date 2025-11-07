@@ -22,6 +22,16 @@ const AdvancedMonitoringPage = lazy(() => import('@/pages/AdvancedMonitoringPage
 // Platform
 const PlatformManagementPage = lazy(() => import('@/pages/PlatformManagementPage'));
 
+// Admin Management
+const ApplicationStatusPage = lazy(() => import('@/pages/ApplicationStatusPage'));
+const TaxManagementPage = lazy(() => import('@/pages/TaxManagementPage'));
+const TeamManagement = lazy(() => import('@/pages/TeamManagement'));
+const InternationalizationPage = lazy(() => import('@/pages/InternationalizationPage'));
+const QuotaManagerPage = lazy(() => import('@/pages/QuotaManagerPage'));
+const SubscriptionManagementPage = lazy(() => import('@/pages/SubscriptionManagementPage'));
+const MultiChannelManagementPage = lazy(() => import('@/pages/MultiChannelManagementPage'));
+const ComplianceCenter = lazy(() => import('@/pages/ComplianceCenter'));
+
 export function EnterpriseRoutes() {
   return (
     <Routes>
@@ -43,6 +53,16 @@ export function EnterpriseRoutes() {
       
       {/* Platform */}
       <Route path="platform" element={<PlatformManagementPage />} />
+      
+      {/* System Management */}
+      <Route path="status" element={<ApplicationStatusPage />} />
+      <Route path="tax" element={<TaxManagementPage />} />
+      <Route path="team" element={<TeamManagement />} />
+      <Route path="i18n" element={<InternationalizationPage />} />
+      <Route path="quotas" element={<QuotaManagerPage />} />
+      <Route path="subscriptions" element={<SubscriptionManagementPage />} />
+      <Route path="multi-channel" element={<MultiChannelManagementPage />} />
+      <Route path="compliance" element={<ComplianceCenter />} />
     </Routes>
   );
 }

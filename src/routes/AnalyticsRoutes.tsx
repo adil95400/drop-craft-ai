@@ -23,6 +23,11 @@ const PriceMonitoringPage = lazy(() => import('@/pages/PriceMonitoringPage'));
 const Reports = lazy(() => import('@/pages/Reports'));
 const ProfitAnalyticsDashboard = lazy(() => import('@/pages/ProfitAnalyticsDashboard'));
 
+// Advanced Analytics
+const BusinessIntelligencePage = lazy(() => import('@/pages/BusinessIntelligencePage'));
+const CustomerSegmentationPage = lazy(() => import('@/pages/CustomerSegmentationPage'));
+const ProductIntelligencePage = lazy(() => import('@/pages/ProductIntelligencePage'));
+
 export function AnalyticsRoutes() {
   return (
     <Routes>
@@ -44,6 +49,11 @@ export function AnalyticsRoutes() {
       {/* Reports */}
       <Route path="reports" element={<Reports />} />
       <Route path="profit-analytics" element={<ProfitAnalyticsDashboard />} />
+      
+      {/* Advanced Analytics */}
+      <Route path="business-intelligence" element={<BusinessIntelligencePage />} />
+      <Route path="customer-segmentation" element={<CustomerSegmentationPage />} />
+      <Route path="product-intelligence" element={<ProductIntelligencePage />} />
       
       {/* Legacy redirects */}
       <Route path="ultra-pro" element={<Navigate to="/analytics/advanced" replace />} />

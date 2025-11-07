@@ -22,6 +22,24 @@ const SEO = lazy(() => import('@/pages/SEO'));
 // Ads
 const AdsManagerPage = lazy(() => import('@/pages/AdsManagerPage'));
 
+// Advanced Marketing
+const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
+const AbandonedCartPage = lazy(() => import('@/pages/AbandonedCartPage'));
+const AffiliateMarketingPage = lazy(() => import('@/pages/AffiliateMarketingPage'));
+const EmailMarketingPage = lazy(() => import('@/pages/EmailMarketingPage'));
+const FlashSalesPage = lazy(() => import('@/pages/FlashSalesPage'));
+const LoyaltyProgramPage = lazy(() => import('@/pages/LoyaltyProgramPage'));
+const CouponManagementPage = lazy(() => import('@/pages/CouponManagementPage'));
+const MarketingCalendarPage = lazy(() => import('@/pages/MarketingCalendarPage'));
+const SocialCommercePage = lazy(() => import('@/pages/SocialCommercePage'));
+const CreativeStudioPage = lazy(() => import('@/pages/CreativeStudioPage'));
+const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage'));
+
+// SEO Tools
+const KeywordResearch = lazy(() => import('@/pages/KeywordResearch'));
+const RankTracker = lazy(() => import('@/pages/RankTracker'));
+const SchemaGenerator = lazy(() => import('@/pages/SchemaGenerator'));
+
 export function MarketingRoutes() {
   return (
     <Routes>
@@ -42,6 +60,24 @@ export function MarketingRoutes() {
       
       {/* Ads */}
       <Route path="ads" element={<AdsManagerPage />} />
+      
+      {/* Advanced Marketing */}
+      <Route path="ab-testing" element={<ABTestingPage />} />
+      <Route path="abandoned-cart" element={<AbandonedCartPage />} />
+      <Route path="affiliate" element={<AffiliateMarketingPage />} />
+      <Route path="email" element={<EmailMarketingPage />} />
+      <Route path="flash-sales" element={<FlashSalesPage />} />
+      <Route path="loyalty" element={<LoyaltyProgramPage />} />
+      <Route path="coupons" element={<CouponManagementPage />} />
+      <Route path="calendar" element={<MarketingCalendarPage />} />
+      <Route path="social-commerce" element={<SocialCommercePage />} />
+      <Route path="creative-studio" element={<CreativeStudioPage />} />
+      <Route path="content-generation" element={<ContentGenerationPage />} />
+      
+      {/* SEO Tools */}
+      <Route path="seo/keywords" element={<KeywordResearch />} />
+      <Route path="seo/rank-tracker" element={<RankTracker />} />
+      <Route path="seo/schema" element={<SchemaGenerator />} />
       
       {/* Legacy redirects */}
       <Route path="crm-ultra-pro" element={<Navigate to="/marketing/crm" replace />} />

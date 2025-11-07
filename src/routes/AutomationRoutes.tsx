@@ -23,6 +23,13 @@ const FeedOptimizationPage = lazy(() => import('@/pages/FeedOptimizationPage'));
 const StockSyncDashboard = lazy(() => import('@/pages/StockSyncDashboard'));
 const ProductSourcingAssistant = lazy(() => import('@/pages/ProductSourcingAssistant'));
 
+// Advanced Automation
+const WorkflowBuilderPage = lazy(() => import('@/pages/WorkflowBuilderPage'));
+const PriceOptimizationPage = lazy(() => import('@/pages/PriceOptimizationPage'));
+const PricingAutomationPage = lazy(() => import('@/pages/PricingAutomationPage'));
+const ProductRecommendationsPage = lazy(() => import('@/pages/ProductRecommendationsPage'));
+const DynamicPricing = lazy(() => import('@/pages/DynamicPricing'));
+
 export function AutomationRoutes() {
   return (
     <Routes>
@@ -44,6 +51,13 @@ export function AutomationRoutes() {
       <Route path="feed-optimization" element={<FeedOptimizationPage />} />
       <Route path="stock-sync" element={<StockSyncDashboard />} />
       <Route path="sourcing-assistant" element={<ProductSourcingAssistant />} />
+      
+      {/* Advanced Automation */}
+      <Route path="workflow-builder" element={<WorkflowBuilderPage />} />
+      <Route path="price-optimization" element={<PriceOptimizationPage />} />
+      <Route path="pricing-automation" element={<PricingAutomationPage />} />
+      <Route path="recommendations" element={<ProductRecommendationsPage />} />
+      <Route path="dynamic-pricing" element={<DynamicPricing />} />
       
       {/* Legacy redirects */}
       <Route path="ultra-pro" element={<Navigate to="/automation" replace />} />

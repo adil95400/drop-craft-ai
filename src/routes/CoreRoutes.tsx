@@ -26,6 +26,10 @@ const ModernCustomersPage = lazy(() => import('@/pages/ModernCustomersPage'));
 const SyncManagerPage = lazy(() => import('@/pages/SyncManagerPage'));
 const MarketplaceSyncDashboard = lazy(() => import('@/pages/MarketplaceSyncDashboard'));
 
+// Order Management
+const ReturnManagementPage = lazy(() => import('@/pages/ReturnManagementPage'));
+const ShippingManagementPage = lazy(() => import('@/pages/ShippingManagementPage'));
+
 export function CoreRoutes() {
   return (
     <Routes>
@@ -47,6 +51,8 @@ export function CoreRoutes() {
       {/* Orders Management */}
       <Route path="orders" element={<ModernOrdersPage />} />
       <Route path="orders/center" element={<OrdersCenterPage />} />
+      <Route path="orders/returns" element={<ReturnManagementPage />} />
+      <Route path="orders/shipping" element={<ShippingManagementPage />} />
       
       {/* Customers */}
       <Route path="customers" element={<ModernCustomersPage />} />

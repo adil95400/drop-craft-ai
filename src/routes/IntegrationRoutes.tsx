@@ -29,6 +29,11 @@ const APIDocumentationPage = lazy(() => import('@/pages/APIDocumentationPage'));
 const Support = lazy(() => import('@/pages/Support'));
 const AcademyPage = lazy(() => import('@/pages/AcademyPage'));
 const CourseDetailPage = lazy(() => import('@/pages/CourseDetailPage'));
+const LiveChatSupportPage = lazy(() => import('@/pages/LiveChatSupportPage'));
+const QAPage = lazy(() => import('@/pages/QAPage'));
+
+// Content Management
+const ContentManagementPage = lazy(() => import('@/pages/ContentManagementPage'));
 
 export function IntegrationRoutes() {
   return (
@@ -56,8 +61,13 @@ export function IntegrationRoutes() {
       
       {/* Support & Learning */}
       <Route path="support" element={<Support />} />
+      <Route path="support/live-chat" element={<LiveChatSupportPage />} />
+      <Route path="support/qa" element={<QAPage />} />
       <Route path="academy" element={<AcademyPage />} />
       <Route path="academy/course/:id" element={<CourseDetailPage />} />
+      
+      {/* Content */}
+      <Route path="content" element={<ContentManagementPage />} />
     </Routes>
   );
 }
