@@ -34,6 +34,7 @@ import { AdvancedExportDialog } from '@/components/products/AdvancedExportDialog
 import { BulkEditDialog } from '@/components/products/BulkEditDialog'
 import { useQueryClient } from '@tanstack/react-query'
 import { ProductsAnalyticsDashboard } from '@/components/products/ProductsAnalyticsDashboard'
+import { AdvancedCSVImport } from '@/components/products/AdvancedCSVImport'
 
 const Products = () => {
   const { toast } = useToast()
@@ -51,6 +52,7 @@ const Products = () => {
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [showBulkEditDialog, setShowBulkEditDialog] = useState(false)
   const [showAnalytics, setShowAnalytics] = useState(false)
+  const [showImport, setShowImport] = useState(false)
   
   const [filters, setFilters] = useState<ProductFiltersState>({
     search: '',
@@ -197,6 +199,11 @@ const Products = () => {
     setSelectedIds([])
   }
 
+  const handleImportComplete = () => {
+    queryClient.invalidateQueries({ queryKey: ['real-products'] })
+    setShowImport(false)
+  }
+
   const handleDuplicate = async (product: Product) => {
     try {
       const { id, created_at, updated_at, user_id, ...productData } = product
@@ -277,11 +284,13 @@ const Products = () => {
             <Download className="h-4 w-4 mr-2" />
             Exporter
           </Button>
-          <Button variant="outline" size="sm" asChild>
-            <a href="/import">
-              <Upload className="h-4 w-4 mr-2" />
-              Importer
-            </a>
+          <Button 
+            variant={showImport ? "default" : "outline"} 
+            size="sm" 
+            onClick={() => setShowImport(!showImport)}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            Importer CSV
           </Button>
           <Button size="sm" asChild>
             <a href="/import">
@@ -297,6 +306,14 @@ const Products = () => {
         <ProductsAnalyticsDashboard 
           products={filteredAndSortedProducts}
           onClose={() => setShowAnalytics(false)}
+        />
+      )}
+
+      {/* Import CSV avancé */}
+      {showImport && (
+        <AdvancedCSVImport 
+          existingProducts={products}
+          onImportComplete={handleImportComplete}
         />
       )}
 
