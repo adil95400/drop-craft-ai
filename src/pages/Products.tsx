@@ -16,7 +16,8 @@ import {
   Plus,
   Download,
   Upload,
-  RefreshCw
+  RefreshCw,
+  BarChart3
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useLegacyPlan } from '@/lib/migration-helper'
@@ -32,6 +33,7 @@ import { SavedViewsManager } from '@/components/products/SavedViewsManager'
 import { AdvancedExportDialog } from '@/components/products/AdvancedExportDialog'
 import { BulkEditDialog } from '@/components/products/BulkEditDialog'
 import { useQueryClient } from '@tanstack/react-query'
+import { ProductsAnalyticsDashboard } from '@/components/products/ProductsAnalyticsDashboard'
 
 const Products = () => {
   const { toast } = useToast()
@@ -48,6 +50,7 @@ const Products = () => {
   const [showProductModal, setShowProductModal] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [showBulkEditDialog, setShowBulkEditDialog] = useState(false)
+  const [showAnalytics, setShowAnalytics] = useState(false)
   
   const [filters, setFilters] = useState<ProductFiltersState>({
     search: '',
@@ -262,6 +265,14 @@ const Products = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button 
+            variant={showAnalytics ? "default" : "outline"} 
+            size="sm" 
+            onClick={() => setShowAnalytics(!showAnalytics)}
+          >
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Analytiques
+          </Button>
           <Button variant="outline" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             Exporter
@@ -281,9 +292,18 @@ const Products = () => {
         </div>
       </div>
 
+      {/* Dashboard analytique */}
+      {showAnalytics && (
+        <ProductsAnalyticsDashboard 
+          products={filteredAndSortedProducts}
+          onClose={() => setShowAnalytics(false)}
+        />
+      )}
+
       {/* Statistiques */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card>
+      {!showAnalytics && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Produits</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
@@ -363,7 +383,8 @@ const Products = () => {
             </CardContent>
           </Card>
         )}
-      </div>
+        </div>
+      )}
 
       {/* Barre d'outils */}
       <Card>
