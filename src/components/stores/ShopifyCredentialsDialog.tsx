@@ -73,9 +73,15 @@ export function ShopifyCredentialsDialog({
     setIsTestingConnection(true)
     
     try {
+      // Get user session for authorization
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error("Session expirée, veuillez vous reconnecter")
+      }
+
       const cleanedDomain = cleanDomain(credentials.shop_domain)
       
-      // Test basic connection
+      // Test basic connection with auth header
       const { data: connectionResult, error: connectionError } = await supabase.functions.invoke('store-connection-test', {
         body: {
           platform: 'shopify',
@@ -83,18 +89,24 @@ export function ShopifyCredentialsDialog({
             shop_domain: cleanedDomain + '.myshopify.com',
             access_token: credentials.access_token
           }
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
         }
       })
 
       if (connectionError || !connectionResult?.success) {
-        throw new Error(connectionResult?.error || 'Connection test failed')
+        throw new Error(connectionResult?.error || 'Test de connexion échoué')
       }
 
-      // Get locations
+      // Get locations with auth header
       const { data: locationsResult, error: locationsError } = await supabase.functions.invoke('shopify-locations', {
         body: {
           shop_domain: cleanedDomain + '.myshopify.com',
           access_token: credentials.access_token
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
         }
       })
 
@@ -131,18 +143,23 @@ export function ShopifyCredentialsDialog({
     try {
       const cleanedDomain = cleanDomain(credentials.shop_domain)
       
-      // Save complete configuration
+      // Save complete configuration to integrations table
       const { error } = await supabase
-        .from('store_integrations')
+        .from('integrations')
         .update({
-          credentials: {
+          encrypted_credentials: {
             shop_domain: cleanedDomain + '.myshopify.com',
             access_token: credentials.access_token,
             location_ids: selectedLocations
           },
-          store_name: shopInfo?.name || cleanedDomain,
-          store_url: `https://${cleanedDomain}.myshopify.com`,
-          connection_status: 'connected'
+          shop_domain: cleanedDomain + '.myshopify.com',
+          platform_url: `https://${cleanedDomain}.myshopify.com`,
+          connection_status: 'connected',
+          store_config: {
+            name: shopInfo?.name || cleanedDomain,
+            currency: shopInfo?.currency,
+            timezone: shopInfo?.timezone
+          }
         })
         .eq('id', integrationId)
 
