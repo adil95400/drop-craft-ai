@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dialog'
 import { useProductVariants } from '@/hooks/useProductVariants'
 import { Plus, Trash2, Edit, Settings, Sparkles } from 'lucide-react'
+import { VariantImageUpload } from './VariantImageUpload'
 
 interface ProductVariantsDialogProps {
   productId: string
@@ -142,6 +143,7 @@ export const ProductVariantsDialog = ({ productId, open, onOpenChange }: Product
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Image</TableHead>
                       <TableHead>SKU</TableHead>
                       <TableHead>Titre</TableHead>
                       <TableHead>Options</TableHead>
@@ -153,6 +155,22 @@ export const ProductVariantsDialog = ({ productId, open, onOpenChange }: Product
                   <TableBody>
                     {variants.map((variant) => (
                       <TableRow key={variant.id}>
+                        <TableCell>
+                          {variant.image_url ? (
+                            <img 
+                              src={variant.image_url} 
+                              alt={variant.name}
+                              className="h-12 w-12 object-cover rounded border"
+                              onError={(e) => {
+                                e.currentTarget.src = '/placeholder.svg'
+                              }}
+                            />
+                          ) : (
+                            <div className="h-12 w-12 bg-muted rounded border flex items-center justify-center text-xs text-muted-foreground">
+                              N/A
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell className="font-mono text-sm">{variant.variant_sku || 'N/A'}</TableCell>
                         <TableCell>{variant.name}</TableCell>
                         <TableCell>
@@ -295,6 +313,11 @@ export const ProductVariantsDialog = ({ productId, open, onOpenChange }: Product
                   onChange={(e) => setEditingVariant({ ...editingVariant, stock_quantity: parseInt(e.target.value) || 0 })}
                 />
               </div>
+
+              <VariantImageUpload
+                imageUrl={editingVariant.image_url}
+                onImageChange={(url) => setEditingVariant({ ...editingVariant, image_url: url })}
+              />
               
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={() => setEditingVariant(null)}>

@@ -176,6 +176,58 @@ serve(async (req) => {
             productsSkipped++;
           } else {
             productsUpdated++;
+
+            // Update variants if product has them
+            const hasVariants = product.variants && product.variants.length > 0;
+            if (hasVariants) {
+              for (const variant of product.variants) {
+                if (variant.shopify_variant_id) {
+                  // Update existing variant including image
+                  const variantUpdateMutation = `
+                    mutation UpdateVariant($input: ProductVariantInput!) {
+                      productVariantUpdate(input: $input) {
+                        productVariant {
+                          id
+                          sku
+                        }
+                        userErrors {
+                          field
+                          message
+                        }
+                      }
+                    }
+                  `;
+
+                  const variantInput: any = {
+                    id: variant.shopify_variant_id,
+                    price: variant.price?.toString(),
+                    compareAtPrice: variant.cost_price?.toString(),
+                    sku: variant.variant_sku,
+                    inventoryQuantity: variant.stock_quantity || 0
+                  };
+
+                  // Add image if variant has one
+                  if (variant.image_url) {
+                    variantInput.imageSrc = variant.image_url;
+                  }
+
+                  await fetch(
+                    `https://${shopDomain}/admin/api/${SHOPIFY_API_VERSION}/graphql.json`,
+                    {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'X-Shopify-Access-Token': accessToken,
+                      },
+                      body: JSON.stringify({
+                        query: variantUpdateMutation,
+                        variables: { input: variantInput }
+                      }),
+                    }
+                  );
+                }
+              }
+            }
           }
 
         } else {
@@ -206,18 +258,27 @@ serve(async (req) => {
           const hasVariants = product.variants && product.variants.length > 0;
           const productOptions = product.options || [];
 
-          // Prepare variants
+          // Prepare variants with images
           const variants = hasVariants 
-            ? product.variants.map((v: any) => ({
-                price: v.price?.toString() || product.price.toString(),
-                compareAtPrice: v.cost_price?.toString(),
-                sku: v.variant_sku,
-                inventoryQuantities: {
-                  availableQuantity: v.stock_quantity || 0,
-                  locationId: `gid://shopify/Location/1`
-                },
-                options: Object.values(v.options || {})
-              }))
+            ? product.variants.map((v: any) => {
+                const variantInput: any = {
+                  price: v.price?.toString() || product.price.toString(),
+                  compareAtPrice: v.cost_price?.toString(),
+                  sku: v.variant_sku,
+                  inventoryQuantities: {
+                    availableQuantity: v.stock_quantity || 0,
+                    locationId: `gid://shopify/Location/1`
+                  },
+                  options: Object.values(v.options || {})
+                };
+                
+                // Add image if variant has one
+                if (v.image_url) {
+                  variantInput.imageSrc = v.image_url;
+                }
+                
+                return variantInput;
+              })
             : [{
                 price: product.price.toString(),
                 sku: product.sku,
