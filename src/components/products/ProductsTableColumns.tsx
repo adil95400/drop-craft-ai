@@ -9,7 +9,8 @@ import {
   Eye,
   ArrowUpDown,
   Package,
-  TrendingUp
+  TrendingUp,
+  History
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -25,12 +26,14 @@ interface ProductsTableColumnsProps {
   onEdit: (product: UnifiedProduct) => void
   onDelete: (id: string) => void
   onView: (product: UnifiedProduct) => void
+  onShowHistory?: (product: UnifiedProduct) => void
 }
 
 export const createProductsColumns = ({
   onEdit,
   onDelete,
   onView,
+  onShowHistory,
 }: ProductsTableColumnsProps): ColumnDef<UnifiedProduct>[] => [
   {
     id: 'select',
@@ -282,6 +285,12 @@ export const createProductsColumns = ({
               <Edit className="mr-2 h-4 w-4" />
               Modifier
             </DropdownMenuItem>
+            {onShowHistory && (
+              <DropdownMenuItem onClick={() => onShowHistory(product)}>
+                <History className="mr-2 h-4 w-4" />
+                Historique
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => onDelete(product.id)}

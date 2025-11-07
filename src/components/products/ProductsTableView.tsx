@@ -30,12 +30,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Settings2, Trash2, Edit } from 'lucide-react'
+import { Settings2, Trash2, Edit, History } from 'lucide-react'
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { createProductsColumns } from './ProductsTableColumns'
 import { cn } from '@/lib/utils'
 import { TablePagination } from './TablePagination'
 import { useUserPreferencesStore } from '@/stores/userPreferencesStore'
+import { ProductHistoryDialog } from './ProductHistoryDialog'
 
 interface ProductsTableViewProps {
   products: UnifiedProduct[]
@@ -44,6 +45,7 @@ interface ProductsTableViewProps {
   onView: (product: UnifiedProduct) => void
   onBulkDelete?: (ids: string[]) => void
   onBulkEdit?: (ids: string[]) => void
+  onProductUpdate?: () => void
 }
 
 export function ProductsTableView({
@@ -53,7 +55,13 @@ export function ProductsTableView({
   onView,
   onBulkDelete,
   onBulkEdit,
+  onProductUpdate,
 }: ProductsTableViewProps) {
+  const [historyDialog, setHistoryDialog] = useState<{ open: boolean; productId: string; productName: string }>({
+    open: false,
+    productId: '',
+    productName: '',
+  })
   const { defaultPageSize, setDefaultPageSize } = useUserPreferencesStore()
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -72,7 +80,26 @@ export function ProductsTableView({
     }
   }, [defaultPageSize])
 
-  const columns = createProductsColumns({ onEdit, onDelete, onView })
+  const handleShowHistory = (product: UnifiedProduct) => {
+    setHistoryDialog({
+      open: true,
+      productId: product.id,
+      productName: product.name,
+    })
+  }
+
+  const handleRestoreProduct = async (snapshot: any) => {
+    if (onProductUpdate) {
+      onProductUpdate()
+    }
+  }
+
+  const columns = createProductsColumns({ 
+    onEdit, 
+    onDelete, 
+    onView,
+    onShowHistory: handleShowHistory,
+  })
 
   const table = useReactTable({
     data: products,
@@ -256,6 +283,15 @@ export function ProductsTableView({
         totalItems={table.getFilteredRowModel().rows.length}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
+      />
+
+      {/* History Dialog */}
+      <ProductHistoryDialog
+        open={historyDialog.open}
+        onOpenChange={(open) => setHistoryDialog(prev => ({ ...prev, open }))}
+        productId={historyDialog.productId}
+        productName={historyDialog.productName}
+        onRestore={handleRestoreProduct}
       />
     </div>
   )

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { ProductsUnifiedService, UnifiedProduct } from '@/services/ProductsUnifiedService'
+import { ProductHistoryService } from '@/services/ProductHistoryService'
 import { supabase } from '@/integrations/supabase/client'
 
 export type { UnifiedProduct }
@@ -32,7 +33,25 @@ export function useUnifiedProducts(filters?: {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
-      return await ProductsUnifiedService.upsertProduct(user.id, { id, ...updates })
+      // Récupérer l'ancien produit pour l'historique
+      const oldProduct = products.find(p => p.id === id)
+      
+      const updatedProduct = await ProductsUnifiedService.upsertProduct(user.id, { id, ...updates })
+      
+      // Enregistrer dans l'historique
+      if (oldProduct) {
+        await ProductHistoryService.recordChange(
+          user.id,
+          id,
+          updatedProduct.name,
+          'updated',
+          oldProduct,
+          updatedProduct,
+          user.email || undefined
+        )
+      }
+      
+      return updatedProduct
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['unified-products'] })
@@ -55,7 +74,23 @@ export function useUnifiedProducts(filters?: {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
-      return await ProductsUnifiedService.deleteProduct(user.id, id)
+      // Récupérer le produit pour l'historique avant suppression
+      const product = products.find(p => p.id === id)
+      
+      await ProductsUnifiedService.deleteProduct(user.id, id)
+      
+      // Enregistrer dans l'historique
+      if (product) {
+        await ProductHistoryService.recordChange(
+          user.id,
+          id,
+          product.name,
+          'deleted',
+          product,
+          product,
+          user.email || undefined
+        )
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['unified-products'] })

@@ -7299,6 +7299,54 @@ export type Database = {
         }
         Relationships: []
       }
+      product_history: {
+        Row: {
+          change_type: string
+          changed_by_email: string | null
+          changed_fields: Json
+          created_at: string
+          id: string
+          ip_address: string | null
+          new_values: Json | null
+          previous_values: Json | null
+          product_id: string
+          product_name: string
+          snapshot: Json
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          change_type: string
+          changed_by_email?: string | null
+          changed_fields?: Json
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          previous_values?: Json | null
+          product_id: string
+          product_name: string
+          snapshot: Json
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          change_type?: string
+          changed_by_email?: string | null
+          changed_fields?: Json
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          previous_values?: Json | null
+          product_id?: string
+          product_name?: string
+          snapshot?: Json
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       product_imports: {
         Row: {
           ai_optimization_results: Json | null
@@ -12047,6 +12095,7 @@ export type Database = {
       cleanup_expired_sessions: { Args: never; Returns: undefined }
       cleanup_old_api_logs: { Args: never; Returns: undefined }
       cleanup_old_import_jobs: { Args: never; Returns: undefined }
+      cleanup_old_product_history: { Args: never; Returns: undefined }
       cleanup_old_security_events: { Args: never; Returns: undefined }
       cleanup_revoked_tokens: { Args: never; Returns: undefined }
       configure_auth_security_settings: { Args: never; Returns: Json }

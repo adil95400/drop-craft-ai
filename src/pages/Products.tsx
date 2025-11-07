@@ -451,6 +451,7 @@ const Products = () => {
               onDelete={handleDelete}
               onBulkDelete={handleBulkDelete}
               onBulkEdit={handleBulkEdit}
+              onProductUpdate={() => queryClient.invalidateQueries({ queryKey: ['unified-products'] })}
             />
           ) : (
             <ProductGridView
