@@ -7416,6 +7416,44 @@ export type Database = {
         }
         Relationships: []
       }
+      product_options: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          position: number | null
+          product_id: string
+          user_id: string
+          values: string[]
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          position?: number | null
+          product_id: string
+          user_id: string
+          values: string[]
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          position?: number | null
+          product_id?: string
+          user_id?: string
+          values?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_options_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_research_results: {
         Row: {
           category: string | null
