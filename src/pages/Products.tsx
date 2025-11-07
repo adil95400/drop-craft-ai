@@ -29,6 +29,7 @@ import { ProductsTableView } from '@/components/products/ProductsTableView'
 import { ProductsViewToggle, ViewMode } from '@/components/products/ProductsViewToggle'
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { SavedViewsManager } from '@/components/products/SavedViewsManager'
+import { AdvancedExportDialog } from '@/components/products/AdvancedExportDialog'
 
 const Products = () => {
   const { toast } = useToast()
@@ -42,6 +43,7 @@ const Products = () => {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [showProductModal, setShowProductModal] = useState(false)
+  const [showExportDialog, setShowExportDialog] = useState(false)
   
   const [filters, setFilters] = useState<ProductFiltersState>({
     search: '',
@@ -209,14 +211,7 @@ const Products = () => {
 
   // Export
   const handleExport = () => {
-    importExportService.exportToCSV(
-      filteredAndSortedProducts,
-      `produits_${new Date().toISOString().split('T')[0]}.csv`
-    )
-    toast({
-      title: "Export réussi",
-      description: `${filteredAndSortedProducts.length} produits exportés`
-    })
+    setShowExportDialog(true)
   }
 
   const formatCurrency = (amount: number) => {
@@ -573,6 +568,15 @@ const Products = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Dialog d'export avancé */}
+      <AdvancedExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+        products={filteredAndSortedProducts}
+        filteredCount={filteredAndSortedProducts.length}
+        totalCount={products.length}
+      />
     </div>
   )
 }
