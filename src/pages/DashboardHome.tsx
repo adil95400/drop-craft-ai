@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { RealTimeMonitor } from '@/components/dashboard/RealTimeMonitor'
 import { QuickActions } from '@/components/navigation/QuickActions'
 import { StatCard } from '@/components/dashboard/StatCard'
+import { FavoritesQuickAccess } from '@/components/navigation/FavoritesQuickAccess'
+import { FavoritesManager } from '@/components/navigation/FavoritesManager'
 import { 
   TrendingUp, 
   Package, 
@@ -48,13 +50,16 @@ export default function DashboardHome() {
   return (
     <div className="p-6 space-y-8 animate-in fade-in duration-500">
       {/* Welcome Section */}
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          Tableau de Bord
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          Vue d'ensemble de votre plateforme e-commerce
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            Tableau de Bord
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Vue d'ensemble de votre plateforme e-commerce
+          </p>
+        </div>
+        <FavoritesManager />
       </div>
 
       {/* Stats Overview */}
@@ -87,6 +92,9 @@ export default function DashboardHome() {
           ))
         )}
       </div>
+
+      {/* Favorites Quick Access */}
+      <FavoritesQuickAccess />
 
       {/* Quick Actions */}
       <QuickActions />

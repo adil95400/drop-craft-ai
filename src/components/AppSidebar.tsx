@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useUnifiedAuth } from "@/contexts/UnifiedAuthContext";
+import { useFavorites } from "@/stores/favoritesStore";
 import { 
   Search, Bot, ShoppingCart, BarChart3, 
   Truck, Upload, Trophy, TrendingUp, Zap, 
@@ -9,7 +10,7 @@ import {
   ChevronDown, Package, Sparkles, Crown, Calculator,
   Megaphone, FileText, Globe, Store, Puzzle, GitCompare,
   Database, ShoppingBag, GraduationCap, HelpCircle, 
-  Activity, Building2, Building
+  Activity, Building2, Building, Star
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { MODULE_REGISTRY, type ModuleConfig } from "@/config/modules";
 import { useModules } from "@/hooks/useModules";
 import { getSubModules } from "@/config/sub-modules";
+import { FavoriteButton } from "@/components/navigation/FavoriteButton";
 
 // Logo mémoïsé pour éviter les re-renders inutiles
 const ShopoptiLogo = memo(() => (
@@ -167,10 +169,11 @@ export function AppSidebar() {
   );
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
   
-  // Utiliser le système de modules
+  // Utiliser le système de modules et favoris
   const modulesData = useModules();
   const { availableModules, canAccess, isModuleEnabled } = modulesData;
   const isAdminBypass = (modulesData as any).isAdminBypass || false;
+  const { favorites, isFavorite } = useFavorites();
 
   // Debounce la recherche
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
@@ -292,6 +295,59 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-2">
+        {/* Section Favoris */}
+        {favorites.length > 0 && (
+          <SidebarGroup className="mb-2">
+            <SidebarGroupLabel className="flex items-center gap-2 text-yellow-600 dark:text-yellow-500">
+              {state !== "collapsed" && (
+                <>
+                  <Star className="h-4 w-4 fill-yellow-500" />
+                  <span className="text-xs font-semibold">⭐ FAVORIS</span>
+                  <Badge variant="secondary" className="text-xs ml-auto">
+                    {favorites.length}
+                  </Badge>
+                </>
+              )}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {favorites.slice(0, 5).map((fav) => {
+                  const module = MODULE_REGISTRY[fav.moduleId];
+                  if (!module || !canAccess(module.id)) return null;
+                  
+                  const Icon = iconMap[module.icon] || Settings;
+                  const active = isActive(module.route);
+
+                  return (
+                    <SidebarMenuItem key={module.id}>
+                      <SidebarMenuButton
+                        onClick={() => handleNavigate(module.route, module.id)}
+                        tooltip={state === "collapsed" ? module.name : undefined}
+                        className={cn(
+                          "w-full justify-start transition-all duration-300 group relative overflow-hidden",
+                          active 
+                            ? "bg-primary text-primary-foreground shadow-md" 
+                            : "hover:bg-accent hover:text-accent-foreground"
+                        )}
+                        isActive={active}
+                      >
+                        <Icon className={cn("h-4 w-4", active && "scale-110")} />
+                        {state !== "collapsed" && (
+                          <div className="flex items-center justify-between w-full gap-2">
+                            <span className="truncate text-sm">{module.name}</span>
+                            <FavoriteButton moduleId={module.id} size="icon" className="h-6 w-6" />
+                          </div>
+                        )}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Groupes de modules */}
         {filteredModuleGroups.map((group) => {
           const groupModules = group.modules
             .map(id => MODULE_REGISTRY[id])
@@ -354,22 +410,25 @@ export function AppSidebar() {
                                   "h-4 w-4 transition-all duration-300",
                                   active && "scale-110"
                                 )} />
-                                {state !== "collapsed" && (
+                                 {state !== "collapsed" && (
                                   <div className="flex items-center justify-between w-full gap-2">
                                     <span className="truncate transition-transform duration-200 group-hover:translate-x-0.5">
                                       {module.name}
                                     </span>
-                                    {module.minPlan !== 'standard' && (
-                                      <Badge 
-                                        variant="secondary"
-                                        className={cn(
-                                          "text-xs h-5 px-2 font-medium transition-all duration-200 group-hover:scale-105",
-                                          getBadgeVariant(module.minPlan)
-                                        )}
-                                      >
-                                        {module.minPlan === 'ultra_pro' ? 'ULTRA' : 'PRO'}
-                                      </Badge>
-                                    )}
+                                    <div className="flex items-center gap-1">
+                                      <FavoriteButton moduleId={module.id} size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                      {module.minPlan !== 'standard' && (
+                                        <Badge 
+                                          variant="secondary"
+                                          className={cn(
+                                            "text-xs h-5 px-2 font-medium transition-all duration-200 group-hover:scale-105",
+                                            getBadgeVariant(module.minPlan)
+                                          )}
+                                        >
+                                          {module.minPlan === 'ultra_pro' ? 'ULTRA' : 'PRO'}
+                                        </Badge>
+                                      )}
+                                    </div>
                                   </div>
                                 )}
                               </SidebarMenuButton>
