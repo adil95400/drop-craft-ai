@@ -87,36 +87,42 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'Building': Building
 };
 
-// Regroupements logiques par catégorie (tous les 32 modules)
+// Regroupements logiques optimisés par workflow business
 const moduleGroups = [
   {
-    title: "🏠 CORE BUSINESS",
-    modules: ['dashboard', 'stores', 'orders', 'marketplaceHub']
+    title: "🏠 TABLEAU DE BORD",
+    modules: ['dashboard']
   },
   {
-    title: "📦 PRODUITS & CATALOGUE",
-    modules: ['products', 'import', 'winners', 'productResearch', 'marketplace', 'suppliers', 
-              'premiumSuppliers', 'premiumCatalog', 'profitCalculator', 'network', 'bulkContent', 
-              'inventoryPredictor', 'importSources']
+    title: "💼 VENTES & COMMANDES",
+    modules: ['orders', 'stores', 'marketplaceHub']
   },
   {
-    title: "👥 CLIENTS & CRM",
-    modules: ['customers', 'customerIntelligence', 'crm', 'seo']
+    title: "📦 CATALOGUE & PRODUITS",
+    modules: ['products', 'import', 'winners', 'productResearch', 'marketplace']
   },
   {
-    title: "📊 ANALYTICS & INSIGHTS",
-    modules: ['analytics', 'competitiveComparison']
+    title: "🚚 FOURNISSEURS & STOCK",
+    modules: ['suppliers', 'premiumSuppliers', 'premiumCatalog', 'inventoryPredictor', 'network']
   },
   {
-    title: "⚡ AUTOMATION & TOOLS",
-    modules: ['automation', 'autoFulfillment', 'adsManager', 'extension']
+    title: "👥 CLIENTS & MARKETING",
+    modules: ['customers', 'customerIntelligence', 'crm', 'seo', 'adsManager']
+  },
+  {
+    title: "📊 ANALYTICS & PERFORMANCE",
+    modules: ['analytics', 'competitiveComparison', 'profitCalculator']
+  },
+  {
+    title: "⚡ AUTOMATION & OUTILS",
+    modules: ['automation', 'autoFulfillment', 'bulkContent', 'importSources', 'extension']
   },
   {
     title: "🎓 FORMATION & SUPPORT",
     modules: ['academy', 'support']
   },
   {
-    title: "🔧 ENTERPRISE & ADMIN",
+    title: "🔧 ADMINISTRATION",
     modules: ['ai', 'commerce', 'multiTenant', 'adminPanel', 'supplierAdmin']
   },
   {
