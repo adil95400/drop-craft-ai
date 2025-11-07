@@ -30,9 +30,12 @@ import { ProductsViewToggle, ViewMode } from '@/components/products/ProductsView
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { SavedViewsManager } from '@/components/products/SavedViewsManager'
 import { AdvancedExportDialog } from '@/components/products/AdvancedExportDialog'
+import { BulkEditDialog } from '@/components/products/BulkEditDialog'
+import { useQueryClient } from '@tanstack/react-query'
 
 const Products = () => {
   const { toast } = useToast()
+  const queryClient = useQueryClient()
   const { isUltraPro, isPro } = useLegacyPlan()
   const { products, stats, isLoading, deleteProduct, addProduct } = useRealProducts()
   
@@ -44,6 +47,7 @@ const Products = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [showProductModal, setShowProductModal] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
+  const [showBulkEditDialog, setShowBulkEditDialog] = useState(false)
   
   const [filters, setFilters] = useState<ProductFiltersState>({
     search: '',
@@ -178,10 +182,16 @@ const Products = () => {
   }
 
   const handleBulkEdit = (ids: string[]) => {
-    toast({
-      title: "Édition en masse",
-      description: `${ids.length} produit(s) sélectionné(s) pour modification`
-    })
+    setShowBulkEditDialog(true)
+  }
+
+  const getSelectedProducts = (): Product[] => {
+    return selectedIds.map(id => products.find(p => p.id === id)).filter(Boolean) as Product[]
+  }
+
+  const handleBulkEditSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['real-products'] })
+    setSelectedIds([])
   }
 
   const handleDuplicate = async (product: Product) => {
@@ -576,6 +586,15 @@ const Products = () => {
         products={filteredAndSortedProducts}
         filteredCount={filteredAndSortedProducts.length}
         totalCount={products.length}
+      />
+
+      {/* Dialog d'édition en masse */}
+      <BulkEditDialog
+        open={showBulkEditDialog}
+        onOpenChange={setShowBulkEditDialog}
+        selectedProducts={getSelectedProducts()}
+        onSuccess={handleBulkEditSuccess}
+        categories={categories}
       />
     </div>
   )
