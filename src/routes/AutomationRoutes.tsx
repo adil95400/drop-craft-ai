@@ -1,0 +1,52 @@
+/**
+ * Routes Automation - Workflows, AI, Auto-fulfillment
+ */
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { lazy } from 'react';
+
+// Automation
+const AutomationPage = lazy(() => import('@/pages/AutomationPage'));
+const AutomationStudio = lazy(() => import('@/pages/AutomationStudio'));
+const AIAutomationHub = lazy(() => import('@/pages/AIAutomationHub'));
+
+// AI Tools
+const AIPage = lazy(() => import('@/pages/AIPage'));
+const AIStudio = lazy(() => import('@/pages/AIStudio'));
+
+// Fulfillment
+const AutoFulfillmentPage = lazy(() => import('@/pages/AutoFulfillmentPage'));
+const AutoFulfillmentDashboard = lazy(() => import('@/pages/AutoFulfillmentDashboard'));
+
+// Optimization
+const OptimizationHub = lazy(() => import('@/pages/OptimizationHub'));
+const FeedOptimizationPage = lazy(() => import('@/pages/FeedOptimizationPage'));
+const StockSyncDashboard = lazy(() => import('@/pages/StockSyncDashboard'));
+const ProductSourcingAssistant = lazy(() => import('@/pages/ProductSourcingAssistant'));
+
+export function AutomationRoutes() {
+  return (
+    <Routes>
+      {/* Automation */}
+      <Route index element={<AutomationPage />} />
+      <Route path="studio" element={<AutomationStudio />} />
+      <Route path="ai-hub" element={<AIAutomationHub />} />
+      
+      {/* AI Tools */}
+      <Route path="ai" element={<AIPage />} />
+      <Route path="ai-studio" element={<AIStudio />} />
+      
+      {/* Auto-Fulfillment */}
+      <Route path="fulfillment" element={<AutoFulfillmentPage />} />
+      <Route path="fulfillment/dashboard" element={<AutoFulfillmentDashboard />} />
+      
+      {/* Optimization */}
+      <Route path="optimization" element={<OptimizationHub />} />
+      <Route path="feed-optimization" element={<FeedOptimizationPage />} />
+      <Route path="stock-sync" element={<StockSyncDashboard />} />
+      <Route path="sourcing-assistant" element={<ProductSourcingAssistant />} />
+      
+      {/* Legacy redirects */}
+      <Route path="ultra-pro" element={<Navigate to="/automation" replace />} />
+    </Routes>
+  );
+}
