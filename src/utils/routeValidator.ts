@@ -165,8 +165,31 @@ const DEFINED_ROUTES: Set<string> = new Set([
   
   // Admin
   '/admin',
+  '/admin/products',
+  '/admin/orders',
+  '/admin/import',
   '/admin/suppliers',
+  '/admin/customers',
+  '/admin/crm',
+  '/admin/analytics',
+  '/admin/monitoring',
+  '/admin/marketing',
+  '/admin/blog',
+  '/admin/seo',
+  '/admin/ai',
+  '/admin/ai-studio',
+  '/admin/automation',
+  '/admin/automation-studio',
+  '/admin/analytics-studio',
   '/admin/security',
+  '/admin/integrations',
+  '/admin/subscriptions',
+  '/admin/extensions',
+  '/admin/video-tutorials',
+  '/admin/super',
+  '/admin/stores',
+  '/admin/catalog',
+  '/admin/users',
 ]);
 
 /**
