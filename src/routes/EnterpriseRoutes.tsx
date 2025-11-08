@@ -35,19 +35,14 @@ const ComplianceCenter = lazy(() => import('@/pages/ComplianceCenter'));
 export function EnterpriseRoutes() {
   return (
     <Routes>
-      {/* Admin */}
-      <Route index element={<AdminDashboard />} />
-      <Route path="dashboard" element={<AdminDashboard />} />
-      <Route path="suppliers" element={<SupplierAdminPage />} />
+      {/* Commerce Pro */}
+      <Route path="commerce" element={<MultiChannelManagementPage />} />
       
       {/* Multi-tenant */}
       <Route path="multi-tenant" element={<MultiTenantPage />} />
       <Route path="multi-tenant/management" element={<MultiTenantManagementPage />} />
       
-      {/* Security */}
-      <Route path="security" element={<SecurityDashboard />} />
-      
-      {/* Monitoring */}
+      {/* Monitoring & Observability */}
       <Route path="monitoring" element={<PerformanceMonitoringPage />} />
       <Route path="monitoring/advanced" element={<AdvancedMonitoringPage />} />
       
@@ -61,7 +56,6 @@ export function EnterpriseRoutes() {
       <Route path="i18n" element={<InternationalizationPage />} />
       <Route path="quotas" element={<QuotaManagerPage />} />
       <Route path="subscriptions" element={<SubscriptionManagementPage />} />
-      <Route path="multi-channel" element={<MultiChannelManagementPage />} />
       <Route path="compliance" element={<ComplianceCenter />} />
     </Routes>
   );

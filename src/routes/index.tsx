@@ -53,6 +53,7 @@ export function AppRoutes() {
         <Route path="/automation/*" element={<ProtectedRoute><AppLayout><AutomationRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/marketing/*" element={<ProtectedRoute><AppLayout><MarketingRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/integrations/*" element={<ProtectedRoute><AppLayout><IntegrationRoutes /></AppLayout></ProtectedRoute>} />
+        <Route path="/enterprise/*" element={<ProtectedRoute><AppLayout><EnterpriseRoutes /></AppLayout></ProtectedRoute>} />
         
         {/* Admin Routes - Rôle admin requis */}
         <Route path="/admin/*" element={
