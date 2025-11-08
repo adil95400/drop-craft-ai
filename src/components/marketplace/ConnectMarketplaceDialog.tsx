@@ -12,7 +12,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections'
-import { Store, Loader2 } from 'lucide-react'
+import { Store, Loader2, AlertCircle } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
 const MARKETPLACE_OPTIONS = [
   { value: 'amazon', label: 'Amazon', icon: '🛒' },
@@ -40,13 +41,59 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
     shop_id: '',
     access_token: '',
   })
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const { connectMarketplace, isConnecting } = useMarketplaceConnections()
+  const { toast } = useToast()
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {}
+
+    // Validation de la plateforme
+    if (!platform) {
+      newErrors.platform = 'Veuillez sélectionner une marketplace'
+    }
+
+    // Validation des champs communs
+    if (!credentials.api_key.trim()) {
+      newErrors.api_key = 'La clé API est requise'
+    }
+
+    if (!credentials.api_secret.trim()) {
+      newErrors.api_secret = 'Le secret API est requis'
+    }
+
+    // Validation spécifique selon la plateforme
+    if (platform === 'shopify' || platform === 'woocommerce') {
+      if (!credentials.shop_url.trim()) {
+        newErrors.shop_url = 'Le domaine du magasin est requis'
+      } else if (!credentials.shop_url.includes('.')) {
+        newErrors.shop_url = 'Format de domaine invalide'
+      }
+    }
+
+    if (platform === 'etsy' || platform === 'manomano') {
+      if (!credentials.shop_id.trim()) {
+        newErrors.shop_id = "L'ID de la boutique est requis"
+      }
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!platform) return
+    // Validation côté client
+    if (!validateForm()) {
+      toast({
+        title: 'Validation échouée',
+        description: 'Veuillez corriger les erreurs dans le formulaire',
+        variant: 'destructive',
+      })
+      return
+    }
 
     try {
       await connectMarketplace({
@@ -69,9 +116,20 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
         shop_id: '',
         access_token: '',
       })
+      setErrors({})
       if (onSuccess) onSuccess()
     } catch (error) {
       // Error is already handled by the hook
+    }
+  }
+
+  const clearError = (field: string) => {
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
     }
   }
 
@@ -97,8 +155,14 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="platform">Marketplace</Label>
-            <Select value={platform} onValueChange={setPlatform}>
-              <SelectTrigger id="platform">
+            <Select 
+              value={platform} 
+              onValueChange={(value) => {
+                setPlatform(value)
+                clearError('platform')
+              }}
+            >
+              <SelectTrigger id="platform" className={errors.platform ? 'border-destructive' : ''}>
                 <SelectValue placeholder="Sélectionnez une marketplace" />
               </SelectTrigger>
               <SelectContent>
@@ -112,6 +176,12 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
                 ))}
               </SelectContent>
             </Select>
+            {errors.platform && (
+              <div className="flex items-center gap-1 text-sm text-destructive">
+                <AlertCircle className="h-3 w-3" />
+                <span>{errors.platform}</span>
+              </div>
+            )}
           </div>
 
           {platform && (
@@ -126,60 +196,96 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
 
               {(platform === 'shopify' || platform === 'woocommerce') && (
                 <div className="space-y-2">
-                  <Label htmlFor="shop_url">Domaine du magasin</Label>
+                  <Label htmlFor="shop_url">
+                    Domaine du magasin <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     id="shop_url"
                     placeholder="mon-magasin.myshopify.com"
                     value={credentials.shop_url}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setCredentials({ ...credentials, shop_url: e.target.value })
-                    }
-                    required
+                      clearError('shop_url')
+                    }}
+                    className={errors.shop_url ? 'border-destructive' : ''}
                   />
+                  {errors.shop_url && (
+                    <div className="flex items-center gap-1 text-sm text-destructive">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>{errors.shop_url}</span>
+                    </div>
+                  )}
                 </div>
               )}
 
               {(platform === 'etsy' || platform === 'manomano') && (
                 <div className="space-y-2">
-                  <Label htmlFor="shop_id">ID de la boutique</Label>
+                  <Label htmlFor="shop_id">
+                    ID de la boutique <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     id="shop_id"
                     placeholder="Votre ID de boutique"
                     value={credentials.shop_id}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setCredentials({ ...credentials, shop_id: e.target.value })
-                    }
-                    required
+                      clearError('shop_id')
+                    }}
+                    className={errors.shop_id ? 'border-destructive' : ''}
                   />
+                  {errors.shop_id && (
+                    <div className="flex items-center gap-1 text-sm text-destructive">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>{errors.shop_id}</span>
+                    </div>
+                  )}
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="api_key">Clé API</Label>
+                <Label htmlFor="api_key">
+                  Clé API <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="api_key"
                   type="password"
                   placeholder="Votre clé API"
                   value={credentials.api_key}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     setCredentials({ ...credentials, api_key: e.target.value })
-                  }
-                  required
+                    clearError('api_key')
+                  }}
+                  className={errors.api_key ? 'border-destructive' : ''}
                 />
+                {errors.api_key && (
+                  <div className="flex items-center gap-1 text-sm text-destructive">
+                    <AlertCircle className="h-3 w-3" />
+                    <span>{errors.api_key}</span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="api_secret">Secret API</Label>
+                <Label htmlFor="api_secret">
+                  Secret API <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="api_secret"
                   type="password"
                   placeholder="Votre secret API"
                   value={credentials.api_secret}
-                  onChange={(e) =>
+                  onChange={(e) => {
                     setCredentials({ ...credentials, api_secret: e.target.value })
-                  }
-                  required
+                    clearError('api_secret')
+                  }}
+                  className={errors.api_secret ? 'border-destructive' : ''}
                 />
+                {errors.api_secret && (
+                  <div className="flex items-center gap-1 text-sm text-destructive">
+                    <AlertCircle className="h-3 w-3" />
+                    <span>{errors.api_secret}</span>
+                  </div>
+                )}
               </div>
 
               {platform === 'shopify' && (
