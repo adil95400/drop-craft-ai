@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { useNavigate } from 'react-router-dom'
 import { VideoTutorialPlayer, VideoGallery } from '@/components/guides/VideoTutorialPlayer'
+import { useVideoTutorials } from '@/hooks/useVideoTutorials'
 import shopifyApiKeysImg from '@/assets/guides/shopify-api-keys.jpg'
 import woocommerceRestApiImg from '@/assets/guides/woocommerce-rest-api.jpg'
 import etsyDeveloperPortalImg from '@/assets/guides/etsy-developer-portal.jpg'
@@ -553,6 +554,7 @@ const guides = {
 export default function MarketplaceIntegrationGuidesPage() {
   const navigate = useNavigate()
   const [selectedPlatform, setSelectedPlatform] = useState('shopify')
+  const { data: videoTutorials, isLoading: isLoadingVideos } = useVideoTutorials(selectedPlatform)
 
   const currentGuide = guides[selectedPlatform as keyof typeof guides]
   const currentPlatform = platforms.find(p => p.id === selectedPlatform)
@@ -661,7 +663,13 @@ export default function MarketplaceIntegrationGuidesPage() {
               </Card>
 
               {/* Video Tutorials */}
-              {currentGuide.videoTutorials && currentGuide.videoTutorials.length > 0 ? (
+              {isLoadingVideos ? (
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <p className="text-muted-foreground">Chargement des vidéos...</p>
+                  </CardContent>
+                </Card>
+              ) : videoTutorials && videoTutorials.length > 0 ? (
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-xl font-semibold mb-2">Tutoriels Vidéo</h3>
@@ -670,7 +678,15 @@ export default function MarketplaceIntegrationGuidesPage() {
                     </p>
                   </div>
                   <VideoGallery 
-                    videos={currentGuide.videoTutorials} 
+                    videos={videoTutorials.map(video => ({
+                      id: video.id,
+                      title: video.title,
+                      description: video.description,
+                      youtubeId: video.youtube_id,
+                      videoUrl: video.video_url,
+                      duration: video.duration,
+                      thumbnailUrl: video.thumbnail_url
+                    }))} 
                     platform={currentPlatform.name}
                   />
                 </div>
