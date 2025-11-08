@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { ArrowLeft, BookOpen, ExternalLink, CheckCircle2, AlertCircle, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, BookOpen, ExternalLink, CheckCircle2, AlertCircle, Image as ImageIcon, Video } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { useNavigate } from 'react-router-dom'
+import { VideoTutorialPlayer, VideoGallery } from '@/components/guides/VideoTutorialPlayer'
 import shopifyApiKeysImg from '@/assets/guides/shopify-api-keys.jpg'
 import woocommerceRestApiImg from '@/assets/guides/woocommerce-rest-api.jpg'
 import etsyDeveloperPortalImg from '@/assets/guides/etsy-developer-portal.jpg'
@@ -66,6 +67,24 @@ const platforms = [
 
 const guides = {
   shopify: {
+    videoTutorials: [
+      {
+        id: 'shopify-overview',
+        title: 'Introduction à l\'intégration Shopify',
+        description: 'Vue d\'ensemble complète du processus d\'intégration',
+        duration: '5:30',
+        thumbnailUrl: shopifyApiKeysImg,
+        // youtubeId: 'YOUR_YOUTUBE_ID', // Ajoutez votre ID YouTube ici
+      },
+      {
+        id: 'shopify-api-setup',
+        title: 'Configuration pas à pas des API Shopify',
+        description: 'Tutoriel détaillé avec enregistrement d\'écran',
+        duration: '8:45',
+        thumbnailUrl: apiPermissionsImg,
+        // youtubeId: 'YOUR_YOUTUBE_ID',
+      }
+    ],
     steps: [
       {
         title: 'Accéder à l\'administration Shopify',
@@ -153,6 +172,22 @@ const guides = {
     documentation: 'https://help.shopify.com/en/manual/apps/custom-apps'
   },
   woocommerce: {
+    videoTutorials: [
+      {
+        id: 'woocommerce-overview',
+        title: 'Introduction à l\'intégration WooCommerce',
+        description: 'Configuration complète de WooCommerce REST API',
+        duration: '6:15',
+        thumbnailUrl: woocommerceRestApiImg,
+      },
+      {
+        id: 'woocommerce-troubleshooting',
+        title: 'Résolution des problèmes courants WooCommerce',
+        description: 'Guide de dépannage avec exemples réels',
+        duration: '4:30',
+        thumbnailUrl: woocommerceRestApiImg,
+      }
+    ],
     steps: [
       {
         title: 'Accéder à l\'administration WordPress',
@@ -239,6 +274,15 @@ const guides = {
     documentation: 'https://woocommerce.com/document/woocommerce-rest-api/'
   },
   etsy: {
+    videoTutorials: [
+      {
+        id: 'etsy-developer-setup',
+        title: 'Configuration du Developer Portal Etsy',
+        description: 'Créer et configurer votre application Etsy',
+        duration: '7:00',
+        thumbnailUrl: etsyDeveloperPortalImg,
+      }
+    ],
     steps: [
       {
         title: 'Créer un compte développeur',
@@ -327,6 +371,15 @@ const guides = {
     documentation: 'https://developer.etsy.com/documentation'
   },
   prestashop: {
+    videoTutorials: [
+      {
+        id: 'prestashop-webservice',
+        title: 'Activation et configuration du Webservice PrestaShop',
+        description: 'Guide complet pour activer l\'API PrestaShop',
+        duration: '9:20',
+        thumbnailUrl: prestashopWebserviceImg,
+      }
+    ],
     steps: [
       {
         title: 'Activer le Webservice',
@@ -415,6 +468,14 @@ const guides = {
     documentation: 'https://devdocs.prestashop-project.org/8/webservice/'
   },
   amazon: {
+    videoTutorials: [
+      {
+        id: 'amazon-sp-api',
+        title: 'Introduction à Amazon Selling Partner API',
+        description: 'Vue d\'ensemble du processus complexe d\'Amazon',
+        duration: '12:00',
+      }
+    ],
     steps: [
       {
         title: 'Inscription Selling Partner API',
@@ -447,6 +508,14 @@ const guides = {
     documentation: 'https://developer-docs.amazon.com/sp-api/'
   },
   ebay: {
+    videoTutorials: [
+      {
+        id: 'ebay-developer',
+        title: 'Configuration développeur eBay',
+        description: 'Créer votre application eBay developer',
+        duration: '10:30',
+      }
+    ],
     steps: [
       {
         title: 'Créer un compte développeur',
@@ -554,11 +623,108 @@ export default function MarketplaceIntegrationGuidesPage() {
 
         {/* Guide Content */}
         {currentPlatform && currentGuide && (
-          <Tabs defaultValue="steps" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
+          <Tabs defaultValue="videos" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="videos">
+                <Video className="h-4 w-4 mr-2" />
+                Tutoriels Vidéo
+              </TabsTrigger>
               <TabsTrigger value="steps">Étapes d'intégration</TabsTrigger>
               <TabsTrigger value="troubleshooting">Dépannage</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="videos" className="space-y-6">
+              {/* Platform Info */}
+              <Card className={`bg-gradient-to-br ${currentPlatform.color} text-white`}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="text-5xl">{currentPlatform.icon}</div>
+                      <div>
+                        <h2 className="text-2xl font-bold mb-1">{currentPlatform.name}</h2>
+                        <p className="opacity-90">
+                          Tutoriels vidéo pour {currentPlatform.name}
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      href={currentGuide.documentation}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Documentation officielle
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Video Tutorials */}
+              {currentGuide.videoTutorials && currentGuide.videoTutorials.length > 0 ? (
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">Tutoriels Vidéo</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Suivez ces tutoriels vidéo pour une configuration guidée pas à pas
+                    </p>
+                  </div>
+                  <VideoGallery 
+                    videos={currentGuide.videoTutorials} 
+                    platform={currentPlatform.name}
+                  />
+                </div>
+              ) : (
+                <Alert>
+                  <Video className="h-4 w-4" />
+                  <AlertDescription>
+                    Les tutoriels vidéo pour {currentPlatform.name} sont en cours de préparation. 
+                    Consultez les étapes écrites dans l'onglet "Étapes d'intégration".
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Quick Links */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Ressources complémentaires</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      const stepsTab = document.querySelector('[value="steps"]') as HTMLButtonElement
+                      stepsTab?.click()
+                    }}
+                  >
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Voir les étapes écrites détaillées
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      const troubleshootingTab = document.querySelector('[value="troubleshooting"]') as HTMLButtonElement
+                      troubleshootingTab?.click()
+                    }}
+                  >
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    Guide de dépannage
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    asChild
+                  >
+                    <a href={currentGuide.documentation} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Documentation officielle
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             <TabsContent value="steps" className="space-y-6">
               {/* Platform Info */}
