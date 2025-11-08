@@ -10,7 +10,12 @@ import {
   ChevronDown, Package, Sparkles, Crown, Calculator,
   Megaphone, FileText, Globe, Store, Puzzle, GitCompare,
   Database, ShoppingBag, GraduationCap, HelpCircle, 
-  Activity, Building2, Building, Star
+  Activity, Building2, Building, Star,
+  LayoutDashboard, Link, Layers, LineChart,
+  FileSpreadsheet, Code, Clock, History,
+  Download, Key, UserPlus, Mail,
+  Phone, Calendar, MessageSquare, Type,
+  DollarSign, Heart, BookOpen
 } from "lucide-react";
 import {
   Sidebar,
@@ -86,7 +91,27 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'HelpCircle': HelpCircle,
   'Activity': Activity,
   'Building2': Building2,
-  'Building': Building
+  'Building': Building,
+  // Icônes pour sous-modules
+  'LayoutDashboard': LayoutDashboard,
+  'Link': Link,
+  'Layers': Layers,
+  'LineChart': LineChart,
+  'FileSpreadsheet': FileSpreadsheet,
+  'Code': Code,
+  'Clock': Clock,
+  'History': History,
+  'Download': Download,
+  'Key': Key,
+  'UserPlus': UserPlus,
+  'Mail': Mail,
+  'Phone': Phone,
+  'Calendar': Calendar,
+  'MessageSquare': MessageSquare,
+  'Type': Type,
+  'DollarSign': DollarSign,
+  'Heart': Heart,
+  'BookOpen': BookOpen
 };
 
 // Regroupements logiques - TOUS les 32+ modules organisés par workflow business
@@ -436,14 +461,14 @@ export function AppSidebar() {
                               <Collapsible open={subMenuOpen} onOpenChange={() => toggleSubMenu(module.id)}>
                                 <CollapsibleTrigger asChild>
                                   <SidebarMenuButton
-                                    onClick={() => handleNavigate(module.route, module.id)}
                                     tooltip={state === "collapsed" ? module.name : undefined}
                                     className={cn(
                                       "w-full justify-start transition-all duration-300 group relative overflow-hidden",
                                       active 
                                         ? "bg-primary text-primary-foreground shadow-md hover:shadow-lg" 
                                         : "hover:bg-accent hover:text-accent-foreground hover:shadow-sm",
-                                      !accessible && "opacity-50 cursor-not-allowed"
+                                      !accessible && "opacity-50 cursor-not-allowed",
+                                      "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700"
                                     )}
                                     disabled={!accessible}
                                     isActive={active}
@@ -458,11 +483,12 @@ export function AppSidebar() {
                                           {module.name}
                                         </span>
                                         <div className="flex items-center gap-1">
+                                          <FavoriteButton moduleId={module.id} size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" />
                                           {module.minPlan !== 'standard' && (
                                             <Badge 
                                               variant="secondary"
                                               className={cn(
-                                                "text-xs h-5 px-2 font-medium transition-all duration-200",
+                                                "text-xs h-5 px-2 font-medium transition-all duration-200 group-hover:scale-105",
                                                 getBadgeVariant(module.minPlan)
                                               )}
                                             >
@@ -470,8 +496,8 @@ export function AppSidebar() {
                                             </Badge>
                                           )}
                                           <ChevronDown className={cn(
-                                            "h-4 w-4 transition-transform duration-300",
-                                            subMenuOpen && "rotate-180"
+                                            "h-4 w-4 transition-all duration-300 text-muted-foreground",
+                                            subMenuOpen && "rotate-180 text-primary"
                                           )} />
                                         </div>
                                       </div>
@@ -480,28 +506,44 @@ export function AppSidebar() {
                                 </CollapsibleTrigger>
                                 
                                 {state !== "collapsed" && (
-                                  <CollapsibleContent className="ml-4 mt-1 space-y-1">
-                                    {subModules.map((subModule) => {
-                                      const SubIcon = iconMap[subModule.icon] || Settings;
-                                      const subActive = isActive(subModule.route);
-                                      
-                                      return (
-                                        <SidebarMenuButton
-                                          key={subModule.id}
-                                          onClick={() => handleNavigate(subModule.route, module.id)}
-                                          className={cn(
-                                            "w-full justify-start text-sm transition-all duration-200",
-                                            subActive 
-                                              ? "bg-primary/20 text-primary font-medium" 
-                                              : "hover:bg-accent/50"
-                                          )}
-                                          isActive={subActive}
-                                        >
-                                          <SubIcon className="h-3.5 w-3.5" />
-                                          <span className="truncate">{subModule.name}</span>
-                                        </SidebarMenuButton>
-                                      );
-                                    })}
+                                  <CollapsibleContent className="overflow-hidden transition-all duration-300 data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
+                                    <div className="ml-6 mt-1 space-y-0.5 border-l-2 border-primary/20 pl-2 py-1">
+                                      {subModules.map((subModule, idx) => {
+                                        const SubIcon = iconMap[subModule.icon] || Settings;
+                                        const subActive = isActive(subModule.route);
+                                        
+                                        return (
+                                          <div 
+                                            key={subModule.id}
+                                            className="animate-fade-in"
+                                            style={{ animationDelay: `${idx * 30}ms` }}
+                                          >
+                                            <SidebarMenuButton
+                                              onClick={() => handleNavigate(subModule.route, module.id)}
+                                              className={cn(
+                                                "w-full justify-start text-sm transition-all duration-300 group/sub relative",
+                                                subActive 
+                                                  ? "bg-primary/15 text-primary font-medium border-l-2 border-primary shadow-sm" 
+                                                  : "hover:bg-accent/50 hover:border-l-2 hover:border-primary/50 hover:translate-x-1",
+                                                "pl-2"
+                                              )}
+                                              isActive={subActive}
+                                            >
+                                              <SubIcon className={cn(
+                                                "h-3.5 w-3.5 transition-all duration-300",
+                                                subActive && "text-primary scale-110"
+                                              )} />
+                                              <span className="truncate">{subModule.name}</span>
+                                              {subActive && (
+                                                <div className="ml-auto">
+                                                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                                </div>
+                                              )}
+                                            </SidebarMenuButton>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
                                   </CollapsibleContent>
                                 )}
                               </Collapsible>
