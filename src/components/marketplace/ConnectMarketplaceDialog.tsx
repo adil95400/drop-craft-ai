@@ -42,6 +42,8 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
     access_token: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isTesting, setIsTesting] = useState(false)
+  const [testResult, setTestResult] = useState<{ success: boolean; message?: string } | null>(null)
 
   const { connectMarketplace, isConnecting } = useMarketplaceConnections()
   const { toast } = useToast()
@@ -130,6 +132,55 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
         delete newErrors[field]
         return newErrors
       })
+    }
+    // Clear test result when user modifies credentials
+    if (testResult) {
+      setTestResult(null)
+    }
+  }
+
+  const handleTestConnection = async () => {
+    // Validate form first
+    if (!validateForm()) {
+      toast({
+        title: 'Validation échouée',
+        description: 'Veuillez corriger les erreurs avant de tester',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setIsTesting(true)
+    setTestResult(null)
+
+    try {
+      const { marketplaceService } = await import('@/services/marketplace.service')
+      const result = await marketplaceService.testConnection(platform, credentials)
+
+      setTestResult(result)
+
+      if (result.success) {
+        toast({
+          title: 'Test réussi ✓',
+          description: result.message || result.details || 'La connexion fonctionne correctement',
+        })
+      } else {
+        toast({
+          title: 'Test échoué',
+          description: result.error || result.details || 'Impossible de se connecter',
+          variant: 'destructive',
+        })
+      }
+    } catch (error: any) {
+      console.error('Test connection error:', error)
+      setTestResult({ success: false, message: error.message })
+      toast({
+        title: 'Erreur de test',
+        description: error.message || 'Une erreur est survenue',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsTesting(false)
     }
   }
 
@@ -305,16 +356,48 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
             </>
           )}
 
+          {testResult && (
+            <div className={`p-4 rounded-lg ${testResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+              <div className="flex items-start gap-2">
+                {testResult.success ? (
+                  <div className="text-green-600 font-semibold">✓ Test réussi</div>
+                ) : (
+                  <div className="text-red-600 font-semibold">✗ Test échoué</div>
+                )}
+              </div>
+              {testResult.message && (
+                <p className={`text-sm mt-1 ${testResult.success ? 'text-green-700' : 'text-red-700'}`}>
+                  {testResult.message}
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="flex justify-end gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
-              disabled={isConnecting}
+              disabled={isConnecting || isTesting}
             >
               Annuler
             </Button>
-            <Button type="submit" disabled={!platform || isConnecting}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleTestConnection}
+              disabled={!platform || isConnecting || isTesting}
+            >
+              {isTesting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Test en cours...
+                </>
+              ) : (
+                'Tester la connexion'
+              )}
+            </Button>
+            <Button type="submit" disabled={!platform || isConnecting || isTesting || !testResult?.success}>
               {isConnecting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

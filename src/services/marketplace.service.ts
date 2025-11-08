@@ -149,6 +149,18 @@ class MarketplaceService {
       successRate: totalSyncs > 0 ? ((totalSyncs - failedSyncs) / totalSyncs * 100).toFixed(1) : '0'
     }
   }
+
+  async testConnection(platform: string, credentials: Record<string, any>): Promise<{ success: boolean; message?: string; error?: string; details?: string }> {
+    const { data, error } = await supabase.functions.invoke('test-marketplace-connection', {
+      body: {
+        platform,
+        credentials
+      }
+    })
+
+    if (error) throw error
+    return data
+  }
 }
 
 export const marketplaceService = new MarketplaceService()

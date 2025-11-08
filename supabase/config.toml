@@ -406,6 +406,9 @@ verify_jwt = false
 [functions.marketplace-connect]
 verify_jwt = true
 
+[functions.test-marketplace-connection]
+verify_jwt = true
+
 [functions.marketplace-sync]
 verify_jwt = true
 
