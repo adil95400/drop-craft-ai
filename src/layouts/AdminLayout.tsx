@@ -1,8 +1,9 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminBreadcrumbs } from '@/components/admin/AdminBreadcrumbs';
+import { Menu } from 'lucide-react';
 
 // Lazy load admin pages
 const AdminDashboard = React.lazy(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
@@ -26,20 +27,23 @@ const SuperAdminDashboard = React.lazy(() => import('@/pages/admin/SuperAdminDas
 
 export const AdminLayout: React.FC = () => {
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-background">
         <AdminSidebar />
         <div className="flex-1 flex flex-col">
-          {/* Top Bar */}
-          <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          {/* Top Bar - Trigger toujours visible */}
+          <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-14 items-center justify-between px-6">
               <div className="flex items-center gap-4">
+                <SidebarTrigger className="h-8 w-8 hover:bg-muted/50 rounded-md -ml-2">
+                  <Menu className="h-4 w-4" />
+                </SidebarTrigger>
                 <div>
                   <h1 className="text-lg font-semibold">Administration Système</h1>
                 </div>
               </div>
             </div>
-          </div>
+          </header>
 
           {/* Page Content */}
           <main className="flex-1 overflow-auto p-6">

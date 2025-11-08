@@ -102,6 +102,11 @@ export function AdminSidebar() {
       .sort((a, b) => a.order - b.order)
   })).filter(group => group.modules.length > 0);
 
+  // Détecter le groupe actif pour le garder ouvert
+  const activeCategory = modulesByCategory.find(({ modules }) =>
+    modules.some(m => isActive(m.route))
+  )?.category.id;
+
   const isActive = (path: string) => {
     if (path === '/admin') return currentPath === '/admin';
     return currentPath === path || currentPath.startsWith(path + '/');
@@ -122,26 +127,33 @@ export function AdminSidebar() {
     const Icon = iconMap[module.icon] || Settings;
     const hasAccess = canAccess(module.id);
     const badge = getPlanBadge(module.minPlan);
+    const active = isActive(module.route);
 
     return (
       <SidebarMenuItem key={module.id}>
-        <SidebarMenuButton asChild className="h-10">
+        <SidebarMenuButton asChild className="h-9">
           <NavLink 
             to={module.route}
-            end={module.route === '/dashboard'}
-            className={({ isActive: navIsActive }) => `flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${getNavCls({ isActive: navIsActive || isActive(module.route) })} ${!hasAccess ? 'opacity-50 cursor-not-allowed' : ''}`}
+            end={module.route === '/admin'}
+            className={({ isActive: navIsActive }) => `
+              flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
+              ${getNavCls({ isActive: navIsActive || active })} 
+              ${!hasAccess ? 'opacity-50 cursor-not-allowed' : ''}
+              ${collapsed ? 'justify-center' : ''}
+            `}
             onClick={(e) => {
               if (!hasAccess) {
                 e.preventDefault();
               }
             }}
+            title={collapsed ? module.name : undefined}
           >
             <Icon className="h-4 w-4 shrink-0" />
             {!collapsed && (
-              <div className="flex items-center justify-between w-full">
-                <span className="truncate">{module.name}</span>
+              <div className="flex items-center justify-between w-full min-w-0">
+                <span className="truncate text-sm">{module.name}</span>
                 {badge && !hasAccess && (
-                  <Badge variant={badge.variant} className="text-xs h-5">
+                  <Badge variant={badge.variant} className="text-[10px] h-4 px-1 shrink-0 ml-2">
                     {badge.text}
                   </Badge>
                 )}
@@ -153,37 +165,50 @@ export function AdminSidebar() {
     );
   };
 
-  const renderMenuGroup = (category: ModuleCategory, modules: ModuleConfig[]) => (
-    <SidebarGroup key={category.id}>
-      <SidebarGroupLabel className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-        {!collapsed && category.name}
-      </SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {modules.map(module => renderModuleItem(module))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
-  );
+  const renderMenuGroup = (category: ModuleCategory, modules: ModuleConfig[]) => {
+    const isGroupActive = category.id === activeCategory;
+    
+    return (
+      <SidebarGroup 
+        key={category.id}
+        className="transition-all"
+      >
+        <SidebarGroupLabel className="text-xs uppercase tracking-wider font-semibold text-muted-foreground px-2">
+          {!collapsed && category.name}
+        </SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu className="space-y-1">
+            {modules.map(module => renderModuleItem(module))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    );
+  };
 
   return (
     <Sidebar
-      className={`border-r transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'}`}
+      className={`border-r transition-all duration-200 ${collapsed ? 'w-16' : 'w-64'}`}
       collapsible="icon"
     >
       <div className="flex h-full flex-col">
-        {/* Header avec profil utilisateur */}
-        {!collapsed && (
-          <div className="border-b p-4">
-            <div className="flex items-center gap-3">
+        {/* Header avec profil utilisateur - responsive */}
+        <div className="border-b p-4">
+          {collapsed ? (
+            <div className="flex justify-center">
               <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Crown className="h-5 w-5 text-primary" />
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <Crown className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 overflow-hidden">
                 <div className="font-semibold text-sm truncate">
                   {profile?.full_name || 'Admin'}
                 </div>
-                <div className="text-xs text-muted-foreground flex items-center gap-2">
+                <div className="text-xs text-muted-foreground flex items-center gap-1 flex-wrap">
                   <Badge variant="outline" className="h-4 text-xs">
                     {effectivePlan}
                   </Badge>
@@ -195,19 +220,24 @@ export function AdminSidebar() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Toggle button */}
-        <div className="flex justify-end p-2">
-          <SidebarTrigger className="h-8 w-8 hover:bg-muted/50 rounded-md" />
+          )}
         </div>
 
-        <SidebarContent className="flex-1 overflow-auto">
+        {/* Navigation content */}
+        <SidebarContent className="flex-1 overflow-auto py-2">
           {modulesByCategory.map(({ category, modules }) => 
             renderMenuGroup(category, modules)
           )}
         </SidebarContent>
+
+        {/* Footer hint en mode collapsed */}
+        {collapsed && (
+          <div className="border-t p-2 flex justify-center">
+            <div className="text-xs text-muted-foreground">
+              <Settings className="h-4 w-4" />
+            </div>
+          </div>
+        )}
       </div>
     </Sidebar>
   );
