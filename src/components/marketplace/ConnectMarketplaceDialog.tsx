@@ -36,7 +36,8 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
   const [credentials, setCredentials] = useState({
     api_key: '',
     api_secret: '',
-    shop_domain: '',
+    shop_url: '',
+    shop_id: '',
     access_token: '',
   })
 
@@ -51,10 +52,11 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
       await connectMarketplace({
         platform,
         credentials: {
-          apiKey: credentials.api_key,
-          apiSecret: credentials.api_secret,
-          shopDomain: credentials.shop_domain,
-          accessToken: credentials.access_token,
+          api_key: credentials.api_key,
+          api_secret: credentials.api_secret,
+          shop_url: credentials.shop_url,
+          shop_id: credentials.shop_id,
+          access_token: credentials.access_token,
         },
       })
       
@@ -63,7 +65,8 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
       setCredentials({
         api_key: '',
         api_secret: '',
-        shop_domain: '',
+        shop_url: '',
+        shop_id: '',
         access_token: '',
       })
       if (onSuccess) onSuccess()
@@ -123,13 +126,28 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
 
               {(platform === 'shopify' || platform === 'woocommerce') && (
                 <div className="space-y-2">
-                  <Label htmlFor="shop_domain">Domaine du magasin</Label>
+                  <Label htmlFor="shop_url">Domaine du magasin</Label>
                   <Input
-                    id="shop_domain"
+                    id="shop_url"
                     placeholder="mon-magasin.myshopify.com"
-                    value={credentials.shop_domain}
+                    value={credentials.shop_url}
                     onChange={(e) =>
-                      setCredentials({ ...credentials, shop_domain: e.target.value })
+                      setCredentials({ ...credentials, shop_url: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+              )}
+
+              {(platform === 'etsy' || platform === 'manomano') && (
+                <div className="space-y-2">
+                  <Label htmlFor="shop_id">ID de la boutique</Label>
+                  <Input
+                    id="shop_id"
+                    placeholder="Votre ID de boutique"
+                    value={credentials.shop_id}
+                    onChange={(e) =>
+                      setCredentials({ ...credentials, shop_id: e.target.value })
                     }
                     required
                   />
