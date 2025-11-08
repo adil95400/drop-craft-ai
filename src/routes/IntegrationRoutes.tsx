@@ -20,6 +20,7 @@ const MultiStoreCentralDashboard = lazy(() => import('@/pages/MultiStoreCentralD
 const Extension = lazy(() => import('@/pages/Extension'));
 const ExtensionsHub = lazy(() => import('@/pages/ExtensionsHub'));
 const ExtensionAPIPage = lazy(() => import('@/pages/ExtensionAPIPage'));
+const ChromeExtensionConfigPage = lazy(() => import('@/pages/ChromeExtensionConfigPage'));
 
 // API
 const APIDeveloperPage = lazy(() => import('@/pages/APIDeveloperPage'));
@@ -54,6 +55,7 @@ export function IntegrationRoutes() {
       <Route path="extensions" element={<Extension />} />
       <Route path="extensions/hub" element={<ExtensionsHub />} />
       <Route path="extensions/api" element={<ExtensionAPIPage />} />
+      <Route path="extensions/chrome-config" element={<ChromeExtensionConfigPage />} />
       
       {/* API */}
       <Route path="api/developer" element={<APIDeveloperPage />} />
