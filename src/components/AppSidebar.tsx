@@ -17,6 +17,7 @@ import {
   Phone, Calendar, MessageSquare, Type,
   DollarSign, Heart, BookOpen
 } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import {
   Sidebar,
   SidebarContent,
@@ -296,10 +297,18 @@ export function AppSidebar() {
                   ADMIN - ACCÈS TOTAL
                 </Badge>
               )}
+              {/* Theme Toggle */}
+              <div className="pt-2">
+                <ThemeToggle collapsed={false} variant="ghost" className="w-full" />
+              </div>
             </div>
           ) : (
-            <div className="w-8 h-8 mx-auto bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group">
-              <ShoppingCart className="w-5 h-5 text-white group-hover:rotate-12 transition-transform duration-300" />
+            <div className="space-y-2">
+              <div className="w-8 h-8 mx-auto bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group">
+                <ShoppingCart className="w-5 h-5 text-white group-hover:rotate-12 transition-transform duration-300" />
+              </div>
+              {/* Theme Toggle collapsed */}
+              <ThemeToggle collapsed={true} variant="ghost" className="mx-auto" />
             </div>
           )}
         </div>
