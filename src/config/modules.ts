@@ -476,8 +476,20 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     category: 'integrations',
     order: 23
   },
+  videoTutorials: {
+    id: 'videoTutorials',
+    name: 'Vidéos Tutoriels',
+    icon: 'Video',
+    enabled: true,
+    minPlan: 'ultra_pro',
+    route: '/admin/video-tutorials',
+    features: ['video-management', 'upload-videos', 'tutorial-guides'],
+    description: 'Gestion des vidéos tutoriels marketplace',
+    category: 'integrations',
+    order: 24
+  },
 
-  // Catégorie: System
+  // Système et configuration
   observability: {
     id: 'observability',
     name: 'Observabilité',
@@ -488,7 +500,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['advanced-monitoring', 'real-time-metrics', 'alerts', 'logs-analytics'],
     description: 'Monitoring et métriques avancés',
     category: 'system',
-    order: 24
+    order: 25
   },
   support: {
     id: 'support',

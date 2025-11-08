@@ -35,6 +35,7 @@ import {
   Building2,
   Plug,
   Activity,
+  Video,
   type LucideIcon
 } from 'lucide-react';
 import {
@@ -81,6 +82,7 @@ const iconMap: Record<string, LucideIcon> = {
   Shield: Shield,
   Plug: Plug,
   Activity: Activity,
+  Video: Video,
 };
 
 export function AdminSidebar() {

@@ -21,6 +21,7 @@ const AdminAutomation = React.lazy(() => import('@/pages/admin/AdminAutomation')
 const AdminSecurity = React.lazy(() => import('@/pages/admin/AdminSecurity'));
 const AdminIntegrations = React.lazy(() => import('@/pages/admin/AdminIntegrations'));
 const AdminSubscriptions = React.lazy(() => import('@/pages/admin/AdminSubscriptions'));
+const VideoTutorialsAdmin = React.lazy(() => import('@/pages/admin/VideoTutorialsAdmin'));
 const SuperAdminDashboard = React.lazy(() => import('@/pages/admin/SuperAdminDashboard').then(m => ({ default: m.SuperAdminDashboard })));
 
 export const AdminLayout: React.FC = () => {
@@ -86,6 +87,7 @@ export const AdminLayout: React.FC = () => {
                 <Route path="integrations" element={<AdminIntegrations />} />
                 <Route path="subscriptions" element={<AdminSubscriptions />} />
                 <Route path="extensions" element={<AdminIntegrations />} />
+                <Route path="video-tutorials" element={<VideoTutorialsAdmin />} />
                 
                 {/* Super Admin */}
                 <Route path="super" element={<SuperAdminDashboard />} />
