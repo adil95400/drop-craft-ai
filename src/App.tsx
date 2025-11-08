@@ -12,7 +12,21 @@ import { NotificationProvider } from '@/components/notifications/NotificationSer
 import { ThemeProvider } from 'next-themes';
 import { GlobalModals } from '@/components/GlobalModals';
 import { AppRoutes } from '@/routes';
+import { useAutoTheme } from '@/hooks/useAutoTheme';
 import '@/lib/i18n';
+
+function AppContent() {
+  useAutoTheme();
+  
+  return (
+    <>
+      <AppRoutes />
+      <GlobalModals />
+      <Toaster />
+      <SonnerToaster position="top-right" />
+    </>
+  );
+}
 
 function App() {
   return (
@@ -27,10 +41,7 @@ function App() {
           <UnifiedAuthProvider>
             <UnifiedProvider>
               <NotificationProvider>
-                <AppRoutes />
-                <GlobalModals />
-                <Toaster />
-                <SonnerToaster position="top-right" />
+                <AppContent />
               </NotificationProvider>
             </UnifiedProvider>
           </UnifiedAuthProvider>

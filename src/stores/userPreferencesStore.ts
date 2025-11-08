@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface UserPreferences {
-  theme: 'light' | 'dark' | 'system';
+  theme: 'light' | 'dark' | 'system' | 'auto';
   language: 'fr' | 'en';
   sidebarCollapsed: boolean;
   defaultView: 'grid' | 'list' | 'table';
@@ -11,6 +11,10 @@ interface UserPreferences {
   compactMode: boolean;
   autoSave: boolean;
   defaultPageSize: number;
+  autoThemeSchedule: {
+    lightModeStart: string; // Format: "HH:mm"
+    darkModeStart: string;  // Format: "HH:mm"
+  };
 }
 
 interface UserPreferencesStore extends UserPreferences {
@@ -23,6 +27,7 @@ interface UserPreferencesStore extends UserPreferences {
   toggleCompactMode: () => void;
   toggleAutoSave: () => void;
   setDefaultPageSize: (size: number) => void;
+  setAutoThemeSchedule: (schedule: UserPreferences['autoThemeSchedule']) => void;
   reset: () => void;
 }
 
@@ -36,6 +41,10 @@ const defaultPreferences: UserPreferences = {
   compactMode: false,
   autoSave: true,
   defaultPageSize: 50,
+  autoThemeSchedule: {
+    lightModeStart: '07:00',
+    darkModeStart: '19:00',
+  },
 };
 
 export const useUserPreferencesStore = create<UserPreferencesStore>()(
@@ -52,6 +61,7 @@ export const useUserPreferencesStore = create<UserPreferencesStore>()(
       toggleCompactMode: () => set((state) => ({ compactMode: !state.compactMode })),
       toggleAutoSave: () => set((state) => ({ autoSave: !state.autoSave })),
       setDefaultPageSize: (size) => set({ defaultPageSize: size }),
+      setAutoThemeSchedule: (schedule) => set({ autoThemeSchedule: schedule }),
       reset: () => set(defaultPreferences),
     }),
     {
