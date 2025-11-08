@@ -1,24 +1,44 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Settings, Database, Zap, TrendingUp, FolderSync } from 'lucide-react'
-import { ImportUltraProInterface } from '@/components/import/ImportUltraProInterface'
-import { AdvancedMapping } from '@/components/import/AdvancedMapping'
-import { AIImportUltraPro } from '@/components/import/AIImportUltraPro'
-import { BulkImportUltraPro } from '@/components/import/BulkImportUltraPro'
+import { Globe, FileCode2, Server, Database, History, Activity, TrendingUp } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useAdvancedImport } from '@/domains/commerce/hooks/useAdvancedImport'
+import { StatsCard } from '@/components/import/advanced/StatsCard'
+import { URLImportCard } from '@/components/import/advanced/URLImportCard'
+import { XMLRSSImportCard } from '@/components/import/advanced/XMLRSSImportCard'
+import { FTPImportCard } from '@/components/import/advanced/FTPImportCard'
+import { ImportJobsMonitor } from '@/components/import/advanced/ImportJobsMonitor'
+import { ImportHistoryTimeline } from '@/components/import/advanced/ImportHistoryTimeline'
+import { FTPConnectorManager } from '@/components/import/advanced/FTPConnectorManager'
 
 export default function AdvancedImport() {
   const navigate = useNavigate()
+  
+  const {
+    activeJobs,
+    completedJobs,
+    products,
+    connectors,
+    importFromUrl,
+    importFromXml,
+    importFromFtp,
+    deleteConnector,
+    testConnection,
+    isImportingUrl,
+    isImportingXml,
+    isImportingFtp,
+    isTestingConnection,
+    stats
+  } = useAdvancedImport()
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Import Avancé</h1>
+          <h1 className="text-3xl font-bold mb-2">Import Avancé Pro</h1>
           <p className="text-muted-foreground">
-            Configuration avancée, mapping intelligent et optimisation IA
+            Monitoring temps réel, import URL/XML/FTP et gestion des connecteurs
           </p>
         </div>
         <Button variant="outline" onClick={() => navigate('/import')}>
@@ -26,130 +46,99 @@ export default function AdvancedImport() {
         </Button>
       </div>
 
-      {/* Onglets */}
-      <Tabs defaultValue="interface" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="interface" className="flex items-center gap-2">
-            <Settings className="w-4 h-4" />
-            Interface Pro
+      {/* Stats en temps réel */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StatsCard 
+          title="Imports Actifs" 
+          value={stats.activeImports}
+          icon={Activity}
+          description={stats.activeImports > 0 ? "En cours..." : "Aucun actif"}
+        />
+        <StatsCard 
+          title="Taux de Succès" 
+          value={`${stats.successRate}%`}
+          icon={TrendingUp}
+          trend={stats.successRate > 80 ? 'up' : stats.successRate > 50 ? 'neutral' : 'down'}
+        />
+        <StatsCard 
+          title="Produits Importés" 
+          value={stats.productsImported}
+          icon={Database}
+        />
+        <StatsCard 
+          title="Total Imports" 
+          value={stats.totalImports}
+          icon={History}
+        />
+      </div>
+
+      {/* Monitoring en temps réel */}
+      {activeJobs.length > 0 && (
+        <ImportJobsMonitor jobs={activeJobs} />
+      )}
+
+      {/* Onglets principaux */}
+      <Tabs defaultValue="url" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="url" className="flex items-center gap-2">
+            <Globe className="w-4 h-4" />
+            Import URL
           </TabsTrigger>
-          <TabsTrigger value="mapping" className="flex items-center gap-2">
+          <TabsTrigger value="xml" className="flex items-center gap-2">
+            <FileCode2 className="w-4 h-4" />
+            XML/RSS
+          </TabsTrigger>
+          <TabsTrigger value="ftp" className="flex items-center gap-2">
+            <Server className="w-4 h-4" />
+            FTP
+          </TabsTrigger>
+          <TabsTrigger value="connectors" className="flex items-center gap-2">
             <Database className="w-4 h-4" />
-            Mapping
+            Connecteurs ({connectors.length})
           </TabsTrigger>
-          <TabsTrigger value="ai" className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
-            IA
-          </TabsTrigger>
-          <TabsTrigger value="bulk" className="flex items-center gap-2">
-            <Zap className="w-4 h-4" />
-            En Masse
+          <TabsTrigger value="history" className="flex items-center gap-2">
+            <History className="w-4 h-4" />
+            Historique
           </TabsTrigger>
         </TabsList>
 
-        {/* Interface Pro complète */}
-        <TabsContent value="interface">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Interface d'Import Professionnelle
-              </CardTitle>
-              <CardDescription>
-                Configuration complète avec toutes les options d'import avancées
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ImportUltraProInterface />
-            </CardContent>
-          </Card>
+        <TabsContent value="url">
+          <URLImportCard 
+            onImport={importFromUrl} 
+            isLoading={isImportingUrl}
+          />
         </TabsContent>
 
-        {/* Mapping avancé */}
-        <TabsContent value="mapping">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="w-5 h-5" />
-                Mapping Avancé des Champs
-              </CardTitle>
-              <CardDescription>
-                Mappez vos colonnes source vers les champs cibles avec validation
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AdvancedMapping />
-            </CardContent>
-          </Card>
+        <TabsContent value="xml">
+          <XMLRSSImportCard 
+            onImport={importFromXml} 
+            isLoading={isImportingXml}
+          />
         </TabsContent>
 
-        {/* Optimisation IA */}
-        <TabsContent value="ai">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" />
-                Optimisation IA Ultra Pro
-              </CardTitle>
-              <CardDescription>
-                Enrichissement automatique et optimisation intelligente des produits
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AIImportUltraPro />
-            </CardContent>
-          </Card>
+        <TabsContent value="ftp">
+          <FTPImportCard 
+            onImport={importFromFtp} 
+            isLoading={isImportingFtp}
+          />
         </TabsContent>
 
-        {/* Import en masse */}
-        <TabsContent value="bulk">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="w-5 h-5" />
-                Import en Masse
-              </CardTitle>
-              <CardDescription>
-                Importez plusieurs sources simultanément avec gestion des lots
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <BulkImportUltraPro />
-            </CardContent>
-          </Card>
+        <TabsContent value="connectors">
+          <FTPConnectorManager 
+            connectors={connectors}
+            onDelete={deleteConnector}
+            onTest={testConnection}
+            isTestingId={isTestingConnection ? 'testing' : undefined}
+          />
+        </TabsContent>
+
+        <TabsContent value="history">
+          <ImportHistoryTimeline 
+            jobs={completedJobs} 
+            products={products}
+          />
         </TabsContent>
       </Tabs>
-
-      {/* Navigation vers autres fonctions avancées */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/import/advanced/sources')}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <FolderSync className="w-5 h-5" />
-              Configuration des Sources
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Configurez et gérez vos sources d'import (API, FTP, etc.)
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/import/manage')}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Database className="w-5 h-5" />
-              Voir les Résultats
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Consultez les produits importés et gérez leur publication
-            </p>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   )
 }
