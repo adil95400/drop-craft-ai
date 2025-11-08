@@ -24,6 +24,7 @@ const DEFINED_ROUTES: Set<string> = new Set([
   '/dashboard',
   '/dashboard/profile',
   '/dashboard/settings',
+  '/dashboard/parametres',
   '/dashboard/stores',
   '/dashboard/stores/connect',
   '/dashboard/stores/integrations',
@@ -35,7 +36,6 @@ const DEFINED_ROUTES: Set<string> = new Set([
   '/dashboard/customers',
   '/dashboard/sync-manager',
   '/dashboard/marketplace-sync',
-  '/dashboard/marketplace-hub',
   
   // Products
   '/products',

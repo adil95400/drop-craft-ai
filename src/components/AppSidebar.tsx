@@ -37,7 +37,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { cn } from "@/lib/utils";
 import { MODULE_REGISTRY, type ModuleConfig } from "@/config/modules";
 import { useModules } from "@/hooks/useModules";
-import { getSubModules } from "@/config/sub-modules";
+import { getAccessibleSubModules } from "@/config/sub-modules";
 import { FavoriteButton } from "@/components/navigation/FavoriteButton";
 
 // Logo mémoïsé pour éviter les re-renders inutiles
@@ -197,7 +197,7 @@ export function AppSidebar() {
   
   // Utiliser le système de modules et favoris
   const modulesData = useModules();
-  const { availableModules, canAccess, isModuleEnabled } = modulesData;
+  const { availableModules, canAccess, isModuleEnabled, currentPlan } = modulesData;
   const isAdminBypass = (modulesData as any).isAdminBypass || false;
   const { favorites, isFavorite } = useFavorites();
 
@@ -225,7 +225,7 @@ export function AppSidebar() {
       }
       
       // Ouvrir le sous-menu si une route de sous-module est active
-      const subModules = getSubModules(activeModule.id);
+      const subModules = getAccessibleSubModules(activeModule.id, currentPlan);
       if (subModules.length > 0) {
         const hasActiveSubModule = subModules.some(sm => isActive(sm.route));
         if (hasActiveSubModule && !openSubMenus[activeModule.id]) {
@@ -419,7 +419,7 @@ export function AppSidebar() {
                         const Icon = iconMap[module.icon] || Settings;
                         const active = isActive(module.route);
                         const accessible = canAccess(module.id);
-                        const subModules = getSubModules(module.id);
+                        const subModules = getAccessibleSubModules(module.id, currentPlan);
                         const hasSubItems = subModules.length > 0;
                         const subMenuOpen = openSubMenus[module.id] || false;
 

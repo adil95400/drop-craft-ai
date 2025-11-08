@@ -200,7 +200,7 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Globe',
     enabled: true,
     minPlan: 'standard',
-    route: '/dashboard/marketplace-hub',
+    route: '/integrations/marketplace/hub',
     features: ['marketplace-listing', 'multi-marketplace', 'centralized-management'],
     description: 'Hub centralisé pour vos marketplaces',
     category: 'core',

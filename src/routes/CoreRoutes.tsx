@@ -60,6 +60,9 @@ export function CoreRoutes() {
       {/* Quick Actions */}
       <Route path="sync-manager" element={<SyncManagerPage />} />
       <Route path="marketplace-sync" element={<MarketplaceSyncDashboard />} />
+      
+      {/* Settings (accessible from sidebar) */}
+      <Route path="parametres" element={<Settings />} />
     </Routes>
   );
 }
