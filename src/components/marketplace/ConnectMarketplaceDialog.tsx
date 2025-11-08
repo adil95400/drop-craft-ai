@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections'
-import { Store, Loader2, AlertCircle } from 'lucide-react'
+import { Store, Loader2, AlertCircle, ExternalLink } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 const MARKETPLACE_OPTIONS = [
@@ -43,7 +43,13 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isTesting, setIsTesting] = useState(false)
-  const [testResult, setTestResult] = useState<{ success: boolean; message?: string } | null>(null)
+  const [testResult, setTestResult] = useState<{ 
+    success: boolean; 
+    message?: string; 
+    error?: string;
+    details?: string;
+    docUrl?: string;
+  } | null>(null)
 
   const { connectMarketplace, isConnecting } = useMarketplaceConnections()
   const { toast } = useToast()
@@ -357,18 +363,32 @@ export function ConnectMarketplaceDialog({ trigger, onSuccess }: ConnectMarketpl
           )}
 
           {testResult && (
-            <div className={`p-4 rounded-lg ${testResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+            <div className={`p-4 rounded-lg space-y-2 ${testResult.success ? 'bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800' : 'bg-destructive/10 border border-destructive/30'}`}>
               <div className="flex items-start gap-2">
                 {testResult.success ? (
-                  <div className="text-green-600 font-semibold">✓ Test réussi</div>
+                  <div className="text-green-600 dark:text-green-400 font-semibold">✓ Test réussi</div>
                 ) : (
-                  <div className="text-red-600 font-semibold">✗ Test échoué</div>
+                  <div className="text-destructive font-semibold flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>✗ {testResult.error || 'Test échoué'}</span>
+                  </div>
                 )}
               </div>
-              {testResult.message && (
-                <p className={`text-sm mt-1 ${testResult.success ? 'text-green-700' : 'text-red-700'}`}>
-                  {testResult.message}
+              {(testResult.message || testResult.details) && (
+                <p className={`text-sm ${testResult.success ? 'text-green-700 dark:text-green-300' : 'text-destructive'}`}>
+                  {testResult.message || testResult.details}
                 </p>
+              )}
+              {testResult.docUrl && !testResult.success && (
+                <a 
+                  href={testResult.docUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-2"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Consulter la documentation
+                </a>
               )}
             </div>
           )}

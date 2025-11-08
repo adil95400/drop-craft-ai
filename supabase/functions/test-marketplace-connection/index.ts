@@ -72,7 +72,8 @@ serve(async (req) => {
         JSON.stringify({ 
           success: false, 
           error: testResult.error || 'Échec du test de connexion',
-          details: testResult.details
+          details: testResult.details,
+          docUrl: testResult.docUrl
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
@@ -170,7 +171,7 @@ function validateCredentialsFormat(
 async function testAPIConnection(
   platform: string,
   credentials: TestRequest['credentials']
-): Promise<{ success: boolean; error?: string; details?: string }> {
+): Promise<{ success: boolean; error?: string; details?: string; docUrl?: string }> {
   try {
     switch (platform) {
       case 'shopify':
@@ -204,7 +205,7 @@ async function testAPIConnection(
 
 async function testShopifyConnection(
   credentials: TestRequest['credentials']
-): Promise<{ success: boolean; error?: string; details?: string }> {
+): Promise<{ success: boolean; error?: string; details?: string; docUrl?: string }> {
   try {
     let shopUrl = credentials.shop_url!
     
@@ -229,13 +230,28 @@ async function testShopifyConnection(
       console.error('[SHOPIFY-TEST] API Error:', errorText)
       
       if (response.status === 401) {
-        return { success: false, error: 'Token d\'accès invalide', details: 'Vérifiez votre token d\'accès Shopify' }
+        return { 
+          success: false, 
+          error: 'Token d\'accès Shopify invalide', 
+          details: 'Vérifiez que votre token dispose des permissions nécessaires (read_products, write_products, etc.). Assurez-vous que votre application privée est correctement configurée.',
+          docUrl: 'https://help.shopify.com/en/manual/apps/custom-apps'
+        }
       }
       if (response.status === 404) {
-        return { success: false, error: 'Boutique non trouvée', details: 'Vérifiez l\'URL de votre boutique Shopify' }
+        return { 
+          success: false, 
+          error: 'Boutique Shopify non trouvée', 
+          details: 'Vérifiez l\'URL de votre boutique (format: votre-boutique.myshopify.com). Assurez-vous que le domaine est correct et que la boutique existe.',
+          docUrl: 'https://help.shopify.com/en/manual/intro-to-shopify/initial-setup/setup-your-store'
+        }
       }
       
-      return { success: false, error: `Erreur HTTP ${response.status}`, details: errorText }
+      return { 
+        success: false, 
+        error: `Erreur HTTP ${response.status}`, 
+        details: `Une erreur inattendue s'est produite. ${errorText}`,
+        docUrl: 'https://shopify.dev/api/admin-rest'
+      }
     }
 
     const data = await response.json()
@@ -248,14 +264,15 @@ async function testShopifyConnection(
     return { 
       success: false, 
       error: 'Impossible de se connecter à Shopify',
-      details: error.message 
+      details: `Erreur de connexion: ${error.message}. Vérifiez votre connexion internet et que l'URL de la boutique est accessible.`,
+      docUrl: 'https://help.shopify.com/en/manual/apps/custom-apps'
     }
   }
 }
 
 async function testWooCommerceConnection(
   credentials: TestRequest['credentials']
-): Promise<{ success: boolean; error?: string; details?: string }> {
+): Promise<{ success: boolean; error?: string; details?: string; docUrl?: string }> {
   try {
     let shopUrl = credentials.shop_url!
     shopUrl = shopUrl.replace(/\/$/, '')
@@ -277,13 +294,28 @@ async function testWooCommerceConnection(
 
     if (!response.ok) {
       if (response.status === 401) {
-        return { success: false, error: 'Identifiants invalides', details: 'Vérifiez votre clé API et secret WooCommerce' }
+        return { 
+          success: false, 
+          error: 'Identifiants WooCommerce invalides', 
+          details: 'Vérifiez que votre clé API et secret sont corrects. Assurez-vous d\'avoir créé une clé API avec les permissions "Lecture/Écriture" dans WooCommerce > Réglages > Avancé > REST API.',
+          docUrl: 'https://woocommerce.com/document/woocommerce-rest-api/'
+        }
       }
       if (response.status === 404) {
-        return { success: false, error: 'API WooCommerce non trouvée', details: 'Vérifiez que WooCommerce est installé et l\'API est activée' }
+        return { 
+          success: false, 
+          error: 'API WooCommerce non trouvée', 
+          details: 'Vérifiez que WooCommerce est installé et activé sur votre site WordPress. Assurez-vous que l\'API REST est activée dans WooCommerce > Réglages > Avancé > REST API.',
+          docUrl: 'https://woocommerce.com/document/woocommerce-rest-api/#section-1'
+        }
       }
       
-      return { success: false, error: `Erreur HTTP ${response.status}` }
+      return { 
+        success: false, 
+        error: `Erreur HTTP ${response.status}`,
+        details: 'Une erreur inattendue s\'est produite lors de la connexion à WooCommerce.',
+        docUrl: 'https://woocommerce.com/document/woocommerce-rest-api/'
+      }
     }
 
     const data = await response.json()
@@ -295,14 +327,15 @@ async function testWooCommerceConnection(
     return { 
       success: false, 
       error: 'Impossible de se connecter à WooCommerce',
-      details: error.message 
+      details: `Erreur de connexion: ${error.message}. Vérifiez l'URL de votre site et que WordPress/WooCommerce sont accessibles.`,
+      docUrl: 'https://woocommerce.com/document/woocommerce-rest-api/'
     }
   }
 }
 
 async function testEtsyConnection(
   credentials: TestRequest['credentials']
-): Promise<{ success: boolean; error?: string; details?: string }> {
+): Promise<{ success: boolean; error?: string; details?: string; docUrl?: string }> {
   try {
     const apiUrl = `https://openapi.etsy.com/v3/application/shops/${credentials.shop_id}`
     
@@ -316,13 +349,28 @@ async function testEtsyConnection(
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        return { success: false, error: 'Clé API invalide', details: 'Vérifiez votre clé API Etsy' }
+        return { 
+          success: false, 
+          error: 'Clé API Etsy invalide', 
+          details: 'Vérifiez que votre clé API est correcte et dispose des permissions nécessaires. Assurez-vous d\'avoir créé une application dans le Developer Portal d\'Etsy et obtenu une clé API valide.',
+          docUrl: 'https://developer.etsy.com/documentation/essentials/authentication'
+        }
       }
       if (response.status === 404) {
-        return { success: false, error: 'Boutique non trouvée', details: 'Vérifiez l\'ID de votre boutique Etsy' }
+        return { 
+          success: false, 
+          error: 'Boutique Etsy non trouvée', 
+          details: 'Vérifiez l\'ID de votre boutique Etsy (Shop ID). Vous pouvez trouver votre Shop ID dans les paramètres de votre boutique ou via l\'API Etsy.',
+          docUrl: 'https://developer.etsy.com/documentation/reference#operation/getShop'
+        }
       }
       
-      return { success: false, error: `Erreur HTTP ${response.status}` }
+      return { 
+        success: false, 
+        error: `Erreur HTTP ${response.status}`,
+        details: 'Une erreur inattendue s\'est produite lors de la connexion à Etsy.',
+        docUrl: 'https://developer.etsy.com/documentation'
+      }
     }
 
     const data = await response.json()
@@ -334,14 +382,15 @@ async function testEtsyConnection(
     return { 
       success: false, 
       error: 'Impossible de se connecter à Etsy',
-      details: error.message 
+      details: `Erreur de connexion: ${error.message}. Vérifiez votre connexion internet et que l'API Etsy est accessible.`,
+      docUrl: 'https://developer.etsy.com/documentation'
     }
   }
 }
 
 async function testPrestaShopConnection(
   credentials: TestRequest['credentials']
-): Promise<{ success: boolean; error?: string; details?: string }> {
+): Promise<{ success: boolean; error?: string; details?: string; docUrl?: string }> {
   try {
     let shopUrl = credentials.shop_url!
     shopUrl = shopUrl.replace(/\/$/, '')
@@ -362,13 +411,28 @@ async function testPrestaShopConnection(
 
     if (!response.ok) {
       if (response.status === 401) {
-        return { success: false, error: 'Clé API invalide', details: 'Vérifiez votre clé API PrestaShop' }
+        return { 
+          success: false, 
+          error: 'Clé API PrestaShop invalide', 
+          details: 'Vérifiez votre clé API PrestaShop. Assurez-vous d\'avoir activé le Webservice dans PrestaShop (Paramètres avancés > Webservice) et créé une clé avec les permissions appropriées.',
+          docUrl: 'https://devdocs.prestashop-project.org/8/webservice/getting-started/'
+        }
       }
       if (response.status === 404) {
-        return { success: false, error: 'API PrestaShop non trouvée', details: 'Vérifiez l\'URL et que l\'API est activée' }
+        return { 
+          success: false, 
+          error: 'API PrestaShop non trouvée', 
+          details: 'Vérifiez l\'URL de votre boutique PrestaShop et assurez-vous que le Webservice est activé dans Paramètres avancés > Webservice. Vérifiez aussi que le .htaccess autorise l\'accès à l\'API.',
+          docUrl: 'https://devdocs.prestashop-project.org/8/webservice/tutorials/prestashop-webservice-lib/'
+        }
       }
       
-      return { success: false, error: `Erreur HTTP ${response.status}` }
+      return { 
+        success: false, 
+        error: `Erreur HTTP ${response.status}`,
+        details: 'Une erreur inattendue s\'est produite lors de la connexion à PrestaShop.',
+        docUrl: 'https://devdocs.prestashop-project.org/8/webservice/'
+      }
     }
 
     return { 
@@ -379,7 +443,8 @@ async function testPrestaShopConnection(
     return { 
       success: false, 
       error: 'Impossible de se connecter à PrestaShop',
-      details: error.message 
+      details: `Erreur de connexion: ${error.message}. Vérifiez l'URL de votre boutique PrestaShop et que le serveur est accessible.`,
+      docUrl: 'https://devdocs.prestashop-project.org/8/webservice/'
     }
   }
 }
