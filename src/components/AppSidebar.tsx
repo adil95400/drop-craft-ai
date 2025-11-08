@@ -197,8 +197,9 @@ export function AppSidebar() {
   
   // Utiliser le système de modules et favoris
   const modulesData = useModules();
-  const { availableModules, canAccess, isModuleEnabled, currentPlan } = modulesData;
-  const isAdminBypass = (modulesData as any).isAdminBypass || false;
+  const { availableModules, canAccess, isModuleEnabled } = modulesData;
+  const currentPlan = modulesData.currentPlan;
+  const isAdminBypass = modulesData.isAdminBypass || false;
   const { favorites, isFavorite } = useFavorites();
 
   // Debounce la recherche
