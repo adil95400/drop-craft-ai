@@ -4,39 +4,34 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, CheckCircle, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-
 interface RouteValidationProviderProps {
   children: React.ReactNode;
   showErrorsInUI?: boolean;
 }
-
-export function RouteValidationProvider({ 
-  children, 
-  showErrorsInUI = true 
+export function RouteValidationProvider({
+  children,
+  showErrorsInUI = true
 }: RouteValidationProviderProps) {
   const [validationResults, setValidationResults] = useState<ReturnType<typeof validateAllRoutes> | null>(null);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
-  
   useEffect(() => {
     // Ne valider qu'en mode développement
     if (import.meta.env.DEV) {
       console.log('🚀 Démarrage de la validation des routes...');
-      
       const results = validateAllRoutes();
       setValidationResults(results);
       logValidationResults(results);
-      
+
       // Afficher le dialogue d'erreur si nécessaire
       if (!results.isValid && showErrorsInUI) {
         setShowErrorDialog(true);
       }
     }
   }, [showErrorsInUI]);
-  
+
   // Affichage des erreurs en mode développement
   if (showErrorDialog && validationResults && !validationResults.isValid) {
-    return (
-      <>
+    return <>
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50" />
         <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl p-4">
           <Card className="border-destructive">
@@ -46,11 +41,7 @@ export function RouteValidationProvider({
                   <AlertTriangle className="h-5 w-5" />
                   Erreurs de Configuration des Routes
                 </CardTitle>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowErrorDialog(false)}
-                >
+                <Button variant="ghost" size="icon" onClick={() => setShowErrorDialog(false)}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -64,11 +55,7 @@ export function RouteValidationProvider({
               </div>
               
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                {validationResults.issues.map((issue, index) => (
-                  <div 
-                    key={index}
-                    className="p-3 bg-muted rounded-lg text-sm space-y-2"
-                  >
+                {validationResults.issues.map((issue, index) => <div key={index} className="p-3 bg-muted rounded-lg text-sm space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1">
                         <div className="font-medium">{issue.name}</div>
@@ -79,27 +66,17 @@ export function RouteValidationProvider({
                       </Badge>
                     </div>
                     <div className="text-muted-foreground">{issue.issue}</div>
-                    {issue.suggestion && (
-                      <div className="text-xs text-blue-600 dark:text-blue-400">
+                    {issue.suggestion && <div className="text-xs text-blue-600 dark:text-blue-400">
                         💡 {issue.suggestion}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                      </div>}
+                  </div>)}
               </div>
               
               <div className="flex gap-2">
-                <Button 
-                  onClick={() => setShowErrorDialog(false)}
-                  className="flex-1"
-                >
+                <Button onClick={() => setShowErrorDialog(false)} className="flex-1">
                   Continuer quand même
                 </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => console.log('Voir console pour plus de détails')}
-                  className="flex-1"
-                >
+                <Button variant="outline" onClick={() => console.log('Voir console pour plus de détails')} className="flex-1">
                   Voir les détails (Console)
                 </Button>
               </div>
@@ -107,31 +84,19 @@ export function RouteValidationProvider({
           </Card>
         </div>
         {children}
-      </>
-    );
+      </>;
   }
-  
+
   // Affichage du succès en mode développement (juste dans la console)
   if (import.meta.env.DEV && validationResults?.isValid) {
-    return (
-      <>
+    return <>
         <div className="fixed bottom-4 left-4 z-50 animate-in fade-in slide-in-from-bottom-5 duration-500">
           <Card className="border-green-500 shadow-lg">
-            <CardContent className="p-4 flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <div className="text-sm">
-                <div className="font-medium">Validation des routes réussie</div>
-                <div className="text-xs text-muted-foreground">
-                  {validationResults.summary.totalModules} modules, {validationResults.summary.totalSubModules} sous-modules
-                </div>
-              </div>
-            </CardContent>
+            
           </Card>
         </div>
         {children}
-      </>
-    );
+      </>;
   }
-  
   return <>{children}</>;
 }
