@@ -13,6 +13,7 @@ const IntegrationsPage = lazy(() => import('@/pages/IntegrationsPage'));
 const Marketplace = lazy(() => import('@/pages/Marketplace'));
 const MarketplaceHubPage = lazy(() => import('@/pages/MarketplaceHubPage'));
 const MarketplaceIntegrationsPage = lazy(() => import('@/pages/MarketplaceIntegrationsPage'));
+const MarketplaceIntegrationGuidesPage = lazy(() => import('@/pages/MarketplaceIntegrationGuidesPage'));
 const FeedManagerPage = lazy(() => import('@/pages/FeedManagerPage'));
 const MultiStoreCentralDashboard = lazy(() => import('@/pages/MultiStoreCentralDashboard'));
 
@@ -48,6 +49,7 @@ export function IntegrationRoutes() {
       <Route path="marketplace" element={<Marketplace />} />
       <Route path="marketplace/hub" element={<MarketplaceHubPage />} />
       <Route path="marketplace/integrations" element={<MarketplaceIntegrationsPage />} />
+      <Route path="marketplace/integration-guides" element={<MarketplaceIntegrationGuidesPage />} />
       <Route path="marketplace/feed-manager" element={<FeedManagerPage />} />
       <Route path="marketplace/multi-store" element={<MultiStoreCentralDashboard />} />
       

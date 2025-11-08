@@ -16,10 +16,12 @@ import {
   CheckCircle,
   Clock,
   ExternalLink,
+  BookOpen,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 
 interface MarketplaceIntegration {
   id: string
@@ -117,6 +119,7 @@ const MARKETPLACE_CONFIGS = {
 
 export function MarketplaceIntegrationsHub() {
   const { toast } = useToast()
+  const navigate = useNavigate()
   const [integrations, setIntegrations] = useState<MarketplaceIntegration[]>([])
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState<string | null>(null)
@@ -312,10 +315,22 @@ export function MarketplaceIntegrationsHub() {
         transition={{ duration: 0.5 }}
       >
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Intégrations Marketplace</h1>
-          <p className="text-muted-foreground">
-            Connectez et synchronisez vos boutiques sur différentes plateformes
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Intégrations Marketplace</h1>
+              <p className="text-muted-foreground">
+                Connectez et synchronisez vos boutiques sur différentes plateformes
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/integrations/marketplace/integration-guides')}
+              className="flex items-center gap-2"
+            >
+              <BookOpen className="h-4 w-4" />
+              Guides d'intégration
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="connected" className="space-y-6">
