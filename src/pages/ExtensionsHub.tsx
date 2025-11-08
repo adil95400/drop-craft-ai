@@ -17,7 +17,8 @@ import {
   Sparkles,
   Building,
   Crown,
-  Lock
+  Lock,
+  Chrome
 } from 'lucide-react'
 
 export default function ExtensionsHub() {
@@ -25,6 +26,15 @@ export default function ExtensionsHub() {
   const { currentPlan, isPro, isUltraPro } = useLegacyPlan();
 
   const extensionFeatures = [
+    {
+      icon: <Chrome className="h-6 w-6" />,
+      title: 'Chrome Extension Config',
+      description: 'Configuration et installation de l\'extension Chrome pour l\'import 1-clic',
+      route: '/integrations/extensions/chrome-config',
+      badge: 'Import',
+      color: 'bg-emerald-500/10 text-emerald-600 border-emerald-200',
+      planRequired: null
+    },
     {
       icon: <Store className="h-6 w-6" />,
       title: 'Marketplace Public',
