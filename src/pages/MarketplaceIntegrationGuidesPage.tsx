@@ -1,11 +1,17 @@
 import { useState } from 'react'
-import { ArrowLeft, BookOpen, ExternalLink, CheckCircle2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, BookOpen, ExternalLink, CheckCircle2, AlertCircle, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { useNavigate } from 'react-router-dom'
+import shopifyApiKeysImg from '@/assets/guides/shopify-api-keys.jpg'
+import woocommerceRestApiImg from '@/assets/guides/woocommerce-rest-api.jpg'
+import etsyDeveloperPortalImg from '@/assets/guides/etsy-developer-portal.jpg'
+import prestashopWebserviceImg from '@/assets/guides/prestashop-webservice.jpg'
+import apiPermissionsImg from '@/assets/guides/api-permissions.jpg'
+import connectionSuccessImg from '@/assets/guides/connection-success.jpg'
 
 const platforms = [
   {
@@ -79,7 +85,8 @@ const guides = {
           'Cliquez sur "Créer une application"',
           'Donnez un nom à votre application (ex: "Mon Intégration")',
           'Cliquez sur "Créer une application"'
-        ]
+        ],
+        image: shopifyApiKeysImg
       },
       {
         title: 'Configurer les permissions',
@@ -91,7 +98,8 @@ const guides = {
           '  • read_orders et write_orders',
           '  • read_inventory et write_inventory',
           'Cliquez sur "Enregistrer"'
-        ]
+        ],
+        image: apiPermissionsImg
       },
       {
         title: 'Générer le token d\'accès',
@@ -102,7 +110,8 @@ const guides = {
           'Copiez le "Token d\'accès Admin API" affiché',
           '⚠️ Attention: Ce token n\'apparaîtra qu\'une seule fois!',
           'Conservez-le en lieu sûr'
-        ]
+        ],
+        image: connectionSuccessImg
       },
       {
         title: 'Récupérer l\'URL de la boutique',
@@ -174,7 +183,8 @@ const guides = {
           'Utilisateur: Sélectionnez votre compte admin',
           'Permissions: Lecture/Écriture',
           'Cliquez sur "Générer la clé API"'
-        ]
+        ],
+        image: woocommerceRestApiImg
       },
       {
         title: 'Copier les identifiants',
@@ -184,7 +194,8 @@ const guides = {
           'Copiez le "Secret du client" (Consumer Secret)',
           '⚠️ Ces informations n\'apparaîtront qu\'une fois!',
           'Conservez-les en lieu sûr'
-        ]
+        ],
+        image: connectionSuccessImg
       },
       {
         title: 'Vérifier l\'URL de l\'API',
@@ -249,7 +260,8 @@ const guides = {
           '  • App Name: "Mon Intégration"',
           '  • App Purpose: "Integration for store management"',
           'Cliquez sur "Create App"'
-        ]
+        ],
+        image: etsyDeveloperPortalImg
       },
       {
         title: 'Obtenir la clé API',
@@ -259,7 +271,8 @@ const guides = {
           'Copiez le "Keystring" (votre clé API)',
           'Copiez le "Shared Secret" (si nécessaire)',
           'Conservez ces informations en sécurité'
-        ]
+        ],
+        image: etsyDeveloperPortalImg
       },
       {
         title: 'Trouver votre Shop ID',
@@ -335,7 +348,8 @@ const guides = {
           '  • Description: "Mon Intégration"',
           '  • État: Activé',
           'Cliquez sur "Générer" pour créer la clé'
-        ]
+        ],
+        image: prestashopWebserviceImg
       },
       {
         title: 'Configurer les permissions',
@@ -348,7 +362,8 @@ const guides = {
           '  • orders: GET, PUT',
           '  • categories: GET',
           'Cliquez sur "Enregistrer"'
-        ]
+        ],
+        image: prestashopWebserviceImg
       },
       {
         title: 'Copier la clé API',
@@ -587,7 +602,22 @@ export default function MarketplaceIntegrationGuidesPage() {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-4">
+                      {step.image && (
+                        <div className="relative rounded-lg overflow-hidden border bg-muted">
+                          <img
+                            src={step.image}
+                            alt={step.title}
+                            className="w-full h-auto"
+                          />
+                          <div className="absolute top-2 right-2">
+                            <Badge className="bg-background/80 backdrop-blur-sm">
+                              <ImageIcon className="h-3 w-3 mr-1" />
+                              Exemple
+                            </Badge>
+                          </div>
+                        </div>
+                      )}
                       <ul className="space-y-2">
                         {step.details.map((detail, detailIndex) => (
                           <li key={detailIndex} className="flex items-start gap-2">
