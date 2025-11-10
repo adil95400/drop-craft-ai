@@ -1,5 +1,5 @@
 import { memo, ReactNode } from 'react';
-import { useGlobalPerformanceMonitor } from '@/hooks/useGlobalPerformanceMonitor';
+import { useUnifiedPerformance } from '@/hooks/useUnifiedPerformance';
 import { PerformanceMonitorWidget } from '@/components/monitoring/PerformanceMonitorWidget';
 import { useUserPreferencesStore } from '@/stores/userPreferencesStore';
 
@@ -13,7 +13,11 @@ export const PerformanceProvider = memo(function PerformanceProvider({
   showWidget = false,
 }: PerformanceProviderProps) {
   // Active le monitoring global
-  useGlobalPerformanceMonitor();
+  useUnifiedPerformance({ 
+    componentName: 'App',
+    trackFPS: true,
+    trackMemory: true 
+  });
 
   const isDev = import.meta.env.DEV;
 

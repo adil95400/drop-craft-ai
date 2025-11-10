@@ -12,4 +12,5 @@ export { UserDropdown } from './components/UserDropdown'
 export { LoadingSpinner } from './components/LoadingSpinner'
 
 // Utilitaires performance
-export { memoizedComponents, PerformanceCache, debounce, throttle } from './utils/performanceOptimizations'
+export { memoizedComponents, debounce, throttle } from './utils/performanceOptimizations'
+export { unifiedCache } from '@/services/UnifiedCacheService'

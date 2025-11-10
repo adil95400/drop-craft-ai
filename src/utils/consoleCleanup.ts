@@ -1,33 +1,21 @@
-// Utilitaire pour remplacer les console.log par des actions appropriées
+/**
+ * @deprecated Use productionLogger from @/utils/productionLogger instead
+ * This file is kept for backward compatibility
+ */
+import { productionLogger } from './productionLogger';
 
 export const logAction = (action: string, data?: any) => {
-  // En mode développement, on peut garder les logs
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[ACTION] ${action}:`, data);
-  }
-  
-  // En production, on peut envoyer à un service de monitoring
-  if (process.env.NODE_ENV === 'production') {
-    // Ici on pourrait envoyer vers Sentry, LogRocket, etc.
-    // pour l'instant on ne fait rien pour éviter le spam
-  }
+  productionLogger.info(action, data);
 };
 
 export const logError = (error: string | Error, context?: string) => {
-  // En mode développement
-  if (process.env.NODE_ENV === 'development') {
-    console.error(`[ERROR]${context ? ` [${context}]` : ''}:`, error);
-  }
-  
-  // En production, on peut envoyer vers un service d'erreur
-  if (process.env.NODE_ENV === 'production') {
-    // Ici on pourrait envoyer vers Sentry
-    // pour l'instant on ne fait rien
+  if (error instanceof Error) {
+    productionLogger.error(error.message, error, context);
+  } else {
+    productionLogger.error(error, undefined, context);
   }
 };
 
 export const logWarning = (warning: string, context?: string) => {
-  if (process.env.NODE_ENV === 'development') {
-    console.warn(`[WARN]${context ? ` [${context}]` : ''}:`, warning);
-  }
+  productionLogger.warn(warning, undefined, context);
 };

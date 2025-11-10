@@ -10,7 +10,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
-import { getCacheStrategy, CacheStrategyType, LocalCache } from '@/utils/cacheStrategy';
+import { getCacheStrategy, CacheStrategyType, LocalCache } from '@/utils/simpleCacheStrategy';
 import { performanceTracker } from '@/utils/performanceMonitoring';
 import { toast } from 'sonner';
 

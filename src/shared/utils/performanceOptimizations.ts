@@ -38,9 +38,9 @@ export {
   useDebounce
 } from '@/components/performance/PerformanceOptimizations';
 
-// Cache utilities
-export { cacheService as PerformanceCache } from '@/services/cache/CacheService';
-export { cacheService } from '@/services/cache/CacheService';
+// Unified services (replaces old cache services)
+export { unifiedCache } from '@/services/UnifiedCacheService';
+export { useUnifiedPerformance } from '@/hooks/useUnifiedPerformance';
 
 // Improved debounce with TypeScript generics
 export const debounce = <T extends (...args: any[]) => any>(

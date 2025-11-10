@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { useGlobalCache } from '@/hooks/useGlobalCache'
+import { unifiedCache, cacheStats } from '@/services/UnifiedCacheService'
 
 interface PerformanceMetrics {
   pageLoadTime: number
@@ -23,8 +23,6 @@ export function PerformanceMonitor() {
     bundleSize: 0
   })
   
-  const { getStats } = useGlobalCache()
-
   useEffect(() => {
     const collectMetrics = () => {
       // Performance API
@@ -36,7 +34,7 @@ export function PerformanceMonitor() {
       const memoryUsage = memory ? (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100 : 0
 
       // Cache stats
-      const cacheStats = getStats()
+      const stats = cacheStats()
       
       // Bundle size approximatif
       const resources = performance.getEntriesByType('resource')
@@ -47,7 +45,7 @@ export function PerformanceMonitor() {
       setMetrics({
         pageLoadTime: Math.round(pageLoadTime),
         memoryUsage: Math.round(memoryUsage),
-        cacheHitRate: Math.round(cacheStats.hitRate * 100),
+        cacheHitRate: Math.round(stats.hitRate * 100),
         errorCount: 0, // À implémenter avec error boundary
         apiResponseTime: 0, // À implémenter avec interceptors
         bundleSize: Math.round(bundleSize / 1024) // KB
@@ -58,7 +56,7 @@ export function PerformanceMonitor() {
     const interval = setInterval(collectMetrics, 30000) // Toutes les 30s
 
     return () => clearInterval(interval)
-  }, [getStats])
+  }, [])
 
   const getPerformanceStatus = (metric: keyof PerformanceMetrics, value: number) => {
     const thresholds = {
