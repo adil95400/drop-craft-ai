@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useMemo } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -56,6 +56,8 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const fetchingRef = useRef(false);
+  const lastFetchedRef = useRef<string | null>(null);
 
   // Initialize auth state
   useEffect(() => {
@@ -95,8 +97,14 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
+    // Prevent duplicate fetches
+    if (fetchingRef.current || lastFetchedRef.current === userId) {
+      return;
+    }
+    
     try {
-      console.log('Fetching profile for user:', userId);
+      fetchingRef.current = true;
+      lastFetchedRef.current = userId;
       
       // Use secure function that computes is_admin from user_roles table
       const { data, error } = await supabase
@@ -110,28 +118,15 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }
 
       if (data) {
-        console.log('Profile loaded:', data);
         setProfile(data as Profile);
-        
-        // Also check Stripe subscription status to ensure sync
-        try {
-          const { data: subData } = await supabase.functions.invoke('check-subscription');
-          if (subData && subData.plan && subData.plan !== data.plan) {
-            // Update profile if Stripe plan is different
-            console.log('Syncing plan from Stripe:', subData.plan);
-            setProfile({ ...data, plan: subData.plan } as Profile);
-          }
-        } catch (subError) {
-          console.log('Could not verify Stripe subscription:', subError);
-          // Not critical, continue with profile data
-        }
       } else {
-        console.log('No profile found, creating default');
         setProfile(null);
       }
     } catch (error) {
       console.error('Profile fetch error:', error);
       setProfile(null);
+    } finally {
+      fetchingRef.current = false;
     }
   };
 
@@ -299,7 +294,7 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return { error: null };
   };
 
-  const value: UnifiedAuthContextType = {
+  const value = useMemo<UnifiedAuthContextType>(() => ({
     user,
     session,
     profile,
@@ -317,7 +312,7 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     effectivePlan,
     updateProfile,
     refetchProfile,
-  };
+  }), [user, session, profile, loading, isAdmin, effectivePlan]);
 
   return (
     <UnifiedAuthContext.Provider value={value}>

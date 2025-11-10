@@ -3,8 +3,8 @@
  * Initialise automatiquement le plan utilisateur au montage
  */
 
-import React, { createContext, useContext, useEffect } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
+import React, { createContext, useContext, useEffect, useRef } from 'react'
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { useToast } from '@/hooks/use-toast'
 
@@ -18,16 +18,18 @@ const UnifiedContext = createContext<{
 }>({ initialized: false })
 
 export function UnifiedProvider({ children }: UnifiedProviderProps) {
-  const { user } = useAuth()
+  const { user } = useUnifiedAuth()
   const { loadUserPlan, loading, error } = useUnifiedPlan()
   const { toast } = useToast()
+  const loadedRef = useRef(false)
   
-  // Charger le plan utilisateur au montage
+  // Charger le plan utilisateur au montage (une seule fois)
   useEffect(() => {
-    if (user?.id) {
+    if (user?.id && !loadedRef.current) {
+      loadedRef.current = true
       loadUserPlan(user.id)
     }
-  }, [user?.id, loadUserPlan])
+  }, [user?.id])
   
   // Afficher les erreurs de plan
   useEffect(() => {
@@ -53,7 +55,7 @@ export function useUnifiedContext() {
 
 // Hook de convenance qui combine auth et plan
 export function useAuthWithPlan() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading } = useUnifiedAuth()
   const planStore = useUnifiedPlan()
   const { initialized } = useUnifiedContext()
   
