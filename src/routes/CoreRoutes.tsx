@@ -10,10 +10,10 @@ const Profile = lazy(() => import('@/pages/Profile'));
 const Settings = lazy(() => import('@/pages/Settings'));
 
 // Stores
-const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard').then(m => ({ default: m.StoreDashboard })));
+const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard'));
 const ConnectStorePage = lazy(() => import('@/pages/stores/ConnectStorePage'));
-const IntegrationsPage = lazy(() => import('@/pages/stores/IntegrationsPage').then(m => ({ default: m.IntegrationsPage })));
-const ManageIntegrationPage = lazy(() => import('@/pages/stores/ManageIntegrationPage').then(m => ({ default: m.ManageIntegrationPage })));
+const IntegrationsPage = lazy(() => import('@/pages/stores/IntegrationsPage'));
+const ManageIntegrationPage = lazy(() => import('@/pages/stores/ManageIntegrationPage'));
 
 // Orders
 const ModernOrdersPage = lazy(() => import('@/pages/ModernOrdersPage'));

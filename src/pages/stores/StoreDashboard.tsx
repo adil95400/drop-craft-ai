@@ -41,7 +41,7 @@ interface RecentSync {
   created_at: string
 }
 
-export function StoreDashboard() {
+export default function StoreDashboard() {
   const [stats, setStats] = useState<IntegrationStats | null>(null)
   const [recentSyncs, setRecentSyncs] = useState<RecentSync[]>([])
   const [loading, setLoading] = useState(true)

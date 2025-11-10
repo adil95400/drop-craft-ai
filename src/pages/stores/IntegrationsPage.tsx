@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { Loader2, RefreshCw, Settings, Trash2, Activity, AlertCircle, CheckCircle, Clock } from 'lucide-react'
 
-export function IntegrationsPage() {
+export default function IntegrationsPage() {
   const [integrations, setIntegrations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState<string | null>(null)

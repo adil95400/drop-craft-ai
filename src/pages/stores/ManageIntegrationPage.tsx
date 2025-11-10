@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { Loader2, ArrowLeft, Settings, Activity, Database, AlertTriangle } from 'lucide-react'
 
-export function ManageIntegrationPage() {
+export default function ManageIntegrationPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [integration, setIntegration] = useState<any>(null)
