@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, ArrowLeft, Settings, Activity, Database, AlertTriangle } from 'lucide-react'
+import { Loader2, Settings, Activity, Database, AlertTriangle } from 'lucide-react'
+import { BackButton } from '@/components/navigation/BackButton'
 
 export default function ManageIntegrationPage() {
   const { id } = useParams<{ id: string }>()
@@ -145,15 +146,10 @@ export default function ManageIntegrationPage() {
 
   return (
     <div className="container mx-auto py-8">
+      <div className="mb-6">
+        <BackButton to="/dashboard/stores/integrations" label="Retour aux intégrations" />
+      </div>
       <div className="flex items-center space-x-4 mb-8">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate('/stores/integrations')}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Retour
-        </Button>
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
             {integration.store_config?.shop_name || `Boutique ${integration.platform_name}`}

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { Loader2, RefreshCw, Settings, Trash2, Activity, AlertCircle, CheckCircle, Clock } from 'lucide-react'
+import { BackButton } from '@/components/navigation/BackButton'
 
 export default function IntegrationsPage() {
   const [integrations, setIntegrations] = useState<any[]>([])
@@ -183,6 +184,9 @@ export default function IntegrationsPage() {
 
   return (
     <div className="container mx-auto py-8">
+      <div className="mb-4">
+        <BackButton to="/dashboard/stores" />
+      </div>
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Intégrations</h1>

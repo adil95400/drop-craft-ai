@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from "@/components/ui/badge";
+import { BackButton } from '@/components/navigation/BackButton';
 
 export default function OrdersCenterPage() {
   const { data: orders = [] } = useQuery({
@@ -43,6 +44,9 @@ export default function OrdersCenterPage() {
       </Helmet>
 
       <div className="space-y-8">
+        <div className="mb-4">
+          <BackButton to="/dashboard/orders" label="Retour aux commandes" />
+        </div>
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Centre de Commandes</h1>

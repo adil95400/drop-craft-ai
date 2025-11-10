@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Store, Loader2 } from 'lucide-react'
+import { Store, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import { useStoreConnection } from '@/hooks/useStoreConnection'
 import { PlatformGridSelector } from './components/PlatformGridSelector'
 import { CredentialInput } from '@/components/common/CredentialInput'
 import { ConnectionTestStatus } from '@/components/stores/connection/ConnectionTestStatus'
+import { BackButton } from '@/components/navigation/BackButton'
 
 const ConnectStorePage = () => {
   const navigate = useNavigate()
@@ -452,6 +453,9 @@ const ConnectStorePage = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
+      <div className="mb-6">
+        <BackButton to="/dashboard/stores" label="Retour aux boutiques" />
+      </div>
       {/* Sélection de plateforme */}
       {!selectedPlatform ? (
         <PlatformGridSelector
@@ -459,14 +463,10 @@ const ConnectStorePage = () => {
         />
       ) : (
         <div className="mb-6">
-          <Button 
-            variant="outline" 
+          <BackButton 
             onClick={() => setSelectedPlatform(null)}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Retour à la sélection
-          </Button>
+            label="Retour à la sélection"
+          />
         </div>
       )}
 

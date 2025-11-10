@@ -18,8 +18,9 @@ import { useUserPreferences } from "@/stores/globalStore";
 import { useTheme } from "next-themes";
 import { useTranslation } from 'react-i18next';
 import i18n from '@/lib/i18n';
+import { BackButton } from '@/components/navigation/BackButton';
 import { 
-  Settings as SettingsIcon, 
+  Settings as SettingsIcon,
   User, 
   Bell, 
   Key, 
@@ -440,6 +441,9 @@ const Settings = () => {
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
+      <div className="mb-4">
+        <BackButton to="/dashboard" />
+      </div>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

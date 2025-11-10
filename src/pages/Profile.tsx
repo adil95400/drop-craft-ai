@@ -25,6 +25,7 @@ import {
   Edit3
 } from "lucide-react";
 import AvatarUpload from '@/components/common/AvatarUpload';
+import { BackButton } from '@/components/navigation/BackButton';
 
 const Profile = () => {
   const { user, profile, updateProfile } = useAuth();
@@ -90,6 +91,9 @@ const Profile = () => {
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
+      <div className="mb-4">
+        <BackButton to="/dashboard" />
+      </div>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

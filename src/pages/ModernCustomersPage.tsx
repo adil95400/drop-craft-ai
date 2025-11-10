@@ -11,6 +11,7 @@ import { useRealCustomers, type Customer } from '@/hooks/useRealCustomers';
 import { Users, UserPlus, Mail, Phone, Calendar, TrendingUp, Search, Filter } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { BackButton } from '@/components/navigation/BackButton';
 
 export default function ModernCustomersPage() {
   const { customers, isLoading: loading, addCustomer } = useRealCustomers();
@@ -84,6 +85,9 @@ export default function ModernCustomersPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-8">
+      <div className="mb-4">
+        <BackButton to="/dashboard" />
+      </div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>

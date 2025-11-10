@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ActionButton } from '@/components/common/ActionButton'
 import { Helmet } from 'react-helmet-async'
 import { useUnifiedSystem } from '@/hooks/useUnifiedSystem'
+import { BackButton } from '@/components/navigation/BackButton'
 import { 
   Package, Search, Filter, MoreHorizontal, 
   Eye, Truck, CheckCircle, XCircle, Clock,
@@ -119,6 +120,9 @@ const ModernOrdersPage: React.FC = () => {
       </Helmet>
 
       <div className="space-y-6 p-6">
+        <div className="mb-4">
+          <BackButton to="/dashboard" />
+        </div>
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
