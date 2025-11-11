@@ -20,30 +20,94 @@ export const useWishlist = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  // Placeholder data until wishlists table is created
-  const wishlist: WishlistItem[] = []
-  const isLoading = false
-  const error = null
+  // Fetch wishlist items
+  const { data: wishlist = [], isLoading, error } = useQuery({
+    queryKey: ['wishlist'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
 
-  // Add to wishlist placeholder
-  const addToWishlist = useMutation({
-    mutationFn: async (productId: string) => {
-      toast({
-        title: "Fonctionnalité à venir",
-        description: "La wishlist sera disponible bientôt",
-      })
-      return null
+      const { data, error } = await supabase
+        .from('wishlists' as any)
+        .select(`
+          id,
+          product_id,
+          user_id,
+          created_at,
+          product:products(
+            id,
+            name,
+            price,
+            image_url,
+            status
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return (data || []) as any as WishlistItem[]
     }
   })
 
-  // Remove from wishlist placeholder
+  // Add to wishlist
+  const addToWishlist = useMutation({
+    mutationFn: async (productId: string) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      const { data, error } = await supabase
+        .from('wishlists' as any)
+        .insert([{ product_id: productId, user_id: user.id }])
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wishlist'] })
+      toast({
+        title: "Ajouté aux favoris",
+        description: "Le produit a été ajouté à votre wishlist",
+      })
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      })
+    }
+  })
+
+  // Remove from wishlist
   const removeFromWishlist = useMutation({
     mutationFn: async (productId: string) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      const { error } = await supabase
+        .from('wishlists' as any)
+        .delete()
+        .eq('product_id', productId)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wishlist'] })
       toast({
-        title: "Fonctionnalité à venir",
-        description: "La wishlist sera disponible bientôt",
+        title: "Retiré des favoris",
+        description: "Le produit a été retiré de votre wishlist",
       })
-      return null
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      })
     }
   })
 

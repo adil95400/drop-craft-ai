@@ -30,27 +30,76 @@ export const useShipping = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  // Placeholder data until shipping tables are created
-  const zones: ShippingZone[] = []
-  const methods: ShippingMethod[] = []
-  const isLoadingZones = false
-  const isLoadingMethods = false
+  // Fetch shipping zones
+  const { data: zones = [], isLoading: isLoadingZones } = useQuery({
+    queryKey: ['shipping-zones'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
 
-  // Add shipping zone placeholder
+      const { data, error } = await supabase
+        .from('shipping_zones' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return (data || []) as any as ShippingZone[]
+    }
+  })
+
+  // Fetch shipping methods
+  const { data: methods = [], isLoading: isLoadingMethods } = useQuery({
+    queryKey: ['shipping-methods'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+
+      const { data, error } = await supabase
+        .from('shipping_methods' as any)
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return (data || []) as any as ShippingMethod[]
+    }
+  })
+
+  // Add shipping zone
   const addZone = useMutation({
     mutationFn: async (newZone: {
       name: string
       countries: string[]
     }) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      const { data, error } = await supabase
+        .from('shipping_zones' as any)
+        .insert([{ ...newZone, user_id: user.id }])
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shipping-zones'] })
       toast({
-        title: "Fonctionnalité à venir",
-        description: "Le système de livraison sera disponible bientôt",
+        title: "Zone créée",
+        description: "La zone de livraison a été créée avec succès",
       })
-      return null
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      })
     }
   })
 
-  // Add shipping method placeholder
+  // Add shipping method
   const addMethod = useMutation({
     mutationFn: async (newMethod: {
       zone_id: string
@@ -62,11 +111,28 @@ export const useShipping = () => {
       estimated_days_min: number
       estimated_days_max: number
     }) => {
+      const { data, error } = await supabase
+        .from('shipping_methods' as any)
+        .insert([newMethod])
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shipping-methods'] })
       toast({
-        title: "Fonctionnalité à venir",
-        description: "Le système de livraison sera disponible bientôt",
+        title: "Méthode créée",
+        description: "La méthode de livraison a été créée avec succès",
       })
-      return null
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      })
     }
   })
 
