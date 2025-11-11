@@ -82,7 +82,7 @@ export default function StoreDashboard() {
   // Calculer les statistiques
   const stats: IntegrationStats = {
     total_integrations: integrations.length,
-    active_integrations: integrations.filter(i => i.connection_status === 'active').length,
+    active_integrations: integrations.filter(i => i.connection_status === 'active' || i.connection_status === 'connected').length,
     syncing_integrations: integrations.filter(i => i.connection_status === 'syncing').length,
     error_integrations: integrations.filter(i => i.connection_status === 'error').length,
     total_products_synced: syncLogs.reduce((sum, log) => sum + (log.records_succeeded || 0), 0),
@@ -217,6 +217,10 @@ export default function StoreDashboard() {
           <Button onClick={() => navigate('/dashboard/stores/integrations')} variant="outline">
             <Settings className="h-4 w-4 mr-2" />
             Gérer
+          </Button>
+          <Button onClick={() => navigate('/dashboard/stores/imported-products')} variant="outline">
+            <Package className="h-4 w-4 mr-2" />
+            Produits Importés
           </Button>
           <Button onClick={() => navigate('/dashboard/stores/connect')}>
             <Plus className="h-4 w-4 mr-2" />

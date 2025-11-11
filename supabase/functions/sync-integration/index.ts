@@ -102,7 +102,8 @@ serve(async (req) => {
         .update({ 
           connection_status: syncResult.success ? 'active' : 'error',
           sync_status: 'idle',
-          last_sync_at: new Date().toISOString()
+          last_sync_at: new Date().toISOString(),
+          is_active: syncResult.success
         })
         .eq('id', integration_id)
 
@@ -254,33 +255,39 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
 
   // Transform and upsert products
   for (const product of allProducts) {
+    // Prepare product for imported_products table
     const productToUpsert = {
       user_id: integration.user_id,
+      platform: 'shopify',
+      external_id: product.id.toString(),
+      sku: product.variants?.[0]?.sku || `SHOP-${product.id}`,
       name: product.title,
       description: product.body_html || '',
       price: parseFloat(product.variants?.[0]?.price || '0'),
       cost_price: parseFloat(product.variants?.[0]?.compare_at_price || '0'),
-      sku: product.variants?.[0]?.sku || '',
-      category: product.product_type || 'General',
-      image_url: product.images?.[0]?.src || null,
+      currency: 'EUR',
       stock_quantity: product.variants?.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0) || 0,
-      status: product.status === 'active' ? 'active' as const : 'inactive' as const,
-      external_id: product.id.toString(),
-      external_platform: 'shopify',
+      category: product.product_type || 'General',
+      brand: product.vendor || '',
       tags: product.tags ? product.tags.split(',').map((t: string) => t.trim()) : [],
-      attributes: {
+      image_url: product.images?.[0]?.src || null,
+      image_urls: product.images?.map((img: any) => img.src) || [],
+      status: product.status === 'active' ? 'active' : 'inactive',
+      variants: product.variants,
+      seo_title: product.title,
+      seo_description: product.body_html?.replace(/<[^>]*>?/gm, '').substring(0, 160) || '',
+      weight: product.variants?.[0]?.weight || null,
+      dimensions: {
         handle: product.handle,
         vendor: product.vendor,
-        created_at: product.created_at,
-        updated_at: product.updated_at,
-        variants: product.variants
+        product_type: product.product_type
       }
     }
 
     const { error } = await supabaseClient
-      .from('products')
+      .from('imported_products')
       .upsert(productToUpsert, { 
-        onConflict: 'external_id,user_id',
+        onConflict: 'user_id,platform,external_id',
         ignoreDuplicates: false 
       })
 

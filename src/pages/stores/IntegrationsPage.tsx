@@ -83,6 +83,7 @@ export default function IntegrationsPage() {
     } as const
 
     const labels = {
+      'connected': 'Actif',
       'active': 'Actif',
       'error': 'Erreur',
       'syncing': 'Synchronisation',
@@ -198,7 +199,7 @@ export default function IntegrationsPage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Actives</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {integrations.filter(i => i.connection_status === 'connected').length}
+                    {integrations.filter(i => i.connection_status === 'connected' || i.connection_status === 'active').length}
                   </p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-500 opacity-50" />
