@@ -9,6 +9,7 @@ import { BackButton } from '@/components/navigation/BackButton'
 import { useStoreIntegrations } from '@/hooks/useStoreIntegrations'
 import { useSyncLogs } from '@/hooks/useSyncLogs'
 import { PlatformConnectionStatus } from '@/components/integrations/PlatformConnectionStatus'
+import { WebhookManager } from '@/components/webhooks/WebhookManager'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -186,6 +187,7 @@ export default function ManageIntegrationPage() {
             <TabsList>
               <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
               <TabsTrigger value="sync-logs">Logs de sync</TabsTrigger>
+              <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
               <TabsTrigger value="settings">Paramètres</TabsTrigger>
             </TabsList>
 
@@ -342,6 +344,10 @@ export default function ManageIntegrationPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="webhooks" className="space-y-4">
+          <WebhookManager integrationId={integration.id} />
         </TabsContent>
 
         <TabsContent value="settings">

@@ -9018,6 +9018,50 @@ export type Database = {
           },
         ]
       }
+      shopify_webhooks: {
+        Row: {
+          address: string
+          created_at: string | null
+          id: string
+          integration_id: string
+          is_active: boolean | null
+          topic: string
+          updated_at: string | null
+          user_id: string
+          webhook_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string | null
+          id?: string
+          integration_id: string
+          is_active?: boolean | null
+          topic: string
+          updated_at?: string | null
+          user_id: string
+          webhook_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string | null
+          id?: string
+          integration_id?: string
+          is_active?: boolean | null
+          topic?: string
+          updated_at?: string | null
+          user_id?: string
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopify_webhooks_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       smart_inventory: {
         Row: {
           auto_reorder_enabled: boolean

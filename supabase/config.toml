@@ -426,3 +426,9 @@ verify_jwt = true
 
 [functions.global-blog-optimizer]
 verify_jwt = true
+
+[functions.shopify-webhook-handler]
+verify_jwt = false
+
+[functions.shopify-webhook-manager]
+verify_jwt = true
