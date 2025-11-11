@@ -54,8 +54,11 @@ serve(async (req) => {
     }
 
     try {
+      // Determine platform to sync - check both platform_type and platform_name
+      const platformToSync = integration.platform_name?.toLowerCase() || integration.platform_type?.toLowerCase();
+      
       // Sync products based on platform
-      switch (integration.platform_type) {
+      switch (platformToSync) {
         case 'shopify':
           syncResult = await syncShopifyData(supabaseClient, integration, sync_type)
           break
@@ -103,18 +106,26 @@ serve(async (req) => {
         })
         .eq('id', integration_id)
 
-      // Log sync activity
+      // Log sync activity - only insert if data exists
+      const logData = {
+        integration_id,
+        sync_type,
+        status: syncResult.success ? 'completed' : 'failed',
+        records_processed: syncResult.products_synced + syncResult.orders_synced,
+        records_succeeded: syncResult.products_synced + syncResult.orders_synced,
+        records_failed: syncResult.errors.length,
+        sync_data: {
+          products: syncResult.products_synced,
+          orders: syncResult.orders_synced
+        },
+        error_message: syncResult.errors.length > 0 ? syncResult.errors.join('; ') : null,
+        started_at: new Date().toISOString(),
+        completed_at: new Date().toISOString()
+      }
+      
       await supabaseClient
         .from('sync_logs')
-        .insert({
-          integration_id,
-          sync_type,
-          status: syncResult.success ? 'completed' : 'failed',
-          products_synced: syncResult.products_synced,
-          orders_synced: syncResult.orders_synced,
-          errors: syncResult.errors,
-          created_at: new Date().toISOString()
-        })
+        .insert(logData)
 
       console.log(`Sync completed for integration ${integration_id}:`, syncResult)
 

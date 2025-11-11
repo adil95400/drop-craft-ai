@@ -311,7 +311,7 @@ export default function ManageIntegrationPage() {
                         </div>
                       </div>
 
-                      {log.completed_at && (
+                      {log.completed_at && log.started_at && (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                           <Clock className="h-3 w-3" />
                           <span>
@@ -355,34 +355,56 @@ export default function ManageIntegrationPage() {
             <CardContent>
               <div className="space-y-6">
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Synchronisation automatique</h4>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <h4 className="font-medium text-foreground mb-2">Synchronisation automatique</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
                     Configure la fréquence de synchronisation automatique des données
                   </p>
-                  <Button variant="outline" disabled>
+                  <select 
+                    className="w-full border rounded-md px-3 py-2 bg-background text-foreground"
+                    value={integration.sync_frequency || 'manual'}
+                    disabled
+                  >
+                    <option value="manual">Manuelle</option>
+                    <option value="hourly">Chaque heure</option>
+                    <option value="daily">Quotidienne</option>
+                    <option value="weekly">Hebdomadaire</option>
+                  </select>
+                  <p className="text-xs text-muted-foreground mt-2">
                     Configuration automatique (Bientôt disponible)
-                  </Button>
+                  </p>
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Types de données</h4>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <h4 className="font-medium text-foreground mb-2">Types de données</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
                     Choisissez quelles données synchroniser
                   </p>
-                  <div className="space-y-2">
-                    <label className="flex items-center space-x-2">
-                      <input type="checkbox" defaultChecked disabled />
-                      <span className="text-sm">Produits</span>
+                  <div className="space-y-3">
+                    <label className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
+                      <input type="checkbox" defaultChecked className="rounded" disabled />
+                      <div className="flex-1">
+                        <span className="text-sm font-medium text-foreground">Produits</span>
+                        <p className="text-xs text-muted-foreground">Synchroniser tous les produits de votre boutique</p>
+                      </div>
                     </label>
-                    <label className="flex items-center space-x-2">
-                      <input type="checkbox" defaultChecked disabled />
-                      <span className="text-sm">Commandes</span>
+                    <label className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
+                      <input type="checkbox" defaultChecked className="rounded" disabled />
+                      <div className="flex-1">
+                        <span className="text-sm font-medium text-foreground">Commandes</span>
+                        <p className="text-xs text-muted-foreground">Synchroniser les commandes et leur statut</p>
+                      </div>
                     </label>
-                    <label className="flex items-center space-x-2">
-                      <input type="checkbox" disabled />
-                      <span className="text-sm">Clients</span>
+                    <label className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
+                      <input type="checkbox" className="rounded" disabled />
+                      <div className="flex-1">
+                        <span className="text-sm font-medium text-foreground">Clients</span>
+                        <p className="text-xs text-muted-foreground">Synchroniser les informations clients</p>
+                      </div>
                     </label>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    La personnalisation des données sera bientôt disponible
+                  </p>
                 </div>
 
                 <div className="border-t pt-6">

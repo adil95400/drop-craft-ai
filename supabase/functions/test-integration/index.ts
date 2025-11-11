@@ -33,10 +33,13 @@ serve(async (req) => {
 
     console.log('Found integration:', integration.platform_name);
 
-    // Test different integration types
+    // Test different integration types - check both platform_type and platform_name
     let testResult = { success: false, message: 'Unknown platform type' };
 
-    switch (integration.platform_type) {
+    // Determine platform to test
+    const platformToTest = integration.platform_name?.toLowerCase() || integration.platform_type?.toLowerCase();
+    
+    switch (platformToTest) {
       case 'shopify':
         testResult = await testShopifyConnection(integration);
         break;
@@ -50,7 +53,7 @@ serve(async (req) => {
         testResult = await testBigBuyConnection(integration);
         break;
       default:
-        testResult = { success: false, message: `Unsupported platform: ${integration.platform_type}` };
+        testResult = { success: false, message: `Unsupported platform: ${platformToTest}` };
     }
 
     // Update integration status based on test result

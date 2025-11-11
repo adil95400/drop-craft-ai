@@ -33,7 +33,7 @@ export function useSyncLogs(integrationId?: string, limit = 20) {
       let query = supabase
         .from('sync_logs')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('started_at', { ascending: false })
         .limit(limit);
 
       if (integrationId) {
@@ -47,11 +47,11 @@ export function useSyncLogs(integrationId?: string, limit = 20) {
       // Map database fields to our interface
       return (data || []).map(log => ({
         ...log,
-        products_synced: (log.sync_data as any)?.products || 0,
+        products_synced: (log.sync_data as any)?.products || log.records_succeeded || 0,
         orders_synced: (log.sync_data as any)?.orders || 0,
         customers_synced: (log.sync_data as any)?.customers || 0,
         errors: log.error_message ? [log.error_message] : [],
-        created_at: log.started_at
+        created_at: log.started_at || log.completed_at
       })) as SyncLog[];
     },
     enabled: !!user,
