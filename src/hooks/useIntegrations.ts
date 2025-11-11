@@ -1,239 +1,159 @@
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { useToast } from '@/hooks/use-toast'
+import { useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface Integration {
-  id: string
-  user_id: string
-  platform_type: string
-  platform_name: string
-  platform_url?: string
-  shop_domain?: string
-  seller_id?: string
-  is_active: boolean
-  connection_status: string
-  sync_frequency: string
-  last_sync_at?: string
-  store_config: any
-  sync_settings: any
-  last_error?: string
-  created_at: string
-  updated_at: string
-}
-
-export interface IntegrationTemplate {
-  id: string
-  name: string
-  description: string
-  category: 'Marketing' | 'Analytics' | 'Payment' | 'Communication' | 'AI' | 'Automation' | 'Security' | 'ecommerce' | 'marketplace'
-  icon: any
-  status: 'available' | 'beta' | 'coming_soon'
-  premium: boolean
-  rating: number
-  installs: number
-  features: string[]
-  logo?: string
-  color?: string
-  isPopular?: boolean
-  isPremium?: boolean
-  setupSteps?: any[]
+  id: string;
+  user_id: string;
+  platform_name: string;
+  platform_type: string;
+  platform_url?: string;
+  store_config?: any;
+  connection_status: 'connected' | 'disconnected' | 'error';
+  is_active: boolean;
+  sync_frequency: 'manual' | 'hourly' | 'daily' | 'weekly';
+  last_sync_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export function useIntegrations() {
-  const { user } = useAuth()
-  const { toast } = useToast()
-  const [integrations, setIntegrations] = useState<Integration[]>([])
-  const [loading, setLoading] = useState(true)
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
+  // Fetch integrations
+  const { data: integrations = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['integrations', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('integrations')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Integration[];
+    },
+    enabled: !!user,
+    staleTime: 30000,
+  });
+
+  // Real-time subscription
   useEffect(() => {
-    if (user) {
-      fetchIntegrations()
-    }
-  }, [user])
+    if (!user) return;
 
-  const fetchIntegrations = async () => {
-    try {
-      setLoading(true)
-      // Utiliser des données mockées pour le moment
-      const mockIntegrations = [
+    const channel = supabase
+      .channel('integrations-changes')
+      .on(
+        'postgres_changes',
         {
-          id: '1',
-          user_id: user?.id || '',
-          platform_type: 'analytics',
-          platform_name: 'Google Analytics 4',
-          is_active: true,
-          connection_status: 'connected',
-          sync_frequency: 'daily',
-          store_config: {},
-          sync_settings: {},
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          event: '*',
+          schema: 'public',
+          table: 'integrations',
+          filter: `user_id=eq.${user.id}`
         },
-        {
-          id: '2',
-          user_id: user?.id || '',
-          platform_type: 'payment',
-          platform_name: 'Stripe',
-          is_active: true,
-          connection_status: 'connected',
-          sync_frequency: 'realtime',
-          store_config: {},
-          sync_settings: {},
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['integrations', user.id] });
         }
-      ]
-      setIntegrations(mockIntegrations)
-    } catch (error) {
-      console.error('Error fetching integrations:', error)
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les intégrations",
-        variant: "destructive"
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const connectIntegration = async (template: IntegrationTemplate, credentials: any) => {
-    if (!user) return false
-
-    try {
-      // Simuler la connexion d'une nouvelle intégration
-      const newIntegration = {
-        id: Date.now().toString(),
-        user_id: user.id,
-        platform_type: template.category.toLowerCase(),
-        platform_name: template.name,
-        platform_url: credentials.platform_url || '',
-        shop_domain: credentials.shop_domain || '',
-        seller_id: credentials.seller_id || '',
-        is_active: true,
-        connection_status: 'connected',
-        sync_frequency: 'daily',
-        store_config: credentials.store_config || {},
-        sync_settings: credentials.sync_settings || {},
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-
-      setIntegrations(prev => [newIntegration, ...prev])
-      toast({
-        title: "Succès",
-        description: `${template.name} connecté avec succès`
-      })
-      return true
-    } catch (error) {
-      console.error('Error connecting integration:', error)
-      toast({
-        title: "Erreur",
-        description: "Impossible de connecter l'intégration",
-        variant: "destructive"
-      })
-      return false
-    }
-  }
-
-  const disconnectIntegration = async (integrationId: string) => {
-    try {
-      // Simuler la déconnexion
-      setIntegrations(prev =>
-        prev.map(integration =>
-          integration.id === integrationId
-            ? { ...integration, is_active: false, connection_status: 'disconnected' }
-            : integration
-        )
       )
+      .subscribe();
 
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient]);
+
+  // Sync integration mutation
+  const syncMutation = useMutation({
+    mutationFn: async (integrationId: string) => {
+      const { data, error } = await supabase.functions.invoke('sync-integration', {
+        body: { integration_id: integrationId, sync_type: 'full' }
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
       toast({
-        title: "Succès",
-        description: "Intégration déconnectée"
-      })
-    } catch (error) {
-      console.error('Error disconnecting integration:', error)
+        title: "Synchronisation lancée",
+        description: "La synchronisation des données est en cours...",
+      });
+      queryClient.invalidateQueries({ queryKey: ['integrations'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erreur de synchronisation",
+        description: error.message || "Impossible de lancer la synchronisation",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Test connection mutation
+  const testConnectionMutation = useMutation({
+    mutationFn: async (integrationId: string) => {
+      const { data, error } = await supabase.functions.invoke('test-integration', {
+        body: { integration_id: integrationId }
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: data.success ? "Connexion réussie" : "Connexion échouée",
+        description: data.message || "Test de connexion effectué",
+        variant: data.success ? "default" : "destructive"
+      });
+      queryClient.invalidateQueries({ queryKey: ['integrations'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erreur de test",
+        description: error.message || "Impossible de tester la connexion",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Delete integration mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (integrationId: string) => {
+      const { error } = await supabase
+        .from('integrations')
+        .delete()
+        .eq('id', integrationId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Intégration supprimée",
+        description: "L'intégration a été supprimée avec succès",
+      });
+      queryClient.invalidateQueries({ queryKey: ['integrations'] });
+    },
+    onError: (error: Error) => {
       toast({
         title: "Erreur",
-        description: "Impossible de déconnecter l'intégration",
+        description: error.message || "Impossible de supprimer l'intégration",
         variant: "destructive"
-      })
+      });
     }
-  }
-
-  const syncIntegration = async (integrationId: string) => {
-    try {
-      // Simuler la synchronisation
-      setIntegrations(prev =>
-        prev.map(integration =>
-          integration.id === integrationId
-            ? { ...integration, last_sync_at: new Date().toISOString() }
-            : integration
-        )
-      )
-
-      toast({
-        title: "Succès",
-        description: "Synchronisation terminée"
-      })
-    } catch (error) {
-      console.error('Error syncing integration:', error)
-      toast({
-        title: "Erreur",
-        description: "Erreur lors de la synchronisation",
-        variant: "destructive"
-      })
-    }
-  }
-
-  const updateIntegrationSettings = async (integrationId: string, settings: any) => {
-    try {
-      // Simuler la mise à jour des paramètres
-      setIntegrations(prev =>
-        prev.map(integration =>
-          integration.id === integrationId
-            ? { ...integration, sync_settings: settings }
-            : integration
-        )
-      )
-
-      toast({
-        title: "Succès",
-        description: "Paramètres mis à jour"
-      })
-    } catch (error) {
-      console.error('Error updating integration settings:', error)
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour les paramètres",
-        variant: "destructive"
-      })
-    }
-  }
+  });
 
   return {
     integrations,
-    loading,
-    connectIntegration,
-    disconnectIntegration,
-    syncIntegration,
-    updateIntegrationSettings,
-    refetch: fetchIntegrations,
-    // Ajout des propriétés manquantes
-    createIntegration: connectIntegration,
-    updateIntegration: updateIntegrationSettings,
-    deleteIntegration: disconnectIntegration,
-    testConnection: syncIntegration,
-    syncData: syncIntegration,
-    syncLogs: [],
-    fetchIntegrations,
-    addIntegration: connectIntegration,
-    isUpdating: false,
-    isDeleting: false,
-    isSyncing: false,
-    isAdding: false,
-    connectedIntegrations: integrations.filter(i => i.is_active),
-    isLoading: loading,
-    error: null,
-    templates: [] // Sera remplacé par de vraies données plus tard
-  }
+    isLoading,
+    error,
+    refetch,
+    syncIntegration: syncMutation.mutate,
+    testConnection: testConnectionMutation.mutate,
+    deleteIntegration: deleteMutation.mutate,
+    isSyncing: syncMutation.isPending,
+    isTesting: testConnectionMutation.isPending,
+    isDeleting: deleteMutation.isPending,
+  };
 }

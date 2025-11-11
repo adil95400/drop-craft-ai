@@ -1,101 +1,55 @@
-import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useToast } from '@/hooks/use-toast'
-import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Settings, Activity, Database, AlertTriangle } from 'lucide-react'
+import { Progress } from '@/components/ui/progress'
+import { Loader2, Settings, Activity, Database, AlertTriangle, RefreshCw, TrendingUp, Clock, CheckCircle, Trash2 } from 'lucide-react'
 import { BackButton } from '@/components/navigation/BackButton'
+import { useStoreIntegrations } from '@/hooks/useStoreIntegrations'
+import { useSyncLogs } from '@/hooks/useSyncLogs'
+import { formatDistanceToNow } from 'date-fns'
+import { fr } from 'date-fns/locale'
 
 export default function ManageIntegrationPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const [integration, setIntegration] = useState<any>(null)
-  const [syncLogs, setSyncLogs] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const { toast } = useToast()
+  
+  const { integrations, syncIntegration, deleteIntegration, isSyncing } = useStoreIntegrations()
+  const { logs, stats, isLoading: logsLoading, refetch: refetchLogs } = useSyncLogs(id, 50)
+  
+  const integration = integrations.find(i => i.id === id)
+  const isLoading = !integration && integrations.length === 0
 
-  useEffect(() => {
+  const handleSync = () => {
     if (id) {
-      loadIntegrationDetails()
-      loadSyncLogs()
+      syncIntegration(id);
+      setTimeout(() => refetchLogs(), 2000);
     }
-  }, [id])
+  };
 
-  const loadIntegrationDetails = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('integrations')
-        .select('*')
-        .eq('id', id)
-        .single()
-
-      if (error) throw error
-
-      setIntegration(data)
-    } catch (error) {
-      console.error('Error loading integration:', error)
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les détails de l'intégration",
-        variant: "destructive"
-      })
-    } finally {
-      setLoading(false)
+  const handleDelete = () => {
+    if (id && confirm('Êtes-vous sûr de vouloir supprimer cette intégration ? Cette action est irréversible.')) {
+      deleteIntegration(id);
+      navigate('/dashboard/stores/integrations');
     }
-  }
-
-  const loadSyncLogs = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('sync_logs')
-        .select('*')
-        .eq('integration_id', id)
-        .order('created_at', { ascending: false })
-        .limit(20)
-
-      if (error) throw error
-
-      setSyncLogs(data || [])
-    } catch (error) {
-      console.error('Error loading sync logs:', error)
-    }
-  }
-
-  const triggerSync = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('sync-integration', {
-        body: { integration_id: id, sync_type: 'full' }
-      })
-
-      if (error) throw error
-
-      toast({
-        title: "Synchronisation lancée",
-        description: "La synchronisation complète a été démarrée",
-      })
-
-      // Reload data after a delay
-      setTimeout(() => {
-        loadIntegrationDetails()
-        loadSyncLogs()
-      }, 2000)
-
-    } catch (error) {
-      console.error('Sync error:', error)
-      toast({
-        title: "Erreur",
-        description: "Impossible de lancer la synchronisation",
-        variant: "destructive"
-      })
-    }
-  }
+  };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('fr-FR')
+    return new Date(dateString).toLocaleString('fr-FR', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    })
   }
+
+  const formatRelativeTime = (dateString: string) => {
+    return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: fr })
+  }
+
+  const calculateSuccessRate = () => {
+    if (stats.total === 0) return 0;
+    return Math.round((stats.completed / stats.total) * 100);
+  };
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -113,11 +67,11 @@ export default function ManageIntegrationPage() {
     )
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto py-8">
         <div className="flex items-center justify-center min-h-64">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </div>
     )
@@ -128,14 +82,14 @@ export default function ManageIntegrationPage() {
       <div className="container mx-auto py-8">
         <Card>
           <CardContent className="py-12 text-center">
-            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">
               Intégration introuvable
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               L'intégration demandée n'existe pas ou vous n'avez pas l'autorisation de la voir.
             </p>
-            <Button onClick={() => navigate('/stores/integrations')}>
+            <Button onClick={() => navigate('/dashboard/stores/integrations')}>
               Retour aux intégrations
             </Button>
           </CardContent>
@@ -145,19 +99,83 @@ export default function ManageIntegrationPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 space-y-6">
       <div className="mb-6">
         <BackButton to="/dashboard/stores/integrations" label="Retour aux intégrations" />
       </div>
-      <div className="flex items-center space-x-4 mb-8">
+
+      {/* Header */}
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-foreground">
             {integration.store_config?.shop_name || `Boutique ${integration.platform_name}`}
           </h1>
-          <p className="text-gray-600 capitalize">
+          <p className="text-muted-foreground capitalize mt-1">
             Intégration {integration.platform_name}
           </p>
         </div>
+        <div className="flex gap-2">
+          <Button onClick={handleSync} disabled={isSyncing} size="sm">
+            {isSyncing ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            Synchroniser
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Taux de succès</p>
+                <p className="text-2xl font-bold text-foreground">{calculateSuccessRate()}%</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-green-500 opacity-50" />
+            </div>
+            <Progress value={calculateSuccessRate()} className="mt-2" />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Syncs totales</p>
+                <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+              </div>
+              <Activity className="h-8 w-8 text-primary opacity-50" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Produits</p>
+                <p className="text-2xl font-bold text-foreground">{stats.totalProducts}</p>
+              </div>
+              <div className="h-8 w-8 flex items-center justify-center text-2xl opacity-50">📦</div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Commandes</p>
+                <p className="text-2xl font-bold text-foreground">{stats.totalOrders}</p>
+              </div>
+              <div className="h-8 w-8 flex items-center justify-center text-2xl opacity-50">🛒</div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
@@ -167,107 +185,150 @@ export default function ManageIntegrationPage() {
           <TabsTrigger value="settings">Paramètres</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">
-          <div className="grid gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Statut de l'intégration</span>
-                  <div className="flex items-center space-x-2">
-                    {getStatusBadge(integration.connection_status)}
-                    <Button onClick={triggerSync} size="sm">
-                      <Activity className="h-4 w-4 mr-2" />
-                      Synchroniser
-                    </Button>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Plateforme</p>
-                    <p className="text-lg font-semibold capitalize">{integration.platform_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Créée le</p>
-                    <p className="text-lg font-semibold">{formatDate(integration.created_at)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Dernière sync</p>
-                    <p className="text-lg font-semibold">
-                      {integration.last_sync_at ? formatDate(integration.last_sync_at) : 'Jamais'}
-                    </p>
-                  </div>
-                </div>
-
-                {integration.store_config && (
-                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                    <h4 className="font-medium text-gray-900 mb-2">Informations de la boutique</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      {Object.entries(integration.store_config).map(([key, value]) => (
-                        <div key={key}>
-                          <span className="font-medium text-gray-700 capitalize">
-                            {key.replace('_', ' ')}:
-                          </span>
-                          <span className="ml-2 text-gray-600">{String(value)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="sync-logs">
+        <TabsContent value="overview" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Database className="h-5 w-5 mr-2" />
-                Historique des synchronisations
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {syncLogs.length === 0 ? (
-                <div className="text-center py-8">
-                  <Database className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Aucune synchronisation effectuée</p>
+              <CardTitle className="flex items-center justify-between">
+                <span>Statut de l'intégration</span>
+                <div className="flex items-center space-x-2">
+                  {getStatusBadge(integration.connection_status)}
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {syncLogs.map((log) => (
-                    <div key={log.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          {getStatusBadge(log.status)}
-                          <span className="text-sm text-gray-600">
-                            {formatDate(log.created_at)}
-                          </span>
-                        </div>
-                        <span className="text-sm text-gray-500 capitalize">
-                          {log.sync_type}
+              </CardTitle>
+              <CardDescription>
+                Informations détaillées sur votre intégration
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Plateforme</p>
+                  <p className="text-lg font-semibold capitalize text-foreground">{integration.platform_name}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Créée le</p>
+                  <p className="text-lg font-semibold text-foreground">{formatDate(integration.created_at)}</p>
+                  <p className="text-xs text-muted-foreground">{formatRelativeTime(integration.created_at)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-muted-foreground">Dernière sync</p>
+                  <p className="text-lg font-semibold text-foreground">
+                    {integration.last_sync_at ? formatDate(integration.last_sync_at) : 'Jamais'}
+                  </p>
+                  {integration.last_sync_at && (
+                    <p className="text-xs text-muted-foreground">{formatRelativeTime(integration.last_sync_at)}</p>
+                  )}
+                </div>
+              </div>
+
+              {integration.store_config && (
+                <div className="p-4 bg-muted/50 rounded-lg border">
+                  <h4 className="font-medium text-foreground mb-3 flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    Informations de la boutique
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    {Object.entries(integration.store_config).map(([key, value]) => (
+                      <div key={key} className="flex justify-between items-center">
+                        <span className="font-medium text-muted-foreground capitalize">
+                          {key.replace(/_/g, ' ')}:
+                        </span>
+                        <span className="text-foreground font-mono text-xs bg-background px-2 py-1 rounded">
+                          {String(value)}
                         </span>
                       </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="font-medium">Produits synchronisés:</span>
-                          <span className="ml-2">{log.products_synced || 0}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="sync-logs" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Database className="h-5 w-5" />
+                    Historique des synchronisations
+                  </CardTitle>
+                  <CardDescription className="mt-1">
+                    {stats.total} synchronisation{stats.total > 1 ? 's' : ''} • {stats.completed} réussie{stats.completed > 1 ? 's' : ''} • {stats.failed} échouée{stats.failed > 1 ? 's' : ''}
+                  </CardDescription>
+                </div>
+                <Button onClick={() => refetchLogs()} variant="outline" size="sm" disabled={logsLoading}>
+                  <RefreshCw className={`h-4 w-4 mr-2 ${logsLoading ? 'animate-spin' : ''}`} />
+                  Actualiser
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {logs.length === 0 ? (
+                <div className="text-center py-8">
+                  <Database className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <p className="text-muted-foreground">Aucune synchronisation effectuée</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {logs.map((log) => (
+                    <div key={log.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          {log.status === 'completed' && <CheckCircle className="h-4 w-4 text-green-500" />}
+                          {log.status === 'failed' && <AlertTriangle className="h-4 w-4 text-destructive" />}
+                          {log.status === 'in_progress' && <Loader2 className="h-4 w-4 text-primary animate-spin" />}
+                          {getStatusBadge(log.status)}
+                          <span className="text-xs text-muted-foreground">
+                            {formatRelativeTime(log.created_at)}
+                          </span>
                         </div>
-                        <div>
-                          <span className="font-medium">Commandes synchronisées:</span>
-                          <span className="ml-2">{log.orders_synced || 0}</span>
+                        <Badge variant="outline" className="capitalize text-xs">
+                          {log.sync_type}
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-4 text-sm mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                          <span className="text-muted-foreground">Produits:</span>
+                          <span className="font-semibold text-foreground">{log.products_synced || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                          <span className="text-muted-foreground">Commandes:</span>
+                          <span className="font-semibold text-foreground">{log.orders_synced || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-purple-500"></div>
+                          <span className="text-muted-foreground">Clients:</span>
+                          <span className="font-semibold text-foreground">{log.customers_synced || 0}</span>
                         </div>
                       </div>
 
+                      {log.completed_at && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                          <Clock className="h-3 w-3" />
+                          <span>
+                            Durée: {Math.round((new Date(log.completed_at).getTime() - new Date(log.started_at).getTime()) / 1000)}s
+                          </span>
+                        </div>
+                      )}
+
                       {log.errors && log.errors.length > 0 && (
-                        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
-                          <p className="text-sm font-medium text-red-800 mb-1">Erreurs:</p>
-                          <ul className="text-sm text-red-700 list-disc list-inside">
-                            {log.errors.map((error: string, index: number) => (
-                              <li key={index}>{error}</li>
+                        <div className="mt-3 p-3 bg-destructive/10 border border-destructive/20 rounded">
+                          <p className="text-sm font-medium text-destructive mb-1 flex items-center gap-2">
+                            <AlertTriangle className="h-3 w-3" />
+                            Erreurs ({log.errors.length}):
+                          </p>
+                          <ul className="text-sm text-destructive/80 list-disc list-inside space-y-1">
+                            {log.errors.slice(0, 3).map((error: string, index: number) => (
+                              <li key={index} className="truncate">{error}</li>
                             ))}
+                            {log.errors.length > 3 && (
+                              <li className="text-xs">... et {log.errors.length - 3} autre(s)</li>
+                            )}
                           </ul>
                         </div>
                       )}
@@ -321,11 +382,15 @@ export default function ManageIntegrationPage() {
                 </div>
 
                 <div className="border-t pt-6">
-                  <h4 className="font-medium text-red-600 mb-2">Zone de danger</h4>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Actions irréversibles pour cette intégration
+                  <h4 className="font-medium text-destructive mb-2 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    Zone de danger
+                  </h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Actions irréversibles pour cette intégration. Cette action supprimera toutes les données de synchronisation associées.
                   </p>
-                  <Button variant="destructive" disabled>
+                  <Button variant="destructive" onClick={handleDelete}>
+                    <Trash2 className="h-4 w-4 mr-2" />
                     Supprimer l'intégration
                   </Button>
                 </div>

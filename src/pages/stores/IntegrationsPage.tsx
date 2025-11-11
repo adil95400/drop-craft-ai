@@ -1,132 +1,57 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useToast } from '@/hooks/use-toast'
-import { supabase } from '@/integrations/supabase/client'
-import { Loader2, RefreshCw, Settings, Trash2, Activity, AlertCircle, CheckCircle, Clock } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Loader2, RefreshCw, Settings, Trash2, Activity, AlertCircle, CheckCircle, Clock, Plus, Search, Filter } from 'lucide-react'
 import { BackButton } from '@/components/navigation/BackButton'
+import { useStoreIntegrations } from '@/hooks/useStoreIntegrations'
+import { useSyncLogs } from '@/hooks/useSyncLogs'
 
 export default function IntegrationsPage() {
-  const [integrations, setIntegrations] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [syncing, setSyncing] = useState<string | null>(null)
-  const { toast } = useToast()
+  const navigate = useNavigate()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  
+  const { 
+    integrations, 
+    isLoading, 
+    refetch, 
+    syncIntegration, 
+    testConnection, 
+    deleteIntegration,
+    isSyncing,
+    isTesting 
+  } = useStoreIntegrations()
+  
+  const { stats: syncStats } = useSyncLogs()
 
-  useEffect(() => {
-    loadIntegrations()
-  }, [])
-
-  const loadIntegrations = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('integrations')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      setIntegrations(data || [])
-    } catch (error) {
-      console.error('Error loading integrations:', error)
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les intégrations",
-        variant: "destructive"
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const syncIntegration = async (integrationId: string) => {
-    setSyncing(integrationId)
+  // Filter integrations based on search and status
+  const filteredIntegrations = integrations.filter(integration => {
+    const matchesSearch = !searchTerm || 
+      integration.platform_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      integration.store_config?.shop_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      integration.store_config?.domain?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    try {
-      const { data, error } = await supabase.functions.invoke('sync-integration', {
-        body: { integration_id: integrationId, sync_type: 'full' }
-      })
+    const matchesStatus = statusFilter === 'all' || integration.connection_status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
-      if (error) throw error
+  const handleSync = (integrationId: string) => {
+    syncIntegration(integrationId);
+  };
 
-      toast({
-        title: "Synchronisation lancée",
-        description: "La synchronisation des données est en cours...",
-      })
+  const handleTest = (integrationId: string) => {
+    testConnection(integrationId);
+  };
 
-      // Reload integrations to show updated status
-      setTimeout(() => {
-        loadIntegrations()
-      }, 2000)
-
-    } catch (error) {
-      console.error('Sync error:', error)
-      toast({
-        title: "Erreur de synchronisation",
-        description: "Impossible de lancer la synchronisation",
-        variant: "destructive"
-      })
-    } finally {
-      setSyncing(null)
+  const handleDelete = (integrationId: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette intégration ?')) {
+      deleteIntegration(integrationId);
     }
-  }
-
-  const testConnection = async (integrationId: string) => {
-    try {
-      const integration = integrations.find(i => i.id === integrationId)
-      if (!integration) return
-
-      const { data, error } = await supabase.functions.invoke('test-integration', {
-        body: { integration_id: integrationId }
-      })
-
-      if (error) throw error
-
-      toast({
-        title: data.success ? "Connexion réussie" : "Connexion échouée",
-        description: data.message || "Test de connexion effectué",
-        variant: data.success ? "default" : "destructive"
-      })
-
-      loadIntegrations()
-    } catch (error) {
-      console.error('Connection test error:', error)
-      toast({
-        title: "Erreur de test",
-        description: "Impossible de tester la connexion",
-        variant: "destructive"
-      })
-    }
-  }
-
-  const deleteIntegration = async (integrationId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette intégration ?')) {
-      return
-    }
-
-    try {
-      const { error } = await supabase
-        .from('integrations')
-        .delete()
-        .eq('id', integrationId)
-
-      if (error) throw error
-
-      toast({
-        title: "Intégration supprimée",
-        description: "L'intégration a été supprimée avec succès",
-      })
-
-      loadIntegrations()
-    } catch (error) {
-      console.error('Delete error:', error)
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer l'intégration",
-        variant: "destructive"
-      })
-    }
-  }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -172,52 +97,157 @@ export default function IntegrationsPage() {
     return new Date(dateString).toLocaleString('fr-FR')
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto py-8">
         <div className="flex items-center justify-center min-h-64">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 space-y-6">
       <div className="mb-4">
         <BackButton to="/dashboard/stores" />
       </div>
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Intégrations</h1>
-          <p className="text-gray-600 mt-2">
-            Gérez vos intégrations e-commerce et leur synchronisation
-          </p>
+
+      {/* Header with stats */}
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Intégrations</h1>
+            <p className="text-muted-foreground mt-2">
+              Gérez vos intégrations e-commerce et leur synchronisation
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => refetch()} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualiser
+            </Button>
+            <Button onClick={() => navigate('/dashboard/stores/connect')} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Ajouter
+            </Button>
+          </div>
         </div>
-        <Button onClick={loadIntegrations} variant="outline">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Actualiser
-        </Button>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total</p>
+                  <p className="text-2xl font-bold text-foreground">{integrations.length}</p>
+                </div>
+                <Activity className="h-8 w-8 text-primary opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Actives</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {integrations.filter(i => i.connection_status === 'connected').length}
+                  </p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-green-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Produits sync</p>
+                  <p className="text-2xl font-bold text-foreground">{syncStats.totalProducts}</p>
+                </div>
+                <div className="h-8 w-8 flex items-center justify-center text-2xl opacity-50">📦</div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Commandes sync</p>
+                  <p className="text-2xl font-bold text-foreground">{syncStats.totalOrders}</p>
+                </div>
+                <div className="h-8 w-8 flex items-center justify-center text-2xl opacity-50">🛒</div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search and filters */}
+        <div className="flex gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher une intégration..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant={statusFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('all')}
+            >
+              Toutes
+            </Button>
+            <Button
+              variant={statusFilter === 'connected' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('connected')}
+            >
+              Actives
+            </Button>
+            <Button
+              variant={statusFilter === 'error' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('error')}
+            >
+              Erreurs
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {integrations.length === 0 ? (
+      {/* Integrations List */}
+      {filteredIntegrations.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Aucune intégration
+            <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              {integrations.length === 0 ? 'Aucune intégration' : 'Aucun résultat'}
             </h3>
-            <p className="text-gray-600 mb-6">
-              Commencez par connecter votre première boutique
+            <p className="text-muted-foreground mb-6">
+              {integrations.length === 0 
+                ? 'Commencez par connecter votre première boutique' 
+                : 'Essayez de modifier vos filtres de recherche'}
             </p>
-            <Button>
-              Ajouter une intégration
-            </Button>
+            {integrations.length === 0 && (
+              <Button onClick={() => navigate('/dashboard/stores/connect')}>
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter une intégration
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-6">
-          {integrations.map((integration) => (
+          {filteredIntegrations.map((integration) => (
             <Card key={integration.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -254,33 +284,20 @@ export default function IntegrationsPage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-700">Statut</p>
+                    <p className="text-sm font-medium text-gray-700">Fréquence</p>
                     <p className="text-sm text-gray-600 capitalize">
-                      {integration.sync_status || 'never'}
+                      {integration.sync_frequency}
                     </p>
                   </div>
                 </div>
 
-                {integration.sync_errors && integration.sync_errors.length > 0 && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-sm font-medium text-red-800 mb-1">
-                      Erreurs de synchronisation :
-                    </p>
-                    <ul className="text-sm text-red-700 list-disc list-inside">
-                      {integration.sync_errors.map((error: string, index: number) => (
-                        <li key={index}>{error}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
                 <div className="flex items-center space-x-2">
                   <Button
-                    onClick={() => syncIntegration(integration.id)}
-                    disabled={syncing === integration.id || integration.sync_status === 'syncing'}
+                    onClick={() => handleSync(integration.id)}
+                    disabled={isSyncing}
                     size="sm"
                   >
-                    {syncing === integration.id ? (
+                    {isSyncing ? (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     ) : (
                       <RefreshCw className="h-4 w-4 mr-2" />
@@ -289,22 +306,31 @@ export default function IntegrationsPage() {
                   </Button>
                   
                   <Button
-                    onClick={() => testConnection(integration.id)}
+                    onClick={() => handleTest(integration.id)}
                     variant="outline"
                     size="sm"
+                    disabled={isTesting}
                   >
                     <Activity className="h-4 w-4 mr-2" />
                     Tester
                   </Button>
                   
                   <Button
-                    onClick={() => deleteIntegration(integration.id)}
+                    onClick={() => navigate(`/dashboard/stores/integrations/${integration.id}`)}
                     variant="outline"
                     size="sm"
-                    className="text-red-600 hover:text-red-700"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Supprimer
+                    <Settings className="h-4 w-4 mr-2" />
+                    Gérer
+                  </Button>
+                  
+                  <Button
+                    onClick={() => handleDelete(integration.id)}
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
