@@ -101,6 +101,81 @@ export const useStoreIntegrations = () => {
     }
   })
 
+  const syncIntegration = useMutation({
+    mutationFn: async (integrationId: string) => {
+      const { data, error } = await supabase.functions.invoke('sync-integration', {
+        body: { integration_id: integrationId, sync_type: 'full' }
+      })
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['store-integrations'] })
+      toast({
+        title: "Synchronisation lancée",
+        description: data?.message || "La synchronisation est en cours"
+      })
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur de synchronisation",
+        description: error.message || "Impossible de lancer la synchronisation",
+        variant: "destructive"
+      })
+    }
+  })
+
+  const testConnection = useMutation({
+    mutationFn: async (integrationId: string) => {
+      const { data, error } = await supabase.functions.invoke('test-integration', {
+        body: { integration_id: integrationId }
+      })
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['store-integrations'] })
+      toast({
+        title: data.success ? "Test réussi" : "Test échoué",
+        description: data.message
+      })
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur de test",
+        description: error.message,
+        variant: "destructive"
+      })
+    }
+  })
+
+  const deleteIntegration = useMutation({
+    mutationFn: async (integrationId: string) => {
+      const { error } = await supabase
+        .from('integrations')
+        .delete()
+        .eq('id', integrationId)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['store-integrations'] })
+      toast({
+        title: "Intégration supprimée",
+        description: "L'intégration a été supprimée avec succès"
+      })
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      })
+    }
+  })
+
   const refetch = () => {
     queryClient.invalidateQueries({ queryKey: ['store-integrations'] })
   }
@@ -126,8 +201,14 @@ export const useStoreIntegrations = () => {
     error,
     syncProducts: syncProducts.mutate,
     syncOrders: syncOrders.mutate,
+    syncIntegration: syncIntegration.mutate,
+    testConnection: testConnection.mutate,
+    deleteIntegration: deleteIntegration.mutate,
     isSyncingProducts: syncProducts.isPending,
     isSyncingOrders: syncOrders.isPending,
+    isSyncing: syncIntegration.isPending,
+    isTesting: testConnection.isPending,
+    isDeleting: deleteIntegration.isPending,
     refetch
   }
 }

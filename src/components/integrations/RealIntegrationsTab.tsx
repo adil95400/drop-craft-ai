@@ -225,7 +225,7 @@ export const RealIntegrationsTab = () => {
               <CardTitle className="text-lg">Actions rapides</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start" onClick={fetchIntegrations}>
+              <Button variant="outline" className="w-full justify-start" onClick={() => fetchIntegrations()}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Actualiser toutes
               </Button>

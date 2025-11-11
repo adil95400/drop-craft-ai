@@ -265,7 +265,6 @@ export default function IntegrationsPage() {
                   </div>
                   <div className="flex items-center space-x-2">
                     {getStatusBadge(integration.connection_status)}
-                    {getStatusBadge(integration.sync_status || 'never')}
                   </div>
                 </div>
               </CardHeader>
