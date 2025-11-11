@@ -173,9 +173,14 @@ export const EnhancedIntegrationsHub: React.FC = () => {
   const handleSaveConnection = async () => {
     if (!connectionDialog.template) return
     
-    const success = await connectIntegration(connectionDialog.template, credentials)
-    if (success) {
-      setConnectionDialog({ open: false })
+    try {
+      const success = await connectIntegration(connectionDialog.template, credentials)
+      if (success) {
+        setConnectionDialog({ open: false })
+        setCredentials({})
+      }
+    } catch (error) {
+      console.error('Connection error:', error)
     }
   }
 

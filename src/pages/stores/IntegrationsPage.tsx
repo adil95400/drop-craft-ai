@@ -4,15 +4,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Loader2, RefreshCw, Settings, Trash2, Activity, AlertCircle, CheckCircle, Clock, Plus, Search, Filter } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Loader2, RefreshCw, Settings, Trash2, Activity, AlertCircle, CheckCircle, Clock, Plus, Search, Filter, Zap } from 'lucide-react'
 import { BackButton } from '@/components/navigation/BackButton'
 import { useStoreIntegrations } from '@/hooks/useStoreIntegrations'
 import { useSyncLogs } from '@/hooks/useSyncLogs'
+import { AutoConfigWizard } from '@/components/integrations/AutoConfigWizard'
+import type { Integration } from '@/hooks/useIntegrations'
 
 export default function IntegrationsPage() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [wizardOpen, setWizardOpen] = useState(false)
+  const [selectedPlatform, setSelectedPlatform] = useState<{ name: string; type: string } | null>(null)
   
   const { 
     integrations, 
@@ -97,6 +102,16 @@ export default function IntegrationsPage() {
     return new Date(dateString).toLocaleString('fr-FR')
   }
 
+  const handleAddIntegration = (platformName: string, platformType: string) => {
+    setSelectedPlatform({ name: platformName, type: platformType })
+    setWizardOpen(true)
+  }
+
+  const handleWizardComplete = (integration: Integration) => {
+    refetch()
+    navigate(`/dashboard/stores/integrations/${integration.id}`)
+  }
+
   if (isLoading) {
     return (
       <div className="container mx-auto py-8">
@@ -127,10 +142,39 @@ export default function IntegrationsPage() {
               <RefreshCw className="h-4 w-4 mr-2" />
               Actualiser
             </Button>
-            <Button onClick={() => navigate('/dashboard/stores/connect')} size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter
-            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  <Zap className="h-4 w-4 mr-1" />
+                  Configuration auto
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Plateformes e-commerce</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleAddIntegration('shopify', 'ecommerce')}>
+                  🛍️ Shopify
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAddIntegration('woocommerce', 'ecommerce')}>
+                  🛒 WooCommerce
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAddIntegration('prestashop', 'ecommerce')}>
+                  🏪 PrestaShop
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Marketplaces</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleAddIntegration('amazon', 'marketplace')}>
+                  📦 Amazon
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/dashboard/stores/connect')}>
+                  Configuration manuelle...
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -336,6 +380,17 @@ export default function IntegrationsPage() {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Auto Config Wizard */}
+      {selectedPlatform && (
+        <AutoConfigWizard
+          open={wizardOpen}
+          onOpenChange={setWizardOpen}
+          platformName={selectedPlatform.name}
+          platformType={selectedPlatform.type}
+          onComplete={handleWizardComplete}
+        />
       )}
     </div>
   )

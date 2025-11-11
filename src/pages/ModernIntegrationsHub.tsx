@@ -305,7 +305,12 @@ export default function ModernIntegrationsHub() {
 
   const handleConnectSubmit = async (config: any) => {
     if (connectDialog.template) {
-      await connectIntegration(connectDialog.template, config);
+      try {
+        await connectIntegration(connectDialog.template, config);
+        setConnectDialog({ open: false });
+      } catch (error) {
+        console.error('Connection error:', error);
+      }
     }
   };
 
@@ -423,7 +428,9 @@ export default function ModernIntegrationsHub() {
                   <SelectContent>
                     <SelectItem value="all">Toutes les catégories</SelectItem>
                     {categories.slice(1).map(category => (
-                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                      <SelectItem key={String(category)} value={String(category)}>
+                        {String(category)}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

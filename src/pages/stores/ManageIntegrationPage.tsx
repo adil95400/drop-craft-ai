@@ -8,6 +8,7 @@ import { Loader2, Settings, Activity, Database, AlertTriangle, RefreshCw, Trendi
 import { BackButton } from '@/components/navigation/BackButton'
 import { useStoreIntegrations } from '@/hooks/useStoreIntegrations'
 import { useSyncLogs } from '@/hooks/useSyncLogs'
+import { PlatformConnectionStatus } from '@/components/integrations/PlatformConnectionStatus'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -178,12 +179,15 @@ export default function ManageIntegrationPage() {
         </Card>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-          <TabsTrigger value="sync-logs">Logs de sync</TabsTrigger>
-          <TabsTrigger value="settings">Paramètres</TabsTrigger>
-        </TabsList>
+      {/* Connection Status Component */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Tabs defaultValue="overview" className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+              <TabsTrigger value="sync-logs">Logs de sync</TabsTrigger>
+              <TabsTrigger value="settings">Paramètres</TabsTrigger>
+            </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
           <Card>
@@ -399,6 +403,16 @@ export default function ManageIntegrationPage() {
           </Card>
         </TabsContent>
       </Tabs>
+        </div>
+
+        {/* Sidebar with Connection Status */}
+        <div className="space-y-6">
+          <PlatformConnectionStatus 
+            integration={integration}
+            onSync={handleSync}
+          />
+        </div>
+      </div>
     </div>
   )
 }
