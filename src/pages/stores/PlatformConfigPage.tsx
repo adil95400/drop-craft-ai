@@ -131,7 +131,7 @@ export function PlatformConfigPage() {
 
   useEffect(() => {
     if (!config) {
-      navigate('/stores/connect')
+      navigate('/dashboard/stores/connect')
     }
   }, [config, navigate])
 
@@ -191,7 +191,7 @@ export function PlatformConfigPage() {
       })
 
       if (testResult.success) {
-        navigate('/stores/integrations')
+        navigate('/dashboard/stores/integrations')
       }
 
     } catch (error) {
@@ -216,7 +216,7 @@ export function PlatformConfigPage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate('/stores/connect')}
+          onClick={() => navigate('/dashboard/stores/connect')}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Retour
@@ -287,7 +287,7 @@ export function PlatformConfigPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate('/stores/connect')}
+                  onClick={() => navigate('/dashboard/stores/connect')}
                 >
                   Annuler
                 </Button>

@@ -165,7 +165,7 @@ const ConnectStorePage = () => {
         credentials
       })
 
-      navigate('/stores')
+      navigate('/dashboard/stores')
     } catch (error) {
       // Error handling is done in the hook
     } finally {
