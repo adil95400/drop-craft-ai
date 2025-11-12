@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { createHmac } from "https://deno.land/std@0.190.0/node/crypto.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -52,12 +51,19 @@ serve(async (req) => {
       throw new Error('Integration not found');
     }
 
-    // Verify HMAC signature
+    // Verify HMAC signature using Web Crypto API
     const accessToken = integration.encrypted_credentials?.access_token;
     if (accessToken) {
-      const hmac = createHmac('sha256', accessToken);
-      hmac.update(body, 'utf8');
-      const digest = hmac.digest('base64');
+      const encoder = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        'raw',
+        encoder.encode(accessToken),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+      const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+      const digest = btoa(String.fromCharCode(...new Uint8Array(signature)));
 
       if (digest !== shopifyHmac) {
         throw new Error('HMAC verification failed');
