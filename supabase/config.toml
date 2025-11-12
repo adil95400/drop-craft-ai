@@ -432,3 +432,6 @@ verify_jwt = false
 
 [functions.shopify-webhook-manager]
 verify_jwt = true
+
+[functions.shopify-auto-sync]
+verify_jwt = false
