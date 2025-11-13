@@ -46,21 +46,35 @@ export class SyncEngine {
     }
     
     try {
-      const products = await connector.fetchProducts({ limit: 100 });
+      console.log(`🔄 Starting product sync for ${platform}...`);
+      
+      // Fetch ALL products (no limit)
+      const products = await connector.fetchProducts();
       const errors: string[] = [];
       let successCount = 0;
       
-      for (const product of products) {
-        try {
-          await this.saveProductToDatabase(product, userId, platform);
-          successCount++;
-        } catch (error) {
-          errors.push(`Failed to save product ${product.sku}: ${error}`);
+      console.log(`📦 Retrieved ${products.length} products from ${platform}`);
+      
+      // Process products in batches for better performance
+      const batchSize = 50;
+      for (let i = 0; i < products.length; i += batchSize) {
+        const batch = products.slice(i, i + batchSize);
+        
+        for (const product of batch) {
+          try {
+            await this.saveProductToDatabase(product, userId, platform);
+            successCount++;
+          } catch (error) {
+            errors.push(`Failed to save product ${product.sku}: ${error}`);
+          }
         }
+        
+        console.log(`✅ Saved ${successCount}/${products.length} products`);
       }
       
       await this.logSyncActivity(userId, platform, 'products', successCount, errors);
       
+      console.log(`🎉 Sync complete: ${successCount} products imported, ${errors.length} errors`);
       return { success: true, count: successCount, errors };
     } catch (error) {
       const errorMessage = `Failed to sync products from ${platform}: ${error}`;
@@ -76,9 +90,14 @@ export class SyncEngine {
     }
     
     try {
-      const orders = await connector.fetchOrders({ limit: 100 });
+      console.log(`🔄 Starting order sync for ${platform}...`);
+      
+      // Fetch ALL orders (no limit)
+      const orders = await connector.fetchOrders();
       const errors: string[] = [];
       let successCount = 0;
+      
+      console.log(`📦 Retrieved ${orders.length} orders from ${platform}`);
       
       for (const order of orders) {
         try {

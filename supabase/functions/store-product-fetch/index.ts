@@ -30,30 +30,54 @@ async function fetchShopifyProducts(storeConfig: any) {
       throw new Error('Missing Shopify credentials: shop_domain and access_token required');
     }
     
-    console.log('Making API call to Shopify:', `https://${shop_domain}/admin/api/2023-10/products.json`);
+    let allProducts: any[] = [];
+    let nextPageInfo: string | null = null;
+    let hasNextPage = true;
 
-    const response = await fetch(
-      `https://${shop_domain}/admin/api/2023-10/products.json?limit=50`,
-      {
+    console.log('🔄 Starting Shopify product fetch with pagination...');
+
+    // Paginate through ALL products
+    while (hasNextPage) {
+      const url = `https://${shop_domain}/admin/api/2023-10/products.json?limit=250${nextPageInfo ? `&page_info=${nextPageInfo}` : ''}`;
+      
+      console.log(`Fetching products from: ${url.substring(0, 100)}...`);
+      
+      const response = await fetch(url, {
         headers: {
           'X-Shopify-Access-Token': access_token,
           'Content-Type': 'application/json',
         },
-      }
-    );
+      });
 
-    if (!response.ok) {
-      console.error('Shopify API Response:', response.status, response.statusText);
-      const errorText = await response.text();
-      console.error('Error details:', errorText);
-      throw new Error(`Shopify API error: ${response.status} ${response.statusText} - ${errorText}`);
+      if (!response.ok) {
+        console.error('Shopify API Response:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('Error details:', errorText);
+        throw new Error(`Shopify API error: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      const products = data.products || [];
+      allProducts = allProducts.concat(products);
+      
+      console.log(`📦 Fetched ${products.length} products. Total so far: ${allProducts.length}`);
+
+      // Check for next page using Link header
+      const linkHeader = response.headers.get('Link');
+      if (linkHeader && linkHeader.includes('rel="next"')) {
+        const nextMatch = linkHeader.match(/<[^>]*[?&]page_info=([^&>]*).*?>;\s*rel="next"/);
+        nextPageInfo = nextMatch ? nextMatch[1] : null;
+        hasNextPage = !!nextPageInfo;
+        console.log(`Next page available: ${!!nextPageInfo}`);
+      } else {
+        hasNextPage = false;
+        console.log('No more pages');
+      }
     }
     
-    console.log('Shopify API call successful');
-
-    const data = await response.json();
+    console.log(`✅ Completed! Fetched total of ${allProducts.length} products from Shopify`);
     
-    return data.products.map((product: any) => ({
+    return allProducts.map((product: any) => ({
       id: product.id.toString(),
       name: product.title,
       description: product.body_html,
