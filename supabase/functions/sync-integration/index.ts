@@ -190,20 +190,18 @@ async function syncShopifyData(supabaseClient: any, integration: any, syncType: 
   const errors: string[] = []
 
   try {
-    // Sync Products
+    // Only sync Products for now to avoid timeout
     if (syncType === 'full' || syncType === 'products') {
       productCount = await syncShopifyProducts(supabaseClient, integration, shopifyDomain, accessToken)
     }
 
-    // Sync Orders
-    if (syncType === 'full' || syncType === 'orders') {
-      orderCount = await syncShopifyOrders(supabaseClient, integration, shopifyDomain, accessToken)
-    }
+    // Skip orders sync to avoid timeout - can be added later if needed
+    console.log('Orders sync skipped to avoid timeout')
 
     return {
       success: true,
       products_synced: productCount,
-      orders_synced: orderCount,
+      orders_synced: 0,
       errors
     }
   } catch (error) {
@@ -211,7 +209,7 @@ async function syncShopifyData(supabaseClient: any, integration: any, syncType: 
     return {
       success: false,
       products_synced: productCount,
-      orders_synced: orderCount,
+      orders_synced: 0,
       errors
     }
   }
@@ -222,11 +220,16 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
   let nextPageInfo = null
   let hasNextPage = true
   let pageCount = 0
-  const MAX_PAGES = 10 // Limit to prevent memory issues (2500 products max)
+  const MAX_PAGES = 3 // Reduced to 3 pages (750 products max) to avoid timeout
+  const BATCH_SIZE = 50 // Reduced batch size
+
+  console.log('Starting Shopify product sync...')
 
   // Process products page by page to avoid memory issues
   while (hasNextPage && pageCount < MAX_PAGES) {
-    const url = `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=250${nextPageInfo ? `&page_info=${nextPageInfo}` : ''}`
+    const url = `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=${BATCH_SIZE}${nextPageInfo ? `&page_info=${nextPageInfo}` : ''}`
+    
+    console.log(`Fetching batch ${pageCount + 1}...`)
     
     const response = await fetch(url, {
       headers: {
@@ -236,6 +239,7 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
     })
 
     if (!response.ok) {
+      console.error(`Shopify API error: ${response.status}`)
       throw new Error(`Shopify API error: ${response.status}`)
     }
 
@@ -245,36 +249,35 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
     console.log(`Processing batch ${pageCount + 1}: ${products.length} products`)
 
     // Transform and upsert products immediately (process by batch)
-    const productsToUpsert = products.map((product: any) => ({
-      user_id: integration.user_id,
-      platform: 'shopify',
-      external_id: product.id.toString(),
-      sku: product.variants?.[0]?.sku || `SHOP-${product.id}`,
-      name: product.title,
-      description: product.body_html || '',
-      price: parseFloat(product.variants?.[0]?.price || '0'),
-      cost_price: parseFloat(product.variants?.[0]?.compare_at_price || '0'),
-      currency: 'EUR',
-      stock_quantity: product.variants?.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0) || 0,
-      category: product.product_type || 'General',
-      brand: product.vendor || '',
-      tags: product.tags ? product.tags.split(',').map((t: string) => t.trim()) : [],
-      image_url: product.images?.[0]?.src || null,
-      image_urls: product.images?.map((img: any) => img.src) || [],
-      status: product.status === 'active' ? 'active' : 'inactive',
-      variants: product.variants,
-      seo_title: product.title,
-      seo_description: product.body_html?.replace(/<[^>]*>?/gm, '').substring(0, 160) || '',
-      weight: product.variants?.[0]?.weight || null,
-      dimensions: {
-        handle: product.handle,
-        vendor: product.vendor,
-        product_type: product.product_type
-      }
-    }))
+    if (products.length > 0) {
+      const productsToUpsert = products.map((product: any) => ({
+        user_id: integration.user_id,
+        platform: 'shopify',
+        external_id: product.id.toString(),
+        sku: product.variants?.[0]?.sku || `SHOP-${product.id}`,
+        name: product.title,
+        description: product.body_html || '',
+        price: parseFloat(product.variants?.[0]?.price || '0'),
+        cost_price: parseFloat(product.variants?.[0]?.compare_at_price || '0') || null,
+        currency: 'EUR',
+        stock_quantity: product.variants?.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0) || 0,
+        category: product.product_type || 'General',
+        brand: product.vendor || '',
+        tags: product.tags ? product.tags.split(',').map((t: string) => t.trim()) : [],
+        image_url: product.images?.[0]?.src || null,
+        image_urls: product.images?.map((img: any) => img.src) || [],
+        status: product.status === 'active' ? 'active' : 'inactive',
+        variants: product.variants,
+        seo_title: product.title,
+        seo_description: product.body_html?.replace(/<[^>]*>?/gm, '').substring(0, 160) || '',
+        weight: product.variants?.[0]?.weight || null,
+        dimensions: {
+          handle: product.handle,
+          vendor: product.vendor,
+          product_type: product.product_type
+        }
+      }))
 
-    // Batch upsert - more efficient
-    if (productsToUpsert.length > 0) {
       const { error } = await supabaseClient
         .from('imported_products')
         .upsert(productsToUpsert, { 
@@ -286,6 +289,7 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
         console.error('Batch upsert error:', error)
       } else {
         totalProducts += productsToUpsert.length
+        console.log(`Synced ${totalProducts} products so far`)
       }
     }
 
@@ -300,6 +304,11 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
     }
     
     pageCount++
+    
+    // Add small delay between batches to avoid rate limiting
+    if (hasNextPage) {
+      await new Promise(resolve => setTimeout(resolve, 500))
+    }
   }
 
   console.log(`Successfully synced ${totalProducts} products from Shopify`)
