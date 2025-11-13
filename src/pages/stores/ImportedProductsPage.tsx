@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Loader2, Package, Search, ExternalLink, RefreshCw, Filter, X, Trash2, Download, CheckSquare } from 'lucide-react'
+import { Loader2, Package, Search, ExternalLink, RefreshCw, Filter, X, Trash2, Download, CheckSquare, ChevronLeft, ChevronRight } from 'lucide-react'
 import { BackButton } from '@/components/navigation/BackButton'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
@@ -61,8 +61,15 @@ export default function ImportedProductsPage() {
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set())
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [bulkStatus, setBulkStatus] = useState<string>('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(25)
   
   const debouncedSearch = useDebouncedValue(searchTerm, 300)
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [debouncedSearch, platformFilter, categoryFilter, statusFilter])
 
   const { data: products = [], isLoading, refetch } = useQuery({
     queryKey: ['imported-products', user?.id],
@@ -95,6 +102,12 @@ export default function ImportedProductsPage() {
     return matchesSearch && matchesPlatform && matchesCategory && matchesStatus
   })
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredProducts.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex)
+
   const platforms = Array.from(new Set(products.map(p => p.supplier_name).filter(Boolean)))
   const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean)))
   const statuses = Array.from(new Set(products.map(p => p.status).filter(Boolean)))
@@ -121,11 +134,26 @@ export default function ImportedProductsPage() {
   }
 
   const toggleSelectAll = () => {
-    if (selectedProducts.size === filteredProducts.length) {
-      setSelectedProducts(new Set())
+    if (selectedProducts.size === paginatedProducts.length && paginatedProducts.every(p => selectedProducts.has(p.id))) {
+      // Deselect all on current page
+      const newSet = new Set(selectedProducts)
+      paginatedProducts.forEach(p => newSet.delete(p.id))
+      setSelectedProducts(newSet)
     } else {
-      setSelectedProducts(new Set(filteredProducts.map(p => p.id)))
+      // Select all on current page
+      const newSet = new Set(selectedProducts)
+      paginatedProducts.forEach(p => newSet.add(p.id))
+      setSelectedProducts(newSet)
     }
+  }
+
+  const handlePageSizeChange = (newSize: string) => {
+    setPageSize(Number(newSize))
+    setCurrentPage(1)
+  }
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)))
   }
 
   const clearSelection = () => {
@@ -392,13 +420,13 @@ export default function ImportedProductsPage() {
                 <Filter className="h-5 w-5 text-muted-foreground" />
                 <h3 className="font-semibold text-foreground">Recherche et Filtres</h3>
                 <div className="ml-auto flex items-center gap-2">
-                  {filteredProducts.length > 0 && (
+                  {paginatedProducts.length > 0 && (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={toggleSelectAll}
                     >
-                      {selectedProducts.size === filteredProducts.length ? 'Tout désélectionner' : 'Tout sélectionner'}
+                      {paginatedProducts.every(p => selectedProducts.has(p.id)) ? 'Désélectionner la page' : 'Sélectionner la page'}
                     </Button>
                   )}
                   {hasActiveFilters && (
@@ -469,8 +497,23 @@ export default function ImportedProductsPage() {
                   </SelectContent>
                 </Select>
                 
-                <div className="text-sm text-muted-foreground flex items-center ml-auto">
-                  {filteredProducts.length} produit{filteredProducts.length !== 1 ? 's' : ''} trouvé{filteredProducts.length !== 1 ? 's' : ''}
+                <div className="flex items-center gap-4 ml-auto">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Afficher:</span>
+                    <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                      <SelectTrigger className="w-[100px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="25">25</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {filteredProducts.length} produit{filteredProducts.length !== 1 ? 's' : ''} au total
+                  </div>
                 </div>
               </div>
             </div>
@@ -479,7 +522,7 @@ export default function ImportedProductsPage() {
       </div>
 
       {/* Products Grid */}
-      {filteredProducts.length === 0 ? (
+      {paginatedProducts.length === 0 && filteredProducts.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
@@ -494,8 +537,9 @@ export default function ImportedProductsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredProducts.map((product) => (
+        <>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {paginatedProducts.map((product) => (
             <Card key={product.id} className="hover:shadow-lg transition-shadow relative">
               <div className="absolute top-4 left-4 z-10">
                 <Checkbox
@@ -583,6 +627,98 @@ export default function ImportedProductsPage() {
             </Card>
           ))}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <Card>
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Affichage de {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} sur {filteredProducts.length} produits
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  
+                  <div className="flex items-center gap-1">
+                    {currentPage > 2 && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => goToPage(1)}
+                        >
+                          1
+                        </Button>
+                        {currentPage > 3 && (
+                          <span className="px-2 text-muted-foreground">...</span>
+                        )}
+                      </>
+                    )}
+                    
+                    {currentPage > 1 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => goToPage(currentPage - 1)}
+                      >
+                        {currentPage - 1}
+                      </Button>
+                    )}
+                    
+                    <Button
+                      variant="default"
+                      size="sm"
+                    >
+                      {currentPage}
+                    </Button>
+                    
+                    {currentPage < totalPages && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => goToPage(currentPage + 1)}
+                      >
+                        {currentPage + 1}
+                      </Button>
+                    )}
+                    
+                    {currentPage < totalPages - 1 && (
+                      <>
+                        {currentPage < totalPages - 2 && (
+                          <span className="px-2 text-muted-foreground">...</span>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => goToPage(totalPages)}
+                        >
+                          {totalPages}
+                        </Button>
+                      </>
+                    )}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </>
       )}
 
       {/* Delete Confirmation Dialog */}
