@@ -216,6 +216,14 @@ export default function IntegrationsPage() {
                 </div>
                 <div className="h-8 w-8 flex items-center justify-center text-2xl opacity-50">📦</div>
               </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full mt-3 text-xs"
+                onClick={() => navigate('/dashboard/stores/imported-products')}
+              >
+                Voir les produits →
+              </Button>
             </CardContent>
           </Card>
           
