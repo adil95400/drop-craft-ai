@@ -216,21 +216,14 @@ async function syncShopifyData(supabaseClient: any, integration: any, syncType: 
 }
 
 async function syncShopifyProducts(supabaseClient: any, integration: any, shopifyDomain: string, accessToken: string): Promise<number> {
-  let totalProducts = 0
-  let nextPageInfo = null
-  let hasNextPage = true
-  let pageCount = 0
-  const MAX_PAGES = 3 // Reduced to 3 pages (750 products max) to avoid timeout
-  const BATCH_SIZE = 50 // Reduced batch size
-
   console.log('Starting Shopify product sync...')
-
-  // Process products page by page to avoid memory issues
-  while (hasNextPage && pageCount < MAX_PAGES) {
-    const url = `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=${BATCH_SIZE}${nextPageInfo ? `&page_info=${nextPageInfo}` : ''}`
-    
-    console.log(`Fetching batch ${pageCount + 1}...`)
-    
+  
+  // Only fetch ONE page with 20 products to avoid timeout
+  const url = `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=20`
+  
+  console.log(`Fetching from: ${url}`)
+  
+  try {
     const response = await fetch(url, {
       headers: {
         'X-Shopify-Access-Token': accessToken,
@@ -240,79 +233,61 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
 
     if (!response.ok) {
       console.error(`Shopify API error: ${response.status}`)
-      throw new Error(`Shopify API error: ${response.status}`)
+      return 0
     }
 
     const data = await response.json()
     const products = data.products || []
     
-    console.log(`Processing batch ${pageCount + 1}: ${products.length} products`)
+    console.log(`Received ${products.length} products from Shopify`)
 
-    // Transform and upsert products immediately (process by batch)
-    if (products.length > 0) {
-      const productsToUpsert = products.map((product: any) => ({
-        user_id: integration.user_id,
-        platform: 'shopify',
-        external_id: product.id.toString(),
-        sku: product.variants?.[0]?.sku || `SHOP-${product.id}`,
-        name: product.title,
-        description: product.body_html || '',
-        price: parseFloat(product.variants?.[0]?.price || '0'),
-        cost_price: parseFloat(product.variants?.[0]?.compare_at_price || '0') || null,
-        currency: 'EUR',
-        stock_quantity: product.variants?.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0) || 0,
-        category: product.product_type || 'General',
-        brand: product.vendor || '',
-        tags: product.tags ? product.tags.split(',').map((t: string) => t.trim()) : [],
-        image_url: product.images?.[0]?.src || null,
-        image_urls: product.images?.map((img: any) => img.src) || [],
-        status: product.status === 'active' ? 'active' : 'inactive',
-        variants: product.variants,
-        seo_title: product.title,
-        seo_description: product.body_html?.replace(/<[^>]*>?/gm, '').substring(0, 160) || '',
-        weight: product.variants?.[0]?.weight || null,
-        dimensions: {
-          handle: product.handle,
-          vendor: product.vendor,
-          product_type: product.product_type
-        }
-      }))
-
-      const { error } = await supabaseClient
-        .from('imported_products')
-        .upsert(productsToUpsert, { 
-          onConflict: 'user_id,platform,external_id',
-          ignoreDuplicates: false 
-        })
-
-      if (error) {
-        console.error('Batch upsert error:', error)
-      } else {
-        totalProducts += productsToUpsert.length
-        console.log(`Synced ${totalProducts} products so far`)
-      }
+    if (products.length === 0) {
+      console.log('No products found in Shopify store')
+      return 0
     }
 
-    // Check for next page
-    const linkHeader = response.headers.get('Link')
-    if (linkHeader && linkHeader.includes('rel="next"')) {
-      const nextMatch = linkHeader.match(/<[^>]*[?&]page_info=([^&>]*).*?>;\s*rel="next"/)
-      nextPageInfo = nextMatch ? nextMatch[1] : null
-      hasNextPage = !!nextPageInfo
-    } else {
-      hasNextPage = false
+    // Transform products
+    const productsToUpsert = products.map((product: any) => ({
+      user_id: integration.user_id,
+      supplier_name: 'Shopify',
+      supplier_product_id: product.id.toString(),
+      sku: product.variants?.[0]?.sku || `SHOP-${product.id}`,
+      name: product.title,
+      description: product.body_html || '',
+      price: parseFloat(product.variants?.[0]?.price || '0'),
+      cost_price: parseFloat(product.variants?.[0]?.compare_at_price || '0') || null,
+      currency: 'EUR',
+      stock_quantity: product.variants?.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0) || 0,
+      category: product.product_type || 'General',
+      brand: product.vendor || '',
+      tags: product.tags ? product.tags.split(',').map((t: string) => t.trim()) : [],
+      image_urls: product.images?.map((img: any) => img.src) || [],
+      status: product.status === 'active' ? 'active' : 'inactive',
+      seo_title: product.title,
+      seo_description: product.body_html?.replace(/<[^>]*>?/gm, '').substring(0, 160) || '',
+      weight: product.variants?.[0]?.weight || null,
+    }))
+
+    console.log(`Upserting ${productsToUpsert.length} products to database...`)
+
+    const { error } = await supabaseClient
+      .from('imported_products')
+      .upsert(productsToUpsert, { 
+        onConflict: 'user_id,supplier_product_id',
+        ignoreDuplicates: false 
+      })
+
+    if (error) {
+      console.error('Database upsert error:', error)
+      return 0
     }
-    
-    pageCount++
-    
-    // Add small delay between batches to avoid rate limiting
-    if (hasNextPage) {
-      await new Promise(resolve => setTimeout(resolve, 500))
-    }
+
+    console.log(`✅ Successfully synced ${productsToUpsert.length} products`)
+    return productsToUpsert.length
+  } catch (error) {
+    console.error('Sync error:', error)
+    return 0
   }
-
-  console.log(`Successfully synced ${totalProducts} products from Shopify`)
-  return totalProducts
 }
 
 async function syncShopifyOrders(supabaseClient: any, integration: any, shopifyDomain: string, accessToken: string): Promise<number> {
