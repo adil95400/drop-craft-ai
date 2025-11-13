@@ -34,6 +34,9 @@ const CourseDetailPage = lazy(() => import('@/pages/CourseDetailPage'));
 const LiveChatSupportPage = lazy(() => import('@/pages/LiveChatSupportPage'));
 const QAPage = lazy(() => import('@/pages/QAPage'));
 
+// Sync Configuration
+const SyncConfigPage = lazy(() => import('@/pages/SyncConfigPage'));
+
 // Content Management
 const ContentManagementPage = lazy(() => import('@/pages/ContentManagementPage'));
 
@@ -44,6 +47,7 @@ export function IntegrationRoutes() {
       <Route index element={<ModernIntegrationsHub />} />
       <Route path="hub" element={<Integrations />} />
       <Route path="settings" element={<IntegrationsPage />} />
+      <Route path="sync-config" element={<SyncConfigPage />} />
       
       {/* Marketplace */}
       <Route path="marketplace" element={<Marketplace />} />

@@ -1,14 +1,16 @@
 import React from 'react'
 import { Helmet } from 'react-helmet-async'
+import { useNavigate } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AutoSyncManager } from '@/components/sync/AutoSyncManager'
 import { ConnectMarketplaceDialog } from '@/components/marketplace/ConnectMarketplaceDialog'
 import { useMarketplaceConnections } from '@/hooks/useMarketplaceConnections'
-import { RefreshCw, CheckCircle, XCircle, Clock, Play } from 'lucide-react'
+import { RefreshCw, CheckCircle, XCircle, Clock, Play, Settings } from 'lucide-react'
 
 export default function SyncManagementPage() {
+  const navigate = useNavigate()
   const { connections, syncMarketplace, isSyncing } = useMarketplaceConnections()
 
   const getStatusIcon = (status: string) => {
@@ -43,6 +45,10 @@ export default function SyncManagementPage() {
               Configurez la synchronisation automatique de vos données
             </p>
           </div>
+          <Button onClick={() => navigate('/integrations/sync-config')}>
+            <Settings className="mr-2 h-4 w-4" />
+            Configuration Avancée
+          </Button>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
