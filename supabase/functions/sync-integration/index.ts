@@ -337,6 +337,7 @@ async function syncShopifyOrders(supabaseClient: any, integration: any, shopifyD
     console.log(`Processing orders batch ${pageCount + 1}: ${orders.length} orders`)
 
     // Process orders immediately
+    for (const order of orders) {
       // Create or get customer
       let customer_id = null
       if (order.customer) {
@@ -418,7 +419,7 @@ async function syncShopifyOrders(supabaseClient: any, integration: any, shopifyD
       } else {
         totalOrders++
       }
-    }
+    } // End for loop
 
     // Check for next page
     const linkHeader = response.headers.get('Link')
