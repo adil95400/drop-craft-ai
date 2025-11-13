@@ -11,6 +11,8 @@ import { BackButton } from '@/components/navigation/BackButton'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import { useModals } from '@/hooks/useModals'
+import { ProductDetailsModal } from '@/components/products/ProductDetailsModal'
 import Papa from 'papaparse'
 import {
   Select,
@@ -61,6 +63,8 @@ export default function ImportedProductsPage() {
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set())
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [bulkStatus, setBulkStatus] = useState<string>('')
+  const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  const { modalStates, openModal, closeModal } = useModals()
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
   
@@ -540,8 +544,18 @@ export default function ImportedProductsPage() {
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {paginatedProducts.map((product) => (
-            <Card key={product.id} className="hover:shadow-lg transition-shadow relative">
-              <div className="absolute top-4 left-4 z-10">
+            <Card 
+              key={product.id} 
+              className="hover:shadow-lg transition-shadow relative cursor-pointer"
+              onClick={() => {
+                setSelectedProduct(product)
+                openModal('productDetails', { product })
+              }}
+            >
+              <div 
+                className="absolute top-4 left-4 z-10"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <Checkbox
                   checked={selectedProducts.has(product.id)}
                   onCheckedChange={() => toggleProductSelection(product.id)}
@@ -749,6 +763,17 @@ export default function ImportedProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ProductDetailsModal
+        product={selectedProduct}
+        open={modalStates.productDetails}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeModal('productDetails')
+            setSelectedProduct(null)
+          }
+        }}
+      />
     </div>
   )
 }
