@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
+import { ProductVariantManager } from './ProductVariantManager'
 import {
   Edit2,
   Save,
@@ -27,6 +28,7 @@ import {
   ExternalLink,
   Clock,
   History,
+  GitBranch,
 } from 'lucide-react'
 
 interface ProductDetailsModalProps {
@@ -41,6 +43,27 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
   const [editedProduct, setEditedProduct] = useState(product)
   const { toast } = useToast()
   const queryClient = useQueryClient()
+
+  // Fetch product variants
+  const { data: variants = [], refetch: refetchVariants } = useQuery({
+    queryKey: ['product-variants', product?.id],
+    queryFn: async () => {
+      if (!product?.id) return []
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+
+      const { data, error } = await supabase
+        .from('product_variants')
+        .select('*')
+        .eq('product_id', product.id)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    },
+    enabled: open && !!product?.id,
+  })
 
   // Fetch sync history - placeholder for future implementation
   const syncHistory: any[] = []
@@ -183,11 +206,15 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
 
         <ScrollArea className="flex-1 pr-4">
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="variants">
+                <GitBranch className="h-4 w-4 mr-2" />
+                Variants
+              </TabsTrigger>
               <TabsTrigger value="images">Images</TabsTrigger>
               <TabsTrigger value="metadata">Metadata</TabsTrigger>
-              <TabsTrigger value="history">Sync History</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
@@ -362,6 +389,14 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                   </CardContent>
                 </Card>
               )}
+            </TabsContent>
+
+            <TabsContent value="variants" className="space-y-4">
+              <ProductVariantManager
+                productId={product.id}
+                variants={variants}
+                onRefetch={refetchVariants}
+              />
             </TabsContent>
 
             <TabsContent value="images" className="space-y-4">
