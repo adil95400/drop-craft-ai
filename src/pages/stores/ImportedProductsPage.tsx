@@ -22,8 +22,8 @@ interface ImportedProduct {
   brand: string
   stock_quantity: number
   status: string
-  platform: string
-  image_url: string
+  supplier_name: string
+  supplier_product_id: string
   image_urls: string[]
   tags: string[]
   created_at: string
@@ -59,12 +59,12 @@ export default function ImportedProductsPage() {
       product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.brand?.toLowerCase().includes(searchTerm.toLowerCase())
     
-    const matchesPlatform = platformFilter === 'all' || product.platform === platformFilter
+    const matchesPlatform = platformFilter === 'all' || product.supplier_name === platformFilter
     
     return matchesSearch && matchesPlatform
   })
 
-  const platforms = Array.from(new Set(products.map(p => p.platform).filter(Boolean)))
+  const platforms = Array.from(new Set(products.map(p => p.supplier_name).filter(Boolean)))
 
   const stats = {
     total: products.length,
@@ -214,10 +214,10 @@ export default function ImportedProductsPage() {
           {filteredProducts.map((product) => (
             <Card key={product.id} className="hover:shadow-lg transition-shadow">
               <CardHeader className="pb-3">
-                {product.image_url && (
+                {product.image_urls && product.image_urls.length > 0 && (
                   <div className="w-full h-48 mb-3 overflow-hidden rounded-lg bg-muted">
                     <img 
-                      src={product.image_url} 
+                      src={product.image_urls[0]} 
                       alt={product.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -263,11 +263,11 @@ export default function ImportedProductsPage() {
                   </div>
                 )}
 
-                {product.platform && (
+                {product.supplier_name && (
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Plateforme:</span>
+                    <span className="text-muted-foreground">Source:</span>
                     <Badge variant="outline" className="capitalize">
-                      {product.platform}
+                      {product.supplier_name}
                     </Badge>
                   </div>
                 )}
