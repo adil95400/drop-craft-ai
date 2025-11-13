@@ -1,8 +1,9 @@
 import { useState } from 'react'
+import { useDropzone } from 'react-dropzone'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Upload, Link as LinkIcon, X } from 'lucide-react'
+import { Upload, Link as LinkIcon, X, Image as ImageIcon } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 interface VariantImageUploadProps {
@@ -15,10 +16,7 @@ export const VariantImageUpload = ({ imageUrl, onImageChange }: VariantImageUplo
   const [urlInput, setUrlInput] = useState('')
   const [isUrlMode, setIsUrlMode] = useState(false)
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
+  const processFile = async (file: File) => {
     // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
@@ -40,7 +38,7 @@ export const VariantImageUpload = ({ imageUrl, onImageChange }: VariantImageUplo
     }
 
     try {
-      // Convert to base64 for preview (in a real app, upload to storage)
+      // Convert to base64 for preview
       const reader = new FileReader()
       reader.onloadend = () => {
         const base64String = reader.result as string
@@ -59,6 +57,25 @@ export const VariantImageUpload = ({ imageUrl, onImageChange }: VariantImageUplo
       })
     }
   }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    processFile(file)
+  }
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: (acceptedFiles) => {
+      if (acceptedFiles.length > 0) {
+        processFile(acceptedFiles[0])
+      }
+    },
+    accept: {
+      'image/*': ['.png', '.jpg', '.jpeg', '.webp']
+    },
+    maxFiles: 1,
+    multiple: false
+  })
 
   const handleUrlSubmit = () => {
     if (!urlInput) return
@@ -116,26 +133,44 @@ export const VariantImageUpload = ({ imageUrl, onImageChange }: VariantImageUplo
         <div className="space-y-2">
           {!isUrlMode ? (
             <>
-              <div className="flex gap-2">
-                <label className="flex-1">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="cursor-pointer"
-                  />
-                </label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsUrlMode(true)}
-                >
-                  <LinkIcon className="h-4 w-4" />
-                </Button>
+              <div
+                {...getRootProps()}
+                className={`
+                  border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
+                  transition-colors
+                  ${isDragActive 
+                    ? 'border-primary bg-primary/5' 
+                    : 'border-border hover:border-primary/50'
+                  }
+                `}
+              >
+                <input {...getInputProps()} />
+                <div className="flex flex-col items-center gap-2">
+                  <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                  {isDragActive ? (
+                    <p className="text-sm text-primary">Déposez l'image ici...</p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-foreground">
+                        Glissez-déposez une image ou cliquez pour parcourir
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Taille max: 5MB • Formats: JPG, PNG, WEBP
+                      </p>
+                    </>
+                  )}
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Taille max: 5MB • Formats: JPG, PNG, WEBP
-              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => setIsUrlMode(true)}
+              >
+                <LinkIcon className="h-4 w-4 mr-2" />
+                Ou utiliser une URL
+              </Button>
             </>
           ) : (
             <div className="flex gap-2">

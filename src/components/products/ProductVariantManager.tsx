@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import Papa from 'papaparse'
+import { VariantImageUpload } from './VariantImageUpload'
 import {
   Plus,
   X,
@@ -20,6 +21,7 @@ import {
   Upload,
   Download,
   FileText,
+  Wand2,
 } from 'lucide-react'
 import {
   AlertDialog,
@@ -64,6 +66,7 @@ interface CSVVariant {
   price: string
   cost_price?: string
   stock_quantity?: string
+  image_url?: string
   [key: string]: string | undefined
 }
 
@@ -95,6 +98,7 @@ export function ProductVariantManager({
     price: '',
     cost_price: '',
     stock_quantity: '',
+    image_url: '',
     options: {} as Record<string, string>,
   })
   const [editedVariant, setEditedVariant] = useState<any>(null)
@@ -117,6 +121,7 @@ export function ProductVariantManager({
           price: variant.price,
           cost_price: variant.cost_price || null,
           stock_quantity: variant.stock_quantity || null,
+          image_url: variant.image_url || null,
           options: variant.options || {},
           is_active: true,
         },
@@ -127,58 +132,24 @@ export function ProductVariantManager({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
       toast({
-        title: 'Variant created',
-        description: 'Product variant added successfully',
+        title: 'Variante créée',
+        description: 'La variante a été ajoutée avec succès',
       })
       setIsAddingVariant(false)
-      resetNewVariant()
+      setNewVariant({
+        name: '',
+        variant_sku: '',
+        price: '',
+        cost_price: '',
+        stock_quantity: '',
+        image_url: '',
+        options: {},
+      })
       onRefetch()
     },
     onError: (error: any) => {
       toast({
-        title: 'Failed to create variant',
-        description: error.message,
-        variant: 'destructive',
-      })
-    },
-  })
-
-  const bulkCreateVariantsMutation = useMutation({
-    mutationFn: async (variants: any[]) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
-      const { error } = await supabase.from('product_variants').insert(
-        variants.map((v) => ({
-          product_id: productId,
-          user_id: user.id,
-          name: v.name,
-          variant_sku: v.variant_sku || null,
-          price: v.price,
-          cost_price: v.cost_price || null,
-          stock_quantity: v.stock_quantity || null,
-          options: v.options || {},
-          is_active: true,
-        }))
-      )
-
-      if (error) throw error
-      return variants.length
-    },
-    onSuccess: (count) => {
-      queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
-      toast({
-        title: 'Bulk import successful',
-        description: `${count} variants created successfully`,
-      })
-      setShowBulkUpload(false)
-      setCsvData([])
-      setCsvErrors([])
-      onRefetch()
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Bulk import failed',
+        title: 'Erreur',
         description: error.message,
         variant: 'destructive',
       })
@@ -201,8 +172,8 @@ export function ProductVariantManager({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
       toast({
-        title: 'Variant updated',
-        description: 'Changes saved successfully',
+        title: 'Variante mise à jour',
+        description: 'Les modifications ont été enregistrées',
       })
       setEditingVariant(null)
       setEditedVariant(null)
@@ -210,7 +181,7 @@ export function ProductVariantManager({
     },
     onError: (error: any) => {
       toast({
-        title: 'Failed to update variant',
+        title: 'Erreur',
         description: error.message,
         variant: 'destructive',
       })
@@ -233,153 +204,76 @@ export function ProductVariantManager({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
       toast({
-        title: 'Variant deleted',
-        description: 'Product variant removed successfully',
+        title: 'Variante supprimée',
+        description: 'La variante a été supprimée avec succès',
       })
       setDeletingVariant(null)
       onRefetch()
     },
     onError: (error: any) => {
       toast({
-        title: 'Failed to delete variant',
+        title: 'Erreur',
         description: error.message,
         variant: 'destructive',
       })
     },
   })
 
-  const downloadCSVTemplate = () => {
-    const template = `name,variant_sku,price,cost_price,stock_quantity,color,size
-Red / Small,PRD-RED-SM,29.99,15.00,50,Red,Small
-Red / Medium,PRD-RED-MD,29.99,15.00,75,Red,Medium
-Red / Large,PRD-RED-LG,29.99,15.00,60,Red,Large
-Blue / Small,PRD-BLU-SM,29.99,15.00,45,Blue,Small
-Blue / Medium,PRD-BLU-MD,29.99,15.00,80,Blue,Medium`
+  const bulkCreateVariantsMutation = useMutation({
+    mutationFn: async (variantsToCreate: any[]) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
 
-    const blob = new Blob([template], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'variant-template.csv'
-    a.click()
-    window.URL.revokeObjectURL(url)
+      const { error } = await supabase.from('product_variants').insert(
+        variantsToCreate.map((v) => ({
+          ...v,
+          product_id: productId,
+          user_id: user.id,
+          is_active: true,
+        }))
+      )
 
-    toast({
-      title: 'Template downloaded',
-      description: 'CSV template has been downloaded',
-    })
-  }
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const data = results.data as CSVVariant[]
-        const validationErrors: string[] = []
-        const validVariants: any[] = []
-
-        data.forEach((row, index) => {
-          if (!row.name) {
-            validationErrors.push(`Row ${index + 1}: Name is required`)
-            return
-          }
-          if (!row.price || isNaN(parseFloat(row.price))) {
-            validationErrors.push(`Row ${index + 1}: Valid price is required`)
-            return
-          }
-
-          const options: Record<string, string> = {}
-          Object.keys(row).forEach((key) => {
-            if (
-              !['name', 'variant_sku', 'price', 'cost_price', 'stock_quantity'].includes(key) &&
-              row[key]
-            ) {
-              options[key] = row[key]!
-            }
-          })
-
-          validVariants.push({
-            name: row.name,
-            variant_sku: row.variant_sku || '',
-            price: parseFloat(row.price),
-            cost_price: row.cost_price ? parseFloat(row.cost_price) : null,
-            stock_quantity: row.stock_quantity ? parseInt(row.stock_quantity) : null,
-            options,
-          })
-        })
-
-        if (validationErrors.length > 0) {
-          setCsvErrors(validationErrors)
-          toast({
-            title: 'Validation errors',
-            description: `${validationErrors.length} errors found in CSV`,
-            variant: 'destructive',
-          })
-        } else {
-          setCsvData(validVariants)
-          setCsvErrors([])
-          toast({
-            title: 'CSV parsed successfully',
-            description: `${validVariants.length} variants ready to import`,
-          })
-        }
-      },
-      error: (error) => {
-        toast({
-          title: 'CSV parse error',
-          description: error.message,
-          variant: 'destructive',
-        })
-      },
-    })
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }
-
-  const handleBulkImport = () => {
-    if (csvData.length === 0) {
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
       toast({
-        title: 'No data',
-        description: 'Please upload a CSV file first',
+        title: 'Variantes créées',
+        description: 'Toutes les variantes ont été ajoutées avec succès',
+      })
+      setCsvData([])
+      setShowBulkUpload(false)
+      setGeneratedVariants([])
+      setShowAutoGenerate(false)
+      onRefetch()
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Erreur',
+        description: error.message,
         variant: 'destructive',
       })
-      return
-    }
+    },
+  })
 
-    bulkCreateVariantsMutation.mutate(csvData)
-  }
-
-  const resetNewVariant = () => {
-    setNewVariant({
-      name: '',
-      variant_sku: '',
-      price: '',
-      cost_price: '',
-      stock_quantity: '',
-      options: {},
-    })
-    setNewOption({ name: '', value: '' })
+  const handleCreateVariant = (e: React.FormEvent) => {
+    e.preventDefault()
     setErrors({})
-  }
 
-  const validateVariant = (variant: any) => {
     try {
-      variantSchema.parse({
-        name: variant.name,
-        variant_sku: variant.variant_sku || undefined,
-        price: variant.price ? parseFloat(variant.price) : undefined,
-        cost_price: variant.cost_price ? parseFloat(variant.cost_price) : undefined,
-        stock_quantity: variant.stock_quantity ? parseInt(variant.stock_quantity) : undefined,
-        options: variant.options,
+      const validatedData = variantSchema.parse({
+        name: newVariant.name,
+        variant_sku: newVariant.variant_sku || undefined,
+        price: parseFloat(newVariant.price),
+        cost_price: newVariant.cost_price ? parseFloat(newVariant.cost_price) : undefined,
+        stock_quantity: newVariant.stock_quantity ? parseInt(newVariant.stock_quantity) : undefined,
+        options: newVariant.options,
       })
-      setErrors({})
-      return true
+
+      createVariantMutation.mutate({
+        ...validatedData,
+        image_url: newVariant.image_url || null,
+      })
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: Record<string, string> = {}
@@ -390,51 +284,201 @@ Blue / Medium,PRD-BLU-MD,29.99,15.00,80,Blue,Medium`
         })
         setErrors(newErrors)
       }
-      return false
     }
   }
 
-  const handleAddVariant = () => {
-    if (!validateVariant(newVariant)) return
+  const handleUpdateVariant = (variantId: string) => {
+    if (!editedVariant) return
 
-    createVariantMutation.mutate({
-      name: newVariant.name,
-      variant_sku: newVariant.variant_sku || null,
-      price: parseFloat(newVariant.price),
-      cost_price: newVariant.cost_price ? parseFloat(newVariant.cost_price) : null,
-      stock_quantity: newVariant.stock_quantity ? parseInt(newVariant.stock_quantity) : null,
-      options: newVariant.options,
+    try {
+      const validatedData = variantSchema.parse({
+        name: editedVariant.name,
+        variant_sku: editedVariant.variant_sku || undefined,
+        price: parseFloat(editedVariant.price),
+        cost_price: editedVariant.cost_price ? parseFloat(editedVariant.cost_price) : undefined,
+        stock_quantity: editedVariant.stock_quantity ? parseInt(editedVariant.stock_quantity) : undefined,
+        options: editedVariant.options || {},
+      })
+
+      updateVariantMutation.mutate({
+        id: variantId,
+        updates: {
+          ...validatedData,
+          image_url: editedVariant.image_url || null,
+        },
+      })
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: 'Erreur de validation',
+          description: error.errors[0].message,
+          variant: 'destructive',
+        })
+      }
+    }
+  }
+
+  const startEditingVariant = (variant: ProductVariant) => {
+    setEditingVariant(variant.id)
+    setEditedVariant({
+      name: variant.name,
+      variant_sku: variant.variant_sku || '',
+      price: variant.price.toString(),
+      cost_price: variant.cost_price?.toString() || '',
+      stock_quantity: variant.stock_quantity?.toString() || '',
+      image_url: variant.image_url || '',
+      options: variant.options || {},
     })
   }
 
-  const handleUpdateVariant = (variantId: string) => {
-    if (!editedVariant || !validateVariant(editedVariant)) return
+  const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    updateVariantMutation.mutate({
-      id: variantId,
-      updates: {
-        name: editedVariant.name,
-        variant_sku: editedVariant.variant_sku || null,
-        price: editedVariant.price,
-        cost_price: editedVariant.cost_price || null,
-        stock_quantity: editedVariant.stock_quantity || null,
-        options: editedVariant.options || {},
+    Papa.parse(file, {
+      header: true,
+      complete: (results) => {
+        const data = results.data as CSVVariant[]
+        const errors: string[] = []
+        const validData: CSVVariant[] = []
+
+        data.forEach((row, index) => {
+          if (!row.name || !row.price) {
+            errors.push(`Ligne ${index + 1}: nom et prix requis`)
+          } else if (isNaN(parseFloat(row.price))) {
+            errors.push(`Ligne ${index + 1}: prix invalide`)
+          } else {
+            validData.push(row)
+          }
+        })
+
+        setCsvErrors(errors)
+        setCsvData(validData)
+
+        if (validData.length > 0) {
+          toast({
+            title: `${validData.length} variantes chargées`,
+            description: errors.length > 0 ? `${errors.length} erreurs détectées` : undefined,
+          })
+        }
+      },
+      error: () => {
+        toast({
+          title: 'Erreur',
+          description: 'Impossible de lire le fichier CSV',
+          variant: 'destructive',
+        })
       },
     })
   }
 
-  const startEdit = (variant: ProductVariant) => {
-    setEditingVariant(variant.id)
-    setEditedVariant({ ...variant })
+  const handleBulkImport = () => {
+    const variantsToCreate = csvData.map((row) => {
+      const options: Record<string, string> = {}
+      Object.keys(row).forEach((key) => {
+        if (!['name', 'variant_sku', 'price', 'cost_price', 'stock_quantity', 'image_url'].includes(key) && row[key]) {
+          options[key] = row[key] as string
+        }
+      })
+
+      return {
+        name: row.name,
+        variant_sku: row.variant_sku || null,
+        price: parseFloat(row.price),
+        cost_price: row.cost_price ? parseFloat(row.cost_price) : null,
+        stock_quantity: row.stock_quantity ? parseInt(row.stock_quantity) : null,
+        image_url: row.image_url || null,
+        options,
+      }
+    })
+
+    bulkCreateVariantsMutation.mutate(variantsToCreate)
   }
 
-  const cancelEdit = () => {
-    setEditingVariant(null)
-    setEditedVariant(null)
-    setErrors({})
+  const downloadCSVTemplate = () => {
+    const template = 'name,variant_sku,price,cost_price,stock_quantity,image_url,color,size,material\n"T-Shirt Rouge M","RED-M",29.99,15.00,50,"https://example.com/red.jpg","Rouge","M","Coton"'
+    const blob = new Blob([template], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'variants_template.csv'
+    a.click()
   }
 
-  const addOption = () => {
+  const generateVariantCombinations = () => {
+    const colors = autoGenOptions.colors.split(',').map((s) => s.trim()).filter(Boolean)
+    const sizes = autoGenOptions.sizes.split(',').map((s) => s.trim()).filter(Boolean)
+    const materials = autoGenOptions.materials.split(',').map((s) => s.trim()).filter(Boolean)
+
+    const allOptions = [
+      colors.length > 0 ? { name: 'color', values: colors } : null,
+      sizes.length > 0 ? { name: 'size', values: sizes } : null,
+      materials.length > 0 ? { name: 'material', values: materials } : null,
+    ].filter(Boolean) as Array<{ name: string; values: string[] }>
+
+    if (allOptions.length === 0) {
+      toast({
+        title: 'Erreur',
+        description: 'Veuillez saisir au moins une option',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const combinations = generateCombinations(allOptions)
+    const basePrice = parseFloat(autoGenOptions.basePrice) || 0
+    const baseCostPrice = parseFloat(autoGenOptions.baseCostPrice) || 0
+    const baseStock = parseInt(autoGenOptions.baseStock) || 0
+
+    const generated = combinations.map((combo) => {
+      const name = combo.map((c) => c.value).join(' / ')
+      const sku = combo.map((c) => c.value.substring(0, 3).toUpperCase()).join('-')
+      const options: Record<string, string> = {}
+      combo.forEach((c) => {
+        options[c.name] = c.value
+      })
+
+      return {
+        name,
+        variant_sku: sku,
+        price: basePrice,
+        cost_price: baseCostPrice || null,
+        stock_quantity: baseStock || null,
+        image_url: null,
+        options,
+      }
+    })
+
+    setGeneratedVariants(generated)
+  }
+
+  const generateCombinations = (
+    options: Array<{ name: string; values: string[] }>
+  ): Array<Array<{ name: string; value: string }>> => {
+    if (options.length === 0) return []
+    if (options.length === 1) {
+      return options[0].values.map((v) => [{ name: options[0].name, value: v }])
+    }
+
+    const result: Array<Array<{ name: string; value: string }>> = []
+    const firstOption = options[0]
+    const restCombinations = generateCombinations(options.slice(1))
+
+    for (const value of firstOption.values) {
+      for (const combo of restCombinations) {
+        result.push([{ name: firstOption.name, value }, ...combo])
+      }
+    }
+
+    return result
+  }
+
+  const handleGenerateVariants = () => {
+    if (generatedVariants.length === 0) return
+    bulkCreateVariantsMutation.mutate(generatedVariants)
+  }
+
+  const addOptionToNewVariant = () => {
     if (!newOption.name || !newOption.value) return
     setNewVariant({
       ...newVariant,
@@ -446,863 +490,526 @@ Blue / Medium,PRD-BLU-MD,29.99,15.00,80,Blue,Medium`
     setNewOption({ name: '', value: '' })
   }
 
-  const removeOption = (optionName: string) => {
+  const removeOptionFromNewVariant = (optionName: string) => {
     const { [optionName]: _, ...rest } = newVariant.options
     setNewVariant({ ...newVariant, options: rest })
   }
 
-  const generateVariantCombinations = () => {
-    const colors = autoGenOptions.colors
-      .split(',')
-      .map((c) => c.trim())
-      .filter((c) => c)
-    const sizes = autoGenOptions.sizes
-      .split(',')
-      .map((s) => s.trim())
-      .filter((s) => s)
-    const materials = autoGenOptions.materials
-      .split(',')
-      .map((m) => m.trim())
-      .filter((m) => m)
-
-    if (colors.length === 0 && sizes.length === 0 && materials.length === 0) {
-      toast({
-        title: 'No options provided',
-        description: 'Please enter at least one option (color, size, or material)',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    const basePrice = parseFloat(autoGenOptions.basePrice) || 0
-    const baseCostPrice = autoGenOptions.baseCostPrice
-      ? parseFloat(autoGenOptions.baseCostPrice)
-      : null
-    const baseStock = autoGenOptions.baseStock ? parseInt(autoGenOptions.baseStock) : null
-
-    const combinations: any[] = []
-
-    // Generate all combinations
-    if (colors.length > 0 && sizes.length > 0 && materials.length > 0) {
-      // All three options
-      colors.forEach((color) => {
-        sizes.forEach((size) => {
-          materials.forEach((material) => {
-            combinations.push({
-              name: `${color} / ${size} / ${material}`,
-              variant_sku: `${color.substring(0, 3).toUpperCase()}-${size.toUpperCase()}-${material.substring(0, 3).toUpperCase()}`,
-              price: basePrice,
-              cost_price: baseCostPrice,
-              stock_quantity: baseStock,
-              options: { color, size, material },
-            })
-          })
-        })
-      })
-    } else if (colors.length > 0 && sizes.length > 0) {
-      // Color + Size
-      colors.forEach((color) => {
-        sizes.forEach((size) => {
-          combinations.push({
-            name: `${color} / ${size}`,
-            variant_sku: `${color.substring(0, 3).toUpperCase()}-${size.toUpperCase()}`,
-            price: basePrice,
-            cost_price: baseCostPrice,
-            stock_quantity: baseStock,
-            options: { color, size },
-          })
-        })
-      })
-    } else if (colors.length > 0 && materials.length > 0) {
-      // Color + Material
-      colors.forEach((color) => {
-        materials.forEach((material) => {
-          combinations.push({
-            name: `${color} / ${material}`,
-            variant_sku: `${color.substring(0, 3).toUpperCase()}-${material.substring(0, 3).toUpperCase()}`,
-            price: basePrice,
-            cost_price: baseCostPrice,
-            stock_quantity: baseStock,
-            options: { color, material },
-          })
-        })
-      })
-    } else if (sizes.length > 0 && materials.length > 0) {
-      // Size + Material
-      sizes.forEach((size) => {
-        materials.forEach((material) => {
-          combinations.push({
-            name: `${size} / ${material}`,
-            variant_sku: `${size.toUpperCase()}-${material.substring(0, 3).toUpperCase()}`,
-            price: basePrice,
-            cost_price: baseCostPrice,
-            stock_quantity: baseStock,
-            options: { size, material },
-          })
-        })
-      })
-    } else if (colors.length > 0) {
-      // Only colors
-      colors.forEach((color) => {
-        combinations.push({
-          name: color,
-          variant_sku: color.substring(0, 3).toUpperCase(),
-          price: basePrice,
-          cost_price: baseCostPrice,
-          stock_quantity: baseStock,
-          options: { color },
-        })
-      })
-    } else if (sizes.length > 0) {
-      // Only sizes
-      sizes.forEach((size) => {
-        combinations.push({
-          name: size,
-          variant_sku: size.toUpperCase(),
-          price: basePrice,
-          cost_price: baseCostPrice,
-          stock_quantity: baseStock,
-          options: { size },
-        })
-      })
-    } else if (materials.length > 0) {
-      // Only materials
-      materials.forEach((material) => {
-        combinations.push({
-          name: material,
-          variant_sku: material.substring(0, 3).toUpperCase(),
-          price: basePrice,
-          cost_price: baseCostPrice,
-          stock_quantity: baseStock,
-          options: { material },
-        })
-      })
-    }
-
-    setGeneratedVariants(combinations)
-    toast({
-      title: 'Variants generated',
-      description: `${combinations.length} variant combinations created`,
-    })
-  }
-
-  const handleAutoGenerate = () => {
-    if (generatedVariants.length === 0) {
-      toast({
-        title: 'No variants generated',
-        description: 'Please generate variants first',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    bulkCreateVariantsMutation.mutate(generatedVariants)
-  }
-
-  const resetAutoGenerate = () => {
-    setAutoGenOptions({
-      colors: '',
-      sizes: '',
-      materials: '',
-      basePrice: '',
-      baseCostPrice: '',
-      baseStock: '',
-    })
-    setGeneratedVariants([])
-  }
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Product Variants</h3>
+        <div>
+          <h3 className="text-lg font-semibold">Variantes de produit</h3>
+          <p className="text-sm text-muted-foreground">
+            {variants.length} variante{variants.length > 1 ? 's' : ''}
+          </p>
+        </div>
         <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowAutoGenerate(true)}
-          >
-            <Package className="h-4 w-4 mr-2" />
-            Auto Generate
+          <Button variant="outline" size="sm" onClick={() => setShowAutoGenerate(true)}>
+            <Wand2 className="h-4 w-4 mr-2" />
+            Auto-générer
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowBulkUpload(true)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setShowBulkUpload(true)}>
             <Upload className="h-4 w-4 mr-2" />
             Import CSV
           </Button>
-          <Button
-            size="sm"
-            onClick={() => setIsAddingVariant(true)}
-            disabled={isAddingVariant}
-          >
+          <Button size="sm" onClick={() => setIsAddingVariant(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Variant
+            Ajouter
           </Button>
         </div>
       </div>
 
-      {isAddingVariant && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">New Variant</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+      {/* Variant List */}
+      <div className="space-y-3">
+        {variants.map((variant) => (
+          <Card key={variant.id}>
+            <CardContent className="p-4">
+              {editingVariant === variant.id ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Nom</Label>
+                      <Input
+                        value={editedVariant?.name || ''}
+                        onChange={(e) =>
+                          setEditedVariant({ ...editedVariant, name: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label>SKU</Label>
+                      <Input
+                        value={editedVariant?.variant_sku || ''}
+                        onChange={(e) =>
+                          setEditedVariant({ ...editedVariant, variant_sku: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label>Prix</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={editedVariant?.price || ''}
+                        onChange={(e) =>
+                          setEditedVariant({ ...editedVariant, price: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label>Prix de revient</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={editedVariant?.cost_price || ''}
+                        onChange={(e) =>
+                          setEditedVariant({ ...editedVariant, cost_price: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label>Stock</Label>
+                      <Input
+                        type="number"
+                        value={editedVariant?.stock_quantity || ''}
+                        onChange={(e) =>
+                          setEditedVariant({ ...editedVariant, stock_quantity: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <VariantImageUpload
+                    imageUrl={editedVariant?.image_url}
+                    onImageChange={(url) =>
+                      setEditedVariant({ ...editedVariant, image_url: url })
+                    }
+                  />
+
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => handleUpdateVariant(variant.id)}
+                      disabled={updateVariantMutation.isPending}
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Sauvegarder
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setEditingVariant(null)
+                        setEditedVariant(null)
+                      }}
+                    >
+                      Annuler
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start gap-4">
+                  {variant.image_url && (
+                    <img
+                      src={variant.image_url}
+                      alt={variant.name}
+                      className="h-20 w-20 object-cover rounded-lg border flex-shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  )}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-medium">{variant.name}</h4>
+                      <Badge variant={variant.is_active ? 'default' : 'secondary'}>
+                        {variant.is_active ? 'Actif' : 'Inactif'}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-muted-foreground">
+                      {variant.variant_sku && (
+                        <div className="flex items-center gap-1">
+                          <Hash className="h-3 w-3" />
+                          {variant.variant_sku}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="h-3 w-3" />
+                        {variant.price.toFixed(2)} €
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Package className="h-3 w-3" />
+                        Stock: {variant.stock_quantity || 0}
+                      </div>
+                      {variant.options && Object.keys(variant.options).length > 0 && (
+                        <div className="flex gap-1 flex-wrap col-span-2 md:col-span-1">
+                          {Object.entries(variant.options as Record<string, any>).map(
+                            ([key, value]) => (
+                              <Badge key={key} variant="outline" className="text-xs">
+                                {String(value)}
+                              </Badge>
+                            )
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => startEditingVariant(variant)}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setDeletingVariant(variant.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Add Variant Dialog */}
+      <Dialog open={isAddingVariant} onOpenChange={setIsAddingVariant}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Ajouter une variante</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateVariant} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Variant Name *</Label>
+                <Label>Nom *</Label>
                 <Input
-                  placeholder="e.g., Red / Large"
                   value={newVariant.name}
-                  onChange={(e) =>
-                    setNewVariant({ ...newVariant, name: e.target.value })
-                  }
+                  onChange={(e) => setNewVariant({ ...newVariant, name: e.target.value })}
                 />
-                {errors.name && (
-                  <p className="text-xs text-destructive mt-1">{errors.name}</p>
-                )}
+                {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
               </div>
               <div>
                 <Label>SKU</Label>
                 <Input
-                  placeholder="Variant SKU"
                   value={newVariant.variant_sku}
-                  onChange={(e) =>
-                    setNewVariant({ ...newVariant, variant_sku: e.target.value })
-                  }
+                  onChange={(e) => setNewVariant({ ...newVariant, variant_sku: e.target.value })}
                 />
               </div>
               <div>
-                <Label>Price *</Label>
+                <Label>Prix *</Label>
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="0.00"
                   value={newVariant.price}
-                  onChange={(e) =>
-                    setNewVariant({ ...newVariant, price: e.target.value })
-                  }
+                  onChange={(e) => setNewVariant({ ...newVariant, price: e.target.value })}
                 />
-                {errors.price && (
-                  <p className="text-xs text-destructive mt-1">{errors.price}</p>
-                )}
+                {errors.price && <p className="text-sm text-destructive">{errors.price}</p>}
               </div>
               <div>
-                <Label>Cost Price</Label>
+                <Label>Prix de revient</Label>
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="0.00"
                   value={newVariant.cost_price}
-                  onChange={(e) =>
-                    setNewVariant({ ...newVariant, cost_price: e.target.value })
-                  }
+                  onChange={(e) => setNewVariant({ ...newVariant, cost_price: e.target.value })}
                 />
               </div>
               <div>
-                <Label>Stock Quantity</Label>
+                <Label>Stock</Label>
                 <Input
                   type="number"
-                  placeholder="0"
                   value={newVariant.stock_quantity}
-                  onChange={(e) =>
-                    setNewVariant({ ...newVariant, stock_quantity: e.target.value })
-                  }
+                  onChange={(e) => setNewVariant({ ...newVariant, stock_quantity: e.target.value })}
                 />
               </div>
             </div>
 
-            <div className="border-t pt-4">
-              <Label className="mb-2 block">Variant Options (Color, Size, etc.)</Label>
-              <div className="flex gap-2 mb-3">
+            <VariantImageUpload
+              imageUrl={newVariant.image_url}
+              onImageChange={(url) => setNewVariant({ ...newVariant, image_url: url })}
+            />
+
+            <div className="space-y-2">
+              <Label>Options</Label>
+              <div className="flex gap-2">
                 <Input
-                  placeholder="Option name (e.g., Color)"
+                  placeholder="Nom (ex: couleur)"
                   value={newOption.name}
-                  onChange={(e) =>
-                    setNewOption({ ...newOption, name: e.target.value })
-                  }
-                  className="flex-1"
+                  onChange={(e) => setNewOption({ ...newOption, name: e.target.value })}
                 />
                 <Input
-                  placeholder="Value (e.g., Red)"
+                  placeholder="Valeur (ex: rouge)"
                   value={newOption.value}
-                  onChange={(e) =>
-                    setNewOption({ ...newOption, value: e.target.value })
-                  }
-                  className="flex-1"
+                  onChange={(e) => setNewOption({ ...newOption, value: e.target.value })}
                 />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={addOption}
-                  disabled={!newOption.name || !newOption.value}
-                >
+                <Button type="button" size="sm" onClick={addOptionToNewVariant}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(newVariant.options).map(([key, value]) => (
-                  <Badge key={key} variant="secondary" className="gap-2">
-                    <span className="font-semibold">{key}:</span> {value}
-                    <button
-                      onClick={() => removeOption(key)}
-                      className="hover:text-destructive"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
+              {Object.entries(newVariant.options).length > 0 && (
+                <div className="flex gap-2 flex-wrap">
+                  {Object.entries(newVariant.options).map(([key, value]) => (
+                    <Badge key={key} variant="secondary">
+                      {key}: {value}
+                      <X
+                        className="h-3 w-3 ml-1 cursor-pointer"
+                        onClick={() => removeOptionFromNewVariant(key)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsAddingVariant(false)
-                  resetNewVariant()
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAddVariant}
-                disabled={createVariantMutation.isPending}
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Create Variant
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="space-y-3">
-        {variants.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">
-                No variants yet. Add your first variant or import from CSV.
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          variants.map((variant) => (
-            <Card key={variant.id}>
-              <CardContent className="p-4">
-                {editingVariant === variant.id ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label>Variant Name</Label>
-                        <Input
-                          value={editedVariant.name}
-                          onChange={(e) =>
-                            setEditedVariant({
-                              ...editedVariant,
-                              name: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label>SKU</Label>
-                        <Input
-                          value={editedVariant.variant_sku || ''}
-                          onChange={(e) =>
-                            setEditedVariant({
-                              ...editedVariant,
-                              variant_sku: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label>Price</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={editedVariant.price || ''}
-                          onChange={(e) =>
-                            setEditedVariant({
-                              ...editedVariant,
-                              price: parseFloat(e.target.value),
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label>Cost Price</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={editedVariant.cost_price || ''}
-                          onChange={(e) =>
-                            setEditedVariant({
-                              ...editedVariant,
-                              cost_price: parseFloat(e.target.value),
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label>Stock</Label>
-                        <Input
-                          type="number"
-                          value={editedVariant.stock_quantity || ''}
-                          onChange={(e) =>
-                            setEditedVariant({
-                              ...editedVariant,
-                              stock_quantity: parseInt(e.target.value),
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 justify-end">
-                      <Button variant="outline" onClick={cancelEdit}>
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={() => handleUpdateVariant(variant.id)}
-                        disabled={updateVariantMutation.isPending}
-                      >
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Changes
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-semibold mb-2">{variant.name}</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                        {variant.variant_sku && (
-                          <div className="flex items-center gap-2">
-                            <Hash className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-muted-foreground">SKU:</span>
-                            <span className="font-mono">{variant.variant_sku}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-muted-foreground">Price:</span>
-                          <span className="font-semibold">${variant.price.toFixed(2)}</span>
-                        </div>
-                        {variant.stock_quantity !== null && (
-                          <div className="flex items-center gap-2">
-                            <Package className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-muted-foreground">Stock:</span>
-                            <Badge
-                              variant={
-                                variant.stock_quantity > 0 ? 'default' : 'destructive'
-                              }
-                            >
-                              {variant.stock_quantity}
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-                      {variant.options &&
-                        typeof variant.options === 'object' &&
-                        Object.keys(variant.options).length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            {Object.entries(variant.options as Record<string, string>).map(
-                              ([key, value]) => (
-                                <Badge key={key} variant="outline">
-                                  <span className="font-semibold">{key}:</span> {value}
-                                </Badge>
-                              )
-                            )}
-                          </div>
-                        )}
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => startEdit(variant)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setDeletingVariant(variant.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
-
-      <Dialog open={showAutoGenerate} onOpenChange={setShowAutoGenerate}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Auto-Generate Variants</DialogTitle>
-            <DialogDescription>
-              Enter your product options and automatically generate all combinations. Separate
-              multiple values with commas.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Product Options</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Colors (comma-separated)</Label>
-                    <Input
-                      placeholder="e.g., Red, Blue, Green, Black"
-                      value={autoGenOptions.colors}
-                      onChange={(e) =>
-                        setAutoGenOptions({ ...autoGenOptions, colors: e.target.value })
-                      }
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Example: Red, Blue, Green
-                    </p>
-                  </div>
-                  <div>
-                    <Label>Sizes (comma-separated)</Label>
-                    <Input
-                      placeholder="e.g., XS, S, M, L, XL"
-                      value={autoGenOptions.sizes}
-                      onChange={(e) =>
-                        setAutoGenOptions({ ...autoGenOptions, sizes: e.target.value })
-                      }
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Example: S, M, L, XL
-                    </p>
-                  </div>
-                  <div className="col-span-2">
-                    <Label>Materials (comma-separated) - Optional</Label>
-                    <Input
-                      placeholder="e.g., Cotton, Polyester, Wool"
-                      value={autoGenOptions.materials}
-                      onChange={(e) =>
-                        setAutoGenOptions({ ...autoGenOptions, materials: e.target.value })
-                      }
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Example: Cotton, Polyester
-                    </p>
-                  </div>
-                </div>
-
-                <div className="border-t pt-4">
-                  <Label className="mb-3 block">Base Pricing & Inventory</Label>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <Label>Base Price *</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="29.99"
-                        value={autoGenOptions.basePrice}
-                        onChange={(e) =>
-                          setAutoGenOptions({
-                            ...autoGenOptions,
-                            basePrice: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label>Base Cost Price</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="15.00"
-                        value={autoGenOptions.baseCostPrice}
-                        onChange={(e) =>
-                          setAutoGenOptions({
-                            ...autoGenOptions,
-                            baseCostPrice: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label>Base Stock</Label>
-                      <Input
-                        type="number"
-                        placeholder="50"
-                        value={autoGenOptions.baseStock}
-                        onChange={(e) =>
-                          setAutoGenOptions({
-                            ...autoGenOptions,
-                            baseStock: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={generateVariantCombinations}
-                    className="flex-1"
-                  >
-                    <Package className="h-4 w-4 mr-2" />
-                    Generate Combinations
-                  </Button>
-                  <Button variant="outline" onClick={resetAutoGenerate}>
-                    Reset
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {generatedVariants.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm flex items-center justify-between">
-                    <span>Generated Variants ({generatedVariants.length})</span>
-                    <Badge variant="secondary">{generatedVariants.length} variants</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {generatedVariants.map((variant, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-3 border rounded hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <p className="font-semibold">{variant.name}</p>
-                            <Badge variant="outline" className="font-mono text-xs">
-                              {variant.variant_sku}
-                            </Badge>
-                          </div>
-                          <div className="flex gap-4 mt-2 text-sm">
-                            <div className="flex items-center gap-1 text-muted-foreground">
-                              <DollarSign className="h-3 w-3" />
-                              <span>Price: ${variant.price.toFixed(2)}</span>
-                            </div>
-                            {variant.cost_price && (
-                              <div className="flex items-center gap-1 text-muted-foreground">
-                                <span>Cost: ${variant.cost_price.toFixed(2)}</span>
-                              </div>
-                            )}
-                            {variant.stock_quantity !== null && (
-                              <div className="flex items-center gap-1 text-muted-foreground">
-                                <Package className="h-3 w-3" />
-                                <span>Stock: {variant.stock_quantity}</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {Object.entries(variant.options).map(([key, value]) => (
-                              <Badge key={key} variant="secondary" className="text-xs">
-                                {key}: {String(value)}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 p-4 bg-muted rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <Package className="h-5 w-5 text-muted-foreground mt-0.5" />
-                      <div className="flex-1">
-                        <p className="font-semibold text-sm">Ready to Create</p>
-                        <p className="text-xs text-muted-foreground">
-                          {generatedVariants.length} variants will be created with the options
-                          you specified. You can edit individual variants after creation.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowAutoGenerate(false)
-                  resetAutoGenerate()
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAutoGenerate}
-                disabled={generatedVariants.length === 0 || bulkCreateVariantsMutation.isPending}
-              >
-                {bulkCreateVariantsMutation.isPending ? (
-                  <>Creating...</>
-                ) : (
-                  <>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create {generatedVariants.length} Variants
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
+            <Button type="submit" className="w-full" disabled={createVariantMutation.isPending}>
+              {createVariantMutation.isPending ? 'Création...' : 'Créer la variante'}
+            </Button>
+          </form>
         </DialogContent>
       </Dialog>
 
+      {/* Bulk Upload Dialog */}
       <Dialog open={showBulkUpload} onOpenChange={setShowBulkUpload}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Bulk Import Variants from CSV</DialogTitle>
+            <DialogTitle>Import CSV de variantes</DialogTitle>
             <DialogDescription>
-              Upload a CSV file to import multiple variants at once. Download the template
-              to see the required format.
+              Importez plusieurs variantes à la fois via un fichier CSV
             </DialogDescription>
           </DialogHeader>
-
           <div className="space-y-4">
             <div className="flex gap-2">
-              <Button variant="outline" onClick={downloadCSVTemplate} className="flex-1">
+              <Button variant="outline" onClick={downloadCSVTemplate}>
                 <Download className="h-4 w-4 mr-2" />
-                Download Template
+                Télécharger le modèle
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex-1"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Upload CSV
+              <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                <FileText className="h-4 w-4 mr-2" />
+                Choisir un fichier
               </Button>
               <input
                 ref={fileInputRef}
                 type="file"
                 accept=".csv"
-                onChange={handleFileUpload}
                 className="hidden"
+                onChange={handleCSVUpload}
               />
             </div>
 
             {csvErrors.length > 0 && (
-              <Card className="border-destructive">
-                <CardHeader>
-                  <CardTitle className="text-sm text-destructive">
-                    Validation Errors
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-1 text-sm">
-                    {csvErrors.map((error, index) => (
-                      <li key={index} className="text-destructive">
-                        • {error}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+              <div className="p-4 border border-destructive rounded-lg">
+                <h4 className="font-medium text-destructive mb-2">Erreurs détectées</h4>
+                <ul className="list-disc list-inside text-sm">
+                  {csvErrors.map((error, i) => (
+                    <li key={i}>{error}</li>
+                  ))}
+                </ul>
+              </div>
             )}
 
             {csvData.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Preview ({csvData.length} variants)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {csvData.slice(0, 10).map((variant, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-2 border rounded text-sm"
-                      >
-                        <div className="flex-1">
-                          <p className="font-semibold">{variant.name}</p>
-                          <div className="flex gap-3 text-xs text-muted-foreground">
-                            <span>SKU: {variant.variant_sku || 'N/A'}</span>
-                            <span>Price: ${variant.price}</span>
-                            {variant.stock_quantity && (
-                              <span>Stock: {variant.stock_quantity}</span>
-                            )}
-                          </div>
-                          {Object.keys(variant.options || {}).length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {Object.entries(variant.options || {}).map(([key, value]) => (
-                                <Badge key={key} variant="outline" className="text-xs">
-                                  {key}: {value}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    {csvData.length > 10 && (
-                      <p className="text-sm text-muted-foreground text-center">
-                        ... and {csvData.length - 10} more variants
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="space-y-2">
+                <h4 className="font-medium">Aperçu ({csvData.length} variantes)</h4>
+                <div className="max-h-64 overflow-auto border rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted">
+                      <tr>
+                        <th className="p-2 text-left">Nom</th>
+                        <th className="p-2 text-left">SKU</th>
+                        <th className="p-2 text-left">Prix</th>
+                        <th className="p-2 text-left">Stock</th>
+                        <th className="p-2 text-left">Image</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {csvData.map((row, i) => (
+                        <tr key={i} className="border-t">
+                          <td className="p-2">{row.name}</td>
+                          <td className="p-2">{row.variant_sku || '-'}</td>
+                          <td className="p-2">{row.price} €</td>
+                          <td className="p-2">{row.stock_quantity || 0}</td>
+                          <td className="p-2">{row.image_url ? '✓' : '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <Button
+                  onClick={handleBulkImport}
+                  disabled={bulkCreateVariantsMutation.isPending}
+                  className="w-full"
+                >
+                  {bulkCreateVariantsMutation.isPending
+                    ? 'Import en cours...'
+                    : `Importer ${csvData.length} variantes`}
+                </Button>
+              </div>
             )}
-
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowBulkUpload(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleBulkImport}
-                disabled={csvData.length === 0 || bulkCreateVariantsMutation.isPending}
-              >
-                {bulkCreateVariantsMutation.isPending ? (
-                  <>Importing...</>
-                ) : (
-                  <>
-                    <Upload className="h-4 w-4 mr-2" />
-                    Import {csvData.length} Variants
-                  </>
-                )}
-              </Button>
-            </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      <AlertDialog
-        open={!!deletingVariant}
-        onOpenChange={(open) => !open && setDeletingVariant(null)}
-      >
+      {/* Auto Generate Dialog */}
+      <Dialog open={showAutoGenerate} onOpenChange={setShowAutoGenerate}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Auto-générer les variantes</DialogTitle>
+            <DialogDescription>
+              Créez automatiquement toutes les combinaisons de couleurs, tailles et matériaux
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <div>
+                <Label>Couleurs (séparées par des virgules)</Label>
+                <Input
+                  placeholder="ex: Rouge, Bleu, Vert"
+                  value={autoGenOptions.colors}
+                  onChange={(e) =>
+                    setAutoGenOptions({ ...autoGenOptions, colors: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label>Tailles (séparées par des virgules)</Label>
+                <Input
+                  placeholder="ex: S, M, L, XL"
+                  value={autoGenOptions.sizes}
+                  onChange={(e) => setAutoGenOptions({ ...autoGenOptions, sizes: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Matériaux (séparées par des virgules)</Label>
+                <Input
+                  placeholder="ex: Coton, Polyester, Laine"
+                  value={autoGenOptions.materials}
+                  onChange={(e) =>
+                    setAutoGenOptions({ ...autoGenOptions, materials: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Prix de base</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="29.99"
+                  value={autoGenOptions.basePrice}
+                  onChange={(e) =>
+                    setAutoGenOptions({ ...autoGenOptions, basePrice: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label>Prix de revient</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="15.00"
+                  value={autoGenOptions.baseCostPrice}
+                  onChange={(e) =>
+                    setAutoGenOptions({ ...autoGenOptions, baseCostPrice: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label>Stock par défaut</Label>
+                <Input
+                  type="number"
+                  placeholder="50"
+                  value={autoGenOptions.baseStock}
+                  onChange={(e) =>
+                    setAutoGenOptions({ ...autoGenOptions, baseStock: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <Button onClick={generateVariantCombinations} variant="outline" className="w-full">
+              <Wand2 className="h-4 w-4 mr-2" />
+              Générer les combinaisons
+            </Button>
+
+            {generatedVariants.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium">
+                  Aperçu ({generatedVariants.length} variantes à créer)
+                </h4>
+                <div className="max-h-64 overflow-auto border rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted">
+                      <tr>
+                        <th className="p-2 text-left">Nom</th>
+                        <th className="p-2 text-left">SKU</th>
+                        <th className="p-2 text-left">Prix</th>
+                        <th className="p-2 text-left">Options</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {generatedVariants.map((variant, i) => (
+                        <tr key={i} className="border-t">
+                          <td className="p-2">{variant.name}</td>
+                          <td className="p-2">{variant.variant_sku}</td>
+                          <td className="p-2">{variant.price.toFixed(2)} €</td>
+                          <td className="p-2">
+                            <div className="flex gap-1">
+                              {Object.values(variant.options).map((val: any, j: number) => (
+                                <Badge key={j} variant="outline" className="text-xs">
+                                  {String(val)}
+                                </Badge>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <Button
+                  onClick={handleGenerateVariants}
+                  disabled={bulkCreateVariantsMutation.isPending}
+                  className="w-full"
+                >
+                  {bulkCreateVariantsMutation.isPending
+                    ? 'Création en cours...'
+                    : `Créer ${generatedVariants.length} variantes`}
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deletingVariant} onOpenChange={() => setDeletingVariant(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Variant</AlertDialogTitle>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this variant? This action cannot be undone.
+              Êtes-vous sûr de vouloir supprimer cette variante ? Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() =>
-                deletingVariant && deleteVariantMutation.mutate(deletingVariant)
-              }
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deletingVariant) {
+                  deleteVariantMutation.mutate(deletingVariant)
+                }
+              }}
+              className="bg-destructive text-destructive-foreground"
             >
-              Delete
+              Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
