@@ -218,12 +218,14 @@ async function syncShopifyData(supabaseClient: any, integration: any, syncType: 
 }
 
 async function syncShopifyProducts(supabaseClient: any, integration: any, shopifyDomain: string, accessToken: string): Promise<number> {
-  let allProducts: any[] = []
+  let totalProducts = 0
   let nextPageInfo = null
   let hasNextPage = true
+  let pageCount = 0
+  const MAX_PAGES = 10 // Limit to prevent memory issues (2500 products max)
 
-  // Fetch all products with pagination
-  while (hasNextPage) {
+  // Process products page by page to avoid memory issues
+  while (hasNextPage && pageCount < MAX_PAGES) {
     const url = `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=250${nextPageInfo ? `&page_info=${nextPageInfo}` : ''}`
     
     const response = await fetch(url, {
@@ -238,25 +240,12 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
     }
 
     const data = await response.json()
-    allProducts = allProducts.concat(data.products || [])
+    const products = data.products || []
+    
+    console.log(`Processing batch ${pageCount + 1}: ${products.length} products`)
 
-    // Check for next page
-    const linkHeader = response.headers.get('Link')
-    if (linkHeader && linkHeader.includes('rel="next"')) {
-      const nextMatch = linkHeader.match(/<[^>]*[?&]page_info=([^&>]*).*?>;\s*rel="next"/)
-      nextPageInfo = nextMatch ? nextMatch[1] : null
-      hasNextPage = !!nextPageInfo
-    } else {
-      hasNextPage = false
-    }
-  }
-
-  console.log(`Fetched ${allProducts.length} products from Shopify`)
-
-  // Transform and upsert products
-  for (const product of allProducts) {
-    // Prepare product for imported_products table
-    const productToUpsert = {
+    // Transform and upsert products immediately (process by batch)
+    const productsToUpsert = products.map((product: any) => ({
       user_id: integration.user_id,
       platform: 'shopify',
       external_id: product.id.toString(),
@@ -282,33 +271,53 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
         vendor: product.vendor,
         product_type: product.product_type
       }
+    }))
+
+    // Batch upsert - more efficient
+    if (productsToUpsert.length > 0) {
+      const { error } = await supabaseClient
+        .from('imported_products')
+        .upsert(productsToUpsert, { 
+          onConflict: 'user_id,platform,external_id',
+          ignoreDuplicates: false 
+        })
+
+      if (error) {
+        console.error('Batch upsert error:', error)
+      } else {
+        totalProducts += productsToUpsert.length
+      }
     }
 
-    const { error } = await supabaseClient
-      .from('imported_products')
-      .upsert(productToUpsert, { 
-        onConflict: 'user_id,platform,external_id',
-        ignoreDuplicates: false 
-      })
-
-    if (error) {
-      console.error('Product upsert error:', error)
+    // Check for next page
+    const linkHeader = response.headers.get('Link')
+    if (linkHeader && linkHeader.includes('rel="next"')) {
+      const nextMatch = linkHeader.match(/<[^>]*[?&]page_info=([^&>]*).*?>;\s*rel="next"/)
+      nextPageInfo = nextMatch ? nextMatch[1] : null
+      hasNextPage = !!nextPageInfo
+    } else {
+      hasNextPage = false
     }
+    
+    pageCount++
   }
 
-  return allProducts.length
+  console.log(`Successfully synced ${totalProducts} products from Shopify`)
+  return totalProducts
 }
 
 async function syncShopifyOrders(supabaseClient: any, integration: any, shopifyDomain: string, accessToken: string): Promise<number> {
-  let allOrders: any[] = []
+  let totalOrders = 0
   let nextPageInfo = null
   let hasNextPage = true
+  let pageCount = 0
+  const MAX_PAGES = 5 // Limit to prevent memory issues (1250 orders max)
 
   // Fetch orders from last 30 days
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-  while (hasNextPage) {
+  while (hasNextPage && pageCount < MAX_PAGES) {
     const url = `https://${shopifyDomain}/admin/api/2023-10/orders.json?limit=250&status=any&created_at_min=${thirtyDaysAgo.toISOString()}${nextPageInfo ? `&page_info=${nextPageInfo}` : ''}`
     
     const response = await fetch(url, {
@@ -323,9 +332,95 @@ async function syncShopifyOrders(supabaseClient: any, integration: any, shopifyD
     }
 
     const data = await response.json()
-    allOrders = allOrders.concat(data.orders || [])
+    const orders = data.orders || []
+    
+    console.log(`Processing orders batch ${pageCount + 1}: ${orders.length} orders`)
 
-    // Pagination
+    // Process orders immediately
+      // Create or get customer
+      let customer_id = null
+      if (order.customer) {
+        const { data: existingCustomer } = await supabaseClient
+          .from('customers')
+          .select('id')
+          .eq('email', order.customer.email)
+          .eq('user_id', integration.user_id)
+          .single()
+
+        if (existingCustomer) {
+          customer_id = existingCustomer.id
+        } else {
+          const { data: newCustomer, error: customerError } = await supabaseClient
+            .from('customers')
+            .insert({
+              user_id: integration.user_id,
+              name: `${order.customer.first_name} ${order.customer.last_name}`,
+              email: order.customer.email,
+              phone: order.customer.phone,
+              country: order.shipping_address?.country
+            })
+            .select('id')
+            .single()
+
+          if (!customerError && newCustomer) {
+            customer_id = newCustomer.id
+          }
+        }
+      }
+
+      // Map Shopify status to our system
+      const mapShopifyStatus = (shopifyStatus: string, fulfillmentStatus: string) => {
+        if (shopifyStatus === 'cancelled') return 'cancelled'
+        if (fulfillmentStatus === 'fulfilled') return 'delivered'
+        if (fulfillmentStatus === 'partial') return 'shipped'
+        if (shopifyStatus === 'open') return 'processing'
+        return 'pending'
+      }
+
+      const orderToUpsert = {
+        user_id: integration.user_id,
+        customer_id,
+        order_number: order.order_number?.toString() || order.id.toString(),
+        status: mapShopifyStatus(order.financial_status, order.fulfillment_status),
+        total_amount: parseFloat(order.total_price || '0'),
+        currency: order.currency || 'EUR',
+        payment_status: order.financial_status === 'paid' ? 'paid' as const : 'pending' as const,
+        shipping_address: order.shipping_address,
+        billing_address: order.billing_address,
+        external_id: order.id.toString(),
+        external_platform: 'shopify',
+        order_items: order.line_items?.map((item: any) => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: parseFloat(item.price),
+          sku: item.sku,
+          variant_title: item.variant_title
+        })),
+        attributes: {
+          tags: order.tags,
+          note: order.note,
+          created_at: order.created_at,
+          processed_at: order.processed_at
+        },
+        created_at: order.created_at,
+        updated_at: order.updated_at
+      }
+
+      const { error } = await supabaseClient
+        .from('orders')
+        .upsert(orderToUpsert, { 
+          onConflict: 'external_id,user_id',
+          ignoreDuplicates: false 
+        })
+
+      if (error) {
+        console.error('Order upsert error:', error)
+      } else {
+        totalOrders++
+      }
+    }
+
+    // Check for next page
     const linkHeader = response.headers.get('Link')
     if (linkHeader && linkHeader.includes('rel="next"')) {
       const nextMatch = linkHeader.match(/<[^>]*[?&]page_info=([^&>]*).*?>;\s*rel="next"/)
@@ -334,94 +429,12 @@ async function syncShopifyOrders(supabaseClient: any, integration: any, shopifyD
     } else {
       hasNextPage = false
     }
+    
+    pageCount++
   }
 
-  console.log(`Fetched ${allOrders.length} orders from Shopify`)
-
-  // Transform and upsert orders
-  for (const order of allOrders) {
-    // Create or get customer
-    let customer_id = null
-    if (order.customer) {
-      const { data: existingCustomer } = await supabaseClient
-        .from('customers')
-        .select('id')
-        .eq('email', order.customer.email)
-        .eq('user_id', integration.user_id)
-        .single()
-
-      if (existingCustomer) {
-        customer_id = existingCustomer.id
-      } else {
-        const { data: newCustomer, error: customerError } = await supabaseClient
-          .from('customers')
-          .insert({
-            user_id: integration.user_id,
-            name: `${order.customer.first_name} ${order.customer.last_name}`,
-            email: order.customer.email,
-            phone: order.customer.phone,
-            country: order.shipping_address?.country
-          })
-          .select('id')
-          .single()
-
-        if (!customerError && newCustomer) {
-          customer_id = newCustomer.id
-        }
-      }
-    }
-
-    // Map Shopify status to our system
-    const mapShopifyStatus = (shopifyStatus: string, fulfillmentStatus: string) => {
-      if (shopifyStatus === 'cancelled') return 'cancelled'
-      if (fulfillmentStatus === 'fulfilled') return 'delivered'
-      if (fulfillmentStatus === 'partial') return 'shipped'
-      if (shopifyStatus === 'open') return 'processing'
-      return 'pending'
-    }
-
-    const orderToUpsert = {
-      user_id: integration.user_id,
-      customer_id,
-      order_number: order.order_number?.toString() || order.id.toString(),
-      status: mapShopifyStatus(order.financial_status, order.fulfillment_status),
-      total_amount: parseFloat(order.total_price || '0'),
-      currency: order.currency || 'EUR',
-      payment_status: order.financial_status === 'paid' ? 'paid' as const : 'pending' as const,
-      shipping_address: order.shipping_address,
-      billing_address: order.billing_address,
-      external_id: order.id.toString(),
-      external_platform: 'shopify',
-      order_items: order.line_items?.map((item: any) => ({
-        name: item.name,
-        quantity: item.quantity,
-        price: parseFloat(item.price),
-        sku: item.sku,
-        variant_title: item.variant_title
-      })),
-      attributes: {
-        tags: order.tags,
-        note: order.note,
-        created_at: order.created_at,
-        processed_at: order.processed_at
-      },
-      created_at: order.created_at,
-      updated_at: order.updated_at
-    }
-
-    const { error } = await supabaseClient
-      .from('orders')
-      .upsert(orderToUpsert, { 
-        onConflict: 'external_id,user_id',
-        ignoreDuplicates: false 
-      })
-
-    if (error) {
-      console.error('Order upsert error:', error)
-    }
-  }
-
-  return allOrders.length
+  console.log(`Successfully synced ${totalOrders} orders from Shopify`)
+  return totalOrders
 }
 
 async function syncWooCommerceData(integration: any, syncType: string) {
