@@ -76,9 +76,19 @@ export function ProductVariantManager({
   const [editingVariant, setEditingVariant] = useState<string | null>(null)
   const [deletingVariant, setDeletingVariant] = useState<string | null>(null)
   const [showBulkUpload, setShowBulkUpload] = useState(false)
+  const [showAutoGenerate, setShowAutoGenerate] = useState(false)
   const [csvData, setCsvData] = useState<CSVVariant[]>([])
   const [csvErrors, setCsvErrors] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [autoGenOptions, setAutoGenOptions] = useState({
+    colors: '',
+    sizes: '',
+    materials: '',
+    basePrice: '',
+    baseCostPrice: '',
+    baseStock: '',
+  })
+  const [generatedVariants, setGeneratedVariants] = useState<any[]>([])
   const [newVariant, setNewVariant] = useState({
     name: '',
     variant_sku: '',
@@ -441,6 +451,166 @@ Blue / Medium,PRD-BLU-MD,29.99,15.00,80,Blue,Medium`
     setNewVariant({ ...newVariant, options: rest })
   }
 
+  const generateVariantCombinations = () => {
+    const colors = autoGenOptions.colors
+      .split(',')
+      .map((c) => c.trim())
+      .filter((c) => c)
+    const sizes = autoGenOptions.sizes
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s)
+    const materials = autoGenOptions.materials
+      .split(',')
+      .map((m) => m.trim())
+      .filter((m) => m)
+
+    if (colors.length === 0 && sizes.length === 0 && materials.length === 0) {
+      toast({
+        title: 'No options provided',
+        description: 'Please enter at least one option (color, size, or material)',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const basePrice = parseFloat(autoGenOptions.basePrice) || 0
+    const baseCostPrice = autoGenOptions.baseCostPrice
+      ? parseFloat(autoGenOptions.baseCostPrice)
+      : null
+    const baseStock = autoGenOptions.baseStock ? parseInt(autoGenOptions.baseStock) : null
+
+    const combinations: any[] = []
+
+    // Generate all combinations
+    if (colors.length > 0 && sizes.length > 0 && materials.length > 0) {
+      // All three options
+      colors.forEach((color) => {
+        sizes.forEach((size) => {
+          materials.forEach((material) => {
+            combinations.push({
+              name: `${color} / ${size} / ${material}`,
+              variant_sku: `${color.substring(0, 3).toUpperCase()}-${size.toUpperCase()}-${material.substring(0, 3).toUpperCase()}`,
+              price: basePrice,
+              cost_price: baseCostPrice,
+              stock_quantity: baseStock,
+              options: { color, size, material },
+            })
+          })
+        })
+      })
+    } else if (colors.length > 0 && sizes.length > 0) {
+      // Color + Size
+      colors.forEach((color) => {
+        sizes.forEach((size) => {
+          combinations.push({
+            name: `${color} / ${size}`,
+            variant_sku: `${color.substring(0, 3).toUpperCase()}-${size.toUpperCase()}`,
+            price: basePrice,
+            cost_price: baseCostPrice,
+            stock_quantity: baseStock,
+            options: { color, size },
+          })
+        })
+      })
+    } else if (colors.length > 0 && materials.length > 0) {
+      // Color + Material
+      colors.forEach((color) => {
+        materials.forEach((material) => {
+          combinations.push({
+            name: `${color} / ${material}`,
+            variant_sku: `${color.substring(0, 3).toUpperCase()}-${material.substring(0, 3).toUpperCase()}`,
+            price: basePrice,
+            cost_price: baseCostPrice,
+            stock_quantity: baseStock,
+            options: { color, material },
+          })
+        })
+      })
+    } else if (sizes.length > 0 && materials.length > 0) {
+      // Size + Material
+      sizes.forEach((size) => {
+        materials.forEach((material) => {
+          combinations.push({
+            name: `${size} / ${material}`,
+            variant_sku: `${size.toUpperCase()}-${material.substring(0, 3).toUpperCase()}`,
+            price: basePrice,
+            cost_price: baseCostPrice,
+            stock_quantity: baseStock,
+            options: { size, material },
+          })
+        })
+      })
+    } else if (colors.length > 0) {
+      // Only colors
+      colors.forEach((color) => {
+        combinations.push({
+          name: color,
+          variant_sku: color.substring(0, 3).toUpperCase(),
+          price: basePrice,
+          cost_price: baseCostPrice,
+          stock_quantity: baseStock,
+          options: { color },
+        })
+      })
+    } else if (sizes.length > 0) {
+      // Only sizes
+      sizes.forEach((size) => {
+        combinations.push({
+          name: size,
+          variant_sku: size.toUpperCase(),
+          price: basePrice,
+          cost_price: baseCostPrice,
+          stock_quantity: baseStock,
+          options: { size },
+        })
+      })
+    } else if (materials.length > 0) {
+      // Only materials
+      materials.forEach((material) => {
+        combinations.push({
+          name: material,
+          variant_sku: material.substring(0, 3).toUpperCase(),
+          price: basePrice,
+          cost_price: baseCostPrice,
+          stock_quantity: baseStock,
+          options: { material },
+        })
+      })
+    }
+
+    setGeneratedVariants(combinations)
+    toast({
+      title: 'Variants generated',
+      description: `${combinations.length} variant combinations created`,
+    })
+  }
+
+  const handleAutoGenerate = () => {
+    if (generatedVariants.length === 0) {
+      toast({
+        title: 'No variants generated',
+        description: 'Please generate variants first',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    bulkCreateVariantsMutation.mutate(generatedVariants)
+  }
+
+  const resetAutoGenerate = () => {
+    setAutoGenOptions({
+      colors: '',
+      sizes: '',
+      materials: '',
+      basePrice: '',
+      baseCostPrice: '',
+      baseStock: '',
+    })
+    setGeneratedVariants([])
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -449,10 +619,18 @@ Blue / Medium,PRD-BLU-MD,29.99,15.00,80,Blue,Medium`
           <Button
             size="sm"
             variant="outline"
+            onClick={() => setShowAutoGenerate(true)}
+          >
+            <Package className="h-4 w-4 mr-2" />
+            Auto Generate
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
             onClick={() => setShowBulkUpload(true)}
           >
             <Upload className="h-4 w-4 mr-2" />
-            Bulk Import CSV
+            Import CSV
           </Button>
           <Button
             size="sm"
@@ -765,6 +943,225 @@ Blue / Medium,PRD-BLU-MD,29.99,15.00,80,Blue,Medium`
           ))
         )}
       </div>
+
+      <Dialog open={showAutoGenerate} onOpenChange={setShowAutoGenerate}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Auto-Generate Variants</DialogTitle>
+            <DialogDescription>
+              Enter your product options and automatically generate all combinations. Separate
+              multiple values with commas.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Product Options</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Colors (comma-separated)</Label>
+                    <Input
+                      placeholder="e.g., Red, Blue, Green, Black"
+                      value={autoGenOptions.colors}
+                      onChange={(e) =>
+                        setAutoGenOptions({ ...autoGenOptions, colors: e.target.value })
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Example: Red, Blue, Green
+                    </p>
+                  </div>
+                  <div>
+                    <Label>Sizes (comma-separated)</Label>
+                    <Input
+                      placeholder="e.g., XS, S, M, L, XL"
+                      value={autoGenOptions.sizes}
+                      onChange={(e) =>
+                        setAutoGenOptions({ ...autoGenOptions, sizes: e.target.value })
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Example: S, M, L, XL
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <Label>Materials (comma-separated) - Optional</Label>
+                    <Input
+                      placeholder="e.g., Cotton, Polyester, Wool"
+                      value={autoGenOptions.materials}
+                      onChange={(e) =>
+                        setAutoGenOptions({ ...autoGenOptions, materials: e.target.value })
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Example: Cotton, Polyester
+                    </p>
+                  </div>
+                </div>
+
+                <div className="border-t pt-4">
+                  <Label className="mb-3 block">Base Pricing & Inventory</Label>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label>Base Price *</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="29.99"
+                        value={autoGenOptions.basePrice}
+                        onChange={(e) =>
+                          setAutoGenOptions({
+                            ...autoGenOptions,
+                            basePrice: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label>Base Cost Price</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="15.00"
+                        value={autoGenOptions.baseCostPrice}
+                        onChange={(e) =>
+                          setAutoGenOptions({
+                            ...autoGenOptions,
+                            baseCostPrice: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label>Base Stock</Label>
+                      <Input
+                        type="number"
+                        placeholder="50"
+                        value={autoGenOptions.baseStock}
+                        onChange={(e) =>
+                          setAutoGenOptions({
+                            ...autoGenOptions,
+                            baseStock: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={generateVariantCombinations}
+                    className="flex-1"
+                  >
+                    <Package className="h-4 w-4 mr-2" />
+                    Generate Combinations
+                  </Button>
+                  <Button variant="outline" onClick={resetAutoGenerate}>
+                    Reset
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {generatedVariants.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm flex items-center justify-between">
+                    <span>Generated Variants ({generatedVariants.length})</span>
+                    <Badge variant="secondary">{generatedVariants.length} variants</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {generatedVariants.map((variant, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 border rounded hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <p className="font-semibold">{variant.name}</p>
+                            <Badge variant="outline" className="font-mono text-xs">
+                              {variant.variant_sku}
+                            </Badge>
+                          </div>
+                          <div className="flex gap-4 mt-2 text-sm">
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <DollarSign className="h-3 w-3" />
+                              <span>Price: ${variant.price.toFixed(2)}</span>
+                            </div>
+                            {variant.cost_price && (
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <span>Cost: ${variant.cost_price.toFixed(2)}</span>
+                              </div>
+                            )}
+                            {variant.stock_quantity !== null && (
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <Package className="h-3 w-3" />
+                                <span>Stock: {variant.stock_quantity}</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {Object.entries(variant.options).map(([key, value]) => (
+                              <Badge key={key} variant="secondary" className="text-xs">
+                                {key}: {String(value)}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 p-4 bg-muted rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <Package className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm">Ready to Create</p>
+                        <p className="text-xs text-muted-foreground">
+                          {generatedVariants.length} variants will be created with the options
+                          you specified. You can edit individual variants after creation.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAutoGenerate(false)
+                  resetAutoGenerate()
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAutoGenerate}
+                disabled={generatedVariants.length === 0 || bulkCreateVariantsMutation.isPending}
+              >
+                {bulkCreateVariantsMutation.isPending ? (
+                  <>Creating...</>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create {generatedVariants.length} Variants
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showBulkUpload} onOpenChange={setShowBulkUpload}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
