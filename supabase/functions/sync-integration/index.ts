@@ -262,7 +262,7 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
       brand: product.vendor || '',
       tags: product.tags ? product.tags.split(',').map((t: string) => t.trim()) : [],
       image_urls: product.images?.map((img: any) => img.src) || [],
-      status: product.status === 'active' ? 'active' : 'inactive',
+      status: product.status === 'active' ? 'published' : 'draft',
       seo_title: product.title,
       seo_description: product.body_html?.replace(/<[^>]*>?/gm, '').substring(0, 160) || '',
       weight: product.variants?.[0]?.weight || null,
