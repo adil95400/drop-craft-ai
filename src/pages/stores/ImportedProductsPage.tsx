@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Package, Search, ExternalLink, RefreshCw, Filter, X } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Loader2, Package, Search, ExternalLink, RefreshCw, Filter, X, Trash2, Download, CheckSquare } from 'lucide-react'
 import { BackButton } from '@/components/navigation/BackButton'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import Papa from 'papaparse'
 import {
   Select,
   SelectContent,
@@ -17,6 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface ImportedProduct {
   id: string
@@ -41,10 +53,14 @@ interface ImportedProduct {
 export default function ImportedProductsPage() {
   const { user } = useAuth()
   const { toast } = useToast()
+  const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState('')
   const [platformFilter, setPlatformFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set())
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [bulkStatus, setBulkStatus] = useState<string>('')
   
   const debouncedSearch = useDebouncedValue(searchTerm, 300)
 
@@ -90,6 +106,134 @@ export default function ImportedProductsPage() {
     setPlatformFilter('all')
     setCategoryFilter('all')
     setStatusFilter('all')
+  }
+
+  const toggleProductSelection = (productId: string) => {
+    setSelectedProducts(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(productId)) {
+        newSet.delete(productId)
+      } else {
+        newSet.add(productId)
+      }
+      return newSet
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedProducts.size === filteredProducts.length) {
+      setSelectedProducts(new Set())
+    } else {
+      setSelectedProducts(new Set(filteredProducts.map(p => p.id)))
+    }
+  }
+
+  const clearSelection = () => {
+    setSelectedProducts(new Set())
+  }
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (productIds: string[]) => {
+      const { error } = await supabase
+        .from('imported_products')
+        .delete()
+        .in('id', productIds)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['imported-products'] })
+      toast({
+        title: "Produits supprimés",
+        description: `${selectedProducts.size} produit(s) supprimé(s) avec succès`
+      })
+      clearSelection()
+      setShowDeleteDialog(false)
+    },
+    onError: (error) => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer les produits",
+        variant: "destructive"
+      })
+    }
+  })
+
+  const bulkStatusMutation = useMutation({
+    mutationFn: async ({ productIds, status }: { productIds: string[], status: string }) => {
+      const { error } = await supabase
+        .from('imported_products')
+        .update({ status })
+        .in('id', productIds)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['imported-products'] })
+      toast({
+        title: "Statut mis à jour",
+        description: `${selectedProducts.size} produit(s) mis à jour`
+      })
+      clearSelection()
+      setBulkStatus('')
+    },
+    onError: () => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour les produits",
+        variant: "destructive"
+      })
+    }
+  })
+
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate(Array.from(selectedProducts))
+  }
+
+  const handleBulkStatusChange = (status: string) => {
+    bulkStatusMutation.mutate({ 
+      productIds: Array.from(selectedProducts), 
+      status 
+    })
+  }
+
+  const handleExportCSV = () => {
+    const selectedProductsData = products.filter(p => selectedProducts.has(p.id))
+    
+    const csvData = selectedProductsData.map(product => ({
+      'ID': product.id,
+      'Nom': product.name,
+      'Description': product.description || '',
+      'Prix': product.price,
+      'Prix de revient': product.cost_price || '',
+      'Devise': product.currency,
+      'SKU': product.sku || '',
+      'Catégorie': product.category || '',
+      'Marque': product.brand || '',
+      'Stock': product.stock_quantity || 0,
+      'Statut': product.status,
+      'Plateforme': product.supplier_name || '',
+      'ID Externe': product.supplier_product_id || '',
+      'Tags': product.tags?.join(', ') || '',
+      'Date de création': new Date(product.created_at).toLocaleDateString('fr-FR')
+    }))
+
+    const csv = Papa.unparse(csvData)
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', `produits_importes_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    toast({
+      title: "Export réussi",
+      description: `${selectedProducts.size} produit(s) exporté(s)`
+    })
   }
 
   const stats = {
@@ -186,6 +330,60 @@ export default function ImportedProductsPage() {
           </Card>
         </div>
 
+        {/* Bulk Actions Toolbar */}
+        {selectedProducts.size > 0 && (
+          <Card className="border-primary bg-primary/5">
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CheckSquare className="h-5 w-5 text-primary" />
+                  <span className="font-semibold text-foreground">
+                    {selectedProducts.size} produit(s) sélectionné(s)
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Select value={bulkStatus} onValueChange={(status) => {
+                    setBulkStatus(status)
+                    handleBulkStatusChange(status)
+                  }}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Changer le statut" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="published">Publié</SelectItem>
+                      <SelectItem value="draft">Brouillon</SelectItem>
+                      <SelectItem value="archived">Archivé</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportCSV}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export CSV
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setShowDeleteDialog(true)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Supprimer
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearSelection}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Search and filters */}
         <Card>
           <CardContent className="pt-6">
@@ -193,17 +391,27 @@ export default function ImportedProductsPage() {
               <div className="flex items-center gap-2 mb-4">
                 <Filter className="h-5 w-5 text-muted-foreground" />
                 <h3 className="font-semibold text-foreground">Recherche et Filtres</h3>
-                {hasActiveFilters && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearFilters}
-                    className="ml-auto"
-                  >
-                    <X className="h-4 w-4 mr-1" />
-                    Effacer les filtres
-                  </Button>
-                )}
+                <div className="ml-auto flex items-center gap-2">
+                  {filteredProducts.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={toggleSelectAll}
+                    >
+                      {selectedProducts.size === filteredProducts.length ? 'Tout désélectionner' : 'Tout sélectionner'}
+                    </Button>
+                  )}
+                  {hasActiveFilters && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearFilters}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Effacer les filtres
+                    </Button>
+                  )}
+                </div>
               </div>
               
               <div className="grid gap-4 md:grid-cols-4">
@@ -288,7 +496,14 @@ export default function ImportedProductsPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredProducts.map((product) => (
-            <Card key={product.id} className="hover:shadow-lg transition-shadow">
+            <Card key={product.id} className="hover:shadow-lg transition-shadow relative">
+              <div className="absolute top-4 left-4 z-10">
+                <Checkbox
+                  checked={selectedProducts.has(product.id)}
+                  onCheckedChange={() => toggleProductSelection(product.id)}
+                  className="bg-background border-2"
+                />
+              </div>
               <CardHeader className="pb-3">
                 {product.image_urls && product.image_urls.length > 0 && (
                   <div className="w-full h-48 mb-3 overflow-hidden rounded-lg bg-muted">
@@ -369,6 +584,35 @@ export default function ImportedProductsPage() {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer {selectedProducts.size} produit(s) ? 
+              Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkDeleteMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Suppression...
+                </>
+              ) : (
+                'Supprimer'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
