@@ -5,10 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Package, Search, ExternalLink, RefreshCw, Filter } from 'lucide-react'
+import { Loader2, Package, Search, ExternalLink, RefreshCw, Filter, X } from 'lucide-react'
 import { BackButton } from '@/components/navigation/BackButton'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface ImportedProduct {
   id: string
@@ -35,6 +43,10 @@ export default function ImportedProductsPage() {
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [platformFilter, setPlatformFilter] = useState<string>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  
+  const debouncedSearch = useDebouncedValue(searchTerm, 300)
 
   const { data: products = [], isLoading, refetch } = useQuery({
     queryKey: ['imported-products', user?.id],
@@ -54,17 +66,31 @@ export default function ImportedProductsPage() {
   })
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = !searchTerm || 
-      product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.brand?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = !debouncedSearch || 
+      product.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      product.sku?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      product.category?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      product.brand?.toLowerCase().includes(debouncedSearch.toLowerCase())
     
     const matchesPlatform = platformFilter === 'all' || product.supplier_name === platformFilter
+    const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter
+    const matchesStatus = statusFilter === 'all' || product.status === statusFilter
     
-    return matchesSearch && matchesPlatform
+    return matchesSearch && matchesPlatform && matchesCategory && matchesStatus
   })
 
   const platforms = Array.from(new Set(products.map(p => p.supplier_name).filter(Boolean)))
+  const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean)))
+  const statuses = Array.from(new Set(products.map(p => p.status).filter(Boolean)))
+  
+  const hasActiveFilters = platformFilter !== 'all' || categoryFilter !== 'all' || statusFilter !== 'all' || searchTerm !== ''
+  
+  const clearFilters = () => {
+    setSearchTerm('')
+    setPlatformFilter('all')
+    setCategoryFilter('all')
+    setStatusFilter('all')
+  }
 
   const stats = {
     total: products.length,
@@ -161,37 +187,87 @@ export default function ImportedProductsPage() {
         </div>
 
         {/* Search and filters */}
-        <div className="flex gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher par nom, SKU ou marque..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant={platformFilter === 'all' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPlatformFilter('all')}
-            >
-              Toutes
-            </Button>
-            {platforms.map(platform => (
-              <Button
-                key={platform}
-                variant={platformFilter === platform ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setPlatformFilter(platform)}
-                className="capitalize"
-              >
-                {platform}
-              </Button>
-            ))}
-          </div>
-        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Filter className="h-5 w-5 text-muted-foreground" />
+                <h3 className="font-semibold text-foreground">Recherche et Filtres</h3>
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="ml-auto"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Effacer les filtres
+                  </Button>
+                )}
+              </div>
+              
+              <div className="grid gap-4 md:grid-cols-4">
+                <div className="relative md:col-span-2">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Rechercher par nom, SKU, catégorie ou marque..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+
+                <Select value={platformFilter} onValueChange={setPlatformFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Plateforme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les plateformes</SelectItem>
+                    {platforms.map(platform => (
+                      <SelectItem key={platform} value={platform} className="capitalize">
+                        {platform}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Catégorie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les catégories</SelectItem>
+                    {categories.map(category => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex gap-2">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    {statuses.map(status => (
+                      <SelectItem key={status} value={status} className="capitalize">
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <div className="text-sm text-muted-foreground flex items-center ml-auto">
+                  {filteredProducts.length} produit{filteredProducts.length !== 1 ? 's' : ''} trouvé{filteredProducts.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Products Grid */}
