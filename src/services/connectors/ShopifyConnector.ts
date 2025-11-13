@@ -28,14 +28,41 @@ export class ShopifyConnector extends BaseConnector {
 
   async fetchProducts(options?: FetchOptions): Promise<SupplierProduct[]> {
     try {
-      const params = new URLSearchParams({
-        limit: String(options?.limit || 50),
-        page: String(options?.page || 1),
-      });
+      let allProducts: any[] = [];
+      let nextPageInfo: string | null = null;
+      let hasNextPage = true;
+      const limit = options?.limit || 250; // Use 250 as max per page
 
-      const response = await this.makeRequest(`/products.json?${params}`);
-      
-      return response.products.map((product: any) => this.normalizeShopifyProduct(product));
+      console.log('Starting Shopify product fetch with pagination...');
+
+      // Paginate through all products
+      while (hasNextPage) {
+        const url = `/products.json?limit=${limit}${nextPageInfo ? `&page_info=${nextPageInfo}` : ''}`;
+        const response = await this.makeRequest(url);
+        
+        const products = response.products || [];
+        allProducts = allProducts.concat(products);
+        
+        console.log(`Fetched ${products.length} products. Total so far: ${allProducts.length}`);
+
+        // Check for next page using Link header
+        const linkHeader = response.headers?.get?.('Link');
+        if (linkHeader && linkHeader.includes('rel="next"')) {
+          const nextMatch = linkHeader.match(/<[^>]*[?&]page_info=([^&>]*).*?>;\s*rel="next"/);
+          nextPageInfo = nextMatch ? nextMatch[1] : null;
+          hasNextPage = !!nextPageInfo;
+        } else {
+          hasNextPage = false;
+        }
+        
+        // Respect rate limits
+        if (hasNextPage) {
+          await this.delay();
+        }
+      }
+
+      console.log(`✅ Completed fetching ${allProducts.length} products from Shopify`);
+      return allProducts.map((product: any) => this.normalizeShopifyProduct(product));
     } catch (error) {
       this.handleError(error, 'Fetch products');
       return [];
@@ -140,6 +167,32 @@ export class ShopifyConnector extends BaseConnector {
       this.handleError(error, 'Update order status');
       return false;
     }
+  }
+
+  // Override makeRequest to include headers for pagination
+  protected async makeRequest(endpoint: string, options: RequestInit = {}): Promise<any> {
+    const url = `${this.baseUrl}${endpoint}`;
+    
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...this.getAuthHeaders(),
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // Return data with headers attached for pagination support
+    return {
+      ...data,
+      headers: response.headers
+    };
   }
 
   private normalizeShopifyProduct(product: any): SupplierProduct {
