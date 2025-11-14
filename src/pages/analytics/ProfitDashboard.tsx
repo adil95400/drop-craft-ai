@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import type { Expense } from '@/types/database'
 import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RealTimeProfitChart } from '@/components/profit/RealTimeProfitChart'
@@ -28,42 +29,41 @@ export default function ProfitDashboard() {
       if (ordersError) throw ordersError
 
       // Fetch expenses
-      const { data: expenses, error: expensesError } = await supabase
+      const { data: expenses, error: expensesError } = (await supabase
         .from('expenses')
         .select('*')
-        .gte('date', startDate.toISOString())
+        .gte('date', startDate.toISOString())) as any
 
       if (expensesError) throw expensesError
 
       // Calculate metrics
       const totalRevenue = orders?.reduce((sum, order) => sum + order.total_amount, 0) || 0
-      const totalExpenses = expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0
+      const totalExpenses = (expenses as Expense[])?.reduce((sum, exp) => sum + Number(exp.amount || 0), 0) || 0
       const netProfit = totalRevenue - totalExpenses
       const avgMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100) : 0
 
       // Calculate daily profit
-      const dailyProfit = orders?.reduce((acc: any[], order) => {
+      const dailyProfit: any[] = []
+      orders?.forEach(order => {
         const date = new Date(order.created_at).toLocaleDateString('fr-FR')
-        const existing = acc.find(d => d.date === date)
+        const existing = dailyProfit.find(d => d.date === date)
         
         if (existing) {
           existing.revenue += order.total_amount
         } else {
-          acc.push({ date, revenue: order.total_amount, expenses: 0, profit: 0 })
+          dailyProfit.push({ date, revenue: order.total_amount, expenses: 0, profit: 0 })
         }
-        
-        return acc
-      }, [])
+      })
 
       // Add expenses to daily profit
-      expenses?.forEach(expense => {
+      (expenses as Expense[])?.forEach(expense => {
         const date = new Date(expense.date).toLocaleDateString('fr-FR')
         const existing = dailyProfit?.find(d => d.date === date)
         
         if (existing) {
-          existing.expenses += expense.amount
+          existing.expenses += Number(expense.amount || 0)
         } else {
-          dailyProfit?.push({ date, revenue: 0, expenses: expense.amount, profit: 0 })
+          dailyProfit?.push({ date, revenue: 0, expenses: Number(expense.amount || 0), profit: 0 })
         }
       })
 
@@ -196,7 +196,7 @@ export default function ProfitDashboard() {
         </TabsContent>
 
         <TabsContent value="expenses">
-          <ExpenseTracker expenses={profitData?.expenses || []} />
+          <ExpenseTracker expenses={(profitData?.expenses as Expense[]) || []} />
         </TabsContent>
       </Tabs>
     </div>

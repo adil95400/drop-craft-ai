@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import type { SupplierRating } from '@/types/database'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -8,31 +9,19 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { TrendingUp, TrendingDown, Minus, RefreshCw, Star, Clock, Package, DollarSign, MessageSquare } from 'lucide-react'
 
-interface SupplierRating {
-  id: string
-  supplier_id: string
-  reliability_score: number
-  quality_score: number
-  shipping_score: number
-  price_score: number
-  communication_score: number
-  overall_score: number
-  updated_at: string
-}
-
 export const SupplierRatingDashboard = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [selectedSupplier, setSelectedSupplier] = useState<string | null>(null)
 
   // Fetch supplier ratings
-  const { data: ratings, isLoading } = useQuery({
+  const { data: ratings, isLoading } = useQuery<SupplierRating[]>({
     queryKey: ['supplier-ratings'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from('supplier_ratings')
         .select('*')
-        .order('overall_score', { ascending: false })
+        .order('overall_score', { ascending: false })) as any
 
       if (error) throw error
       return data as SupplierRating[]

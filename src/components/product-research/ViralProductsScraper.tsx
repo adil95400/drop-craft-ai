@@ -4,28 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, TrendingUp, ExternalLink, Heart, MessageCircle, Share2, Eye } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
+import type { ViralProduct } from '@/types/database'
 import { useToast } from '@/hooks/use-toast'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-
-interface ViralProduct {
-  id: string
-  product_name: string
-  platform: string
-  url: string
-  viral_score: number
-  views: number
-  likes: number
-  comments: number
-  shares: number
-  engagement_rate: number
-  price?: number
-  estimated_margin?: number
-  thumbnail_url?: string
-  hashtags?: string[]
-  creator_username?: string
-  analyzed_at: string
-}
 
 export const ViralProductsScraper = () => {
   const [hashtags, setHashtags] = useState('tiktokmademebuyit, amazonfinds, dropshipping')
@@ -34,14 +16,14 @@ export const ViralProductsScraper = () => {
   const queryClient = useQueryClient()
 
   // Récupérer les produits viraux existants
-  const { data: viralProducts, isLoading } = useQuery({
+  const { data: viralProducts, isLoading } = useQuery<ViralProduct[]>({
     queryKey: ['viral-products'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from('viral_products')
         .select('*')
         .order('viral_score', { ascending: false })
-        .limit(20)
+        .limit(20)) as any
 
       if (error) throw error
       return data as ViralProduct[]
