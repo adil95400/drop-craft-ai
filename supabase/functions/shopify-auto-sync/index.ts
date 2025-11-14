@@ -111,6 +111,30 @@ async function syncShopifyProducts(supabaseClient: any, integration: any) {
   const shopifyDomain = credentials.shop_domain
   const accessToken = credentials.access_token
 
+  // Vérifier la validité du token avant la synchronisation
+  console.log('🔐 Vérification du token Shopify...')
+  const testResponse = await fetch(`https://${shopifyDomain}/admin/api/2023-10/shop.json`, {
+    headers: { 'X-Shopify-Access-Token': accessToken }
+  })
+
+  if (!testResponse.ok) {
+    const errorText = await testResponse.text()
+    console.error('❌ Token Shopify invalide:', testResponse.status, errorText)
+    
+    // Mettre à jour le statut de l'intégration
+    await supabaseClient
+      .from('store_integrations')
+      .update({ 
+        connection_status: 'error',
+        sync_error: `Token invalide: ${testResponse.status}`
+      })
+      .eq('id', integration.id)
+    
+    throw new Error(`Token Shopify invalide (${testResponse.status}). Veuillez reconnecter votre magasin Shopify.`)
+  }
+
+  console.log('✅ Token valide, démarrage de la synchronisation...')
+
   let allProducts: any[] = []
   let nextPageInfo = null
   let hasNextPage = true

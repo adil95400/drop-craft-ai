@@ -83,10 +83,12 @@ export function useOptimizedImport() {
             sku: item.sku,
             price: item.price,
             cost_price: item.cost_price || 0,
-            stock: item.stock || 0,
+            stock_quantity: item.stock || 0,
             category: item.category,
             description: item.description,
-            image_url: item.image_url,
+            image_urls: item.image_url ? [item.image_url] : [],
+            supplier_name: 'Import manuel',
+            status: 'draft' as const,
           }));
 
           const { error } = await supabase
@@ -94,10 +96,11 @@ export function useOptimizedImport() {
             .insert(products);
 
           if (error) {
+            console.error('❌ Erreur insertion batch:', error);
             failed += batch.length;
             allErrors.push({
               row: i * batchSize,
-              error: error.message
+              error: error.message || 'Erreur d\'insertion dans la base de données'
             });
           } else {
             imported += batch.length;
