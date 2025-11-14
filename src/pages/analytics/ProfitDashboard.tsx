@@ -29,10 +29,10 @@ export default function ProfitDashboard() {
       if (ordersError) throw ordersError
 
       // Fetch expenses
-      const { data: expenses, error: expensesError } = (await supabase
+      const { data: expenses, error: expensesError } = await (supabase as any)
         .from('expenses')
         .select('*')
-        .gte('date', startDate.toISOString())) as any
+        .gte('date', startDate.toISOString())
 
       if (expensesError) throw expensesError
 
@@ -43,32 +43,37 @@ export default function ProfitDashboard() {
       const avgMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100) : 0
 
       // Calculate daily profit
-      const dailyProfit: any[] = []
-      orders?.forEach(order => {
-        const date = new Date(order.created_at).toLocaleDateString('fr-FR')
-        const existing = dailyProfit.find(d => d.date === date)
-        
-        if (existing) {
-          existing.revenue += order.total_amount
-        } else {
-          dailyProfit.push({ date, revenue: order.total_amount, expenses: 0, profit: 0 })
-        }
-      })
+      const dailyProfit: Array<{ date: string; revenue: number; expenses: number; profit: number }> = []
+      
+      if (orders) {
+        orders.forEach(order => {
+          const date = new Date(order.created_at).toLocaleDateString('fr-FR')
+          const existing = dailyProfit.find(d => d.date === date)
+          
+          if (existing) {
+            existing.revenue += order.total_amount
+          } else {
+            dailyProfit.push({ date, revenue: order.total_amount, expenses: 0, profit: 0 })
+          }
+        })
+      }
 
       // Add expenses to daily profit
-      (expenses as Expense[])?.forEach(expense => {
-        const date = new Date(expense.date).toLocaleDateString('fr-FR')
-        const existing = dailyProfit?.find(d => d.date === date)
-        
-        if (existing) {
-          existing.expenses += Number(expense.amount || 0)
-        } else {
-          dailyProfit?.push({ date, revenue: 0, expenses: Number(expense.amount || 0), profit: 0 })
-        }
-      })
+      if (expenses) {
+        (expenses as Expense[]).forEach(expense => {
+          const date = new Date(expense.date).toLocaleDateString('fr-FR')
+          const existing = dailyProfit.find(d => d.date === date)
+          
+          if (existing) {
+            existing.expenses += Number(expense.amount || 0)
+          } else {
+            dailyProfit.push({ date, revenue: 0, expenses: Number(expense.amount || 0), profit: 0 })
+          }
+        })
+      }
 
       // Calculate daily net profit
-      dailyProfit?.forEach(day => {
+      dailyProfit.forEach(day => {
         day.profit = day.revenue - day.expenses
       })
 

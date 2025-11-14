@@ -19,11 +19,11 @@ export const ViralProductsScraper = () => {
   const { data: viralProducts, isLoading } = useQuery<ViralProduct[]>({
     queryKey: ['viral-products'],
     queryFn: async () => {
-      const { data, error } = (await supabase
+      const { data, error } = await (supabase as any)
         .from('viral_products')
         .select('*')
         .order('viral_score', { ascending: false })
-        .limit(20)) as any
+        .limit(20)
 
       if (error) throw error
       return data as ViralProduct[]

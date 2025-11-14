@@ -53,7 +53,7 @@ export const ExpenseTracker = ({ expenses }: ExpenseTrackerProps) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const { data, error } = (await supabase
+      const { data, error } = await (supabase as any)
         .from('expenses')
         .insert([{
           user_id: user.id,
@@ -64,7 +64,7 @@ export const ExpenseTracker = ({ expenses }: ExpenseTrackerProps) => {
           recurring: false
         }])
         .select()
-        .single()) as any
+        .single()
 
       if (error) throw error
       return data
@@ -90,10 +90,10 @@ export const ExpenseTracker = ({ expenses }: ExpenseTrackerProps) => {
   // Delete expense mutation
   const deleteExpense = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = (await supabase
+      const { error } = await (supabase as any)
         .from('expenses')
         .delete()
-        .eq('id', id)) as any
+        .eq('id', id)
 
       if (error) throw error
     },
@@ -133,7 +133,7 @@ export const ExpenseTracker = ({ expenses }: ExpenseTrackerProps) => {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                label={(props: any) => `${props.name}: ${(props.percent * 100).toFixed(0)}%`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"

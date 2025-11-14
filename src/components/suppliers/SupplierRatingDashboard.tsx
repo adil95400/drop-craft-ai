@@ -18,10 +18,10 @@ export const SupplierRatingDashboard = () => {
   const { data: ratings, isLoading } = useQuery<SupplierRating[]>({
     queryKey: ['supplier-ratings'],
     queryFn: async () => {
-      const { data, error } = (await supabase
+      const { data, error } = await (supabase as any)
         .from('supplier_ratings')
         .select('*')
-        .order('overall_score', { ascending: false })) as any
+        .order('overall_score', { ascending: false })
 
       if (error) throw error
       return data as SupplierRating[]
