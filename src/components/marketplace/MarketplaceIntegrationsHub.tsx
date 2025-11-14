@@ -17,6 +17,7 @@ import {
   Clock,
   ExternalLink,
   BookOpen,
+  Play,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
@@ -114,6 +115,14 @@ const MARKETPLACE_CONFIGS = {
     icon: TrendingUp,
     color: 'from-red-500 to-orange-500',
     description: 'Global dropshipping platform',
+  },
+  
+  // Social Commerce
+  tiktok_shop: {
+    name: 'TikTok Shop',
+    icon: Play,
+    color: 'from-pink-500 to-purple-500',
+    description: 'Vente sociale sur TikTok',
   },
 }
 
@@ -231,6 +240,12 @@ export function MarketplaceIntegrationsHub() {
   }
 
   const handleConnect = async (platform: string) => {
+    // Redirect to Social Commerce page for TikTok Shop
+    if (platform === 'tiktok_shop') {
+      navigate('/social-commerce')
+      return
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
