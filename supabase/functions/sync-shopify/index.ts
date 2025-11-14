@@ -41,28 +41,29 @@ serve(async (req) => {
     }
 
     if (action === 'push_products') {
-      // Push selected products to Shopify
-      const { data: products } = await supabase
-        .from('products')
-        .select('*, inventory(*)')
+      // Push selected products to Shopify from imported_products
+      // Récupérer les données depuis imported_products au lieu de products
+      const { data: importedProducts } = await supabase
+        .from('imported_products')
+        .select('*')
         .in('id', productIds);
 
       const shopifyProducts = [];
       
-      for (const product of products || []) {
+      for (const product of importedProducts || []) {
         const shopifyProduct = {
-          title: product.title,
+          title: product.name,
           body_html: product.description || '',
-          vendor: product.vendor || 'Default',
-          product_type: 'Electronics',
+          vendor: product.brand || 'Default',
+          product_type: product.category || 'General',
           tags: product.tags?.join(', ') || '',
           variants: [{
             price: product.price.toString(),
             sku: product.sku,
-            inventory_quantity: product.inventory?.[0]?.stock || 0,
+            inventory_quantity: product.stock_quantity || 0,
             inventory_management: 'shopify'
           }],
-          images: product.images ? JSON.parse(product.images).map((url: string) => ({ src: url })) : []
+          images: product.image_urls?.map((url: string) => ({ src: url })) || []
         };
 
         // Create product in Shopify

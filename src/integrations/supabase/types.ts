@@ -12591,6 +12591,16 @@ export type Database = {
         }
         Relationships: []
       }
+      shopify_import_stats: {
+        Row: {
+          active_products: number | null
+          draft_products: number | null
+          imported_today: number | null
+          last_import: string | null
+          total_products: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_change_user_role: {
