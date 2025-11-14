@@ -18,6 +18,8 @@ import {
   ExternalLink,
   BookOpen,
   Play,
+  Instagram,
+  Facebook,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
@@ -129,6 +131,18 @@ const MARKETPLACE_CONFIGS = {
     icon: Play,
     color: 'from-pink-500 to-purple-500',
     description: 'Vente sociale sur TikTok',
+  },
+  instagram_shopping: {
+    name: 'Instagram Shopping',
+    icon: Instagram,
+    color: 'from-purple-600 via-pink-600 to-orange-500',
+    description: 'Vente sur Instagram',
+  },
+  facebook_shops: {
+    name: 'Facebook Shops',
+    icon: Facebook,
+    color: 'from-blue-600 to-blue-500',
+    description: 'Boutique Facebook',
   },
 }
 
@@ -246,8 +260,8 @@ export function MarketplaceIntegrationsHub() {
   }
 
   const handleConnect = async (platform: string) => {
-    // Redirect to Social Commerce page for TikTok Shop
-    if (platform === 'tiktok_shop') {
+    // Redirect to Social Commerce page for social platforms
+    if (platform === 'tiktok_shop' || platform === 'instagram_shopping' || platform === 'facebook_shops') {
       navigate('/social-commerce')
       return
     }
