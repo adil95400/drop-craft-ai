@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import type { Expense } from '@/types/database'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,14 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast'
 import { Plus, Trash2, DollarSign } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
-
-interface Expense {
-  id: string
-  category: string
-  amount: number
-  date: string
-  description?: string
-}
 
 interface ExpenseTrackerProps {
   expenses: Expense[]
@@ -56,21 +49,22 @@ export const ExpenseTracker = ({ expenses }: ExpenseTrackerProps) => {
 
   // Add expense mutation
   const addExpense = useMutation({
-    mutationFn: async (expense: typeof newExpense) => {
+    mutationFn: async (expense: { category: string; amount: number; description: string }) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from('expenses')
         .insert([{
           user_id: user.id,
           category: expense.category,
           amount: expense.amount,
           description: expense.description,
-          date: new Date().toISOString()
+          date: new Date().toISOString(),
+          recurring: false
         }])
         .select()
-        .single()
+        .single()) as any
 
       if (error) throw error
       return data
@@ -96,10 +90,10 @@ export const ExpenseTracker = ({ expenses }: ExpenseTrackerProps) => {
   // Delete expense mutation
   const deleteExpense = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = (await supabase
         .from('expenses')
         .delete()
-        .eq('id', id)
+        .eq('id', id)) as any
 
       if (error) throw error
     },
@@ -123,7 +117,7 @@ export const ExpenseTracker = ({ expenses }: ExpenseTrackerProps) => {
     value
   }))
 
-  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0)
+  const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0)
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
