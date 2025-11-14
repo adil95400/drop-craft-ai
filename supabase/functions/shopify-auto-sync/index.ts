@@ -146,36 +146,45 @@ async function syncShopifyProducts(supabaseClient: any, integration: any) {
 
   console.log(`📦 Retrieved ${allProducts.length} products from Shopify`)
 
-  // Transformer et insérer les produits
+  // Transformer et insérer les produits dans imported_products
   const productsToInsert = allProducts.map(product => ({
     user_id: integration.user_id,
     name: product.title,
     description: product.body_html || '',
     price: parseFloat(product.variants?.[0]?.price || '0'),
     cost_price: parseFloat(product.variants?.[0]?.compare_at_price || '0'),
+    currency: 'EUR',
     sku: product.variants?.[0]?.sku || '',
     category: product.product_type || 'Général',
-    image_url: product.images?.[0]?.src || null,
+    brand: product.vendor || '',
+    
+    // Champs spécifiques à imported_products
+    supplier_name: 'Shopify',
+    supplier_product_id: product.id.toString(),
+    supplier_sku: product.variants?.[0]?.sku || '',
+    supplier_url: `https://${integration.credentials.shop_domain}/admin/products/${product.id}`,
+    
+    // Images (array)
+    image_urls: product.images?.map((img: any) => img.src) || [],
+    
+    // Stock et statut
     stock_quantity: product.variants?.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0) || 0,
-    status: product.status === 'active' ? 'active' as const : 'inactive' as const,
-    external_id: product.id.toString(),
-    external_platform: 'shopify',
+    status: product.status === 'active' ? 'active' as const : 'draft' as const,
+    
+    // Tags
     tags: product.tags ? product.tags.split(',').map((t: string) => t.trim()) : [],
-    shopify_data: {
-      handle: product.handle,
-      vendor: product.vendor,
-      created_at: product.created_at,
-      updated_at: product.updated_at,
-      variants: product.variants
-    }
+    
+    // SEO
+    seo_title: product.title,
+    seo_description: product.body_html?.substring(0, 160) || ''
   }))
 
-  // Upsert des produits (mise à jour si existe, création sinon)
+  // Upsert des produits dans imported_products
   for (const product of productsToInsert) {
     const { error } = await supabaseClient
-      .from('products')
+      .from('imported_products')
       .upsert(product, { 
-        onConflict: 'external_id,user_id',
+        onConflict: 'supplier_product_id,user_id',
         ignoreDuplicates: false 
       })
 
@@ -183,6 +192,12 @@ async function syncShopifyProducts(supabaseClient: any, integration: any) {
       console.error('Product upsert error:', error)
     }
   }
+
+  console.log(`✅ Shopify sync completed:`)
+  console.log(`   - Products fetched: ${allProducts.length}`)
+  console.log(`   - Products inserted/updated: ${productsToInsert.length}`)
+  console.log(`   - Integration: ${integration.id}`)
+  console.log(`   - User: ${integration.user_id}`)
 
   // Mettre à jour le statut de l'intégration
   await supabaseClient
