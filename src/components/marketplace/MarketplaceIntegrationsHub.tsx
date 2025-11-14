@@ -52,6 +52,12 @@ const MARKETPLACE_CONFIGS = {
     color: 'from-purple-600 to-purple-400',
     description: 'WordPress e-commerce',
   },
+  prestashop: {
+    name: 'PrestaShop',
+    icon: Store,
+    color: 'from-blue-600 to-indigo-500',
+    description: 'Open-source e-commerce',
+  },
   
   // Marketplaces
   amazon: {
