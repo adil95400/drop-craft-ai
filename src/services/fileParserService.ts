@@ -112,15 +112,16 @@ export class FileParserService {
   }
 
   private static normalizeProduct(raw: any): ProductImport {
+    // Normalisation des noms de colonnes (support Shopify français et anglais)
     const normalized = {
-      name: raw.name || raw.title || raw.nom || '',
-      sku: raw.sku || raw.reference || raw.ref || null,
-      price: this.parseNumber(raw.price || raw.prix || 0),
-      cost_price: this.parseNumber(raw.cost_price || raw.cost || raw.cout || 0),
-      stock: this.parseInt(raw.stock || raw.quantity || raw.quantite || 0),
-      category: raw.category || raw.categorie || null,
-      description: raw.description || null,
-      image_url: raw.image_url || raw.image || raw.photo || null,
+      name: raw.name || raw.title || raw.nom || raw.Title || raw.Nom || raw.Handle || '',
+      sku: raw.sku || raw.SKU || raw.reference || raw.Référence || raw.ref || raw.Variant_SKU || null,
+      price: this.parseNumber(raw.price || raw.prix || raw.Price || raw.Prix || raw.Variant_Price || 0),
+      cost_price: this.parseNumber(raw.cost_price || raw.cost || raw.cout || raw['Prix de revient'] || raw.Variant_Compare_At_Price || 0),
+      stock: this.parseInt(raw.stock || raw.quantity || raw.quantite || raw.Quantity || raw.Inventaire || raw.Variant_Inventory_Qty || 0),
+      category: raw.category || raw.categorie || raw.Type || raw.type || raw.Product_Type || null,
+      description: raw.description || raw.Description || raw['Body HTML'] || raw.Body_HTML || null,
+      image_url: raw.image_url || raw.image || raw.Image || raw.photo || raw['Image Src'] || raw.Image_Src || null,
     };
 
     // Validation avec zod
