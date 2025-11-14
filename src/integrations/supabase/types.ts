@@ -1590,6 +1590,54 @@ export type Database = {
         }
         Relationships: []
       }
+      backup_suppliers: {
+        Row: {
+          auto_switch_enabled: boolean | null
+          backup_supplier_id: string
+          backup_supplier_name: string | null
+          backup_supplier_url: string | null
+          created_at: string | null
+          id: string
+          price_comparison: number | null
+          primary_supplier_id: string
+          priority: number | null
+          product_id: string
+          shipping_time_days: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          auto_switch_enabled?: boolean | null
+          backup_supplier_id: string
+          backup_supplier_name?: string | null
+          backup_supplier_url?: string | null
+          created_at?: string | null
+          id?: string
+          price_comparison?: number | null
+          primary_supplier_id: string
+          priority?: number | null
+          product_id: string
+          shipping_time_days?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          auto_switch_enabled?: boolean | null
+          backup_supplier_id?: string
+          backup_supplier_name?: string | null
+          backup_supplier_url?: string | null
+          created_at?: string | null
+          id?: string
+          price_comparison?: number | null
+          primary_supplier_id?: string
+          priority?: number | null
+          product_id?: string
+          shipping_time_days?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           ai_generated: boolean
@@ -3530,6 +3578,54 @@ export type Database = {
           setting_value?: Json
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount: number
+          attached_file_url: string | null
+          category: string
+          created_at: string | null
+          currency: string | null
+          date: string
+          description: string | null
+          id: string
+          recurring: boolean | null
+          recurring_frequency: string | null
+          subcategory: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          attached_file_url?: string | null
+          category: string
+          created_at?: string | null
+          currency?: string | null
+          date: string
+          description?: string | null
+          id?: string
+          recurring?: boolean | null
+          recurring_frequency?: string | null
+          subcategory?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          attached_file_url?: string | null
+          category?: string
+          created_at?: string | null
+          currency?: string | null
+          date?: string
+          description?: string | null
+          id?: string
+          recurring?: boolean | null
+          recurring_frequency?: string | null
+          subcategory?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -9179,6 +9275,54 @@ export type Database = {
         }
         Relationships: []
       }
+      social_trends: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          growth_rate: number | null
+          hashtag: string
+          id: string
+          peak_date: string | null
+          platform: string
+          product_count: number | null
+          seasonality: string | null
+          total_views: number | null
+          trend_score: number
+          trend_status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          growth_rate?: number | null
+          hashtag: string
+          id?: string
+          peak_date?: string | null
+          platform: string
+          product_count?: number | null
+          seasonality?: string | null
+          total_views?: number | null
+          trend_score?: number
+          trend_status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          growth_rate?: number | null
+          hashtag?: string
+          id?: string
+          peak_date?: string | null
+          platform?: string
+          product_count?: number | null
+          seasonality?: string | null
+          total_views?: number | null
+          trend_score?: number
+          trend_status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       sourcing_history: {
         Row: {
           action: string
@@ -9741,6 +9885,42 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          id: string
+          message: string
+          resolved: boolean | null
+          resolved_at: string | null
+          severity: string
+          supplier_id: string
+          user_id: string | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string | null
+          id?: string
+          message: string
+          resolved?: boolean | null
+          resolved_at?: string | null
+          severity?: string
+          supplier_id: string
+          user_id?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          id?: string
+          message?: string
+          resolved?: boolean | null
+          resolved_at?: string | null
+          severity?: string
+          supplier_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       supplier_catalog: {
         Row: {
           category: string | null
@@ -10021,6 +10201,48 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_performance_logs: {
+        Row: {
+          communication_rating: number | null
+          created_at: string | null
+          delivery_time: number | null
+          id: string
+          notes: string | null
+          order_id: string | null
+          quality_issues: string | null
+          quality_rating: number | null
+          supplier_id: string
+          user_id: string | null
+          would_reorder: boolean | null
+        }
+        Insert: {
+          communication_rating?: number | null
+          created_at?: string | null
+          delivery_time?: number | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          quality_issues?: string | null
+          quality_rating?: number | null
+          supplier_id: string
+          user_id?: string | null
+          would_reorder?: boolean | null
+        }
+        Update: {
+          communication_rating?: number | null
+          created_at?: string | null
+          delivery_time?: number | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          quality_issues?: string | null
+          quality_rating?: number | null
+          supplier_id?: string
+          user_id?: string | null
+          would_reorder?: boolean | null
+        }
+        Relationships: []
+      }
       supplier_products: {
         Row: {
           attributes: Json | null
@@ -10100,6 +10322,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      supplier_ratings: {
+        Row: {
+          average_delivery_days: number | null
+          communication_score: number | null
+          created_at: string | null
+          id: string
+          on_time_delivery_rate: number | null
+          overall_score: number | null
+          price_score: number | null
+          quality_score: number | null
+          reliability_score: number | null
+          return_rate: number | null
+          shipping_score: number | null
+          supplier_id: string | null
+          supplier_name: string
+          total_orders: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          average_delivery_days?: number | null
+          communication_score?: number | null
+          created_at?: string | null
+          id?: string
+          on_time_delivery_rate?: number | null
+          overall_score?: number | null
+          price_score?: number | null
+          quality_score?: number | null
+          reliability_score?: number | null
+          return_rate?: number | null
+          shipping_score?: number | null
+          supplier_id?: string | null
+          supplier_name: string
+          total_orders?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          average_delivery_days?: number | null
+          communication_score?: number | null
+          created_at?: string | null
+          id?: string
+          on_time_delivery_rate?: number | null
+          overall_score?: number | null
+          price_score?: number | null
+          quality_score?: number | null
+          reliability_score?: number | null
+          return_rate?: number | null
+          shipping_score?: number | null
+          supplier_id?: string | null
+          supplier_name?: string
+          total_orders?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       supplier_routing_rules: {
         Row: {
@@ -11806,6 +12085,78 @@ export type Database = {
           video_url?: string | null
           view_count?: number | null
           youtube_id?: string | null
+        }
+        Relationships: []
+      }
+      viral_products: {
+        Row: {
+          analyzed_at: string | null
+          comments: number | null
+          created_at: string | null
+          creator_followers: number | null
+          creator_username: string | null
+          engagement_rate: number | null
+          estimated_margin: number | null
+          hashtags: string[] | null
+          id: string
+          likes: number | null
+          platform: string
+          posted_at: string | null
+          price: number | null
+          product_name: string
+          shares: number | null
+          thumbnail_url: string | null
+          url: string
+          user_id: string | null
+          video_url: string | null
+          views: number | null
+          viral_score: number
+        }
+        Insert: {
+          analyzed_at?: string | null
+          comments?: number | null
+          created_at?: string | null
+          creator_followers?: number | null
+          creator_username?: string | null
+          engagement_rate?: number | null
+          estimated_margin?: number | null
+          hashtags?: string[] | null
+          id?: string
+          likes?: number | null
+          platform: string
+          posted_at?: string | null
+          price?: number | null
+          product_name: string
+          shares?: number | null
+          thumbnail_url?: string | null
+          url: string
+          user_id?: string | null
+          video_url?: string | null
+          views?: number | null
+          viral_score?: number
+        }
+        Update: {
+          analyzed_at?: string | null
+          comments?: number | null
+          created_at?: string | null
+          creator_followers?: number | null
+          creator_username?: string | null
+          engagement_rate?: number | null
+          estimated_margin?: number | null
+          hashtags?: string[] | null
+          id?: string
+          likes?: number | null
+          platform?: string
+          posted_at?: string | null
+          price?: number | null
+          product_name?: string
+          shares?: number | null
+          thumbnail_url?: string | null
+          url?: string
+          user_id?: string | null
+          video_url?: string | null
+          views?: number | null
+          viral_score?: number
         }
         Relationships: []
       }
