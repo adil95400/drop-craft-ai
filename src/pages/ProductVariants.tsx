@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ProductVariantsDialog } from '@/components/products/ProductVariantsDialog'
+import { ProductVariantsAdvancedManager } from '@/components/products/ProductVariantsAdvancedManager'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 
@@ -24,9 +24,9 @@ export default function ProductVariants() {
         Retour aux produits
       </Button>
       
-      <h1 className="text-3xl font-bold mb-6">Gestion des variantes</h1>
+      <h1 className="text-3xl font-bold mb-6">Gestion avancée des variantes</h1>
       
-      <ProductVariantsDialog 
+      <ProductVariantsAdvancedManager 
         productId={productId} 
         open={open}
         onOpenChange={(newOpen) => {
