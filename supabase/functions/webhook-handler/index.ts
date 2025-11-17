@@ -40,9 +40,21 @@ serve(async (req) => {
       eventType = shopifyTopic
       console.log(`📨 Shopify webhook: ${shopifyTopic} from ${shopifyShopDomain}`)
       
-      // Verify Shopify webhook signature
+      // Verify Shopify webhook signature using global secret
       if (shopifyHmac && shopifyShopDomain) {
-        const isValid = await verifyShopifyWebhook(supabase, shopifyShopDomain, body, shopifyHmac)
+        const webhookSecret = Deno.env.get('SHOPIFY_WEBHOOK_SECRET')
+        if (!webhookSecret) {
+          console.error('❌ SHOPIFY_WEBHOOK_SECRET not configured')
+          return new Response(
+            JSON.stringify({ success: false, error: 'Webhook verification not configured' }),
+            {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 500,
+            }
+          )
+        }
+
+        const isValid = await verifyShopifyWebhook(webhookSecret, body, shopifyHmac)
         if (!isValid) {
           console.error('❌ Invalid Shopify webhook signature')
           return new Response(
@@ -113,30 +125,16 @@ serve(async (req) => {
 })
 
 async function verifyShopifyWebhook(
-  supabase: any,
-  shopDomain: string,
+  secret: string,
   body: string,
   hmacHeader: string
 ): Promise<boolean> {
   try {
-    // Lookup integration by shop domain to get webhook secret
-    const { data: integration, error } = await supabase
-      .from('marketplace_integrations')
-      .select('webhook_secret')
-      .eq('platform', 'shopify')
-      .eq('shop_url', shopDomain)
-      .single()
-
-    if (error || !integration?.webhook_secret) {
-      console.error(`❌ No webhook secret found for shop: ${shopDomain}`, error)
-      return false
-    }
-
     // Create HMAC-SHA256 hash
     const encoder = new TextEncoder()
     const key = await crypto.subtle.importKey(
       'raw',
-      encoder.encode(integration.webhook_secret),
+      encoder.encode(secret),
       { name: 'HMAC', hash: 'SHA-256' },
       false,
       ['sign']
@@ -156,7 +154,6 @@ async function verifyShopifyWebhook(
     
     if (!isValid) {
       console.error('❌ HMAC verification failed', {
-        shop: shopDomain,
         expected: hmacHeader,
         computed: hashBase64
       })

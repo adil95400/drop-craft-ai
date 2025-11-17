@@ -140,7 +140,7 @@ export function useStoreConnection() {
     // Validation spécifique par plateforme
     switch (data.platform) {
       case 'shopify':
-        if (!data.credentials.access_token) {
+        if (!data.credentials.accessToken) {
           return { isValid: false, error: "Access Token requis pour Shopify" }
         }
         // Validation du format du domaine Shopify

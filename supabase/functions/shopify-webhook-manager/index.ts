@@ -136,16 +136,6 @@ async function registerWebhooks(
       const data = await response.json();
       const webhook = data.webhook;
 
-      // Store webhook secret in marketplace_integrations for HMAC verification
-      if (webhook.api_secret_key) {
-        await supabaseClient
-          .from('marketplace_integrations')
-          .update({ webhook_secret: webhook.api_secret_key })
-          .eq('id', integration.id);
-        
-        console.log(`✅ Stored webhook secret for integration ${integration.id}`);
-      }
-
       // Store webhook in database
       await supabaseClient
         .from('shopify_webhooks')
