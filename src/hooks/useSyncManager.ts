@@ -161,19 +161,129 @@ export const useSyncManager = () => {
     }
   })
 
+  // Fetch sync queue from new tables
+  const { data: queue = [], isLoading: isLoadingQueue } = useQuery({
+    queryKey: ['sync-queue'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sync_queue' as any)
+        .select('*')
+        .order('priority', { ascending: true })
+        .order('scheduled_at', { ascending: true })
+
+      if (error) throw error
+      return data || []
+    },
+    refetchInterval: 5000,
+  })
+
+  // Fetch sync logs
+  const { data: logs = [], isLoading: isLoadingLogs } = useQuery({
+    queryKey: ['sync-logs'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sync_logs' as any)
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100)
+
+      if (error) throw error
+      return data || []
+    },
+  })
+
+  // Fetch sync conflicts
+  const { data: conflicts = [], isLoading: isLoadingConflicts } = useQuery({
+    queryKey: ['sync-conflicts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('sync_conflicts' as any)
+        .select('*')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    },
+  })
+
+  // Cancel a sync
+  const cancelSync = useMutation({
+    mutationFn: async (queueItemId: string) => {
+      const { error } = await supabase
+        .from('sync_queue' as any)
+        .update({ status: 'cancelled' })
+        .eq('id', queueItemId)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sync-queue'] })
+      toast({
+        title: 'Synchronisation annulée',
+      })
+    },
+  })
+
+  // Resolve a conflict
+  const resolveConflict = useMutation({
+    mutationFn: async ({
+      conflictId,
+      strategy,
+      resolutionData,
+    }: {
+      conflictId: string
+      strategy: string
+      resolutionData?: Record<string, any>
+    }) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      const { error } = await supabase
+        .from('sync_conflicts' as any)
+        .update({
+          resolution_strategy: strategy,
+          resolution_data: resolutionData,
+          resolved_by: user.id,
+          resolved_at: new Date().toISOString(),
+          status: 'resolved',
+        })
+        .eq('id', conflictId)
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sync-conflicts'] })
+      toast({
+        title: 'Conflit résolu',
+      })
+    },
+  })
+
   return {
     syncJobs,
     queueStats,
+    queue,
+    logs,
+    conflicts,
     isLoading,
+    isLoadingQueue,
+    isLoadingLogs,
+    isLoadingConflicts,
     createSyncJob: createSyncJob.mutate,
     triggerManualSync: triggerManualSync.mutate,
     syncToShopify: syncToShopify.mutate,
     importFromBigBuy: importFromBigBuy.mutate,
     cleanupOldJobs: cleanupOldJobs.mutate,
+    cancelSync: cancelSync.mutate,
+    resolveConflict: resolveConflict.mutate,
+    retrySync: cleanupOldJobs.mutate,
     isCreatingSyncJob: createSyncJob.isPending,
     isTriggeringSync: triggerManualSync.isPending,
     isSyncingToShopify: syncToShopify.isPending,
     isImportingFromBigBuy: importFromBigBuy.isPending,
-    isCleaningUp: cleanupOldJobs.isPending
+    isCleaningUp: cleanupOldJobs.isPending,
+    isCancelling: cancelSync.isPending,
+    isResolving: resolveConflict.isPending,
   }
 }

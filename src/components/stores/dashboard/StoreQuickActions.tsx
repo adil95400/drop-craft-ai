@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, RefreshCw, Settings, BarChart3 } from 'lucide-react';
+import { Plus, RefreshCw, Settings, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface StoreQuickActionsProps {
@@ -25,17 +25,17 @@ export function StoreQuickActions({ onSync, isSyncing }: StoreQuickActionsProps)
       variant: 'outline' as const,
     },
     {
+      label: 'Synchronisation',
+      icon: Activity,
+      onClick: () => navigate('/dashboard/stores/sync'),
+      variant: 'outline' as const,
+    },
+    {
       label: 'Synchroniser',
       icon: RefreshCw,
       onClick: onSync,
       variant: 'outline' as const,
       loading: isSyncing,
-    },
-    {
-      label: 'Analytics',
-      icon: BarChart3,
-      onClick: () => navigate('/dashboard/analytics'),
-      variant: 'outline' as const,
     },
   ];
 
