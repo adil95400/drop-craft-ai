@@ -5788,6 +5788,7 @@ export type Database = {
           total_sync_count: number | null
           updated_at: string | null
           user_id: string
+          webhook_secret: string | null
         }
         Insert: {
           access_token?: string | null
@@ -5815,6 +5816,7 @@ export type Database = {
           total_sync_count?: number | null
           updated_at?: string | null
           user_id: string
+          webhook_secret?: string | null
         }
         Update: {
           access_token?: string | null
@@ -5842,6 +5844,7 @@ export type Database = {
           total_sync_count?: number | null
           updated_at?: string | null
           user_id?: string
+          webhook_secret?: string | null
         }
         Relationships: []
       }
