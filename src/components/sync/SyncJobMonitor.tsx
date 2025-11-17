@@ -164,29 +164,21 @@ export const SyncJobMonitor: React.FC<SyncJobMonitorProps> = ({
       {/* Controls */}
       <div className="flex items-center gap-2">
         <Button 
-          onClick={() => triggerManualSync({ supplierId: 'all', type: 'products' })}
-          disabled={isTriggeringSync}
+          disabled
           size="sm"
+          title="Fonctionnalité à venir"
         >
-          {isTriggeringSync ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Play className="h-4 w-4 mr-2" />
-          )}
+          <Play className="h-4 w-4 mr-2" />
           Sync Manuel
         </Button>
         
         <Button 
-          onClick={() => cleanupOldJobs(7)}
-          disabled={isCleaningUp}
+          disabled
           variant="outline"
           size="sm"
+          title="Fonctionnalité à venir"
         >
-          {isCleaningUp ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Trash2 className="h-4 w-4 mr-2" />
-          )}
+          <Trash2 className="h-4 w-4 mr-2" />
           Nettoyer (7j)
         </Button>
       </div>
@@ -226,7 +218,7 @@ export const SyncJobMonitor: React.FC<SyncJobMonitorProps> = ({
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           {getJobStatusIcon(job.status)}
-                          <span className="font-medium">{formatJobType(job.type)}</span>
+                          <span className="font-medium">{formatJobType(job.sync_type)}</span>
                           {getJobStatusBadge(job.status)}
                         </div>
                         <div className="text-sm text-muted-foreground">
@@ -244,12 +236,13 @@ export const SyncJobMonitor: React.FC<SyncJobMonitorProps> = ({
                       )}
 
                       <div className="text-sm text-muted-foreground">
-                        {job.description}
+                        {job.entity_type} - {job.operation}
+                        {job.entity_id && ` (ID: ${job.entity_id})`}
                       </div>
 
-                      {job.metadata && Object.keys(job.metadata).length > 0 && (
+                      {job.payload && Object.keys(job.payload).length > 0 && (
                         <div className="mt-2 text-xs">
-                          <strong>Détails:</strong> {JSON.stringify(job.metadata, null, 2)}
+                          <strong>Détails:</strong> {JSON.stringify(job.payload, null, 2)}
                         </div>
                       )}
                     </div>
