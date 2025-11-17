@@ -115,9 +115,9 @@ export function useStoreConnection() {
       // Appel à la fonction Edge pour tester la connexion
       const { data: result, error } = await supabase.functions.invoke('store-connection-test', {
         body: {
+          ...data.credentials,
           platform: data.platform,
-          shopDomain: data.domain,
-          ...data.credentials
+          shopDomain: data.domain
         },
         headers: {
           Authorization: `Bearer ${session.access_token}`
