@@ -21,7 +21,7 @@ import { WishConnector } from './WishConnector';
 import { ShopeeConnector } from './ShopeeConnector';
 import { MercadoLibreConnector } from './MercadoLibreConnector';
 import { MiraklConnector } from './MiraklConnector';
-// EBayConnector uses different architecture - to be integrated later
+import { EBayConnector } from './eBayConnector';
 import { BigBuyConnector } from './BigBuyConnector';
 import { EproloConnector } from './EproloConnector';
 import { PrintfulConnector } from './PrintfulConnector';
@@ -357,9 +357,7 @@ export class ConnectorFactory {
       case 'amazon':
         return new AmazonConnector(credentials);
       case 'ebay':
-        // eBay uses different connector architecture - temporarily unavailable
-        console.warn('eBay connector integration in progress');
-        return null;
+        return new EBayConnector(credentials);
       case 'etsy':
         return new EtsyConnector(credentials);
       case 'cdiscount':
@@ -432,7 +430,7 @@ export class ConnectorFactory {
       case 'amazon':
         return !!credentials.accessToken && !!credentials.marketplace_id;
       case 'ebay':
-        return !!credentials.apiKey && !!credentials.apiSecret;
+        return !!credentials.accessToken;
       case 'etsy':
         return !!credentials.apiKey && !!credentials.shop_id && !!credentials.accessToken;
       case 'cdiscount':
