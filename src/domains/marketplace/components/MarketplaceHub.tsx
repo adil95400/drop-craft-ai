@@ -566,7 +566,7 @@ export const MarketplaceHub = () => {
                       <CardTitle>{marketplace.name}</CardTitle>
                     </div>
                     <Button
-                      onClick={() => connectMarketplace(marketplace.id)}
+                      onClick={() => openConnectDialog(marketplace.id)}
                       disabled={connections.some(c => c.platform === marketplace.id)}
                     >
                       <Plus className="h-4 w-4 mr-2" />
