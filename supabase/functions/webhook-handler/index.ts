@@ -21,6 +21,8 @@ serve(async (req) => {
     
     // Detect webhook source
     const shopifyTopic = req.headers.get('x-shopify-topic')
+    const shopifyShopDomain = req.headers.get('x-shopify-shop-domain')
+    const shopifyHmac = req.headers.get('x-shopify-hmac-sha256')
     const webhookSignature = req.headers.get('x-webhook-signature')
     
     let parsedBody: any
@@ -36,7 +38,25 @@ serve(async (req) => {
     if (shopifyTopic) {
       source = 'shopify'
       eventType = shopifyTopic
-      console.log(`📨 Shopify webhook: ${shopifyTopic}`)
+      console.log(`📨 Shopify webhook: ${shopifyTopic} from ${shopifyShopDomain}`)
+      
+      // Verify Shopify webhook signature
+      if (shopifyHmac && shopifyShopDomain) {
+        const isValid = await verifyShopifyWebhook(supabase, shopifyShopDomain, body, shopifyHmac)
+        if (!isValid) {
+          console.error('❌ Invalid Shopify webhook signature')
+          return new Response(
+            JSON.stringify({ success: false, error: 'Invalid signature' }),
+            {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 401,
+            }
+          )
+        }
+        console.log('✅ Shopify webhook signature verified')
+      } else {
+        console.warn('⚠️ Shopify webhook received without signature headers')
+      }
     } else if (webhookSignature) {
       source = 'internal'
       eventType = parsedBody.event || 'webhook.received'
@@ -91,3 +111,60 @@ serve(async (req) => {
     )
   }
 })
+
+async function verifyShopifyWebhook(
+  supabase: any,
+  shopDomain: string,
+  body: string,
+  hmacHeader: string
+): Promise<boolean> {
+  try {
+    // Lookup integration by shop domain to get webhook secret
+    const { data: integration, error } = await supabase
+      .from('marketplace_integrations')
+      .select('webhook_secret')
+      .eq('platform', 'shopify')
+      .eq('shop_url', shopDomain)
+      .single()
+
+    if (error || !integration?.webhook_secret) {
+      console.error(`❌ No webhook secret found for shop: ${shopDomain}`, error)
+      return false
+    }
+
+    // Create HMAC-SHA256 hash
+    const encoder = new TextEncoder()
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(integration.webhook_secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    )
+
+    const signature = await crypto.subtle.sign(
+      'HMAC',
+      key,
+      encoder.encode(body)
+    )
+
+    // Convert to base64 for comparison
+    const hashArray = Array.from(new Uint8Array(signature))
+    const hashBase64 = btoa(String.fromCharCode(...hashArray))
+
+    const isValid = hashBase64 === hmacHeader
+    
+    if (!isValid) {
+      console.error('❌ HMAC verification failed', {
+        shop: shopDomain,
+        expected: hmacHeader,
+        computed: hashBase64
+      })
+    }
+
+    return isValid
+  } catch (error) {
+    console.error('❌ Error verifying webhook signature:', error)
+    return false
+  }
+}
