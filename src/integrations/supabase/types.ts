@@ -973,6 +973,69 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_insights: {
+        Row: {
+          acknowledged_at: string | null
+          confidence_level: number | null
+          created_at: string | null
+          data_points: Json | null
+          description: string
+          expires_at: string | null
+          id: string
+          impact_score: number | null
+          insight_category: string
+          insight_type: string
+          is_acknowledged: boolean | null
+          recommended_actions: Json | null
+          severity: string | null
+          store_identifier: string | null
+          store_name: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          confidence_level?: number | null
+          created_at?: string | null
+          data_points?: Json | null
+          description: string
+          expires_at?: string | null
+          id?: string
+          impact_score?: number | null
+          insight_category: string
+          insight_type: string
+          is_acknowledged?: boolean | null
+          recommended_actions?: Json | null
+          severity?: string | null
+          store_identifier?: string | null
+          store_name?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          confidence_level?: number | null
+          created_at?: string | null
+          data_points?: Json | null
+          description?: string
+          expires_at?: string | null
+          id?: string
+          impact_score?: number | null
+          insight_category?: string
+          insight_type?: string
+          is_acknowledged?: boolean | null
+          recommended_actions?: Json | null
+          severity?: string | null
+          store_identifier?: string | null
+          store_name?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       api_analytics: {
         Row: {
           avg_response_time_ms: number | null
@@ -2980,6 +3043,54 @@ export type Database = {
           rate?: number
           source?: string | null
           to_currency?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      custom_analytics_reports: {
+        Row: {
+          created_at: string | null
+          filters: Json | null
+          id: string
+          is_favorite: boolean | null
+          last_generated_at: string | null
+          metrics: Json
+          report_data: Json | null
+          report_name: string
+          report_type: string
+          schedule: Json | null
+          store_identifiers: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          is_favorite?: boolean | null
+          last_generated_at?: string | null
+          metrics?: Json
+          report_data?: Json | null
+          report_name: string
+          report_type: string
+          schedule?: Json | null
+          store_identifiers?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          is_favorite?: boolean | null
+          last_generated_at?: string | null
+          metrics?: Json
+          report_data?: Json | null
+          report_name?: string
+          report_type?: string
+          schedule?: Json | null
+          store_identifiers?: string[] | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -7019,48 +7130,54 @@ export type Database = {
       predictive_analytics: {
         Row: {
           accuracy_score: number | null
-          confidence_level: number
-          created_at: string
+          actual_results: Json | null
+          confidence_score: number | null
+          created_at: string | null
+          factors_analyzed: Json | null
           id: string
-          input_data: Json
-          model_version: string
-          prediction_period: string
-          prediction_results: Json
+          prediction_period_end: string
+          prediction_period_start: string
           prediction_type: string
-          target_metric: string
-          updated_at: string
+          predictions: Json
+          recommendations: Json | null
+          store_identifier: string | null
+          store_name: string | null
+          updated_at: string | null
           user_id: string
-          valid_until: string | null
         }
         Insert: {
           accuracy_score?: number | null
-          confidence_level?: number
-          created_at?: string
+          actual_results?: Json | null
+          confidence_score?: number | null
+          created_at?: string | null
+          factors_analyzed?: Json | null
           id?: string
-          input_data?: Json
-          model_version?: string
-          prediction_period: string
-          prediction_results?: Json
+          prediction_period_end: string
+          prediction_period_start: string
           prediction_type: string
-          target_metric: string
-          updated_at?: string
+          predictions?: Json
+          recommendations?: Json | null
+          store_identifier?: string | null
+          store_name?: string | null
+          updated_at?: string | null
           user_id: string
-          valid_until?: string | null
         }
         Update: {
           accuracy_score?: number | null
-          confidence_level?: number
-          created_at?: string
+          actual_results?: Json | null
+          confidence_score?: number | null
+          created_at?: string | null
+          factors_analyzed?: Json | null
           id?: string
-          input_data?: Json
-          model_version?: string
-          prediction_period?: string
-          prediction_results?: Json
+          prediction_period_end?: string
+          prediction_period_start?: string
           prediction_type?: string
-          target_metric?: string
-          updated_at?: string
+          predictions?: Json
+          recommendations?: Json | null
+          store_identifier?: string | null
+          store_name?: string | null
+          updated_at?: string | null
           user_id?: string
-          valid_until?: string | null
         }
         Relationships: []
       }
@@ -10076,6 +10193,54 @@ export type Database = {
           },
         ]
       }
+      store_comparative_analytics: {
+        Row: {
+          best_performers: Json | null
+          comparison_data: Json
+          comparison_name: string
+          comparison_period_end: string
+          comparison_period_start: string
+          created_at: string | null
+          id: string
+          insights: Json | null
+          optimization_opportunities: Json | null
+          store_identifiers: string[]
+          underperformers: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          best_performers?: Json | null
+          comparison_data?: Json
+          comparison_name: string
+          comparison_period_end: string
+          comparison_period_start: string
+          created_at?: string | null
+          id?: string
+          insights?: Json | null
+          optimization_opportunities?: Json | null
+          store_identifiers: string[]
+          underperformers?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          best_performers?: Json | null
+          comparison_data?: Json
+          comparison_name?: string
+          comparison_period_end?: string
+          comparison_period_start?: string
+          created_at?: string | null
+          id?: string
+          insights?: Json | null
+          optimization_opportunities?: Json | null
+          store_identifiers?: string[]
+          underperformers?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       store_integrations: {
         Row: {
           connection_status: string | null
@@ -10133,6 +10298,81 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           webhook_config?: Json | null
+        }
+        Relationships: []
+      }
+      store_performance_analytics: {
+        Row: {
+          analysis_period_end: string
+          analysis_period_start: string
+          avg_order_value: number | null
+          conversion_rate: number | null
+          created_at: string | null
+          customer_acquisition_cost: number | null
+          customer_lifetime_value: number | null
+          customer_segments: Json | null
+          id: string
+          inventory_turnover_rate: number | null
+          performance_score: number | null
+          profit_margin: number | null
+          recommendations: Json | null
+          sales_trends: Json | null
+          store_identifier: string | null
+          store_name: string | null
+          top_categories: Json | null
+          top_products: Json | null
+          total_orders: number | null
+          total_revenue: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis_period_end: string
+          analysis_period_start: string
+          avg_order_value?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          customer_acquisition_cost?: number | null
+          customer_lifetime_value?: number | null
+          customer_segments?: Json | null
+          id?: string
+          inventory_turnover_rate?: number | null
+          performance_score?: number | null
+          profit_margin?: number | null
+          recommendations?: Json | null
+          sales_trends?: Json | null
+          store_identifier?: string | null
+          store_name?: string | null
+          top_categories?: Json | null
+          top_products?: Json | null
+          total_orders?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis_period_end?: string
+          analysis_period_start?: string
+          avg_order_value?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          customer_acquisition_cost?: number | null
+          customer_lifetime_value?: number | null
+          customer_segments?: Json | null
+          id?: string
+          inventory_turnover_rate?: number | null
+          performance_score?: number | null
+          profit_margin?: number | null
+          recommendations?: Json | null
+          sales_trends?: Json | null
+          store_identifier?: string | null
+          store_name?: string | null
+          top_categories?: Json | null
+          top_products?: Json | null
+          total_orders?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }

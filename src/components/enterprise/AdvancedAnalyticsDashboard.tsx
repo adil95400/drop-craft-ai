@@ -138,7 +138,7 @@ export function AdvancedAnalyticsDashboard() {
                     {analysis.prediction_type}
                   </CardTitle>
                   <CardDescription>
-                    Confiance: {(analysis.confidence_level * 100).toFixed(0)}%
+                    Confiance: {(analysis.confidence_score * 100).toFixed(0)}%
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -146,7 +146,7 @@ export function AdvancedAnalyticsDashboard() {
                     <div>
                       <h4 className="font-medium mb-2">Prédictions</h4>
                       <div className="text-sm text-muted-foreground">
-                        {JSON.stringify(analysis.prediction_results, null, 2)}
+                        {JSON.stringify(analysis.predictions, null, 2)}
                       </div>
                     </div>
                     <div>
