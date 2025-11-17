@@ -88,13 +88,11 @@ const platforms: Platform[] = [
     id: 'ebay',
     name: 'eBay',
     color: 'bg-blue-600',
-    disabled: true
   },
   {
     id: 'facebook',
     name: 'Facebook Shop',
     color: 'bg-blue-500',
-    disabled: true
   },
   {
     id: 'rakuten',
