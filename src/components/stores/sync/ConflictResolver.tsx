@@ -1,36 +1,27 @@
 import { useState } from 'react';
-import { useSyncManager } from '@/hooks/useSyncManager';
+import { useSyncManager, type SyncConflict } from '@/hooks/useSyncManager';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export function ConflictResolver() {
-  const { conflicts, isLoadingConflicts, resolveConflict } = useSyncManager();
-  const [selectedConflict, setSelectedConflict] = useState<any>(null);
-  const [resolution, setResolution] = useState<string>('remote_wins');
+  const { conflicts, resolveConflict, isLoadingConflicts } = useSyncManager();
+  const [selectedConflict, setSelectedConflict] = useState<SyncConflict | null>(null);
 
-  const handleResolve = () => {
-    if (!selectedConflict) return;
-
-    resolveConflict({
-      conflictId: selectedConflict.id,
-      strategy: resolution,
-    });
-
+  const handleResolve = (conflictId: string, strategy: string) => {
+    resolveConflict({ conflictId, strategy });
     setSelectedConflict(null);
   };
 
@@ -64,41 +55,54 @@ export function ConflictResolver() {
   }
 
   return (
-    <>
-      <Card>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
-              <h2 className="text-xl font-semibold">Conflits de synchronisation</h2>
-            </div>
-            {conflicts.length > 0 && (
-              <Badge variant="destructive">{conflicts.length} conflits</Badge>
-            )}
+    <Card>
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+            <h2 className="text-xl font-semibold">Conflits de synchronisation</h2>
           </div>
+          {conflicts.length > 0 && (
+            <Badge variant="destructive">{conflicts.length} conflits</Badge>
+          )}
+        </div>
 
-          {conflicts.length === 0 ? (
-            <div className="text-center py-12">
-              <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
-              <p className="text-muted-foreground">
-                Aucun conflit de synchronisation
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {conflicts.map((conflict) => (
-                <Card key={conflict.id} className="p-4 border-l-4 border-l-yellow-500">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
+        {conflicts.length === 0 ? (
+          <div className="text-center py-12">
+            <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
+            <p className="text-muted-foreground">
+              Aucun conflit de synchronisation
+            </p>
+          </div>
+        ) : (
+          <ScrollArea className="h-[600px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Entité</TableHead>
+                  <TableHead>Détails</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {conflicts.map((conflict) => (
+                  <TableRow key={conflict.id}>
+                    <TableCell>
+                      <div className="flex flex-col gap-2">
                         {getConflictTypeBadge(conflict.conflict_type)}
                         <Badge variant="outline">{conflict.entity_type}</Badge>
                       </div>
+                    </TableCell>
 
-                      <p className="text-sm font-medium mb-1">
-                        Entité: {conflict.entity_id}
+                    <TableCell>
+                      <p className="text-sm font-medium truncate max-w-[150px]">
+                        {conflict.entity_id}
                       </p>
+                    </TableCell>
 
+                    <TableCell>
                       <p className="text-xs text-muted-foreground">
                         Détecté{' '}
                         {formatDistanceToNow(new Date(conflict.created_at), {
@@ -106,112 +110,55 @@ export function ConflictResolver() {
                           locale: fr,
                         })}
                       </p>
+                    </TableCell>
 
+                    <TableCell>
                       {conflict.local_data && conflict.remote_data && (
-                        <div className="mt-3 grid grid-cols-2 gap-4 text-xs">
-                          <div>
-                            <p className="font-medium text-muted-foreground mb-1">
-                              Données locales:
-                            </p>
-                            <ScrollArea className="h-20 rounded bg-muted p-2">
-                              <pre className="text-xs">
-                                {JSON.stringify(conflict.local_data, null, 2)}
-                              </pre>
-                            </ScrollArea>
-                          </div>
-                          <div>
-                            <p className="font-medium text-muted-foreground mb-1">
-                              Données distantes:
-                            </p>
-                            <ScrollArea className="h-20 rounded bg-muted p-2">
-                              <pre className="text-xs">
-                                {JSON.stringify(conflict.remote_data, null, 2)}
-                              </pre>
-                            </ScrollArea>
-                          </div>
+                        <div className="text-xs">
+                          <p className="font-medium">Local vs Remote</p>
+                          <p className="text-muted-foreground">
+                            {Object.keys(conflict.local_data).length} champs
+                          </p>
                         </div>
                       )}
-                    </div>
+                    </TableCell>
 
-                    <Button
-                      size="sm"
-                      onClick={() => setSelectedConflict(conflict)}
-                    >
-                      Résoudre
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      </Card>
-
-      {/* Resolution Dialog */}
-      <Dialog
-        open={!!selectedConflict}
-        onOpenChange={() => setSelectedConflict(null)}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Résoudre le conflit</DialogTitle>
-            <DialogDescription>
-              Choisissez comment résoudre ce conflit de synchronisation
-            </DialogDescription>
-          </DialogHeader>
-
-          <RadioGroup value={resolution} onValueChange={setResolution}>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="local_wins" id="local" />
-                <Label htmlFor="local" className="cursor-pointer">
-                  <span className="font-medium">Garder les données locales</span>
-                  <p className="text-xs text-muted-foreground">
-                    Les modifications locales écraseront les données distantes
-                  </p>
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="remote_wins" id="remote" />
-                <Label htmlFor="remote" className="cursor-pointer">
-                  <span className="font-medium">Garder les données distantes</span>
-                  <p className="text-xs text-muted-foreground">
-                    Les données distantes écraseront les modifications locales
-                  </p>
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="merge" id="merge" />
-                <Label htmlFor="merge" className="cursor-pointer">
-                  <span className="font-medium">Fusionner les données</span>
-                  <p className="text-xs text-muted-foreground">
-                    Tentative de fusion automatique des changements
-                  </p>
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="manual" id="manual" />
-                <Label htmlFor="manual" className="cursor-pointer">
-                  <span className="font-medium">Résolution manuelle</span>
-                  <p className="text-xs text-muted-foreground">
-                    Marquer pour résolution manuelle ultérieure
-                  </p>
-                </Label>
-              </div>
-            </div>
-          </RadioGroup>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedConflict(null)}>
-              Annuler
-            </Button>
-            <Button onClick={handleResolve}>Appliquer</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            handleResolve(conflict.id, 'local_wins')
+                          }
+                        >
+                          Garder local
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            handleResolve(conflict.id, 'remote_wins')
+                          }
+                        >
+                          Garder distant
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => handleResolve(conflict.id, 'merge')}
+                        >
+                          Fusionner
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        )}
+      </div>
+    </Card>
   );
 }

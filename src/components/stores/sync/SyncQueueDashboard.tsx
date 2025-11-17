@@ -1,8 +1,7 @@
-import { useSyncManager } from '@/hooks/useSyncManager';
+import { useSyncManager, type SyncQueueItem } from '@/hooks/useSyncManager';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
   Table,
   TableBody,
@@ -12,18 +11,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  PlayCircle,
-  XCircle,
   CheckCircle2,
   Clock,
   AlertCircle,
+  PlayCircle,
+  XCircle,
   RefreshCw,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export function SyncQueueDashboard() {
-  const { queue, isLoadingQueue, cancelSync, retrySync } = useSyncManager();
+  const { queue, cancelSync, retrySync, isLoadingQueue, isCancelling } = useSyncManager();
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -131,11 +130,11 @@ export function SyncQueueDashboard() {
       {/* Queue Table */}
       <Card>
         <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4">File de synchronisation</h2>
+          <h2 className="text-xl font-semibold mb-4">File d'attente de synchronisation</h2>
 
           {queue.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              Aucune synchronisation en file d'attente
+              Aucune synchronisation en attente
             </div>
           ) : (
             <Table>
@@ -145,84 +144,63 @@ export function SyncQueueDashboard() {
                   <TableHead>Priorité</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead>Planifié</TableHead>
-                  <TableHead>Progression</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {queue.map((item) => (
-                  <TableRow key={item.id}>
+                {queue.map((job) => (
+                  <TableRow key={job.id}>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{item.sync_type}</p>
-                        {item.error_message && (
+                        <Badge variant="outline">{job.sync_type}</Badge>
+                        {job.error_message && (
                           <p className="text-xs text-red-500 mt-1">
-                            {item.error_message}
+                            {job.error_message}
                           </p>
                         )}
                       </div>
                     </TableCell>
 
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={getPriorityColor(item.priority)}
-                      >
-                        P{item.priority}
-                      </Badge>
+                      <span className={`font-semibold ${getPriorityColor(job.priority)}`}>
+                        {job.priority}
+                      </span>
                     </TableCell>
 
-                    <TableCell>{getStatusBadge(item.status)}</TableCell>
+                    <TableCell>{getStatusBadge(job.status)}</TableCell>
 
                     <TableCell className="text-sm text-muted-foreground">
-                      {formatDistanceToNow(new Date(item.scheduled_at), {
+                      {formatDistanceToNow(new Date(job.scheduled_at), {
                         addSuffix: true,
                         locale: fr,
                       })}
                     </TableCell>
 
                     <TableCell>
-                      {item.status === 'processing' && (
-                        <div className="space-y-1">
-                          <Progress value={50} className="h-2" />
-                          <p className="text-xs text-muted-foreground">
-                            En cours...
-                          </p>
-                        </div>
-                      )}
-                      {item.status === 'completed' && (
-                        <p className="text-xs text-green-500">Terminé</p>
-                      )}
-                      {item.status === 'failed' && (
-                        <p className="text-xs text-red-500">
-                          Échec ({item.retry_count}/{item.max_retries})
-                        </p>
-                      )}
-                    </TableCell>
-
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {item.status === 'failed' && (
+                      <div className="flex gap-2">
+                        {job.status === 'pending' && (
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => retrySync(item.id)}
+                            onClick={() => cancelSync(job.id)}
+                            disabled={isCancelling}
                           >
-                            <RefreshCw className="h-3 w-3 mr-1" />
-                            Réessayer
-                          </Button>
-                        )}
-                        {(item.status === 'pending' ||
-                          item.status === 'processing') && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => cancelSync(item.id)}
-                          >
-                            <XCircle className="h-3 w-3 mr-1" />
+                            <XCircle className="h-4 w-4 mr-1" />
                             Annuler
                           </Button>
                         )}
+
+                        {(job.status === 'failed' || job.status === 'cancelled') &&
+                          job.retry_count < job.max_retries && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => retrySync(job.id)}
+                            >
+                              <RefreshCw className="h-4 w-4 mr-1" />
+                              Réessayer
+                            </Button>
+                          )}
                       </div>
                     </TableCell>
                   </TableRow>
