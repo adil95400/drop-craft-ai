@@ -216,20 +216,20 @@ async function syncShopifyData(supabaseClient: any, integration: any, syncType: 
 }
 
 async function syncShopifyProducts(supabaseClient: any, integration: any, shopifyDomain: string, accessToken: string): Promise<number> {
-  console.log('Starting Shopify product sync with pagination...')
+  console.log('Starting Shopify product sync with batch processing...')
   
-  let allProducts: any[] = []
+  let totalSynced = 0
   let nextPageInfo: string | null = null
   let hasNextPage = true
   let pageCount = 0
   
   try {
-    // Fetch ALL products with pagination
-    while (hasNextPage) {
+    // Fetch and process products page by page (batch processing)
+    while (hasNextPage && pageCount < 20) { // Limit to 20 pages (1000 products max) to avoid timeout
       pageCount++
       const url = nextPageInfo
-        ? `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=250&page_info=${nextPageInfo}`
-        : `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=250`
+        ? `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=50&page_info=${nextPageInfo}`
+        : `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=50`
       
       console.log(`📄 Fetching page ${pageCount}...`)
       
@@ -247,9 +247,50 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
 
       const data = await response.json()
       const products = data.products || []
-      allProducts = allProducts.concat(products)
       
-      console.log(`   Retrieved ${products.length} products (total so far: ${allProducts.length})`)
+      console.log(`   Retrieved ${products.length} products`)
+
+      if (products.length === 0) {
+        break
+      }
+
+      // Transform and upsert immediately (batch processing)
+      const productsToUpsert = products.map((product: any) => ({
+        user_id: integration.user_id,
+        supplier_name: 'Shopify',
+        supplier_product_id: product.id.toString(),
+        sku: product.variants?.[0]?.sku || `SHOP-${product.id}`,
+        name: product.title,
+        description: product.body_html || '',
+        price: parseFloat(product.variants?.[0]?.price || '0'),
+        cost_price: parseFloat(product.variants?.[0]?.compare_at_price || '0') || null,
+        currency: 'EUR',
+        stock_quantity: product.variants?.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0) || 0,
+        category: product.product_type || 'General',
+        brand: product.vendor || '',
+        tags: product.tags ? product.tags.split(',').map((t: string) => t.trim()) : [],
+        image_urls: product.images?.map((img: any) => img.src) || [],
+        status: product.status === 'active' ? 'published' : 'draft',
+        seo_title: product.title,
+        seo_description: product.body_html?.replace(/<[^>]*>?/gm, '').substring(0, 160) || '',
+        weight: product.variants?.[0]?.weight || null,
+      }))
+
+      console.log(`💾 Upserting batch of ${productsToUpsert.length} products...`)
+
+      const { error } = await supabaseClient
+        .from('imported_products')
+        .upsert(productsToUpsert, { 
+          onConflict: 'user_id,supplier_product_id',
+          ignoreDuplicates: false 
+        })
+
+      if (error) {
+        console.error('Database upsert error:', error)
+      } else {
+        totalSynced += productsToUpsert.length
+        console.log(`   ✅ Batch synced (total: ${totalSynced})`)
+      }
 
       // Check for next page
       const linkHeader = response.headers.get('Link')
@@ -262,54 +303,11 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
       }
     }
     
-    console.log(`📦 Total products retrieved: ${allProducts.length}`)
-
-    if (allProducts.length === 0) {
-      console.log('No products found in Shopify store')
-      return 0
-    }
-
-    // Transform products
-    const productsToUpsert = allProducts.map((product: any) => ({
-      user_id: integration.user_id,
-      supplier_name: 'Shopify',
-      supplier_product_id: product.id.toString(),
-      sku: product.variants?.[0]?.sku || `SHOP-${product.id}`,
-      name: product.title,
-      description: product.body_html || '',
-      price: parseFloat(product.variants?.[0]?.price || '0'),
-      cost_price: parseFloat(product.variants?.[0]?.compare_at_price || '0') || null,
-      currency: 'EUR',
-      stock_quantity: product.variants?.reduce((sum: number, v: any) => sum + (v.inventory_quantity || 0), 0) || 0,
-      category: product.product_type || 'General',
-      brand: product.vendor || '',
-      tags: product.tags ? product.tags.split(',').map((t: string) => t.trim()) : [],
-      image_urls: product.images?.map((img: any) => img.src) || [],
-      status: product.status === 'active' ? 'published' : 'draft',
-      seo_title: product.title,
-      seo_description: product.body_html?.replace(/<[^>]*>?/gm, '').substring(0, 160) || '',
-      weight: product.variants?.[0]?.weight || null,
-    }))
-
-    console.log(`💾 Upserting ${productsToUpsert.length} products to database...`)
-
-    const { error } = await supabaseClient
-      .from('imported_products')
-      .upsert(productsToUpsert, { 
-        onConflict: 'user_id,supplier_product_id',
-        ignoreDuplicates: false 
-      })
-
-    if (error) {
-      console.error('Database upsert error:', error)
-      return 0
-    }
-
-    console.log(`✅ Successfully synced ${productsToUpsert.length} products`)
-    return productsToUpsert.length
+    console.log(`📦 Total products synced: ${totalSynced}`)
+    return totalSynced
   } catch (error) {
     console.error('Error syncing Shopify products:', error)
-    return 0
+    return totalSynced
   }
 }
 
