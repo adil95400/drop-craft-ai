@@ -60,7 +60,7 @@ export const useProducts = (filters?: {
         query = query.ilike('name', `%${filters.search}%`)
       }
       
-      const { data, error } = await query
+      const { data, error } = await query.limit(10000)
       
       if (error) throw error
       return data as Product[]

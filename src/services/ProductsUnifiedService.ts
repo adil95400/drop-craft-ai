@@ -73,7 +73,7 @@ export class ProductsUnifiedService {
     }
     if (filters?.lowStock) query = query.lt('stock_quantity', 10)
 
-    const { data, error } = await query.order('created_at', { ascending: false })
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(10000)
     if (error) throw error
 
     return (data || []).map(p => ({
@@ -95,7 +95,7 @@ export class ProductsUnifiedService {
       query = query.or(`name.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`)
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false })
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(10000)
     if (error) throw error
 
     return (data || []).map(p => ({
