@@ -36,56 +36,87 @@ export interface StoreStats {
 export function useUnifiedStores() {
   const queryClient = useQueryClient();
 
-  // Fetch all user stores
+  // Fetch all user stores from integrations table
   const { data: stores, isLoading, error } = useQuery({
     queryKey: ['unified-stores'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('stores' as any)
+        .from('integrations')
         .select('*')
-        .order('is_main', { ascending: false })
+        .eq('platform_type', 'ecommerce')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as unknown as Store[];
+      
+      // Transform integrations to Store format
+      return (data || []).map(integration => {
+        const config = integration.store_config && typeof integration.store_config === 'object' 
+          ? integration.store_config as Record<string, any>
+          : {};
+        
+        return {
+          id: integration.id,
+          user_id: integration.user_id,
+          name: config.name || integration.platform_name || 'Boutique',
+          domain: integration.shop_domain || integration.platform_url,
+          country: 'FR',
+          currency: 'EUR',
+          timezone: 'Europe/Paris',
+          logo_url: null,
+          is_main: false,
+          is_active: integration.is_active ?? true,
+          store_type: 'primary' as const,
+          settings: config || {},
+          created_at: integration.created_at,
+          updated_at: integration.updated_at,
+        };
+      }) as Store[];
     },
   });
 
-  // Fetch store statistics
+  // Fetch store statistics from integrations
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ['store-stats'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('store_consolidated_stats' as any)
-        .select('*');
+        .from('integrations')
+        .select('*')
+        .eq('platform_type', 'ecommerce');
 
       if (error) throw error;
-      return data as unknown as StoreStats[];
+      
+      // Transform to StoreStats format
+      return (data || []).map(integration => {
+        const config = integration.store_config && typeof integration.store_config === 'object' 
+          ? integration.store_config as Record<string, any>
+          : {};
+        
+        return {
+          store_id: integration.id,
+          store_name: config.name || integration.platform_name || 'Boutique',
+          domain: integration.shop_domain || integration.platform_url,
+          is_active: integration.is_active ?? true,
+          total_integrations: 1,
+          active_integrations: integration.connection_status === 'connected' ? 1 : 0,
+          integrations_summary: [{
+            platform: integration.platform_name,
+            status: integration.connection_status || 'unknown',
+            last_sync: integration.last_sync_at
+          }]
+        };
+      }) as StoreStats[];
     },
   });
 
-  // Create new store
+  // Create new store - redirect to connect page instead
   const createStore = useMutation({
     mutationFn: async (storeData: Partial<Store>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('stores' as any)
-        .insert({
-          user_id: user.id,
-          ...storeData,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      toast.info('Redirection vers la page de connexion...');
+      window.location.href = '/dashboard/stores/connect';
+      return null;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unified-stores'] });
-      queryClient.invalidateQueries({ queryKey: ['store-stats'] });
-      toast.success('Boutique créée avec succès');
+      // Handled by redirect
     },
     onError: (error: Error) => {
       toast.error(`Erreur: ${error.message}`);
@@ -96,8 +127,14 @@ export function useUnifiedStores() {
   const updateStore = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Store> & { id: string }) => {
       const { data, error } = await supabase
-        .from('stores' as any)
-        .update(updates)
+        .from('integrations')
+        .update({
+          is_active: updates.is_active,
+          store_config: {
+            ...updates.settings,
+            name: updates.name
+          }
+        })
         .eq('id', id)
         .select()
         .single();
@@ -119,7 +156,7 @@ export function useUnifiedStores() {
   const deleteStore = useMutation({
     mutationFn: async (storeId: string) => {
       const { error } = await supabase
-        .from('stores' as any)
+        .from('integrations')
         .delete()
         .eq('id', storeId);
 
@@ -128,6 +165,7 @@ export function useUnifiedStores() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['unified-stores'] });
       queryClient.invalidateQueries({ queryKey: ['store-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['store-integrations'] });
       toast.success('Boutique supprimée');
     },
     onError: (error: Error) => {
@@ -139,7 +177,7 @@ export function useUnifiedStores() {
   const toggleStoreActive = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
       const { data, error } = await supabase
-        .from('stores' as any)
+        .from('integrations')
         .update({ is_active })
         .eq('id', id)
         .select()
@@ -151,6 +189,7 @@ export function useUnifiedStores() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['unified-stores'] });
       queryClient.invalidateQueries({ queryKey: ['store-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['store-integrations'] });
       toast.success(variables.is_active ? 'Boutique activée' : 'Boutique désactivée');
     },
     onError: (error: Error) => {
