@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -10,7 +10,9 @@ import { BackButton } from '@/components/navigation/BackButton'
 import { useStoreIntegrations } from '@/hooks/useStoreIntegrations'
 import { useSyncLogs } from '@/hooks/useSyncLogs'
 import { AutoConfigWizard } from '@/components/integrations/AutoConfigWizard'
+import { SyncProgressModal } from './components/SyncProgressModal'
 import type { Integration } from '@/hooks/useIntegrations'
+import { supabase } from '@/integrations/supabase/client'
 
 export default function IntegrationsPage() {
   const navigate = useNavigate()
@@ -18,6 +20,10 @@ export default function IntegrationsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [wizardOpen, setWizardOpen] = useState(false)
   const [selectedPlatform, setSelectedPlatform] = useState<{ name: string; type: string } | null>(null)
+  const [syncModalOpen, setSyncModalOpen] = useState(false)
+  const [syncProgress, setSyncProgress] = useState(0)
+  const [syncSteps, setSyncSteps] = useState<any[]>([])
+  const [currentIntegrationId, setCurrentIntegrationId] = useState<string | null>(null)
   
   const { 
     integrations, 
@@ -32,6 +38,71 @@ export default function IntegrationsPage() {
   
   const { stats: syncStats } = useSyncLogs()
 
+  // Track sync progress in real-time
+  useEffect(() => {
+    if (!syncModalOpen || !currentIntegrationId) return
+
+    let progressInterval: NodeJS.Timeout
+
+    const updateProgress = () => {
+      setSyncProgress(prev => {
+        const newProgress = Math.min(prev + 10, 95)
+        
+        // Update steps based on progress
+        if (newProgress >= 30) {
+          setSyncSteps(steps => steps.map(s => 
+            s.id === 'init' ? { ...s, status: 'completed', progress: 100 } :
+            s.id === 'products' && s.status === 'pending' ? { ...s, status: 'running', progress: (newProgress - 30) } :
+            s
+          ))
+        }
+        
+        if (newProgress >= 85) {
+          setSyncSteps(steps => steps.map(s => 
+            s.id === 'products' ? { ...s, status: 'completed', progress: 100 } :
+            s.id === 'complete' && s.status === 'pending' ? { ...s, status: 'running', progress: (newProgress - 85) * 10 } :
+            s
+          ))
+        }
+        
+        return newProgress
+      })
+    }
+
+    progressInterval = setInterval(updateProgress, 500)
+
+    // Subscribe to sync completion via realtime
+    const channel = supabase
+      .channel('sync-completion')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sync_logs',
+          filter: `integration_id=eq.${currentIntegrationId}`
+        },
+        (payload) => {
+          if (payload.new && (payload.new as any).status === 'completed') {
+            setSyncProgress(100)
+            setSyncSteps(steps => steps.map(s => ({ ...s, status: 'completed', progress: 100 })))
+            clearInterval(progressInterval)
+            
+            setTimeout(() => {
+              setSyncModalOpen(false)
+              refetch()
+            }, 1500)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      clearInterval(progressInterval)
+      supabase.removeChannel(channel)
+    }
+  }, [syncModalOpen, currentIntegrationId, refetch])
+
   // Filter integrations based on search and status
   const filteredIntegrations = integrations.filter(integration => {
     const matchesSearch = !searchTerm || 
@@ -45,6 +116,14 @@ export default function IntegrationsPage() {
   });
 
   const handleSync = (integrationId: string) => {
+    setCurrentIntegrationId(integrationId)
+    setSyncModalOpen(true)
+    setSyncProgress(0)
+    setSyncSteps([
+      { id: 'init', name: 'Initialisation', status: 'running', progress: 0 },
+      { id: 'products', name: 'Synchronisation produits', status: 'pending', progress: 0 },
+      { id: 'complete', name: 'Finalisation', status: 'pending', progress: 0 }
+    ])
     syncIntegration(integrationId);
   };
 
@@ -401,6 +480,16 @@ export default function IntegrationsPage() {
           onComplete={handleWizardComplete}
         />
       )}
+
+      {/* Sync Progress Modal */}
+      <SyncProgressModal
+        isOpen={syncModalOpen}
+        onClose={() => setSyncModalOpen(false)}
+        syncType="full"
+        overallProgress={syncProgress}
+        steps={syncSteps}
+        currentStep={syncSteps.find(s => s.status === 'running')?.name}
+      />
     </div>
   )
 }
