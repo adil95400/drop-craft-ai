@@ -23,16 +23,24 @@ const ConnectStorePage = () => {
 
   const handleConnect = async (data: any) => {
     try {
+      // Normaliser les credentials pour correspondre au format attendu (snake_case)
+      const credentials = {
+        ...data,
+        platform: undefined,
+        name: undefined,
+        domain: undefined,
+      }
+
+      // Convertir accessToken en access_token si nécessaire (pour compatibilité)
+      if (credentials.accessToken && !credentials.access_token) {
+        credentials.access_token = credentials.accessToken
+      }
+
       await connectStore({
         platform: data.platform,
         name: data.name,
         domain: data.domain,
-        credentials: {
-          ...data,
-          platform: undefined,
-          name: undefined,
-          domain: undefined,
-        },
+        credentials,
       })
 
       toast({
