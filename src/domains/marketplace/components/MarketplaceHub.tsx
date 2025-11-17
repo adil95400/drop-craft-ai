@@ -46,6 +46,9 @@ export const MarketplaceHub = () => {
   const [syncing, setSyncing] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterPlatform, setFilterPlatform] = useState<string>('all')
+  const [connectDialogOpen, setConnectDialogOpen] = useState(false)
+  const [selectedPlatform, setSelectedPlatform] = useState<string>('')
+  const [credentials, setCredentials] = useState<any>({})
 
   useEffect(() => {
     if (user) {
@@ -106,13 +109,20 @@ export const MarketplaceHub = () => {
     }
   }
 
-  const connectMarketplace = async (platform: string, credentials?: any) => {
+  const openConnectDialog = (platform: string) => {
+    setSelectedPlatform(platform)
+    setCredentials({})
+    setConnectDialogOpen(true)
+  }
+
+  const connectMarketplace = async () => {
     try {
+      setLoading(true)
       const { data, error } = await supabase.functions.invoke('marketplace-connect', {
         body: { 
-          platform,
-          credentials: credentials || {},
-          shop_url: credentials?.shop_url || `https://${platform}.com`
+          platform: selectedPlatform,
+          credentials,
+          shop_url: credentials.shop_url || `https://${selectedPlatform}.com`
         }
       })
 
@@ -120,9 +130,10 @@ export const MarketplaceHub = () => {
 
       toast({
         title: "Connexion établie",
-        description: `Connexion réussie avec ${platform}`
+        description: `Connexion réussie avec ${selectedPlatform}`
       })
       
+      setConnectDialogOpen(false)
       await loadConnections()
     } catch (error) {
       console.error('Connection error:', error)
