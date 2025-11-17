@@ -367,23 +367,15 @@ export class BatchImportService {
   }
 
   /**
-   * Export to CSV
+   * Export to CSV (works with existing product tables)
    */
-  async exportToCSV(
-    tableName: string,
-    userId: string,
-    filters?: any
-  ): Promise<string> {
-    let query = supabase.from(tableName).select('*').eq('user_id', userId);
+  async exportToCSV(userId: string, filters?: any): Promise<string> {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('user_id', userId)
+      .limit(1000);
 
-    if (filters) {
-      // Apply filters
-      Object.entries(filters).forEach(([key, value]) => {
-        query = query.eq(key, value);
-      });
-    }
-
-    const { data, error } = await query;
     if (error) throw error;
 
     const csv = Papa.unparse(data || []);
@@ -393,25 +385,18 @@ export class BatchImportService {
   /**
    * Export to Excel
    */
-  async exportToExcel(
-    tableName: string,
-    userId: string,
-    filters?: any
-  ): Promise<ArrayBuffer> {
-    let query = supabase.from(tableName).select('*').eq('user_id', userId);
+  async exportToExcel(userId: string): Promise<ArrayBuffer> {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('user_id', userId)
+      .limit(1000);
 
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        query = query.eq(key, value);
-      });
-    }
-
-    const { data, error } = await query;
     if (error) throw error;
 
     const worksheet = XLSX.utils.json_to_sheet(data || []);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Data');
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
 
     const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     return buffer;
@@ -425,19 +410,23 @@ export class BatchImportService {
     targetTable: string,
     result: ImportResult
   ): Promise<void> {
-    await supabase.from('activity_logs').insert({
-      user_id: userId,
-      action: 'batch_import',
-      description: `Imported ${result.imported} records to ${targetTable}`,
-      entity_type: targetTable,
-      metadata: {
-        total: result.total,
-        imported: result.imported,
-        updated: result.updated,
-        skipped: result.skipped,
-        error_count: result.errors.length,
-      },
-    });
+    try {
+      await supabase.from('activity_logs').insert({
+        user_id: userId,
+        action: 'batch_import',
+        description: `Imported ${result.imported} records to ${targetTable}`,
+        entity_type: targetTable,
+        metadata: {
+          total: result.total,
+          imported: result.imported,
+          updated: result.updated,
+          skipped: result.skipped,
+          error_count: result.errors.length,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to log import activity:', error);
+    }
   }
 
   /**
