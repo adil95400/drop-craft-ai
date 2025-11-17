@@ -229,6 +229,76 @@ const platformConfigs: Record<string, PlatformConfig> = {
       autoSync: z.boolean().optional(),
     }),
   },
+  facebook: {
+    name: 'Facebook Shop',
+    icon: '📘',
+    fields: [
+      { name: 'name', label: 'Nom de la boutique', placeholder: 'Ma Boutique Facebook', type: 'text', required: true },
+      { name: 'domain', label: 'Page ID', placeholder: '1234567890', type: 'text', required: true },
+      { name: 'accessToken', label: 'Page Access Token', placeholder: 'EAAxxxx...', type: 'password', required: true },
+      { name: 'catalogId', label: 'Catalog ID', placeholder: '1234567890', type: 'text', required: true },
+      { name: 'autoSync', label: 'Synchronisation automatique', type: 'switch' },
+    ],
+    schema: z.object({
+      name: z.string().min(1, 'Nom requis'),
+      domain: z.string().min(1, 'Page ID requis'),
+      accessToken: z.string().min(1, 'Page Access Token requis'),
+      catalogId: z.string().min(1, 'Catalog ID requis'),
+      autoSync: z.boolean().optional(),
+    }),
+  },
+  rakuten: {
+    name: 'Rakuten France',
+    icon: '🛒',
+    fields: [
+      { name: 'name', label: 'Nom du compte', placeholder: 'Mon Compte Rakuten', type: 'text', required: true },
+      { name: 'domain', label: 'Merchant ID', placeholder: 'xxxxx', type: 'text', required: true },
+      { name: 'apiKey', label: 'API Key', placeholder: 'xxxxx', type: 'password', required: true },
+      { name: 'apiSecret', label: 'API Secret', placeholder: 'xxxxx', type: 'password', required: true },
+      { name: 'autoSync', label: 'Synchronisation automatique', type: 'switch' },
+    ],
+    schema: z.object({
+      name: z.string().min(1, 'Nom requis'),
+      domain: z.string().min(1, 'Merchant ID requis'),
+      apiKey: z.string().min(1, 'API Key requise'),
+      apiSecret: z.string().min(1, 'API Secret requis'),
+      autoSync: z.boolean().optional(),
+    }),
+  },
+  fnac: {
+    name: 'Fnac Marketplace',
+    icon: '📚',
+    fields: [
+      { name: 'name', label: 'Nom du compte', placeholder: 'Mon Compte Fnac', type: 'text', required: true },
+      { name: 'domain', label: 'Partner ID', placeholder: 'xxxxx', type: 'text', required: true },
+      { name: 'apiKey', label: 'API Key', placeholder: 'xxxxx', type: 'password', required: true },
+      { name: 'autoSync', label: 'Synchronisation automatique', type: 'switch' },
+    ],
+    schema: z.object({
+      name: z.string().min(1, 'Nom requis'),
+      domain: z.string().min(1, 'Partner ID requis'),
+      apiKey: z.string().min(1, 'API Key requise'),
+      autoSync: z.boolean().optional(),
+    }),
+  },
+  aliexpress: {
+    name: 'AliExpress',
+    icon: '🌏',
+    fields: [
+      { name: 'name', label: 'Nom du compte', placeholder: 'Mon Compte AliExpress', type: 'text', required: true },
+      { name: 'domain', label: 'App Key', placeholder: 'xxxxx', type: 'text', required: true },
+      { name: 'apiKey', label: 'App Key', placeholder: 'xxxxx', type: 'text', required: true },
+      { name: 'apiSecret', label: 'App Secret', placeholder: 'xxxxx', type: 'password', required: true },
+      { name: 'autoSync', label: 'Synchronisation automatique', type: 'switch' },
+    ],
+    schema: z.object({
+      name: z.string().min(1, 'Nom requis'),
+      domain: z.string().min(1, 'App Key requis'),
+      apiKey: z.string().min(1, 'App Key requis'),
+      apiSecret: z.string().min(1, 'App Secret requis'),
+      autoSync: z.boolean().optional(),
+    }),
+  },
 }
 
 export function StoreConnectionDialog({
