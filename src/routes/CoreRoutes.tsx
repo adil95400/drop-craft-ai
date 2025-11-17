@@ -30,6 +30,7 @@ const MarketplaceSyncDashboard = lazy(() => import('@/pages/MarketplaceSyncDashb
 const MultiStoreCentralDashboard = lazy(() => import('@/pages/MultiStoreCentralDashboard'));
 const StoreSyncDashboard = lazy(() => import('@/pages/StoreSyncDashboard'));
 const StockManagementDashboard = lazy(() => import('@/pages/StockManagementDashboard'));
+const AdvancedNotificationCenter = lazy(() => import('@/pages/AdvancedNotificationCenter'));
 
 // Order Management
 const ReturnManagementPage = lazy(() => import('@/pages/ReturnManagementPage'));
@@ -70,6 +71,7 @@ export function CoreRoutes() {
       <Route path="multi-store" element={<MultiStoreCentralDashboard />} />
       <Route path="stores/sync" element={<StoreSyncDashboard />} />
       <Route path="stores/stock-intelligence" element={<StockManagementDashboard />} />
+      <Route path="notifications" element={<AdvancedNotificationCenter />} />
       
       {/* Settings (accessible from sidebar) */}
       <Route path="parametres" element={<Settings />} />

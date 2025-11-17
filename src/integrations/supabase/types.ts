@@ -631,6 +631,84 @@ export type Database = {
         }
         Relationships: []
       }
+      advanced_alert_rules: {
+        Row: {
+          alert_template: Json | null
+          alert_trigger_type: string
+          applies_to_categories: string[] | null
+          applies_to_products: string[] | null
+          applies_to_stores: string[] | null
+          created_at: string | null
+          description: string | null
+          email_enabled: boolean | null
+          group_alerts: boolean | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          notification_channels: string[] | null
+          priority: number | null
+          rule_name: string
+          sms_enabled: boolean | null
+          throttle_minutes: number | null
+          trigger_conditions: Json
+          trigger_count: number | null
+          updated_at: string | null
+          user_id: string
+          webhook_enabled: boolean | null
+          webhook_url: string | null
+        }
+        Insert: {
+          alert_template?: Json | null
+          alert_trigger_type: string
+          applies_to_categories?: string[] | null
+          applies_to_products?: string[] | null
+          applies_to_stores?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          email_enabled?: boolean | null
+          group_alerts?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          notification_channels?: string[] | null
+          priority?: number | null
+          rule_name: string
+          sms_enabled?: boolean | null
+          throttle_minutes?: number | null
+          trigger_conditions: Json
+          trigger_count?: number | null
+          updated_at?: string | null
+          user_id: string
+          webhook_enabled?: boolean | null
+          webhook_url?: string | null
+        }
+        Update: {
+          alert_template?: Json | null
+          alert_trigger_type?: string
+          applies_to_categories?: string[] | null
+          applies_to_products?: string[] | null
+          applies_to_stores?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          email_enabled?: boolean | null
+          group_alerts?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          notification_channels?: string[] | null
+          priority?: number | null
+          rule_name?: string
+          sms_enabled?: boolean | null
+          throttle_minutes?: number | null
+          trigger_conditions?: Json
+          trigger_count?: number | null
+          updated_at?: string | null
+          user_id?: string
+          webhook_enabled?: boolean | null
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
       advanced_reports: {
         Row: {
           created_at: string
@@ -4279,6 +4357,54 @@ export type Database = {
         }
         Relationships: []
       }
+      grouped_alerts: {
+        Row: {
+          affected_items: Json | null
+          alert_count: number | null
+          alert_type: string
+          created_at: string | null
+          first_alert_at: string | null
+          group_key: string
+          id: string
+          is_resolved: boolean | null
+          last_alert_at: string | null
+          resolved_at: string | null
+          summary_data: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          affected_items?: Json | null
+          alert_count?: number | null
+          alert_type: string
+          created_at?: string | null
+          first_alert_at?: string | null
+          group_key: string
+          id?: string
+          is_resolved?: boolean | null
+          last_alert_at?: string | null
+          resolved_at?: string | null
+          summary_data?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          affected_items?: Json | null
+          alert_count?: number | null
+          alert_type?: string
+          created_at?: string | null
+          first_alert_at?: string | null
+          group_key?: string
+          id?: string
+          is_resolved?: boolean | null
+          last_alert_at?: string | null
+          resolved_at?: string | null
+          summary_data?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       import_batches: {
         Row: {
           batch_type: string
@@ -5979,6 +6105,242 @@ export type Database = {
           id?: string
           rate_limit_key?: string | null
           source?: string | null
+        }
+        Relationships: []
+      }
+      notification_history: {
+        Row: {
+          action_taken: string | null
+          action_taken_at: string | null
+          alert_rule_id: string | null
+          channel: string
+          created_at: string | null
+          delivered_at: string | null
+          failed_reason: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          notification_type: string
+          read_at: string | null
+          sent_at: string | null
+          status: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          action_taken?: string | null
+          action_taken_at?: string | null
+          alert_rule_id?: string | null
+          channel: string
+          created_at?: string | null
+          delivered_at?: string | null
+          failed_reason?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          notification_type: string
+          read_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          action_taken?: string | null
+          action_taken_at?: string | null
+          alert_rule_id?: string | null
+          channel?: string
+          created_at?: string | null
+          delivered_at?: string | null
+          failed_reason?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          notification_type?: string
+          read_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_history_alert_rule_id_fkey"
+            columns: ["alert_rule_id"]
+            isOneToOne: false
+            referencedRelation: "advanced_alert_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          customer_alerts_pref: boolean | null
+          email_address: string | null
+          email_digest: boolean | null
+          email_frequency: string | null
+          email_notifications: boolean | null
+          financial_alerts_pref: boolean | null
+          id: string
+          in_app_notifications: boolean | null
+          order_alerts_pref: boolean | null
+          phone_number: string | null
+          push_notifications: boolean | null
+          push_tokens: Json | null
+          quiet_hours_enabled: boolean | null
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          quiet_hours_timezone: string | null
+          sms_for_critical_only: boolean | null
+          sms_notifications: boolean | null
+          stock_alerts_pref: boolean | null
+          system_alerts_pref: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          customer_alerts_pref?: boolean | null
+          email_address?: string | null
+          email_digest?: boolean | null
+          email_frequency?: string | null
+          email_notifications?: boolean | null
+          financial_alerts_pref?: boolean | null
+          id?: string
+          in_app_notifications?: boolean | null
+          order_alerts_pref?: boolean | null
+          phone_number?: string | null
+          push_notifications?: boolean | null
+          push_tokens?: Json | null
+          quiet_hours_enabled?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          quiet_hours_timezone?: string | null
+          sms_for_critical_only?: boolean | null
+          sms_notifications?: boolean | null
+          stock_alerts_pref?: boolean | null
+          system_alerts_pref?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          customer_alerts_pref?: boolean | null
+          email_address?: string | null
+          email_digest?: boolean | null
+          email_frequency?: string | null
+          email_notifications?: boolean | null
+          financial_alerts_pref?: boolean | null
+          id?: string
+          in_app_notifications?: boolean | null
+          order_alerts_pref?: boolean | null
+          phone_number?: string | null
+          push_notifications?: boolean | null
+          push_tokens?: Json | null
+          quiet_hours_enabled?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          quiet_hours_timezone?: string | null
+          sms_for_critical_only?: boolean | null
+          sms_notifications?: boolean | null
+          stock_alerts_pref?: boolean | null
+          system_alerts_pref?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notification_templates: {
+        Row: {
+          body_template: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_system: boolean | null
+          locale: string | null
+          subject_template: string | null
+          template_name: string
+          template_type: string
+          updated_at: string | null
+          user_id: string | null
+          variables: Json | null
+        }
+        Insert: {
+          body_template?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          locale?: string | null
+          subject_template?: string | null
+          template_name: string
+          template_type: string
+          updated_at?: string | null
+          user_id?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          body_template?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_system?: boolean | null
+          locale?: string | null
+          subject_template?: string | null
+          template_name?: string
+          template_type?: string
+          updated_at?: string | null
+          user_id?: string | null
+          variables?: Json | null
+        }
+        Relationships: []
+      }
+      notification_webhooks: {
+        Row: {
+          created_at: string | null
+          custom_headers: Json | null
+          event_types: string[]
+          failure_count: number | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          secret_token: string | null
+          success_count: number | null
+          updated_at: string | null
+          user_id: string
+          webhook_name: string
+          webhook_url: string
+        }
+        Insert: {
+          created_at?: string | null
+          custom_headers?: Json | null
+          event_types: string[]
+          failure_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          secret_token?: string | null
+          success_count?: number | null
+          updated_at?: string | null
+          user_id: string
+          webhook_name: string
+          webhook_url: string
+        }
+        Update: {
+          created_at?: string | null
+          custom_headers?: Json | null
+          event_types?: string[]
+          failure_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          secret_token?: string | null
+          success_count?: number | null
+          updated_at?: string | null
+          user_id?: string
+          webhook_name?: string
+          webhook_url?: string
         }
         Relationships: []
       }
