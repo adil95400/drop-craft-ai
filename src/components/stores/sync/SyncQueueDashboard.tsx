@@ -2,6 +2,7 @@ import { useSyncManager, type SyncQueueItem } from '@/hooks/useSyncManager';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import {
   Table,
   TableBody,
@@ -71,6 +72,12 @@ export function SyncQueueDashboard() {
     failed: queue.filter((q) => q.status === 'failed').length,
   };
 
+  // Calculate overall progress
+  const totalJobs = queue.length;
+  const completedJobs = stats.completed;
+  const progressPercentage = totalJobs > 0 ? Math.round((completedJobs / totalJobs) * 100) : 0;
+  const hasActiveSync = stats.processing > 0 || stats.pending > 0;
+
   if (isLoadingQueue) {
     return (
       <Card className="p-6">
@@ -84,6 +91,33 @@ export function SyncQueueDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Global Progress Bar */}
+      {hasActiveSync && (
+        <Card className="p-6">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Synchronisation en cours
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {completedJobs} sur {totalJobs} tâches terminées
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-bold text-primary">
+                  {progressPercentage}%
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {stats.processing} en cours
+                </p>
+              </div>
+            </div>
+            <Progress value={progressPercentage} className="h-3" />
+          </div>
+        </Card>
+      )}
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-4">
