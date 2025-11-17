@@ -216,38 +216,61 @@ async function syncShopifyData(supabaseClient: any, integration: any, syncType: 
 }
 
 async function syncShopifyProducts(supabaseClient: any, integration: any, shopifyDomain: string, accessToken: string): Promise<number> {
-  console.log('Starting Shopify product sync...')
+  console.log('Starting Shopify product sync with pagination...')
   
-  // Only fetch ONE page with 20 products to avoid timeout
-  const url = `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=20`
-  
-  console.log(`Fetching from: ${url}`)
+  let allProducts: any[] = []
+  let nextPageInfo: string | null = null
+  let hasNextPage = true
+  let pageCount = 0
   
   try {
-    const response = await fetch(url, {
-      headers: {
-        'X-Shopify-Access-Token': accessToken,
-        'Content-Type': 'application/json'
+    // Fetch ALL products with pagination
+    while (hasNextPage) {
+      pageCount++
+      const url = nextPageInfo
+        ? `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=250&page_info=${nextPageInfo}`
+        : `https://${shopifyDomain}/admin/api/2023-10/products.json?limit=250`
+      
+      console.log(`📄 Fetching page ${pageCount}...`)
+      
+      const response = await fetch(url, {
+        headers: {
+          'X-Shopify-Access-Token': accessToken,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        console.error(`Shopify API error: ${response.status}`)
+        break
       }
-    })
 
-    if (!response.ok) {
-      console.error(`Shopify API error: ${response.status}`)
-      return 0
+      const data = await response.json()
+      const products = data.products || []
+      allProducts = allProducts.concat(products)
+      
+      console.log(`   Retrieved ${products.length} products (total so far: ${allProducts.length})`)
+
+      // Check for next page
+      const linkHeader = response.headers.get('Link')
+      if (linkHeader && linkHeader.includes('rel="next"')) {
+        const nextMatch = linkHeader.match(/<[^>]*[?&]page_info=([^&>]*).*?>;\s*rel="next"/)
+        nextPageInfo = nextMatch ? nextMatch[1] : null
+        hasNextPage = !!nextPageInfo
+      } else {
+        hasNextPage = false
+      }
     }
-
-    const data = await response.json()
-    const products = data.products || []
     
-    console.log(`Received ${products.length} products from Shopify`)
+    console.log(`📦 Total products retrieved: ${allProducts.length}`)
 
-    if (products.length === 0) {
+    if (allProducts.length === 0) {
       console.log('No products found in Shopify store')
       return 0
     }
 
     // Transform products
-    const productsToUpsert = products.map((product: any) => ({
+    const productsToUpsert = allProducts.map((product: any) => ({
       user_id: integration.user_id,
       supplier_name: 'Shopify',
       supplier_product_id: product.id.toString(),
@@ -268,7 +291,7 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
       weight: product.variants?.[0]?.weight || null,
     }))
 
-    console.log(`Upserting ${productsToUpsert.length} products to database...`)
+    console.log(`💾 Upserting ${productsToUpsert.length} products to database...`)
 
     const { error } = await supabaseClient
       .from('imported_products')
@@ -285,10 +308,11 @@ async function syncShopifyProducts(supabaseClient: any, integration: any, shopif
     console.log(`✅ Successfully synced ${productsToUpsert.length} products`)
     return productsToUpsert.length
   } catch (error) {
-    console.error('Sync error:', error)
+    console.error('Error syncing Shopify products:', error)
     return 0
   }
 }
+
 
 async function syncShopifyOrders(supabaseClient: any, integration: any, shopifyDomain: string, accessToken: string): Promise<number> {
   let totalOrders = 0
