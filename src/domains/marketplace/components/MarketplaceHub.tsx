@@ -26,6 +26,7 @@ import {
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import { MarketplaceConnectDialog } from './MarketplaceConnectDialog'
 
 interface MarketplaceConnection {
   id: string
@@ -48,7 +49,6 @@ export const MarketplaceHub = () => {
   const [filterPlatform, setFilterPlatform] = useState<string>('all')
   const [connectDialogOpen, setConnectDialogOpen] = useState(false)
   const [selectedPlatform, setSelectedPlatform] = useState<string>('')
-  const [credentials, setCredentials] = useState<any>({})
 
   useEffect(() => {
     if (user) {
@@ -111,18 +111,16 @@ export const MarketplaceHub = () => {
 
   const openConnectDialog = (platform: string) => {
     setSelectedPlatform(platform)
-    setCredentials({})
     setConnectDialogOpen(true)
   }
 
-  const connectMarketplace = async () => {
+  const connectMarketplace = async (credentials: any) => {
     try {
-      setLoading(true)
       const { data, error } = await supabase.functions.invoke('marketplace-connect', {
         body: { 
           platform: selectedPlatform,
           credentials,
-          shop_url: credentials.shop_url || `https://${selectedPlatform}.com`
+          config: {}
         }
       })
 
@@ -133,7 +131,6 @@ export const MarketplaceHub = () => {
         description: `Connexion réussie avec ${selectedPlatform}`
       })
       
-      setConnectDialogOpen(false)
       await loadConnections()
     } catch (error) {
       console.error('Connection error:', error)
@@ -142,6 +139,7 @@ export const MarketplaceHub = () => {
         description: "Impossible de se connecter à la plateforme",
         variant: "destructive"
       })
+      throw error
     }
   }
 
@@ -726,6 +724,13 @@ export const MarketplaceHub = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      <MarketplaceConnectDialog
+        open={connectDialogOpen}
+        onOpenChange={setConnectDialogOpen}
+        platform={selectedPlatform}
+        onConnect={connectMarketplace}
+      />
     </div>
   )
 }
