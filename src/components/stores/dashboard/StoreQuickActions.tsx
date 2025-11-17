@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, RefreshCw, Settings, Activity } from 'lucide-react';
+import { Plus, RefreshCw, Settings, Activity, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface StoreQuickActionsProps {
@@ -25,6 +25,12 @@ export function StoreQuickActions({ onSync, isSyncing }: StoreQuickActionsProps)
       variant: 'outline' as const,
     },
     {
+      label: 'Stock IA',
+      icon: TrendingUp,
+      onClick: () => navigate('/dashboard/stores/stock-intelligence'),
+      variant: 'outline' as const,
+    },
+    {
       label: 'Synchronisation',
       icon: Activity,
       onClick: () => navigate('/dashboard/stores/sync'),
@@ -42,7 +48,7 @@ export function StoreQuickActions({ onSync, isSyncing }: StoreQuickActionsProps)
   return (
     <Card className="p-4">
       <h3 className="text-sm font-medium text-muted-foreground mb-3">Actions Rapides</h3>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
         {actions.map((action, index) => (
           <Button
             key={index}
