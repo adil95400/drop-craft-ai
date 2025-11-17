@@ -67,27 +67,34 @@ serve(async (req) => {
           throw new Error('Missing credentials')
         }
 
-        console.log(`📦 Syncing from ${domain}`)
+        console.log(`📦 Syncing ALL products from ${domain}`)
         
         let total = 0
-        const MAX_PAGES = 5 // 125 products max
+        let page = 1
+        let hasMore = true
 
-        for (let page = 1; page <= MAX_PAGES; page++) {
-          console.log(`   Page ${page}/${MAX_PAGES}`)
+        while (hasMore) {
+          console.log(`   Page ${page}...`)
           
-          const res = await fetch(`https://${domain}/admin/api/2023-10/products.json?limit=25&page=${page}`, {
+          const res = await fetch(`https://${domain}/admin/api/2023-10/products.json?limit=250&page=${page}`, {
             headers: {
               'X-Shopify-Access-Token': token,
               'Content-Type': 'application/json'
             }
           })
 
-          if (!res.ok) break
+          if (!res.ok) {
+            console.log(`   ❌ Error fetching page ${page}: ${res.status}`)
+            break
+          }
 
           const data = await res.json()
           const products = data.products || []
           
-          if (products.length === 0) break
+          if (products.length === 0) {
+            hasMore = false
+            break
+          }
 
           const items = products.map((p: any) => ({
             user_id: integration.user_id,
@@ -113,7 +120,26 @@ serve(async (req) => {
 
           if (!error) {
             total += items.length
-            console.log(`   ✅ ${total} total`)
+            console.log(`   ✅ ${total} products synced`)
+            
+            // Update progress in real-time
+            await supabaseClient
+              .from('integrations')
+              .update({
+                store_config: {
+                  ...(integration.store_config || {}),
+                  last_products_synced: total,
+                  sync_in_progress: true
+                }
+              })
+              .eq('id', integration_id)
+          }
+          
+          page++
+          
+          // Rate limiting - wait 500ms between pages
+          if (hasMore && products.length > 0) {
+            await new Promise(resolve => setTimeout(resolve, 500))
           }
         }
 
@@ -125,12 +151,13 @@ serve(async (req) => {
             last_sync_at: new Date().toISOString(),
             store_config: {
               ...(integration.store_config || {}),
-              last_products_synced: total
+              last_products_synced: total,
+              sync_in_progress: false
             }
           })
           .eq('id', integration_id)
 
-        console.log(`✅ Done: ${total} products`)
+        console.log(`✅ Sync completed: ${total} products imported`)
       } catch (error) {
         console.error('❌ Error:', error)
         await supabaseClient
