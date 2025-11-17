@@ -44,46 +44,34 @@ export default function IntegrationsPage() {
 
     let progressInterval: NodeJS.Timeout
 
-    const updateProgress = () => {
-      setSyncProgress(prev => {
-        const newProgress = Math.min(prev + 10, 95)
-        
-        // Update steps based on progress
-        if (newProgress >= 30) {
-          setSyncSteps(steps => steps.map(s => 
-            s.id === 'init' ? { ...s, status: 'completed', progress: 100 } :
-            s.id === 'products' && s.status === 'pending' ? { ...s, status: 'running', progress: (newProgress - 30) } :
-            s
-          ))
-        }
-        
-        if (newProgress >= 85) {
-          setSyncSteps(steps => steps.map(s => 
-            s.id === 'products' ? { ...s, status: 'completed', progress: 100 } :
-            s.id === 'complete' && s.status === 'pending' ? { ...s, status: 'running', progress: (newProgress - 85) * 10 } :
-            s
-          ))
-        }
-        
-        return newProgress
-      })
-    }
-
-    progressInterval = setInterval(updateProgress, 500)
-
-    // Subscribe to sync completion via realtime
+    // Subscribe to integration updates for real-time progress
     const channel = supabase
-      .channel('sync-completion')
+      .channel('sync-progress')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
-          table: 'sync_logs',
-          filter: `integration_id=eq.${currentIntegrationId}`
+          table: 'integrations',
+          filter: `id=eq.${currentIntegrationId}`
         },
         (payload) => {
-          if (payload.new && (payload.new as any).status === 'completed') {
+          const newData = payload.new as any
+          const storeConfig = newData.store_config || {}
+          
+          if (storeConfig.last_products_synced) {
+            const productsCount = storeConfig.last_products_synced
+            setSyncSteps(steps => steps.map(s => 
+              s.id === 'products' ? { 
+                ...s, 
+                status: 'running', 
+                progress: 50,
+                name: `Synchronisation produits (${productsCount} produits)` 
+              } : s
+            ))
+          }
+          
+          if (newData.sync_status === 'synced' && !storeConfig.sync_in_progress) {
             setSyncProgress(100)
             setSyncSteps(steps => steps.map(s => ({ ...s, status: 'completed', progress: 100 })))
             clearInterval(progressInterval)
