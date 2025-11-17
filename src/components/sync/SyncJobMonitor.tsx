@@ -27,14 +27,22 @@ export const SyncJobMonitor: React.FC<SyncJobMonitorProps> = ({
   refreshInterval = 5000 
 }) => {
   const { 
-    syncJobs, 
-    queueStats, 
-    isLoading,
-    triggerManualSync,
-    cleanupOldJobs,
-    isTriggeringSync,
-    isCleaningUp
+    queue: syncJobs, 
+    isLoadingQueue: isLoading,
   } = useSyncManager();
+  
+  const queueStats = {
+    total: syncJobs.length,
+    running: syncJobs.filter(j => j.status === 'processing').length,
+    completed: syncJobs.filter(j => j.status === 'completed').length,
+    failed: syncJobs.filter(j => j.status === 'failed').length,
+    by_status: {
+      pending: syncJobs.filter(j => j.status === 'pending').length,
+      processing: syncJobs.filter(j => j.status === 'processing').length,
+      completed: syncJobs.filter(j => j.status === 'completed').length,
+      failed: syncJobs.filter(j => j.status === 'failed').length,
+    }
+  };
 
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
 
@@ -85,14 +93,7 @@ export const SyncJobMonitor: React.FC<SyncJobMonitorProps> = ({
   };
 
   const formatJobType = (type: string) => {
-    const typeMap = {
-      sync: 'Synchronisation',
-      import: 'Import',
-      export: 'Export',
-      cleanup: 'Nettoyage'
-    } as Record<string, string>;
-    
-    return typeMap[type] || type;
+    return type || 'Synchronisation';
   };
 
   const calculateProgress = (job: any) => {

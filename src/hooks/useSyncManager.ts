@@ -1,289 +1,251 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
-import { syncService } from '@/services/sync/SyncService'
-import { queueService } from '@/services/sync/QueueService'
-import { useToast } from '@/hooks/use-toast'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-export const useSyncManager = () => {
-  const { toast } = useToast()
-  const queryClient = useQueryClient()
+// Export type definitions for sync entities
+export interface SyncQueueItem {
+  id: string;
+  user_id: string;
+  store_id: string | null;
+  sync_type: string;
+  entity_type: string;
+  entity_id: string | null;
+  operation: string;
+  priority: number;
+  status: string;
+  retry_count: number;
+  max_retries: number;
+  error_message: string | null;
+  payload: any;
+  scheduled_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
-  // Récupération des jobs de synchronisation
-  const { data: syncJobs = [], isLoading } = useQuery({
-    queryKey: ['sync-jobs'],
-    queryFn: async () => {
-      // Utiliser activity_logs pour récupérer les jobs temporairement
-      const { data } = await supabase
-        .from('activity_logs')
-        .select('*')
-        .like('action', 'sync_%')
-        .order('created_at', { ascending: false })
+export interface SyncLog {
+  id: string;
+  user_id: string;
+  store_id: string | null;
+  sync_type: string;
+  operation: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  status: string;
+  duration_ms: number | null;
+  message: string;
+  error_details: any;
+  metadata: any;
+  created_at: string;
+}
 
-      return data?.map(log => ({
-        id: log.id,
-        type: log.action.replace('sync_', ''),
-        status: log.severity, // Approximation
-        created_at: log.created_at,
-        description: log.description,
-        metadata: log.metadata
-      })) || []
-    }
-  })
+export interface SyncConflict {
+  id: string;
+  user_id: string;
+  store_id: string | null;
+  entity_type: string;
+  entity_id: string;
+  conflict_type: string;
+  local_data: any;
+  remote_data: any;
+  resolution_strategy: string | null;
+  resolved_at: string | null;
+  resolved_data: any;
+  created_at: string;
+  updated_at: string;
+}
 
-  // Statistiques de la queue
-  const { data: queueStats } = useQuery({
-    queryKey: ['queue-stats'],
-    queryFn: () => queueService.getQueueStats(),
-    refetchInterval: 30000 // Rafraîchir toutes les 30 secondes
-  })
+export function useSyncManager() {
+  const queryClient = useQueryClient();
 
-  // Création d'un job de sync
-  const createSyncJob = useMutation({
-    mutationFn: async (params: {
-      type: 'products' | 'stock' | 'orders'
-      supplier_id: string
-      frequency: 'hourly' | 'daily' | 'weekly' | 'manual'
-      auto_enabled: boolean
-    }) => {
-      // Simuler la création d'un job de sync
-      return await queueService.addJob('sync', {
-        supplierId: params.supplier_id,
-        type: params.type,
-        frequency: params.frequency,
-        auto_enabled: params.auto_enabled
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sync-jobs'] })
-      toast({
-        title: "Job de synchronisation créé",
-        description: "Le job de synchronisation a été configuré avec succès.",
-      })
-    },
-    onError: (error) => {
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer le job de synchronisation.",
-        variant: "destructive",
-      })
-      console.error('Failed to create sync job:', error)
-    }
-  })
-
-  // Synchronisation manuelle
-  const triggerManualSync = useMutation({
-    mutationFn: async ({ supplierId, type }: { supplierId: string; type: 'products' | 'stock' | 'orders' }) => {
-      return await queueService.addJob('sync', {
-        supplierId,
-        type,
-        manual: true
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sync-jobs', 'queue-stats'] })
-      toast({
-        title: "Synchronisation lancée",
-        description: "La synchronisation manuelle a été ajoutée à la queue.",
-      })
-    },
-    onError: (error) => {
-      toast({
-        title: "Erreur de synchronisation",
-        description: "Impossible de lancer la synchronisation manuelle.",
-        variant: "destructive",
-      })
-      console.error('Failed to trigger manual sync:', error)
-    }
-  })
-
-  // Synchronisation de produits vers Shopify
-  const syncToShopify = useMutation({
-    mutationFn: async (params: { productIds: string[]; shopifyCredentials: any }) => {
-      return await queueService.addJob('export', {
-        destination: 'shopify',
-        format: 'shopify_api',
-        filters: { productIds: params.productIds },
-        credentials: params.shopifyCredentials
-      })
-    },
-    onSuccess: () => {
-      toast({
-        title: "Export Shopify lancé",
-        description: "L'export vers Shopify a été ajouté à la queue.",
-      })
-    },
-    onError: (error) => {
-      toast({
-        title: "Erreur d'export",
-        description: "Impossible de lancer l'export vers Shopify.",
-        variant: "destructive",
-      })
-      console.error('Failed to sync to Shopify:', error)
-    }
-  })
-
-  // Import depuis BigBuy
-  const importFromBigBuy = useMutation({
-    mutationFn: async (params: { category?: string; limit?: number }) => {
-      return await queueService.addJob('import', {
-        source: 'bigbuy',
-        category: params.category,
-        limit: params.limit || 100
-      })
-    },
-    onSuccess: () => {
-      toast({
-        title: "Import BigBuy lancé",
-        description: "L'import depuis BigBuy a été ajouté à la queue.",
-      })
-    },
-    onError: (error) => {
-      toast({
-        title: "Erreur d'import",
-        description: "Impossible de lancer l'import depuis BigBuy.",
-        variant: "destructive",
-      })
-      console.error('Failed to import from BigBuy:', error)
-    }
-  })
-
-  // Nettoyage des anciens jobs
-  const cleanupOldJobs = useMutation({
-    mutationFn: async (days: number = 7) => {
-      await queueService.cleanupOldJobs(days)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sync-jobs', 'queue-stats'] })
-      toast({
-        title: "Nettoyage effectué",
-        description: "Les anciens jobs ont été supprimés.",
-      })
-    }
-  })
-
-  // Fetch sync queue from new tables
-  const { data: queue = [], isLoading: isLoadingQueue } = useQuery({
+  // Fetch sync queue
+  const {
+    data: queue = [],
+    isLoading: isLoadingQueue,
+  } = useQuery({
     queryKey: ['sync-queue'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('sync_queue' as any)
+      const { data, error } = await (supabase as any)
+        .from('sync_queue')
         .select('*')
         .order('priority', { ascending: true })
-        .order('scheduled_at', { ascending: true })
+        .order('scheduled_at', { ascending: true });
 
-      if (error) throw error
-      return data || []
+      if (error) throw error;
+      return (data || []) as SyncQueueItem[];
     },
-    refetchInterval: 5000,
-  })
+  });
 
   // Fetch sync logs
-  const { data: logs = [], isLoading: isLoadingLogs } = useQuery({
+  const {
+    data: logs = [],
+    isLoading: isLoadingLogs,
+  } = useQuery({
     queryKey: ['sync-logs'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('sync_logs' as any)
+      const { data, error } = await (supabase as any)
+        .from('sync_logs')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(100)
+        .limit(100);
 
-      if (error) throw error
-      return data || []
+      if (error) throw error;
+      return (data || []) as SyncLog[];
     },
-  })
+  });
 
   // Fetch sync conflicts
-  const { data: conflicts = [], isLoading: isLoadingConflicts } = useQuery({
+  const {
+    data: conflicts = [],
+    isLoading: isLoadingConflicts,
+  } = useQuery({
     queryKey: ['sync-conflicts'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('sync_conflicts' as any)
+      const { data, error } = await (supabase as any)
+        .from('sync_conflicts')
         .select('*')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false })
+        .is('resolved_at', null)
+        .order('created_at', { ascending: false});
 
-      if (error) throw error
-      return data || []
+      if (error) throw error;
+      return (data || []) as SyncConflict[];
     },
-  })
+  });
 
-  // Cancel a sync
-  const cancelSync = useMutation({
-    mutationFn: async (queueItemId: string) => {
-      const { error } = await supabase
-        .from('sync_queue' as any)
-        .update({ status: 'cancelled' })
-        .eq('id', queueItemId)
+  // Queue a new sync
+  const queueSync = useMutation({
+    mutationFn: async (params: {
+      storeId: string;
+      syncType: string;
+      entityType: string;
+      operation: string;
+      priority?: number;
+    }) => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('Not authenticated');
 
-      if (error) throw error
+      const { error } = await (supabase as any).from('sync_queue').insert({
+        user_id: user.user.id,
+        store_id: params.storeId,
+        sync_type: params.syncType,
+        entity_type: params.entityType,
+        operation: params.operation,
+        priority: params.priority || 5,
+        status: 'pending',
+        retry_count: 0,
+        max_retries: 3,
+        payload: {},
+        scheduled_at: new Date().toISOString(),
+      });
+
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sync-queue'] })
-      toast({
-        title: 'Synchronisation annulée',
-      })
+      queryClient.invalidateQueries({ queryKey: ['sync-queue'] });
+      toast.success('Synchronisation ajoutée à la file d\'attente');
     },
-  })
+    onError: () => {
+      toast.error('Erreur lors de l\'ajout de la synchronisation');
+    },
+  });
+
+  // Cancel a sync job
+  const cancelSync = useMutation({
+    mutationFn: async (syncId: string) => {
+      const { error } = await (supabase as any)
+        .from('sync_queue')
+        .update({ status: 'cancelled' })
+        .eq('id', syncId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sync-queue'] });
+      toast.success('Synchronisation annulée');
+    },
+    onError: () => {
+      toast.error('Erreur lors de l\'annulation');
+    },
+  });
+
+  // Retry a failed sync
+  const retrySync = useMutation({
+    mutationFn: async (syncId: string) => {
+      const { error } = await (supabase as any)
+        .from('sync_queue')
+        .update({
+          status: 'pending',
+          error_message: null,
+          scheduled_at: new Date().toISOString(),
+        })
+        .eq('id', syncId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sync-queue'] });
+      toast.success('Synchronisation relancée');
+    },
+    onError: () => {
+      toast.error('Erreur lors de la relance');
+    },
+  });
 
   // Resolve a conflict
   const resolveConflict = useMutation({
-    mutationFn: async ({
-      conflictId,
-      strategy,
-      resolutionData,
-    }: {
-      conflictId: string
-      strategy: string
-      resolutionData?: Record<string, any>
-    }) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
+    mutationFn: async (params: { conflictId: string; strategy: string }) => {
+      const conflict = conflicts.find((c) => c.id === params.conflictId);
+      if (!conflict) throw new Error('Conflict not found');
 
-      const { error } = await supabase
-        .from('sync_conflicts' as any)
+      let resolvedData;
+      switch (params.strategy) {
+        case 'local_wins':
+          resolvedData = conflict.local_data;
+          break;
+        case 'remote_wins':
+          resolvedData = conflict.remote_data;
+          break;
+        case 'merge':
+          resolvedData = { ...conflict.remote_data, ...conflict.local_data };
+          break;
+        default:
+          throw new Error('Invalid strategy');
+      }
+
+      const { error } = await (supabase as any)
+        .from('sync_conflicts')
         .update({
-          resolution_strategy: strategy,
-          resolution_data: resolutionData,
-          resolved_by: user.id,
+          resolution_strategy: params.strategy,
+          resolved_data: resolvedData,
           resolved_at: new Date().toISOString(),
-          status: 'resolved',
         })
-        .eq('id', conflictId)
+        .eq('id', params.conflictId);
 
-      if (error) throw error
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sync-conflicts'] })
-      toast({
-        title: 'Conflit résolu',
-      })
+      queryClient.invalidateQueries({ queryKey: ['sync-conflicts'] });
+      toast.success('Conflit résolu');
     },
-  })
+    onError: () => {
+      toast.error('Erreur lors de la résolution du conflit');
+    },
+  });
 
   return {
-    syncJobs,
-    queueStats,
     queue,
     logs,
     conflicts,
-    isLoading,
     isLoadingQueue,
     isLoadingLogs,
     isLoadingConflicts,
-    createSyncJob: createSyncJob.mutate,
-    triggerManualSync: triggerManualSync.mutate,
-    syncToShopify: syncToShopify.mutate,
-    importFromBigBuy: importFromBigBuy.mutate,
-    cleanupOldJobs: cleanupOldJobs.mutate,
+    queueSync,
     cancelSync: cancelSync.mutate,
+    retrySync: retrySync.mutate,
     resolveConflict: resolveConflict.mutate,
-    retrySync: cleanupOldJobs.mutate,
-    isCreatingSyncJob: createSyncJob.isPending,
-    isTriggeringSync: triggerManualSync.isPending,
-    isSyncingToShopify: syncToShopify.isPending,
-    isImportingFromBigBuy: importFromBigBuy.isPending,
-    isCleaningUp: cleanupOldJobs.isPending,
     isCancelling: cancelSync.isPending,
+    isRetrying: retrySync.isPending,
     isResolving: resolveConflict.isPending,
-  }
+  };
 }

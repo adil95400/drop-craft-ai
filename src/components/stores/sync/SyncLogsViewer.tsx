@@ -1,4 +1,4 @@
-import { useSyncManager } from '@/hooks/useSyncManager';
+import { useSyncManager, type SyncLog } from '@/hooks/useSyncManager';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -26,6 +26,7 @@ import { fr } from 'date-fns/locale';
 
 export function SyncLogsViewer() {
   const { logs, isLoadingLogs } = useSyncManager();
+  const typedLogs = (logs || []) as SyncLog[];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -91,10 +92,10 @@ export function SyncLogsViewer() {
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Historique de synchronisation</h2>
-          <Badge variant="outline">{logs.length} entrées</Badge>
+          <Badge variant="outline">{typedLogs.length} entrées</Badge>
         </div>
 
-        {logs.length === 0 ? (
+        {typedLogs.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             Aucun log de synchronisation
           </div>
@@ -113,7 +114,7 @@ export function SyncLogsViewer() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {logs.map((log) => (
+                {typedLogs.map((log) => (
                   <TableRow key={log.id}>
                     <TableCell className="text-sm text-muted-foreground">
                       {formatDistanceToNow(new Date(log.created_at), {
