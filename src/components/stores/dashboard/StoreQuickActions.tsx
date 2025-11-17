@@ -19,17 +19,17 @@ export function StoreQuickActions({ onSync, isSyncing }: StoreQuickActionsProps)
       variant: 'default' as const,
     },
     {
-      label: 'Synchroniser Tout',
+      label: 'Multi-Store',
+      icon: Settings,
+      onClick: () => navigate('/dashboard/multi-store'),
+      variant: 'outline' as const,
+    },
+    {
+      label: 'Synchroniser',
       icon: RefreshCw,
       onClick: onSync,
       variant: 'outline' as const,
       loading: isSyncing,
-    },
-    {
-      label: 'Intégrations',
-      icon: Settings,
-      onClick: () => navigate('/dashboard/stores/integrations'),
-      variant: 'outline' as const,
     },
     {
       label: 'Analytics',
