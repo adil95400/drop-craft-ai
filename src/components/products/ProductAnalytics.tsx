@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,57 +9,55 @@ import {
   Calendar, Filter, Download, RefreshCw
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Cell, Pie } from 'recharts';
+import { AnalyticsService, SalesDataPoint, ConversionChannel, GeographicData, ProductMetrics } from '@/services/analytics.service';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProductAnalyticsProps {
   productId: string;
 }
 
 const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
+  const { user } = useAuth();
   const [timeRange, setTimeRange] = useState('30d');
-  
-  // Données simulées pour l'exemple
-  const salesData = [
-    { date: '2024-01-01', sales: 12, revenue: 15600, views: 450 },
-    { date: '2024-01-02', sales: 18, revenue: 23400, views: 520 },
-    { date: '2024-01-03', sales: 15, revenue: 19500, views: 480 },
-    { date: '2024-01-04', sales: 22, revenue: 28600, views: 610 },
-    { date: '2024-01-05', sales: 19, revenue: 24700, views: 550 },
-    { date: '2024-01-06', sales: 25, revenue: 32500, views: 680 },
-    { date: '2024-01-07', sales: 20, revenue: 26000, views: 590 }
-  ];
+  const [salesData, setSalesData] = useState<SalesDataPoint[]>([]);
+  const [conversionData, setConversionData] = useState<ConversionChannel[]>([]);
+  const [geographicData, setGeographicData] = useState<GeographicData[]>([]);
+  const [productMetrics, setProductMetrics] = useState<ProductMetrics | null>(null);
+  const [hourlyData, setHourlyData] = useState<{ hour: number; purchases: number }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const conversionData = [
-    { channel: 'Recherche organique', visits: 2400, conversions: 120, rate: 5.0 },
-    { channel: 'Publicité payante', visits: 1800, conversions: 108, rate: 6.0 },
-    { channel: 'Réseaux sociaux', visits: 1200, conversions: 48, rate: 4.0 },
-    { channel: 'Email marketing', visits: 900, conversions: 63, rate: 7.0 },
-    { channel: 'Référencement', visits: 600, conversions: 24, rate: 4.0 }
-  ];
+  useEffect(() => {
+    loadAnalyticsData();
+  }, [productId, user?.id, timeRange]);
 
-  const geographicData = [
-    { country: 'France', sales: 156, percentage: 45 },
-    { country: 'Allemagne', sales: 89, percentage: 26 },
-    { country: 'Belgique', sales: 45, percentage: 13 },
-    { country: 'Suisse', sales: 32, percentage: 9 },
-    { country: 'Autres', sales: 23, percentage: 7 }
-  ];
+  const loadAnalyticsData = async () => {
+    if (!user?.id) return;
+    
+    setIsLoading(true);
+    try {
+      const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
+      
+      const [sales, conversions, geographic, metrics, hourly] = await Promise.all([
+        AnalyticsService.getProductSalesData(productId, days),
+        AnalyticsService.getConversionData(user.id),
+        AnalyticsService.getGeographicData(user.id),
+        AnalyticsService.getProductMetrics(productId, user.id),
+        AnalyticsService.getPurchaseHourlyData(user.id)
+      ]);
 
-  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00C49F'];
-
-  const productMetrics = {
-    totalSales: 456,
-    totalRevenue: 592400,
-    averageOrderValue: 1299,
-    conversionRate: 4.8,
-    totalViews: 12450,
-    favoriteCount: 89,
-    returnRate: 2.1,
-    stockTurnover: 6.2,
-    profitMargin: 31.5,
-    customerSatisfaction: 4.6,
-    repeatPurchaseRate: 23.4,
-    avgTimeOnPage: 145
+      setSalesData(sales);
+      setConversionData(conversions);
+      setGeographicData(geographic);
+      setProductMetrics(metrics);
+      setHourlyData(hourly);
+    } catch (error) {
+      console.error('Error loading analytics:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', 'hsl(var(--destructive))'];
 
   const compareToAverage = (value: number, average: number) => {
     const diff = ((value - average) / average) * 100;
@@ -70,6 +68,21 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
     };
   };
 
+  if (isLoading || !productMetrics) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-muted rounded w-1/3"></div>
+          <div className="grid grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-24 bg-muted rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -78,17 +91,13 @@ const ProductAnalytics = ({ productId }: ProductAnalyticsProps) => {
           <p className="text-muted-foreground">Analyse détaillée des performances</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Filter className="w-4 h-4 mr-2" />
-            Filtres
+          <Button variant="outline" size="sm" onClick={loadAnalyticsData}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Actualiser
           </Button>
           <Button variant="outline" size="sm">
             <Download className="w-4 h-4 mr-2" />
             Exporter
-          </Button>
-          <Button variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Actualiser
           </Button>
         </div>
       </div>

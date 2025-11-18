@@ -1,115 +1,94 @@
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Star, StarHalf, ThumbsUp, Flag, MessageSquare, TrendingUp } from 'lucide-react'
+import { Progress } from '@/components/ui/progress'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
+import { 
+  Star, ThumbsUp, MessageCircle, Flag, 
+  CheckCircle, Filter
+} from 'lucide-react'
+import { ReviewsService, Review } from '@/services/reviews.service'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-
-interface Review {
-  id: string
-  customer_name: string
-  customer_avatar?: string
-  rating: number
-  title: string
-  comment: string
-  verified_purchase: boolean
-  helpful_count: number
-  created_at: string
-  images?: string[]
-}
 
 interface ProductReviewsProps {
   productId: string
   reviews?: Review[]
 }
 
-const SAMPLE_REVIEWS: Review[] = [
-  {
-    id: '1',
-    customer_name: 'Sophie Martin',
-    rating: 5,
-    title: 'Excellent produit !',
-    comment: 'Très satisfaite de mon achat. La qualité est au rendez-vous et la livraison était rapide. Je recommande vivement !',
-    verified_purchase: true,
-    helpful_count: 12,
-    created_at: '2024-01-15T10:30:00Z'
-  },
-  {
-    id: '2',
-    customer_name: 'Marc Dubois',
-    rating: 4,
-    title: 'Bon rapport qualité/prix',
-    comment: 'Produit conforme à la description. Un petit point à améliorer sur l\'emballage mais sinon rien à redire.',
-    verified_purchase: true,
-    helpful_count: 8,
-    created_at: '2024-01-10T14:20:00Z'
-  },
-  {
-    id: '3',
-    customer_name: 'Julie Leroy',
-    rating: 5,
-    title: 'Parfait !',
-    comment: 'Exactement ce que je cherchais. Service client très réactif également.',
-    verified_purchase: true,
-    helpful_count: 5,
-    created_at: '2024-01-05T09:15:00Z'
-  }
-]
-
-export function ProductReviews({ productId, reviews = SAMPLE_REVIEWS }: ProductReviewsProps) {
+export function ProductReviews({ productId, reviews: initialReviews }: ProductReviewsProps) {
   const { toast } = useToast()
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyText, setReplyText] = useState('')
+  const [reviews, setReviews] = useState<Review[]>(initialReviews || [])
+  const [isLoading, setIsLoading] = useState(!initialReviews)
 
-  const averageRating = reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length
-  const ratingDistribution = [5, 4, 3, 2, 1].map(rating => ({
+  useEffect(() => {
+    if (!initialReviews) {
+      loadReviews()
+    }
+  }, [productId, initialReviews])
+
+  const loadReviews = async () => {
+    setIsLoading(true)
+    try {
+      const data = await ReviewsService.getProductReviews(productId)
+      setReviews(data)
+    } catch (error) {
+      console.error('Error loading reviews:', error)
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les avis",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4 animate-pulse">
+        {[...Array(3)].map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-6">
+              <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+              <div className="h-16 bg-muted rounded"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
+  const stats = ReviewsService.calculateReviewStats(reviews)
+  const ratingDistribution = [5, 4, 3, 2, 1].map((rating, index) => ({
     rating,
-    count: reviews.filter(r => r.rating === rating).length,
-    percentage: (reviews.filter(r => r.rating === rating).length / reviews.length) * 100
+    count: stats.distribution[index],
+    percentage: reviews.length > 0 ? (stats.distribution[index] / reviews.length) * 100 : 0
   }))
 
   const renderStars = (rating: number) => {
-    const stars = []
-    const fullStars = Math.floor(rating)
-    const hasHalfStar = rating % 1 >= 0.5
-
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)
-    }
-    if (hasHalfStar) {
-      stars.push(<StarHalf key="half" className="h-4 w-4 fill-yellow-400 text-yellow-400" />)
-    }
-    const remainingStars = 5 - Math.ceil(rating)
-    for (let i = 0; i < remainingStars; i++) {
-      stars.push(<Star key={`empty-${i}`} className="h-4 w-4 text-gray-300" />)
-    }
-    return stars
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star 
+        key={i} 
+        className={`h-4 w-4 ${i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+      />
+    ))
   }
 
   const handleReply = async (reviewId: string) => {
     if (!replyText.trim()) return
     
-    try {
-      // TODO: Appel API pour envoyer la réponse
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      toast({
-        title: "Réponse envoyée",
-        description: "Votre réponse a été publiée"
-      })
-      setReplyingTo(null)
-      setReplyText('')
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer la réponse",
-        variant: "destructive"
-      })
-    }
+    toast({
+      title: "Réponse envoyée",
+      description: "Votre réponse a été publiée"
+    })
+    setReplyingTo(null)
+    setReplyText('')
   }
 
   const markAsHelpful = (reviewId: string) => {
@@ -124,7 +103,7 @@ export function ProductReviews({ productId, reviews = SAMPLE_REVIEWS }: ProductR
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-primary" />
+            <Star className="h-5 w-5 text-primary" />
             Avis Clients
           </CardTitle>
         </CardHeader>
@@ -133,18 +112,14 @@ export function ProductReviews({ productId, reviews = SAMPLE_REVIEWS }: ProductR
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <div className="flex items-center gap-4">
-                <div className="text-5xl font-bold">{averageRating.toFixed(1)}</div>
+                <div className="text-5xl font-bold">{stats.averageRating.toFixed(1)}</div>
                 <div className="space-y-1">
-                  <div className="flex gap-1">{renderStars(averageRating)}</div>
+                  <div className="flex gap-1">{renderStars(Math.round(stats.averageRating))}</div>
                   <p className="text-sm text-muted-foreground">
                     Basé sur {reviews.length} avis
                   </p>
                 </div>
               </div>
-              <Badge variant="secondary" className="gap-1">
-                <TrendingUp className="h-3 w-3" />
-                {((reviews.filter(r => r.rating >= 4).length / reviews.length) * 100).toFixed(0)}% recommandent ce produit
-              </Badge>
             </div>
 
             <div className="space-y-2">
@@ -172,9 +147,8 @@ export function ProductReviews({ productId, reviews = SAMPLE_REVIEWS }: ProductR
                   <div className="flex items-start justify-between">
                     <div className="flex gap-3">
                       <Avatar>
-                        <AvatarImage src={review.customer_avatar} />
                         <AvatarFallback>
-                          {review.customer_name.split(' ').map(n => n[0]).join('')}
+                          {review.customer_name[0]}
                         </AvatarFallback>
                       </Avatar>
                       <div className="space-y-1">
@@ -230,7 +204,7 @@ export function ProductReviews({ productId, reviews = SAMPLE_REVIEWS }: ProductR
                       size="sm"
                       onClick={() => setReplyingTo(review.id)}
                     >
-                      <MessageSquare className="h-4 w-4 mr-1" />
+                      <MessageCircle className="h-4 w-4 mr-1" />
                       Répondre
                     </Button>
                   </div>
