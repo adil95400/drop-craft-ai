@@ -9,10 +9,9 @@ import { ExtensionUpdateNotification } from "@/components/extensions/ExtensionUp
 import { ExtensionHealthMonitor } from "@/components/extensions/ExtensionHealthMonitor";
 import { ExtensionInstallGuide } from "@/components/extensions/ExtensionInstallGuide";
 import { toast } from "@/hooks/use-toast";
-import { useRealisticData } from "@/hooks/useRealisticData";
+
 export default function Extension() {
   const [activeTab, setActiveTab] = useState("install");
-  const { generateRealisticData, loading } = useRealisticData();
   const handleAddToChrome = () => {
     setActiveTab("guide");
     toast({
@@ -382,28 +381,6 @@ export default function Extension() {
                       <li>Données d'analyse et statistiques</li>
                       <li>Historique d'imports réaliste</li>
                     </ul>
-                  </div>
-
-                  <div className="flex flex-col items-center space-y-4">
-                    <Button 
-                      size="lg" 
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                      onClick={generateRealisticData}
-                      disabled={loading}
-                    >
-                      <Database className="w-5 h-5 mr-2" />
-                      {loading ? "Génération en cours..." : "Générer des Données Réalistes"}
-                    </Button>
-                    <p className="text-sm text-muted-foreground text-center max-w-md">
-                      Cette action créera automatiquement des fournisseurs, produits, clients et commandes réalistes dans votre base de données pour tester l'extension.
-                    </p>
-                  </div>
-
-                  <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <h3 className="font-semibold text-yellow-900 mb-2">⚠️ Attention</h3>
-                    <p className="text-sm text-yellow-800">
-                      Les données générées sont fictives et destinées uniquement aux tests. Elles seront ajoutées à votre compte actuel.
-                    </p>
                   </div>
                 </div>
               </CardContent>

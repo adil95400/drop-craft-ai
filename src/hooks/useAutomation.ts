@@ -204,31 +204,6 @@ export const useAutomation = () => {
     },
   });
 
-  // Seed sample data
-  const seedSampleData = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await supabase.rpc('seed_sample_data');
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
-      queryClient.invalidateQueries({ queryKey: ['automation-triggers'] });
-      toast({
-        title: "Données créées",
-        description: "Les données d'exemple ont été créées avec succès",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer les données d'exemple",
-        variant: "destructive",
-      });
-    },
-  });
 
   const stats = {
     totalTriggers: triggers.length,
@@ -251,12 +226,10 @@ export const useAutomation = () => {
     deleteTrigger: deleteTrigger.mutate,
     createAction: createAction.mutate,
     processTrigger: processTrigger.mutate,
-    seedSampleData: seedSampleData.mutate,
     isCreatingTrigger: createTrigger.isPending,
     isUpdatingTrigger: updateTrigger.isPending,
     isDeletingTrigger: deleteTrigger.isPending,
     isCreatingAction: createAction.isPending,
     isProcessing: processTrigger.isPending,
-    isSeeding: seedSampleData.isPending,
   };
 };

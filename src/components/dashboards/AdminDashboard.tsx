@@ -27,7 +27,6 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
-import DataGenerator from '@/components/admin/DataGenerator';
 import { logError } from '@/utils/consoleCleanup';
 
 interface SystemStatus {
@@ -587,10 +586,6 @@ export const AdminDashboard: React.FC = () => {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-
-        <TabsContent value="data-gen" className="space-y-4">
-          <DataGenerator />
         </TabsContent>
       </Tabs>
     </div>

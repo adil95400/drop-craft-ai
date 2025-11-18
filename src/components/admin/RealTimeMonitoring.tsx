@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useProductionData } from '@/hooks/useProductionData';
 
 interface SystemMetrics {
   activeUsers: number;
@@ -39,6 +40,7 @@ interface RealTimeEvent {
 }
 
 export const RealTimeMonitoring = () => {
+  const { dashboardStats, orders, customers } = useProductionData();
   const [metrics, setMetrics] = useState<SystemMetrics>({
     activeUsers: 0,
     totalOrders: 0,
@@ -62,9 +64,9 @@ export const RealTimeMonitoring = () => {
         checkForAlerts();
       }, 5000); // Update every 5 seconds
 
-      // Simulate real-time events
+      // Load real events from activity logs
       const eventInterval = setInterval(() => {
-        generateMockEvent();
+        loadRealEvents();
       }, 3000);
 
       return () => {
@@ -72,26 +74,35 @@ export const RealTimeMonitoring = () => {
         clearInterval(eventInterval);
       };
     }
-  }, [isMonitoring]);
+  }, [isMonitoring, dashboardStats]);
 
   const loadInitialMetrics = async () => {
     try {
       // Load real metrics from database
-      const { data: orders } = await supabase
-        .from('orders')
-        .select('count')
-        .eq('status', 'processing');
-
-      const { data: users } = await supabase
+      const { count: userCount } = await supabase
         .from('profiles')
-        .select('count')
-        .gte('last_login_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+        .select('*', { count: 'exact', head: true });
 
-      setMetrics(prev => ({
-        ...prev,
-        totalOrders: orders?.length || 0,
-        activeUsers: users?.length || 0
-      }));
+      const { count: recentActivity } = await supabase
+        .from('activity_logs')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString());
+
+      const { data: errorLogs } = await supabase
+        .from('activity_logs')
+        .select('*')
+        .eq('severity', 'error')
+        .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString());
+
+      setMetrics({
+        activeUsers: recentActivity || 0,
+        totalOrders: dashboardStats?.totalOrders || 0,
+        systemLoad: 45, // Can be calculated based on server metrics
+        dbConnections: userCount || 0,
+        apiCalls: recentActivity || 0,
+        errorRate: errorLogs?.length || 0,
+        uptime: calculateUptime()
+      });
     } catch (error) {
       logError(error, 'RealTimeMonitoring.loadMetrics');
     }
@@ -99,12 +110,9 @@ export const RealTimeMonitoring = () => {
 
   const updateMetrics = () => {
     setMetrics(prev => ({
-      activeUsers: Math.max(1, prev.activeUsers + Math.floor(Math.random() * 3) - 1),
-      totalOrders: prev.totalOrders + Math.floor(Math.random() * 2),
-      systemLoad: Math.max(0, Math.min(100, prev.systemLoad + (Math.random() - 0.5) * 10)),
-      dbConnections: Math.max(0, Math.min(100, prev.dbConnections + (Math.random() - 0.5) * 5)),
-      apiCalls: prev.apiCalls + Math.floor(Math.random() * 20),
-      errorRate: Math.max(0, Math.min(10, prev.errorRate + (Math.random() - 0.7) * 0.5)),
+      ...prev,
+      activeUsers: customers?.length || prev.activeUsers,
+      totalOrders: orders?.length || prev.totalOrders,
       uptime: calculateUptime()
     }));
   };
@@ -115,26 +123,34 @@ export const RealTimeMonitoring = () => {
     return `${uptimeHours}h ${uptimeMinutes}m`;
   };
 
-  const generateMockEvent = () => {
-    const eventTypes = [
-      { type: 'order', message: 'Nouvelle commande #ORD-2024-', severity: 'success' },
-      { type: 'user', message: 'Nouvel utilisateur inscrit', severity: 'info' },
-      { type: 'integration', message: 'Synchronisation Shopify terminée', severity: 'success' },
-      { type: 'error', message: 'Erreur API fournisseur', severity: 'warning' },
-    ];
+  const loadRealEvents = async () => {
+    try {
+      // Load recent activity logs
+      const { data: logs } = await supabase
+        .from('activity_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
 
-    const randomEvent = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-    const orderId = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
-    
-    const newEvent: RealTimeEvent = {
-      id: Date.now().toString(),
-      type: randomEvent.type as any,
-      message: randomEvent.message + (randomEvent.type === 'order' ? orderId : ''),
-      timestamp: new Date().toISOString(),
-      severity: randomEvent.severity as any
-    };
+      if (logs) {
+        const newEvents: RealTimeEvent[] = logs.map(log => ({
+          id: log.id,
+          type: log.entity_type === 'order' ? 'order' : 
+                log.entity_type === 'user' ? 'user' : 
+                log.severity === 'error' ? 'error' : 'integration',
+          message: log.description,
+          timestamp: new Date(log.created_at).toLocaleTimeString('fr-FR'),
+          severity: log.severity as 'info' | 'warning' | 'error' | 'success'
+        }));
 
-    setEvents(prev => [newEvent, ...prev].slice(0, 20)); // Keep last 20 events
+        setEvents(prev => {
+          const combined = [...newEvents, ...prev];
+          return combined.slice(0, 20); // Keep last 20 events
+        });
+      }
+    } catch (error) {
+      logError(error, 'RealTimeMonitoring.loadRealEvents');
+    }
   };
 
   const checkForAlerts = () => {
