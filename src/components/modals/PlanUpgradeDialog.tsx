@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Dialog,
   DialogContent,
@@ -91,6 +92,7 @@ export const PlanUpgradeDialog = ({
   requiredFeature, 
   currentPlan = 'standard' 
 }: PlanUpgradeDialogProps) => {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { toast } = useToast()
   const [isUpgrading, setIsUpgrading] = useState(false)
@@ -116,8 +118,8 @@ export const PlanUpgradeDialog = ({
         description: `Bienvenue dans le plan ${targetPlan === 'pro' ? 'Pro' : 'Ultra Pro'} !`,
       })
       
-      // Redirect to dashboard with success message
-      window.location.href = `/dashboard?upgrade=success&plan=${targetPlan}`
+      // Navigate to dashboard with success message
+      navigate(`/dashboard?upgrade=success&plan=${targetPlan}`, { replace: true })
       
     } catch (error) {
       toast({

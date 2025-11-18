@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { useLocation, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { ChevronRight, Home, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -83,6 +83,7 @@ const ROUTE_INFO: { [key: string]: RouteInfo } = {
 }
 
 export const SmartBreadcrumbs = () => {
+  const navigate = useNavigate()
   const location = useLocation()
   
   const breadcrumbs = useMemo(() => {
@@ -133,10 +134,10 @@ export const SmartBreadcrumbs = () => {
     if (breadcrumbs.length > 1) {
       const previousCrumb = breadcrumbs[breadcrumbs.length - 2]
       if (previousCrumb) {
-        window.location.href = previousCrumb.path
+        navigate(previousCrumb.path)
       }
     } else {
-      window.history.back()
+      navigate(-1)
     }
   }
 

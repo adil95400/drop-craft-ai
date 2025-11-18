@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,6 +50,7 @@ interface APITestResult {
 }
 
 export function APIImportWizard() {
+  const navigate = useNavigate()
   const { toast } = useToast()
   const [step, setStep] = useState<'config' | 'test' | 'mapping' | 'import'>('config')
   const [config, setConfig] = useState<APIConfig>({
@@ -626,7 +628,7 @@ export function APIImportWizard() {
                         <Button onClick={() => setStep('config')} variant="outline">
                           Nouvel import
                         </Button>
-                        <Button onClick={() => window.location.href = '/import/results'}>
+                        <Button onClick={() => navigate('/import/results')}>
                           Voir les produits
                         </Button>
                       </div>

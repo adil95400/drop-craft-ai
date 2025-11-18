@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUnifiedAuth as useAuth } from '@/contexts/UnifiedAuthContext';
 import { Loader2 } from 'lucide-react';
 
@@ -15,6 +16,7 @@ export const AuthGuard = ({
   requireRole,
   redirectTo = '/auth' 
 }: AuthGuardProps) => {
+  const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
   const [loadingTimeout, setLoadingTimeout] = useState(false);
 
@@ -31,17 +33,17 @@ export const AuthGuard = ({
     if (!loading && !loadingTimeout) {
       // Not authenticated and auth required
       if (requireAuth && !user) {
-        window.location.href = redirectTo;
+        navigate(redirectTo, { replace: true });
         return;
       }
       
       // Role-based access control - simplifiée
       if (requireAuth && user && requireRole === 'admin' && profile && !profile.is_admin) {
-        window.location.href = '/dashboard';
+        navigate('/dashboard', { replace: true });
         return;
       }
     }
-  }, [user, profile, loading, requireAuth, requireRole, redirectTo, loadingTimeout]);
+  }, [user, profile, loading, requireAuth, requireRole, redirectTo, loadingTimeout, navigate]);
 
   // Show loading spinner while checking auth (avec timeout)
   if ((loading || (requireAuth && user && !profile)) && !loadingTimeout) {

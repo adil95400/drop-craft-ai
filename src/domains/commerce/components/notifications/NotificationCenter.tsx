@@ -1,4 +1,5 @@
 import { Bell, Check, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -12,6 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 export const NotificationCenter = () => {
+  const navigate = useNavigate();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
   const getNotificationIcon = (type: string) => {
@@ -96,7 +98,7 @@ export const NotificationCenter = () => {
                           variant="link"
                           size="sm"
                           className="h-auto p-0 mt-2 text-xs"
-                          onClick={() => window.location.href = notification.action!.url}
+                          onClick={() => navigate(notification.action!.url)}
                         >
                           {notification.action.label} →
                         </Button>
