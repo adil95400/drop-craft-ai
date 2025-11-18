@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -103,6 +104,7 @@ const mockRecommendations: ImportRecommendation[] = [
 ]
 
 export const SmartImportRecommendations = () => {
+  const navigate = useNavigate()
   const { hasFeature } = useUnifiedPlan()
   const aiImportEnabled = hasFeature('ai-import')
   const [recommendations, setRecommendations] = useState<ImportRecommendation[]>([])
@@ -192,7 +194,7 @@ export const SmartImportRecommendations = () => {
           <p className="text-muted-foreground mb-4">
             Fonctionnalité disponible avec le plan Pro et Ultra Pro
           </p>
-          <Button onClick={() => window.location.href = '/subscription'}>
+          <Button onClick={() => navigate('/subscription')}>
             Voir les Plans
           </Button>
         </CardContent>

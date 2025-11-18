@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -37,6 +38,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
   showUpgrade = true,
   className
 }) => {
+  const navigate = useNavigate();
   const { hasFeature, hasPlan, currentPlan, canBypass } = useUnifiedPlan();
   const { profile } = useUnifiedAuth();
   
@@ -116,10 +118,7 @@ export const FeatureGate: React.FC<FeatureGateProps> = ({
           <Button 
             size="sm" 
             className="ml-4"
-            onClick={() => {
-              // Navigate to pricing page
-              window.location.href = '/pricing';
-            }}
+            onClick={() => navigate('/pricing')}
           >
             Passer au {planLabel}
           </Button>

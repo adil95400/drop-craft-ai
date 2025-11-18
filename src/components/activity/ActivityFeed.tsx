@@ -17,6 +17,7 @@ import {
   Zap
 } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 interface ActivityItem {
   id: string
@@ -33,6 +34,7 @@ interface ActivityItem {
 }
 
 export function ActivityFeed() {
+  const navigate = useNavigate()
   const [activities] = useState<ActivityItem[]>([
     {
       id: '1',
@@ -44,7 +46,7 @@ export function ActivityFeed() {
       module: 'CRM',
       action: {
         label: 'Voir CRM',
-        onClick: () => window.location.href = '/crm'
+        onClick: () => navigate('/crm')
       }
     },
     {
@@ -57,7 +59,7 @@ export function ActivityFeed() {
       module: 'Reviews',
       action: {
         label: 'Gérer avis',
-        onClick: () => window.location.href = '/reviews'
+        onClick: () => navigate('/reviews')
       }
     },
     {
@@ -70,7 +72,7 @@ export function ActivityFeed() {
       module: 'SEO',
       action: {
         label: 'Optimiser SEO',
-        onClick: () => window.location.href = '/seo'
+        onClick: () => navigate('/seo')
       }
     },
     {
@@ -83,7 +85,7 @@ export function ActivityFeed() {
       module: 'Automation',
       action: {
         label: 'Configurer IA',
-        onClick: () => window.location.href = '/automation-ai'
+        onClick: () => navigate('/automation-ai')
       }
     },
     {
@@ -96,7 +98,7 @@ export function ActivityFeed() {
       module: 'Dashboard',
       action: {
         label: 'Voir dashboard',
-        onClick: () => window.location.href = '/dashboard'
+        onClick: () => navigate('/dashboard')
       }
     },
     {

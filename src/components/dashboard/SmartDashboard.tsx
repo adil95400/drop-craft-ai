@@ -1,4 +1,5 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,6 +29,7 @@ interface SmartMetric {
 }
 
 export const SmartDashboard = () => {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { currentPlan, isPro, isUltraPro } = useLegacyPlan()
 
@@ -217,7 +219,7 @@ export const SmartDashboard = () => {
               className={`cursor-pointer hover:shadow-md transition-all duration-200 ${
                 isRestricted ? 'opacity-50 cursor-not-allowed' : ''
               }`}
-              onClick={() => !isRestricted && (window.location.href = action.href)}
+              onClick={() => !isRestricted && navigate(action.href)}
             >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">

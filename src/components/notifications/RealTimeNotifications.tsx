@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, X, Check, AlertTriangle, Info, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,6 +24,7 @@ interface Notification {
 }
 
 export const RealTimeNotifications = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -295,7 +297,7 @@ export const RealTimeNotifications = () => {
                                 className="h-6 text-xs"
                                 onClick={() => {
                                   if (notification.action?.url) {
-                                    window.location.href = notification.action.url;
+                                    navigate(notification.action.url);
                                   }
                                 }}
                               >
@@ -338,8 +340,7 @@ export const RealTimeNotifications = () => {
                     className="w-full text-xs"
                     onClick={() => {
                       setIsOpen(false);
-                      // Navigate to notifications page
-                      window.location.href = '/notifications';
+                      navigate('/notifications');
                     }}
                   >
                     Voir toutes les notifications

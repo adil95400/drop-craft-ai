@@ -1,4 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import { logError, logWarning } from '@/utils/consoleCleanup';
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/integrations/supabase/client'
@@ -25,6 +26,7 @@ interface AuthFormProps {
 }
 
 export const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -59,8 +61,8 @@ export const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
         if (result.data.user && !result.data.user.email_confirmed_at) {
           setMessage('Vérifiez votre email pour confirmer votre compte')
         } else if (result.data.user) {
-          // Force page reload for clean state
-          window.location.href = '/dashboard'
+          // Navigate to dashboard
+          navigate('/dashboard', { replace: true })
         }
       } else {
         result = await supabase.auth.signInWithPassword({
@@ -70,8 +72,8 @@ export const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
         if (result.error) throw result.error
         
         if (result.data.user) {
-          // Force page reload for clean state
-          window.location.href = '/dashboard'
+          // Navigate to dashboard
+          navigate('/dashboard', { replace: true })
         }
       }
     } catch (error: any) {

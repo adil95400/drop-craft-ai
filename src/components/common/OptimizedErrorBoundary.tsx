@@ -102,6 +102,7 @@ export class OptimizedErrorBoundary extends Component<Props, State> {
   };
 
   handleGoHome = () => {
+    // Use window.location for full page reload to reset app state
     window.location.href = '/';
   };
 

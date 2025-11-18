@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -60,6 +61,7 @@ interface MarketplaceConnector {
 }
 
 export const SupplierManagement = () => {
+  const navigate = useNavigate()
   const { t } = useTranslation(['common', 'navigation'])
   const { 
     suppliers, 
@@ -838,10 +840,7 @@ export const SupplierManagement = () => {
                   <CardContent>
                     <Button
                       className="w-full"
-                      onClick={async () => {
-                        // Redirection vers la méthode d'import spécifique
-                        window.location.href = `/import/${method.id}`
-                      }}
+                      onClick={() => navigate(`/import/${method.id}`)}
                     >
                       <Upload className="h-4 w-4 mr-2" />
                       Commencer l'import
@@ -949,7 +948,7 @@ export const SupplierManagement = () => {
                   <p className="text-muted-foreground mb-4">
                     Vous n'avez pas encore effectué d'import ou de synchronisation.
                   </p>
-                  <Button onClick={() => window.location.href = '#import'}>
+                  <Button onClick={() => navigate('#import')}>
                     <Upload className="h-4 w-4 mr-2" />
                     Commencer un import
                   </Button>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -27,6 +28,7 @@ const planColors = {
 }
 
 export const SubscriptionManager = () => {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { subscription, loading, checkSubscription, openCustomerPortal } = useStripeSubscription()
   const [isChecking, setIsChecking] = useState(false)
@@ -139,7 +141,7 @@ export const SubscriptionManager = () => {
             </Button>
           ) : (
             <Button 
-              onClick={() => window.location.href = '/pricing'}
+              onClick={() => navigate('/pricing')}
               className="flex-1 gap-2"
             >
               <Crown className="h-4 w-4" />
