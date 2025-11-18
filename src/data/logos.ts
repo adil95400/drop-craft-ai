@@ -1,7 +1,8 @@
 export type LogoKey =
   | "shopify" | "woocommerce" | "bigbuy" | "aliexpress" | "amazon" | "canva"
   | "paypal" | "stripe" | "tiktok-shop" | "ebay" | "cdiscount" | "meta-ads"
-  | "google-ads" | "klaviyo" | "zapier" | "prestashop" | "tiktok" | "facebook" | "instagram";
+  | "google-ads" | "klaviyo" | "zapier" | "prestashop" | "tiktok" | "facebook" | "instagram"
+  | "magento" | "etsy";
 
 export const LOGOS: Record<LogoKey, { src: string; alt: string; cdn?: string }> = {
   shopify: { src: "/logos/shopify.svg", alt: "Shopify", cdn: "https://cdn.simpleicons.org/shopify" },
@@ -23,4 +24,6 @@ export const LOGOS: Record<LogoKey, { src: string; alt: string; cdn?: string }> 
   tiktok: { src: "/logos/tiktok.svg", alt: "TikTok", cdn: "https://cdn.simpleicons.org/tiktok" },
   facebook: { src: "/logos/facebook.svg", alt: "Facebook", cdn: "https://cdn.simpleicons.org/facebook" },
   instagram: { src: "/logos/instagram.svg", alt: "Instagram", cdn: "https://cdn.simpleicons.org/instagram" },
+  magento: { src: "/logos/magento.svg", alt: "Magento", cdn: "https://cdn.simpleicons.org/adobecommerce" },
+  etsy: { src: "/logos/etsy.svg", alt: "Etsy", cdn: "https://cdn.simpleicons.org/etsy" },
 };

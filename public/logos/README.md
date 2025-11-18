@@ -24,11 +24,11 @@ This directory contains brand logos for various platforms and services integrate
 
 ## Brands Included
 
-- **E-commerce**: Shopify, WooCommerce, Amazon, eBay, TikTok Shop, Cdiscount
+- **E-commerce**: Shopify, WooCommerce, Amazon, eBay, TikTok Shop, Cdiscount, PrestaShop, Magento, Etsy
 - **Suppliers**: BigBuy, AliExpress
 - **Payments**: PayPal, Stripe
 - **Design**: Canva
-- **Marketing**: Meta Ads, Google Ads, Klaviyo
+- **Marketing**: Meta Ads, Google Ads, Klaviyo, TikTok, Facebook, Instagram
 - **Automation**: Zapier
 
 For logo updates or additions, please ensure proper licensing and attribution.
