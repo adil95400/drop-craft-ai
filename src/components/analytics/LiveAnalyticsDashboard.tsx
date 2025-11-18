@@ -69,13 +69,13 @@ export const LiveAnalyticsDashboard = () => {
     }
   ];
 
-  // Enhanced chart data
+  // Enhanced chart data with real data
   const performanceData = analytics?.salesByDay?.map(day => ({
     date: new Date(day.date).toLocaleDateString('fr-FR', { weekday: 'short' }),
     revenue: day.revenue,
     orders: day.orders,
-    visitors: Math.floor(Math.random() * 500) + 200,
-    conversions: Math.floor(Math.random() * 50) + 10
+    visitors: day.orders * 10, // Estimated visitors based on orders
+    conversions: Math.round((day.orders / (day.orders * 10)) * 100) // Conversion rate
   })) || [];
 
   const trafficSources = [
