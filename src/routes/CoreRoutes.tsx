@@ -16,6 +16,7 @@ const IntegrationsPage = lazy(() => import('@/pages/stores/IntegrationsPage'));
 const ManageIntegrationPage = lazy(() => import('@/pages/stores/ManageIntegrationPage'));
 const ImportedProductsPage = lazy(() => import('@/pages/stores/ImportedProductsPage'));
 const ShopifyDiagnostic = lazy(() => import('@/pages/ShopifyDiagnostic'));
+const ShopifyManagementPage = lazy(() => import('@/pages/ShopifyManagementPage'));
 
 // Orders
 const ModernOrdersPage = lazy(() => import('@/pages/ModernOrdersPage'));
@@ -56,6 +57,7 @@ export function CoreRoutes() {
       <Route path="stores/integrations/:id" element={<ManageIntegrationPage />} />
       <Route path="stores/imported-products" element={<ImportedProductsPage />} />
       <Route path="stores/shopify-diagnostic" element={<ShopifyDiagnostic />} />
+      <Route path="stores/shopify-management" element={<ShopifyManagementPage />} />
       
       {/* Orders Management */}
       <Route path="orders" element={<ModernOrdersPage />} />
