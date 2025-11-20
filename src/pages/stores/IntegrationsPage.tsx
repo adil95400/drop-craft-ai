@@ -206,6 +206,17 @@ export default function IntegrationsPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            {integrations.some(i => i.platform_type === 'shopify') && (
+              <Button 
+                onClick={() => navigate('/dashboard/stores/shopify-management')} 
+                variant="outline" 
+                size="sm"
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                Gestion Shopify
+              </Button>
+            )}
+            
             <Button onClick={() => refetch()} variant="outline" size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
               Actualiser
