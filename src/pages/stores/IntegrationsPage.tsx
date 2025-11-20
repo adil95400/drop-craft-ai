@@ -434,14 +434,26 @@ export default function IntegrationsPage() {
                     Tester
                   </Button>
                   
-                  <Button
-                    onClick={() => navigate(`/dashboard/stores/integrations/${integration.id}`)}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    Gérer
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Gérer
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => navigate(`/dashboard/stores/integrations/${integration.id}`)}>
+                        <Settings className="h-4 w-4 mr-2" />
+                        Paramètres
+                      </DropdownMenuItem>
+                      {integration.platform_type === 'shopify' && (
+                        <DropdownMenuItem onClick={() => navigate('/dashboard/stores/shopify-management')}>
+                          <Zap className="h-4 w-4 mr-2" />
+                          Gestion Shopify
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   
                   <Button
                     onClick={() => handleDelete(integration.id)}
