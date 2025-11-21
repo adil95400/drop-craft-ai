@@ -57,6 +57,10 @@ const MarketingPage = lazy(() => import('@/pages/MarketingPage'));
 const AIInsightsPage = lazy(() => import('@/pages/AIInsightsPage'));
 const WorkflowsPage = lazy(() => import('@/pages/WorkflowsPage'));
 
+// Settings & Management
+const APIManagementPage = lazy(() => import('@/pages/APIManagementPage'));
+const BillingPage = lazy(() => import('@/pages/BillingPage'));
+
 // Additional Pages
 const SubscriptionPage = lazy(() => import('@/pages/SubscriptionPage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
@@ -120,6 +124,10 @@ export function CoreRoutes() {
       {/* AI & Automation */}
       <Route path="ai-insights" element={<AIInsightsPage />} />
       <Route path="workflows" element={<WorkflowsPage />} />
+      
+      {/* Settings & Management */}
+      <Route path="api" element={<APIManagementPage />} />
+      <Route path="billing" element={<BillingPage />} />
       
       {/* Subscription & Notifications */}
       <Route path="subscription" element={<SubscriptionPage />} />
