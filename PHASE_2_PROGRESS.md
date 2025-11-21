@@ -57,12 +57,18 @@
 - ✅ Documentation complète (README.md)
 - ⚠️ Partie AI optimization déjà correcte (pas de changement)
 
-#### 5. `global-image-optimizer/`
-**État**: Mock tailles/dimensions
-**Action**:
-- Fetcher vraies images
-- Calculer vraies tailles
-- Optionnel: intégrer Sharp pour compression
+#### 5. `global-image-optimizer/` - ✅ TERMINÉ
+**État**: Refactorisé - fetch réel d'images, calcul réel de tailles/dimensions
+**Actions réalisées**:
+- ✅ Supprimé mock `mockSize`, `mockWidth`, `mockHeight`
+- ✅ Implémentation fetch réel avec timeout (10s)
+- ✅ Récupération taille réelle via header `Content-Length`
+- ✅ Parse dimensions réelles via `getImageDimensions()` pour PNG/JPEG/GIF/WebP
+- ✅ Détection format via Content-Type + extension + magic bytes
+- ✅ Gestion erreurs robuste avec fallback graceful
+- ✅ Fetch size réel dans l'action `optimize`
+- ✅ Documentation complète (README.md)
+- ⚠️ Partie ALT AI déjà correcte (pas de changement)
 
 ## 🟡 Priorité MOYENNE (10 fonctions)
 
@@ -87,9 +93,9 @@
 
 ### Après Phase 2 (actuel):
 - Edge functions: 37 (-3) ✅
-- Lignes mockées: ~1,350 (-767 total refactorés) ✅
-- Fonctions documentées: 4 (aliexpress, automated-sync, bigbuy, global-seo-scanner) ✅
-- Fonctions production-ready: 4 ✅
+- Lignes mockées: ~1,100 (-1,017 total refactorés) ✅
+- Fonctions documentées: 5 (aliexpress, automated-sync, bigbuy, global-seo-scanner, global-image-optimizer) ✅
+- Fonctions production-ready: 5 ✅
 
 ### Objectif fin Phase 2:
 - Edge functions: 25 (-15 mocks/inutiles)
@@ -108,11 +114,11 @@
 
 ## 🎯 Prochaine action
 
-**Immédiate**: Refactorer `global-image-optimizer/`
-- Mock tailles/dimensions d'images
-- Implémenter vrai fetch + analyse d'images
-- Moins critique mais utilisé fréquemment
+**Immédiate**: Nettoyer les 10 fonctions de priorité MOYENNE
+- `ads-manager/`, `bulk-zip-import/`, `canva-design-optimizer/`, etc.
+- Impact moyen mais améliore la qualité globale
+- Certaines peuvent être supprimées si non utilisées
 
-**Après**: Nettoyer les 9 autres fonctions de priorité MOYENNE
+**Après**: Documentation finale + tests d'intégration
 - `ads-manager/`, `bulk-zip-import/`, `canva-design-optimizer/`, etc.
 - Impact moyen mais améliore la qualité globale
