@@ -160,7 +160,7 @@ async function processSyncJob(job: any, supabase: any) {
 async function processSupplierSync(job: any, supabase: any) {
   console.log(`🔗 Syncing supplier products for job ${job.id}`);
   
-  // Get user's suppliers
+  // Get user's suppliers with their integrations
   const { data: suppliers, error: suppliersError } = await supabase
     .from('suppliers')
     .select('*')
@@ -174,26 +174,71 @@ async function processSupplierSync(job: any, supabase: any) {
 
   for (const supplier of suppliers || []) {
     try {
-      // Simulate supplier API call (replace with actual API integration)
-      const mockProducts = generateMockProducts(supplier.id, 10);
+      console.log(`🔄 Fetching products from ${supplier.name} (${supplier.supplier_type})`);
+      
+      let products = [];
+      
+      // Call appropriate supplier connector based on type
+      switch (supplier.supplier_type) {
+        case 'bigbuy':
+          const bigbuyResult = await supabase.functions.invoke('bigbuy-integration', {
+            body: {
+              action: 'fetch_products',
+              supplier_id: supplier.id,
+              api_key: supplier.api_credentials?.api_key,
+              limit: job.batch_size || 100
+            }
+          });
+          products = bigbuyResult.data?.products || [];
+          break;
+          
+        case 'aliexpress':
+          const aliexpressResult = await supabase.functions.invoke('aliexpress-integration', {
+            body: {
+              action: 'search_products',
+              keywords: supplier.search_keywords || 'trending',
+              api_key: supplier.api_credentials?.api_key,
+              api_secret: supplier.api_credentials?.api_secret,
+              limit: job.batch_size || 50
+            }
+          });
+          products = aliexpressResult.data?.products || [];
+          break;
+          
+        default:
+          console.warn(`⚠️ Unknown supplier type: ${supplier.supplier_type}. Skipping.`);
+          continue;
+      }
       
       // Insert/update products
-      for (const product of mockProducts) {
+      for (const product of products) {
         try {
           await supabase.from('imported_products').upsert({
             user_id: job.user_id,
             supplier_name: supplier.name,
-            ...product,
+            supplier_id: supplier.id,
+            external_id: product.external_id || product.sku,
+            name: product.name || product.title,
+            description: product.description,
+            price: product.price,
+            cost_price: product.cost_price || product.costPrice,
+            currency: product.currency || 'EUR',
+            sku: product.sku,
+            category: product.category,
+            brand: product.brand,
+            stock_quantity: product.stock || product.stock_quantity || 0,
+            image_urls: product.images || product.image_urls || [],
+            status: 'draft',
             updated_at: new Date().toISOString()
-          });
+          }, { onConflict: 'external_id,user_id' });
           totalProcessed++;
         } catch (error) {
-          console.error(`Error upserting product: ${error.message}`);
+          console.error(`Error upserting product ${product.sku}: ${error.message}`);
           totalErrors++;
         }
       }
 
-      console.log(`✅ Processed ${mockProducts.length} products from ${supplier.name}`);
+      console.log(`✅ Processed ${products.length} products from ${supplier.name}`);
 
     } catch (error) {
       console.error(`❌ Error syncing supplier ${supplier.name}:`, error);
@@ -212,113 +257,245 @@ async function processSupplierSync(job: any, supabase: any) {
 async function processInventorySync(job: any, supabase: any) {
   console.log(`📦 Updating inventory for job ${job.id}`);
   
-  // Get products that need inventory updates
+  // Get products that need inventory updates (grouped by supplier)
   const { data: products, error: productsError } = await supabase
     .from('imported_products')
-    .select('*')
+    .select('*, suppliers!inner(*)')
     .eq('user_id', job.user_id)
+    .not('supplier_id', 'is', null)
     .lt('updated_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Older than 24h
     .limit(100);
 
   if (productsError) throw productsError;
 
   let updated = 0;
+  let errors = 0;
   
-  for (const product of products || []) {
-    // Simulate inventory check (replace with actual API call)
-    const newStock = Math.floor(Math.random() * 100);
+  // Group products by supplier for batch API calls
+  const productsBySupplier = (products || []).reduce((acc, product) => {
+    const supplierId = product.supplier_id;
+    if (!acc[supplierId]) acc[supplierId] = [];
+    acc[supplierId].push(product);
+    return acc;
+  }, {} as Record<string, any[]>);
+  
+  for (const [supplierId, supplierProducts] of Object.entries(productsBySupplier)) {
+    const supplier = supplierProducts[0].suppliers;
     
-    await supabase
-      .from('imported_products')
-      .update({ 
-        stock_quantity: newStock,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', product.id);
-    
-    updated++;
+    try {
+      // Fetch fresh inventory data from supplier API
+      let inventoryData = [];
+      
+      switch (supplier.supplier_type) {
+        case 'bigbuy':
+          const bigbuyResult = await supabase.functions.invoke('bigbuy-integration', {
+            body: {
+              action: 'fetch_inventory',
+              product_ids: supplierProducts.map(p => p.external_id),
+              api_key: supplier.api_credentials?.api_key
+            }
+          });
+          inventoryData = bigbuyResult.data?.inventory || [];
+          break;
+          
+        case 'aliexpress':
+          // AliExpress doesn't have direct inventory API, skip
+          console.log(`⚠️ Inventory sync not supported for AliExpress`);
+          continue;
+          
+        default:
+          console.warn(`⚠️ Unknown supplier type: ${supplier.supplier_type}`);
+          continue;
+      }
+      
+      // Update products with fresh inventory data
+      for (const inventoryItem of inventoryData) {
+        const product = supplierProducts.find(p => p.external_id === inventoryItem.product_id);
+        if (!product) continue;
+        
+        await supabase
+          .from('imported_products')
+          .update({ 
+            stock_quantity: inventoryItem.stock || 0,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', product.id);
+        
+        updated++;
+      }
+      
+    } catch (error) {
+      console.error(`❌ Error updating inventory for supplier ${supplier.name}:`, error);
+      errors += supplierProducts.length;
+    }
   }
 
   return {
     type: 'inventory_sync',
-    products_updated: updated
+    products_updated: updated,
+    errors
   };
 }
 
 async function processPriceSync(job: any, supabase: any) {
   console.log(`💰 Updating prices for job ${job.id}`);
   
-  // Get products for price updates
+  // Get products for price updates (grouped by supplier)
   const { data: products, error: productsError } = await supabase
     .from('imported_products')
-    .select('*')
+    .select('*, suppliers!inner(*)')
     .eq('user_id', job.user_id)
+    .not('supplier_id', 'is', null)
     .limit(50);
 
   if (productsError) throw productsError;
 
   let updated = 0;
+  let errors = 0;
   
-  for (const product of products || []) {
-    // Simulate price update (replace with actual API call)
-    const priceVariation = 0.9 + Math.random() * 0.2; // ±10%
-    const newPrice = Math.round(product.price * priceVariation * 100) / 100;
+  // Group products by supplier for batch API calls
+  const productsBySupplier = (products || []).reduce((acc, product) => {
+    const supplierId = product.supplier_id;
+    if (!acc[supplierId]) acc[supplierId] = [];
+    acc[supplierId].push(product);
+    return acc;
+  }, {} as Record<string, any[]>);
+  
+  for (const [supplierId, supplierProducts] of Object.entries(productsBySupplier)) {
+    const supplier = supplierProducts[0].suppliers;
     
-    await supabase
-      .from('imported_products')
-      .update({ 
-        price: newPrice,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', product.id);
-    
-    updated++;
+    try {
+      // Fetch fresh pricing data from supplier API
+      let pricingData = [];
+      
+      switch (supplier.supplier_type) {
+        case 'bigbuy':
+          const bigbuyResult = await supabase.functions.invoke('bigbuy-integration', {
+            body: {
+              action: 'fetch_pricing',
+              product_ids: supplierProducts.map(p => p.external_id),
+              api_key: supplier.api_credentials?.api_key
+            }
+          });
+          pricingData = bigbuyResult.data?.pricing || [];
+          break;
+          
+        case 'aliexpress':
+          const aliexpressResult = await supabase.functions.invoke('aliexpress-integration', {
+            body: {
+              action: 'get_product_details',
+              product_ids: supplierProducts.map(p => p.external_id),
+              api_key: supplier.api_credentials?.api_key,
+              api_secret: supplier.api_credentials?.api_secret
+            }
+          });
+          pricingData = aliexpressResult.data?.products || [];
+          break;
+          
+        default:
+          console.warn(`⚠️ Unknown supplier type: ${supplier.supplier_type}`);
+          continue;
+      }
+      
+      // Update products with fresh pricing data
+      for (const priceItem of pricingData) {
+        const product = supplierProducts.find(p => p.external_id === priceItem.product_id || p.external_id === priceItem.id);
+        if (!product) continue;
+        
+        await supabase
+          .from('imported_products')
+          .update({ 
+            price: priceItem.price || priceItem.retail_price,
+            cost_price: priceItem.cost_price || priceItem.wholesale_price,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', product.id);
+        
+        updated++;
+      }
+      
+    } catch (error) {
+      console.error(`❌ Error updating prices for supplier ${supplier.name}:`, error);
+      errors += supplierProducts.length;
+    }
   }
 
   return {
     type: 'price_sync',
-    products_updated: updated
+    products_updated: updated,
+    errors
   };
 }
 
 async function processOrderSync(job: any, supabase: any) {
   console.log(`📋 Syncing orders for job ${job.id}`);
   
-  // Get recent orders for tracking updates
+  // Get recent orders for tracking updates (with marketplace integration)
   const { data: orders, error: ordersError } = await supabase
     .from('orders')
-    .select('*')
+    .select('*, marketplace_integrations!inner(*)')
     .eq('user_id', job.user_id)
+    .not('platform_order_id', 'is', null)
     .in('status', ['pending', 'processing', 'shipped'])
     .limit(20);
 
   if (ordersError) throw ordersError;
 
   let updated = 0;
+  let errors = 0;
   
   for (const order of orders || []) {
-    // Simulate order status update
-    const statuses = ['processing', 'shipped', 'delivered'];
-    const currentIndex = statuses.indexOf(order.status);
-    
-    if (currentIndex < statuses.length - 1 && Math.random() > 0.7) {
-      const newStatus = statuses[currentIndex + 1];
+    try {
+      const integration = order.marketplace_integrations;
       
-      await supabase
-        .from('orders')
-        .update({ 
-          status: newStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', order.id);
+      // Fetch order status from marketplace
+      let orderStatus = null;
       
-      updated++;
+      switch (integration.platform) {
+        case 'shopify':
+          // Shopify order sync would go here
+          console.log(`⚠️ Shopify order sync not yet implemented for order ${order.id}`);
+          break;
+          
+        case 'woocommerce':
+          // WooCommerce order sync would go here
+          console.log(`⚠️ WooCommerce order sync not yet implemented for order ${order.id}`);
+          break;
+          
+        case 'amazon':
+          // Amazon order sync would go here
+          console.log(`⚠️ Amazon order sync not yet implemented for order ${order.id}`);
+          break;
+          
+        default:
+          console.warn(`⚠️ Unknown marketplace platform: ${integration.platform}`);
+          continue;
+      }
+      
+      // Update order status if changed
+      if (orderStatus && orderStatus !== order.status) {
+        await supabase
+          .from('orders')
+          .update({ 
+            status: orderStatus,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', order.id);
+        
+        updated++;
+        console.log(`✅ Updated order ${order.order_number} status: ${order.status} → ${orderStatus}`);
+      }
+      
+    } catch (error) {
+      console.error(`❌ Error syncing order ${order.id}:`, error);
+      errors++;
     }
   }
 
   return {
     type: 'order_sync',
-    orders_updated: updated
+    orders_updated: updated,
+    errors
   };
 }
 
@@ -386,21 +563,5 @@ async function updateProductPerformanceScores(supabase: any) {
   }
 }
 
-function generateMockProducts(supplierId: string, count: number) {
-  const categories = ['Electronics', 'Fashion', 'Home & Garden', 'Sports', 'Beauty'];
-  const brands = ['TechPro', 'StyleMax', 'HomeComfort', 'SportElite', 'BeautyPlus'];
-  
-  return Array.from({ length: count }, (_, i) => ({
-    external_id: `${supplierId}_${Date.now()}_${i}`,
-    name: `Product ${i + 1} from Supplier ${supplierId}`,
-    description: `High-quality product with excellent features. Perfect for daily use.`,
-    price: Math.round((Math.random() * 200 + 10) * 100) / 100,
-    currency: 'EUR',
-    sku: `SKU${supplierId}${i}${Date.now()}`,
-    category: categories[Math.floor(Math.random() * categories.length)],
-    brand: brands[Math.floor(Math.random() * brands.length)],
-    stock_quantity: Math.floor(Math.random() * 100),
-    status: 'draft',
-    supplier_name: `Supplier ${supplierId}`
-  }));
-}
+// Mock product generation removed - now using real supplier APIs
+// See processSupplierSync() for actual API integration with BigBuy and AliExpress
