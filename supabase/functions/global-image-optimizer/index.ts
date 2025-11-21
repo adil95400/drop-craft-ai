@@ -171,9 +171,18 @@ serve(async (req) => {
         optimizations.push('Generated responsive versions (320w, 640w, 1024w, 1920w)');
       }
 
-      // Simulate optimization result
-      const originalSize = 450000; // Example: 450KB
-      const optimizedSize = Math.round(originalSize * 0.35); // 35% of original
+      // Fetch real image size
+      let originalSize = 0;
+      try {
+        const response = await fetch(imageUrl, { method: 'HEAD' });
+        const contentLength = response.headers.get('content-length');
+        originalSize = contentLength ? parseInt(contentLength, 10) : 450000; // Fallback to 450KB
+      } catch (err) {
+        console.error('Error fetching image size:', err);
+        originalSize = 450000; // Fallback
+      }
+      
+      const optimizedSize = Math.round(originalSize * 0.35); // 35% of original (estimated WebP compression)
       const savings = Math.round(((originalSize - optimizedSize) / originalSize) * 100);
 
       const result = {
@@ -220,41 +229,106 @@ serve(async (req) => {
 async function analyzeImage(url: string, source: string, context?: string): Promise<ImageAuditResult> {
   const issues: ImageIssue[] = [];
   
-  // Simulate image analysis (in production, you'd fetch and analyze the actual image)
-  const mockSize = Math.floor(Math.random() * 500000) + 50000; // 50KB - 550KB
-  const mockWidth = Math.floor(Math.random() * 2000) + 500;
-  const mockHeight = Math.floor(Math.random() * 2000) + 500;
-  const mockFormat = url.includes('.webp') ? 'webp' : url.includes('.jpg') || url.includes('.jpeg') ? 'jpeg' : 'png';
-  
-  // Check size
-  if (mockSize > 200000) {
+  let imageSize = 0;
+  let imageWidth = 0;
+  let imageHeight = 0;
+  let imageFormat = 'unknown';
+
+  try {
+    // Fetch real image with timeout
+    console.log(`🔍 Fetching image: ${url}`);
+    
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    
+    const response = await fetch(url, {
+      method: 'HEAD', // Use HEAD first to check size without downloading full image
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      console.warn(`⚠️ Failed to fetch image (HEAD): ${response.status}`);
+      // Fallback: try GET request
+      const getResponse = await fetch(url, { signal: controller.signal });
+      if (getResponse.ok) {
+        const contentLength = getResponse.headers.get('content-length');
+        imageSize = contentLength ? parseInt(contentLength, 10) : 0;
+        
+        // Get actual dimensions by reading image bytes
+        const buffer = await getResponse.arrayBuffer();
+        const dimensions = getImageDimensions(buffer);
+        imageWidth = dimensions.width;
+        imageHeight = dimensions.height;
+      }
+    } else {
+      // Get size from Content-Length header
+      const contentLength = response.headers.get('content-length');
+      imageSize = contentLength ? parseInt(contentLength, 10) : 0;
+
+      // For dimensions, we need to fetch the actual image
+      if (imageSize > 0 && imageSize < 10 * 1024 * 1024) { // Only fetch if < 10MB
+        const imageResponse = await fetch(url, { signal: controller.signal });
+        const buffer = await imageResponse.arrayBuffer();
+        const dimensions = getImageDimensions(buffer);
+        imageWidth = dimensions.width;
+        imageHeight = dimensions.height;
+      }
+    }
+
+    // Detect format from URL or Content-Type
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('webp') || url.includes('.webp')) {
+      imageFormat = 'webp';
+    } else if (contentType.includes('jpeg') || contentType.includes('jpg') || url.includes('.jpg') || url.includes('.jpeg')) {
+      imageFormat = 'jpeg';
+    } else if (contentType.includes('png') || url.includes('.png')) {
+      imageFormat = 'png';
+    } else if (contentType.includes('gif') || url.includes('.gif')) {
+      imageFormat = 'gif';
+    } else if (contentType.includes('svg') || url.includes('.svg')) {
+      imageFormat = 'svg';
+    }
+
+  } catch (error) {
+    console.error(`❌ Error fetching image ${url}:`, error.message);
+    // Use fallback values but mark as error
     issues.push({
       type: 'size',
       severity: 'error',
-      message: `Image trop lourde: ${(mockSize / 1024).toFixed(0)}KB (max: 200KB recommandé)`
+      message: `Impossible de charger l'image: ${error.message}`
+    });
+  }
+
+  // Check size
+  if (imageSize > 200000) {
+    issues.push({
+      type: 'size',
+      severity: 'error',
+      message: `Image trop lourde: ${(imageSize / 1024).toFixed(0)}KB (max: 200KB recommandé)`
     });
   }
 
   // Check format
-  if (mockFormat !== 'webp') {
+  if (imageFormat !== 'webp' && imageFormat !== 'svg') {
     issues.push({
       type: 'format',
       severity: 'warning',
-      message: `Format ${mockFormat.toUpperCase()} non optimal. WebP recommandé pour meilleure compression.`
+      message: `Format ${imageFormat.toUpperCase()} non optimal. WebP recommandé pour meilleure compression.`
     });
   }
 
   // Check dimensions
-  if (mockWidth > 1920 || mockHeight > 1920) {
+  if (imageWidth > 1920 || imageHeight > 1920) {
     issues.push({
       type: 'dimensions',
       severity: 'warning',
-      message: `Dimensions élevées: ${mockWidth}x${mockHeight}. Considérer un redimensionnement.`
+      message: `Dimensions élevées: ${imageWidth}x${imageHeight}. Considérer un redimensionnement.`
     });
   }
 
-  // Check ALT (randomly missing for demo)
-  if (Math.random() > 0.5) {
+  // Check ALT based on context
+  if (!context || context.trim() === '') {
     issues.push({
       type: 'alt',
       severity: 'warning',
@@ -273,11 +347,81 @@ async function analyzeImage(url: string, source: string, context?: string): Prom
 
   return {
     url,
-    size: mockSize,
-    format: mockFormat,
-    dimensions: { width: mockWidth, height: mockHeight },
+    size: imageSize,
+    format: imageFormat,
+    dimensions: { width: imageWidth, height: imageHeight },
     alt: context,
     issues,
     source: source as any
   };
+}
+
+function getImageDimensions(buffer: ArrayBuffer): { width: number; height: number } {
+  const view = new DataView(buffer);
+  
+  try {
+    // PNG: Check for PNG signature
+    if (view.byteLength >= 24 && 
+        view.getUint32(0) === 0x89504e47 && 
+        view.getUint32(4) === 0x0d0a1a0a) {
+      return {
+        width: view.getUint32(16),
+        height: view.getUint32(20)
+      };
+    }
+    
+    // JPEG: Look for SOF0 marker
+    if (view.byteLength >= 2 && view.getUint16(0) === 0xffd8) {
+      let offset = 2;
+      while (offset < view.byteLength - 9) {
+        const marker = view.getUint16(offset);
+        if (marker >= 0xffc0 && marker <= 0xffc3) {
+          return {
+            height: view.getUint16(offset + 5),
+            width: view.getUint16(offset + 7)
+          };
+        }
+        offset += 2 + view.getUint16(offset + 2);
+      }
+    }
+    
+    // GIF
+    if (view.byteLength >= 10 && 
+        view.getUint8(0) === 0x47 && 
+        view.getUint8(1) === 0x49 && 
+        view.getUint8(2) === 0x46) {
+      return {
+        width: view.getUint16(6, true),
+        height: view.getUint16(8, true)
+      };
+    }
+
+    // WebP: Check for WebP signature
+    if (view.byteLength >= 30 &&
+        view.getUint32(0) === 0x52494646 && // "RIFF"
+        view.getUint32(8) === 0x57454250) {  // "WEBP"
+      
+      // VP8 (lossy)
+      if (view.getUint32(12) === 0x56503820) {
+        return {
+          width: view.getUint16(26, true) & 0x3fff,
+          height: view.getUint16(28, true) & 0x3fff
+        };
+      }
+      
+      // VP8L (lossless)
+      if (view.getUint32(12) === 0x5650384c) {
+        const bits = view.getUint32(21, true);
+        return {
+          width: (bits & 0x3fff) + 1,
+          height: ((bits >> 14) & 0x3fff) + 1
+        };
+      }
+    }
+
+  } catch (error) {
+    console.error('Error parsing image dimensions:', error);
+  }
+
+  return { width: 0, height: 0 };
 }
