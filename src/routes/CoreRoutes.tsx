@@ -5,9 +5,10 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
 // Dashboard
-const DashboardHome = lazy(() => import('@/pages/DashboardHome'));
+const DashboardHome = lazy(() => import('@/pages/Dashboard'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const Settings = lazy(() => import('@/pages/Settings'));
+const ImportAdvancedPage = lazy(() => import('@/pages/ImportAdvancedPage'));
 
 // Stores
 const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard'));
@@ -61,9 +62,12 @@ export function CoreRoutes() {
       
       {/* Orders Management */}
       <Route path="orders" element={<ModernOrdersPage />} />
-      <Route path="orders/center" element={<OrdersCenterPage />} />
+      <Route path="orders-center" element={<OrdersCenterPage />} />
       <Route path="orders/returns" element={<ReturnManagementPage />} />
       <Route path="orders/shipping" element={<ShippingManagementPage />} />
+      
+      {/* Import */}
+      <Route path="import/advanced" element={<ImportAdvancedPage />} />
       
       {/* Customers */}
       <Route path="customers" element={<ModernCustomersPage />} />

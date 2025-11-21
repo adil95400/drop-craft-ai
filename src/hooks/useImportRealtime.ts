@@ -10,6 +10,26 @@ export const useImportRealtime = (userId?: string) => {
   const [activeJobs, setActiveJobs] = useState<ImportJobStatus[]>([])
   const [isConnected, setIsConnected] = useState(false)
 
+  const importFromFile = async (file: File) => {
+    toast.info('Import depuis fichier en cours...');
+    // Logic will be implemented
+  };
+
+  const importFromURL = async (url: string) => {
+    toast.info('Import depuis URL en cours...');
+    // Logic will be implemented
+  };
+
+  const importWithAI = async (prompt: string, count: number) => {
+    toast.info('Génération IA en cours...');
+    // Logic will be implemented
+  };
+
+  const importFromMarketplace = async (productIds: string[]) => {
+    toast.info('Import depuis marketplace en cours...');
+    // Logic will be implemented
+  };
+
   useEffect(() => {
     if (!userId) return
 
@@ -96,7 +116,14 @@ export const useImportRealtime = (userId?: string) => {
     }
   }, [userId])
 
-  return { activeJobs, isConnected }
+  return { 
+    activeJobs, 
+    isConnected,
+    importFromFile,
+    importFromURL,
+    importWithAI,
+    importFromMarketplace
+  }
 }
 
 function mapToJobStatus(data: any): ImportJobStatus {
