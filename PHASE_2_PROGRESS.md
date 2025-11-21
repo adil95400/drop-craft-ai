@@ -44,12 +44,18 @@
 - ✅ Documentation complète (README.md)
 - ✅ Gestion d'erreurs robuste
 
-#### 4. `global-seo-scanner/`
-**État**: Mock dans partie scan, AI OK si LOVABLE_API_KEY
-**Action**: 
-- Remplacer mocks par vrai parsing HTML
-- Utiliser cheerio ou similaire
-- Garder l'intégration AI (déjà bonne)
+#### 4. `global-seo-scanner/` - ✅ TERMINÉ
+**État**: Refactorisé - parsing HTML réel implémenté
+**Actions réalisées**:
+- ✅ Supprimé fonctions mockées (getPageTitle, getPageMetaDescription, getPageH1)
+- ✅ Implémenté vrai fetch + parsing HTML avec regex
+- ✅ Extraction réelle de title, meta description, H1
+- ✅ Vérification du nombre de H1 (doit être unique)
+- ✅ Détection de canonical tag
+- ✅ Timeout de 10s et limite 1MB de HTML
+- ✅ Gestion d'erreurs robuste
+- ✅ Documentation complète (README.md)
+- ⚠️ Partie AI optimization déjà correcte (pas de changement)
 
 #### 5. `global-image-optimizer/`
 **État**: Mock tailles/dimensions
@@ -81,9 +87,9 @@
 
 ### Après Phase 2 (actuel):
 - Edge functions: 37 (-3) ✅
-- Lignes mockées: ~1,400 (-400 supprimés, -367 automated-sync, -281 bigbuy) ✅
-- Fonctions documentées: 3 (aliexpress, automated-sync, bigbuy) ✅
-- Fonctions production-ready: 3 ✅
+- Lignes mockées: ~1,350 (-767 total refactorés) ✅
+- Fonctions documentées: 4 (aliexpress, automated-sync, bigbuy, global-seo-scanner) ✅
+- Fonctions production-ready: 4 ✅
 
 ### Objectif fin Phase 2:
 - Edge functions: 25 (-15 mocks/inutiles)
@@ -102,9 +108,11 @@
 
 ## 🎯 Prochaine action
 
-**Immédiate**: Refactorer fonctions de priorité MOYENNE
-- `global-seo-scanner/` - Mock dans partie scan, AI OK
-- `global-image-optimizer/` - Mock tailles/dimensions
-- Ou nettoyer les 10 autres fonctions mockées de priorité moyenne
+**Immédiate**: Refactorer `global-image-optimizer/`
+- Mock tailles/dimensions d'images
+- Implémenter vrai fetch + analyse d'images
+- Moins critique mais utilisé fréquemment
 
-**Impact**: Après ces 3 fonctions HAUTE priorité terminées, reste 10 fonctions MOYENNE à nettoyer
+**Après**: Nettoyer les 9 autres fonctions de priorité MOYENNE
+- `ads-manager/`, `bulk-zip-import/`, `canva-design-optimizer/`, etc.
+- Impact moyen mais améliore la qualité globale
