@@ -186,122 +186,138 @@ serve(async (req) => {
 })
 
 async function fetchFromAliExpressAPI(apiKey: string, importType: string, filters: any): Promise<AliExpressProduct[]> {
-  // Real AliExpress API integration would be implemented here
-  // This is a placeholder for the actual API calls
+  /**
+   * REAL API INTEGRATION - À implémenter avec vraie API AliExpress
+   * 
+   * Documentation: https://developers.aliexpress.com/en/doc.htm
+   * Voir README.md pour instructions complètes
+   */
   
+  const apiSecret = Deno.env.get('ALIEXPRESS_API_SECRET')
+  
+  if (!apiSecret) {
+    throw new Error(
+      'ALIEXPRESS_API_SECRET not configured. ' +
+      'Cette edge function nécessite une clé API AliExpress valide. ' +
+      'Voir README.md pour instructions.'
+    )
+  }
+
   const apiEndpoint = 'https://api-sg.aliexpress.com/sync'
+  const pageSize = importType === 'complete_catalog' ? 200 : 100
   
   try {
-    const params = {
+    // Étape 1: Préparer paramètres de requête
+    const baseParams = {
       app_key: apiKey,
       method: 'aliexpress.affiliate.product.query',
       format: 'json',
       v: '2.0',
       sign_method: 'md5',
-      timestamp: Date.now(),
+      timestamp: Math.floor(Date.now() / 1000).toString(),
       category_ids: filters.category || '',
       keywords: filters.keywords || '',
       max_sale_price: filters.maxPrice || '',
       min_sale_price: filters.minPrice || '',
-      page_no: 1,
-      page_size: importType === 'complete_catalog' ? 200 : 100
+      page_no: '1',
+      page_size: pageSize.toString(),
+      sort: 'SALE_PRICE_ASC',
+      target_currency: 'USD',
+      target_language: 'EN',
+      tracking_id: 'default' // Votre tracking ID AliExpress
     }
-
-    // In a real implementation, you would:
-    // 1. Generate proper API signature
-    // 2. Make authenticated requests to AliExpress API
-    // 3. Handle pagination for large datasets
-    // 4. Parse and transform the response data
     
-    console.log('AliExpress API params:', params)
+    // Étape 2: Générer signature MD5
+    // TODO: Implémenter generateMD5Signature(baseParams, apiSecret)
+    // const signature = generateMD5Signature(baseParams, apiSecret)
     
-    // For now, return enhanced mock data
-    return generateEnhancedMockData(importType, filters)
+    // Étape 3: Faire la requête API réelle
+    // TODO: Remplacer par vraie requête HTTP
+    console.warn(
+      'API AliExpress non implémentée - Structure prête pour intégration. ' +
+      'Paramètres:', baseParams
+    )
+    
+    // TEMPORAIRE: Throw error explicite si credentials réels fournis
+    throw new Error(
+      'AliExpress API integration not yet implemented. ' +
+      'Real API structure is ready - developer needs to: ' +
+      '1. Implement MD5 signature generation ' +
+      '2. Make HTTP request to ' + apiEndpoint + ' ' +
+      '3. Parse and transform API response ' +
+      'See README.md and https://developers.aliexpress.com for details.'
+    )
+    
+    // Structure pour vraie implémentation:
+    /*
+    const response = await fetch(`${apiEndpoint}?${new URLSearchParams({
+      ...baseParams,
+      sign: signature
+    })}`)
+    
+    if (!response.ok) {
+      throw new Error(`AliExpress API error: ${response.statusText}`)
+    }
+    
+    const data = await response.json()
+    
+    // Gérer pagination si nécessaire
+    let allProducts = transformAliExpressProducts(data.resp_result.result.products)
+    
+    // Si plus de pages disponibles
+    if (data.resp_result.result.total_page_no > 1) {
+      for (let page = 2; page <= data.resp_result.result.total_page_no; page++) {
+        // Fetch page suivante...
+        // Rate limiting: attendre 200ms entre requêtes
+        await new Promise(resolve => setTimeout(resolve, 200))
+      }
+    }
+    
+    return allProducts
+    */
     
   } catch (error) {
     console.error('AliExpress API error:', error)
-    throw new Error(`AliExpress API integration failed: ${error.message}`)
+    throw error
   }
 }
 
-function generateEnhancedMockData(importType: string, filters: any): AliExpressProduct[] {
-  const categories = ['Electronics', 'Fashion', 'Home & Garden', 'Sports', 'Beauty', 'Automotive']
-  const suppliers = ['TechPro Store', 'Fashion Hub', 'Home Essentials', 'Sport Zone', 'Beauty Plus', 'Auto Parts Co']
+/**
+ * TODO: Implémenter génération signature MD5 selon doc AliExpress
+ * https://developers.aliexpress.com/en/doc.htm?docId=27744
+ */
+function generateMD5Signature(params: Record<string, string>, appSecret: string): string {
+  // Étapes requises:
+  // 1. Trier paramètres alphabétiquement
+  // 2. Concaténer en format key1value1key2value2...
+  // 3. Préfixer et suffixer avec appSecret
+  // 4. Calculer MD5 hash
+  // 5. Convertir en uppercase hexadecimal
   
-  const baseProducts = [
-    {
-      title: "Wireless Gaming Headset RGB LED",
-      category: "Electronics",
-      base_price: 29.99,
-      original_price: 59.99,
-      tags: ["gaming", "wireless", "rgb", "headset"]
-    },
-    {
-      title: "Smart Fitness Watch Waterproof",
-      category: "Electronics",
-      base_price: 45.99,
-      original_price: 89.99,
-      tags: ["fitness", "smart", "waterproof", "watch"]
-    },
-    {
-      title: "LED Strip Lights RGB Smart",
-      category: "Home & Garden",
-      base_price: 19.99,
-      original_price: 39.99,
-      tags: ["led", "rgb", "smart", "lighting"]
-    },
-    {
-      title: "Bluetooth Speaker Portable",
-      category: "Electronics",
-      base_price: 35.99,
-      original_price: 69.99,
-      tags: ["bluetooth", "speaker", "portable", "audio"]
-    },
-    {
-      title: "Phone Camera Lens Kit",
-      category: "Electronics", 
-      base_price: 24.99,
-      original_price: 49.99,
-      tags: ["phone", "camera", "lens", "photography"]
-    }
-  ]
+  throw new Error('MD5 signature generation not implemented')
+}
 
-  let count = 100
-  if (importType === 'trending_products') count = 500
-  else if (importType === 'winners_detected') count = 150
-  else if (importType === 'complete_catalog') count = 2500
-  else if (importType === 'global_bestsellers') count = 200
-
-  return Array.from({ length: count }, (_, i) => {
-    const baseProduct = baseProducts[i % baseProducts.length]
-    const categoryIndex = categories.indexOf(baseProduct.category)
-    
-    return {
-      product_id: `ae_${Date.now()}_${i}`,
-      title: `${baseProduct.title} - Model ${String.fromCharCode(65 + (i % 26))}${i + 1}`,
-      price: Number((baseProduct.base_price + (Math.random() * 20 - 10)).toFixed(2)),
-      original_price: baseProduct.original_price,
-      discount_rate: Math.round(((baseProduct.original_price - baseProduct.base_price) / baseProduct.original_price) * 100),
-      rating: Number((4.0 + Math.random() * 1).toFixed(1)),
-      review_count: Math.floor(Math.random() * 2000) + 100,
-      image_urls: [
-        `https://images.unsplash.com/photo-${1500000000000 + i}?w=400`,
-        `https://images.unsplash.com/photo-${1500000000000 + i + 1}?w=400`
-      ],
-      category: baseProduct.category,
-      tags: baseProduct.tags,
-      supplier_name: suppliers[categoryIndex] || suppliers[0],
-      shipping_time: `${5 + Math.floor(Math.random() * 15)}-${10 + Math.floor(Math.random() * 20)} days`,
-      min_order_quantity: Math.floor(Math.random() * 5) + 1,
-      description: `Premium quality ${baseProduct.title.toLowerCase()} with advanced features and reliable performance. Perfect for ${baseProduct.category.toLowerCase()} enthusiasts.`,
-      attributes: {
-        color: ['Black', 'White', 'Blue', 'Red'][Math.floor(Math.random() * 4)],
-        material: ['Plastic', 'Metal', 'Silicone'][Math.floor(Math.random() * 3)],
-        warranty: `${12 + Math.floor(Math.random() * 12)} months`
-      },
-      stock_quantity: Math.floor(Math.random() * 1000) + 50
-    }
-  })
+/**
+ * TODO: Transformer réponse API AliExpress vers notre format
+ */
+function transformAliExpressProducts(apiProducts: any[]): AliExpressProduct[] {
+  return apiProducts.map(p => ({
+    product_id: p.product_id,
+    title: p.product_title,
+    price: parseFloat(p.target_sale_price || p.sale_price),
+    original_price: parseFloat(p.target_original_price || p.original_price),
+    discount_rate: parseInt(p.discount || '0'),
+    rating: parseFloat(p.evaluate_rate || '0'),
+    review_count: parseInt(p.volume || '0'),
+    image_urls: [p.product_main_image_url, ...(p.product_small_image_urls || [])],
+    category: p.second_level_category_name || 'General',
+    tags: [],
+    supplier_name: p.shop_title || 'AliExpress',
+    shipping_time: '15-30 days', // Estimation par défaut
+    min_order_quantity: parseInt(p.min_order_quantity || '1'),
+    description: p.product_detail_url,
+    stock_quantity: 999 // AliExpress n'expose pas toujours le stock
+  }))
 }
 
 function calculateQualityScore(product: AliExpressProduct): number {
