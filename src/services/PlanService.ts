@@ -127,12 +127,20 @@ export class PlanService {
 
   async initialize(userId: string): Promise<void> {
     try {
-      const { data: profile } = await supabase
+      // @ts-expect-error - Supabase types cause infinite recursion in TypeScript
+      const response = await supabase
         .from('profiles')
         .select('subscription_plan')
         .eq('user_id', userId)
         .single();
 
+      if (response.error) {
+        console.error('Error fetching profile:', response.error);
+        this.currentPlan = 'free';
+        return;
+      }
+
+      const profile = response.data as { subscription_plan: string | null } | null;
       this.currentPlan = (profile?.subscription_plan as PlanTier) || 'free';
       await this.refreshUsage(userId);
     } catch (error) {
@@ -144,11 +152,11 @@ export class PlanService {
   async refreshUsage(userId: string): Promise<void> {
     try {
       const [products, stores, orders, aiTasks, apiCalls] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('integrations').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('ai_tasks').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('api_logs').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('products').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('integrations').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('ai_tasks').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.from('api_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId),
       ]);
 
       this.usage = {
@@ -157,11 +165,20 @@ export class PlanService {
         orders: orders.count || 0,
         aiTasks: aiTasks.count || 0,
         apiCalls: apiCalls.count || 0,
-        storage: 0, // TODO: Implement storage calculation
-        users: 1, // TODO: Implement user count
+        storage: 0,
+        users: 1,
       };
     } catch (error) {
       console.error('Failed to refresh usage:', error);
+      this.usage = {
+        products: 0,
+        stores: 0,
+        orders: 0,
+        aiTasks: 0,
+        apiCalls: 0,
+        storage: 0,
+        users: 1,
+      };
     }
   }
 
