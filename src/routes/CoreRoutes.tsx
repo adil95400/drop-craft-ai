@@ -61,6 +61,10 @@ const WorkflowsPage = lazy(() => import('@/pages/WorkflowsPage'));
 const APIManagementPage = lazy(() => import('@/pages/APIManagementPage'));
 const BillingPage = lazy(() => import('@/pages/BillingPage'));
 
+// Learning & Security
+const AcademyPage = lazy(() => import('@/pages/AcademyPage'));
+const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
+
 // Additional Pages
 const SubscriptionPage = lazy(() => import('@/pages/SubscriptionPage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
@@ -128,6 +132,10 @@ export function CoreRoutes() {
       {/* Settings & Management */}
       <Route path="api" element={<APIManagementPage />} />
       <Route path="billing" element={<BillingPage />} />
+      
+      {/* Learning & Security */}
+      <Route path="academy" element={<AcademyPage />} />
+      <Route path="security" element={<SecurityDashboard />} />
       
       {/* Subscription & Notifications */}
       <Route path="subscription" element={<SubscriptionPage />} />
