@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,69 +12,114 @@ serve(async (req) => {
 
   try {
     const { productName, category, features, targetAudience, tone = 'professional' } = await req.json();
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not configured');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    const prompt = `Generate a compelling product description for an e-commerce platform.
-
-Product Name: ${productName}
-Category: ${category}
-Key Features: ${features?.join(', ') || 'N/A'}
-Target Audience: ${targetAudience || 'General consumers'}
-Tone: ${tone}
-
-Requirements:
-- Create an engaging, SEO-optimized description (150-200 words)
-- Highlight unique selling points
-- Include emotional appeal
-- Use persuasive language
-- Format with short paragraphs for readability
-
-Return the response as JSON with this structure:
-{
-  "title": "Optimized product title",
-  "shortDescription": "1-2 sentence hook (50-60 characters)",
-  "fullDescription": "Complete product description",
-  "bulletPoints": ["Key feature 1", "Key feature 2", "Key feature 3"],
-  "seoKeywords": ["keyword1", "keyword2", "keyword3"]
-}`;
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-mini-2025-08-07',
+        model: 'google/gemini-2.5-flash',
         messages: [
-          { role: 'system', content: 'You are an expert e-commerce copywriter specializing in product descriptions that convert.' },
-          { role: 'user', content: prompt }
+          { 
+            role: 'system', 
+            content: 'Tu es un expert en rédaction de descriptions produits e-commerce. Fournis des descriptions persuasives et optimisées SEO.' 
+          },
+          { 
+            role: 'user', 
+            content: `Génère une description produit complète pour un produit e-commerce.
+
+Nom du produit: ${productName}
+Catégorie: ${category}
+Caractéristiques: ${features?.join(', ') || 'N/A'}
+Public cible: ${targetAudience || 'Grand public'}
+Ton: ${tone}
+
+Fournis une réponse structurée avec:
+- Un titre accrocheur et optimisé SEO
+- Une courte description (50-60 caractères) pour attirer l'attention
+- Une description complète (150-200 mots) persuasive
+- 3-5 points clés/bénéfices du produit
+- 3-5 mots-clés SEO pertinents` 
+          }
         ],
         temperature: 0.8,
-        max_completion_tokens: 1000,
+        max_tokens: 1000,
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "generate_product_description",
+              description: "Génère une description produit structurée",
+              parameters: {
+                type: "object",
+                properties: {
+                  title: {
+                    type: "string",
+                    description: "Titre optimisé du produit"
+                  },
+                  shortDescription: {
+                    type: "string",
+                    description: "Description courte accrocheuse"
+                  },
+                  fullDescription: {
+                    type: "string",
+                    description: "Description complète persuasive"
+                  },
+                  bulletPoints: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Points clés et bénéfices"
+                  },
+                  seoKeywords: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Mots-clés SEO"
+                  }
+                },
+                required: ["title", "shortDescription", "fullDescription", "bulletPoints", "seoKeywords"],
+                additionalProperties: false
+              }
+            }
+          }
+        ],
+        tool_choice: { type: "function", function: { name: "generate_product_description" } }
       }),
     });
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: 'Rate limit atteint. Veuillez réessayer plus tard.' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: 'Crédits insuffisants. Veuillez recharger votre compte.' }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('Lovable AI error:', response.status, errorText);
+      throw new Error('Erreur Lovable AI');
     }
 
     const data = await response.json();
-    const content = data.choices[0].message.content;
+    const toolCall = data.choices[0].message.tool_calls?.[0];
     
-    // Parse JSON from response
     let parsedContent;
-    try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      parsedContent = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content);
-    } catch (e) {
-      console.error('JSON parsing error:', e);
+    if (toolCall?.function?.arguments) {
+      parsedContent = JSON.parse(toolCall.function.arguments);
+    } else {
+      // Fallback si pas de tool call
+      const content = data.choices[0].message.content;
       parsedContent = {
         title: productName,
         shortDescription: content.substring(0, 100),
