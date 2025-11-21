@@ -13848,6 +13848,8 @@ export type Database = {
         Returns: Json
       }
       seed_sample_data: { Args: never; Returns: Json }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       simple_mask_email: { Args: { email: string }; Returns: string }
       simple_mask_phone: { Args: { phone: string }; Returns: string }
       unlock_stuck_import_jobs: { Args: never; Returns: number }
