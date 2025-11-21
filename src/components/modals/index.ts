@@ -18,3 +18,7 @@ export { NotificationDialog } from './NotificationDialog';
 export { GenerateReportDialog } from './GenerateReportDialog';
 export { CreateSupplierDialog } from './CreateSupplierDialog';
 export { SupplierFeedDialog } from './SupplierFeedDialog';
+export { NewAutomationDialog } from './NewAutomationDialog';
+export { ConfigAutomationDialog } from './ConfigAutomationDialog';
+export { AIInsightsDialog } from './AIInsightsDialog';
+export { ProductDetailsDialog } from './ProductDetailsDialog';
