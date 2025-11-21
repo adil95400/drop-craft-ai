@@ -53,6 +53,10 @@ const ProductCatalog = lazy(() => import('@/pages/ProductCatalog'));
 const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
 const MarketingPage = lazy(() => import('@/pages/MarketingPage'));
 
+// AI & Automation
+const AIInsightsPage = lazy(() => import('@/pages/AIInsightsPage'));
+const WorkflowsPage = lazy(() => import('@/pages/WorkflowsPage'));
+
 // Additional Pages
 const SubscriptionPage = lazy(() => import('@/pages/SubscriptionPage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
@@ -112,6 +116,10 @@ export function CoreRoutes() {
       {/* Suppliers & Marketing */}
       <Route path="suppliers" element={<SuppliersPage />} />
       <Route path="marketing" element={<MarketingPage />} />
+      
+      {/* AI & Automation */}
+      <Route path="ai-insights" element={<AIInsightsPage />} />
+      <Route path="workflows" element={<WorkflowsPage />} />
       
       {/* Subscription & Notifications */}
       <Route path="subscription" element={<SubscriptionPage />} />
