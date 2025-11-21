@@ -32,6 +32,7 @@ export interface ModalData {
   orderId?: string;
   orderNumber?: string;
   automationId?: string;
+  selectedItems?: any[];
   [key: string]: any;
 }
 
