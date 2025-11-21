@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { validateInput, importRequestSchema } from '../_shared/input-validation.ts'
-import { withErrorHandler, AuthenticationError } from '../_shared/error-handler.ts'
+import { authenticateUser } from '../_shared/secure-auth.ts'
+import { secureBatchInsert } from '../_shared/db-helpers.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,42 +9,37 @@ const corsHeaders = {
 }
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-serve(withErrorHandler(async (req) => {
+serve(async (req) => {
   console.log('Unified Import Function called:', req.method, req.url)
 
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabase = createClient(supabaseUrl, supabaseKey)
-  
-  // Authenticate user
-  const authHeader = req.headers.get('Authorization')
-  if (!authHeader) {
-    throw new AuthenticationError('Authorization header required')
-  }
+  try {
+    const supabase = createClient(supabaseUrl, supabaseKey)
+    const { user } = await authenticateUser(req, supabase)
+    
+    const url = new URL(req.url)
+    const endpoint = url.pathname.split('/').pop()
+    const body = await req.json()
 
-  const token = authHeader.replace('Bearer ', '')
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-  
-  if (authError || !user) {
-    throw new AuthenticationError('Invalid authentication token')
-  }
-
-  const url = new URL(req.url)
-  const endpoint = url.pathname.split('/').pop()
-  const body = await req.json()
-
-    console.log('Processing import endpoint:', endpoint, 'with body:', body)
+    console.log('Processing import endpoint:', endpoint, 'for user:', user.id)
 
     switch (endpoint) {
+      case 'csv':
+        return await handleCSVImport(supabase, body, user.id)
+      
       case 'xml-json':
-        return handleXMLJSONImport(body)
+        return await handleXMLJSONImport(supabase, body, user.id)
+      
+      case 'url':
+        return await handleURLImport(supabase, body, user.id)
       
       case 'ftp':
-        return handleFTPImport(body)
+        return await handleFTPImport(supabase, body, user.id)
       
       default:
         return new Response(
@@ -52,45 +47,149 @@ serve(withErrorHandler(async (req) => {
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }
-  // Error handling is done by withErrorHandler wrapper
-}, corsHeaders))
+  } catch (error) {
+    console.error('Error in unified import:', error)
+    return new Response(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: error instanceof Error ? error.stack : undefined
+      }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+})
 
-async function handleXMLJSONImport(body: any) {
-  console.log('Processing XML/JSON import:', body)
+async function handleCSVImport(supabase: any, body: any, userId: string) {
+  const { products } = body
   
-  const response = {
-    success: true,
-    message: 'XML/JSON import completed',
-    data: {
-      format: body.format || 'json',
-      recordsProcessed: Math.floor(Math.random() * 100) + 1,
-      recordsImported: Math.floor(Math.random() * 80) + 1,
-      timestamp: new Date().toISOString()
-    }
+  if (!products || !Array.isArray(products)) {
+    throw new Error('Invalid products data')
   }
 
+  console.log(`Importing ${products.length} products from CSV for user ${userId}`)
+
+  const validProducts = products.map(p => ({
+    name: p.name || 'Sans nom',
+    description: p.description || '',
+    price: parseFloat(p.price) || 0,
+    cost_price: parseFloat(p.cost_price) || 0,
+    sku: p.sku || `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    category: p.category || 'Autre',
+    stock_quantity: parseInt(p.stock_quantity) || 0,
+    status: p.status || 'active',
+    image_url: p.image_url || null,
+    user_id: userId
+  }))
+
+  const result = await secureBatchInsert(supabase, 'products', validProducts, userId)
+
   return new Response(
-    JSON.stringify(response),
+    JSON.stringify({
+      success: true,
+      message: 'CSV import completed',
+      data: {
+        recordsProcessed: products.length,
+        recordsImported: result.length,
+        timestamp: new Date().toISOString()
+      }
+    }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   )
 }
 
-async function handleFTPImport(body: any) {
-  console.log('Processing FTP import:', body)
+async function handleXMLJSONImport(supabase: any, body: any, userId: string) {
+  const { format, data: importData } = body
   
-  const response = {
-    success: true,
-    message: 'FTP import completed',
-    data: {
-      server: body.server || 'ftp.example.com',
-      filesProcessed: Math.floor(Math.random() * 20) + 1,
-      recordsImported: Math.floor(Math.random() * 200) + 1,
-      timestamp: new Date().toISOString()
-    }
+  console.log(`Processing ${format} import for user ${userId}`)
+
+  let products = []
+  
+  if (format === 'json') {
+    products = Array.isArray(importData) ? importData : [importData]
+  } else if (format === 'xml') {
+    // Parse XML to JSON (simplified - would need proper XML parser)
+    throw new Error('XML parsing not yet implemented')
   }
 
+  const validProducts = products.map(p => ({
+    name: p.name || p.title || 'Sans nom',
+    description: p.description || '',
+    price: parseFloat(p.price) || 0,
+    sku: p.sku || `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    category: p.category || 'Autre',
+    stock_quantity: parseInt(p.stock || p.quantity) || 0,
+    status: 'active',
+    user_id: userId
+  }))
+
+  const result = await secureBatchInsert(supabase, 'products', validProducts, userId)
+
   return new Response(
-    JSON.stringify(response),
+    JSON.stringify({
+      success: true,
+      message: `${format.toUpperCase()} import completed`,
+      data: {
+        format,
+        recordsProcessed: products.length,
+        recordsImported: result.length,
+        timestamp: new Date().toISOString()
+      }
+    }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   )
+}
+
+async function handleURLImport(supabase: any, body: any, userId: string) {
+  const { url } = body
+  
+  if (!url) {
+    throw new Error('URL is required')
+  }
+
+  console.log(`Importing from URL: ${url} for user ${userId}`)
+
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch data from URL: ${response.statusText}`)
+  }
+
+  const data = await response.json()
+  const products = Array.isArray(data) ? data : [data]
+
+  const validProducts = products.map(p => ({
+    name: p.name || p.title || 'Sans nom',
+    description: p.description || '',
+    price: parseFloat(p.price) || 0,
+    sku: p.sku || `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    category: p.category || 'Autre',
+    stock_quantity: parseInt(p.stock || p.quantity) || 0,
+    status: 'active',
+    user_id: userId
+  }))
+
+  const result = await secureBatchInsert(supabase, 'products', validProducts, userId)
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      message: 'URL import completed',
+      data: {
+        url,
+        recordsProcessed: products.length,
+        recordsImported: result.length,
+        timestamp: new Date().toISOString()
+      }
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  )
+}
+
+async function handleFTPImport(supabase: any, body: any, userId: string) {
+  const { server, username, path } = body
+  
+  console.log(`FTP import from ${server}${path} for user ${userId}`)
+
+  // FTP implementation would require proper FTP client
+  // For now, return a placeholder response
+  throw new Error('FTP import not yet implemented - use CSV or URL import instead')
 }
