@@ -39,6 +39,10 @@ const MultiStoreAnalyticsDashboard = lazy(() => import('@/pages/MultiStoreAnalyt
 const ReturnManagementPage = lazy(() => import('@/pages/ReturnManagementPage'));
 const ShippingManagementPage = lazy(() => import('@/pages/ShippingManagementPage'));
 
+// Stock & Reports
+const StockManagement = lazy(() => import('@/pages/StockManagement'));
+const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
+
 export function CoreRoutes() {
   return (
     <Routes>
@@ -80,6 +84,10 @@ export function CoreRoutes() {
       <Route path="stores/stock-intelligence" element={<StockManagementDashboard />} />
       <Route path="stores/analytics" element={<MultiStoreAnalyticsDashboard />} />
       <Route path="notifications" element={<AdvancedNotificationCenter />} />
+      
+      {/* Stock & Reports */}
+      <Route path="stock" element={<StockManagement />} />
+      <Route path="reports" element={<ReportsPage />} />
       
       {/* Settings (accessible from sidebar) */}
       <Route path="parametres" element={<Settings />} />
