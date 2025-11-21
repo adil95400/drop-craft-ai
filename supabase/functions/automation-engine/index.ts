@@ -35,6 +35,21 @@ serve(async (req) => {
     let result;
 
     switch (action) {
+      case 'create_rule':
+        result = await createRule(user.id, params);
+        break;
+      case 'update_rule':
+        result = await updateRule(user.id, params);
+        break;
+      case 'get_rule':
+        result = await getRule(user.id, params);
+        break;
+      case 'delete_rule':
+        result = await deleteRule(user.id, params);
+        break;
+      case 'get_rules':
+        result = await getRules(user.id, params);
+        break;
       case 'create_workflow':
         result = await createWorkflow(user.id, params);
         break;
@@ -66,6 +81,99 @@ serve(async (req) => {
     });
   }
 });
+
+async function createRule(userId: string, params: any) {
+  const { rule } = params;
+  
+  const { data, error } = await supabase
+    .from('automation_rules')
+    .insert({
+      ...rule,
+      user_id: userId,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return {
+    success: true,
+    rule: data,
+    message: 'Règle créée avec succès'
+  };
+}
+
+async function updateRule(userId: string, params: any) {
+  const { rule_id, updates } = params;
+  
+  const { data, error } = await supabase
+    .from('automation_rules')
+    .update(updates)
+    .eq('id', rule_id)
+    .eq('user_id', userId)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return {
+    success: true,
+    rule: data,
+    message: 'Règle mise à jour avec succès'
+  };
+}
+
+async function getRule(userId: string, params: any) {
+  const { rule_id } = params;
+  
+  const { data, error } = await supabase
+    .from('automation_rules')
+    .select('*')
+    .eq('id', rule_id)
+    .eq('user_id', userId)
+    .single();
+
+  if (error) throw error;
+
+  return {
+    success: true,
+    rule: data
+  };
+}
+
+async function deleteRule(userId: string, params: any) {
+  const { rule_id } = params;
+  
+  const { error } = await supabase
+    .from('automation_rules')
+    .delete()
+    .eq('id', rule_id)
+    .eq('user_id', userId);
+
+  if (error) throw error;
+
+  return {
+    success: true,
+    message: 'Règle supprimée avec succès'
+  };
+}
+
+async function getRules(userId: string, params: any) {
+  const { data, error } = await supabase
+    .from('automation_rules')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  if (error) throw error;
+
+  return {
+    success: true,
+    rules: data || [],
+    count: data?.length || 0
+  };
+}
 
 async function createWorkflow(userId: string, params: any) {
   const { name, description, triggers, actions } = params;

@@ -1,7 +1,4 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,9 +12,10 @@ serve(async (req) => {
 
   try {
     const { type, prompt, language = "fr", keywords = [] } = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured');
     }
 
     let systemPrompt = "";
@@ -54,14 +52,14 @@ serve(async (req) => {
         userPrompt = prompt;
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -72,30 +70,28 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'OpenAI API error');
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: 'Rate limit atteint. Veuillez réessayer plus tard.' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: 'Crédits insuffisants. Veuillez recharger votre compte.' }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const error = await response.text();
+      console.error('Lovable AI error:', response.status, error);
+      throw new Error('Erreur Lovable AI');
     }
 
     const data = await response.json();
     const generatedContent = data.choices[0].message.content;
 
-    // Structure the response based on type
-    let structuredContent;
-    try {
-      // Try to parse if the content is structured
-      if (generatedContent.includes('```json')) {
-        const jsonMatch = generatedContent.match(/```json\n(.*?)\n```/s);
-        if (jsonMatch) {
-          structuredContent = JSON.parse(jsonMatch[1]);
-        }
-      }
-    } catch {
-      // Fallback to raw content
-    }
-
     return new Response(JSON.stringify({ 
       content: generatedContent,
-      structured: structuredContent,
       type,
       language,
       keywords,
