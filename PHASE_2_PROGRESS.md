@@ -32,11 +32,17 @@
 - ✅ Documentation complète (README.md)
 - ✅ Groupement par supplier pour batch API calls (performance)
 
-#### 3. `bigbuy-integration/`
-**État**: 281 lignes de mocks
-**Action**: Implémenter BigBuy REST API
-**Docs**: https://api.bigbuy.eu/
-**Secrets requis**: BIGBUY_API_KEY
+#### 3. `bigbuy-integration/` - ✅ TERMINÉ
+**État**: Refactorisé - mocks supprimés, API réelle implémentée
+**Actions réalisées**:
+- ✅ Supprimé `generateMockBigBuyProducts()` et `generateMockCategories()`
+- ✅ Validation API key obligatoire (fail fast si absente)
+- ✅ Support pagination dans `fetch_products`
+- ✅ Nouvelle action `fetch_pricing` pour sync prix
+- ✅ Amélioration `fetch_inventory` avec format standardisé
+- ✅ Logging détaillé avec emojis
+- ✅ Documentation complète (README.md)
+- ✅ Gestion d'erreurs robuste
 
 #### 4. `global-seo-scanner/`
 **État**: Mock dans partie scan, AI OK si LOVABLE_API_KEY
@@ -75,9 +81,9 @@
 
 ### Après Phase 2 (actuel):
 - Edge functions: 37 (-3) ✅
-- Lignes mockées: ~1,700 (-400 supprimés, -367 refactorés) ✅
-- Fonctions documentées: 2 (aliexpress, automated-sync) ✅
-- Fonctions production-ready: 2 ✅
+- Lignes mockées: ~1,400 (-400 supprimés, -367 automated-sync, -281 bigbuy) ✅
+- Fonctions documentées: 3 (aliexpress, automated-sync, bigbuy) ✅
+- Fonctions production-ready: 3 ✅
 
 ### Objectif fin Phase 2:
 - Edge functions: 25 (-15 mocks/inutiles)
@@ -96,12 +102,9 @@
 
 ## 🎯 Prochaine action
 
-**Immédiate**: Refactorer `bigbuy-integration/`
-- 281 lignes de mocks à remplacer
-- API REST bien documentée (https://api.bigbuy.eu/)
-- Nécessite `BIGBUY_API_KEY` secret
-- Impact élevé : utilisé par automated-sync
+**Immédiate**: Refactorer fonctions de priorité MOYENNE
+- `global-seo-scanner/` - Mock dans partie scan, AI OK
+- `global-image-optimizer/` - Mock tailles/dimensions
+- Ou nettoyer les 10 autres fonctions mockées de priorité moyenne
 
-**Alternative**: `global-seo-scanner/` ou `global-image-optimizer/`
-- Fonctions utilitaires indépendantes
-- Moins critiques mais utilisées fréquemment
+**Impact**: Après ces 3 fonctions HAUTE priorité terminées, reste 10 fonctions MOYENNE à nettoyer
