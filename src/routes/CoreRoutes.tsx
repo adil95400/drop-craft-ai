@@ -43,6 +43,10 @@ const ShippingManagementPage = lazy(() => import('@/pages/ShippingManagementPage
 const StockManagement = lazy(() => import('@/pages/StockManagement'));
 const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
 
+// Additional Pages
+const SubscriptionPage = lazy(() => import('@/pages/SubscriptionPage'));
+const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
+
 export function CoreRoutes() {
   return (
     <Routes>
@@ -88,6 +92,10 @@ export function CoreRoutes() {
       {/* Stock & Reports */}
       <Route path="stock" element={<StockManagement />} />
       <Route path="reports" element={<ReportsPage />} />
+      
+      {/* Subscription & Notifications */}
+      <Route path="subscription" element={<SubscriptionPage />} />
+      <Route path="notifications" element={<NotificationsPage />} />
       
       {/* Settings (accessible from sidebar) */}
       <Route path="parametres" element={<Settings />} />
