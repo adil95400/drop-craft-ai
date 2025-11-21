@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { cacheGet, cacheSet } from '@/services/OptimizedCacheService';
 
 interface SecurityEvent {
   id: string;
@@ -87,10 +88,20 @@ export const useSecurityMonitoring = () => {
     }
   };
 
-  // Fetch security events (admin only)
+  // Fetch security events (admin only) with caching
   const fetchSecurityEvents = async () => {
     const currentUser = await getCurrentUser();
     if (!currentUser) return;
+
+    // Check cache first (5 second TTL for realtime monitoring)
+    const cacheKey = `security_events_${currentUser.id}`;
+    const cached = cacheGet<SecurityEvent[]>(cacheKey);
+    
+    if (cached) {
+      setEvents(cached);
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     try {
@@ -115,6 +126,9 @@ export const useSecurityMonitoring = () => {
       }));
 
       setEvents(formattedEvents);
+      
+      // Cache the results (realtime domain = 5s TTL)
+      cacheSet(cacheKey, formattedEvents, 'realtime');
 
       // Calculate statistics
       const today = new Date();
