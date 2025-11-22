@@ -59,6 +59,17 @@ export const SUB_MODULES_REGISTRY: Record<string, SubModule[]> = {
   // Sous-modules de "Import Produits"
   import: [
     {
+      id: 'import-url',
+      name: 'Import par URL',
+      route: '/products/import/url',
+      icon: 'Link',
+      description: 'Importer un produit depuis son URL',
+      features: ['url-import', 'product-scraping', 'one-click-import'],
+      parentModule: 'import',
+      order: 1,
+      minPlan: 'standard'
+    },
+    {
       id: 'import-quick',
       name: 'Import Rapide',
       route: '/products/import/quick',
@@ -66,7 +77,7 @@ export const SUB_MODULES_REGISTRY: Record<string, SubModule[]> = {
       description: 'Import rapide de produits',
       features: ['quick-import', 'fast-upload'],
       parentModule: 'import',
-      order: 1,
+      order: 2,
       minPlan: 'standard'
     },
     {
@@ -77,7 +88,7 @@ export const SUB_MODULES_REGISTRY: Record<string, SubModule[]> = {
       description: 'Import avancé avec options',
       features: ['advanced-import', 'custom-mapping'],
       parentModule: 'import',
-      order: 2,
+      order: 3,
       minPlan: 'standard'
     },
     {
@@ -88,7 +99,7 @@ export const SUB_MODULES_REGISTRY: Record<string, SubModule[]> = {
       description: 'Gérer vos imports',
       features: ['import-management', 'source-management'],
       parentModule: 'import',
-      order: 3,
+      order: 4,
       minPlan: 'standard'
     },
     {
@@ -99,7 +110,7 @@ export const SUB_MODULES_REGISTRY: Record<string, SubModule[]> = {
       description: 'Liste des produits importés',
       features: ['product-list', 'imported-catalog'],
       parentModule: 'import',
-      order: 4,
+      order: 5,
       minPlan: 'standard'
     },
     {
@@ -110,7 +121,7 @@ export const SUB_MODULES_REGISTRY: Record<string, SubModule[]> = {
       description: 'Historique des imports',
       features: ['import-logs', 'tracking'],
       parentModule: 'import',
-      order: 5,
+      order: 6,
       minPlan: 'standard'
     }
   ],

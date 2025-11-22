@@ -2,10 +2,18 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Upload, Activity, ShoppingCart, BarChart3, ArrowRight, Zap } from 'lucide-react'
+import { Upload, Activity, ShoppingCart, BarChart3, ArrowRight, Zap, Link as LinkIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 const quickActions = [
+  {
+    title: "Import par URL",
+    description: "Importer depuis n'importe quel site",
+    href: "/products/import/url",
+    icon: LinkIcon,
+    badge: "Nouveau",
+    color: "text-blue-600"
+  },
   {
     title: "Import Produits",
     description: "CSV, API, scraping intelligent",
@@ -53,7 +61,7 @@ export function QuickActions() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {quickActions.map((action) => {
             const IconComponent = action.icon
             return (
