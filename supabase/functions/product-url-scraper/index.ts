@@ -76,8 +76,9 @@ serve(async (req) => {
       body: JSON.stringify({
         url: url,
         formats: ['markdown', 'html'],
-        onlyMainContent: true,
-        includeTags: ['img', 'h1', 'h2', 'p', 'span', 'div'],
+        onlyMainContent: false, // Get full page content for better extraction
+        waitFor: 2000, // Wait for dynamic content to load
+        includeTags: ['img', 'h1', 'h2', 'h3', 'p', 'span', 'div', 'meta'],
       }),
     });
 
@@ -196,23 +197,47 @@ function extractProductData(
 }
 
 function extractProductName(markdown: string, html: string, metadata: any, supplier: string): string {
-  // Try metadata title first
-  if (metadata.title && metadata.title.length > 5) {
-    return cleanText(metadata.title);
+  // Extract from markdown first (better than metadata for product pages)
+  const lines = markdown.split('\n');
+  
+  // Look for the first substantial header or title (not site name)
+  for (const line of lines) {
+    const h1Match = line.match(/^#\s+(.+)$/);
+    if (h1Match) {
+      const title = cleanText(h1Match[1]);
+      // Skip if it's just the site name
+      if (!title.toLowerCase().includes('temu') && 
+          !title.toLowerCase().includes('aliexpress') &&
+          !title.toLowerCase().includes('amazon') &&
+          title.length > 10) {
+        console.log(`📝 Product name from markdown: ${title}`);
+        return title;
+      }
+    }
   }
 
-  // Extract from markdown headers
-  const h1Match = markdown.match(/^#\s+(.+)$/m);
+  // Try h1 from HTML
+  const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
   if (h1Match) {
-    return cleanText(h1Match[1]);
+    const title = cleanText(h1Match[1]);
+    if (title.length > 10) {
+      console.log(`📝 Product name from HTML h1: ${title}`);
+      return title;
+    }
   }
 
-  // Fallback patterns based on supplier
-  if (supplier === 'AliExpress') {
-    const match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
-    if (match) return cleanText(match[1]);
+  // Try metadata title as last resort (but filter out site names)
+  if (metadata.title && metadata.title.length > 10) {
+    const title = cleanText(metadata.title);
+    if (!title.toLowerCase().includes('temu') && 
+        !title.toLowerCase().includes('aliexpress') &&
+        !title.toLowerCase().includes('amazon')) {
+      console.log(`📝 Product name from metadata: ${title}`);
+      return title;
+    }
   }
 
+  console.warn('⚠️ No product name found, using fallback');
   return `Produit importé - ${new Date().toISOString().split('T')[0]}`;
 }
 
@@ -228,32 +253,47 @@ function extractDescription(markdown: string, html: string, supplier: string): s
 }
 
 function extractPrice(markdown: string, html: string, supplier: string): { price: number; currency: string } {
-  // Common price patterns
+  // Common price patterns - including European format with comma
   const pricePatterns = [
-    /\$\s*(\d+(?:\.\d{2})?)/,  // $29.99
-    /(\d+(?:\.\d{2})?)\s*\$/,  // 29.99$
-    /€\s*(\d+(?:\.\d{2})?)/,   // €29.99
-    /(\d+(?:\.\d{2})?)\s*€/,   // 29.99€
-    /£\s*(\d+(?:\.\d{2})?)/,   // £29.99
-    /US\s*\$\s*(\d+(?:\.\d{2})?)/i, // US $29.99
+    /(\d+,\d{2})\s*€/,         // 13,18€ (European format)
+    /€\s*(\d+,\d{2})/,         // €13,18
+    /\$\s*(\d+\.\d{2})/,       // $29.99
+    /(\d+\.\d{2})\s*\$/,       // 29.99$
+    /€\s*(\d+\.\d{2})/,        // €29.99
+    /(\d+\.\d{2})\s*€/,        // 29.99€
+    /£\s*(\d+\.\d{2})/,        // £29.99
+    /(\d+\.\d{2})\s*£/,        // 29.99£
+    /US\s*\$\s*(\d+\.\d{2})/i, // US $29.99
+    /(\d+,\d{2})\s*EUR/i,      // 13,18 EUR
+    /(\d+\.\d{2})\s*USD/i,     // 29.99 USD
   ];
 
   let price = 0;
   let currency = 'USD';
 
+  const combinedText = markdown + ' ' + html;
+
   for (const pattern of pricePatterns) {
-    const match = markdown.match(pattern) || html.match(pattern);
+    const match = combinedText.match(pattern);
     if (match) {
-      price = parseFloat(match[1]);
-      if (markdown.includes('€') || html.includes('€')) currency = 'EUR';
-      else if (markdown.includes('£') || html.includes('£')) currency = 'GBP';
+      // Handle both comma and dot as decimal separator
+      const priceStr = match[1].replace(',', '.');
+      price = parseFloat(priceStr);
+      
+      // Detect currency
+      if (combinedText.includes('€') || combinedText.includes('EUR')) currency = 'EUR';
+      else if (combinedText.includes('£') || combinedText.includes('GBP')) currency = 'GBP';
+      else if (combinedText.includes('$') || combinedText.includes('USD')) currency = 'USD';
+      
+      console.log(`💰 Price extracted: ${price} ${currency}`);
       break;
     }
   }
 
   // If no price found, set a default
   if (price === 0) {
-    price = 9.99;
+    console.warn('⚠️ No price found, using default');
+    price = 0;
   }
 
   return { price, currency };
@@ -262,21 +302,30 @@ function extractPrice(markdown: string, html: string, supplier: string): { price
 function extractImages(html: string, links: any[]): string[] {
   const images: string[] = [];
   
-  // Extract from img tags
-  const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
+  // Extract from img tags (src and data-src for lazy loading)
+  const imgRegex = /<img[^>]+(?:src|data-src)=["']([^"']+)["']/gi;
   let match;
   
   while ((match = imgRegex.exec(html)) !== null) {
     const imgUrl = match[1];
-    // Filter out small icons and logos
+    // Filter out small icons, logos, and ensure it's a valid image URL
     if (!imgUrl.includes('icon') && 
         !imgUrl.includes('logo') && 
         !imgUrl.includes('placeholder') &&
+        !imgUrl.includes('sprite') &&
+        !imgUrl.includes('svg') &&
+        (imgUrl.includes('.jpg') || imgUrl.includes('.jpeg') || 
+         imgUrl.includes('.png') || imgUrl.includes('.webp')) &&
         imgUrl.length > 20) {
-      images.push(imgUrl);
+      // Make sure it's an absolute URL
+      if (imgUrl.startsWith('http')) {
+        images.push(imgUrl);
+      }
     }
   }
 
+  console.log(`🖼️ Found ${images.length} product images`);
+  
   // Deduplicate and limit to 10 images
   return [...new Set(images)].slice(0, 10);
 }
