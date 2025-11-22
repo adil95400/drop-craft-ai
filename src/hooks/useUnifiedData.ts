@@ -7,7 +7,6 @@ import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
 
-// Types unifiés simplifiés
 export interface UnifiedProduct {
   id: string
   name: string
@@ -18,8 +17,15 @@ export interface UnifiedProduct {
   status: string
   category?: string
   sku?: string
+  image_url?: string
   image_urls?: string[]
+  supplier?: string
   supplier_name?: string
+  profit_margin?: number
+  tags?: string[]
+  seo_title?: string
+  seo_description?: string
+  seo_keywords?: string[]
   user_id: string
   created_at: string
   updated_at: string
@@ -28,12 +34,21 @@ export interface UnifiedProduct {
 export interface UnifiedSupplier {
   id: string
   name: string
+  display_name: string
+  description?: string
   supplier_type: string
+  category: string
   country?: string
   sector?: string
+  status: string
   connection_status: string
   product_count: number
-  rating?: number
+  rating: number
+  success_rate: number
+  error_count: number
+  access_count: number
+  is_premium: boolean
+  tags: string[]
   user_id: string
   created_at: string
   updated_at: string
@@ -93,8 +108,15 @@ export function useUnifiedProducts(filters?: any) {
         status: item.status || 'draft',
         category: item.category,
         sku: item.sku,
+        image_url: item.image_url || (item.image_urls?.[0]),
         image_urls: item.image_urls || [],
+        supplier: item.supplier,
         supplier_name: item.supplier_name,
+        profit_margin: item.profit_margin,
+        tags: item.tags || [],
+        seo_title: item.seo_title,
+        seo_description: item.seo_description,
+        seo_keywords: item.seo_keywords || [],
         user_id: item.user_id,
         created_at: item.created_at,
         updated_at: item.updated_at
@@ -216,12 +238,21 @@ export function useUnifiedSuppliers(filters?: any) {
       return data?.map((item: any): UnifiedSupplier => ({
         id: item.id,
         name: item.name,
+        display_name: item.display_name || item.name,
+        description: item.description,
         supplier_type: item.supplier_type || 'api',
+        category: item.category || item.sector || 'General',
         country: item.country,
         sector: item.sector,
+        status: item.status || 'active',
         connection_status: item.connection_status || 'disconnected',
         product_count: item.product_count || 0,
-        rating: item.rating,
+        rating: item.rating || 0,
+        success_rate: item.success_rate || 100,
+        error_count: item.error_count || 0,
+        access_count: item.access_count || 0,
+        is_premium: item.is_premium || false,
+        tags: item.tags || [],
         user_id: item.user_id,
         created_at: item.created_at,
         updated_at: item.updated_at
