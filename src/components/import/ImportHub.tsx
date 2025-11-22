@@ -83,7 +83,7 @@ export const ImportHub = ({ onViewChange, onCategorySelect }: ImportHubProps) =>
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => navigate('/import/history')}
+            onClick={() => navigate('/products/import/manage/history')}
             className="flex items-center gap-2"
           >
             <History className="h-4 w-4" />
@@ -91,7 +91,7 @@ export const ImportHub = ({ onViewChange, onCategorySelect }: ImportHubProps) =>
           </Button>
           <Button
             variant="outline"
-            onClick={() => navigate('/import/configuration')}
+            onClick={() => navigate('/products/import/manage')}
             className="flex items-center gap-2"
           >
             <Settings2 className="h-4 w-4" />

@@ -24,6 +24,7 @@ import { IntegrationRoutes } from './IntegrationRoutes';
 
 // Pages directes
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const AvisPositifUltraPro = lazy(() => import('@/pages/AvisPositifUltraPro'));
 
 // Loading component
 const PageLoader = () => (
@@ -54,6 +55,7 @@ export function AppRoutes() {
         <Route path="/marketing/*" element={<ProtectedRoute><AppLayout><MarketingRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/integrations/*" element={<ProtectedRoute><AppLayout><IntegrationRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/enterprise/*" element={<ProtectedRoute><AppLayout><EnterpriseRoutes /></AppLayout></ProtectedRoute>} />
+        <Route path="/reviews" element={<ProtectedRoute><AppLayout><AvisPositifUltraPro /></AppLayout></ProtectedRoute>} />
         
         {/* Admin Routes - Rôle admin requis */}
         <Route path="/admin/*" element={
