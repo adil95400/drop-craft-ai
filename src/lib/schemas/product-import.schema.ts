@@ -1,23 +1,121 @@
 import { z } from "zod";
 
-// Schema for CSV product row validation
+// Schema for CSV product row validation - Flexible pour accepter divers formats
 export const ProductImportRowSchema = z.object({
-  name: z.string().min(1, "Le nom est requis").max(500, "Le nom ne peut pas dépasser 500 caractères"),
-  description: z.string().optional().default(""),
-  price: z.coerce.number().min(0, "Le prix doit être positif"),
-  cost_price: z.coerce.number().min(0, "Le prix de revient doit être positif").optional(),
-  sku: z.string().min(1, "Le SKU est requis").max(100, "Le SKU ne peut pas dépasser 100 caractères"),
-  category: z.string().optional().default(""),
-  brand: z.string().optional().default(""),
-  stock_quantity: z.coerce.number().int().min(0, "La quantité doit être positive").optional().default(0),
-  status: z.enum(["draft", "active", "archived"]).optional().default("draft"),
-  image_url: z.string().url("URL d'image invalide").optional().or(z.literal("")),
-  supplier_name: z.string().optional().default(""),
-  tags: z.string().optional().default(""), // Comma-separated tags
-  weight: z.coerce.number().min(0).optional(),
-  length: z.coerce.number().min(0).optional(),
-  width: z.coerce.number().min(0).optional(),
-  height: z.coerce.number().min(0).optional(),
+  name: z.string()
+    .transform(val => val?.trim() || "")
+    .pipe(z.string().min(1, "Le nom est requis").max(500, "Le nom ne peut pas dépasser 500 caractères")),
+  
+  description: z.string()
+    .transform(val => val?.trim() || "")
+    .optional()
+    .default(""),
+  
+  price: z.union([
+    z.string().transform(val => {
+      const cleaned = val?.replace(/[^0-9.,]/g, '').replace(',', '.');
+      const parsed = parseFloat(cleaned || "0");
+      return isNaN(parsed) ? 0 : parsed;
+    }),
+    z.number()
+  ]).pipe(z.number().min(0, "Le prix doit être positif")),
+  
+  cost_price: z.union([
+    z.string().transform(val => {
+      if (!val || val.trim() === "") return undefined;
+      const cleaned = val.replace(/[^0-9.,]/g, '').replace(',', '.');
+      const parsed = parseFloat(cleaned);
+      return isNaN(parsed) ? undefined : parsed;
+    }),
+    z.number()
+  ]).optional(),
+  
+  sku: z.string()
+    .transform(val => val?.trim() || "")
+    .pipe(z.string().min(1, "Le SKU est requis").max(100, "Le SKU ne peut pas dépasser 100 caractères")),
+  
+  category: z.string()
+    .transform(val => val?.trim() || "")
+    .optional()
+    .default(""),
+  
+  brand: z.string()
+    .transform(val => val?.trim() || "")
+    .optional()
+    .default(""),
+  
+  stock_quantity: z.union([
+    z.string().transform(val => {
+      const parsed = parseInt(val?.trim() || "0");
+      return isNaN(parsed) ? 0 : parsed;
+    }),
+    z.number()
+  ]).pipe(z.number().int().min(0, "La quantité doit être positive")).optional().default(0),
+  
+  status: z.string()
+    .transform(val => {
+      const normalized = val?.toLowerCase().trim();
+      if (normalized === "actif" || normalized === "active") return "active";
+      if (normalized === "archivé" || normalized === "archived") return "archived";
+      return "draft";
+    })
+    .pipe(z.enum(["draft", "active", "archived"]))
+    .optional()
+    .default("draft"),
+  
+  image_url: z.string()
+    .transform(val => val?.trim() || "")
+    .refine(val => !val || val === "" || val.startsWith("http"), {
+      message: "L'URL doit commencer par http ou être vide"
+    })
+    .optional()
+    .default(""),
+  
+  supplier_name: z.string()
+    .transform(val => val?.trim() || "")
+    .optional()
+    .default(""),
+  
+  tags: z.string()
+    .transform(val => val?.trim() || "")
+    .optional()
+    .default(""),
+  
+  weight: z.union([
+    z.string().transform(val => {
+      if (!val || val.trim() === "") return undefined;
+      const parsed = parseFloat(val.replace(',', '.'));
+      return isNaN(parsed) ? undefined : parsed;
+    }),
+    z.number()
+  ]).optional(),
+  
+  length: z.union([
+    z.string().transform(val => {
+      if (!val || val.trim() === "") return undefined;
+      const parsed = parseFloat(val.replace(',', '.'));
+      return isNaN(parsed) ? undefined : parsed;
+    }),
+    z.number()
+  ]).optional(),
+  
+  width: z.union([
+    z.string().transform(val => {
+      if (!val || val.trim() === "") return undefined;
+      const parsed = parseFloat(val.replace(',', '.'));
+      return isNaN(parsed) ? undefined : parsed;
+    }),
+    z.number()
+  ]).optional(),
+  
+  height: z.union([
+    z.string().transform(val => {
+      if (!val || val.trim() === "") return undefined;
+      const parsed = parseFloat(val.replace(',', '.'));
+      return isNaN(parsed) ? undefined : parsed;
+    }),
+    z.number()
+  ]).optional(),
 });
 
 export type ProductImportRow = z.infer<typeof ProductImportRowSchema>;

@@ -57,8 +57,24 @@ export function ImportCSVWithValidation() {
       Papa.parse(selectedFile, {
         header: true,
         skipEmptyLines: true,
+        transformHeader: (header) => {
+          // Normalize header names
+          const normalized = header.toLowerCase().trim()
+          
+          // Try to find matching field in PRODUCT_COLUMN_MAPPINGS
+          for (const [fieldName, possibleNames] of Object.entries(PRODUCT_COLUMN_MAPPINGS)) {
+            if (possibleNames.some(name => normalized === name || normalized.includes(name))) {
+              return fieldName
+            }
+          }
+          
+          return header
+        },
         complete: (results) => {
           setProgress(50)
+          
+          console.log('Parsed headers:', results.meta.fields)
+          console.log('First row sample:', results.data[0])
           
           // Validate each row
           const validated: ParsedRow[] = results.data.map((row: any, index: number) => {
@@ -71,6 +87,7 @@ export function ImportCSVWithValidation() {
                 errors: []
               }
             } catch (error: any) {
+              console.error(`Row ${index + 1} validation error:`, error)
               const errors = error.errors?.map((e: any) => `${e.path.join('.')}: ${e.message}`) || ['Erreur de validation']
               return {
                 row: index + 1,
