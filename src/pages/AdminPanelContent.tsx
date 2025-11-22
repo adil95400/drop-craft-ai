@@ -350,7 +350,7 @@ const AdminPanelContent = () => {
                 <h2 className="text-2xl font-bold">Gestion des Connecteurs</h2>
                 <p className="text-muted-foreground">Configurez les intégrations e-commerce et les synchronisations</p>
               </div>
-              <Button onClick={() => navigate('/sync-manager')} className="flex items-center gap-2">
+              <Button onClick={() => navigate('/dashboard/sync-manager')} className="flex items-center gap-2">
                 <RefreshCw className="h-4 w-4" />
                 Gestionnaire de Sync
               </Button>

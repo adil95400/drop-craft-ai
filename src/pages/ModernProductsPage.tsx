@@ -375,7 +375,7 @@ export default function ModernProductsPage() {
                       <Download className="h-4 w-4 mr-2" />
                       Exporter
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => navigate('/import')}>
+                    <Button variant="outline" size="sm" onClick={() => navigate('/products/import')}>
                       <Upload className="h-4 w-4 mr-2" />
                       Importer
                     </Button>
@@ -499,7 +499,7 @@ export default function ModernProductsPage() {
                     <p className="text-muted-foreground mb-6">
                       Commencez par importer vos premiers produits
                     </p>
-                    <Button onClick={() => navigate('/import')}>
+                    <Button onClick={() => navigate('/products/import')}>
                       <Upload className="h-4 w-4 mr-2" />
                       Importer des produits
                     </Button>
