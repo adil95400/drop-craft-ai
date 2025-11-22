@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { QuickActions } from '@/components/dashboard/QuickActions';
+import { FeatureStatusDashboard } from '@/components/dashboard/FeatureStatusDashboard';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { TrendingUp, TrendingDown, Package, ShoppingCart, Users, DollarSign } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -93,6 +94,9 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <QuickActions />
+
+      {/* Feature Status Dashboard */}
+      <FeatureStatusDashboard />
 
       {/* Recent Activity */}
       <Card>
