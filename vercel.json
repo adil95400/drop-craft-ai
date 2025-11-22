@@ -55,6 +55,16 @@
       "source": "/admin",
       "destination": "/",
       "permanent": false
+    },
+    {
+      "source": "/import",
+      "destination": "/products/import",
+      "permanent": true
+    },
+    {
+      "source": "/import/:path*",
+      "destination": "/products/import/:path*",
+      "permanent": true
     }
   ],
   "trailingSlash": false,

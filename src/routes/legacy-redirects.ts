@@ -14,8 +14,15 @@ export const LEGACY_ROUTE_REDIRECTS: Record<string, string> = {
   '/catalogue-ultra-pro-advanced': '/products/catalogue',
   '/my-products': '/products',
   
-  // Import
+  // Import - All import routes redirect to products/import
+  '/import': '/products/import',
+  '/import/quick': '/products/import/quick',
+  '/import/advanced': '/products/import/advanced',
+  '/import/manage': '/products/import/manage',
+  '/import/manage/products': '/products/import/manage/products',
+  '/import/manage/history': '/products/import/manage/history',
   '/import-advanced': '/products/import/advanced',
+  '/import-ultra-pro': '/products/import/advanced',
   
   // Orders
   '/orders-ultra-pro': '/dashboard/orders',

@@ -61,22 +61,22 @@ export class NavigationService {
   static isValidPath(path: string): boolean {
     // Define valid paths
     const validPaths = [
-      '/', '/auth', '/dashboard', '/dashboard-ultra-pro',
-      '/import', '/import-ultra-pro',
-      '/catalogue', '/catalogue-ultra-pro', '/catalogue-ultra-pro-advanced',
-      '/orders', '/orders-ultra-pro',
-      '/crm', '/crm-ultra-pro',
-      '/tracking', '/tracking-ultra-pro',
-      '/reviews', '/reviews-ultra-pro',
-      '/seo', '/seo-ultra-pro',
-      '/marketing', '/marketing-ultra-pro',
-      '/inventory', '/inventory-ultra-pro',
-      '/automation', '/automation-ultra-pro',
-      '/plugins', '/plugins-ultra-pro',
-      '/mobile', '/mobile-ultra-pro',
-      '/integrations', '/support', '/analytics', '/settings'
+      '/', '/auth', '/dashboard',
+      '/products', '/products/import', '/products/import/quick', '/products/import/advanced', '/products/import/manage',
+      '/products/catalogue', '/products/inventory-predictor',
+      '/dashboard/orders', '/dashboard/customers', '/dashboard/marketplace-sync',
+      '/analytics', '/analytics/advanced',
+      '/automation', '/automation/ai-hub', '/automation/stock-sync',
+      '/marketing', '/marketing/crm', '/marketing/seo',
+      '/integrations', '/integrations/support', '/integrations/academy', '/integrations/extensions',
+      '/admin', '/settings'
     ];
 
-    return validPaths.includes(path) || path.startsWith('/crm/') || path.startsWith('/tracking/');
+    return validPaths.includes(path) || 
+           path.startsWith('/products/') || 
+           path.startsWith('/dashboard/') || 
+           path.startsWith('/marketing/') || 
+           path.startsWith('/integrations/') ||
+           path.startsWith('/admin/');
   }
 }
