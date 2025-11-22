@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
 import { parse } from "https://deno.land/std@0.181.0/encoding/csv.ts"
+import { authenticateUser, logSecurityEvent, checkRateLimit } from '../_shared/secure-auth.ts'
+import { secureBatchInsert, logDatabaseOperation } from '../_shared/db-helpers.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,17 +23,13 @@ serve(async (req) => {
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader) {
-      throw new Error('Authentication required')
-    }
+    // Enhanced authentication with security logging
+    const { user } = await authenticateUser(req, supabase)
     
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
+    // Rate limiting: max 10 imports per hour
+    await checkRateLimit(supabase, user.id, 'csv_import', 10, 60)
     
-    if (userError || !user) {
-      throw new Error('User not authenticated')
-    }
+    console.log('[CSV-IMPORT] Authenticated user:', { user_id: user.id })
 
     // Support new format (rows array) or old format (csv_content/file_url)
     const { rows, csv_content, file_url, field_mapping = {}, columnMapping = {}, config = {}, userId } = await req.json()
@@ -325,7 +323,18 @@ serve(async (req) => {
         .eq('id', jobId)
     }
 
-    // Log activity
+    // Log activity and database operation
+    await logDatabaseOperation(supabase, userId || user.id, 'insert', 'imported_products', successCount)
+    
+    await logSecurityEvent(supabase, userId || user.id, 'csv_import_completed', 'info', {
+      total_rows: records.length,
+      success_count: successCount,
+      error_count: errorCount,
+      skipped_count: skippedCount,
+      duration_ms: duration,
+      job_id: jobId
+    })
+    
     await supabase.from('activity_logs').insert({
       user_id: userId || user.id,
       action: 'product_import',

@@ -1,10 +1,14 @@
 /**
  * Secure Authentication Handler for Edge Functions
- * Provides robust authentication with proper error handling
+ * CRITICAL SECURITY: All Edge Functions must use this for authentication
+ * Provides robust authentication with rate limiting and security logging
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0'
 import { AuthenticationError } from './error-handler.ts'
+
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 export interface AuthContext {
   user: {
@@ -16,56 +20,60 @@ export interface AuthContext {
 }
 
 /**
- * Verify and extract authentication from request
+ * Authenticate user from request with security logging
  */
-export async function verifyAuth(req: Request): Promise<AuthContext> {
+export async function authenticateUser(req: Request, supabase: any) {
   const authHeader = req.headers.get('Authorization')
   
   if (!authHeader) {
+    await logSecurityEvent(supabase, null, 'auth_missing_header', 'critical')
     throw new AuthenticationError('Authorization header required')
   }
 
   const token = authHeader.replace('Bearer ', '')
   
-  if (!token || token === authHeader) {
+  if (!token || token === authHeader || token.length < 20) {
+    await logSecurityEvent(supabase, null, 'auth_invalid_token', 'critical')
     throw new AuthenticationError('Invalid authorization format')
   }
-
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')
-  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Missing Supabase configuration')
-  }
-
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
   // Verify JWT token
   const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
   if (authError || !user) {
+    await logSecurityEvent(supabase, null, 'auth_failed', 'critical', { error: authError?.message })
     throw new AuthenticationError('Invalid or expired token')
   }
 
-  // Get user role with proper search_path
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  // Check if user is admin using has_role function
+  const { data: isAdmin } = await supabase.rpc('has_role', {
+    _user_id: user.id,
+    _role: 'admin'
+  })
 
-  if (profileError) {
-    console.error('Error fetching user profile:', profileError)
-    throw new AuthenticationError('Unable to verify user permissions')
-  }
+  // Log successful authentication
+  await logSecurityEvent(supabase, user.id, 'auth_success', 'info', { is_admin: isAdmin })
 
   return {
     user: {
       id: user.id,
       email: user.email,
-      role: profile?.role || 'user'
+      role: isAdmin ? 'admin' : 'user'
     },
+    isAdmin: Boolean(isAdmin),
     supabase
+  }
+}
+
+/**
+ * Legacy verifyAuth for backward compatibility
+ */
+export async function verifyAuth(req: Request): Promise<AuthContext> {
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const result = await authenticateUser(req, supabase)
+  return {
+    user: result.user,
+    supabase: result.supabase
   }
 }
 

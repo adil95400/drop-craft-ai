@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { authenticateUser, logSecurityEvent, checkRateLimit } from '../_shared/secure-auth.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,17 +18,11 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      throw new Error('No authorization header')
-    }
-
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    // Enhanced authentication
+    const { user } = await authenticateUser(req, supabase)
     
-    if (authError || !user) {
-      throw new Error('Unauthorized')
-    }
+    // Rate limiting: max 20 exports per hour
+    await checkRateLimit(supabase, user.id, 'data_export', 20, 60)
 
     const { type, format = 'csv', filters = {} } = await req.json()
 
@@ -112,7 +107,13 @@ serve(async (req) => {
       throw new Error(`Unsupported format: ${format}`)
     }
 
-    // Logger l'activité
+    // Log security event and activity
+    await logSecurityEvent(supabase, user.id, 'data_export', 'info', {
+      type,
+      format,
+      count: data.length
+    })
+    
     await supabase.from('activity_logs').insert({
       user_id: user.id,
       action: 'data_exported',
