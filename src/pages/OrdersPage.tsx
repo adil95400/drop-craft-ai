@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
+import { useDataExport } from '@/hooks/useDataExport'
+import { useNavigate } from 'react-router-dom'
 import {
   Select,
   SelectContent,
@@ -21,13 +23,27 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Package, Search, Filter, Eye, Edit } from 'lucide-react'
+import { Package, Search, Filter, Eye, Edit, Download } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 export default function OrdersPage() {
   const { toast } = useToast()
+  const navigate = useNavigate()
+  const { exportData, isExporting } = useDataExport()
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+
+  const handleExport = async () => {
+    await exportData('orders', 'csv')
+  }
+
+  const handleViewOrder = (orderId: string) => {
+    navigate(`/orders/${orderId}`)
+  }
+
+  const handleEditOrder = (orderId: string) => {
+    navigate(`/orders/${orderId}/edit`)
+  }
 
   const { data: orders, isLoading, refetch } = useQuery({
     queryKey: ['orders', statusFilter],
@@ -69,10 +85,16 @@ export default function OrdersPage() {
           <h1 className="text-3xl font-bold">Orders</h1>
           <p className="text-muted-foreground">Manage and track your orders</p>
         </div>
-        <Button>
-          <Package className="w-4 h-4 mr-2" />
-          New Order
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExport} disabled={isExporting}>
+            <Download className="w-4 h-4 mr-2" />
+            {isExporting ? 'Export...' : 'Exporter CSV'}
+          </Button>
+          <Button onClick={() => navigate('/orders/new')}>
+            <Package className="w-4 h-4 mr-2" />
+            Nouvelle commande
+          </Button>
+        </div>
       </div>
 
       <Card className="p-6">
@@ -142,10 +164,18 @@ export default function OrdersPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleViewOrder(order.id)}
+                      >
                         <Eye className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleEditOrder(order.id)}
+                      >
                         <Edit className="w-4 h-4" />
                       </Button>
                     </div>

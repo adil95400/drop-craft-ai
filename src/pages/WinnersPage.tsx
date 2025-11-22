@@ -3,10 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { useWinnersActions } from '@/hooks/useWinnersActions';
 import { 
   Trophy, TrendingUp, Sparkles, Search, Filter, 
   Star, DollarSign, BarChart3, ExternalLink,
-  RefreshCw, Target
+  RefreshCw, Target, Download
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
@@ -14,6 +15,11 @@ import { toast } from 'sonner';
 export default function WinnersPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { importWinner, isImporting } = useWinnersActions();
+
+  const handleImport = async (product: any) => {
+    await importWinner(product);
+  };
 
   const analyzeWinners = () => {
     setIsAnalyzing(true);
@@ -214,11 +220,21 @@ export default function WinnersPage() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button className="flex-1" size="sm">
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Voir le produit
+                    <Button 
+                      className="flex-1" 
+                      size="sm"
+                      onClick={() => handleImport(product)}
+                      disabled={isImporting}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      {isImporting ? 'Import...' : 'Importer'}
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(product.name)}`, '_blank')}
+                    >
                       <BarChart3 className="mr-2 h-4 w-4" />
                       Analyser
                     </Button>

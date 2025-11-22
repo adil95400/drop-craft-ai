@@ -2,8 +2,15 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Star, Download } from 'lucide-react';
+import { useExtensionActions } from '@/hooks/useExtensionActions';
 
 export default function ExtensionsMarketplace() {
+  const { installExtension, isInstalling } = useExtensionActions();
+
+  const handleInstall = async (extensionId: number) => {
+    await installExtension(extensionId.toString());
+  };
+
   const extensions = [
     {
       id: 1,
@@ -64,7 +71,13 @@ export default function ExtensionsMarketplace() {
             </div>
             <div className="flex items-center justify-between">
               <span className="font-semibold">{extension.price}</span>
-              <Button size="sm">Installer</Button>
+              <Button 
+                size="sm" 
+                onClick={() => handleInstall(extension.id)}
+                disabled={isInstalling}
+              >
+                {isInstalling ? 'Installation...' : 'Installer'}
+              </Button>
             </div>
           </Card>
         ))}

@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePlan } from '@/hooks/usePlan'
+import { useBulkOperations } from '@/hooks/useBulkOperations'
+import { useDataExport } from '@/hooks/useDataExport'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
+import { BulkActionsToolbar } from '@/components/products/BulkActionsToolbar'
 import { 
   Crown, 
   Zap, 
@@ -35,6 +38,8 @@ export default function CatalogueReal() {
   const { user } = useAuth()
   const { hasPlan, plan } = usePlan()
   const { toast } = useToast()
+  const { exportData, isExporting } = useDataExport()
+  const { executeBulkOperation, isProcessing } = useBulkOperations()
   
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
@@ -46,9 +51,36 @@ export default function CatalogueReal() {
   const [onlyWinners, setOnlyWinners] = useState(false)
   const [onlyTrending, setOnlyTrending] = useState(false)
   const [onlyBestsellers, setOnlyBestsellers] = useState(false)
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([])
   
   const isUltraPro = hasPlan('ultra_pro')
   const isPro = hasPlan('pro')
+
+  const handleExport = async () => {
+    await exportData('products', 'csv', selectedProducts.length > 0 ? { ids: selectedProducts } : undefined)
+  }
+
+  const handleBulkAction = async (action: string) => {
+    if (selectedProducts.length === 0) {
+      toast({ title: 'Erreur', description: 'Aucun produit sélectionné', variant: 'destructive' })
+      return
+    }
+
+    await executeBulkOperation(action, selectedProducts)
+    setSelectedProducts([])
+  }
+
+  const toggleProductSelection = (productId: string) => {
+    setSelectedProducts(prev => 
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    )
+  }
+
+  const clearSelection = () => {
+    setSelectedProducts([])
+  }
 
   // Fetch user's own products instead of marketplace data
   const { data: userProducts = [], isLoading, error } = useQuery({
@@ -272,9 +304,13 @@ export default function CatalogueReal() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline">
+              <Button 
+                variant="outline" 
+                onClick={handleExport}
+                disabled={isExporting}
+              >
                 <Download className="h-4 w-4 mr-2" />
-                Exporter
+                {isExporting ? 'Export...' : 'Exporter'}
               </Button>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -286,6 +322,12 @@ export default function CatalogueReal() {
       </div>
 
       <div className="container mx-auto px-6 py-6">
+        <BulkActionsToolbar 
+          selectedCount={selectedProducts.length}
+          onAction={handleBulkAction}
+          onClearSelection={clearSelection}
+        />
+        
         <Tabs defaultValue="my-products" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="my-products">Mes Produits</TabsTrigger>
