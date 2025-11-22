@@ -101,11 +101,15 @@ export const useUnifiedImport = () => {
 
       const csvContent = await file.text()
       
-      setProgress(50)
+      setProgress(30)
 
-      // Call edge function
-      const { data, error } = await supabase.functions.invoke('unified-import/csv', {
-        body: { csvContent }
+      // Call CSV import edge function
+      const { data, error } = await supabase.functions.invoke('csv-import', {
+        body: { 
+          csvContent, 
+          userId: user.id,
+          source: 'manual'
+        }
       })
 
       if (error) throw error
@@ -116,9 +120,10 @@ export const useUnifiedImport = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['imported-products'] })
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['import-history'] })
       toast({
         title: "Import CSV réussi",
-        description: `${data.data.recordsImported} produits importés`
+        description: `${data.successCount || 0} produits importés`
       })
       setTimeout(() => setProgress(0), 2000)
     },
@@ -180,8 +185,8 @@ export const useUnifiedImport = () => {
 
       setProgress(10)
 
-      // Call edge function
-      const { data, error } = await supabase.functions.invoke('unified-import/url', {
+      // Call URL import edge function
+      const { data, error } = await supabase.functions.invoke('url-import', {
         body: { url }
       })
 
@@ -193,15 +198,16 @@ export const useUnifiedImport = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['imported-products'] })
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['import-history'] })
       toast({
-        title: "Import API réussi",
-        description: `${data.data.recordsImported} produits importés`
+        title: "Import URL réussi",
+        description: "Produit importé avec succès"
       })
       setTimeout(() => setProgress(0), 2000)
     },
     onError: (error: any) => {
       toast({
-        title: "Erreur d'import API",
+        title: "Erreur d'import URL",
         description: error.message,
         variant: "destructive"
       })

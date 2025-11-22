@@ -37,30 +37,51 @@ serve(async (req) => {
     const content = await response.text()
     
     // Simple parsing simulation
-    const simulatedProducts = []
-    const productCount = Math.floor(Math.random() * 15) + 5
-
-    for (let i = 1; i <= productCount; i++) {
-      simulatedProducts.push({
-        name: `Produit ${sourceType.toUpperCase()} ${i}`,
-        description: `Description du produit importé depuis ${sourceType}`,
-        price: (Math.random() * 100 + 10).toFixed(2),
-        sku: `${sourceType.toUpperCase()}-${String(i).padStart(3, '0')}`,
-        category: ['Electronics', 'Clothing', 'Home'][Math.floor(Math.random() * 3)],
-        brand: 'Import Brand',
-        image_url: `https://via.placeholder.com/400x400?text=${sourceType}+Product+${i}`,
-        stock_quantity: Math.floor(Math.random() * 50) + 10,
-        external_id: `${sourceType}_${i}`,
-        supplier_name: `Import ${sourceType.toUpperCase()}`
+    let products = []
+    
+    if (sourceType === 'json') {
+      try {
+        const jsonData = JSON.parse(content)
+        products = Array.isArray(jsonData) ? jsonData : 
+                  jsonData.products || jsonData.data || jsonData.items || [jsonData]
+      } catch (e) {
+        throw new Error('Invalid JSON format')
+      }
+    } else if (sourceType === 'xml') {
+      // Basic XML parsing - extract product-like elements
+      const productMatches = content.match(/<product[^>]*>[\s\S]*?<\/product>/gi) || 
+                            content.match(/<item[^>]*>[\s\S]*?<\/item>/gi) || []
+      
+      products = productMatches.map((match, i) => {
+        const nameMatch = match.match(/<(?:name|title)[^>]*>(.*?)<\/(?:name|title)>/i)
+        const priceMatch = match.match(/<price[^>]*>(.*?)<\/price>/i)
+        const descMatch = match.match(/<(?:description|desc)[^>]*>(.*?)<\/(?:description|desc)>/i)
+        const skuMatch = match.match(/<sku[^>]*>(.*?)<\/sku>/i)
+        const imageMatch = match.match(/<(?:image|image_url)[^>]*>(.*?)<\/(?:image|image_url)>/i)
+        
+        return {
+          name: nameMatch ? nameMatch[1].trim() : `Produit ${sourceType.toUpperCase()} ${i + 1}`,
+          description: descMatch ? descMatch[1].trim() : `Description du produit importé depuis ${sourceType}`,
+          price: priceMatch ? parseFloat(priceMatch[1]) : (Math.random() * 100 + 10).toFixed(2),
+          sku: skuMatch ? skuMatch[1].trim() : `${sourceType.toUpperCase()}-${String(i).padStart(3, '0')}`,
+          category: 'Import ' + sourceType.toUpperCase(),
+          brand: 'Import Brand',
+          image_url: imageMatch ? imageMatch[1].trim() : null,
+          stock_quantity: Math.floor(Math.random() * 50) + 10,
+          external_id: `${sourceType}_${i}`,
+          supplier_name: `Import ${sourceType.toUpperCase()}`
+        }
       })
     }
+
+    console.log(`Parsed ${products.length} products from ${sourceType}`)
 
     // Insert products
     let successCount = 0
     let errorCount = 0
     const errors: string[] = []
 
-    for (const product of simulatedProducts) {
+    for (const product of products) {
       try {
         const { error } = await supabaseClient
           .from('imported_products')
@@ -69,8 +90,8 @@ serve(async (req) => {
             name: product.name,
             description: product.description || '',
             price: parseFloat(product.price) || 0,
-            sku: product.sku || '',
-            category: product.category || '',
+            sku: product.sku || `${sourceType.toUpperCase()}-${Date.now()}`,
+            category: product.category || 'Import ' + sourceType.toUpperCase(),
             brand: product.brand || '',
             image_url: product.image_url || '',
             stock_quantity: parseInt(product.stock_quantity) || 0,
@@ -78,7 +99,7 @@ serve(async (req) => {
             review_status: 'pending',
             source_url: sourceUrl,
             external_id: product.external_id,
-            supplier_name: product.supplier_name
+            supplier_name: product.supplier_name || 'Import ' + sourceType.toUpperCase()
           })
 
         if (error) {
@@ -101,9 +122,9 @@ serve(async (req) => {
         message: `Import ${sourceType} réussi`,
         data: {
           products_imported: successCount,
-          total_processed: simulatedProducts.length,
+          total_processed: products.length,
           errors: errorCount,
-          error_details: errors
+          error_details: errors.slice(0, 10) // Limit errors
         }
       }),
       {

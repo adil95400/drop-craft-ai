@@ -435,3 +435,43 @@ verify_jwt = true
 
 [functions.shopify-auto-sync]
 verify_jwt = false
+
+[functions.csv-import]
+verify_jwt = true
+
+[functions.shopify-complete-import]
+verify_jwt = true
+
+[functions.url-import]
+verify_jwt = true
+
+[functions.image-product-import]
+verify_jwt = true
+
+[functions.xml-json-import]
+verify_jwt = true
+
+[functions.process-import]
+verify_jwt = true
+
+[functions.system-health-check]
+verify_jwt = true
+
+[functions.metrics-collector]
+verify_jwt = true
+
+[functions.supplier-connect]
+verify_jwt = true
+
+[functions.extension-install]
+verify_jwt = true
+
+[functions.bulk-operations]
+verify_jwt = true
+
+[functions.export-data]
+verify_jwt = true
+
+[functions.winners-import]
+verify_jwt = true
+
