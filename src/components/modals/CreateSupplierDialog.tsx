@@ -12,6 +12,7 @@ import { Building2, Mail, Phone, MapPin, Globe, Loader2, AlertCircle } from "luc
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CreateSupplierDialogProps {
   open: boolean;
@@ -50,8 +51,20 @@ export function CreateSupplierDialog({ open, onOpenChange }: CreateSupplierDialo
       setSubmitError(null);
       setIsSubmitting(true);
       
-      // TODO: Implémenter la création réelle du fournisseur via hook
-      console.log('Creating supplier:', data);
+      const { error } = await supabase
+        .from('suppliers')
+        .insert({
+          name: data.companyName,
+          email: data.email,
+          phone: data.phone,
+          website: data.website,
+          country: data.country,
+          payment_terms: data.paymentTerms,
+          is_active: true,
+          user_id: (await supabase.auth.getUser()).data.user?.id
+        });
+
+      if (error) throw error;
       
       toast.success("Fournisseur créé avec succès");
       form.reset();

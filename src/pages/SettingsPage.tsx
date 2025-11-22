@@ -356,12 +356,9 @@ const SettingsPage = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={() => {
-                    // TODO: Implement 2FA setup
-                    alert('Configuration 2FA - Fonctionnalité à venir');
-                  }}
+                  disabled
                 >
-                  Configurer
+                  Bientôt disponible
                 </Button>
               </div>
 
@@ -377,12 +374,9 @@ const SettingsPage = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={() => {
-                    // TODO: Implement session management
-                    alert('Gestion des sessions - Fonctionnalité à venir');
-                  }}
+                  disabled
                 >
-                  Voir tout
+                  Bientôt disponible
                 </Button>
               </div>
             </CardContent>

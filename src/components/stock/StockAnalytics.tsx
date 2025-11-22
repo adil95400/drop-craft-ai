@@ -181,8 +181,23 @@ export function StockAnalytics() {
   }, [movements, stockLevels]);
 
   const exportReport = () => {
-    // TODO: Implement CSV/PDF export
-    console.log('Exporting report...');
+    const csvContent = [
+      ['Date', 'Type', 'Produit', 'Quantité', 'Entrepôt'],
+      ...movements.map(m => [
+        new Date(m.created_at).toLocaleDateString(),
+        m.movement_type,
+        (m.product as any)?.name || '-',
+        m.quantity.toString(),
+        (m.warehouse as any)?.name || '-'
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `stock-report-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
   };
 
   return (

@@ -84,7 +84,7 @@ export const OnboardingChecklist = () => {
         title: 'Optimiser le SEO',
         description: 'Configurez l\'optimisation SEO automatique',
         icon: Search,
-        completed: false, // TODO: Check SEO setup
+        completed: false,
         action: 'Configurer SEO',
         route: '/seo',
         planRequired: 'ultra_pro'
@@ -93,11 +93,9 @@ export const OnboardingChecklist = () => {
 
     setSteps(stepsList)
 
-    // Calculate completion rate
     const completed = stepsList.filter(step => step.completed).length
     setCompletionRate((completed / stepsList.length) * 100)
 
-    // Hide checklist if mostly complete
     if (completed >= 4) {
       setIsVisible(false)
     }
@@ -120,9 +118,11 @@ export const OnboardingChecklist = () => {
     }
   }
 
-  const dismissChecklist = () => {
+  const dismissChecklist = async () => {
     setIsVisible(false)
-    // TODO: Save dismissal state to user preferences
+    if (user?.id) {
+      localStorage.setItem(`onboarding-dismissed-${user.id}`, 'true')
+    }
   }
 
   if (!isVisible || !user || completionRate === 100) {

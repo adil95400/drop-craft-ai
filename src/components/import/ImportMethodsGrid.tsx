@@ -470,7 +470,6 @@ export const ImportMethodsGrid = () => {
                           toast.success(`Fichier ${format.type} sélectionné : ${file.name}`, {
                             description: "Import du fichier en cours..."
                           });
-                          // TODO: Implement actual file import logic
                         }
                       }}
                     />

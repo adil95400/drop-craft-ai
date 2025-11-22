@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Languages, Plus, Save, Trash2, Globe } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/integrations/supabase/client'
 import {
   Select,
   SelectContent,
@@ -89,8 +90,22 @@ export function ProductTranslations({ productId, currentTranslations = [] }: Pro
   const saveTranslations = async () => {
     setIsSaving(true)
     try {
-      // TODO: Appel API pour sauvegarder les traductions
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      const { error } = await supabase
+        .from('product_translations')
+        .upsert(
+          translations.map(t => ({
+            product_id: productId,
+            locale: t.language,
+            name: t.name,
+            description: t.description,
+            user_id: user.id
+          }))
+        )
+
+      if (error) throw error
       
       toast({
         title: "Traductions sauvegardées",
