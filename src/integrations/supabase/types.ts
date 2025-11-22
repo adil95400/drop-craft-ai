@@ -5150,6 +5150,39 @@ export type Database = {
           },
         ]
       }
+      installed_extensions: {
+        Row: {
+          config: Json | null
+          created_at: string | null
+          extension_id: string
+          id: string
+          installed_at: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string | null
+          extension_id: string
+          id?: string
+          installed_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string | null
+          extension_id?: string
+          id?: string
+          installed_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       integrations: {
         Row: {
           access_token: string | null
