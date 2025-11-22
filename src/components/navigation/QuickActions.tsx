@@ -9,7 +9,7 @@ const quickActions = [
   {
     title: "Import Produits",
     description: "CSV, API, scraping intelligent",
-    href: "/import/advanced",
+    href: "/products/import/advanced",
     icon: Upload,
     badge: "Pro",
     color: "text-blue-600"
@@ -17,7 +17,7 @@ const quickActions = [
   {
     title: "Sync Manager", 
     description: "Synchronisation bidirectionnelle",
-    href: "/sync-manager",
+    href: "/dashboard/sync-manager",
     icon: Activity,
     badge: "Nouveau",
     color: "text-green-600"
@@ -25,7 +25,7 @@ const quickActions = [
   {
     title: "Centre Commandes",
     description: "Gestion multi-plateformes",
-    href: "/orders-center", 
+    href: "/dashboard/orders-center", 
     icon: ShoppingCart,
     badge: "Nouveau",
     color: "text-purple-600"

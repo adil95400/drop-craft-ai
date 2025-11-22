@@ -64,11 +64,11 @@ export const ImportDashboard = () => {
           <p className="text-muted-foreground">Vue d'ensemble de tous vos imports et produits</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => navigate('/import/history')}>
+          <Button variant="outline" size="sm" onClick={() => navigate('/products/import/manage/history')}>
             <FileSpreadsheet className="w-4 h-4 mr-2" />
             Historique
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate('/import/products')}>
+          <Button variant="outline" size="sm" onClick={() => navigate('/products/import/manage/products')}>
             <Database className="w-4 h-4 mr-2" />
             Produits
           </Button>
@@ -223,7 +223,7 @@ export const ImportDashboard = () => {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => navigate('/import/history')}
+            onClick={() => navigate('/products/import/manage/history')}
           >
             Voir tout
           </Button>
@@ -289,7 +289,7 @@ export const ImportDashboard = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Button
-              onClick={() => navigate('/import/url-config')}
+              onClick={() => navigate('/products/import/advanced')}
               className="h-20 flex flex-col items-center justify-center gap-2"
               variant="outline"
             >
@@ -298,7 +298,7 @@ export const ImportDashboard = () => {
             </Button>
 
             <Button
-              onClick={() => navigate('/import/bulk-config')}
+              onClick={() => navigate('/products/import/quick')}
               className="h-20 flex flex-col items-center justify-center gap-2"
               variant="outline"
             >
@@ -307,7 +307,7 @@ export const ImportDashboard = () => {
             </Button>
 
             <Button
-              onClick={() => navigate('/import/xml-config')}
+              onClick={() => navigate('/products/import/advanced')}
               className="h-20 flex flex-col items-center justify-center gap-2"
               variant="outline"
             >
@@ -316,7 +316,7 @@ export const ImportDashboard = () => {
             </Button>
 
             <Button
-              onClick={() => navigate('/import/ftp-config')}
+              onClick={() => navigate('/products/import/advanced')}
               className="h-20 flex flex-col items-center justify-center gap-2"
               variant="outline"
             >
