@@ -28,9 +28,9 @@ export function ProductActionsBar({
   onExport
 }: ProductActionsBarProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-in slide-in-from-top duration-300">
       {/* Top Actions */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between gap-4 items-stretch sm:items-center">
         <div className="flex flex-1 items-center space-x-2">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -38,13 +38,13 @@ export function ProductActionsBar({
               placeholder="Rechercher des produits..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-background/50 backdrop-blur border-border/50 focus:border-primary/50 transition-colors"
             />
           </div>
           
           <Select defaultValue="all">
-            <SelectTrigger className="w-[140px]">
-              <Filter className="h-4 w-4" />
+            <SelectTrigger className="w-[140px] bg-background/50 backdrop-blur border-border/50">
+              <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Filtrer" />
             </SelectTrigger>
             <SelectContent>
@@ -56,8 +56,8 @@ export function ProductActionsBar({
           </Select>
           
           <Select defaultValue="created_at">
-            <SelectTrigger className="w-[140px]">
-              <SortAsc className="h-4 w-4" />
+            <SelectTrigger className="w-[140px] bg-background/50 backdrop-blur border-border/50">
+              <SortAsc className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Trier" />
             </SelectTrigger>
             <SelectContent>
@@ -69,13 +69,13 @@ export function ProductActionsBar({
           </Select>
         </div>
         
-        <div className="flex items-center space-x-2">
-          <div className="flex border rounded-md">
+        <div className="flex items-center space-x-2 flex-wrap">
+          <div className="flex border border-border/50 rounded-lg overflow-hidden bg-background/50 backdrop-blur">
             <Button
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onViewModeChange('grid')}
-              className="rounded-r-none"
+              className="rounded-none border-0"
             >
               <Grid className="h-4 w-4" />
             </Button>
@@ -83,23 +83,36 @@ export function ProductActionsBar({
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onViewModeChange('list')}
-              className="rounded-l-none"
+              className="rounded-none border-0"
             >
               <List className="h-4 w-4" />
             </Button>
           </div>
           
-          <Button variant="outline" size="sm" onClick={onImport}>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onImport}
+            className="bg-background/50 backdrop-blur border-border/50 hover:bg-accent/50"
+          >
             <Upload className="h-4 w-4 mr-2" />
             Importer
           </Button>
           
-          <Button variant="outline" size="sm" onClick={onExport}>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onExport}
+            className="bg-background/50 backdrop-blur border-border/50 hover:bg-accent/50"
+          >
             <Download className="h-4 w-4 mr-2" />
             Exporter
           </Button>
           
-          <Button onClick={onCreateNew}>
+          <Button 
+            onClick={onCreateNew}
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Nouveau
           </Button>
@@ -107,20 +120,20 @@ export function ProductActionsBar({
       </div>
       
       {/* Results Info */}
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-sm text-muted-foreground">
         <div className="flex items-center space-x-4">
-          <span>{totalCount} produit(s)</span>
+          <span className="font-medium">{totalCount} produit(s)</span>
           {selectedCount > 0 && (
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="bg-primary/10 text-primary">
               {selectedCount} sélectionné(s)
             </Badge>
           )}
         </div>
         
         <div className="flex items-center space-x-2">
-          <span>Affichage:</span>
+          <span className="hidden sm:inline">Affichage:</span>
           <Select defaultValue="20">
-            <SelectTrigger className="w-16 h-8">
+            <SelectTrigger className="w-16 h-8 bg-background/50 backdrop-blur border-border/50">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
