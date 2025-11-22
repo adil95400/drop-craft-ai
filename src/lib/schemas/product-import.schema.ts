@@ -152,21 +152,21 @@ export const ImportResultSchema = z.object({
 
 export type ImportResult = z.infer<typeof ImportResultSchema>;
 
-// Column mapping for CSV headers
+// Column mapping for CSV headers - Support multiple formats (Shopify, WooCommerce, custom)
 export const PRODUCT_COLUMN_MAPPINGS: Record<string, string[]> = {
-  name: ["name", "product_name", "title", "nom", "produit", "titre"],
-  description: ["description", "desc", "details", "description_produit"],
-  price: ["price", "prix", "selling_price", "prix_vente"],
-  cost_price: ["cost_price", "cout", "prix_achat", "cost", "purchase_price"],
-  sku: ["sku", "reference", "ref", "product_id", "id_produit"],
-  category: ["category", "categorie", "cat", "type"],
-  brand: ["brand", "marque", "manufacturer", "fabricant"],
-  stock_quantity: ["stock", "quantity", "qty", "quantite", "inventaire", "stock_quantity"],
-  status: ["status", "statut", "state", "etat"],
-  image_url: ["image", "image_url", "photo", "picture", "img"],
+  name: ["name", "product_name", "title", "nom", "produit", "titre", "handle", "url handle"],
+  description: ["description", "desc", "details", "description_produit", "body html", "body_html"],
+  price: ["price", "prix", "selling_price", "prix_vente", "variant price"],
+  cost_price: ["cost_price", "cout", "prix_achat", "cost", "purchase_price", "cost per item"],
+  sku: ["sku", "reference", "ref", "product_id", "id_produit", "variant sku"],
+  category: ["category", "categorie", "cat", "type", "product category", "product_type"],
+  brand: ["brand", "marque", "manufacturer", "fabricant", "vendor"],
+  stock_quantity: ["stock", "quantity", "qty", "quantite", "inventaire", "stock_quantity", "inventory quantity", "inventory_quantity"],
+  status: ["status", "statut", "state", "etat", "published"],
+  image_url: ["image", "image_url", "photo", "picture", "img", "product image url", "image src"],
   supplier_name: ["supplier", "fournisseur", "vendor", "supplier_name"],
   tags: ["tags", "etiquettes", "labels", "keywords"],
-  weight: ["weight", "poids", "wt"],
+  weight: ["weight", "poids", "wt", "weight value", "weight value (grams)"],
   length: ["length", "longueur", "l"],
   width: ["width", "largeur", "w"],
   height: ["height", "hauteur", "h"],
