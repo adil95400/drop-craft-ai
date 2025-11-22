@@ -22,14 +22,15 @@ export const FeatureStatusDashboard = () => {
       name: 'Extension Chrome',
       description: 'Import en 1 clic depuis Temu, AliExpress, Amazon',
       status: 'active',
-      path: '/integrations/extensions'
+      path: '/integrations/extensions/hub'
     },
     {
       id: 'url-import',
       name: 'Importation de produits basée sur une URL',
       description: 'Edge function product-url-scraper déployée',
       status: 'active',
-      edgeFunctionName: 'product-url-scraper'
+      edgeFunctionName: 'product-url-scraper',
+      path: '/products/import/url'
     },
     {
       id: 'supplier-catalog',
@@ -43,7 +44,7 @@ export const FeatureStatusDashboard = () => {
       name: 'Automatisation de la tarification dynamique',
       description: 'Règles de prix automatiques et optimisation IA',
       status: 'active',
-      path: '/automation/pricing'
+      path: '/automation/pricing-automation'
     },
     {
       id: 'auto-fulfillment',
@@ -121,27 +122,29 @@ export const FeatureStatusDashboard = () => {
                   )}
                 </div>
               </div>
-              {feature.path && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(feature.path!)}
-                >
-                  Ouvrir
-                </Button>
-              )}
-              {feature.edgeFunctionName && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open(
-                    `https://supabase.com/dashboard/project/dtozyrmmekdnvekissuh/functions/${feature.edgeFunctionName}/logs`,
-                    '_blank'
-                  )}
-                >
-                  Logs
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {feature.path && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(feature.path!)}
+                  >
+                    Ouvrir
+                  </Button>
+                )}
+                {feature.edgeFunctionName && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(
+                      `https://supabase.com/dashboard/project/dtozyrmmekdnvekissuh/functions/${feature.edgeFunctionName}/logs`,
+                      '_blank'
+                    )}
+                  >
+                    Logs
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
         </div>
