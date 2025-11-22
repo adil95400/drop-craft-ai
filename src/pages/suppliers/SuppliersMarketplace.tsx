@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSupplierActions } from '@/hooks/useSupplierActions';
+import { useNavigate } from 'react-router-dom';
 import {
   Store,
   Search,
@@ -160,6 +162,24 @@ export default function SuppliersMarketplace() {
   const [selectedSector, setSelectedSector] = useState('Tous');
   const [selectedCountry, setSelectedCountry] = useState('Tous');
   const [showOnlyFeatured, setShowOnlyFeatured] = useState(false);
+  const { connectSupplier, isConnecting } = useSupplierActions();
+  const navigate = useNavigate();
+
+  const handleConnect = async (supplierId: string) => {
+    const result = await connectSupplier(supplierId);
+    if (result.success) {
+      // Rafraîchir ou rediriger
+      navigate('/suppliers');
+    }
+  };
+
+  const handleAddManual = () => {
+    navigate('/suppliers/add');
+  };
+
+  const handleContact = () => {
+    window.open('mailto:support@dropcraft.com?subject=Demande d\'ajout de fournisseur', '_blank');
+  };
 
   const filteredSuppliers = MARKETPLACE_SUPPLIERS.filter(supplier => {
     const matchesSearch = supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -409,11 +429,19 @@ export default function SuppliersMarketplace() {
                 )}
                 
                 <div className="flex gap-2 pt-2">
-                  <Button className="flex-1 gap-2">
+                  <Button 
+                    className="flex-1 gap-2"
+                    onClick={() => handleConnect(supplier.id)}
+                    disabled={isConnecting}
+                  >
                     <Zap className="h-4 w-4" />
-                    Connecter
+                    {isConnecting ? 'Connexion...' : 'Connecter'}
                   </Button>
-                  <Button variant="outline" size="icon">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => window.open(supplier.logo_url, '_blank')}
+                  >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </div>
@@ -433,11 +461,16 @@ export default function SuppliersMarketplace() {
                 </p>
               </div>
               <div className="flex gap-3">
-                <Button variant="secondary" size="lg">
+                <Button variant="secondary" size="lg" onClick={handleAddManual}>
                   <Plus className="h-4 w-4 mr-2" />
                   Ajouter manuellement
                 </Button>
-                <Button variant="outline" size="lg" className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
+                  onClick={handleContact}
+                >
                   Nous contacter
                 </Button>
               </div>
