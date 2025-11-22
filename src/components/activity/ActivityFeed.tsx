@@ -46,7 +46,7 @@ export function ActivityFeed() {
       module: 'CRM',
       action: {
         label: 'Voir CRM',
-        onClick: () => navigate('/crm')
+        onClick: () => navigate('/marketing/crm')
       }
     },
     {
@@ -72,7 +72,7 @@ export function ActivityFeed() {
       module: 'SEO',
       action: {
         label: 'Optimiser SEO',
-        onClick: () => navigate('/seo')
+        onClick: () => navigate('/marketing/seo')
       }
     },
     {
@@ -85,7 +85,7 @@ export function ActivityFeed() {
       module: 'Automation',
       action: {
         label: 'Configurer IA',
-        onClick: () => navigate('/automation-ai')
+        onClick: () => navigate('/automation')
       }
     },
     {

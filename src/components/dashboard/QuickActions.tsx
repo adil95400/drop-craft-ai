@@ -73,7 +73,7 @@ export const QuickActions: React.FC = () => {
       description: 'Lancer une nouvelle campagne',
       icon: <Mail className="h-5 w-5" />,
       color: 'bg-pink-500 hover:bg-pink-600',
-      action: () => navigate('/marketing/campaigns')
+      action: () => navigate('/marketing')
     },
     {
       id: 'automation',
@@ -81,7 +81,7 @@ export const QuickActions: React.FC = () => {
       description: 'Créer un workflow automatisé',
       icon: <Zap className="h-5 w-5" />,
       color: 'bg-yellow-500 hover:bg-yellow-600',
-      action: () => navigate('/automation/workflows')
+      action: () => navigate('/automation/workflow-builder')
     },
     {
       id: 'analytics',
