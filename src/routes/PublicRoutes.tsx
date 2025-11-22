@@ -19,6 +19,7 @@ const FAQ = lazy(() => import('@/pages/FAQ'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
 const About = lazy(() => import('@/pages/About'));
+const EnterpriseObservability = lazy(() => import('@/pages/EnterpriseObservability'));
 
 // Feature pages
 const AIOptimizationPage = lazy(() => import('@/pages/features/AIOptimizationPage'));
@@ -61,6 +62,9 @@ export function PublicRoutes() {
       {/* Payment */}
       <Route path="payment/success" element={<PaymentSuccess />} />
       <Route path="payment/cancelled" element={<PaymentCancelled />} />
+      
+      {/* Enterprise */}
+      <Route path="enterprise/observability" element={<EnterpriseObservability />} />
       
       {/* Legacy redirects */}
       <Route path="guides" element={<Navigate to="/documentation" replace />} />
