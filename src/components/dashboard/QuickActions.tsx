@@ -65,7 +65,7 @@ export const QuickActions: React.FC = () => {
       description: 'Importer produits ou commandes',
       icon: <Upload className="h-5 w-5" />,
       color: 'bg-orange-500 hover:bg-orange-600',
-      action: () => navigate('/products/import/manage')
+      action: () => navigate('/products/import/quick')
     },
     {
       id: 'create-campaign',
@@ -73,7 +73,7 @@ export const QuickActions: React.FC = () => {
       description: 'Lancer une nouvelle campagne',
       icon: <Mail className="h-5 w-5" />,
       color: 'bg-pink-500 hover:bg-pink-600',
-      action: () => openModal('createCampaign')
+      action: () => navigate('/marketing/campaigns')
     },
     {
       id: 'automation',
@@ -81,7 +81,7 @@ export const QuickActions: React.FC = () => {
       description: 'Créer un workflow automatisé',
       icon: <Zap className="h-5 w-5" />,
       color: 'bg-yellow-500 hover:bg-yellow-600',
-      action: () => openModal('newAutomation')
+      action: () => navigate('/automation/workflows')
     },
     {
       id: 'analytics',
@@ -89,7 +89,7 @@ export const QuickActions: React.FC = () => {
       description: 'Consulter les performances',
       icon: <BarChart3 className="h-5 w-5" />,
       color: 'bg-indigo-500 hover:bg-indigo-600',
-      action: () => window.open('/analytics', '_blank')
+      action: () => navigate('/analytics')
     },
     {
       id: 'notifications',
@@ -114,24 +114,23 @@ export const QuickActions: React.FC = () => {
       description: 'Créer un rapport personnalisé',
       icon: <FileText className="h-5 w-5" />,
       color: 'bg-slate-500 hover:bg-slate-600',
-      action: () => openModal('generateReport'),
-      badge: 'Pro'
+      action: () => navigate('/analytics/reports')
     },
     {
-      id: 'blog-post',
-      title: 'Créer un article',
-      description: 'Rédiger un article de blog',
-      icon: <FileText className="h-5 w-5" />,
-      color: 'bg-emerald-500 hover:bg-emerald-600',
-      action: () => openModal('blogPost')
+      id: 'suppliers',
+      title: 'Gérer les fournisseurs',
+      description: 'Ajouter et connecter des fournisseurs',
+      icon: <Package className="h-5 w-5" />,
+      color: 'bg-cyan-500 hover:bg-cyan-600',
+      action: () => navigate('/products/suppliers')
     },
     {
-      id: 'settings',
-      title: 'Paramètres',
-      description: 'Configurer votre application',
+      id: 'integrations',
+      title: 'Intégrations',
+      description: 'Connecter vos plateformes',
       icon: <Settings className="h-5 w-5" />,
       color: 'bg-gray-500 hover:bg-gray-600',
-      action: () => openModal('settings')
+      action: () => navigate('/integrations')
     }
   ];
 
