@@ -27,6 +27,7 @@ export default function ChromeExtensionConfigPage() {
   const { toast } = useToast();
   const [apiKey, setApiKey] = useState('');
   const [copied, setCopied] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Generate API key (simulation)
   const generateApiKey = () => {
@@ -46,6 +47,63 @@ export default function ChromeExtensionConfigPage() {
       title: "Copié!",
       description: "Le texte a été copié dans le presse-papier.",
     });
+  };
+
+  const downloadExtension = async () => {
+    setIsDownloading(true);
+    try {
+      const response = await fetch(
+        'https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-download',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Erreur lors du téléchargement');
+      }
+
+      const result = await response.json();
+      
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Aucune donnée reçue');
+      }
+
+      // Decode base64 to binary
+      const binaryString = atob(result.data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // Create blob and download
+      const blob = new Blob([bytes], { type: 'application/zip' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = result.filename || 'dropcraft-extension.zip';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "✅ Extension téléchargée",
+        description: "Le fichier ZIP a été téléchargé avec succès.",
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "❌ Erreur",
+        description: error instanceof Error ? error.message : "Impossible de télécharger l'extension",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
@@ -112,9 +170,13 @@ export default function ChromeExtensionConfigPage() {
                   <p className="text-sm text-muted-foreground">
                     Cliquez sur le bouton ci-dessous pour télécharger le fichier .zip de l'extension
                   </p>
-                  <Button className="gap-2">
+                  <Button 
+                    className="gap-2" 
+                    onClick={downloadExtension}
+                    disabled={isDownloading}
+                  >
                     <Download className="h-4 w-4" />
-                    Télécharger l'extension
+                    {isDownloading ? "Téléchargement..." : "Télécharger l'extension"}
                   </Button>
                 </div>
               </div>
