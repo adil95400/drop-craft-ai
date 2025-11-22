@@ -102,7 +102,9 @@ export function RealTimePerformanceTracker() {
       id: 'impressions',
       name: 'Impressions',
       value: stats.totalImpressions,
-      change: 12.5, // TODO: Calculate from historical data
+      change: realTimeData.length > 1 
+        ? ((realTimeData[realTimeData.length - 1]?.impressions - (realTimeData[realTimeData.length - 2]?.impressions || 0)) / (realTimeData[realTimeData.length - 2]?.impressions || 1)) * 100
+        : 0,
       changeType: 'increase',
       unit: '/h',
       target: stats.totalImpressions * 1.2,
@@ -112,7 +114,9 @@ export function RealTimePerformanceTracker() {
       id: 'clicks',
       name: 'Clics',
       value: stats.totalClicks,
-      change: stats.totalClicks > 0 ? 8.3 : -3.2,
+      change: realTimeData.length > 1 
+        ? ((realTimeData[realTimeData.length - 1]?.clicks - (realTimeData[realTimeData.length - 2]?.clicks || 0)) / (realTimeData[realTimeData.length - 2]?.clicks || 1)) * 100
+        : 0,
       changeType: stats.totalClicks > 0 ? 'increase' : 'decrease',
       unit: '/h',
       target: stats.totalClicks * 1.1,

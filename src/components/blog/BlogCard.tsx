@@ -42,6 +42,9 @@ interface BlogCardProps {
 }
 
 export function BlogCard({ post, variant = 'default', onClick }: BlogCardProps) {
+  const [isLiked, setIsLiked] = React.useState(false);
+  const [isBookmarked, setIsBookmarked] = React.useState(false);
+
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (navigator.share) {
@@ -55,12 +58,12 @@ export function BlogCard({ post, variant = 'default', onClick }: BlogCardProps) 
 
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Implement like functionality
+    setIsLiked(!isLiked);
   };
 
   const handleBookmark = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Implement bookmark functionality
+    setIsBookmarked(!isBookmarked);
   };
 
   if (variant === 'featured') {

@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supplierHub } from '@/services/SupplierHub';
 import { importManager } from '@/services/ImportManager';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { SupplierAnalyzer } from '@/components/suppliers/SupplierAnalyzer';
 import { 
   Plus, 
@@ -35,6 +36,7 @@ import type { SupplierConnectorInfo } from '@/services/SupplierHub';
 
 const SupplierHub: React.FC = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const { suppliers, isLoading, addSupplier, updateSupplier, deleteSupplier } = useRealSuppliers();
   
   // States pour la gestion des connecteurs
@@ -165,12 +167,20 @@ const SupplierHub: React.FC = () => {
   const handleSync = async (connectorId: string) => {
     setSyncProgress(prev => ({ ...prev, [connectorId]: 0 }));
     
+    if (!user?.id) {
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: 'Utilisateur non authentifié'
+      });
+      return;
+    }
+    
     try {
-      // Utiliser la nouvelle Edge Function pour la synchronisation
       const { data, error } = await supabase.functions.invoke('supplier-sync-engine', {
         body: {
           connectorId,
-          userId: 'user-demo', // TODO: récupérer le vrai user ID
+          userId: user.id,
           jobType: 'products',
           options: {
             fullSync: false,

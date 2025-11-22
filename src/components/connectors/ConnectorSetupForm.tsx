@@ -96,9 +96,6 @@ export const ConnectorSetupForm: React.FC<ConnectorSetupFormProps> = ({
         setErrorMessage('Échec de la connexion. Vérifiez vos identifiants.');
       }
 
-      // Nettoyer le connecteur temporaire
-      // TODO: Implémenter la suppression du connecteur temporaire
-
     } catch (error: any) {
       setConnectionStatus('error');
       setErrorMessage(error.message);

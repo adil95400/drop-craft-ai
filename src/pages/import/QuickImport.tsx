@@ -9,6 +9,7 @@ import { useOptimizedImport } from '@/hooks/useOptimizedImport'
 import { FileSpreadsheet, Link as LinkIcon, Upload, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '@/integrations/supabase/client'
 
 export default function QuickImport() {
   const navigate = useNavigate()
@@ -53,11 +54,19 @@ export default function QuickImport() {
     }
 
     try {
-      new URL(url) // Validate URL
-      toast.info('Import par URL en cours de développement')
-      // TODO: Implement URL import
-    } catch {
-      toast.error('URL invalide')
+      new URL(url)
+      toast.info('Analyse de l\'URL en cours...')
+      
+      const { data, error } = await supabase.functions.invoke('import-from-url', {
+        body: { url }
+      })
+      
+      if (error) throw error
+      toast.success('Import réussi')
+    } catch (error) {
+      toast.error(error instanceof Error && error.message === 'Invalid URL' 
+        ? 'URL invalide' 
+        : 'Erreur lors de l\'import')
     }
   }
 

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Grid3x3, List } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export function UnifiedStoreDashboard() {
   const navigate = useNavigate();
@@ -35,9 +36,22 @@ export function UnifiedStoreDashboard() {
     toggleStoreActive({ id: storeId, is_active: isActive });
   };
 
-  const handleSyncAll = () => {
-    toast.info('Synchronisation de toutes les boutiques...');
-    // TODO: Implement sync all functionality in Phase 5
+  const handleSyncAll = async () => {
+    const activeStores = stores?.filter(s => s.is_active) || [];
+    if (activeStores.length === 0) {
+      toast.warning('Aucune boutique active à synchroniser');
+      return;
+    }
+    
+    toast.info(`Synchronisation de ${activeStores.length} boutique(s)...`);
+    
+    for (const store of activeStores) {
+      await supabase.functions.invoke('advanced-sync', {
+        body: { integration_id: store.id, sync_type: 'products' }
+      });
+    }
+    
+    toast.success('Synchronisation terminée');
   };
 
   if (isLoading) {

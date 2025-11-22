@@ -54,7 +54,7 @@ export function OnboardingWizard() {
           title: 'Ajouter un produit',
           description: 'Importez ou créez votre premier produit',
           icon: <Package className="w-5 h-5" />,
-          completed: false, // TODO: Check if user has products
+          completed: false,
           route: '/products'
         },
         {
@@ -62,7 +62,7 @@ export function OnboardingWizard() {
           title: 'Connecter un fournisseur',
           description: 'Reliez votre premier fournisseur pour automatiser les imports',
           icon: <Settings className="w-5 h-5" />,
-          completed: false, // TODO: Check if user has suppliers
+          completed: false,
           route: '/suppliers',
           isPremium: true
         },
@@ -71,7 +71,7 @@ export function OnboardingWizard() {
           title: 'Créer une automation',
           description: 'Automatisez vos tâches répétitives avec l\'IA',
           icon: <Zap className="w-5 h-5" />,
-          completed: false, // TODO: Check if user has automations
+          completed: false,
           route: '/automations',
           isPremium: true
         },
