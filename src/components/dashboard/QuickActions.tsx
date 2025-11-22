@@ -17,6 +17,7 @@ import {
   FileText
 } from 'lucide-react';
 import { useModals } from '@/hooks/useModals';
+import { useNavigate } from 'react-router-dom';
 
 interface QuickAction {
   id: string;
@@ -31,6 +32,7 @@ interface QuickAction {
 
 export const QuickActions: React.FC = () => {
   const { openModal } = useModals();
+  const navigate = useNavigate();
 
   const quickActions: QuickAction[] = [
     {
@@ -63,7 +65,7 @@ export const QuickActions: React.FC = () => {
       description: 'Importer produits ou commandes',
       icon: <Upload className="h-5 w-5" />,
       color: 'bg-orange-500 hover:bg-orange-600',
-      action: () => openModal('importData')
+      action: () => navigate('/products/import/manage')
     },
     {
       id: 'create-campaign',

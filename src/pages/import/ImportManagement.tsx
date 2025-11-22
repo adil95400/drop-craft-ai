@@ -20,16 +20,21 @@ export default function ImportManagement() {
             Module complet de gestion, analyse et publication de vos imports
           </p>
         </div>
-        <Button variant="outline" onClick={() => navigate('/import')}>
-          Retour au Hub
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate('/products/import/quick')}>
+            Import Rapide
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/import')}>
+            Hub Import
+          </Button>
+        </div>
       </div>
 
       {/* Navigation rapide */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card 
           className="cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => navigate('/import/manage/products')}
+          onClick={() => navigate('/products/import/manage/products')}
         >
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
@@ -44,7 +49,7 @@ export default function ImportManagement() {
 
         <Card 
           className="cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => navigate('/import/manage/publishing')}
+          onClick={() => navigate('/products/import/manage/publishing')}
         >
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
@@ -59,7 +64,7 @@ export default function ImportManagement() {
 
         <Card 
           className="cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => navigate('/import/manage/marketplace')}
+          onClick={() => navigate('/products/import/manage/marketplace')}
         >
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
@@ -74,7 +79,7 @@ export default function ImportManagement() {
 
         <Card 
           className="cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => navigate('/import/manage/history')}
+          onClick={() => navigate('/products/import/manage/history')}
         >
           <CardContent className="p-6">
             <div className="flex items-center gap-3">

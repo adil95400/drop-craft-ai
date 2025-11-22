@@ -71,9 +71,14 @@ export default function QuickImport() {
             Importez vos produits en quelques clics
           </p>
         </div>
-        <Button variant="outline" onClick={() => navigate('/import')}>
-          Retour au Hub
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate('/products/import/manage')}>
+            Gérer les imports
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/import')}>
+            Retour au Hub
+          </Button>
+        </div>
       </div>
 
       {/* Progression globale */}
