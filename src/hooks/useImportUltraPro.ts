@@ -83,14 +83,32 @@ export const useImportUltraPro = () => {
   } = useQuery({
     queryKey: ['imported-products'],
     queryFn: async () => {
+      console.log('[useImportUltraPro] Fetching imported products...')
+      
+      // Check authentication
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      console.log('[useImportUltraPro] Current user:', user?.id, authError)
+      
       const { data, error } = await supabase
         .from('imported_products')
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      console.log('[useImportUltraPro] Query result:', { 
+        count: data?.length, 
+        error: error?.message,
+        userId: user?.id
+      })
+
+      if (error) {
+        console.error('[useImportUltraPro] Error fetching products:', error)
+        throw error
+      }
+      
       return data as ImportedProduct[]
-    }
+    },
+    refetchOnWindowFocus: false,
+    refetchOnMount: true
   })
 
   // Fetch AI optimization jobs
