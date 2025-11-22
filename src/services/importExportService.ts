@@ -68,40 +68,45 @@ class ImportExportService {
   }
 
   /**
-   * Import products from CSV to database
+   * Import products from CSV to database using edge function
    */
-  async importFromCSV(file: File, userId: string): Promise<{ success: number; errors: number }> {
+  async importFromCSV(file: File, userId: string): Promise<{ success: boolean; imported: number; errors: string[] }> {
     try {
-      const products = await this.parseCSV(file)
+      const csvContent = await file.text()
       
-      let success = 0
-      let errors = 0
-
-      for (const product of products) {
-        try {
-          const { error } = await supabase
-            .from('products')
-            .insert({
-              ...product,
-              user_id: userId
-            })
-
-          if (error) {
-            console.error('Error importing product:', error)
-            errors++
-          } else {
-            success++
-          }
-        } catch (err) {
-          console.error('Error importing product:', err)
-          errors++
+      console.log('📤 Envoi du CSV vers l\'edge function...')
+      
+      const { data, error } = await supabase.functions.invoke('csv-import', {
+        body: {
+          userId,
+          csvContent,
+          source: 'manual'
         }
+      })
+
+      if (error) {
+        console.error('❌ Erreur edge function:', error)
+        throw new Error(error.message || 'Erreur lors de l\'import CSV')
       }
 
-      return { success, errors }
+      if (data?.success) {
+        console.log(`✅ Import réussi: ${data.imported} produits`)
+        return {
+          success: true,
+          imported: data.imported || 0,
+          errors: []
+        }
+      } else {
+        console.error('❌ Erreur dans la réponse:', data)
+        throw new Error(data?.error || 'Erreur lors de l\'import')
+      }
     } catch (error) {
-      console.error('Error parsing CSV:', error)
-      throw new Error('Erreur lors de l\'analyse du fichier CSV')
+      console.error('❌ Erreur import CSV:', error)
+      return {
+        success: false,
+        imported: 0,
+        errors: [error instanceof Error ? error.message : 'Erreur inconnue']
+      }
     }
   }
 
