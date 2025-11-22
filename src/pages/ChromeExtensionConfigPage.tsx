@@ -18,7 +18,8 @@ import {
   ExternalLink,
   Code,
   FileCode,
-  Settings
+  Settings,
+  Zap
 } from 'lucide-react';
 
 export default function ChromeExtensionConfigPage() {
@@ -50,16 +51,26 @@ export default function ChromeExtensionConfigPage() {
   return (
     <div className="container mx-auto py-8 space-y-8">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="p-3 rounded-lg bg-primary/10">
-          <Chrome className="h-8 w-8 text-primary" />
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <div className="p-3 rounded-lg bg-primary/10">
+            <Chrome className="h-8 w-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">Extension Chrome - Import en 1 Clic</h1>
+            <p className="text-muted-foreground">
+              Des boutons d'importation automatiques sur chaque page produit
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-bold">Extension Chrome</h1>
-          <p className="text-muted-foreground">
-            Configuration et installation de l'extension pour l'import 1-clic
-          </p>
-        </div>
+        
+        {/* Highlight Box */}
+        <Alert className="border-primary/50 bg-primary/5">
+          <CheckCircle2 className="h-5 w-5 text-primary" />
+          <AlertDescription className="text-base">
+            <strong className="text-primary">Nouvelle fonctionnalité :</strong> L'extension injecte automatiquement des boutons <strong>"🚀 Importer"</strong> sur les pages produits de Temu, AliExpress, Amazon et plus. Plus besoin d'ouvrir le popup !
+          </AlertDescription>
+        </Alert>
       </div>
 
       <Tabs defaultValue="install" className="w-full">
@@ -313,71 +324,51 @@ export default function ChromeExtensionConfigPage() {
 
         {/* Usage Tab */}
         <TabsContent value="usage" className="space-y-6">
-          <Card>
+          {/* New Feature Highlight */}
+          <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-primary/10">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileCode className="h-5 w-5" />
-                Comment utiliser l'extension
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <Zap className="h-5 w-5" />
+                🚀 Import en 1 Clic - Nouveau !
               </CardTitle>
-              <CardDescription>
-                Guide d'utilisation pour l'import 1-clic
+              <CardDescription className="text-base">
+                Les boutons d'import apparaissent automatiquement sur les pages
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex gap-3 items-start">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
                     1
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold mb-2">Naviguez vers une page produit</h3>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Allez sur un site de fournisseur (Amazon, AliExpress, eBay, etc.) et ouvrez une page produit
+                    <h4 className="font-semibold">Allez sur une page produit</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Temu, AliExpress, Amazon ou tout autre site e-commerce supporté
                     </p>
-                    <Badge variant="outline">Plateformes supportées</Badge>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      <Badge>Amazon</Badge>
-                      <Badge>AliExpress</Badge>
-                      <Badge>eBay</Badge>
-                      <Badge>Walmart</Badge>
-                      <Badge>Shopify</Badge>
-                      <Badge>Etsy</Badge>
-                    </div>
                   </div>
                 </div>
 
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+                <div className="flex gap-3 items-start">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
                     2
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold mb-2">Cliquez sur l'icône de l'extension</h3>
+                    <h4 className="font-semibold">Le bouton apparaît automatiquement ✨</h4>
                     <p className="text-sm text-muted-foreground">
-                      L'extension détectera automatiquement les informations du produit (nom, prix, images, description)
+                      Un bouton <Badge className="mx-1">🚀 Importer dans Drop Craft AI</Badge> s'affiche en haut de la page
                     </p>
                   </div>
                 </div>
 
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
+                <div className="flex gap-3 items-start">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
                     3
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold mb-2">Vérifiez et ajustez les données</h3>
+                    <h4 className="font-semibold">Cliquez et c'est importé !</h4>
                     <p className="text-sm text-muted-foreground">
-                      Vous pouvez modifier les champs détectés avant l'import (prix, marge, catégorie, etc.)
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
-                    4
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold mb-2">Cliquez sur "Importer"</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Le produit sera automatiquement ajouté à votre catalogue
+                      Le produit est extrait et importé automatiquement avec toutes ses infos (titre, prix, images, description)
                     </p>
                   </div>
                 </div>
@@ -386,7 +377,78 @@ export default function ChromeExtensionConfigPage() {
               <Alert>
                 <CheckCircle2 className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Astuce Pro:</strong> Vous pouvez aussi faire un clic droit sur une image de produit et sélectionner "Importer avec l'extension" dans le menu contextuel.
+                  <strong>Super rapide :</strong> Sur les pages de listing, des mini-boutons "Importer" apparaissent sur chaque produit pour un import instantané !
+                </AlertDescription>
+              </Alert>
+
+              <div className="pt-2">
+                <Badge variant="outline" className="mb-2">Plateformes avec Import en 1 Clic</Badge>
+                <div className="flex flex-wrap gap-2">
+                  <Badge className="bg-gradient-to-r from-pink-500 to-rose-500">Temu</Badge>
+                  <Badge className="bg-gradient-to-r from-orange-500 to-red-500">AliExpress</Badge>
+                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500">Amazon</Badge>
+                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-500">Shopify</Badge>
+                  <Badge className="bg-gradient-to-r from-purple-500 to-pink-500">WooCommerce</Badge>
+                  <Badge variant="secondary">+ Sites génériques</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Traditional Method */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileCode className="h-5 w-5" />
+                Méthode Alternative (Via Popup)
+              </CardTitle>
+              <CardDescription>
+                Vous pouvez aussi utiliser le popup de l'extension
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold">
+                    1
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-2">Cliquez sur l'icône de l'extension</h3>
+                    <p className="text-sm text-muted-foreground">
+                      L'extension détectera automatiquement les informations du produit
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold">
+                    2
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-2">Utilisez "Scraper cette page"</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Pour extraire plusieurs produits d'une page de listing
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center font-bold">
+                    3
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-2">Cliquez sur "Envoyer à l'app"</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Les produits seront importés dans votre catalogue
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Note :</strong> Le menu contextuel (clic droit) est également disponible sur n'importe quelle page.
                 </AlertDescription>
               </Alert>
             </CardContent>
@@ -394,26 +456,55 @@ export default function ChromeExtensionConfigPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Fonctionnalités avancées</CardTitle>
+              <CardTitle>Fonctionnalités</CardTitle>
+              <CardDescription>
+                Toutes les capacités de l'extension Chrome
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4">
-                <div className="p-4 border rounded-lg space-y-2">
-                  <h4 className="font-semibold">Import en lot</h4>
+                <div className="p-4 border rounded-lg space-y-2 bg-primary/5 border-primary/20">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-primary">✨ Nouveau</Badge>
+                    <h4 className="font-semibold">Import en 1 Clic Automatique</h4>
+                  </div>
                   <p className="text-sm text-muted-foreground">
-                    Maintenez Ctrl (ou Cmd sur Mac) et cliquez sur plusieurs produits pour les importer en une seule fois
+                    Des boutons "Importer" apparaissent automatiquement sur chaque page produit et listing. Plus besoin d'ouvrir le popup !
                   </p>
                 </div>
+                
                 <div className="p-4 border rounded-lg space-y-2">
-                  <h4 className="font-semibold">Règles de prix automatiques</h4>
+                  <h4 className="font-semibold">Scraping Intelligent Multi-Plateforme</h4>
                   <p className="text-sm text-muted-foreground">
-                    Configurez des règles pour calculer automatiquement vos prix de vente (marge fixe, pourcentage, paliers)
+                    Détection automatique de Temu, AliExpress, Amazon, Shopify, WooCommerce et sites génériques avec extraction optimisée des données
                   </p>
                 </div>
+                
                 <div className="p-4 border rounded-lg space-y-2">
-                  <h4 className="font-semibold">Optimisation IA</h4>
+                  <h4 className="font-semibold">Extraction Complète</h4>
                   <p className="text-sm text-muted-foreground">
-                    L'IA peut améliorer automatiquement les titres et descriptions pour le SEO
+                    Titre, prix, images, description, variations, avis, notes, informations vendeur - tout est automatiquement extrait
+                  </p>
+                </div>
+                
+                <div className="p-4 border rounded-lg space-y-2">
+                  <h4 className="font-semibold">Import via API Backend</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Utilise l'edge function product-url-scraper pour un scraping puissant avec Firecrawl et une extraction de données avancée
+                  </p>
+                </div>
+                
+                <div className="p-4 border rounded-lg space-y-2">
+                  <h4 className="font-semibold">Notifications Toast Élégantes</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Retour visuel immédiat de l'état de l'import (en cours, succès, erreur) directement sur la page
+                  </p>
+                </div>
+                
+                <div className="p-4 border rounded-lg space-y-2">
+                  <h4 className="font-semibold">Menu Contextuel</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Clic droit sur n'importe quelle page pour accéder rapidement aux fonctions de scraping et d'import
                   </p>
                 </div>
               </div>

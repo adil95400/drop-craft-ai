@@ -28,10 +28,10 @@ export default function ExtensionsHub() {
   const extensionFeatures = [
     {
       icon: <Chrome className="h-6 w-6" />,
-      title: 'Chrome Extension Config',
-      description: 'Configuration et installation de l\'extension Chrome pour l\'import 1-clic',
+      title: 'Chrome Extension - Import 1-Clic 🚀',
+      description: 'Boutons automatiques sur Temu, AliExpress, Amazon - Import instantané des produits',
       route: '/integrations/extensions/chrome-config',
-      badge: 'Import',
+      badge: 'Nouveau',
       color: 'bg-emerald-500/10 text-emerald-600 border-emerald-200',
       planRequired: null
     },
