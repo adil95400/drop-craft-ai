@@ -21,6 +21,7 @@ import { AutomationRoutes } from './AutomationRoutes';
 import { MarketingRoutes } from './MarketingRoutes';
 import { EnterpriseRoutes } from './EnterpriseRoutes';
 import { IntegrationRoutes } from './IntegrationRoutes';
+import { ExtensionRoutes } from './ExtensionRoutes';
 
 // Pages directes
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -55,6 +56,7 @@ export function AppRoutes() {
         <Route path="/marketing/*" element={<ProtectedRoute><AppLayout><MarketingRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/integrations/*" element={<ProtectedRoute><AppLayout><IntegrationRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/enterprise/*" element={<ProtectedRoute><AppLayout><EnterpriseRoutes /></AppLayout></ProtectedRoute>} />
+        <Route path="/extensions/*" element={<ProtectedRoute><AppLayout><ExtensionRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/reviews" element={<ProtectedRoute><AppLayout><AvisPositifUltraPro /></AppLayout></ProtectedRoute>} />
         
         {/* Admin Routes - Rôle admin requis */}
