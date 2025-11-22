@@ -75,11 +75,10 @@ export function ProductActionsBar({
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous</SelectItem>
-                <SelectItem value="active">Actifs</SelectItem>
-                <SelectItem value="inactive">Inactifs</SelectItem>
-              </SelectContent>
+                <SelectContent className="z-[100] bg-popover">
+                  <SelectItem value="active">Actif</SelectItem>
+                  <SelectItem value="inactive">Inactif</SelectItem>
+                </SelectContent>
             </Select>
           )}
           

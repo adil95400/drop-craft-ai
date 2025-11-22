@@ -83,42 +83,92 @@ export function ProductExportDialog({ open, onOpenChange }: ProductExportDialogP
 
         <div className="space-y-4">
           <div>
-            <Select value={exportFormat} onValueChange={setExportFormat}>
-              <SelectTrigger>
-                <SelectValue />
+            <Label htmlFor="export-format">Format d'export *</Label>
+            <Select value={exportFormat} onValueChange={setExportFormat} disabled={isExporting}>
+              <SelectTrigger id="export-format" className="bg-background">
+                <SelectValue placeholder="Sélectionner un format" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="csv">CSV</SelectItem>
-                <SelectItem value="excel">Excel</SelectItem>
-                <SelectItem value="json">JSON</SelectItem>
+              <SelectContent className="z-[100] bg-popover">
+                <SelectItem value="csv">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    <div>
+                      <div className="font-medium">CSV</div>
+                      <div className="text-xs text-muted-foreground">Compatible Excel, Google Sheets</div>
+                    </div>
+                  </div>
+                </SelectItem>
+                <SelectItem value="excel">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    <div>
+                      <div className="font-medium">Excel (.xlsx)</div>
+                      <div className="text-xs text-muted-foreground">Format Microsoft Excel</div>
+                    </div>
+                  </div>
+                </SelectItem>
+                <SelectItem value="json">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    <div>
+                      <div className="font-medium">JSON</div>
+                      <div className="text-xs text-muted-foreground">Format API/développeurs</div>
+                    </div>
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
+          <div className="rounded-lg bg-muted/50 p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Produits à exporter</span>
+              <span className="text-2xl font-bold text-primary">{products.length}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Tous vos produits seront exportés au format {exportFormat.toUpperCase()}
+            </p>
+          </div>
+
           {isExporting && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Export en cours...</span>
-                <span>{exportProgress}%</span>
+            <div className="space-y-3 p-4 rounded-lg border border-primary/20 bg-primary/5">
+              <div className="flex justify-between text-sm font-medium">
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Export en cours...
+                </span>
+                <span className="text-primary">{exportProgress}%</span>
               </div>
-              <Progress value={exportProgress} />
+              <Progress value={exportProgress} className="h-2" />
+              <p className="text-xs text-muted-foreground text-center">
+                Préparation de vos {products.length} produits...
+              </p>
             </div>
           )}
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isExporting}>
+          <div className="flex flex-col sm:flex-row justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isExporting}
+              className="sm:order-1"
+            >
               Annuler
             </Button>
-            <Button onClick={handleExport} disabled={isExporting}>
+            <Button
+              onClick={handleExport}
+              disabled={isExporting || products.length === 0}
+              className="sm:order-2"
+            >
               {isExporting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Export...
+                  Export en cours...
                 </>
               ) : (
                 <>
                   <Download className="h-4 w-4 mr-2" />
-                  Exporter
+                  Exporter ({products.length})
                 </>
               )}
             </Button>

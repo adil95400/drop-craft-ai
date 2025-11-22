@@ -144,7 +144,7 @@ export function ProductImportDialog({ open, onOpenChange }: ProductImportDialogP
         </DialogHeader>
 
         <Tabs value={selectedMethod} onValueChange={(value) => setSelectedMethod(value as ImportMethod)}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-4 bg-muted">
             <TabsTrigger value="csv" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Fichier CSV
@@ -174,15 +174,21 @@ export function ProductImportDialog({ open, onOpenChange }: ProductImportDialogP
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="csv-file">Fichier CSV</Label>
+                    <Label htmlFor="csv-file">Fichier CSV *</Label>
                     <Input 
                       id="csv-file"
                       ref={fileInputRef}
                       type="file" 
-                      accept=".csv" 
+                      accept=".csv"
+                      aria-required="true"
+                      aria-describedby="csv-help"
                       onChange={handleFileChange}
                       disabled={isImporting}
+                      className="bg-background file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
                     />
+                    <p id="csv-help" className="text-xs text-muted-foreground mt-1">
+                      Format requis: CSV avec colonnes name, price, description, category, stock_quantity
+                    </p>
                   </div>
                   {file && (
                     <div className="text-sm text-muted-foreground">
@@ -203,18 +209,22 @@ export function ProductImportDialog({ open, onOpenChange }: ProductImportDialogP
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="import-url">URL de l'API</Label>
+                    <Label htmlFor="import-url">URL de l'API *</Label>
                     <Input 
                       id="import-url"
                       type="url"
                       placeholder="https://api.example.com/products"
                       value={url}
+                      maxLength={2000}
+                      aria-required="true"
+                      aria-describedby="url-help"
                       onChange={(e) => setUrl(e.target.value)}
                       disabled={isImporting}
+                      className="bg-background"
                     />
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    L'API doit retourner du JSON avec un tableau de produits contenant les champs : name, price, description
+                    <p id="url-help" className="text-xs text-muted-foreground mt-1">
+                      L'API doit retourner du JSON avec un tableau de produits contenant: name, price, description
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -230,18 +240,27 @@ export function ProductImportDialog({ open, onOpenChange }: ProductImportDialogP
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="ai-prompt">Description des produits à générer</Label>
+                    <Label htmlFor="ai-prompt">Description des produits à générer *</Label>
                     <Textarea
                       id="ai-prompt"
                       placeholder="Ex: Des produits électroniques innovants pour la maison intelligente, avec des prix entre 50€ et 300€"
                       value={aiPrompt}
+                      maxLength={1000}
+                      aria-required="true"
+                      aria-describedby="ai-help"
                       onChange={(e) => setAiPrompt(e.target.value)}
                       disabled={isImporting}
                       rows={4}
+                      className="bg-background resize-none"
                     />
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Plus votre description est précise, meilleurs seront les produits générés
+                    <div className="flex justify-between items-center mt-1">
+                      <p id="ai-help" className="text-xs text-muted-foreground">
+                        Plus votre description est précise, meilleurs seront les produits générés
+                      </p>
+                      <span className="text-xs text-muted-foreground">
+                        {aiPrompt.length} / 1000
+                      </span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -258,37 +277,43 @@ export function ProductImportDialog({ open, onOpenChange }: ProductImportDialogP
                 <CardContent>
                   <div className="space-y-4">
                     {catalogProducts.length > 0 ? (
-                      <div className="grid gap-3 max-h-64 overflow-y-auto">
+                      <div className="grid gap-3 max-h-96 overflow-y-auto pr-2 rounded-lg border p-4 bg-muted/30">
                         {catalogProducts.slice(0, 20).map((product) => (
-                          <div key={product.id} className="flex items-center space-x-3 p-3 border rounded-lg">
+                          <div key={product.id} className="flex items-center space-x-3 p-3 border rounded-lg bg-background hover:bg-accent/50 transition-colors">
                             <Checkbox
                               checked={selectedCatalogProducts.includes(product.id)}
                               onCheckedChange={() => toggleCatalogProduct(product.id)}
                               disabled={isImporting}
+                              aria-label={`Sélectionner ${product.name}`}
                             />
                             <img 
                               src={product.image_url} 
                               alt={product.name}
-                              className="h-12 w-12 object-cover rounded"
+                              className="h-12 w-12 object-cover rounded border"
                               onError={(e) => {
                                 e.currentTarget.src = '/placeholder.svg'
                               }}
                             />
                             <div className="flex-1 min-w-0">
                               <div className="font-medium truncate">{product.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {product.price}€ • {product.category}
+                              <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                <span className="font-semibold text-primary">{product.price}€</span>
+                                <span>•</span>
+                                <span>{product.category}</span>
                               </div>
-                              {product.is_trending && <Badge variant="secondary">Tendance</Badge>}
-                              {product.is_bestseller && <Badge variant="default">Best-seller</Badge>}
+                              <div className="flex gap-1 mt-1">
+                                {product.is_trending && <Badge variant="secondary" className="text-xs">Tendance</Badge>}
+                                {product.is_bestseller && <Badge variant="default" className="text-xs">Best-seller</Badge>}
+                              </div>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin" />
-                        Chargement du catalogue...
+                      <div className="text-center py-12 text-muted-foreground border rounded-lg bg-muted/30">
+                        <Loader2 className="h-10 w-10 mx-auto mb-3 animate-spin text-primary" />
+                        <p className="font-medium">Chargement du catalogue...</p>
+                        <p className="text-sm mt-1">Veuillez patienter</p>
                       </div>
                     )}
                     
@@ -304,20 +329,26 @@ export function ProductImportDialog({ open, onOpenChange }: ProductImportDialogP
           </div>
 
           {isImporting && (
-            <Card className="mt-4">
+            <Card className="mt-4 border-primary/20 bg-primary/5">
               <CardContent className="pt-6">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Import en cours...</span>
-                    <span>{importProgress}%</span>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm font-medium">
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Import en cours...
+                    </span>
+                    <span className="text-primary">{importProgress}%</span>
                   </div>
-                  <Progress value={importProgress} />
+                  <Progress value={importProgress} className="h-2" />
+                  <p className="text-xs text-muted-foreground text-center">
+                    Veuillez patienter, cette opération peut prendre quelques instants
+                  </p>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          <div className="flex justify-end gap-2 mt-6">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 mt-6">
             <Button 
               variant="outline" 
               onClick={() => {
@@ -325,11 +356,13 @@ export function ProductImportDialog({ open, onOpenChange }: ProductImportDialogP
                 onOpenChange(false)
               }} 
               disabled={isImporting}
+              className="sm:order-1"
             >
               Annuler
             </Button>
             <Button 
-              onClick={handleImport} 
+              onClick={handleImport}
+              className="sm:order-2"
               disabled={
                 isImporting || 
                 (selectedMethod === 'csv' && !file) ||
@@ -347,6 +380,9 @@ export function ProductImportDialog({ open, onOpenChange }: ProductImportDialogP
                 <>
                   <Upload className="h-4 w-4 mr-2" />
                   Démarrer l'import
+                  {selectedMethod === 'catalog' && selectedCatalogProducts.length > 0 && (
+                    <span className="ml-2 text-xs">({selectedCatalogProducts.length})</span>
+                  )}
                 </>
               )}
             </Button>

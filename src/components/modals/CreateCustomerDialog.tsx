@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useRealCustomers } from "@/hooks/useRealCustomers";
 import { supabase } from "@/integrations/supabase/client";
-import { logError } from '@/utils/consoleCleanup';
+import { customerSchema, CustomerFormData } from "@/lib/validation/customerSchema";
+import { Loader2, User, Mail, Phone, MapPin, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useState } from "react";
 
 interface CreateCustomerDialogProps {
   open: boolean;
@@ -18,183 +22,298 @@ interface CreateCustomerDialogProps {
 export const CreateCustomerDialog = ({ open, onOpenChange }: CreateCustomerDialogProps) => {
   const { toast } = useToast();
   const { addCustomer, isAdding } = useRealCustomers();
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    country: "",
-    segment: "regular"
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const form = useForm<CustomerFormData>({
+    resolver: zodResolver(customerSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      address: "",
+      city: "",
+      country: "",
+      segment: "regular"
+    }
   });
 
-  const handleCreate = async () => {
-    if (!formData.firstName || !formData.lastName || !formData.email) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez remplir tous les champs obligatoires",
-        variant: "destructive"
-      });
-      return;
-    }
-
+  const handleCreate = async (data: CustomerFormData) => {
     try {
+      setSubmitError(null);
       const { data: { user } } = await supabase.auth.getUser();
+      
       if (!user) {
-        toast({
-          title: "Erreur",
-          description: "Vous devez être connecté pour créer un client",
-          variant: "destructive"
-        });
+        setSubmitError("Vous devez être connecté pour créer un client");
         return;
       }
 
-      addCustomer({
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        phone: formData.phone || null,
+      await addCustomer({
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        phone: data.phone || null,
         user_id: user.id,
         status: 'active',
         total_spent: 0,
         total_orders: 0,
         address: {
-          street: formData.address,
-          city: formData.city,
-          country: formData.country
+          street: data.address,
+          city: data.city,
+          country: data.country
         }
       } as any);
 
+      form.reset();
       onOpenChange(false);
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        address: "",
-        city: "",
-        country: "",
-        segment: "regular"
-      });
     } catch (error) {
-      logError(error as Error, 'Failed to create customer');
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la création du client",
-        variant: "destructive"
-      });
+      setSubmitError(
+        error instanceof Error ? error.message : "Une erreur est survenue lors de la création du client"
+      );
+    }
+  };
+
+  const handleClose = () => {
+    if (!isAdding) {
+      form.reset();
+      setSubmitError(null);
+      onOpenChange(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Ajouter un Nouveau Client</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <User className="h-5 w-5 text-primary" />
+            Ajouter un Nouveau Client
+          </DialogTitle>
           <DialogDescription>
-            Créez un nouveau profil client
+            Créez un nouveau profil client avec ses informations de contact
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">Prénom</Label>
-              <Input
-                id="firstName"
-                value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                placeholder="Prénom"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Nom</Label>
-              <Input
-                id="lastName"
-                value={formData.lastName}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                placeholder="Nom de famille"
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="email@example.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Téléphone</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="+33 1 23 45 67 89"
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="address">Adresse</Label>
-            <Textarea
-              id="address"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              placeholder="Adresse complète"
-              rows={2}
-            />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="city">Ville</Label>
-              <Input
-                id="city"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                placeholder="Ville"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="country">Pays</Label>
-              <Input
-                id="country"
-                value={formData.country}
-                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                placeholder="Pays"
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="segment">Segment client</Label>
-            <Select value={formData.segment} onValueChange={(value) => setFormData({ ...formData, segment: value })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="regular">Regular</SelectItem>
-                <SelectItem value="premium">Premium</SelectItem>
-                <SelectItem value="vip">VIP</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Annuler
-          </Button>
-          <Button onClick={handleCreate} disabled={isAdding}>
-            {isAdding ? "Création..." : "Créer le client"}
-          </Button>
-        </DialogFooter>
+        {submitError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{submitError}</AlertDescription>
+          </Alert>
+        )}
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              {/* Prénom */}
+              <FormField
+                control={form.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Prénom *</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Jean"
+                        maxLength={50}
+                        disabled={isAdding}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Nom */}
+              <FormField
+                control={form.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nom *</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Dupont"
+                        maxLength={50}
+                        disabled={isAdding}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              {/* Email */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      Email *
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="email"
+                        placeholder="jean.dupont@example.com"
+                        maxLength={255}
+                        disabled={isAdding}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Téléphone */}
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      Téléphone
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="tel"
+                        placeholder="+33 1 23 45 67 89"
+                        maxLength={20}
+                        disabled={isAdding}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            {/* Adresse */}
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Adresse
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="123 Rue de la Paix"
+                      maxLength={200}
+                      rows={2}
+                      disabled={isAdding}
+                      className="bg-background resize-none"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="grid grid-cols-2 gap-4">
+              {/* Ville */}
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ville</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Paris"
+                        maxLength={100}
+                        disabled={isAdding}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Pays */}
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pays</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="France"
+                        maxLength={100}
+                        disabled={isAdding}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            {/* Segment */}
+            <FormField
+              control={form.control}
+              name="segment"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Segment client</FormLabel>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={isAdding}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="Sélectionner le segment" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="regular">Regular</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                      <SelectItem value="vip">VIP</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Définit le niveau de service et les avantages du client
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter className="gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                disabled={isAdding}
+              >
+                Annuler
+              </Button>
+              <Button type="submit" disabled={isAdding || !form.formState.isValid}>
+                {isAdding && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Créer le client
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
