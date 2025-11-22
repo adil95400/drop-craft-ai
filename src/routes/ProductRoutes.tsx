@@ -16,7 +16,7 @@ const QuickImport = lazy(() => import('@/pages/import/QuickImport'));
 const AdvancedImport = lazy(() => import('@/pages/import/AdvancedImport'));
 const ImportManagement = lazy(() => import('@/pages/import/ImportManagement'));
 const ImportedProductsList = lazy(() => import('@/pages/import/manage/ImportedProductsList'));
-const ImportHistoryPage = lazy(() => import('@/pages/import/manage/ImportHistoryPage'));
+const ImportHistoryPage = lazy(() => import('@/pages/import/history/SimpleHistoryPage'));
 
 // Suppliers
 const SuppliersHub = lazy(() => import('@/pages/suppliers/SuppliersHub'));
