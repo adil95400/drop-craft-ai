@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { supplierSchema, SupplierFormData } from "@/lib/validation/supplierSchema";
+import { Building2, Mail, Phone, MapPin, Globe, Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Building2, Mail, Phone, MapPin } from "lucide-react";
 
 interface CreateSupplierDialogProps {
   open: boolean;
@@ -15,36 +19,12 @@ interface CreateSupplierDialogProps {
 }
 
 export function CreateSupplierDialog({ open, onOpenChange }: CreateSupplierDialogProps) {
-  const [formData, setFormData] = useState({
-    companyName: "",
-    contactName: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    postalCode: "",
-    country: "",
-    website: "",
-    taxId: "",
-    category: "",
-    paymentTerms: "",
-    deliveryTime: "",
-    minimumOrder: "",
-    notes: "",
-    isActive: true,
-    isPreferred: false
-  });
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.companyName || !formData.contactName || !formData.email) {
-      toast.error("Nom d'entreprise, contact et email requis");
-      return;
-    }
-    
-    toast.success("Fournisseur créé avec succès");
-    onOpenChange(false);
-    setFormData({
+  const form = useForm<SupplierFormData>({
+    resolver: zodResolver(supplierSchema),
+    defaultValues: {
       companyName: "",
       contactName: "",
       email: "",
@@ -55,237 +35,493 @@ export function CreateSupplierDialog({ open, onOpenChange }: CreateSupplierDialo
       country: "",
       website: "",
       taxId: "",
-      category: "",
-      paymentTerms: "",
-      deliveryTime: "",
-      minimumOrder: "",
+      category: undefined,
+      paymentTerms: undefined,
+      deliveryTime: undefined,
+      minimumOrder: undefined,
       notes: "",
       isActive: true,
       isPreferred: false
-    });
+    }
+  });
+
+  const handleCreate = async (data: SupplierFormData) => {
+    try {
+      setSubmitError(null);
+      setIsSubmitting(true);
+      
+      // TODO: Implémenter la création réelle du fournisseur via hook
+      console.log('Creating supplier:', data);
+      
+      toast.success("Fournisseur créé avec succès");
+      form.reset();
+      onOpenChange(false);
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error ? error.message : "Une erreur est survenue lors de la création du fournisseur"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (!isSubmitting) {
+      form.reset();
+      setSubmitError(null);
+      onOpenChange(false);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
+            <Building2 className="h-5 w-5 text-primary" />
             Nouveau Fournisseur
           </DialogTitle>
         </DialogHeader>
+
+        {submitError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{submitError}</AlertDescription>
+          </Alert>
+        )}
         
-        <form onSubmit={handleCreate} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="companyName">Nom de l'entreprise *</Label>
-              <Input
-                id="companyName"
-                value={formData.companyName}
-                onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
-                required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-4">
+            {/* Informations de base */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="companyName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nom de l'entreprise *</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Ex: TechSupply SA"
+                        maxLength={200}
+                        disabled={isSubmitting}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="contactName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nom du contact *</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Ex: Marie Martin"
+                        maxLength={100}
+                        disabled={isSubmitting}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-            
-            <div>
-              <Label htmlFor="contactName">Nom du contact *</Label>
-              <Input
-                id="contactName"
-                value={formData.contactName}
-                onChange={(e) => setFormData(prev => ({ ...prev, contactName: e.target.value }))}
-                required
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="email" className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                Email *
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                required
+            {/* Contact */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      Email *
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="email"
+                        placeholder="contact@techsupply.com"
+                        maxLength={255}
+                        disabled={isSubmitting}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      Téléphone
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="tel"
+                        placeholder="+33 1 23 45 67 89"
+                        maxLength={20}
+                        disabled={isSubmitting}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-            
-            <div>
-              <Label htmlFor="phone" className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                Téléphone
-              </Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-              />
-            </div>
-          </div>
 
-          <div>
-            <Label htmlFor="address" className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Adresse
-            </Label>
-            <Input
-              id="address"
-              value={formData.address}
-              onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+            {/* Adresse */}
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Adresse
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="123 Avenue des Champs-Élysées"
+                      maxLength={300}
+                      disabled={isSubmitting}
+                      className="bg-background"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="city">Ville</Label>
-              <Input
-                id="city"
-                value={formData.city}
-                onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ville</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Paris"
+                        maxLength={100}
+                        disabled={isSubmitting}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="postalCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Code postal</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="75008"
+                        maxLength={20}
+                        disabled={isSubmitting}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pays</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="France"
+                        maxLength={100}
+                        disabled={isSubmitting}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-            
-            <div>
-              <Label htmlFor="postalCode">Code postal</Label>
-              <Input
-                id="postalCode"
-                value={formData.postalCode}
-                onChange={(e) => setFormData(prev => ({ ...prev, postalCode: e.target.value }))}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="country">Pays</Label>
-              <Input
-                id="country"
-                value={formData.country}
-                onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="website">Site web</Label>
-              <Input
-                id="website"
-                value={formData.website}
-                onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                placeholder="https://example.com"
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="website"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Globe className="h-4 w-4" />
+                      Site web
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="url"
+                        placeholder="https://techsupply.com"
+                        maxLength={500}
+                        disabled={isSubmitting}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="taxId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Numéro de TVA</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="FR12345678901"
+                        maxLength={50}
+                        disabled={isSubmitting}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-            
-            <div>
-              <Label htmlFor="taxId">Numéro de TVA</Label>
-              <Input
-                id="taxId"
-                value={formData.taxId}
-                onChange={(e) => setFormData(prev => ({ ...prev, taxId: e.target.value }))}
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="category">Catégorie</Label>
-              <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner la catégorie" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="electronics">Électronique</SelectItem>
-                  <SelectItem value="clothing">Vêtements</SelectItem>
-                  <SelectItem value="food">Alimentaire</SelectItem>
-                  <SelectItem value="beauty">Beauté</SelectItem>
-                  <SelectItem value="home">Maison</SelectItem>
-                  <SelectItem value="services">Services</SelectItem>
-                  <SelectItem value="other">Autre</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label htmlFor="paymentTerms">Conditions de paiement</Label>
-              <Select value={formData.paymentTerms} onValueChange={(value) => setFormData(prev => ({ ...prev, paymentTerms: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner les conditions" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="immediate">Immédiat</SelectItem>
-                  <SelectItem value="net15">Net 15 jours</SelectItem>
-                  <SelectItem value="net30">Net 30 jours</SelectItem>
-                  <SelectItem value="net60">Net 60 jours</SelectItem>
-                  <SelectItem value="prepayment">Prépaiement</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="deliveryTime">Délai de livraison (jours)</Label>
-              <Input
-                id="deliveryTime"
-                type="number"
-                value={formData.deliveryTime}
-                onChange={(e) => setFormData(prev => ({ ...prev, deliveryTime: e.target.value }))}
-                placeholder="7"
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Catégorie</FormLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isSubmitting}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-background">
+                          <SelectValue placeholder="Sélectionner la catégorie" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="electronics">Électronique</SelectItem>
+                        <SelectItem value="clothing">Vêtements</SelectItem>
+                        <SelectItem value="food">Alimentaire</SelectItem>
+                        <SelectItem value="beauty">Beauté</SelectItem>
+                        <SelectItem value="home">Maison</SelectItem>
+                        <SelectItem value="services">Services</SelectItem>
+                        <SelectItem value="other">Autre</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="paymentTerms"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Conditions de paiement</FormLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isSubmitting}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-background">
+                          <SelectValue placeholder="Sélectionner les conditions" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="immediate">Immédiat</SelectItem>
+                        <SelectItem value="net15">Net 15 jours</SelectItem>
+                        <SelectItem value="net30">Net 30 jours</SelectItem>
+                        <SelectItem value="net60">Net 60 jours</SelectItem>
+                        <SelectItem value="prepayment">Prépaiement</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-            
-            <div>
-              <Label htmlFor="minimumOrder">Commande minimum (€)</Label>
-              <Input
-                id="minimumOrder"
-                type="number"
-                value={formData.minimumOrder}
-                onChange={(e) => setFormData(prev => ({ ...prev, minimumOrder: e.target.value }))}
-                placeholder="100"
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="deliveryTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Délai de livraison (jours)</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="number"
+                        min="0"
+                        max="365"
+                        placeholder="7"
+                        disabled={isSubmitting}
+                        className="bg-background"
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="minimumOrder"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Commande minimum (€)</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="number"
+                        min="0"
+                        max="999999.99"
+                        step="0.01"
+                        placeholder="100.00"
+                        disabled={isSubmitting}
+                        className="bg-background"
+                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-          </div>
 
-          <div>
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              rows={3}
-              placeholder="Notes supplémentaires sur le fournisseur..."
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Notes supplémentaires sur le fournisseur..."
+                      maxLength={2000}
+                      rows={3}
+                      disabled={isSubmitting}
+                      className="bg-background resize-none"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {field.value?.length || 0} / 2000 caractères
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="isActive"
-                checked={formData.isActive}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isSubmitting}
+                      />
+                    </FormControl>
+                    <div>
+                      <FormLabel className="font-medium">Fournisseur actif</FormLabel>
+                      <FormDescription className="text-xs">
+                        Visible dans la liste des fournisseurs
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
               />
-              <Label htmlFor="isActive">Fournisseur actif</Label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="isPreferred"
-                checked={formData.isPreferred}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPreferred: checked }))}
+              
+              <FormField
+                control={form.control}
+                name="isPreferred"
+                render={({ field }) => (
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isSubmitting}
+                      />
+                    </FormControl>
+                    <div>
+                      <FormLabel className="font-medium">Fournisseur préféré</FormLabel>
+                      <FormDescription className="text-xs">
+                        Priorité dans les commandes
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
               />
-              <Label htmlFor="isPreferred">Fournisseur préféré</Label>
             </div>
-          </div>
 
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Annuler
-            </Button>
-            <Button type="submit">Créer le fournisseur</Button>
-          </div>
-        </form>
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                disabled={isSubmitting}
+                className="sm:order-1"
+              >
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !form.formState.isValid}
+                className="sm:order-2"
+              >
+                {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Créer le fournisseur
+              </Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
