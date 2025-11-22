@@ -13301,6 +13301,14 @@ export type Database = {
           is_secure: boolean
         }[]
       }
+      check_security_rate_limit: {
+        Args: {
+          p_event_type: string
+          p_max_events?: number
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
       check_user_quota: {
         Args: { increment_by?: number; quota_key_param: string }
         Returns: boolean
@@ -13789,7 +13797,16 @@ export type Database = {
         Args: { access_type: string; record_id?: string; table_name: string }
         Returns: undefined
       }
-      log_sensitive_data_access: { Args: never; Returns: undefined }
+      log_sensitive_data_access:
+        | { Args: never; Returns: undefined }
+        | {
+            Args: {
+              p_action: string
+              p_record_id: string
+              p_table_name: string
+            }
+            Returns: undefined
+          }
       mask_customer_email: { Args: { email: string }; Returns: string }
       mask_customer_phone: { Args: { phone: string }; Returns: string }
       mask_email: { Args: { email: string }; Returns: string }
