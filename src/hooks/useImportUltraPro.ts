@@ -83,32 +83,43 @@ export const useImportUltraPro = () => {
   } = useQuery({
     queryKey: ['imported-products'],
     queryFn: async () => {
-      console.log('[useImportUltraPro] Fetching imported products...')
+      console.log('🔍 [useImportUltraPro] Fetching imported products...')
       
       // Check authentication
       const { data: { user }, error: authError } = await supabase.auth.getUser()
-      console.log('[useImportUltraPro] Current user:', user?.id, authError)
+      console.log('👤 [useImportUltraPro] Current user:', { 
+        id: user?.id,
+        email: user?.email,
+        authError: authError?.message
+      })
       
       const { data, error } = await supabase
         .from('imported_products')
         .select('*')
         .order('created_at', { ascending: false })
 
-      console.log('[useImportUltraPro] Query result:', { 
+      console.log('📊 [useImportUltraPro] Query result:', { 
         count: data?.length, 
         error: error?.message,
-        userId: user?.id
+        errorDetails: error,
+        userId: user?.id,
+        firstProduct: data?.[0]
       })
 
       if (error) {
-        console.error('[useImportUltraPro] Error fetching products:', error)
+        console.error('❌ [useImportUltraPro] Error fetching products:', error)
         throw error
+      }
+
+      if (!data || data.length === 0) {
+        console.warn('⚠️ [useImportUltraPro] No products found!')
       }
       
       return data as ImportedProduct[]
     },
     refetchOnWindowFocus: false,
-    refetchOnMount: true
+    refetchOnMount: true,
+    staleTime: 0 // Force refetch
   })
 
   // Fetch AI optimization jobs
