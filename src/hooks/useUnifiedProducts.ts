@@ -3,30 +3,110 @@ import { useToast } from '@/hooks/use-toast'
 import { ProductsUnifiedService, UnifiedProduct } from '@/services/ProductsUnifiedService'
 import { ProductHistoryService } from '@/services/ProductHistoryService'
 import { supabase } from '@/integrations/supabase/client'
+import { useMemo } from 'react'
 
 export type { UnifiedProduct }
 
-export function useUnifiedProducts(filters?: {
+export interface ProductFilters {
   search?: string
   category?: string
   status?: 'active' | 'inactive'
   minPrice?: number
   maxPrice?: number
   lowStock?: boolean
-}) {
+  source?: 'products' | 'imported' | 'premium' | 'catalog'
+}
+
+export function useUnifiedProducts(filters?: ProductFilters) {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  const { data: products = [], isLoading, error } = useQuery({
+  // Requête principale avec gestion d'erreur améliorée
+  const { data: products = [], isLoading, error, refetch } = useQuery({
     queryKey: ['unified-products', filters],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
-      return await ProductsUnifiedService.getAllProducts(user.id, filters)
+      const allProducts = await ProductsUnifiedService.getAllProducts(user.id, filters)
+      
+      // Filtrage côté client pour les filtres avancés
+      let filtered = allProducts
+      
+      if (filters?.minPrice !== undefined) {
+        filtered = filtered.filter(p => p.price >= filters.minPrice!)
+      }
+      if (filters?.maxPrice !== undefined) {
+        filtered = filtered.filter(p => p.price <= filters.maxPrice!)
+      }
+      if (filters?.source) {
+        filtered = filtered.filter(p => p.source === filters.source)
+      }
+      
+      return filtered
     },
-    staleTime: 2 * 60 * 1000 // Cache 2 minutes
+    staleTime: 60 * 1000, // Cache 1 minute pour données plus fraîches
+    gcTime: 5 * 60 * 1000, // Garder en cache 5 minutes
+    refetchOnWindowFocus: false,
+    retry: 2
   })
+
+  // Statistiques calculées en temps réel
+  const stats = useMemo(() => {
+    const active = products.filter(p => p.status === 'active')
+    const inactive = products.filter(p => p.status === 'inactive')
+    const lowStock = products.filter(p => (p.stock_quantity || 0) < 10 && (p.stock_quantity || 0) > 0)
+    const outOfStock = products.filter(p => (p.stock_quantity || 0) === 0)
+    
+    const totalValue = products.reduce((sum, p) => sum + (p.price * (p.stock_quantity || 0)), 0)
+    const totalCost = products.reduce((sum, p) => sum + ((p.cost_price || 0) * (p.stock_quantity || 0)), 0)
+    const totalProfit = totalValue - totalCost
+    
+    const avgPrice = products.length > 0 
+      ? products.reduce((sum, p) => sum + p.price, 0) / products.length 
+      : 0
+    
+    const avgMargin = products.filter(p => p.profit_margin).length > 0
+      ? products.filter(p => p.profit_margin).reduce((sum, p) => sum + (p.profit_margin || 0), 0) / products.filter(p => p.profit_margin).length
+      : 0
+
+    // Statistiques par source
+    const bySource = {
+      products: products.filter(p => p.source === 'products').length,
+      imported: products.filter(p => p.source === 'imported').length,
+      premium: products.filter(p => p.source === 'premium').length,
+      catalog: products.filter(p => p.source === 'catalog').length
+    }
+
+    // Top catégories
+    const categoryCount = products.reduce((acc, p) => {
+      if (p.category) {
+        acc[p.category] = (acc[p.category] || 0) + 1
+      }
+      return acc
+    }, {} as Record<string, number>)
+    
+    const topCategories = Object.entries(categoryCount)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 5)
+      .map(([name, count]) => ({ name, count }))
+
+    return {
+      total: products.length,
+      active: active.length,
+      inactive: inactive.length,
+      lowStock: lowStock.length,
+      outOfStock: outOfStock.length,
+      totalValue,
+      totalCost,
+      totalProfit,
+      avgPrice,
+      avgMargin,
+      bySource,
+      topCategories,
+      profitMargin: totalValue > 0 ? (totalProfit / totalValue) * 100 : 0
+    }
+  }, [products])
 
   const updateProduct = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<UnifiedProduct> }) => {
@@ -131,25 +211,12 @@ export function useUnifiedProducts(filters?: {
     }
   })
 
-  const stats = {
-    total: products.length,
-    active: products.filter(p => p.status === 'active').length,
-    inactive: products.filter(p => p.status === 'inactive').length,
-    lowStock: products.filter(p => (p.stock_quantity || 0) < 10).length,
-    totalValue: products.reduce((sum, p) => sum + (p.price * (p.stock_quantity || 0)), 0),
-    bySource: {
-      products: products.filter(p => p.source === 'products').length,
-      imported: products.filter(p => p.source === 'imported').length,
-      premium: products.filter(p => p.source === 'premium').length,
-      catalog: products.filter(p => p.source === 'catalog').length
-    }
-  }
-
   return {
     products,
     stats,
     isLoading,
     error,
+    refetch,
     updateProduct: updateProduct.mutate,
     deleteProduct: deleteProduct.mutate,
     consolidateProducts: consolidateProducts.mutate,
@@ -157,4 +224,68 @@ export function useUnifiedProducts(filters?: {
     isDeleting: deleteProduct.isPending,
     isConsolidating: consolidateProducts.isPending
   }
+}
+
+// Hook pour un seul produit avec cache optimisé
+export function useProduct(productId: string) {
+  const { toast } = useToast()
+  
+  return useQuery({
+    queryKey: ['product', productId],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      
+      // Essayer de le trouver dans plusieurs tables
+      const { data: product } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', productId)
+        .eq('user_id', user.id)
+        .single()
+      
+      if (product) {
+        return {
+          ...product,
+          status: product.status as 'active' | 'inactive',
+          source: 'products' as const,
+          images: product.image_url ? [product.image_url] : []
+        } as UnifiedProduct
+      }
+      
+      // Sinon chercher dans imported_products
+      const { data: imported } = await supabase
+        .from('imported_products')
+        .select('*')
+        .eq('id', productId)
+        .eq('user_id', user.id)
+        .single()
+      
+      if (imported) {
+        return {
+          id: imported.id,
+          name: imported.name || 'Produit',
+          description: imported.description,
+          price: imported.price || 0,
+          cost_price: imported.cost_price,
+          status: (imported.status === 'published' ? 'active' : 'inactive') as 'active' | 'inactive',
+          stock_quantity: imported.stock_quantity,
+          sku: imported.sku,
+          category: imported.category,
+          image_url: Array.isArray(imported.image_urls) && imported.image_urls.length > 0 ? imported.image_urls[0] : undefined,
+          images: Array.isArray(imported.image_urls) ? imported.image_urls : [],
+          profit_margin: imported.cost_price ? ((imported.price - imported.cost_price) / imported.price * 100) : undefined,
+          user_id: imported.user_id,
+          source: 'imported' as const,
+          created_at: imported.created_at,
+          updated_at: imported.updated_at
+        } as UnifiedProduct
+      }
+      
+      throw new Error('Produit introuvable')
+    },
+    enabled: !!productId,
+    staleTime: 30 * 1000,
+    retry: 1
+  })
 }

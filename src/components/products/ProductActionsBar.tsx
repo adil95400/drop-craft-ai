@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Search, Filter, SortAsc, Grid, List, Download, Upload, Plus } from 'lucide-react'
+import { Search, Filter, SortAsc, Grid, List, Download, Upload, Plus, X } from 'lucide-react'
 
 interface ProductActionsBarProps {
   searchTerm: string
@@ -14,6 +14,12 @@ interface ProductActionsBarProps {
   onCreateNew: () => void
   onImport: () => void
   onExport: () => void
+  categories?: string[]
+  onCategoryChange?: (category: string) => void
+  onStatusChange?: (status: string) => void
+  onSortChange?: (sort: string) => void
+  hasActiveFilters?: boolean
+  onResetFilters?: () => void
 }
 
 export function ProductActionsBar({
@@ -25,7 +31,13 @@ export function ProductActionsBar({
   onViewModeChange,
   onCreateNew,
   onImport,
-  onExport
+  onExport,
+  categories = [],
+  onCategoryChange,
+  onStatusChange,
+  onSortChange,
+  hasActiveFilters = false,
+  onResetFilters
 }: ProductActionsBarProps) {
   return (
     <div className="space-y-4 animate-in slide-in-from-top duration-300">
@@ -42,18 +54,34 @@ export function ProductActionsBar({
             />
           </div>
           
-          <Select defaultValue="all">
-            <SelectTrigger className="w-[140px] bg-background/50 backdrop-blur border-border/50">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Filtrer" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous</SelectItem>
-              <SelectItem value="active">Actifs</SelectItem>
-              <SelectItem value="inactive">Inactifs</SelectItem>
-              <SelectItem value="low-stock">Stock faible</SelectItem>
-            </SelectContent>
-          </Select>
+          {onCategoryChange && (
+            <Select defaultValue="all" onValueChange={onCategoryChange}>
+              <SelectTrigger className="w-[160px] bg-background/50 backdrop-blur border-border/50">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Catégorie" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes catégories</SelectItem>
+                {categories.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          
+          {onStatusChange && (
+            <Select defaultValue="all" onValueChange={onStatusChange}>
+              <SelectTrigger className="w-[140px] bg-background/50 backdrop-blur border-border/50">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous</SelectItem>
+                <SelectItem value="active">Actifs</SelectItem>
+                <SelectItem value="inactive">Inactifs</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
           
           <Select defaultValue="created_at">
             <SelectTrigger className="w-[140px] bg-background/50 backdrop-blur border-border/50">
