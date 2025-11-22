@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { BarChart3, Package, Upload, FileText, TrendingUp } from 'lucide-react'
 import { ImportDashboard } from '@/components/import/ImportDashboard'
 import { AdvancedImportResults } from '@/components/import/AdvancedImportResults'
-import { ImportUltraProInterface } from '@/components/import/ImportUltraProInterface'
+import { ImportCSVWithValidation } from '@/components/import/ImportCSVWithValidation'
 import { useNavigate } from 'react-router-dom'
 
 export default function ImportManagement() {
@@ -121,15 +121,15 @@ export default function ImportManagement() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Upload className="w-5 h-5" />
-                Nouvel Import de Produits
+                <Upload className="w-5 w-5" />
+                Nouvel Import CSV avec Validation
               </CardTitle>
               <CardDescription>
-                Interface complète pour importer vos produits
+                Importez vos produits depuis un fichier CSV avec validation automatique
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ImportUltraProInterface />
+              <ImportCSVWithValidation />
             </CardContent>
           </Card>
         </TabsContent>
