@@ -1,19 +1,22 @@
 import { useMemo } from 'react';
 import { useUnifiedProducts } from '@/hooks/useUnifiedProducts';
+import { useProductFilters } from '@/hooks/useProductFilters';
 import { ProductsPageWrapper } from '@/components/products/ProductsPageWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Loader2, TrendingUp, AlertCircle, Archive } from 'lucide-react';
+import { Package, Loader2, TrendingUp, AlertCircle, Archive, DollarSign } from 'lucide-react';
 import { useModals } from '@/hooks/useModals';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 /**
  * Page principale de gestion des produits
  * Utilise le hook unifié et le wrapper pour toutes les actions
  */
 export default function ProductsMainPage() {
-  const { products, isLoading } = useUnifiedProducts();
+  const { products, stats, isLoading, error, refetch } = useUnifiedProducts();
+  const { filters, filteredProducts, categories, updateFilter, resetFilters, hasActiveFilters } = useProductFilters(products);
   const { openModal } = useModals();
   const { toast } = useToast();
   const { invalidateQueries } = useQueryClient();
@@ -71,14 +74,10 @@ export default function ProductsMainPage() {
     );
   }
 
-  // Statistiques mémorisées pour performance
-  const stats = useMemo(() => ({
-    total: products.length,
-    active: products.filter(p => p.status === 'active').length,
-    lowStock: products.filter(p => (p.stock_quantity || 0) < 10).length,
-    inactive: products.filter(p => p.status === 'inactive').length,
-    totalValue: products.reduce((sum, p) => sum + (p.price * (p.stock_quantity || 0)), 0)
-  }), [products]);
+  const handleRefresh = () => {
+    refetch();
+    invalidateQueries({ queryKey: ['unified-products'] });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -95,8 +94,8 @@ export default function ProductsMainPage() {
           </div>
         </div>
 
-        {/* Statistiques rapides optimisées */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Statistiques rapides basées sur vraies données */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card className="hover:shadow-lg transition-all duration-300 border-border/50 bg-card/50 backdrop-blur">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -109,7 +108,7 @@ export default function ProductsMainPage() {
             <CardContent>
               <div className="text-3xl font-bold text-foreground">{stats.total}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                Valeur totale: {stats.totalValue.toFixed(2)} €
+                {Object.values(stats.bySource).reduce((a, b) => a + b, 0)} au total
               </p>
             </CardContent>
           </Card>
@@ -169,7 +168,55 @@ export default function ProductsMainPage() {
               </p>
             </CardContent>
           </Card>
+
+          <Card className="hover:shadow-lg transition-all duration-300 border-border/50 bg-card/50 backdrop-blur">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Marge Moyenne
+                </CardTitle>
+                <DollarSign className="h-5 w-5 text-blue-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-blue-600">
+                {stats.avgMargin.toFixed(1)}%
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Profit: {stats.totalProfit.toFixed(2)} €
+              </p>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Actions rapides */}
+        {stats.lowStock > 0 && (
+          <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20 dark:border-orange-900">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="h-5 w-5 text-orange-600" />
+                  <div>
+                    <p className="font-medium text-foreground">
+                      Attention: {stats.lowStock} produit(s) en stock faible
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Pensez à réapprovisionner pour éviter les ruptures
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => updateFilter('lowStock', true)}
+                  className="bg-background"
+                >
+                  Voir les produits
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Table/Grid produits optimisée */}
         <Card className="border-border/50 bg-card/50 backdrop-blur shadow-lg">
@@ -183,11 +230,17 @@ export default function ProductsMainPage() {
           </CardHeader>
           <CardContent>
             <ProductsPageWrapper
-              products={products}
+              products={filteredProducts}
+              allProducts={products}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onView={handleView}
-              onRefresh={() => invalidateQueries({ queryKey: ['unified-products'] })}
+              onRefresh={handleRefresh}
+              filters={filters}
+              categories={categories}
+              onFilterChange={updateFilter}
+              onResetFilters={resetFilters}
+              hasActiveFilters={hasActiveFilters}
             />
           </CardContent>
         </Card>
