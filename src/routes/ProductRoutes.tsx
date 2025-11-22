@@ -5,7 +5,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
 // Products
-const ModernProductsPage = lazy(() => import('@/pages/Products'));
+const ModernProductsPage = lazy(() => import('@/pages/products/ProductsMainPage'));
 const ProductDetailsPage = lazy(() => import('@/pages/ProductDetailsPage'));
 const ProductPublishing = lazy(() => import('@/pages/ProductPublishing'));
 const Catalogue = lazy(() => import('@/pages/CatalogueReal'));
