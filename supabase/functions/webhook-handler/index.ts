@@ -40,35 +40,56 @@ serve(async (req) => {
       eventType = shopifyTopic
       console.log(`📨 Shopify webhook: ${shopifyTopic} from ${shopifyShopDomain}`)
       
-      // Verify Shopify webhook signature using global secret
-      if (shopifyHmac && shopifyShopDomain) {
-        const webhookSecret = Deno.env.get('SHOPIFY_WEBHOOK_SECRET')
-        if (!webhookSecret) {
-          console.error('❌ SHOPIFY_WEBHOOK_SECRET not configured')
-          return new Response(
-            JSON.stringify({ success: false, error: 'Webhook verification not configured' }),
-            {
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-              status: 500,
-            }
-          )
-        }
-
-        const isValid = await verifyShopifyWebhook(webhookSecret, body, shopifyHmac)
-        if (!isValid) {
-          console.error('❌ Invalid Shopify webhook signature')
-          return new Response(
-            JSON.stringify({ success: false, error: 'Invalid signature' }),
-            {
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-              status: 401,
-            }
-          )
-        }
-        console.log('✅ Shopify webhook signature verified')
-      } else {
-        console.warn('⚠️ Shopify webhook received without signature headers')
+      // SECURITY: Require signature verification for all Shopify webhooks
+      if (!shopifyHmac || !shopifyShopDomain) {
+        console.error('❌ Shopify webhook missing required signature headers')
+        await supabase.from('security_events').insert({
+          user_id: null,
+          event_type: 'webhook_signature_missing',
+          severity: 'critical',
+          description: 'Shopify webhook received without signature',
+          metadata: { topic: shopifyTopic, shop: shopifyShopDomain }
+        })
+        return new Response(
+          JSON.stringify({ success: false, error: 'Signature required' }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 401,
+          }
+        )
       }
+
+      const webhookSecret = Deno.env.get('SHOPIFY_WEBHOOK_SECRET')
+      if (!webhookSecret) {
+        console.error('❌ SHOPIFY_WEBHOOK_SECRET not configured')
+        return new Response(
+          JSON.stringify({ success: false, error: 'Webhook verification not configured' }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500,
+          }
+        )
+      }
+
+      const isValid = await verifyShopifyWebhook(webhookSecret, body, shopifyHmac)
+      if (!isValid) {
+        console.error('❌ Invalid Shopify webhook signature')
+        await supabase.from('security_events').insert({
+          user_id: null,
+          event_type: 'webhook_signature_invalid',
+          severity: 'critical',
+          description: 'Shopify webhook signature verification failed',
+          metadata: { topic: shopifyTopic, shop: shopifyShopDomain }
+        })
+        return new Response(
+          JSON.stringify({ success: false, error: 'Invalid signature' }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 401,
+          }
+        )
+      }
+      console.log('✅ Shopify webhook signature verified')
     } else if (webhookSignature) {
       source = 'internal'
       eventType = parsedBody.event || 'webhook.received'
