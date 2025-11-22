@@ -58,17 +58,28 @@ export function ImportCSVWithValidation() {
         header: true,
         skipEmptyLines: true,
         transformHeader: (header) => {
-          // Normalize header names
-          const normalized = header.toLowerCase().trim()
+          // Normalize header: lowercase, trim, replace spaces with underscores, remove special chars
+          const normalized = header
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '_')
+            .replace(/[()]/g, '')
+          
+          console.log('Transforming CSV header:', header, '→', normalized)
           
           // Try to find matching field in PRODUCT_COLUMN_MAPPINGS
           for (const [fieldName, possibleNames] of Object.entries(PRODUCT_COLUMN_MAPPINGS)) {
-            if (possibleNames.some(name => normalized === name || normalized.includes(name))) {
+            if (possibleNames.some(name => {
+              const normalizedName = name.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '')
+              return normalized === normalizedName || normalized.includes(normalizedName)
+            })) {
+              console.log('  → Mapped to:', fieldName)
               return fieldName
             }
           }
           
-          return header
+          console.log('  → No mapping found, keeping:', normalized)
+          return normalized
         },
         complete: (results) => {
           setProgress(50)
