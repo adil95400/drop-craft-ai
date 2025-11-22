@@ -10,6 +10,7 @@ import AuthPage from '@/pages/AuthPage';
 
 // Pages publiques lazy loaded
 const Pricing = lazy(() => import('@/pages/Pricing'));
+const PricingPlans = lazy(() => import('@/pages/PricingPlansPage'));
 const Features = lazy(() => import('@/pages/Features'));
 const Documentation = lazy(() => import('@/pages/Documentation'));
 const ModernBlog = lazy(() => import('@/pages/ModernBlog'));
@@ -37,6 +38,7 @@ export function PublicRoutes() {
       
       {/* Marketing */}
       <Route path="pricing" element={<Pricing />} />
+      <Route path="pricing-plans" element={<PricingPlans />} />
       <Route path="features" element={<Features />} />
       <Route path="features/ai-optimization" element={<AIOptimizationPage />} />
       <Route path="features/multi-marketplace" element={<MultiMarketplacePage />} />
