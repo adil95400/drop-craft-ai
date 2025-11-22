@@ -6,6 +6,7 @@ class AdvancedProductDetector {
     this.platformDetectors = {
       aliexpress: new AliExpressDetector(),
       amazon: new AmazonDetector(),
+      temu: new TemuDetector(),
       shopify: new ShopifyDetector(),
       woocommerce: new WooCommerceDetector(),
       generic: new GenericDetector()
@@ -62,6 +63,7 @@ class AdvancedProductDetector {
     
     if (hostname.includes('aliexpress')) return 'aliexpress';
     if (hostname.includes('amazon')) return 'amazon';
+    if (hostname.includes('temu')) return 'temu';
     if (hostname.includes('myshopify') || document.querySelector('meta[name="generator"][content*="Shopify"]')) return 'shopify';
     if (document.querySelector('meta[name="generator"][content*="WooCommerce"]')) return 'woocommerce';
     
@@ -72,6 +74,29 @@ class AdvancedProductDetector {
     const platform = this.detectPlatform();
     const detector = this.platformDetectors[platform] || this.platformDetectors.generic;
     detector.injectOneClickButtons();
+    
+    // Inject global styles for toasts
+    if (!document.querySelector('#dropcraft-styles')) {
+      const style = document.createElement('style');
+      style.id = 'dropcraft-styles';
+      style.textContent = `
+        @keyframes slideIn {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        
+        .dropcraft-import-btn:active {
+          transform: scale(0.95) !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
   }
 }
 
@@ -279,7 +304,7 @@ class AliExpressDetector {
     const targetEl = document.querySelector('.product-title-text, h1');
     if (!targetEl) return;
     
-    const button = this.createImportButton('Importer dans Drop Craft AI', () => {
+    const button = this.createImportButton('🚀 Importer dans Drop Craft AI', () => {
       this.importCurrentProduct();
     });
     
@@ -288,11 +313,11 @@ class AliExpressDetector {
 
   injectListingButtons() {
     const productElements = document.querySelectorAll('.list-item, .product-item');
-    productElements.forEach((element, index) => {
+    productElements.forEach((element) => {
       if (element.querySelector('.dropcraft-import-btn')) return;
       
       const button = this.createImportButton('Importer', () => {
-        this.importProductFromElement(element, index);
+        this.importProductFromURL(this.getLinkFromElement(element));
       }, true);
       
       element.style.position = 'relative';
@@ -304,53 +329,124 @@ class AliExpressDetector {
     const button = document.createElement('button');
     button.className = 'dropcraft-import-btn';
     button.textContent = text;
-    button.onclick = onClick;
+    button.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onClick();
+    };
     
     button.style.cssText = `
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
-      padding: ${isSmall ? '6px 12px' : '10px 20px'};
-      border-radius: ${isSmall ? '4px' : '6px'};
-      font-size: ${isSmall ? '11px' : '14px'};
-      font-weight: 500;
+      padding: ${isSmall ? '6px 12px' : '12px 24px'};
+      border-radius: ${isSmall ? '6px' : '8px'};
+      font-size: ${isSmall ? '12px' : '16px'};
+      font-weight: 600;
       cursor: pointer;
-      position: ${isSmall ? 'absolute' : 'static'};
+      position: ${isSmall ? 'absolute' : 'relative'};
       top: ${isSmall ? '10px' : 'auto'};
       right: ${isSmall ? '10px' : 'auto'};
-      z-index: 1000;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+      z-index: 10000;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      margin: ${isSmall ? '0' : '16px 0'};
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     `;
     
     button.onmouseover = () => {
-      button.style.transform = 'translateY(-1px)';
-      button.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+      button.style.transform = 'translateY(-2px)';
+      button.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
     };
     
     button.onmouseout = () => {
       button.style.transform = 'translateY(0)';
-      button.style.boxShadow = '0 2px 10px rgba(102, 126, 234, 0.3)';
+      button.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
     };
     
     return button;
   }
 
   async importCurrentProduct() {
-    const product = await this.extractSingleProduct();
-    this.sendToExtension([product]);
+    this.importProductFromURL(window.location.href);
   }
 
   async importProductFromElement(element, index) {
-    const product = await this.extractProductFromElement(element, index);
-    this.sendToExtension([product]);
+    const link = this.getLinkFromElement(element);
+    this.importProductFromURL(link);
   }
 
-  sendToExtension(products) {
-    window.postMessage({
-      type: 'IMPORT_PRODUCTS',
-      products: products
-    }, '*');
+  async importProductFromURL(url) {
+    this.showLoadingToast('⏳ Import en cours...');
+    
+    try {
+      const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/product-url-scraper', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        this.showSuccessToast(`✅ ${result.product?.name || 'Produit'} importé!`);
+      } else {
+        this.showErrorToast('❌ ' + (result.error || 'Erreur inconnue'));
+      }
+    } catch (error) {
+      console.error('Import error:', error);
+      this.showErrorToast('❌ Erreur de connexion');
+    }
+  }
+
+  showLoadingToast(message) {
+    this.hideAllToasts();
+    const toast = this.createToast(message, '#667eea');
+    document.body.appendChild(toast);
+  }
+
+  showSuccessToast(message) {
+    this.hideAllToasts();
+    const toast = this.createToast(message, '#10b981');
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  showErrorToast(message) {
+    this.hideAllToasts();
+    const toast = this.createToast(message, '#ef4444');
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
+
+  hideAllToasts() {
+    document.querySelectorAll('.dropcraft-toast').forEach(t => t.remove());
+  }
+
+  createToast(message, color) {
+    const toast = document.createElement('div');
+    toast.className = 'dropcraft-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${color};
+      color: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      z-index: 100000;
+      animation: slideIn 0.3s ease-out;
+      max-width: 350px;
+    `;
+    return toast;
   }
 
   // Utility methods
@@ -398,6 +494,321 @@ class AliExpressDetector {
   getOrdersFromElement(element) {
     const ordersEl = element.querySelector('[class*="order"], [class*="sold"]');
     return ordersEl ? ordersEl.textContent.trim() : null;
+  }
+
+  getLinkFromElement(element) {
+    const link = element.querySelector('a');
+    return link ? link.href : window.location.href;
+  }
+}
+
+// Temu specific detector  
+class TemuDetector {
+  async extractProducts() {
+    const products = [];
+    const productElements = document.querySelectorAll(
+      '[data-testid="product-card"], .goods-item, .product-item'
+    );
+    
+    for (let i = 0; i < productElements.length; i++) {
+      const element = productElements[i];
+      const product = await this.extractProductFromElement(element, i);
+      if (product.name && product.price) {
+        products.push(product);
+      }
+    }
+    
+    return products;
+  }
+
+  async extractSingleProduct() {
+    return {
+      id: `temu_${Date.now()}`,
+      name: this.getProductTitle(),
+      price: this.getProductPrice(),
+      originalPrice: this.getOriginalPrice(),
+      discount: this.getDiscount(),
+      image: this.getProductImage(),
+      images: this.getProductImages(),
+      description: this.getProductDescription(),
+      rating: this.getRating(),
+      reviews: this.getReviewCount(),
+      url: window.location.href,
+      domain: 'temu.com',
+      platform: 'temu',
+      scrapedAt: new Date().toISOString(),
+      source: 'extension_injected'
+    };
+  }
+
+  async extractProductFromElement(element, index) {
+    return {
+      id: `temu_list_${Date.now()}_${index}`,
+      name: this.getTextContent(element, [
+        'h1', 'h2', 'h3', '.product-title', '[class*="title"]'
+      ]),
+      price: this.getPriceContent(element, [
+        '.price', '[class*="price"]', '[data-testid*="price"]'
+      ]),
+      image: this.getImageSrc(element, [
+        'img[src*="product"]', 'img'
+      ]),
+      url: this.getLinkFromElement(element),
+      domain: 'temu.com',
+      platform: 'temu',
+      scrapedAt: new Date().toISOString(),
+      source: 'extension_injected'
+    };
+  }
+
+  getProductTitle() {
+    return this.getTextContent(document, [
+      'h1', '[data-testid="product-title"]', '.product-title'
+    ]);
+  }
+
+  getProductPrice() {
+    return this.getPriceContent(document, [
+      '[class*="price-current"]', '.price', '[data-testid*="price"]'
+    ]);
+  }
+
+  getOriginalPrice() {
+    return this.getPriceContent(document, [
+      '[class*="original"]', '[class*="regular"]'
+    ]);
+  }
+
+  getDiscount() {
+    const discountEl = document.querySelector('[class*="discount"], [class*="save"]');
+    return discountEl ? discountEl.textContent.trim() : null;
+  }
+
+  getProductImage() {
+    return this.getImageSrc(document, [
+      '[class*="main-image"] img', 'img[alt*="product"]', 'img'
+    ]);
+  }
+
+  getProductImages() {
+    const images = [];
+    document.querySelectorAll('img[src*="product"], [class*="gallery"] img').forEach(img => {
+      const src = img.src || img.dataset.src;
+      if (src && !images.includes(src)) images.push(src);
+    });
+    return images.slice(0, 10); // Limit to 10 images
+  }
+
+  getProductDescription() {
+    return this.getTextContent(document, [
+      '[class*="description"]', '[data-testid="description"]', 'p'
+    ]);
+  }
+
+  getRating() {
+    const ratingEl = document.querySelector('[class*="rating"], [class*="star"]');
+    if (ratingEl) {
+      const ratingMatch = ratingEl.textContent.match(/(\d+\.?\d*)/);
+      return ratingMatch ? parseFloat(ratingMatch[1]) : null;
+    }
+    return null;
+  }
+
+  getReviewCount() {
+    const reviewEl = document.querySelector('[class*="review"]');
+    return reviewEl ? reviewEl.textContent.trim() : null;
+  }
+
+  injectOneClickButtons() {
+    if (this.isProductPage()) {
+      this.injectProductImportButton();
+    }
+    this.injectListingButtons();
+  }
+
+  isProductPage() {
+    return window.location.pathname.includes('/g-') || 
+           document.querySelector('h1, [data-testid="product-title"]');
+  }
+
+  injectProductImportButton() {
+    if (document.querySelector('.dropcraft-import-btn')) return;
+    
+    const targetEl = document.querySelector('h1, [data-testid="product-title"]');
+    if (!targetEl) return;
+    
+    const button = this.createImportButton('🚀 Importer dans Drop Craft AI', () => {
+      this.importCurrentProduct();
+    });
+    
+    targetEl.parentNode.insertBefore(button, targetEl.nextSibling);
+  }
+
+  injectListingButtons() {
+    const productElements = document.querySelectorAll('[data-testid="product-card"], .goods-item');
+    productElements.forEach((element, index) => {
+      if (element.querySelector('.dropcraft-import-btn')) return;
+      
+      const button = this.createImportButton('Importer', () => {
+        this.importProductFromURL(this.getLinkFromElement(element));
+      }, true);
+      
+      element.style.position = 'relative';
+      element.appendChild(button);
+    });
+  }
+
+  createImportButton(text, onClick, isSmall = false) {
+    const button = document.createElement('button');
+    button.className = 'dropcraft-import-btn';
+    button.textContent = text;
+    button.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onClick();
+    };
+    
+    button.style.cssText = `
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: ${isSmall ? '6px 12px' : '12px 24px'};
+      border-radius: ${isSmall ? '6px' : '8px'};
+      font-size: ${isSmall ? '12px' : '16px'};
+      font-weight: 600;
+      cursor: pointer;
+      position: ${isSmall ? 'absolute' : 'relative'};
+      top: ${isSmall ? '10px' : 'auto'};
+      right: ${isSmall ? '10px' : 'auto'};
+      z-index: 10000;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      margin: ${isSmall ? '0' : '16px 0'};
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    `;
+    
+    button.onmouseover = () => {
+      button.style.transform = 'translateY(-2px)';
+      button.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+    };
+    
+    button.onmouseout = () => {
+      button.style.transform = 'translateY(0)';
+      button.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+    };
+    
+    return button;
+  }
+
+  async importCurrentProduct() {
+    this.importProductFromURL(window.location.href);
+  }
+
+  async importProductFromURL(url) {
+    this.showLoadingToast('⏳ Import en cours...');
+    
+    try {
+      // Use the product-url-scraper edge function
+      const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/product-url-scraper', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        this.showSuccessToast(`✅ ${result.product?.name || 'Produit'} importé avec succès!`);
+      } else {
+        this.showErrorToast('❌ Erreur lors de l\'import: ' + (result.error || 'Erreur inconnue'));
+      }
+    } catch (error) {
+      console.error('Import error:', error);
+      this.showErrorToast('❌ Erreur de connexion');
+    }
+  }
+
+  showLoadingToast(message) {
+    this.hideAllToasts();
+    const toast = this.createToast(message, '#667eea');
+    document.body.appendChild(toast);
+  }
+
+  showSuccessToast(message) {
+    this.hideAllToasts();
+    const toast = this.createToast(message, '#10b981');
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  showErrorToast(message) {
+    this.hideAllToasts();
+    const toast = this.createToast(message, '#ef4444');
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
+
+  hideAllToasts() {
+    document.querySelectorAll('.dropcraft-toast').forEach(t => t.remove());
+  }
+
+  createToast(message, color) {
+    const toast = document.createElement('div');
+    toast.className = 'dropcraft-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${color};
+      color: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      z-index: 100000;
+      animation: slideIn 0.3s ease-out;
+      max-width: 350px;
+    `;
+    return toast;
+  }
+
+  // Utility methods
+  getTextContent(container, selectors) {
+    for (const selector of selectors) {
+      const element = container.querySelector(selector);
+      if (element && element.textContent.trim()) {
+        return element.textContent.trim();
+      }
+    }
+    return '';
+  }
+
+  getPriceContent(container, selectors) {
+    for (const selector of selectors) {
+      const element = container.querySelector(selector);
+      if (element) {
+        const text = element.textContent.trim();
+        const priceMatch = text.match(/[\d,.]+(€|$|£|₹|¥|kr|zł|CHF|USD|EUR)/i);
+        if (priceMatch) return priceMatch[0];
+      }
+    }
+    return '';
+  }
+
+  getImageSrc(container, selectors) {
+    for (const selector of selectors) {
+      const element = container.querySelector(selector);
+      if (element) {
+        return element.src || element.dataset.src || element.dataset.original || '';
+      }
+    }
+    return '';
   }
 
   getLinkFromElement(element) {
