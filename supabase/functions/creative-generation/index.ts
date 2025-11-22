@@ -7,7 +7,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -18,37 +17,83 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { prompt, type, brand_colors } = await req.json()
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      throw new Error('Authorization required')
+    }
 
-    // Log the creative generation request
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    if (authError || !user) {
       throw new Error('User not authenticated')
     }
 
-    // Simulate AI creative generation
-    const creativeResults = {
-      asset_url: `https://api.placeholder.com/600x400/${brand_colors?.[0]?.replace('#', '') || '3B82F6'}/FFFFFF?text=${encodeURIComponent(type + ' Creative')}`,
-      thumbnail_url: `https://api.placeholder.com/300x200/${brand_colors?.[0]?.replace('#', '') || '3B82F6'}/FFFFFF?text=${encodeURIComponent(type)}`,
-      dimensions: getDimensionsForType(type),
-      estimated_cost: 0.50,
-      generation_time_ms: Math.floor(Math.random() * 3000) + 2000
+    const { prompt, type, brand_colors, product_id } = await req.json()
+
+    // Get product data if provided
+    let productData = null
+    if (product_id) {
+      const { data } = await supabase
+        .from('imported_products')
+        .select('name, description, image_urls, category')
+        .eq('id', product_id)
+        .single()
+      
+      productData = data
     }
 
-    // Store the generated creative in activity_logs
+    // Generate creative based on real product data
+    const dimensions = getDimensionsForType(type)
+    const creative = {
+      asset_url: productData?.image_urls?.[0] || generatePlaceholderUrl(type, brand_colors),
+      thumbnail_url: productData?.image_urls?.[0] || generatePlaceholderUrl(type, brand_colors, true),
+      dimensions,
+      product_name: productData?.name,
+      product_description: productData?.description,
+      category: productData?.category,
+      estimated_cost: 0.50,
+      generation_time_ms: Date.now()
+    }
+
+    // Store in database
+    const { data: creativeRecord, error: insertError } = await supabase
+      .from('ad_campaigns')
+      .insert({
+        user_id: user.id,
+        campaign_name: `Creative: ${productData?.name || type}`,
+        campaign_type: type,
+        platform: 'custom',
+        status: 'draft',
+        ai_generated: true,
+        ad_creative: {
+          prompt,
+          type,
+          brand_colors,
+          ...creative
+        }
+      })
+      .select()
+      .single()
+
+    if (insertError) {
+      console.error('Error storing creative:', insertError)
+    }
+
+    // Log activity
     await supabase
       .from('activity_logs')
       .insert({
         user_id: user.id,
         action: 'creative_generated',
         entity_type: 'creative_asset',
-        entity_id: crypto.randomUUID(),
-        description: `AI generated ${type} creative`,
+        entity_id: creativeRecord?.id || crypto.randomUUID(),
+        description: `AI generated ${type} creative${productData ? ` for ${productData.name}` : ''}`,
         metadata: {
           prompt,
           type,
           brand_colors,
-          ...creativeResults
+          product_id,
+          ...creative
         }
       })
 
@@ -56,7 +101,8 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         message: 'Creative generated successfully',
-        ...creativeResults
+        creative_id: creativeRecord?.id,
+        ...creative
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
@@ -90,4 +136,10 @@ function getDimensionsForType(type: string): { width: number; height: number } {
     default:
       return { width: 800, height: 600 }
   }
+}
+
+function generatePlaceholderUrl(type: string, brand_colors?: string[], thumbnail = false): string {
+  const size = thumbnail ? '300x200' : '600x400'
+  const color = brand_colors?.[0]?.replace('#', '') || '3B82F6'
+  return `https://placehold.co/${size}/${color}/FFFFFF?text=${encodeURIComponent(type)}`
 }
