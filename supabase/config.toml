@@ -475,3 +475,6 @@ verify_jwt = true
 [functions.winners-import]
 verify_jwt = true
 
+[functions.product-url-scraper]
+verify_jwt = true
+
