@@ -133,7 +133,7 @@ export default function CourseDetailPage() {
   return (
     <>
       <Helmet>
-        <title>{course.title} | DropCraft Academy</title>
+        <title>{course.title} | ShopOpti Academy</title>
         <meta name="description" content={course.description} />
       </Helmet>
 

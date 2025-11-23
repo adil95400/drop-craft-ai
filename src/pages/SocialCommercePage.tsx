@@ -9,7 +9,7 @@ export default function SocialCommercePage() {
   return (
     <>
       <Helmet>
-        <title>Social Commerce - DropCraft AI</title>
+        <title>Social Commerce - ShopOpti</title>
       </Helmet>
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center gap-3 mb-6">

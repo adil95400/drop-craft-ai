@@ -72,7 +72,7 @@ export default function PriceMonitoringPage() {
   return (
     <>
       <Helmet>
-        <title>Price Monitoring & Auto-Pricing - DropCraft AI</title>
+        <title>Price Monitoring & Auto-Pricing - ShopOpti</title>
         <meta name="description" content="Surveillance automatique des prix concurrents et ajustement dynamique pour maximiser vos marges" />
       </Helmet>
 

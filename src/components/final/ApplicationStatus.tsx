@@ -76,7 +76,7 @@ export const ApplicationStatus = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <CheckCircle className="h-6 w-6 text-green-500" />
-            État de l'Application - DropCraft AI
+            État de l'Application - ShopOpti
           </CardTitle>
           <CardDescription>
             Suivi du développement et des fonctionnalités implémentées
@@ -129,7 +129,7 @@ export const ApplicationStatus = () => {
               <h3 className="font-semibold text-green-800">Application Prête pour Production</h3>
             </div>
             <p className="text-green-700 text-sm">
-              Toutes les phases de développement sont terminées. L'application DropCraft AI est 
+              Toutes les phases de développement sont terminées. L'application ShopOpti est 
               entièrement fonctionnelle avec tous les composants TypeScript corrigés et optimisés.
             </p>
           </div>

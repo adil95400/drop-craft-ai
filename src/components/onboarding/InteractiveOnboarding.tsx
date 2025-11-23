@@ -34,7 +34,7 @@ interface OnboardingStep {
 const onboardingSteps: OnboardingStep[] = [
   {
     id: 'welcome',
-    title: 'Bienvenue sur DropCraft AI',
+    title: 'Bienvenue sur ShopOpti',
     description: 'Découvrez votre nouvelle plateforme e-commerce intelligente',
     icon: Sparkles,
     action: 'Commencer',

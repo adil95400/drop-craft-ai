@@ -115,7 +115,7 @@ export default function ProfitAnalyticsDashboard() {
   return (
     <>
       <Helmet>
-        <title>Profit Analytics Dashboard - DropCraft AI</title>
+        <title>Profit Analytics Dashboard - ShopOpti</title>
         <meta name="description" content="Analysez vos marges, coûts et profits en temps réel par produit et fournisseur" />
       </Helmet>
 
