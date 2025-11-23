@@ -47,6 +47,10 @@ const WarehouseManagement = lazy(() => import('@/pages/WarehouseManagement'));
 const DropshippingCenterPage = lazy(() => import('@/pages/DropshippingCenterPage'));
 const VendorManagementPage = lazy(() => import('@/pages/VendorManagementPage'));
 
+// Advanced Products
+const AdvancedProductsPage = lazy(() => import('@/pages/products/AdvancedProductsPage'));
+const AdvancedSuppliersPage = lazy(() => import('@/pages/AdvancedSuppliersPage'));
+
 export function ProductRoutes() {
   return (
     <Routes>
@@ -55,6 +59,7 @@ export function ProductRoutes() {
       <Route path=":id" element={<ProductDetailsPage />} />
       <Route path="publish" element={<ProductPublishing />} />
       <Route path="catalogue" element={<Catalogue />} />
+      <Route path="advanced" element={<AdvancedProductsPage />} />
       
       {/* Import Hub */}
       <Route path="import" element={<ImportHub />} />
@@ -70,6 +75,7 @@ export function ProductRoutes() {
       
       {/* Suppliers */}
       <Route path="suppliers" element={<SuppliersHub />} />
+      <Route path="suppliers/advanced" element={<AdvancedSuppliersPage />} />
       <Route path="suppliers/marketplace" element={<SuppliersMarketplace />} />
       <Route path="suppliers/manage" element={<ManageSuppliers />} />
       <Route path="suppliers/manage/list" element={<ManageSuppliersList />} />
