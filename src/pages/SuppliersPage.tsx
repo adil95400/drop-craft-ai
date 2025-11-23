@@ -15,6 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useRealSuppliers } from '@/hooks/useRealSuppliers'
+import { ImportSuppliersDialog } from '@/components/suppliers/ImportSuppliersDialog'
 import { 
   Search, 
   Plus, 
@@ -29,7 +30,8 @@ import {
   Globe,
   Filter,
   Download,
-  RefreshCw
+  RefreshCw,
+  Upload
 } from 'lucide-react'
 
 export default function SuppliersPage() {
@@ -37,6 +39,7 @@ export default function SuppliersPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [countryFilter, setCountryFilter] = useState<string>('all')
+  const [showImportDialog, setShowImportDialog] = useState(false)
   
   const { suppliers, stats, isLoading, deleteSupplier } = useRealSuppliers({
     status: statusFilter !== 'all' ? statusFilter : undefined,
@@ -66,6 +69,10 @@ export default function SuppliersPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setShowImportDialog(true)}>
+              <Upload className="w-4 h-4 mr-2" />
+              Importer Fournisseurs
+            </Button>
             <Button variant="outline">
               <Download className="w-4 h-4 mr-2" />
               Exporter
@@ -329,6 +336,11 @@ export default function SuppliersPage() {
             )}
           </CardContent>
         </Card>
+
+        <ImportSuppliersDialog 
+          open={showImportDialog} 
+          onOpenChange={setShowImportDialog}
+        />
       </div>
     </>
   )
