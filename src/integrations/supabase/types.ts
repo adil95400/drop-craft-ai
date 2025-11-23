@@ -8331,6 +8331,7 @@ export type Database = {
         Row: {
           admin_mode: string | null
           avatar_url: string | null
+          bio: string | null
           business_goals: string[] | null
           business_name: string | null
           business_type: string | null
@@ -8346,10 +8347,12 @@ export type Database = {
           interests: string[] | null
           is_admin: boolean | null
           last_login_at: string | null
+          location: string | null
           login_count: number | null
           monthly_volume: string | null
           notification_settings: Json | null
           onboarding_completed: boolean | null
+          phone: string | null
           plan: Database["public"]["Enums"]["plan_type"] | null
           preferences: Json | null
           settings: Json | null
@@ -8363,6 +8366,7 @@ export type Database = {
         Insert: {
           admin_mode?: string | null
           avatar_url?: string | null
+          bio?: string | null
           business_goals?: string[] | null
           business_name?: string | null
           business_type?: string | null
@@ -8378,10 +8382,12 @@ export type Database = {
           interests?: string[] | null
           is_admin?: boolean | null
           last_login_at?: string | null
+          location?: string | null
           login_count?: number | null
           monthly_volume?: string | null
           notification_settings?: Json | null
           onboarding_completed?: boolean | null
+          phone?: string | null
           plan?: Database["public"]["Enums"]["plan_type"] | null
           preferences?: Json | null
           settings?: Json | null
@@ -8395,6 +8401,7 @@ export type Database = {
         Update: {
           admin_mode?: string | null
           avatar_url?: string | null
+          bio?: string | null
           business_goals?: string[] | null
           business_name?: string | null
           business_type?: string | null
@@ -8410,10 +8417,12 @@ export type Database = {
           interests?: string[] | null
           is_admin?: boolean | null
           last_login_at?: string | null
+          location?: string | null
           login_count?: number | null
           monthly_volume?: string | null
           notification_settings?: Json | null
           onboarding_completed?: boolean | null
+          phone?: string | null
           plan?: Database["public"]["Enums"]["plan_type"] | null
           preferences?: Json | null
           settings?: Json | null
