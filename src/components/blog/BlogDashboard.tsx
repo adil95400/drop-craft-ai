@@ -38,6 +38,7 @@ interface BlogDashboardProps {
 }
 
 export function BlogDashboard({ onCreatePost, onEditPost }: BlogDashboardProps) {
+  const navigate = useNavigate()
   const { posts, stats, loading, publishPost, deletePost } = useBlog()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
