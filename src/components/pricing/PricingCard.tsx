@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, Star, Zap } from 'lucide-react';
 import { useStripeIntegration } from '@/hooks/useStripeIntegration';
-import { usePlan } from '@/contexts/PlanContext';
+import { useUnifiedPlan } from '@/lib/unified-plan-system';
 
 interface PricingCardProps {
   plan: 'standard' | 'pro' | 'ultra_pro';
@@ -28,7 +28,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
   onSelect
 }) => {
   const { createCheckout, isCreatingCheckout } = useStripeIntegration();
-  const { currentPlan } = usePlan();
+  const { currentPlan } = useUnifiedPlan();
 
   const handleSelect = () => {
     if (onSelect) {

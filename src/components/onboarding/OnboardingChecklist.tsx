@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { CheckCircle2, Circle, ArrowRight, Store, Package, Zap, Search, CreditCard } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
-import { usePlan } from '@/contexts/PlanContext'
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
+import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -21,8 +21,8 @@ interface OnboardingStep {
 }
 
 export const OnboardingChecklist = () => {
-  const { user } = useAuth()
-  const { currentPlan, hasFeature } = usePlan()
+  const { user } = useUnifiedAuth()
+  const { currentPlan, hasFeature } = useUnifiedPlan()
   const navigate = useNavigate()
   const [steps, setSteps] = useState<OnboardingStep[]>([])
   const [completionRate, setCompletionRate] = useState(0)

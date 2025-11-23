@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { usePlan } from '@/contexts/PlanContext';
+import { useUnifiedPlan } from '@/lib/unified-plan-system';
 
 export interface StripeSubscription {
   subscribed: boolean;
@@ -14,7 +14,7 @@ export interface StripeSubscription {
 export const useStripeIntegration = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { setPlan } = usePlan();
+  const { setPlan } = useUnifiedPlan();
   const [isLoading, setIsLoading] = useState(false);
 
   // Check subscription status

@@ -26,6 +26,9 @@ import { ExtensionRoutes } from './ExtensionRoutes';
 // Pages directes
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const AvisPositifUltraPro = lazy(() => import('@/pages/AvisPositifUltraPro'));
+const AdvancedImportPage = lazy(() => import('@/pages/import/AdvancedImportPage'));
+const SyncManagerPage = lazy(() => import('@/pages/sync/SyncManagerPage'));
+const OrdersCenterPage = lazy(() => import('@/pages/orders/OrdersCenterPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -58,6 +61,11 @@ export function AppRoutes() {
         <Route path="/enterprise/*" element={<ProtectedRoute><AppLayout><EnterpriseRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/extensions/*" element={<ProtectedRoute><AppLayout><ExtensionRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/reviews" element={<ProtectedRoute><AppLayout><AvisPositifUltraPro /></AppLayout></ProtectedRoute>} />
+        
+        {/* Pages manquantes ajoutées - Phase 1 */}
+        <Route path="/import/advanced" element={<ProtectedRoute><AppLayout><AdvancedImportPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/sync-manager" element={<ProtectedRoute><AppLayout><SyncManagerPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/orders-center" element={<ProtectedRoute><AppLayout><OrdersCenterPage /></AppLayout></ProtectedRoute>} />
         
         {/* Admin Routes - Rôle admin requis */}
         <Route path="/admin/*" element={

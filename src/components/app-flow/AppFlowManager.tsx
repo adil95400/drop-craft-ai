@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { useAuth } from '@/contexts/AuthContext'
-import { usePlan } from '@/contexts/PlanContext'
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
+import { useUnifiedPlan } from '@/lib/unified-plan-system'
 import { logWarning } from '@/utils/consoleCleanup'
 
 interface AppFlowStep {
@@ -201,8 +201,8 @@ export function AppFlowProvider({ children }: { children: React.ReactNode }) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const location = useLocation()
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const { currentPlan } = usePlan()
+  const { user } = useUnifiedAuth()
+  const { currentPlan } = useUnifiedPlan()
 
   // Charger l'état depuis localStorage
   useEffect(() => {
