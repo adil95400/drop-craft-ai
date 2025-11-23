@@ -65,8 +65,22 @@ export default function Dashboard() {
           const Icon = metric.icon;
           const isPositive = metric.trend >= 0;
           
+          const getMetricLink = (title: string) => {
+            switch(title) {
+              case 'Revenus totaux': return '/analytics';
+              case 'Commandes': return '/dashboard/orders';
+              case 'Produits': return '/products';
+              case 'Clients': return '/customers';
+              default: return '#';
+            }
+          };
+          
           return (
-            <Card key={metric.title}>
+            <Card 
+              key={metric.title} 
+              className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+              onClick={() => window.location.href = getMetricLink(metric.title)}
+            >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{metric.title}</CardTitle>
                 <Icon className={`h-4 w-4 ${metric.color}`} />
