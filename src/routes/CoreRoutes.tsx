@@ -51,6 +51,8 @@ const ProductCatalog = lazy(() => import('@/pages/ProductCatalog'));
 
 // Suppliers & Marketing
 const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
+const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'));
+const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'));
 const MarketingPage = lazy(() => import('@/pages/MarketingPage'));
 
 // AI & Automation
@@ -123,6 +125,9 @@ export function CoreRoutes() {
       
       {/* Suppliers & Marketing */}
       <Route path="suppliers" element={<SuppliersPage />} />
+      <Route path="suppliers/create" element={<CreateSupplier />} />
+      <Route path="suppliers/:id" element={<SupplierDetails />} />
+      <Route path="suppliers/:id/edit" element={<CreateSupplier />} />
       <Route path="marketing" element={<MarketingPage />} />
       
       {/* AI & Automation */}
