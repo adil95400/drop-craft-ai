@@ -8,22 +8,81 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { ArrowLeft, Bell } from 'lucide-react';
+import { 
+  ArrowLeft, Bell, Mail, MessageSquare, Smartphone,
+  Users, Calendar, Clock, Zap, Target, BarChart3,
+  Eye, Send, Info
+} from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+
+const notificationTemplates = [
+  { id: 'order-confirmed', name: 'Commande confirmée', category: 'transactional' },
+  { id: 'order-shipped', name: 'Commande expédiée', category: 'transactional' },
+  { id: 'promo-flash', name: 'Promotion éclair', category: 'marketing' },
+  { id: 'welcome', name: 'Bienvenue', category: 'marketing' },
+  { id: 'cart-reminder', name: 'Rappel panier abandonné', category: 'retention' },
+];
 
 export default function CreateNotification() {
   const navigate = useNavigate();
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [scheduleDate, setScheduleDate] = useState<Date>();
+  const [scheduleTime, setScheduleTime] = useState('');
+  
   const [formData, setFormData] = useState({
     title: '',
     message: '',
     type: '',
-    priority: '',
-    targetUsers: '',
-    scheduleDate: '',
+    priority: 'medium',
+    targetUsers: 'all',
+    customSegment: '',
     pushNotification: true,
     emailNotification: false,
-    smsNotification: false
+    smsNotification: false,
+    scheduleType: 'now',
+    actionUrl: '',
+    actionLabel: '',
+    imageUrl: ''
   });
+
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    const template = notificationTemplates.find(t => t.id === templateId);
+    if (template) {
+      // Pré-remplir avec des données de template
+      setFormData(prev => ({
+        ...prev,
+        title: template.name,
+        type: template.category === 'transactional' ? 'info' : 'promotion'
+      }));
+    }
+  };
+
+  const getEstimatedReach = () => {
+    switch (formData.targetUsers) {
+      case 'all': return '5,234';
+      case 'active': return '3,891';
+      case 'vip': return '156';
+      case 'new': return '1,023';
+      default: return '0';
+    }
+  };
+
+  const getChannelCost = () => {
+    let cost = 0;
+    if (formData.pushNotification) cost += 0;
+    if (formData.emailNotification) cost += parseFloat(getEstimatedReach().replace(',', '')) * 0.001;
+    if (formData.smsNotification) cost += parseFloat(getEstimatedReach().replace(',', '')) * 0.05;
+    return cost.toFixed(2);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +91,12 @@ export default function CreateNotification() {
       return;
     }
     
-    toast.success('Notification créée avec succès');
+    if (formData.scheduleType === 'scheduled' && !scheduleDate) {
+      toast.error('Date de programmation requise');
+      return;
+    }
+    
+    toast.success('Notification programmée avec succès');
     navigate('/dashboard');
   };
 
@@ -40,177 +104,514 @@ export default function CreateNotification() {
     <>
       <Helmet>
         <title>Créer une Notification - ShopOpti</title>
-        <meta name="description" content="Envoyez une notification à vos utilisateurs depuis ShopOpti" />
+        <meta name="description" content="Créez et programmez une notification multicanale pour vos utilisateurs" />
       </Helmet>
 
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto py-8 px-4 max-w-4xl">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/dashboard')}
-            className="mb-6"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour au tableau de bord
-          </Button>
+        <div className="container mx-auto py-8 px-4 max-w-7xl">
+          <div className="flex items-center justify-between mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/dashboard')}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Retour au tableau de bord
+            </Button>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => toast.info('Prévisualisation envoyée')}>
+                <Eye className="mr-2 h-4 w-4" />
+                Tester
+              </Button>
+              <Button onClick={handleSubmit}>
+                <Send className="mr-2 h-4 w-4" />
+                {formData.scheduleType === 'now' ? 'Envoyer maintenant' : 'Programmer'}
+              </Button>
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Bell className="h-6 w-6 text-primary" />
-                <CardTitle className="text-2xl">Créer une notification</CardTitle>
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Colonne principale */}
+              <div className="lg:col-span-2 space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Bell className="h-5 w-5 text-primary" />
+                      Modèles de notification
+                    </CardTitle>
+                    <CardDescription>
+                      Commencez avec un modèle prédéfini ou créez depuis zéro
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {notificationTemplates.map((template) => (
+                        <Button
+                          key={template.id}
+                          type="button"
+                          variant={selectedTemplate === template.id ? 'default' : 'outline'}
+                          className="h-auto flex-col items-start p-4"
+                          onClick={() => handleTemplateSelect(template.id)}
+                        >
+                          <div className="font-medium text-sm">{template.name}</div>
+                          <Badge variant="secondary" className="mt-2 text-xs">
+                            {template.category}
+                          </Badge>
+                        </Button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Contenu de la notification</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="type">Type *</Label>
+                        <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="info">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                Information
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="warning">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                                Avertissement
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="success">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-green-500" />
+                                Succès
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="error">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-red-500" />
+                                Erreur
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="promotion">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-purple-500" />
+                                Promotion
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="priority">Priorité</Label>
+                        <Select value={formData.priority} onValueChange={(value) => setFormData({ ...formData, priority: value })}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Faible</SelectItem>
+                            <SelectItem value="medium">Moyenne</SelectItem>
+                            <SelectItem value="high">Élevée</SelectItem>
+                            <SelectItem value="urgent">Urgente</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Titre *</Label>
+                      <Input
+                        id="title"
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        placeholder="Titre accrocheur de votre notification"
+                        maxLength={60}
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground text-right">
+                        {formData.title.length}/60
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="message">Message *</Label>
+                      <Textarea
+                        id="message"
+                        value={formData.message}
+                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                        placeholder="Votre message complet..."
+                        rows={6}
+                        maxLength={500}
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground text-right">
+                        {formData.message.length}/500
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="actionLabel">Texte du bouton</Label>
+                        <Input
+                          id="actionLabel"
+                          value={formData.actionLabel}
+                          onChange={(e) => setFormData({ ...formData, actionLabel: e.target.value })}
+                          placeholder="Ex: Voir l'offre"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="actionUrl">Lien du bouton</Label>
+                        <Input
+                          id="actionUrl"
+                          type="url"
+                          value={formData.actionUrl}
+                          onChange={(e) => setFormData({ ...formData, actionUrl: e.target.value })}
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="imageUrl">Image (URL)</Label>
+                      <Input
+                        id="imageUrl"
+                        type="url"
+                        value={formData.imageUrl}
+                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                        placeholder="https://example.com/image.jpg"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Recommandé: 1200x630px pour les emails, 512x512px pour les notifications push
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5 text-primary" />
+                      Audience cible
+                    </CardTitle>
+                    <CardDescription>
+                      Sélectionnez qui recevra cette notification
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="targetUsers">Segment</Label>
+                      <Select value={formData.targetUsers} onValueChange={(value) => setFormData({ ...formData, targetUsers: value })}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">
+                            <div className="flex items-center justify-between w-full">
+                              <span>Tous les utilisateurs</span>
+                              <Badge variant="secondary" className="ml-2">5,234</Badge>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="active">
+                            <div className="flex items-center justify-between w-full">
+                              <span>Utilisateurs actifs (30j)</span>
+                              <Badge variant="secondary" className="ml-2">3,891</Badge>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="vip">
+                            <div className="flex items-center justify-between w-full">
+                              <span>Clients VIP</span>
+                              <Badge variant="secondary" className="ml-2">156</Badge>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="new">
+                            <div className="flex items-center justify-between w-full">
+                              <span>Nouveaux clients (7j)</span>
+                              <Badge variant="secondary" className="ml-2">1,023</Badge>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="custom">
+                            <span>Segment personnalisé</span>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {formData.targetUsers === 'custom' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="customSegment">Critères personnalisés</Label>
+                        <Input
+                          id="customSegment"
+                          value={formData.customSegment}
+                          onChange={(e) => setFormData({ ...formData, customSegment: e.target.value })}
+                          placeholder="Ex: tag:premium AND last_purchase:<30d"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Utilisez des opérateurs: AND, OR, NOT
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Portée estimée</span>
+                        </div>
+                        <span className="text-2xl font-bold">{getEstimatedReach()}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-primary" />
+                      Programmation
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Tabs value={formData.scheduleType} onValueChange={(value) => setFormData({ ...formData, scheduleType: value })}>
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="now">
+                          <Zap className="h-4 w-4 mr-2" />
+                          Maintenant
+                        </TabsTrigger>
+                        <TabsTrigger value="scheduled">
+                          <Clock className="h-4 w-4 mr-2" />
+                          Programmer
+                        </TabsTrigger>
+                      </TabsList>
+
+                      <TabsContent value="now" className="space-y-3">
+                        <div className="p-4 border rounded-lg bg-blue-50/50 dark:bg-blue-950/20">
+                          <p className="text-sm text-blue-900 dark:text-blue-100">
+                            La notification sera envoyée immédiatement après validation
+                          </p>
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="scheduled" className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Date</Label>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    'w-full justify-start text-left font-normal',
+                                    !scheduleDate && 'text-muted-foreground'
+                                  )}
+                                >
+                                  <Calendar className="mr-2 h-4 w-4" />
+                                  {scheduleDate ? format(scheduleDate, 'PPP', { locale: fr }) : 'Sélectionner'}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <CalendarComponent
+                                  mode="single"
+                                  selected={scheduleDate}
+                                  onSelect={setScheduleDate}
+                                  disabled={(date) => date < new Date()}
+                                  initialFocus
+                                  className={cn('p-3 pointer-events-auto')}
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="scheduleTime">Heure</Label>
+                            <Input
+                              id="scheduleTime"
+                              type="time"
+                              value={scheduleTime}
+                              onChange={(e) => setScheduleTime(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        {scheduleDate && scheduleTime && (
+                          <div className="p-4 border rounded-lg bg-green-50/50 dark:bg-green-950/20">
+                            <p className="text-sm text-green-900 dark:text-green-100">
+                              Envoi prévu: {format(scheduleDate, 'EEEE d MMMM yyyy', { locale: fr })} à {scheduleTime}
+                            </p>
+                          </div>
+                        )}
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
               </div>
-              <CardDescription>
-                Envoyez une notification à vos utilisateurs
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Titre *</Label>
-                    <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="Titre de la notification"
-                      required
-                    />
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="type">Type *</Label>
-                    <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner le type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="info">Information</SelectItem>
-                        <SelectItem value="warning">Avertissement</SelectItem>
-                        <SelectItem value="success">Succès</SelectItem>
-                        <SelectItem value="error">Erreur</SelectItem>
-                        <SelectItem value="promotion">Promotion</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+              {/* Colonne latérale */}
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Canaux de diffusion</CardTitle>
+                    <CardDescription>
+                      Sélectionnez les canaux pour cette notification
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Smartphone className="h-5 w-5 text-primary" />
+                        <div>
+                          <Label htmlFor="pushNotif" className="cursor-pointer font-medium">
+                            Notification push
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Dans l'application
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        id="pushNotif"
+                        checked={formData.pushNotification}
+                        onCheckedChange={(checked) => setFormData({ ...formData, pushNotification: checked })}
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="message">Message *</Label>
-                  <Textarea
-                    id="message"
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    placeholder="Votre message..."
-                    rows={5}
-                    required
-                  />
-                </div>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Mail className="h-5 w-5 text-primary" />
+                        <div>
+                          <Label htmlFor="emailNotif" className="cursor-pointer font-medium">
+                            Email
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            ~0.001€ par email
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        id="emailNotif"
+                        checked={formData.emailNotification}
+                        onCheckedChange={(checked) => setFormData({ ...formData, emailNotification: checked })}
+                      />
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="priority">Priorité</Label>
-                    <Select value={formData.priority} onValueChange={(value) => setFormData({ ...formData, priority: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner la priorité" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Faible</SelectItem>
-                        <SelectItem value="medium">Moyenne</SelectItem>
-                        <SelectItem value="high">Élevée</SelectItem>
-                        <SelectItem value="urgent">Urgente</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <MessageSquare className="h-5 w-5 text-primary" />
+                        <div>
+                          <Label htmlFor="smsNotif" className="cursor-pointer font-medium">
+                            SMS
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            ~0.05€ par SMS
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        id="smsNotif"
+                        checked={formData.smsNotification}
+                        onCheckedChange={(checked) => setFormData({ ...formData, smsNotification: checked })}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="targetUsers">Utilisateurs cibles</Label>
-                    <Input
-                      id="targetUsers"
-                      value={formData.targetUsers}
-                      onChange={(e) => setFormData({ ...formData, targetUsers: e.target.value })}
-                      placeholder="Tous, Admin, Clients..."
-                    />
-                  </div>
-                </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5" />
+                      Estimation
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Destinataires</span>
+                        <span className="font-medium">{getEstimatedReach()}</span>
+                      </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="scheduleDate">Programmer pour une date (optionnel)</Label>
-                  <Input
-                    id="scheduleDate"
-                    type="datetime-local"
-                    value={formData.scheduleDate}
-                    onChange={(e) => setFormData({ ...formData, scheduleDate: e.target.value })}
-                  />
-                </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Coût estimé</span>
+                        <span className="font-medium">{getChannelCost()}€</span>
+                      </div>
 
-                <div className="space-y-4">
-                  <Label>Canaux de notification</Label>
+                      <Separator />
 
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="pushNotification" className="cursor-pointer">
-                        Notification push
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        Notification dans l'application
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Taux d'ouverture estimé</span>
+                          <span className="font-medium">~35%</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Taux de clic estimé</span>
+                          <span className="font-medium">~8%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Prévisualisation</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="p-4 border rounded-lg bg-card">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 rounded-lg bg-primary/10">
+                            <Bell className="h-4 w-4 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">
+                              {formData.title || 'Titre de la notification'}
+                            </p>
+                            <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                              {formData.message || 'Votre message apparaîtra ici...'}
+                            </p>
+                            {formData.actionLabel && (
+                              <Button size="sm" variant="outline" className="mt-2">
+                                {formData.actionLabel}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground text-center">
+                        Aperçu notification push
                       </p>
                     </div>
-                    <Switch
-                      id="pushNotification"
-                      checked={formData.pushNotification}
-                      onCheckedChange={(checked) => setFormData({ ...formData, pushNotification: checked })}
-                    />
-                  </div>
+                  </CardContent>
+                </Card>
 
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="emailNotification" className="cursor-pointer">
-                        Email
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        Notification par email
-                      </p>
+                <Card className="border-yellow-200 bg-yellow-50/50 dark:bg-yellow-950/20">
+                  <CardContent className="pt-6">
+                    <div className="flex gap-3">
+                      <Info className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-yellow-900 dark:text-yellow-100">
+                          Bonnes pratiques
+                        </p>
+                        <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+                          <li>• Soyez concis et clair</li>
+                          <li>• Ajoutez un appel à l'action</li>
+                          <li>• Testez avant l'envoi</li>
+                          <li>• Respectez les fuseaux horaires</li>
+                        </ul>
+                      </div>
                     </div>
-                    <Switch
-                      id="emailNotification"
-                      checked={formData.emailNotification}
-                      onCheckedChange={(checked) => setFormData({ ...formData, emailNotification: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="smsNotification" className="cursor-pointer">
-                        SMS
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        Notification par SMS
-                      </p>
-                    </div>
-                    <Switch
-                      id="smsNotification"
-                      checked={formData.smsNotification}
-                      onCheckedChange={(checked) => setFormData({ ...formData, smsNotification: checked })}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-4 pt-6">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate('/dashboard')}
-                  >
-                    Annuler
-                  </Button>
-                  <Button type="submit">
-                    Envoyer la notification
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
     </>
