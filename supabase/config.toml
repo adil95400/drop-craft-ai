@@ -478,3 +478,6 @@ verify_jwt = true
 [functions.product-url-scraper]
 verify_jwt = true
 
+[functions.shopify-store-import]
+verify_jwt = true
+

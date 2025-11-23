@@ -89,11 +89,11 @@ export const IMPORT_TEMPLATES: ImportTemplate[] = [
     id: 'shopify',
     name: 'shopify',
     displayName: 'Shopify Store',
-    description: 'Import from any Shopify store',
+    description: 'Import from any Shopify store with variants and categories',
     icon: '🛍️',
     sourceType: 'api',
     provider: 'shopify',
-    requiresAuth: true,
+    requiresAuth: false,
     fieldMapping: {
       'id': 'external_id',
       'title': 'name',
@@ -104,9 +104,10 @@ export const IMPORT_TEMPLATES: ImportTemplate[] = [
       'vendor': 'brand'
     },
     defaultConfig: {
-      syncInventory: true,
-      syncOrders: false,
-      extractImages: true
+      syncInventory: false,
+      extractImages: true,
+      extractVariants: true,
+      extractCategories: true
     },
     urlPattern: /myshopify\.com/i
   },
