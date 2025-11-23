@@ -34,6 +34,10 @@ const OrdersQA = lazy(() => import('@/pages/qa/OrdersQA'));
 const QADashboard = lazy(() => import('@/pages/qa/QADashboard'));
 const ShopifyStore = lazy(() => import('@/pages/ShopifyStore'));
 const ShopifyProductDetail = lazy(() => import('@/pages/ShopifyProductDetail'));
+const CreateProduct = lazy(() => import('@/pages/products/CreateProduct'));
+const CreateOrder = lazy(() => import('@/pages/orders/CreateOrder'));
+const CreateCustomer = lazy(() => import('@/pages/customers/CreateCustomer'));
+const CreateNotification = lazy(() => import('@/pages/notifications/CreateNotification'));
 
 // Loading component
 const PageLoader = () => (
@@ -84,6 +88,12 @@ export function AppRoutes() {
         {/* Shopify Store Routes */}
         <Route path="/store" element={<ShopifyStore />} />
         <Route path="/store/product/:handle" element={<ShopifyProductDetail />} />
+        
+        {/* Creation Pages */}
+        <Route path="/products/create" element={<ProtectedRoute><CreateProduct /></ProtectedRoute>} />
+        <Route path="/orders/create" element={<ProtectedRoute><CreateOrder /></ProtectedRoute>} />
+        <Route path="/customers/create" element={<ProtectedRoute><CreateCustomer /></ProtectedRoute>} />
+        <Route path="/notifications/create" element={<ProtectedRoute><CreateNotification /></ProtectedRoute>} />
         
         {/* Admin Routes - Rôle admin requis */}
         <Route path="/admin/*" element={
