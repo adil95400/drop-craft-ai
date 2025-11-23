@@ -94,6 +94,12 @@ export function AdminSidebar() {
   const currentPath = location.pathname;
   const collapsed = !sidebarOpen;
 
+  // Fonction pour déterminer si une route est active
+  const isActive = (path: string) => {
+    if (path === '/admin') return currentPath === '/admin';
+    return currentPath === path || currentPath.startsWith(path + '/');
+  };
+
   // Obtenir tous les modules organisés par catégorie
   const categories = getAllCategories();
   const modulesByCategory = categories.map(category => ({
@@ -107,11 +113,6 @@ export function AdminSidebar() {
   const activeCategory = modulesByCategory.find(({ modules }) =>
     modules.some(m => isActive(m.route))
   )?.category.id;
-
-  const isActive = (path: string) => {
-    if (path === '/admin') return currentPath === '/admin';
-    return currentPath === path || currentPath.startsWith(path + '/');
-  };
   
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
