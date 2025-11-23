@@ -26,11 +26,44 @@ export const useAdminRole = () => {
   const { toast } = useToast()
 
   useEffect(() => {
-    if (profile) {
-      setIsAdmin(profile.is_admin === true)
-      setLoading(false)
+    const checkAdminStatus = async () => {
+      if (!user) {
+        setIsAdmin(false)
+        setLoading(false)
+        return
+      }
+
+      try {
+        // Double vérification: client (rapide) + serveur (sécurisé)
+        const clientCheck = profile?.is_admin === true
+        
+        // Vérification serveur sécurisée
+        const { data: serverCheck, error } = await supabase.rpc('is_admin_secure')
+        
+        if (error) {
+          console.error('Admin check error:', error)
+          setIsAdmin(clientCheck) // Fallback sur client en cas d'erreur
+        } else {
+          // Si incohérence, utiliser la vérification serveur (source de vérité)
+          const isAdminStatus = serverCheck === true
+          setIsAdmin(isAdminStatus)
+          
+          // Si incohérence détectée, rafraîchir le profil
+          if (clientCheck !== isAdminStatus) {
+            console.warn('Admin status mismatch detected, refreshing profile...')
+            await refetchProfile()
+          }
+        }
+      } catch (error) {
+        console.error('Failed to verify admin status:', error)
+        setIsAdmin(false)
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [profile])
+
+    checkAdminStatus()
+  }, [user, profile?.is_admin])
 
   const fetchAllUsers = async () => {
     try {
@@ -78,7 +111,9 @@ export const useAdminRole = () => {
   const changeUserRole = async (targetUserId: string, newRole: 'admin' | 'user') => {
     try {
       setLoading(true)
-      const { data, error } = await supabase.rpc('admin_update_user_role', {
+      
+      // Utiliser admin_set_role qui existe déjà
+      const { data, error } = await supabase.rpc('admin_set_role', {
         target_user_id: targetUserId,
         new_role: newRole
       })
@@ -109,7 +144,7 @@ export const useAdminRole = () => {
 
   const checkAdminAccess = async () => {
     try {
-      const { data, error } = await supabase.rpc('is_current_user_admin')
+      const { data, error } = await supabase.rpc('is_admin_secure')
       if (error) throw error
       return Boolean(data)
     } catch (error) {

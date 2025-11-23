@@ -8344,6 +8344,7 @@ export type Database = {
           full_name: string | null
           id: string
           interests: string[] | null
+          is_admin: boolean | null
           last_login_at: string | null
           login_count: number | null
           monthly_volume: string | null
@@ -8375,6 +8376,7 @@ export type Database = {
           full_name?: string | null
           id: string
           interests?: string[] | null
+          is_admin?: boolean | null
           last_login_at?: string | null
           login_count?: number | null
           monthly_volume?: string | null
@@ -8406,6 +8408,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           interests?: string[] | null
+          is_admin?: boolean | null
           last_login_at?: string | null
           login_count?: number | null
           monthly_volume?: string | null
@@ -13777,6 +13780,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { user_id_param?: string }; Returns: boolean }
+      is_admin_secure: { Args: never; Returns: boolean }
       is_admin_user: { Args: { user_id?: string }; Returns: boolean }
       is_authenticated_admin: { Args: never; Returns: boolean }
       is_authenticated_admin_secure: { Args: never; Returns: boolean }
