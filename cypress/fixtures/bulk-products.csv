@@ -1,0 +1,6 @@
+name,price,description,sku,stock_quantity,category,brand,tags
+"Product A",29.99,"Description A","SKU-A001",100,"Electronics","BrandA","tech,gadget"
+"Product B",39.99,"Description B","SKU-B001",80,"Fashion","BrandB","clothing,style"
+"Product C",49.99,"Description C","SKU-C001",60,"Home","BrandC","decor,furniture"
+"Product D",59.99,"Description D","SKU-D001",40,"Sports","BrandD","fitness,outdoor"
+"Product E",69.99,"Description E","SKU-E001",20,"Beauty","BrandE","skincare,cosmetics"
