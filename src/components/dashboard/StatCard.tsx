@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface StatCardProps {
   label: string;
@@ -9,13 +10,30 @@ interface StatCardProps {
   change: string;
   icon: LucideIcon;
   color: string;
+  href?: string;
+  onClick?: () => void;
 }
 
-export const StatCard = memo(({ label, value, change, icon: Icon, color }: StatCardProps) => {
+export const StatCard = memo(({ label, value, change, icon: Icon, color, href, onClick }: StatCardProps) => {
   const isPositive = change.startsWith('+');
+  const navigate = useNavigate();
+  
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else if (href) {
+      navigate(href);
+    }
+  };
   
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg hover:scale-105">
+    <Card 
+      className={cn(
+        "overflow-hidden transition-all hover:shadow-lg hover:scale-105",
+        (href || onClick) && "cursor-pointer"
+      )}
+      onClick={handleClick}
+    >
       <CardContent className="pt-6">
         <div className="flex items-center justify-between">
           <div className="space-y-1">

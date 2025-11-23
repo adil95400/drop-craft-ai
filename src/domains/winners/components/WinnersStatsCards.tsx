@@ -1,6 +1,8 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarChart3, TrendingUp, Target, Star } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { cn } from '@/lib/utils'
 import { WinnersStats } from '../types'
 
 interface WinnersStatsCardsProps {
@@ -14,20 +16,30 @@ export const WinnersStatsCards = ({
   totalSources = 0, 
   isLoading = false 
 }: WinnersStatsCardsProps) => {
+  const navigate = useNavigate();
+
   const StatCard = ({ 
     title, 
     value, 
     subtitle, 
     icon: Icon, 
-    className = "" 
+    className = "",
+    href
   }: {
     title: string
     value: string | number
     subtitle: string
     icon: any
     className?: string
+    href?: string
   }) => (
-    <Card className={className}>
+    <Card 
+      className={cn(
+        className,
+        href && "cursor-pointer transition-all hover:shadow-lg hover:scale-105"
+      )}
+      onClick={() => href && navigate(href)}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
@@ -54,6 +66,7 @@ export const WinnersStatsCards = ({
         value={stats.totalAnalyzed}
         subtitle={`${totalSources} sources actives`}
         icon={BarChart3}
+        href="/products"
       />
       
       <StatCard
@@ -62,6 +75,7 @@ export const WinnersStatsCards = ({
         subtitle="Score > 70"
         icon={TrendingUp}
         className="border-green-200 bg-green-50/50"
+        href="/winners"
       />
       
       <StatCard
@@ -69,6 +83,7 @@ export const WinnersStatsCards = ({
         value={Math.round(stats.averageScore)}
         subtitle="Sur 100 points"
         icon={Target}
+        href="/analytics"
       />
       
       <StatCard
@@ -77,6 +92,7 @@ export const WinnersStatsCards = ({
         subtitle="Taux de succès"
         icon={Star}
         className="border-blue-200 bg-blue-50/50"
+        href="/automation/ai-hub"
       />
     </div>
   )

@@ -23,28 +23,32 @@ export default function DashboardHome() {
       value: stats.productsCount.toLocaleString(), 
       change: `${stats.productsChange >= 0 ? '+' : ''}${stats.productsChange.toFixed(1)}%`, 
       icon: Package, 
-      color: "from-blue-500 to-blue-600" 
+      color: "from-blue-500 to-blue-600",
+      href: "/products"
     },
     { 
       label: "Commandes", 
       value: stats.ordersCount.toLocaleString(), 
       change: `${stats.ordersChange >= 0 ? '+' : ''}${stats.ordersChange.toFixed(1)}%`, 
       icon: ShoppingCart, 
-      color: "from-green-500 to-green-600" 
+      color: "from-green-500 to-green-600",
+      href: "/dashboard/orders"
     },
     { 
       label: "Clients", 
       value: stats.customersCount.toLocaleString(), 
       change: `${stats.customersChange >= 0 ? '+' : ''}${stats.customersChange.toFixed(1)}%`, 
       icon: Users, 
-      color: "from-purple-500 to-purple-600" 
+      color: "from-purple-500 to-purple-600",
+      href: "/customers"
     },
     { 
       label: "CA Mensuel", 
       value: `€${stats.monthlyRevenue.toFixed(2)}`, 
       change: `${stats.revenueChange >= 0 ? '+' : ''}${stats.revenueChange.toFixed(1)}%`, 
       icon: TrendingUp, 
-      color: "from-orange-500 to-orange-600" 
+      color: "from-orange-500 to-orange-600",
+      href: "/analytics"
     }
   ] : []
   return (
@@ -88,6 +92,7 @@ export default function DashboardHome() {
               change={stat.change}
               icon={stat.icon}
               color={stat.color}
+              href={stat.href}
             />
           ))
         )}

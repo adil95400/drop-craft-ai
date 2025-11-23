@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -44,25 +45,29 @@ export const ReviewManagementHub = () => {
       title: 'Total des avis',
       value: analytics?.total_reviews || 0,
       icon: MessageSquare,
-      color: 'text-blue-500'
+      color: 'text-blue-500',
+      href: '/reviews'
     },
     {
       title: 'Note moyenne',
       value: analytics?.average_rating?.toFixed(1) || '0.0',
       icon: Star,
-      color: 'text-yellow-500'
+      color: 'text-yellow-500',
+      href: '/reviews'
     },
     {
       title: 'En attente',
       value: analytics?.by_status?.pending || 0,
       icon: Clock,
-      color: 'text-orange-500'
+      color: 'text-orange-500',
+      href: '/reviews'
     },
     {
       title: 'Approuvés',
       value: analytics?.by_status?.approved || 0,
       icon: CheckCircle,
-      color: 'text-green-500'
+      color: 'text-green-500',
+      href: '/reviews'
     }
   ];
 
@@ -79,19 +84,26 @@ export const ReviewManagementHub = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {statCards.map((stat, index) => (
-          <Card key={index}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.title}</p>
-                  <h3 className="text-2xl font-bold mt-2">{stat.value}</h3>
+        {statCards.map((stat, index) => {
+          const navigate = useNavigate();
+          return (
+            <Card 
+              key={index}
+              className="cursor-pointer transition-all hover:shadow-lg hover:scale-105"
+              onClick={() => stat.href && navigate(stat.href)}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{stat.title}</p>
+                    <h3 className="text-2xl font-bold mt-2">{stat.value}</h3>
+                  </div>
+                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
                 </div>
-                <stat.icon className={`h-8 w-8 ${stat.color}`} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Main Content */}

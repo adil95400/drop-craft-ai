@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Select,
@@ -69,28 +71,32 @@ export function BlogDashboard({ onCreatePost, onEditPost }: BlogDashboardProps) 
       value: stats.published,
       icon: BookOpen,
       color: 'text-green-600',
-      bg: 'bg-green-100'
+      bg: 'bg-green-100',
+      href: '/marketing/blog'
     },
     {
       title: 'Brouillons',
       value: stats.drafts,
       icon: FileText,
       color: 'text-yellow-600',
-      bg: 'bg-yellow-100'
+      bg: 'bg-yellow-100',
+      href: '/marketing/blog'
     },
     {
       title: 'Vues totales',
       value: stats.totalViews.toLocaleString(),
       icon: Eye,
       color: 'text-blue-600',
-      bg: 'bg-blue-100'
+      bg: 'bg-blue-100',
+      href: '/analytics'
     },
     {
       title: 'Articles IA',
       value: stats.aiGenerated,
       icon: Zap,
       color: 'text-purple-600',
-      bg: 'bg-purple-100'
+      bg: 'bg-purple-100',
+      href: '/automation/ai-hub'
     }
   ]
 
@@ -140,7 +146,11 @@ export function BlogDashboard({ onCreatePost, onEditPost }: BlogDashboardProps) 
           {/* Statistiques rapides */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {quickStats.map((stat, index) => (
-              <Card key={index}>
+              <Card 
+                key={index}
+                className="cursor-pointer transition-all hover:shadow-lg hover:scale-105"
+                onClick={() => stat.href && navigate(stat.href)}
+              >
                 <CardContent className="flex items-center p-6">
                   <div className={`p-3 rounded-full ${stat.bg} mr-4`}>
                     <stat.icon className={`h-6 w-6 ${stat.color}`} />
