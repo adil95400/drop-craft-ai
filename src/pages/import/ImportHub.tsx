@@ -98,7 +98,7 @@ export default function ImportHub() {
       </div>
 
       {/* 3 grandes cartes de navigation */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Carte Import par URL - NOUVEAU */}
         <Link to="/products/import/url">
           <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer border-2 hover:border-primary bg-gradient-to-br from-primary/5 to-primary/10">
@@ -136,6 +136,48 @@ export default function ImportHub() {
               <Button className="w-full mt-4 bg-primary hover:bg-primary/90">
                 <LinkIcon className="w-4 h-4 mr-2" />
                 Essayer maintenant
+              </Button>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* Carte Import Shopify Store - NOUVEAU */}
+        <Link to="/products/import/shopify-store">
+          <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer border-2 hover:border-primary bg-gradient-to-br from-green-500/5 to-green-500/10">
+            <CardHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-3 bg-green-500/20 rounded-lg">
+                  <Package className="w-6 h-6 text-green-600" />
+                </div>
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    Import Shopify
+                    <Badge variant="secondary" className="text-xs">NOUVEAU</Badge>
+                  </CardTitle>
+                </div>
+              </div>
+              <CardDescription>
+                Importez produits et variantes depuis n'importe quelle boutique Shopify
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span>Produits & variantes</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span>Catégories & tags</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span>Images & descriptions</span>
+                </div>
+              </div>
+              <Button className="w-full mt-4 bg-green-600 hover:bg-green-600/90">
+                <Package className="w-4 h-4 mr-2" />
+                Importer maintenant
               </Button>
             </CardContent>
           </Card>

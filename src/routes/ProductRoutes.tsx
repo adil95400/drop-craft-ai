@@ -14,6 +14,7 @@ const Catalogue = lazy(() => import('@/pages/CatalogueReal'));
 const ImportHub = lazy(() => import('@/pages/import/ImportHub'));
 const QuickImport = lazy(() => import('@/pages/import/QuickImport'));
 const URLImportPage = lazy(() => import('@/pages/import/URLImportPage'));
+const ShopifyStoreImportPage = lazy(() => import('@/pages/ShopifyStoreImportPage'));
 const AdvancedImport = lazy(() => import('@/pages/import/AdvancedImport'));
 const ImportManagement = lazy(() => import('@/pages/import/ImportManagement'));
 const ImportedProductsList = lazy(() => import('@/pages/import/manage/ImportedProductsList'));
@@ -59,6 +60,7 @@ export function ProductRoutes() {
       <Route path="import" element={<ImportHub />} />
       <Route path="import/quick" element={<QuickImport />} />
       <Route path="import/url" element={<URLImportPage />} />
+      <Route path="import/shopify-store" element={<ShopifyStoreImportPage />} />
       <Route path="import/advanced" element={<AdvancedImport />} />
       <Route path="import/manage" element={<ImportManagement />} />
       <Route path="import/manage/products" element={<ImportedProductsList />} />
