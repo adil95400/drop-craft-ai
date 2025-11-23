@@ -29,6 +29,9 @@ const AvisPositifUltraPro = lazy(() => import('@/pages/AvisPositifUltraPro'));
 const AdvancedImportPage = lazy(() => import('@/pages/import/AdvancedImportPage'));
 const SyncManagerPage = lazy(() => import('@/pages/sync/SyncManagerPage'));
 const OrdersCenterPage = lazy(() => import('@/pages/orders/OrdersCenterPage'));
+const ProductsQA = lazy(() => import('@/pages/qa/ProductsQA'));
+const OrdersQA = lazy(() => import('@/pages/qa/OrdersQA'));
+const QADashboard = lazy(() => import('@/pages/qa/QADashboard'));
 
 // Loading component
 const PageLoader = () => (
@@ -66,6 +69,11 @@ export function AppRoutes() {
         <Route path="/import/advanced" element={<ProtectedRoute><AppLayout><AdvancedImportPage /></AppLayout></ProtectedRoute>} />
         <Route path="/sync-manager" element={<ProtectedRoute><AppLayout><SyncManagerPage /></AppLayout></ProtectedRoute>} />
         <Route path="/orders-center" element={<ProtectedRoute><AppLayout><OrdersCenterPage /></AppLayout></ProtectedRoute>} />
+        
+        {/* QA Routes - Phase 4 */}
+        <Route path="/qa" element={<ProtectedRoute><AppLayout><QADashboard /></AppLayout></ProtectedRoute>} />
+        <Route path="/qa/products" element={<ProtectedRoute><AppLayout><ProductsQA /></AppLayout></ProtectedRoute>} />
+        <Route path="/qa/orders" element={<ProtectedRoute><AppLayout><OrdersQA /></AppLayout></ProtectedRoute>} />
         
         {/* Admin Routes - Rôle admin requis */}
         <Route path="/admin/*" element={
