@@ -32,6 +32,8 @@ const OrdersCenterPage = lazy(() => import('@/pages/orders/OrdersCenterPage'));
 const ProductsQA = lazy(() => import('@/pages/qa/ProductsQA'));
 const OrdersQA = lazy(() => import('@/pages/qa/OrdersQA'));
 const QADashboard = lazy(() => import('@/pages/qa/QADashboard'));
+const ShopifyStore = lazy(() => import('@/pages/ShopifyStore'));
+const ShopifyProductDetail = lazy(() => import('@/pages/ShopifyProductDetail'));
 
 // Loading component
 const PageLoader = () => (
@@ -74,6 +76,10 @@ export function AppRoutes() {
         <Route path="/qa" element={<ProtectedRoute><AppLayout><QADashboard /></AppLayout></ProtectedRoute>} />
         <Route path="/qa/products" element={<ProtectedRoute><AppLayout><ProductsQA /></AppLayout></ProtectedRoute>} />
         <Route path="/qa/orders" element={<ProtectedRoute><AppLayout><OrdersQA /></AppLayout></ProtectedRoute>} />
+        
+        {/* Shopify Store Routes */}
+        <Route path="/store" element={<ShopifyStore />} />
+        <Route path="/store/product/:handle" element={<ShopifyProductDetail />} />
         
         {/* Admin Routes - Rôle admin requis */}
         <Route path="/admin/*" element={
