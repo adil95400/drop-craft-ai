@@ -2,7 +2,7 @@
  * Point d'entrée principal du système de routing
  * Architecture modulaire optimisée pour la maintenance et les performances
  */
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 
@@ -55,6 +55,10 @@ export function AppRoutes() {
       <Routes>
         {/* Public Routes - Non authentifiés */}
         <Route path="/*" element={<PublicRoutes />} />
+        
+        {/* Redirections pour profil et paramètres */}
+        <Route path="/profile" element={<Navigate to="/dashboard/profile" replace />} />
+        <Route path="/settings" element={<Navigate to="/dashboard/settings" replace />} />
         
         {/* Protected App Routes - Authentification requise */}
         <Route path="/dashboard/*" element={<ProtectedRoute><AppLayout><CoreRoutes /></AppLayout></ProtectedRoute>} />
