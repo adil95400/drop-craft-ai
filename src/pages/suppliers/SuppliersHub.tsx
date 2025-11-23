@@ -10,6 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useNavigate } from 'react-router-dom'
 import { useRealSuppliers } from '@/hooks/useRealSuppliers'
 import { ImportSuppliersDialog } from '@/components/suppliers/ImportSuppliersDialog'
+import { SupplierStatsChart } from '@/components/suppliers/SupplierStatsChart'
+import { TrendingSuppliers } from '@/components/suppliers/TrendingSuppliers'
+import { RecentActivity } from '@/components/suppliers/RecentActivity'
 import {
   Store, ShoppingCart, Settings, TrendingUp, Package, Globe, Zap,
   CheckCircle, AlertCircle, Search, Plus, Upload, Download, RefreshCw,
@@ -132,6 +135,9 @@ export default function SuppliersHub() {
           </Card>
         </div>
 
+        {/* Analytics Charts */}
+        <SupplierStatsChart suppliers={suppliers} />
+
         {/* Main Navigation Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card 
@@ -232,6 +238,12 @@ export default function SuppliersHub() {
               <Button className="w-full mt-4" variant="outline">Créer</Button>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Trending & Activity */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TrendingSuppliers />
+          <RecentActivity />
         </div>
 
         {/* Suppliers List/Grid */}
