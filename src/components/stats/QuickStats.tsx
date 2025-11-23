@@ -1,6 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -19,6 +21,8 @@ interface Stat {
   trend?: 'up' | 'down' | 'neutral';
   icon: React.ElementType;
   description?: string;
+  href?: string;
+  onClick?: () => void;
 }
 
 interface QuickStatsProps {
@@ -27,6 +31,8 @@ interface QuickStatsProps {
 }
 
 export function QuickStats({ stats, className }: QuickStatsProps) {
+  const navigate = useNavigate();
+  
   const formatValue = (value: string | number) => {
     if (typeof value === 'number') {
       return value.toLocaleString('fr-FR');
@@ -56,13 +62,29 @@ export function QuickStats({ stats, className }: QuickStatsProps) {
     }
   };
 
+  const handleClick = (stat: Stat) => {
+    if (stat.onClick) {
+      stat.onClick();
+    } else if (stat.href) {
+      navigate(stat.href);
+    }
+  };
+
   return (
     <div className={`grid gap-4 md:grid-cols-2 lg:grid-cols-4 ${className}`}>
       {stats.map((stat, index) => {
         const Icon = stat.icon;
+        const isClickable = !!(stat.href || stat.onClick);
         
         return (
-          <Card key={index} className="relative overflow-hidden">
+          <Card 
+            key={index} 
+            className={cn(
+              "relative overflow-hidden",
+              isClickable && "cursor-pointer transition-all hover:shadow-lg hover:scale-105"
+            )}
+            onClick={() => isClickable && handleClick(stat)}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.title}

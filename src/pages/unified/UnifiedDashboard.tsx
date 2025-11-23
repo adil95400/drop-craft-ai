@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -69,6 +70,7 @@ interface SmartMetric {
   description: string
   urgent?: boolean
   planRestricted?: boolean
+  href?: string
 }
 
 export default function UnifiedDashboard() {
@@ -239,32 +241,38 @@ export default function UnifiedDashboard() {
     return baseMetrics
   }
 
-  const StatCard = ({ title, value, icon: Icon, change, trend, urgent }: any) => (
-    <Card className={`relative overflow-hidden ${urgent ? 'border-orange-500' : ''}`}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <Icon className={`h-4 w-4 ${urgent ? 'text-orange-500' : 'text-muted-foreground'}`} />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {change !== undefined && (
-          <div className="flex items-center text-xs text-muted-foreground">
-            {trend === 'up' ? (
-              <ArrowUpRight className="mr-1 h-3 w-3 text-emerald-500" />
-            ) : (
-              <ArrowDownRight className="mr-1 h-3 w-3 text-red-500" />
-            )}
-            <span className={trend === 'up' ? 'text-emerald-500' : 'text-red-500'}>
-              {Math.abs(change)}%
-            </span>
-            <span className="ml-1">vs mois dernier</span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  )
+  const StatCard = ({ title, value, icon: Icon, change, trend, urgent, href }: any) => {
+    const navigate = useNavigate();
+    return (
+      <Card 
+        className={`relative overflow-hidden ${urgent ? 'border-orange-500' : ''} ${href ? 'cursor-pointer transition-all hover:shadow-lg hover:scale-105' : ''}`}
+        onClick={() => href && navigate(href)}
+      >
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            {title}
+          </CardTitle>
+          <Icon className={`h-4 w-4 ${urgent ? 'text-orange-500' : 'text-muted-foreground'}`} />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{value}</div>
+          {change !== undefined && (
+            <div className="flex items-center text-xs text-muted-foreground">
+              {trend === 'up' ? (
+                <ArrowUpRight className="mr-1 h-3 w-3 text-emerald-500" />
+              ) : (
+                <ArrowDownRight className="mr-1 h-3 w-3 text-red-500" />
+              )}
+              <span className={trend === 'up' ? 'text-emerald-500' : 'text-red-500'}>
+                {Math.abs(change)}%
+              </span>
+              <span className="ml-1">vs mois dernier</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (loading || planLoading) {
     return (
@@ -395,6 +403,7 @@ export default function UnifiedDashboard() {
               change={metric.change.value}
               trend={metric.change.trend}
               urgent={metric.urgent}
+              href={metric.href}
             />
           ))}
         </div>
