@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useSupplierActions } from '@/hooks/useSupplierActions'
 import { ImportSuppliersDialog } from '@/components/suppliers/ImportSuppliersDialog'
+import { SupplierPreviewModal } from '@/components/suppliers/SupplierPreviewModal'
 import { useNavigate } from 'react-router-dom'
 import {
   Store, Search, Filter, Globe, Clock, Star, Zap, Package,
-  ExternalLink, Plus, Upload, TrendingUp, Shield
+  ExternalLink, Plus, Upload, TrendingUp, Shield, Info
 } from 'lucide-react'
 
 interface MarketplaceSupplier {
@@ -116,6 +117,7 @@ export default function SuppliersBrowse() {
   const [selectedCountry, setSelectedCountry] = useState('Tous')
   const [showOnlyFeatured, setShowOnlyFeatured] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
+  const [previewSupplier, setPreviewSupplier] = useState<any>(null)
   const { connectSupplier, isConnecting } = useSupplierActions()
   const navigate = useNavigate()
 
@@ -370,15 +372,21 @@ export default function SuppliersBrowse() {
                 
                 <div className="flex gap-2 pt-2">
                   <Button 
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setPreviewSupplier(supplier)}
+                  >
+                    <Info className="h-4 w-4 mr-2" />
+                    Détails
+                  </Button>
+                  <Button 
                     className="flex-1 gap-2"
-                    onClick={() => handleConnect(supplier.id)}
-                    disabled={isConnecting}
+                    onClick={() => {
+                      setPreviewSupplier(supplier)
+                    }}
                   >
                     <Zap className="h-4 w-4" />
-                    {isConnecting ? 'Connexion...' : 'Connecter'}
-                  </Button>
-                  <Button variant="outline" size="icon">
-                    <ExternalLink className="h-4 w-4" />
+                    Connecter
                   </Button>
                 </div>
               </CardContent>
@@ -387,6 +395,17 @@ export default function SuppliersBrowse() {
         </div>
 
         <ImportSuppliersDialog open={showImportDialog} onOpenChange={setShowImportDialog} />
+        <SupplierPreviewModal 
+          open={!!previewSupplier} 
+          onOpenChange={(open) => !open && setPreviewSupplier(null)}
+          supplier={previewSupplier}
+          onConnect={async () => {
+            if (previewSupplier) {
+              await handleConnect(previewSupplier.id)
+              setPreviewSupplier(null)
+            }
+          }}
+        />
       </div>
     </>
   )
