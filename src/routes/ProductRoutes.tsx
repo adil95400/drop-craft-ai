@@ -50,6 +50,8 @@ const VendorManagementPage = lazy(() => import('@/pages/VendorManagementPage'));
 // Advanced Products
 const AdvancedProductsPage = lazy(() => import('@/pages/products/AdvancedProductsPage'));
 const AdvancedSuppliersPage = lazy(() => import('@/pages/AdvancedSuppliersPage'));
+const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'));
+const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'));
 
 export function ProductRoutes() {
   return (
@@ -75,6 +77,9 @@ export function ProductRoutes() {
       
       {/* Suppliers */}
       <Route path="suppliers" element={<SuppliersHub />} />
+      <Route path="suppliers/create" element={<CreateSupplier />} />
+      <Route path="suppliers/:id" element={<SupplierDetails />} />
+      <Route path="suppliers/:id/edit" element={<CreateSupplier />} />
       <Route path="suppliers/advanced" element={<AdvancedSuppliersPage />} />
       <Route path="suppliers/marketplace" element={<SuppliersMarketplace />} />
       <Route path="suppliers/manage" element={<ManageSuppliers />} />
