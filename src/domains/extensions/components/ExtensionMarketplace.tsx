@@ -14,7 +14,7 @@ import {
   Zap, Puzzle, TrendingUp, Shield, Package, ExternalLink
 } from 'lucide-react'
 import { ExtensionCard } from './ExtensionCard'
-import { usePlan } from '@/contexts/PlanContext'
+import { useUnifiedPlan } from '@/lib/unified-plan-system'
 
 interface Extension {
   id: string
@@ -132,7 +132,7 @@ const CATEGORIES = [
 ]
 
 export const ExtensionMarketplace: React.FC = () => {
-  const { hasFeature } = usePlan()
+  const { hasFeature } = useUnifiedPlan()
   const [extensions] = useState<Extension[]>(SAMPLE_EXTENSIONS)
   const [filteredExtensions, setFilteredExtensions] = useState<Extension[]>(SAMPLE_EXTENSIONS)
   const [searchQuery, setSearchQuery] = useState('')
