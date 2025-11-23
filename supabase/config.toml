@@ -55,16 +55,7 @@ verify_jwt = true
 [functions.sync-integration] 
 verify_jwt = true
 
-[functions.unified-integrations]
-verify_jwt = true
-
-[functions.unified-payments]
-verify_jwt = true
-
 [functions.unified-ai]
-verify_jwt = true
-
-[functions.unified-management]
 verify_jwt = true
 
 [functions.unified-import]
