@@ -146,7 +146,7 @@ export function UnifiedSidebar() {
               <Sparkles className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1">
-              <h2 className="font-semibold text-sm">DropCraft AI</h2>
+              <h2 className="font-semibold text-sm">ShopOpti</h2>
               <p className="text-xs text-muted-foreground">E-commerce Platform</p>
             </div>
           </div>

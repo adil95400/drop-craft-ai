@@ -387,7 +387,7 @@ export function SupportCenter() {
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center justify-between text-sm">
                     <span>Email:</span>
-                    <span>support@dropcraft.ai</span>
+                    <span>support@shopopti.com</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span>Réponse sous:</span>

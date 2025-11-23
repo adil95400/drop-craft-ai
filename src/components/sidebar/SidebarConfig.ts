@@ -55,7 +55,7 @@ export const userActivityConfig = {
   pendingTasks: 12,
   avatar: "/avatars/user-pro.jpg",
   name: "Utilisateur Pro",
-  email: "pro@dropcraft.ai"
+  email: "pro@shopopti.com"
 };
 
 // Map des icônes pour éviter les erreurs de référence

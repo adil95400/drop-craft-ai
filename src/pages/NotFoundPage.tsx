@@ -10,7 +10,7 @@ export default function NotFoundPage() {
   return (
     <>
       <Helmet>
-        <title>Page non trouvée - DropCraft AI</title>
+        <title>Page non trouvée - ShopOpti</title>
         <meta name="description" content="La page que vous recherchez n'existe pas ou a été déplacée." />
       </Helmet>
       

@@ -6,7 +6,7 @@ export default function MarketplaceIntegrationsPage() {
   return (
     <>
       <Helmet>
-        <title>Intégrations Marketplace - DropCraft AI</title>
+        <title>Intégrations Marketplace - ShopOpti</title>
         <meta
           name="description"
           content="Connectez et synchronisez vos boutiques sur Etsy, Cdiscount, Allegro, ManoMano et autres marketplaces"

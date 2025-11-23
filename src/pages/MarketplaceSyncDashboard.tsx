@@ -176,7 +176,7 @@ export default function MarketplaceSyncDashboard() {
   return (
     <>
       <Helmet>
-        <title>Synchronisation Marketplace - DropCraft AI</title>
+        <title>Synchronisation Marketplace - ShopOpti</title>
         <meta
           name="description"
           content="Gérez vos synchronisations avec Shopify, Amazon, eBay et autres marketplaces"

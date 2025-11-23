@@ -28,7 +28,7 @@ export default function AcademyPage() {
         <div className="text-center space-y-4 py-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
             <GraduationCap className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium">DropCraft Academy</span>
+            <span className="text-sm font-medium">ShopOpti Academy</span>
           </div>
           
           <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-primary via-purple-500 to-blue-500 bg-clip-text text-transparent">

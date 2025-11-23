@@ -111,7 +111,7 @@ export const useSettingsActions = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `dropcraft-export-${Date.now()}.json`;
+      a.download = `shopopti-export-${Date.now()}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

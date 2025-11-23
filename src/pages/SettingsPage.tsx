@@ -95,7 +95,7 @@ const SettingsPage = () => {
   return (
     <>
       <Helmet>
-        <title>Paramètres - DropCraft</title>
+        <title>Paramètres - ShopOpti</title>
         <meta name="description" content="Configurez vos préférences et paramètres de compte" />
       </Helmet>
 

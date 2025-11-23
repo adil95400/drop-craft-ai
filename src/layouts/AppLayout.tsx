@@ -56,7 +56,7 @@ export function AppLayout({
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input 
-                    placeholder="Rechercher dans DropCraft AI..." 
+                    placeholder="Rechercher dans ShopOpti..." 
                     className="pl-8 bg-muted/50 border-0 focus-visible:ring-1" 
                   />
                 </div>

@@ -19,7 +19,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-14 items-center justify-between px-4">
               <div className="flex items-center space-x-4">
-                <h1 className="font-semibold">DropCraft AI</h1>
+                <h1 className="font-semibold">ShopOpti</h1>
               </div>
               
               <div className="flex items-center space-x-4">

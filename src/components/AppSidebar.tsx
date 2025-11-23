@@ -49,7 +49,7 @@ const ShopoptiLogo = memo(() => (
     </div>
     <div className="flex flex-col">
       <span className="font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent transition-all duration-300 group-hover:from-primary/80 group-hover:to-secondary/80">
-        DropCraft AI
+        ShopOpti
       </span>
       <span className="text-xs text-muted-foreground -mt-1 flex items-center gap-1">
         <Sparkles className="w-3 h-3" />

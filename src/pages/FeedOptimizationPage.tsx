@@ -111,7 +111,7 @@ export default function FeedOptimizationPage() {
   return (
     <>
       <Helmet>
-        <title>Feed Management & Optimization - DropCraft AI</title>
+        <title>Feed Management & Optimization - ShopOpti</title>
         <meta name="description" content="Gérez et optimisez vos flux produits pour tous vos canaux de vente" />
       </Helmet>
 

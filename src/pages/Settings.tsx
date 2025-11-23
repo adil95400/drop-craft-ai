@@ -330,21 +330,10 @@ const Settings = () => {
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Documentation API - DropCraft</title>
-  <style>
-    body { font-family: -apple-system, sans-serif; margin: 40px; line-height: 1.6; }
-    .endpoint { background: #f5f5f5; padding: 15px; margin: 20px 0; border-radius: 8px; }
-    .method { display: inline-block; padding: 4px 8px; border-radius: 4px; color: white; margin-right: 10px; }
-    .get { background: #2196F3; }
-    .post { background: #4CAF50; }
-    .put { background: #FF9800; }
-    .delete { background: #f44336; }
-    pre { background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 8px; overflow-x: auto; }
-  </style>
-</head>
-<body>
-  <h1>📚 Documentation API DropCraft</h1>
-  <p>Cette API vous permet d'intégrer DropCraft avec vos applications tierces.</p>
+  <title>Documentation API - ShopOpti</title>
+...
+  <h1>📚 Documentation API ShopOpti</h1>
+  <p>Cette API vous permet d'intégrer ShopOpti avec vos applications tierces.</p>
   
   <h2>🔑 Authentication</h2>
   <p>Toutes les requêtes doivent inclure votre clé API dans l'en-tête:</p>
@@ -411,7 +400,7 @@ const Settings = () => {
   </ul>
   
   <hr>
-  <p><em>Besoin d'aide ? Contactez notre support à api-support@dropcraft.com</em></p>
+  <p><em>Besoin d'aide ? Contactez notre support à api-support@shopopti.com</em></p>
 </body>
 </html>`;
     

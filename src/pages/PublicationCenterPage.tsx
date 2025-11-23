@@ -58,7 +58,7 @@ export default function PublicationCenterPage() {
   return (
     <>
       <Helmet>
-        <title>Centre de Publication - DropCraft AI</title>
+        <title>Centre de Publication - ShopOpti</title>
         <meta 
           name="description" 
           content="Publiez vos produits sur plusieurs marketplaces simultanément"

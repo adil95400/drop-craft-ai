@@ -58,7 +58,7 @@ export default function ProductSourcingAssistant() {
   return (
     <>
       <Helmet>
-        <title>Product Sourcing Assistant - DropCraft AI</title>
+        <title>Product Sourcing Assistant - ShopOpti</title>
         <meta name="description" content="Trouvez les meilleurs fournisseurs pour vos produits avec comparaison intelligente et recommandations IA" />
       </Helmet>
 

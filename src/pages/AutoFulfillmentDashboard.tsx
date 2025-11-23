@@ -107,7 +107,7 @@ export default function AutoFulfillmentDashboard() {
   return (
     <>
       <Helmet>
-        <title>Auto-Fulfillment Dashboard - DropCraft AI</title>
+        <title>Auto-Fulfillment Dashboard - ShopOpti</title>
         <meta name="description" content="Système d'exécution automatique des commandes avec multi-fournisseurs et routing intelligent" />
       </Helmet>
 

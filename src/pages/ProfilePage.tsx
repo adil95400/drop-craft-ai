@@ -87,7 +87,7 @@ const ProfilePage = () => {
   return (
     <>
       <Helmet>
-        <title>Mon Profil - DropCraft</title>
+        <title>Mon Profil - ShopOpti</title>
         <meta name="description" content="Gérez vos informations personnelles et préférences de compte" />
       </Helmet>
 
