@@ -50,7 +50,7 @@ const AnalyticsDashboard = lazy(() => import('@/pages/AnalyticsDashboard'));
 const ProductCatalog = lazy(() => import('@/pages/ProductCatalog'));
 
 // Suppliers & Marketing
-const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
+const SuppliersHub = lazy(() => import('@/pages/suppliers/SuppliersHub'));
 const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'));
 const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'));
 const MarketingPage = lazy(() => import('@/pages/MarketingPage'));
@@ -124,7 +124,7 @@ export function CoreRoutes() {
       <Route path="products" element={<ProductCatalog />} />
       
       {/* Suppliers & Marketing */}
-      <Route path="suppliers" element={<SuppliersPage />} />
+      <Route path="suppliers" element={<SuppliersHub />} />
       <Route path="suppliers/create" element={<CreateSupplier />} />
       <Route path="suppliers/:id" element={<SupplierDetails />} />
       <Route path="suppliers/:id/edit" element={<CreateSupplier />} />

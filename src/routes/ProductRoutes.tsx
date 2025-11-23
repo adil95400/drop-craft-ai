@@ -22,12 +22,10 @@ const ImportHistoryPage = lazy(() => import('@/pages/import/history/SimpleHistor
 const ImportResults = lazy(() => import('@/pages/import/ImportResults'));
 const ImportSources = lazy(() => import('@/pages/import/ImportSources'));
 
-// Suppliers
+// Suppliers - Nouvelle structure consolidée
 const SuppliersHub = lazy(() => import('@/pages/suppliers/SuppliersHub'));
-const ManageSuppliers = lazy(() => import('@/pages/suppliers/ManageSuppliers'));
-const SuppliersMarketplace = lazy(() => import('@/pages/suppliers/SuppliersMarketplace'));
-const ManageSuppliersList = lazy(() => import('@/pages/suppliers/manage/ManageSuppliersList'));
-const ManageSuppliersConnectors = lazy(() => import('@/pages/suppliers/manage/ManageSuppliersConnectors'));
+const SuppliersBrowse = lazy(() => import('@/pages/suppliers/SuppliersBrowse'));
+const SuppliersManage = lazy(() => import('@/pages/suppliers/SuppliersManage'));
 
 // Winners & Research
 const WinnersPage = lazy(() => import('@/pages/WinnersPage'));
@@ -49,7 +47,6 @@ const VendorManagementPage = lazy(() => import('@/pages/VendorManagementPage'));
 
 // Advanced Products
 const AdvancedProductsPage = lazy(() => import('@/pages/products/AdvancedProductsPage'));
-const AdvancedSuppliersPage = lazy(() => import('@/pages/AdvancedSuppliersPage'));
 const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'));
 const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'));
 
@@ -75,16 +72,13 @@ export function ProductRoutes() {
       <Route path="import/results" element={<ImportResults />} />
       <Route path="import/sources" element={<ImportSources />} />
       
-      {/* Suppliers */}
+      {/* Suppliers - Structure unifiée */}
       <Route path="suppliers" element={<SuppliersHub />} />
+      <Route path="suppliers/browse" element={<SuppliersBrowse />} />
+      <Route path="suppliers/manage" element={<SuppliersManage />} />
       <Route path="suppliers/create" element={<CreateSupplier />} />
       <Route path="suppliers/:id" element={<SupplierDetails />} />
       <Route path="suppliers/:id/edit" element={<CreateSupplier />} />
-      <Route path="suppliers/advanced" element={<AdvancedSuppliersPage />} />
-      <Route path="suppliers/marketplace" element={<SuppliersMarketplace />} />
-      <Route path="suppliers/manage" element={<ManageSuppliers />} />
-      <Route path="suppliers/manage/list" element={<ManageSuppliersList />} />
-      <Route path="suppliers/manage/connectors" element={<ManageSuppliersConnectors />} />
       
       {/* Product Research */}
       <Route path="winners" element={<WinnersPage />} />
