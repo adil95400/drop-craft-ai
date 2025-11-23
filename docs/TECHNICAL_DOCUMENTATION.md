@@ -1,669 +1,679 @@
 # Documentation Technique - Drop Craft AI
 
-## Architecture Générale
+## Table des matières
 
-### Stack Technologique
+1. [Vue d'ensemble](#vue-densemble)
+2. [Architecture du système](#architecture-du-système)
+3. [Stack technologique](#stack-technologique)
+4. [Structure du projet](#structure-du-projet)
+5. [Services et modules](#services-et-modules)
+6. [Base de données](#base-de-données)
+7. [Edge Functions](#edge-functions)
+8. [Authentification et sécurité](#authentification-et-sécurité)
+9. [Intégrations externes](#intégrations-externes)
+10. [Performance et optimisation](#performance-et-optimisation)
 
-- **Frontend**: React 18 + TypeScript + Vite
-- **UI Framework**: Tailwind CSS + shadcn/ui
-- **Backend**: Supabase (PostgreSQL + Edge Functions)
-- **Authentication**: Supabase Auth
-- **Déploiement**: Vercel (Frontend) + Supabase (Backend)
-- **Monitoring**: Sentry + Vercel Analytics
+---
 
-### Architecture des Composants
+## Vue d'ensemble
 
-```mermaid
-graph TB
-    A[React App] --> B[Router]
-    B --> C[Layout Components]
-    B --> D[Page Components]
-    C --> E[UI Components]
-    D --> E
-    E --> F[Hooks]
-    F --> G[Supabase Client]
-    G --> H[Database]
-    G --> I[Edge Functions]
+Drop Craft AI est une plateforme complète de dropshipping assistée par IA, permettant aux utilisateurs de :
+- Importer et gérer des produits depuis diverses sources
+- Optimiser les descriptions et images avec l'IA
+- Synchroniser avec Shopify et d'autres plateformes
+- Automatiser les workflows marketing
+- Analyser les performances avec des insights IA
+
+### Architecture globale
+
+```
+┌─────────────────┐
+│   Frontend      │
+│   React + TS    │
+│   + Tailwind    │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Supabase       │
+│  - Auth         │
+│  - Database     │
+│  - Storage      │
+│  - Edge Funcs   │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Intégrations   │
+│  - Shopify      │
+│  - AliExpress   │
+│  - OpenAI       │
+│  - Stripe       │
+└─────────────────┘
 ```
 
-## Structure du Projet
+---
+
+## Architecture du système
+
+### Architecture Frontend
+
+**Modèle Domain-Driven Design (DDD)**
 
 ```
 src/
-├── components/          # Composants réutilisables
-│   ├── ui/             # shadcn/ui components
-│   ├── admin/          # Composants admin
-│   ├── auth/           # Composants d'authentification
-│   ├── common/         # Composants communs
-│   └── layout/         # Layout et navigation
-├── pages/              # Pages de l'application
-├── hooks/              # Hooks React personnalisés
-├── lib/                # Utilitaires et configuration
-├── contexts/           # Contextes React
-├── integrations/       # Configuration Supabase
-├── utils/              # Fonctions utilitaires
-└── styles/             # Styles CSS globaux
+├── domains/              # Domaines métier
+│   ├── commerce/        # Gestion produits, commandes
+│   ├── marketing/       # Campagnes, analytics
+│   └── automation/      # Workflows automatisés
+├── components/          # Composants UI réutilisables
+├── hooks/              # React hooks personnalisés
+├── lib/                # Utilitaires et helpers
+└── integrations/       # Clients API (Supabase, etc.)
 ```
 
-## Base de Données
+### Flux de données
 
-### Schema Principal
+```
+User Action
+    ↓
+Component (React)
+    ↓
+Hook (useQuery/useMutation)
+    ↓
+Service Layer
+    ↓
+Supabase Client
+    ↓
+Database / Edge Function
+```
 
+---
+
+## Stack technologique
+
+### Frontend
+- **React 18.3.1** - Framework UI
+- **TypeScript** - Typage statique
+- **Vite** - Build tool et dev server
+- **Tailwind CSS** - Framework CSS utilitaire
+- **shadcn/ui** - Composants UI
+- **TanStack Query** - Gestion d'état serveur
+- **React Hook Form + Zod** - Gestion de formulaires
+- **React Router** - Routing
+- **Framer Motion** - Animations
+
+### Backend (Supabase)
+- **PostgreSQL** - Base de données
+- **Supabase Auth** - Authentification
+- **Supabase Storage** - Stockage fichiers
+- **Edge Functions (Deno)** - Serverless functions
+- **Row Level Security** - Sécurité au niveau ligne
+
+### Outils de développement
+- **Vitest** - Tests unitaires
+- **Cypress** - Tests E2E
+- **Playwright** - Tests d'intégration
+- **ESLint + Prettier** - Linting et formatage
+- **Husky** - Git hooks
+
+---
+
+## Structure du projet
+
+### Détail des dossiers principaux
+
+#### `/src/domains`
+Organisation par domaine métier avec services, types et logique métier isolés.
+
+```typescript
+// Exemple: domains/commerce/services/catalogService.ts
+export class CatalogService {
+  async getProducts(filters?: CommerceFilters) {
+    // Logique métier isolée
+  }
+}
+```
+
+#### `/src/components`
+Composants UI réutilisables organisés par fonction.
+
+```
+components/
+├── ui/               # shadcn components
+├── forms/           # Composants de formulaires
+├── layouts/         # Layouts de page
+└── features/        # Composants feature-specific
+```
+
+#### `/src/hooks`
+Hooks React personnalisés pour la logique réutilisable.
+
+```typescript
+// Exemple: hooks/useSupabaseData.ts
+export const useProducts = () => {
+  return useQuery({
+    queryKey: ['products'],
+    queryFn: () => catalogService.getProducts()
+  });
+};
+```
+
+#### `/supabase/functions`
+Edge Functions serverless pour la logique backend.
+
+```
+functions/
+├── _shared/          # Code partagé
+├── shopify-sync/     # Sync Shopify
+├── ai-optimize/      # Optimisation IA
+└── csv-import/       # Import CSV
+```
+
+---
+
+## Services et modules
+
+### CatalogService
+Gestion du catalogue produits avec cache.
+
+```typescript
+class CatalogService {
+  // Cache avec TTL de 10 minutes
+  private cache: Map<string, CachedData>;
+  
+  async getProducts(filters?: CommerceFilters): Promise<{
+    products: CatalogProduct[];
+    total: number;
+  }>;
+  
+  async getProduct(id: string): Promise<CatalogProduct | null>;
+  async importProduct(productId: string): Promise<any>;
+}
+```
+
+### ImportService
+Gestion des imports de produits multi-sources.
+
+```typescript
+class ImportService {
+  async startUrlImport(url: string, config?: Record<string, any>);
+  async startSupplierImport(supplier: string, config?: Record<string, any>);
+  async approveProduct(productId: string);
+  async publishProduct(productId: string);
+}
+```
+
+### AIScraperService
+Scraping intelligent avec IA.
+
+```typescript
+class AIScraperService {
+  async scrapeWithAI(url: string): Promise<{
+    success: boolean;
+    products: ScrapedProduct[];
+  }>;
+  
+  async optimizeProduct(
+    product: ScrapedProduct,
+    options?: AIOptimizationOptions
+  ): Promise<OptimizedProduct>;
+  
+  async detectPageType(url: string): Promise<PageType>;
+}
+```
+
+### NotificationService
+Système de notifications en temps réel.
+
+```typescript
+class NotificationService {
+  init(userId: string): void;
+  subscribe(callback: NotificationCallback): () => void;
+  addNotification(notification: Notification): void;
+  markAsRead(notificationId: string): Promise<void>;
+}
+```
+
+---
+
+## Base de données
+
+### Tables principales
+
+#### `products`
 ```sql
--- Users (géré par Supabase Auth)
--- Extension du profil utilisateur
-CREATE TABLE profiles (
-  id UUID REFERENCES auth.users PRIMARY KEY,
-  full_name TEXT,
-  company TEXT,
-  avatar_url TEXT,
-  subscription_plan TEXT DEFAULT 'free',
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Produits
 CREATE TABLE products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users NOT NULL,
-  title TEXT NOT NULL,
-  description TEXT,
-  price DECIMAL(10,2),
-  currency TEXT DEFAULT 'EUR',
-  category TEXT,
-  status TEXT DEFAULT 'draft',
-  images TEXT[],
-  supplier_id UUID,
-  source_url TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Fournisseurs
-CREATE TABLE suppliers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users NOT NULL,
+  user_id UUID NOT NULL,
   name TEXT NOT NULL,
-  platform TEXT NOT NULL,
-  contact_email TEXT,
-  website TEXT,
-  api_credentials JSONB,
-  status TEXT DEFAULT 'active',
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  description TEXT,
+  price DECIMAL(10, 2),
+  cost_price DECIMAL(10, 2),
+  sku TEXT,
+  images JSONB,
+  variants JSONB,
+  supplier_info JSONB,
+  status TEXT DEFAULT 'draft',
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Intégrations
-CREATE TABLE integrations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users NOT NULL,
-  platform_type TEXT NOT NULL,
-  platform_name TEXT NOT NULL,
-  credentials JSONB,
-  sync_settings JSONB,
-  status TEXT DEFAULT 'active',
-  last_sync_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- Index de performance
+CREATE INDEX idx_products_user_status ON products(user_id, status);
+CREATE INDEX idx_products_created_at ON products(created_at DESC);
+```
 
--- Commandes
+#### `orders`
+```sql
 CREATE TABLE orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users NOT NULL,
-  customer_email TEXT NOT NULL,
-  items JSONB NOT NULL,
-  total_amount DECIMAL(10,2),
+  user_id UUID NOT NULL,
+  customer_id UUID,
+  order_number TEXT UNIQUE NOT NULL,
   status TEXT DEFAULT 'pending',
+  total_amount DECIMAL(10, 2),
+  items JSONB NOT NULL,
   shipping_address JSONB,
   tracking_number TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_orders_user_status ON orders(user_id, status);
+CREATE INDEX idx_orders_created_at ON orders(created_at DESC);
+```
+
+#### `import_jobs`
+```sql
+CREATE TABLE import_jobs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  source_type TEXT NOT NULL,
+  source_url TEXT,
+  status TEXT DEFAULT 'pending',
+  progress INTEGER DEFAULT 0,
+  total_items INTEGER,
+  imported_items INTEGER DEFAULT 0,
+  failed_items INTEGER DEFAULT 0,
+  error_log JSONB,
+  config JSONB,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
 );
 ```
 
 ### Row Level Security (RLS)
 
+Toutes les tables sensibles ont des politiques RLS :
+
 ```sql
--- Politiques de sécurité pour l'isolation des données utilisateur
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE suppliers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE integrations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+-- Politique pour products
+CREATE POLICY "Users can view own products"
+  ON products FOR SELECT
+  USING (auth.uid() = user_id);
 
--- Exemples de politiques
-CREATE POLICY "Users can view own profile" ON profiles
-  FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can insert own products"
+  ON products FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can view own products" ON products
-  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can update own products"
+  ON products FOR UPDATE
+  USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can create own products" ON products
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own products"
+  ON products FOR DELETE
+  USING (auth.uid() = user_id);
 ```
 
-## Authentification
+### Fonctions de base de données
 
-### Configuration Supabase
+#### `update_updated_at_column()`
+Trigger automatique pour mettre à jour `updated_at`.
 
-```typescript
-// src/integrations/supabase/client.ts
-import { createClient } from '@supabase/supabase-js'
+```sql
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SET search_path = 'public';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+CREATE TRIGGER update_products_updated_at
+  BEFORE UPDATE ON products
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
 ```
 
-### Hook d'authentification
+---
+
+## Edge Functions
+
+### Architecture des Edge Functions
+
+Toutes les Edge Functions suivent ce pattern :
 
 ```typescript
-// src/hooks/useAuth.ts
-import { useEffect, useState } from 'react'
-import { supabase } from '@/integrations/supabase/client'
+import { createClient } from '@supabase/supabase-js';
+import { corsHeaders } from '../_shared/cors.ts';
 
-export function useAuth() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+Deno.serve(async (req) => {
+  // Handle CORS
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    // Authentification
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Missing authorization');
+    }
+
+    // Supabase client
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Vérifier le token
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !user) {
+      throw new Error('Invalid token');
+    }
+
+    // Logique métier
+    const body = await req.json();
+    const result = await processRequest(body, user.id);
+
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { 
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
+  }
+});
+```
+
+### Sécurité des Edge Functions
+
+#### Authentication partagée
+```typescript
+// _shared/secure-auth.ts
+export async function authenticateUser(req: Request, supabase: SupabaseClient) {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) {
+    throw new Error('Missing Authorization header');
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+
+  if (error || !user) {
+    throw new Error('Invalid or expired token');
+  }
+
+  return user;
+}
+
+export async function requireAdmin(user: User, supabase: SupabaseClient) {
+  const { data: isAdmin } = await supabase.rpc('is_user_admin', {
+    user_id: user.id
+  });
+
+  if (!isAdmin) {
+    throw new Error('Admin privileges required');
+  }
+
+  return true;
+}
+```
+
+#### Helpers de base de données sécurisés
+```typescript
+// _shared/db-helpers.ts
+export async function secureQuery(
+  supabase: SupabaseClient,
+  userId: string,
+  table: string,
+  query: any
+) {
+  // Force l'isolation par tenant
+  return supabase
+    .from(table)
+    .select(query)
+    .eq('user_id', userId);
+}
+```
+
+---
+
+## Authentification et sécurité
+
+### Flux d'authentification
+
+```
+1. User Login → Supabase Auth
+2. Get JWT Token
+3. Store in localStorage
+4. Include in API calls: Authorization: Bearer {token}
+5. Backend validates token
+6. Access granted if valid
+```
+
+### Gestion des sessions
+
+```typescript
+// hooks/useAuth.ts
+export const useAuth = () => {
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Écouter les changements d'authentification
+    // Récupérer la session actuelle
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Écouter les changements d'auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null)
-        setLoading(false)
+      (_event, session) => {
+        setUser(session?.user ?? null);
       }
-    )
+    );
 
-    return () => subscription.unsubscribe()
-  }, [])
+    return () => subscription.unsubscribe();
+  }, []);
 
-  return { user, loading }
+  return { user };
+};
+```
+
+### API Keys
+
+Les clés API utilisateur sont gérées via la table `api_keys`.
+
+### Sanitization des entrées
+
+```typescript
+// utils/input-sanitization.ts
+import DOMPurify from 'dompurify';
+
+export function sanitizeHtml(dirty: string): string {
+  return DOMPurify.sanitize(dirty, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br'],
+    ALLOWED_ATTR: ['href', 'target']
+  });
+}
+
+export function sanitizeText(text: string): string {
+  return text
+    .replace(/[<>]/g, '')
+    .trim()
+    .slice(0, 1000);
+}
+
+export function sanitizeProductData(data: any) {
+  return {
+    ...data,
+    name: sanitizeText(data.name),
+    description: sanitizeHtml(data.description),
+    sku: sanitizeSKU(data.sku)
+  };
 }
 ```
 
-## API et Edge Functions
+---
 
-### Structure des Edge Functions
+## Intégrations externes
 
-```typescript
-// supabase/functions/import-products/index.ts
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+### Shopify
 
-serve(async (req) => {
-  const { urls, settings } = await req.json()
-  
-  // Logique d'import de produits
-  
-  return new Response(JSON.stringify(results), {
-    headers: { 'Content-Type': 'application/json' }
-  })
-})
-```
-
-### Client API
+Configuration du client :
 
 ```typescript
-// src/lib/api.ts
-import { supabase } from '@/integrations/supabase/client'
+// integrations/shopify/client.ts
+import Shopify from '@shopify/shopify-api';
 
-export class ApiClient {
-  async callFunction<T>(functionName: string, payload?: any): Promise<T> {
-    const { data, error } = await supabase.functions.invoke(functionName, {
-      body: JSON.stringify(payload)
-    })
-    
-    if (error) throw error
-    return data
-  }
+export async function getShopifyClient(userId: string) {
+  const { data: config } = await supabase
+    .from('shopify_integrations')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
 
-  async getProducts(filters?: any) {
-    let query = supabase.from('products').select('*')
-    
-    if (filters?.category) {
-      query = query.eq('category', filters.category)
-    }
-    
-    const { data, error } = await query
-    if (error) throw error
-    return data
-  }
+  return new Shopify.Clients.Rest(
+    config.shop_domain,
+    config.access_token
+  );
 }
 ```
 
-## State Management
-
-### Contextes React
+### AliExpress (via API Affiliate)
 
 ```typescript
-// src/contexts/AuthContext.tsx
-import React, { createContext, useContext, ReactNode } from 'react'
-import { useAuth } from '@/hooks/useAuth'
-
-interface AuthContextType {
-  user: any
-  loading: boolean
-  signIn: (email: string, password: string) => Promise<void>
-  signOut: () => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const auth = useAuth()
-  
-  return (
-    <AuthContext.Provider value={auth}>
-      {children}
-    </AuthContext.Provider>
-  )
-}
-
-export function useAuthContext() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuthContext must be used within AuthProvider')
-  }
-  return context
-}
-```
-
-### Zustand Store
-
-```typescript
-// src/stores/productStore.ts
-import { create } from 'zustand'
-
-interface ProductStore {
-  products: Product[]
-  loading: boolean
-  fetchProducts: () => Promise<void>
-  addProduct: (product: Product) => void
-}
-
-export const useProductStore = create<ProductStore>((set, get) => ({
-  products: [],
-  loading: false,
-  
-  fetchProducts: async () => {
-    set({ loading: true })
-    // Fetch logic
-    set({ products: data, loading: false })
-  },
-  
-  addProduct: (product) => {
-    set((state) => ({
-      products: [...state.products, product]
-    }))
-  }
-}))
-```
-
-## Composants UI
-
-### Design System
-
-```typescript
-// src/components/ui/button.tsx
-import { cn } from '@/lib/utils'
-import { cva, type VariantProps } from 'class-variance-authority'
-
-const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md transition-colors",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        outline: "border border-input hover:bg-accent",
-        ghost: "hover:bg-accent hover:text-accent-foreground"
-      },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 px-3",
-        lg: "h-11 px-8"
-      }
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default"
-    }
-  }
-)
-
-interface ButtonProps extends VariantProps<typeof buttonVariants> {
-  className?: string
-}
-
-export function Button({ className, variant, size, ...props }: ButtonProps) {
-  return (
-    <button
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
-  )
-}
-```
-
-### Composant de formulaire
-
-```typescript
-// src/components/forms/ProductForm.tsx
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-
-const productSchema = z.object({
-  title: z.string().min(1, 'Titre requis'),
-  price: z.number().positive('Prix invalide'),
-  category: z.string().min(1, 'Catégorie requise')
-})
-
-type ProductFormData = z.infer<typeof productSchema>
-
-export function ProductForm({ onSubmit }: { onSubmit: (data: ProductFormData) => void }) {
-  const form = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema)
-  })
-
-  return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      {/* Form fields */}
-    </form>
-  )
-}
-```
-
-## Intégrations Tierces
-
-### Configuration des intégrations
-
-```typescript
-// src/integrations/shopify.ts
-export class ShopifyIntegration {
-  constructor(private credentials: ShopifyCredentials) {}
-
-  async syncProducts(): Promise<Product[]> {
-    const response = await fetch(`${this.credentials.shop_url}/admin/api/2023-04/products.json`, {
+// integrations/aliexpress/api.ts
+export async function searchProducts(keyword: string) {
+  const response = await fetch(
+    `https://api.aliexpress.com/v1/products/search`,
+    {
       headers: {
-        'X-Shopify-Access-Token': this.credentials.access_token
-      }
-    })
-    
-    const data = await response.json()
-    return this.transformProducts(data.products)
-  }
+        'Authorization': `Bearer ${ALIEXPRESS_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify({ keyword, page_size: 50 })
+    }
+  );
 
-  private transformProducts(shopifyProducts: any[]): Product[] {
-    return shopifyProducts.map(product => ({
-      id: product.id,
-      title: product.title,
-      description: product.body_html,
-      price: parseFloat(product.variants[0]?.price || '0'),
-      images: product.images.map((img: any) => img.src)
-    }))
-  }
+  return response.json();
 }
 ```
 
-## Tests
+### OpenAI
 
-### Tests unitaires (Vitest)
-
-```typescript
-// src/components/__tests__/Button.test.tsx
-import { render, screen } from '@testing-library/react'
-import { Button } from '../ui/button'
-
-describe('Button', () => {
-  it('renders with default variant', () => {
-    render(<Button>Test Button</Button>)
-    const button = screen.getByRole('button', { name: 'Test Button' })
-    expect(button).toHaveClass('bg-primary')
-  })
-
-  it('renders with outline variant', () => {
-    render(<Button variant="outline">Test Button</Button>)
-    const button = screen.getByRole('button', { name: 'Test Button' })
-    expect(button).toHaveClass('border')
-  })
-})
-```
-
-### Tests E2E (Cypress)
+Utilisé pour l'optimisation de contenu :
 
 ```typescript
-// cypress/e2e/product-management.cy.ts
-describe('Product Management', () => {
-  beforeEach(() => {
-    cy.login('test@example.com', 'password')
-    cy.visit('/products')
-  })
+// integrations/openai/client.ts
+import OpenAI from 'openai';
 
-  it('should create a new product', () => {
-    cy.get('[data-testid="add-product-btn"]').click()
-    cy.get('[data-testid="product-title"]').type('Test Product')
-    cy.get('[data-testid="product-price"]').type('29.99')
-    cy.get('[data-testid="submit-btn"]').click()
-    
-    cy.contains('Test Product').should('be.visible')
-  })
-})
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+export async function generateDescription(product: any) {
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4',
+    messages: [{
+      role: 'system',
+      content: 'Generate compelling product descriptions for e-commerce.'
+    }, {
+      role: 'user',
+      content: `Product: ${product.name}\nFeatures: ${product.features}`
+    }],
+    temperature: 0.7,
+    max_tokens: 500
+  });
+
+  return completion.choices[0].message.content;
+}
 ```
 
-## Performance et Optimisation
+---
+
+## Performance et optimisation
+
+### Caching Strategy
+
+#### Frontend Cache (TanStack Query)
+
+```typescript
+// Configuration globale
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      refetchOnWindowFocus: false,
+      retry: 1
+    }
+  }
+});
+```
+
+### Index de base de données
+
+```sql
+-- Produits
+CREATE INDEX idx_products_user_status ON products(user_id, status);
+CREATE INDEX idx_products_created_at ON products(created_at DESC);
+CREATE INDEX idx_products_category ON products(category) WHERE category IS NOT NULL;
+
+-- Commandes
+CREATE INDEX idx_orders_user_status ON orders(user_id, status);
+CREATE INDEX idx_orders_created_at ON orders(created_at DESC);
+
+-- Logs
+CREATE INDEX idx_activity_logs_user_id ON activity_logs(user_id, created_at DESC);
+```
 
 ### Lazy Loading
 
 ```typescript
-// src/components/routing/ModuleRoutes.tsx
-import { lazy, Suspense } from 'react'
+// Router avec lazy loading
+import { lazy, Suspense } from 'react';
 
-const ProductsPage = lazy(() => import('@/pages/Products'))
-const OrdersPage = lazy(() => import('@/pages/Orders'))
+const ProductsPage = lazy(() => import('./pages/ProductsPage'));
+const OrdersPage = lazy(() => import('./pages/OrdersPage'));
 
-export function ModuleRoutes() {
+function App() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<LoadingSpinner />}>
       <Routes>
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/orders" element={<OrdersPage />} />
       </Routes>
     </Suspense>
-  )
+  );
 }
 ```
 
-### Mémorisation des composants
+---
 
-```typescript
-// src/components/ProductCard.tsx
-import { memo } from 'react'
+## Références
 
-interface ProductCardProps {
-  product: Product
-  onEdit: (id: string) => void
-}
-
-export const ProductCard = memo(({ product, onEdit }: ProductCardProps) => {
-  return (
-    <div className="product-card">
-      {/* Contenu du composant */}
-    </div>
-  )
-})
-```
-
-### Cache des requêtes
-
-```typescript
-// src/hooks/useProducts.ts
-import { useQuery } from '@tanstack/react-query'
-
-export function useProducts(filters?: ProductFilters) {
-  return useQuery({
-    queryKey: ['products', filters],
-    queryFn: () => apiClient.getProducts(filters),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000    // 10 minutes
-  })
-}
-```
-
-## Sécurité
-
-### Validation des données
-
-```typescript
-// src/lib/validation.ts
-import { z } from 'zod'
-
-export const ProductSchema = z.object({
-  title: z.string().min(1).max(200),
-  description: z.string().optional(),
-  price: z.number().positive().max(999999),
-  category: z.enum(['electronics', 'clothing', 'home', 'other']),
-  images: z.array(z.string().url()).max(10)
-})
-
-export function validateProduct(data: unknown) {
-  return ProductSchema.safeParse(data)
-}
-```
-
-### Sanitisation
-
-```typescript
-// src/utils/sanitize.ts
-import DOMPurify from 'dompurify'
-
-export function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li'],
-    ALLOWED_ATTR: []
-  })
-}
-
-export function sanitizeInput(input: string): string {
-  return input.trim().replace(/[<>]/g, '')
-}
-```
-
-## Monitoring et Debugging
-
-### Configuration Sentry
-
-```typescript
-// src/utils/sentry.ts
-import * as Sentry from '@sentry/react'
-
-export function initSentry() {
-  if (import.meta.env.PROD) {
-    Sentry.init({
-      dsn: import.meta.env.VITE_SENTRY_DSN,
-      environment: import.meta.env.NODE_ENV,
-      tracesSampleRate: 0.1,
-      beforeSend(event) {
-        // Filtrer les erreurs sensibles
-        return event
-      }
-    })
-  }
-}
-```
-
-### Logging personnalisé
-
-```typescript
-// src/utils/logger.ts
-class Logger {
-  info(message: string, extra?: any) {
-    console.log(`[INFO] ${message}`, extra)
-    
-    if (import.meta.env.PROD) {
-      // Envoyer vers service de logging
-    }
-  }
-
-  error(message: string, error?: Error) {
-    console.error(`[ERROR] ${message}`, error)
-    
-    if (import.meta.env.PROD) {
-      Sentry.captureException(error || new Error(message))
-    }
-  }
-}
-
-export const logger = new Logger()
-```
-
-## Déploiement
-
-### Variables d'environnement
-
-```bash
-# .env.production
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
-VITE_SENTRY_DSN=your-sentry-dsn
-NODE_ENV=production
-```
-
-### Build Configuration
-
-```typescript
-// vite.config.ts
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
-
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src')
-    }
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-select']
-        }
-      }
-    }
-  }
-})
-```
-
-## Migration et Mise à jour
-
-### Scripts de migration
-
-```sql
--- Migration example: Add new column
-ALTER TABLE products 
-ADD COLUMN seo_title TEXT,
-ADD COLUMN seo_description TEXT;
-
--- Update existing data
-UPDATE products 
-SET seo_title = title 
-WHERE seo_title IS NULL;
-```
-
-### Versioning des APIs
-
-```typescript
-// src/lib/api-versions.ts
-export const API_VERSIONS = {
-  V1: 'v1',
-  V2: 'v2'
-} as const
-
-export function getApiEndpoint(version: string, endpoint: string) {
-  return `/api/${version}/${endpoint}`
-}
-```
-
-Cette documentation technique couvre l'architecture, l'implémentation et les bonnes pratiques du projet Drop Craft AI. Elle doit être maintenue à jour avec les évolutions du projet.
+- [Documentation Supabase](https://supabase.com/docs)
+- [Documentation React](https://react.dev)
+- [Documentation TanStack Query](https://tanstack.com/query)
+- [Documentation Shopify API](https://shopify.dev/docs)
+- [Guides de sécurité](./SECURITY_GUIDELINES.md)
+- [Stratégie de tests](./TESTING_STRATEGY.md)
