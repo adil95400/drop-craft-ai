@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Upload, Download, Mail, Bell, Settings, BarChart3, Users, Package, ShoppingCart, Zap, FileText } from 'lucide-react';
-import { useModals } from '@/hooks/useModals';
+import { useModalContext } from '@/hooks/useModalHelpers';
 import { useNavigate } from 'react-router-dom';
 interface QuickAction {
   id: string;
@@ -16,9 +16,7 @@ interface QuickAction {
   disabled?: boolean;
 }
 export const QuickActions: React.FC = () => {
-  const {
-    openModal
-  } = useModals();
+  const { openModal } = useModalContext();
   const navigate = useNavigate();
   const quickActions: QuickAction[] = [{
     id: 'add-product',

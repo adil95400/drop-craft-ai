@@ -11,6 +11,8 @@ import { UnifiedProvider } from '@/components/unified/UnifiedProvider';
 import { NotificationProvider } from '@/components/notifications/NotificationService';
 import { ThemeProvider } from 'next-themes';
 import { GlobalModals } from '@/components/GlobalModals';
+import { ModalContextProvider } from '@/hooks/useModalHelpers';
+import { ModalManager } from '@/components/modals/ModalManager';
 import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
 import '@/lib/i18n';
@@ -22,6 +24,7 @@ const AppContent = memo(() => {
     <>
       <AppRoutes />
       <GlobalModals />
+      <ModalManager />
       <Toaster />
       <SonnerToaster position="top-right" />
     </>
@@ -42,7 +45,9 @@ function App() {
         <UnifiedAuthProvider>
           <UnifiedProvider>
             <NotificationProvider>
-              <AppContent />
+              <ModalContextProvider>
+                <AppContent />
+              </ModalContextProvider>
             </NotificationProvider>
           </UnifiedProvider>
         </UnifiedAuthProvider>
