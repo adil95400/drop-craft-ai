@@ -130,18 +130,12 @@ export default function OrdersCenterPage() {
 
   const handleExport = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('export-data', {
-        body: { 
-          type: 'orders',
-          orders: filteredOrders 
-        }
-      });
-
-      if (error) throw error;
+      const csv = convertOrdersToCSV(filteredOrders);
+      downloadCSV(csv, `orders-export-${new Date().toISOString().split('T')[0]}.csv`);
 
       toast({
-        title: "Export lancé",
-        description: "Votre fichier CSV est en cours de génération"
+        title: "Export réussi",
+        description: `${filteredOrders.length} commandes exportées`
       });
     } catch (error: any) {
       toast({
@@ -150,6 +144,31 @@ export default function OrdersCenterPage() {
         variant: "destructive"
       });
     }
+  };
+
+  const convertOrdersToCSV = (orders: Order[]) => {
+    const headers = ['Numéro', 'Client', 'Statut', 'Montant', 'Devise', 'Date', 'Articles'];
+    const rows = orders.map(o => [
+      o.order_number,
+      o.customer_name,
+      o.status,
+      o.total_amount,
+      o.currency,
+      new Date(o.created_at).toLocaleDateString(),
+      o.items_count
+    ]);
+    
+    return [headers, ...rows].map(row => row.join(',')).join('\n');
+  };
+
+  const downloadCSV = (csv: string, filename: string) => {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    window.URL.revokeObjectURL(url);
   };
 
   const getStatusColor = (status: string) => {

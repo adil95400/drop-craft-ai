@@ -17,8 +17,9 @@ import {
   DollarSign, BarChart3, Target, Zap, AlertTriangle,
   CheckCircle, Star, Globe, Image
 } from 'lucide-react'
-import { useAuthOptimized } from '@/shared/hooks/useAuthOptimized'
-import { usePlanContext } from '@/components/plan'
+import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
+import { useUnifiedPlan } from '@/lib/unified-plan-system'
+import { supabase } from '@/integrations/supabase/client'
 
 interface Product {
   id: string
@@ -63,8 +64,8 @@ interface SEOAnalysis {
 }
 
 export const AdvancedProductManager: React.FC = () => {
-  const { user } = useAuthOptimized()
-  const { hasFeature } = usePlanContext()
+  const { user } = useUnifiedAuth()
+  const { hasFeature } = useUnifiedPlan()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
@@ -154,10 +155,97 @@ export const AdvancedProductManager: React.FC = () => {
     setLoading(false)
   }
 
-  const handleBulkAction = (action: string) => {
-    console.log(`Bulk action ${action} for products:`, selectedProducts)
-    // Implémenter les actions en masse
-  }
+  const handleBulkAction = async (action: string) => {
+    if (selectedProducts.length === 0) return;
+
+    try {
+      switch (action) {
+        case 'activate':
+          // Utiliser le service de bulk update
+          const { error: activateError } = await supabase
+            .from('imported_products')
+            .update({ status: 'active', updated_at: new Date().toISOString() })
+            .in('id', selectedProducts)
+            .eq('user_id', user!.id);
+
+          if (activateError) throw activateError;
+          
+          setProducts(products.map(p => 
+            selectedProducts.includes(p.id) ? { ...p, status: 'active' as const } : p
+          ));
+          setSelectedProducts([]);
+          break;
+
+        case 'deactivate':
+          const { error: deactivateError } = await supabase
+            .from('imported_products')
+            .update({ status: 'inactive', updated_at: new Date().toISOString() })
+            .in('id', selectedProducts)
+            .eq('user_id', user!.id);
+
+          if (deactivateError) throw deactivateError;
+          
+          setProducts(products.map(p => 
+            selectedProducts.includes(p.id) ? { ...p, status: 'inactive' as const } : p
+          ));
+          setSelectedProducts([]);
+          break;
+
+        case 'delete':
+          if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedProducts.length} produits ?`)) {
+            return;
+          }
+
+          const { error: deleteError } = await supabase
+            .from('imported_products')
+            .delete()
+            .in('id', selectedProducts)
+            .eq('user_id', user!.id);
+
+          if (deleteError) throw deleteError;
+          
+          setProducts(products.filter(p => !selectedProducts.includes(p.id)));
+          setSelectedProducts([]);
+          break;
+
+        case 'export':
+          const selectedProductsData = products.filter(p => selectedProducts.includes(p.id));
+          const csv = convertToCSV(selectedProductsData);
+          downloadCSV(csv, `products-export-${new Date().toISOString().split('T')[0]}.csv`);
+          break;
+
+        default:
+          console.log('Action non reconnue:', action);
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'action groupée:', error);
+    }
+  };
+
+  const convertToCSV = (data: Product[]) => {
+    const headers = ['ID', 'Nom', 'SKU', 'Prix', 'Catégorie', 'Statut', 'Stock'];
+    const rows = data.map(p => [
+      p.id,
+      p.name,
+      p.sku,
+      p.price,
+      p.category,
+      p.status,
+      p.stock_quantity
+    ]);
+    
+    return [headers, ...rows].map(row => row.join(',')).join('\n');
+  };
+
+  const downloadCSV = (csv: string, filename: string) => {
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   const handleProductEdit = (product: Product) => {
     setEditingProduct(product)
