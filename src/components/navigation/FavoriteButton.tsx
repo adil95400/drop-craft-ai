@@ -1,7 +1,6 @@
 import React from 'react';
 import { Star } from 'lucide-react';
 import { useFavorites } from '@/stores/favoritesStore';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
   Tooltip,
@@ -32,16 +31,28 @@ export function FavoriteButton({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            variant={variant}
-            size={size}
+          <div
+            role="button"
+            tabIndex={0}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               toggleFavorite(moduleId);
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleFavorite(moduleId);
+              }
+            }}
             className={cn(
-              'transition-all duration-200',
+              'inline-flex items-center justify-center rounded-md transition-all duration-200 cursor-pointer',
+              'hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              size === 'icon' && 'h-8 w-8',
+              size === 'sm' && 'h-7 px-2',
+              size === 'default' && 'h-9 px-3',
+              size === 'lg' && 'h-10 px-4',
               favorite && 'text-yellow-500 hover:text-yellow-600',
               className
             )}
@@ -57,7 +68,7 @@ export function FavoriteButton({
                 {favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
               </span>
             )}
-          </Button>
+          </div>
         </TooltipTrigger>
         <TooltipContent>
           <p>{favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}</p>

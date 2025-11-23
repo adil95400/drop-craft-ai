@@ -1,15 +1,18 @@
-import React from 'react'
-import { Outlet } from 'react-router-dom'
+import React, { useState } from 'react'
+import { Outlet, useNavigate } from 'react-router-dom'
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from '@/components/AppSidebar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Bell, Search, Settings, Crown, Menu } from 'lucide-react'
+import { Bell, Search, Crown, Menu } from 'lucide-react'
 import { useUnifiedSystem } from '@/hooks/useUnifiedSystem'
+import { UserDropdown } from '@/shared/components/UserDropdown'
 
 export function DashboardLayout() {
-  const { profile, isAdmin } = useUnifiedSystem()
+  const { isAdmin } = useUnifiedSystem()
+  const navigate = useNavigate()
+  const [notificationCount] = useState(0)
 
   return (
     <SidebarProvider>
@@ -51,24 +54,21 @@ export function DashboardLayout() {
                 </Badge>
               )}
               
-              <Button variant="ghost" size="icon">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate('/dashboard/notifications')}
+                className="relative"
+              >
                 <Bell className="h-4 w-4" />
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center">
+                    {notificationCount}
+                  </span>
+                )}
               </Button>
               
-              <Button variant="ghost" size="icon">
-                <Settings className="h-4 w-4" />
-              </Button>
-
-              <div className="flex items-center gap-2 ml-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
-                  <span className="text-xs font-medium text-white">
-                    {profile?.full_name?.charAt(0) || 'A'}
-                  </span>
-                </div>
-                <div className="hidden md:block text-right">
-                  <p className="text-sm font-medium">Administrateur</p>
-                </div>
-              </div>
+              <UserDropdown />
             </div>
           </header>
 
