@@ -303,19 +303,44 @@
   }
   
   .sidebar-nav-item {
-    @apply flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-all duration-200;
+    @apply flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-all duration-300;
   }
   
   .sidebar-nav-item-active {
-    @apply bg-primary text-primary-foreground font-medium shadow-sm;
+    @apply bg-gradient-to-r from-primary to-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/30;
   }
   
   .sidebar-nav-item-inactive {
-    @apply text-foreground hover:bg-muted hover:text-foreground;
+    @apply text-foreground hover:bg-gradient-to-r hover:from-accent/80 hover:to-accent/40 hover:text-foreground hover:shadow-md backdrop-blur-sm;
   }
   
   .sidebar-nav-item-disabled {
-    @apply text-muted-foreground cursor-not-allowed opacity-50;
+    @apply text-muted-foreground cursor-not-allowed opacity-50 hover:scale-100;
+  }
+  
+  /* Sidebar glassmorphism */
+  .sidebar-glass {
+    @apply bg-gradient-to-b from-card/80 to-background/60 backdrop-blur-xl backdrop-saturate-150 border-r border-border/50;
+  }
+  
+  .sidebar-header-glass {
+    @apply bg-gradient-to-br from-background/95 via-muted/20 to-background/90 backdrop-blur-2xl border-b border-border/30;
+  }
+  
+  /* Enhanced scroll animations */
+  .scroll-fade-in {
+    animation: scroll-fade-in 0.4s ease-out;
+  }
+  
+  @keyframes scroll-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   
   /* Mobile safe area support */
