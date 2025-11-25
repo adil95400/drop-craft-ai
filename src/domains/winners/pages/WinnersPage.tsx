@@ -173,7 +173,6 @@ const WinnersPage = () => {
                   <WinnersProductGrid
                     products={products}
                     onImportProduct={handleImportClick}
-                    onPublishProduct={(product) => setPublishProduct(product)}
                     isImporting={isImporting}
                   />
                 </CardContent>

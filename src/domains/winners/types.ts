@@ -15,6 +15,19 @@ export interface WinnerProduct {
   final_score?: number
   category?: string
   tags?: string[]
+  // Nouvelles propriétés type AutoDS
+  supplier_name?: string
+  supplier_url?: string
+  estimated_cost?: number
+  profit_margin?: number
+  shipping_time?: string
+  social_proof?: {
+    tiktok_views?: number
+    instagram_likes?: number
+    facebook_shares?: number
+  }
+  competition_level?: 'low' | 'medium' | 'high'
+  saturation_score?: number
 }
 
 export interface WinnersResponse {
