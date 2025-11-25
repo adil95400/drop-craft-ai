@@ -10571,6 +10571,101 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_analytics: {
+        Row: {
+          active_products: number | null
+          api_calls_count: number | null
+          api_errors_count: number | null
+          api_success_rate: number | null
+          average_delivery_time_days: number | null
+          average_fulfillment_time_hours: number | null
+          average_order_value: number | null
+          average_response_time_ms: number | null
+          cancelled_orders: number | null
+          created_at: string | null
+          date: string
+          failed_orders: number | null
+          id: string
+          last_inventory_sync_at: string | null
+          last_price_sync_at: string | null
+          out_of_stock_products: number | null
+          success_rate: number | null
+          successful_orders: number | null
+          supplier_id: string
+          total_cost: number | null
+          total_orders: number | null
+          total_products: number | null
+          total_profit: number | null
+          total_revenue: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          active_products?: number | null
+          api_calls_count?: number | null
+          api_errors_count?: number | null
+          api_success_rate?: number | null
+          average_delivery_time_days?: number | null
+          average_fulfillment_time_hours?: number | null
+          average_order_value?: number | null
+          average_response_time_ms?: number | null
+          cancelled_orders?: number | null
+          created_at?: string | null
+          date?: string
+          failed_orders?: number | null
+          id?: string
+          last_inventory_sync_at?: string | null
+          last_price_sync_at?: string | null
+          out_of_stock_products?: number | null
+          success_rate?: number | null
+          successful_orders?: number | null
+          supplier_id: string
+          total_cost?: number | null
+          total_orders?: number | null
+          total_products?: number | null
+          total_profit?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          active_products?: number | null
+          api_calls_count?: number | null
+          api_errors_count?: number | null
+          api_success_rate?: number | null
+          average_delivery_time_days?: number | null
+          average_fulfillment_time_hours?: number | null
+          average_order_value?: number | null
+          average_response_time_ms?: number | null
+          cancelled_orders?: number | null
+          created_at?: string | null
+          date?: string
+          failed_orders?: number | null
+          id?: string
+          last_inventory_sync_at?: string | null
+          last_price_sync_at?: string | null
+          out_of_stock_products?: number | null
+          success_rate?: number | null
+          successful_orders?: number | null
+          supplier_id?: string
+          total_cost?: number | null
+          total_orders?: number | null
+          total_products?: number | null
+          total_profit?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_analytics_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_catalog: {
         Row: {
           category: string | null
@@ -10690,6 +10785,83 @@ export type Database = {
           valid_until?: string | null
         }
         Relationships: []
+      }
+      supplier_credentials_vault: {
+        Row: {
+          access_token_encrypted: string | null
+          api_key_encrypted: string | null
+          api_secret_encrypted: string | null
+          connection_status: string
+          connection_type: string
+          created_at: string | null
+          error_count: number | null
+          expires_at: string | null
+          id: string
+          last_error: string | null
+          last_request_at: string | null
+          last_validation_at: string | null
+          oauth_data: Json | null
+          rate_limit_requests_per_hour: number | null
+          rate_limit_requests_per_minute: number | null
+          refresh_token_encrypted: string | null
+          requests_today: number | null
+          supplier_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token_encrypted?: string | null
+          api_key_encrypted?: string | null
+          api_secret_encrypted?: string | null
+          connection_status?: string
+          connection_type: string
+          created_at?: string | null
+          error_count?: number | null
+          expires_at?: string | null
+          id?: string
+          last_error?: string | null
+          last_request_at?: string | null
+          last_validation_at?: string | null
+          oauth_data?: Json | null
+          rate_limit_requests_per_hour?: number | null
+          rate_limit_requests_per_minute?: number | null
+          refresh_token_encrypted?: string | null
+          requests_today?: number | null
+          supplier_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token_encrypted?: string | null
+          api_key_encrypted?: string | null
+          api_secret_encrypted?: string | null
+          connection_status?: string
+          connection_type?: string
+          created_at?: string | null
+          error_count?: number | null
+          expires_at?: string | null
+          id?: string
+          last_error?: string | null
+          last_request_at?: string | null
+          last_validation_at?: string | null
+          oauth_data?: Json | null
+          rate_limit_requests_per_hour?: number | null
+          rate_limit_requests_per_minute?: number | null
+          refresh_token_encrypted?: string | null
+          requests_today?: number | null
+          supplier_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_credentials_vault_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       supplier_feeds: {
         Row: {
@@ -10851,6 +11023,128 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_orders: {
+        Row: {
+          actual_delivery_date: string | null
+          billing_address: Json | null
+          cancelled_at: string | null
+          carrier: string | null
+          confirmed_at: string | null
+          cost_price: number | null
+          created_at: string | null
+          currency: string | null
+          customer_email: string | null
+          customer_notes: string | null
+          customer_phone: string | null
+          delivered_at: string | null
+          error_message: string | null
+          estimated_delivery_date: string | null
+          external_order_number: string | null
+          fulfillment_status: string
+          id: string
+          last_retry_at: string | null
+          line_items: Json
+          metadata: Json | null
+          payment_status: string
+          placed_at: string | null
+          profit: number | null
+          retry_count: number | null
+          selling_price: number | null
+          shipped_at: string | null
+          shipping_address: Json
+          shop_order_id: string
+          supplier_id: string
+          supplier_order_id: string | null
+          total_amount: number
+          tracking_number: string | null
+          tracking_url: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          actual_delivery_date?: string | null
+          billing_address?: Json | null
+          cancelled_at?: string | null
+          carrier?: string | null
+          confirmed_at?: string | null
+          cost_price?: number | null
+          created_at?: string | null
+          currency?: string | null
+          customer_email?: string | null
+          customer_notes?: string | null
+          customer_phone?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          estimated_delivery_date?: string | null
+          external_order_number?: string | null
+          fulfillment_status?: string
+          id?: string
+          last_retry_at?: string | null
+          line_items: Json
+          metadata?: Json | null
+          payment_status?: string
+          placed_at?: string | null
+          profit?: number | null
+          retry_count?: number | null
+          selling_price?: number | null
+          shipped_at?: string | null
+          shipping_address: Json
+          shop_order_id: string
+          supplier_id: string
+          supplier_order_id?: string | null
+          total_amount: number
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          actual_delivery_date?: string | null
+          billing_address?: Json | null
+          cancelled_at?: string | null
+          carrier?: string | null
+          confirmed_at?: string | null
+          cost_price?: number | null
+          created_at?: string | null
+          currency?: string | null
+          customer_email?: string | null
+          customer_notes?: string | null
+          customer_phone?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          estimated_delivery_date?: string | null
+          external_order_number?: string | null
+          fulfillment_status?: string
+          id?: string
+          last_retry_at?: string | null
+          line_items?: Json
+          metadata?: Json | null
+          payment_status?: string
+          placed_at?: string | null
+          profit?: number | null
+          retry_count?: number | null
+          selling_price?: number | null
+          shipped_at?: string | null
+          shipping_address?: Json
+          shop_order_id?: string
+          supplier_id?: string
+          supplier_order_id?: string | null
+          total_amount?: number
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_performance_logs: {
         Row: {
           communication_rating: number | null
@@ -10892,6 +11186,83 @@ export type Database = {
           would_reorder?: boolean | null
         }
         Relationships: []
+      }
+      supplier_pricing_rules: {
+        Row: {
+          auto_update_enabled: boolean | null
+          category_overrides: Json | null
+          competitor_price_adjustment: number | null
+          created_at: string | null
+          fixed_markup_amount: number | null
+          id: string
+          is_active: boolean | null
+          last_update_at: string | null
+          match_competitor_prices: boolean | null
+          max_price: number | null
+          min_price: number | null
+          percentage_markup: number | null
+          price_tiers: Json | null
+          pricing_type: string
+          priority: number | null
+          supplier_id: string
+          target_margin_percent: number | null
+          update_frequency: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_update_enabled?: boolean | null
+          category_overrides?: Json | null
+          competitor_price_adjustment?: number | null
+          created_at?: string | null
+          fixed_markup_amount?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_update_at?: string | null
+          match_competitor_prices?: boolean | null
+          max_price?: number | null
+          min_price?: number | null
+          percentage_markup?: number | null
+          price_tiers?: Json | null
+          pricing_type: string
+          priority?: number | null
+          supplier_id: string
+          target_margin_percent?: number | null
+          update_frequency?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_update_enabled?: boolean | null
+          category_overrides?: Json | null
+          competitor_price_adjustment?: number | null
+          created_at?: string | null
+          fixed_markup_amount?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_update_at?: string | null
+          match_competitor_prices?: boolean | null
+          max_price?: number | null
+          min_price?: number | null
+          percentage_markup?: number | null
+          price_tiers?: Json | null
+          pricing_type?: string
+          priority?: number | null
+          supplier_id?: string
+          target_margin_percent?: number | null
+          update_frequency?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_pricing_rules_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       supplier_products: {
         Row: {
@@ -11130,6 +11501,68 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "supplier_sync_jobs_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_webhooks: {
+        Row: {
+          created_at: string | null
+          events: string[]
+          failure_count: number | null
+          id: string
+          is_active: boolean | null
+          last_error: string | null
+          last_triggered_at: string | null
+          max_retries: number | null
+          retry_delay_seconds: number | null
+          success_count: number | null
+          supplier_id: string
+          updated_at: string | null
+          user_id: string
+          webhook_secret: string | null
+          webhook_url: string
+        }
+        Insert: {
+          created_at?: string | null
+          events?: string[]
+          failure_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_error?: string | null
+          last_triggered_at?: string | null
+          max_retries?: number | null
+          retry_delay_seconds?: number | null
+          success_count?: number | null
+          supplier_id: string
+          updated_at?: string | null
+          user_id: string
+          webhook_secret?: string | null
+          webhook_url: string
+        }
+        Update: {
+          created_at?: string | null
+          events?: string[]
+          failure_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_error?: string | null
+          last_triggered_at?: string | null
+          max_retries?: number | null
+          retry_delay_seconds?: number | null
+          success_count?: number | null
+          supplier_id?: string
+          updated_at?: string | null
+          user_id?: string
+          webhook_secret?: string | null
+          webhook_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_webhooks_supplier_id_fkey"
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
@@ -13735,6 +14168,10 @@ export type Database = {
           is_active: boolean
           tier_level: string
         }[]
+      }
+      get_supplier_health_score: {
+        Args: { p_supplier_id: string; p_user_id: string }
+        Returns: Json
       }
       get_supplier_sensitive_data: {
         Args: { supplier_id: string }
