@@ -394,6 +394,18 @@ verify_jwt = true
 [functions.analyze-supplier]
 verify_jwt = false
 
+[functions.supplier-connect-advanced]
+verify_jwt = true
+
+[functions.supplier-test-connection]
+verify_jwt = true
+
+[functions.supplier-place-order]
+verify_jwt = true
+
+[functions.supplier-sync-products]
+verify_jwt = true
+
 [functions.marketplace-connect]
 verify_jwt = true
 

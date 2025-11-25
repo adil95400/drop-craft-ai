@@ -22,3 +22,8 @@ export { ZalandoConnector } from './ZalandoConnector';
 export { WishConnector } from './WishConnector';
 export { DropshippingConnector } from './DropshippingConnector';
 export { ConnectorFactory } from './ConnectorFactory';
+export { DropshippingEuropeConnector } from './DropshippingEuropeConnector';
+export { BTSWholesalerConnector } from './BTSWholesalerConnector';
+export { MatterhornConnector } from './MatterhornConnector';
+export { B2BSportsWholesaleConnector } from './B2BSportsWholesaleConnector';
+export { WatchImportConnector } from './WatchImportConnector';
