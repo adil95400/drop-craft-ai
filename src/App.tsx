@@ -16,6 +16,7 @@ import { ModalManager } from '@/components/modals/ModalManager';
 import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
 import '@/lib/i18n';
+import { QueryClientProvider } from '@tanstack/react-query';
 
 const AppContent = memo(() => {
   useAutoTheme();
