@@ -366,15 +366,18 @@ export default function ManageSuppliers() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => navigate(`/products/suppliers/${supplier.id}`)}>
                                 <Eye className="h-4 w-4 mr-2" />
                                 Voir détails
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => updateSupplier({ 
-                                  id: supplier.id, 
-                                  updates: { status: supplier.status === 'active' ? 'inactive' : 'active' }
-                                })}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  updateSupplier({ 
+                                    id: supplier.id, 
+                                    updates: { status: supplier.status === 'active' ? 'inactive' : 'active' }
+                                  })
+                                }}
                                 disabled={isUpdating}
                               >
                                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -382,7 +385,8 @@ export default function ManageSuppliers() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation()
                                   if (confirm(`Supprimer ${supplier.name} ?`)) {
                                     deleteSupplier(supplier.id)
                                   }

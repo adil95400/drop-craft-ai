@@ -9,9 +9,10 @@ interface SupplierPreviewModalProps {
   onOpenChange: (open: boolean) => void
   supplier: any
   onConnect: () => void
+  isConnecting?: boolean
 }
 
-export function SupplierPreviewModal({ open, onOpenChange, supplier, onConnect }: SupplierPreviewModalProps) {
+export function SupplierPreviewModal({ open, onOpenChange, supplier, onConnect, isConnecting }: SupplierPreviewModalProps) {
   if (!supplier) return null
 
   return (
@@ -160,12 +161,12 @@ export function SupplierPreviewModal({ open, onOpenChange, supplier, onConnect }
         </Tabs>
 
         <div className="flex gap-3 pt-4 border-t">
-          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)} disabled={isConnecting}>
             Annuler
           </Button>
-          <Button className="flex-1" onClick={onConnect}>
+          <Button className="flex-1" onClick={onConnect} disabled={isConnecting}>
             <Zap className="h-4 w-4 mr-2" />
-            Connecter maintenant
+            {isConnecting ? 'Connexion...' : 'Connecter maintenant'}
           </Button>
         </div>
       </DialogContent>

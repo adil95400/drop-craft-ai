@@ -121,11 +121,26 @@ export default function SuppliersBrowse() {
   const { connectSupplier, isConnecting } = useSupplierActions()
   const navigate = useNavigate()
 
-  const handleConnect = async (supplierId: string) => {
-    const result = await connectSupplier(supplierId)
+  const handleConnect = async (supplier: MarketplaceSupplier) => {
+    const result = await connectSupplier(supplier.id, undefined, {
+      connectorId: supplier.id,
+      name: supplier.name,
+      type: supplier.supplier_type
+    })
     if (result.success) {
       navigate('/products/suppliers')
     }
+  }
+
+  const handleExport = () => {
+    const dataStr = JSON.stringify(MARKETPLACE_SUPPLIERS, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `suppliers-marketplace-${new Date().toISOString().split('T')[0]}.json`
+    link.click()
+    URL.revokeObjectURL(url)
   }
 
   const filteredSuppliers = MARKETPLACE_SUPPLIERS.filter(supplier => {
@@ -381,12 +396,14 @@ export default function SuppliersBrowse() {
                   </Button>
                   <Button 
                     className="flex-1 gap-2"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation()
                       setPreviewSupplier(supplier)
                     }}
+                    disabled={isConnecting}
                   >
                     <Zap className="h-4 w-4" />
-                    Connecter
+                    {isConnecting ? 'Connexion...' : 'Connecter'}
                   </Button>
                 </div>
               </CardContent>
@@ -401,10 +418,11 @@ export default function SuppliersBrowse() {
           supplier={previewSupplier}
           onConnect={async () => {
             if (previewSupplier) {
-              await handleConnect(previewSupplier.id)
+              await handleConnect(previewSupplier)
               setPreviewSupplier(null)
             }
           }}
+          isConnecting={isConnecting}
         />
       </div>
     </>

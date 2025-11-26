@@ -67,7 +67,16 @@ export default function SuppliersHub() {
               <Upload className="h-4 w-4 mr-2" />
               Importer
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => {
+              const dataStr = JSON.stringify(suppliers, null, 2)
+              const dataBlob = new Blob([dataStr], { type: 'application/json' })
+              const url = URL.createObjectURL(dataBlob)
+              const link = document.createElement('a')
+              link.href = url
+              link.download = `suppliers-export-${new Date().toISOString().split('T')[0]}.json`
+              link.click()
+              URL.revokeObjectURL(url)
+            }}>
               <Download className="h-4 w-4 mr-2" />
               Exporter
             </Button>
