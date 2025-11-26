@@ -6,6 +6,14 @@ import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { useRealSuppliers } from '@/hooks/useRealSuppliers'
+import { useSupplierSync } from '@/hooks/useSupplierSync'
+import { useNavigate } from 'react-router-dom'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { 
   Search, 
   Users, 
@@ -32,11 +40,21 @@ import {
 } from 'lucide-react'
 
 export function AdvancedSupplierManager() {
+  const navigate = useNavigate()
   const { suppliers, stats, isLoading, addSupplier, updateSupplier } = useRealSuppliers()
+  const { syncSupplier, syncAllSuppliers, isSyncing } = useSupplierSync()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSupplier, setSelectedSupplier] = useState<any>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('rating')
+
+  const handleSyncAll = async () => {
+    await syncAllSuppliers()
+  }
+
+  const handleSyncSupplier = async (supplierId: string) => {
+    await syncSupplier(supplierId)
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -113,11 +131,15 @@ export function AdvancedSupplierManager() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline">
-              <RefreshCw className="h-4 w-4 mr-2" />
+            <Button 
+              variant="outline"
+              onClick={handleSyncAll}
+              disabled={isSyncing}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
               Sync Tous
             </Button>
-            <Button>
+            <Button onClick={() => navigate('/products/suppliers/create')}>
               <Plus className="h-4 w-4 mr-2" />
               Nouveau Fournisseur
             </Button>
@@ -186,10 +208,22 @@ export function AdvancedSupplierManager() {
                 Attention
               </Button>
               
-              <Button variant="outline">
-                <ArrowUpDown className="h-4 w-4 mr-2" />
-                Trier par: {sortBy}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                    Trier par: {sortBy === 'rating' ? 'Note' : 'Nom'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setSortBy('rating')}>
+                    Note
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('name')}>
+                    Nom
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -245,15 +279,39 @@ export function AdvancedSupplierManager() {
 
                   {/* Actions */}
                   <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/products/suppliers/${supplier.id}`)
+                      }}
+                    >
                       <BarChart3 className="h-3 w-3 mr-1" />
                       Analytics
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <RefreshCw className="h-3 w-3 mr-1" />
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleSyncSupplier(supplier.id)
+                      }}
+                      disabled={isSyncing}
+                    >
+                      <RefreshCw className={`h-3 w-3 mr-1 ${isSyncing ? 'animate-spin' : ''}`} />
                       Sync
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/products/suppliers/${supplier.id}/edit`)
+                      }}
+                    >
                       <Settings className="h-3 w-3" />
                     </Button>
                   </div>
@@ -312,7 +370,11 @@ export function AdvancedSupplierManager() {
                       <p className="font-medium text-sm">HomeDecor Masters</p>
                       <p className="text-xs text-muted-foreground">Pas de sync depuis 2h - vérifier la connexion API</p>
                     </div>
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => navigate('/products/suppliers/manage')}
+                    >
                       Résoudre
                     </Button>
                   </div>
@@ -323,7 +385,11 @@ export function AdvancedSupplierManager() {
                       <p className="font-medium text-sm">Opportunité de négociation</p>
                       <p className="text-xs text-muted-foreground">TechGlobal - volumes élevés, renégocier les tarifs</p>
                     </div>
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => navigate('/products/suppliers')}
+                    >
                       Contacter
                     </Button>
                   </div>
@@ -334,7 +400,11 @@ export function AdvancedSupplierManager() {
                       <p className="font-medium text-sm">Nouveau certification</p>
                       <p className="text-xs text-muted-foreground">SportMax a obtenu une nouvelle certification ISO</p>
                     </div>
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => navigate('/products/suppliers')}
+                    >
                       Voir
                     </Button>
                   </div>
@@ -482,7 +552,10 @@ export function AdvancedSupplierManager() {
                     </p>
                   </div>
 
-                  <Button className="w-full">
+                  <Button 
+                    className="w-full"
+                    onClick={() => navigate('/automation/workflows')}
+                  >
                     <Zap className="h-4 w-4 mr-2" />
                     Nouvelle règle
                   </Button>
@@ -499,7 +572,11 @@ export function AdvancedSupplierManager() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <Button variant="outline" className="w-full justify-start h-auto p-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start h-auto p-4"
+                    onClick={() => navigate('/automation/workflows')}
+                  >
                     <div className="text-left">
                       <div className="font-medium">Onboarding Nouveau Fournisseur</div>
                       <div className="text-sm text-muted-foreground">
@@ -508,7 +585,11 @@ export function AdvancedSupplierManager() {
                     </div>
                   </Button>
 
-                  <Button variant="outline" className="w-full justify-start h-auto p-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start h-auto p-4"
+                    onClick={() => navigate('/automation/workflows')}
+                  >
                     <div className="text-left">
                       <div className="font-medium">Évaluation Performance</div>
                       <div className="text-sm text-muted-foreground">
@@ -517,7 +598,11 @@ export function AdvancedSupplierManager() {
                     </div>
                   </Button>
 
-                  <Button variant="outline" className="w-full justify-start h-auto p-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start h-auto p-4"
+                    onClick={() => navigate('/automation/workflows')}
+                  >
                     <div className="text-left">
                       <div className="font-medium">Gestion des Conflits</div>
                       <div className="text-sm text-muted-foreground">
@@ -526,7 +611,11 @@ export function AdvancedSupplierManager() {
                     </div>
                   </Button>
 
-                  <Button variant="outline" className="w-full justify-start h-auto p-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start h-auto p-4"
+                    onClick={() => navigate('/automation/workflows')}
+                  >
                     <div className="text-left">
                       <div className="font-medium">Optimisation Commandes</div>
                       <div className="text-sm text-muted-foreground">
