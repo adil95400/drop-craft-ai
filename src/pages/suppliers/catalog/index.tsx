@@ -1,0 +1,1 @@
+export { UnifiedCatalog as default } from './UnifiedCatalog';
