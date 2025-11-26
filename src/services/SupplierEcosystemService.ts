@@ -55,13 +55,27 @@ export class SupplierEcosystemService {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
-    const { error } = await supabase
-      .from('supplier_credentials_vault')
-      .update({ connection_status: 'revoked' })
-      .eq('supplier_id', supplierId)
+    // Update supplier status to inactive
+    const { error: supplierError } = await supabase
+      .from('suppliers')
+      .update({ 
+        status: 'inactive',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', supplierId)
       .eq('user_id', user.id);
 
-    if (error) throw error;
+    if (supplierError) throw supplierError;
+
+    // Also revoke any credentials
+    await supabase
+      .from('supplier_credentials_vault')
+      .update({ 
+        connection_status: 'revoked',
+        is_active: false 
+      })
+      .eq('supplier_id', supplierId)
+      .eq('user_id', user.id);
   }
 
   async testConnection(supplierId: string, credentials?: any): Promise<boolean> {
