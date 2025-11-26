@@ -8,6 +8,8 @@ import { Progress } from '@/components/ui/progress'
 import { useRealSuppliers } from '@/hooks/useRealSuppliers'
 import { useSupplierSync } from '@/hooks/useSupplierSync'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '@/integrations/supabase/client'
+import { toast } from 'sonner'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,13 +49,42 @@ export function AdvancedSupplierManager() {
   const [selectedSupplier, setSelectedSupplier] = useState<any>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('rating')
+  const [connectedSuppliers, setConnectedSuppliers] = useState<Set<string>>(new Set())
+
+  // Fetch connected suppliers on mount
+  React.useEffect(() => {
+    const fetchConnectedSuppliers = async () => {
+      try {
+        const { data } = await supabase
+          .from('supplier_credentials_vault')
+          .select('supplier_id')
+          .eq('connection_status', 'active')
+        
+        if (data) {
+          setConnectedSuppliers(new Set(data.map(c => c.supplier_id)))
+        }
+      } catch (error) {
+        console.error('Error fetching connected suppliers:', error)
+      }
+    }
+    fetchConnectedSuppliers()
+  }, [])
 
   const handleSyncAll = async () => {
     await syncAllSuppliers()
   }
 
   const handleSyncSupplier = async (supplierId: string) => {
+    if (!connectedSuppliers.has(supplierId)) {
+      toast.error('Ce fournisseur n\'est pas connecté. Connectez-le d\'abord.')
+      navigate('/products/suppliers/browse')
+      return
+    }
     await syncSupplier(supplierId)
+  }
+
+  const isSupplierConnected = (supplierId: string) => {
+    return connectedSuppliers.has(supplierId)
   }
 
   const getStatusIcon = (status: string) => {
@@ -246,7 +277,14 @@ export function AdvancedSupplierManager() {
                         {supplier.country}
                       </div>
                     </div>
-                    {getStatusBadge(supplier.status)}
+                    <div className="flex flex-col gap-1 items-end">
+                      {getStatusBadge(supplier.status)}
+                      {!isSupplierConnected(supplier.id) && (
+                        <Badge variant="outline" className="text-xs">
+                          Non connecté
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 
@@ -279,41 +317,56 @@ export function AdvancedSupplierManager() {
 
                   {/* Actions */}
                   <div className="flex gap-2 pt-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        navigate(`/products/suppliers/${supplier.id}`)
-                      }}
-                    >
-                      <BarChart3 className="h-3 w-3 mr-1" />
-                      Analytics
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleSyncSupplier(supplier.id)
-                      }}
-                      disabled={isSyncing}
-                    >
-                      <RefreshCw className={`h-3 w-3 mr-1 ${isSyncing ? 'animate-spin' : ''}`} />
-                      Sync
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        navigate(`/products/suppliers/${supplier.id}/edit`)
-                      }}
-                    >
-                      <Settings className="h-3 w-3" />
-                    </Button>
+                    {isSupplierConnected(supplier.id) ? (
+                      <>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            navigate(`/products/suppliers/${supplier.id}`)
+                          }}
+                        >
+                          <BarChart3 className="h-3 w-3 mr-1" />
+                          Analytics
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleSyncSupplier(supplier.id)
+                          }}
+                          disabled={isSyncing}
+                        >
+                          <RefreshCw className={`h-3 w-3 mr-1 ${isSyncing ? 'animate-spin' : ''}`} />
+                          Sync
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            navigate(`/products/suppliers/${supplier.id}/edit`)
+                          }}
+                        >
+                          <Settings className="h-3 w-3" />
+                        </Button>
+                      </>
+                    ) : (
+                      <Button 
+                        size="sm" 
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          navigate('/products/suppliers/browse')
+                        }}
+                      >
+                        Connecter
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
