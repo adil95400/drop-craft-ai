@@ -1,1 +1,1 @@
-export { SupplierMarketplace } from './SupplierMarketplace';
+export { SupplierMarketplace as default } from './SupplierMarketplace';
