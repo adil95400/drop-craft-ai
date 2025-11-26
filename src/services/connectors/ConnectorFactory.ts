@@ -28,6 +28,8 @@ import { PrintfulConnector } from './PrintfulConnector';
 import { SynceeConnector } from './SynceeConnector';
 import { VidaXLConnector } from './VidaXLConnector';
 import { AlibabaConnector } from './AlibabaConnector';
+import { MatterhornConnector } from './MatterhornConnector';
+import { BTSWholesalerConnector } from './BTSWholesalerConnector';
 
 export class ConnectorFactory {
   private static connectors: Map<string, SupplierConnector> = new Map([
@@ -316,6 +318,26 @@ export class ConnectorFactory {
       features: { products: true, inventory: true, orders: true, webhooks: false },
       rateLimits: { requestsPerMinute: 30, requestsPerHour: 1000 },
     }],
+    ['matterhorn', {
+      id: 'matterhorn',
+      name: 'matterhorn',
+      displayName: 'Matterhorn Wholesaler',
+      description: 'European fashion wholesaler specializing in clothing and accessories',
+      category: 'supplier',
+      authType: 'api_key',
+      features: { products: true, inventory: true, orders: true, webhooks: false },
+      rateLimits: { requestsPerMinute: 60, requestsPerHour: 1000 },
+    }],
+    ['btswholesaler', {
+      id: 'btswholesaler',
+      name: 'btswholesaler',
+      displayName: 'BTS Wholesaler',
+      description: 'Fashion and sportswear wholesale supplier with diverse product catalog',
+      category: 'supplier',
+      authType: 'api_key',
+      features: { products: true, inventory: true, orders: true, webhooks: false },
+      rateLimits: { requestsPerMinute: 60, requestsPerHour: 1000 },
+    }],
   ]);
 
   static getAvailableConnectors(): SupplierConnector[] {
@@ -392,6 +414,10 @@ export class ConnectorFactory {
         return new SynceeConnector(credentials);
       case 'vidaxl':
         return new VidaXLConnector(credentials);
+      case 'matterhorn':
+        return new MatterhornConnector(credentials);
+      case 'btswholesaler':
+        return new BTSWholesalerConnector(credentials);
         
       default:
         console.warn(`Connector ${connectorId} not found`);
@@ -455,6 +481,8 @@ export class ConnectorFactory {
       case 'eprolo':
       case 'syncee':
       case 'vidaxl':
+      case 'matterhorn':
+      case 'btswholesaler':
         return !!credentials.apiKey;
       case 'printful':
         return !!credentials.access_token;
