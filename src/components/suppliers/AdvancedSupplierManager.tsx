@@ -7,13 +7,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { useRealSuppliers } from '@/hooks/useRealSuppliers'
 import { useSupplierSync } from '@/hooks/useSupplierSync'
+import { useSupplierConnection } from '@/hooks/useSupplierConnection'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { 
@@ -45,37 +46,23 @@ export function AdvancedSupplierManager() {
   const navigate = useNavigate()
   const { suppliers, stats, isLoading, addSupplier, updateSupplier } = useRealSuppliers()
   const { syncSupplier, syncAllSuppliers, isSyncing } = useSupplierSync()
+  const { 
+    isSupplierConnected, 
+    disconnectSupplier, 
+    isDisconnecting,
+    refreshConnections 
+  } = useSupplierConnection()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSupplier, setSelectedSupplier] = useState<any>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('rating')
-  const [connectedSuppliers, setConnectedSuppliers] = useState<Set<string>>(new Set())
-
-  // Fetch connected suppliers on mount
-  React.useEffect(() => {
-    const fetchConnectedSuppliers = async () => {
-      try {
-        const { data } = await supabase
-          .from('supplier_credentials_vault')
-          .select('supplier_id')
-          .eq('connection_status', 'active')
-        
-        if (data) {
-          setConnectedSuppliers(new Set(data.map(c => c.supplier_id)))
-        }
-      } catch (error) {
-        console.error('Error fetching connected suppliers:', error)
-      }
-    }
-    fetchConnectedSuppliers()
-  }, [])
 
   const handleSyncAll = async () => {
     await syncAllSuppliers()
   }
 
   const handleSyncSupplier = async (supplierId: string) => {
-    if (!connectedSuppliers.has(supplierId)) {
+    if (!isSupplierConnected(supplierId)) {
       toast.error('Ce fournisseur n\'est pas connecté. Connectez-le d\'abord.')
       navigate('/products/suppliers/browse')
       return
@@ -83,8 +70,13 @@ export function AdvancedSupplierManager() {
     await syncSupplier(supplierId)
   }
 
-  const isSupplierConnected = (supplierId: string) => {
-    return connectedSuppliers.has(supplierId)
+  const handleDisconnect = async (supplierId: string, supplierName: string) => {
+    if (confirm(`Voulez-vous vraiment déconnecter ${supplierName} ?`)) {
+      const result = await disconnectSupplier(supplierId)
+      if (result.success) {
+        refreshConnections()
+      }
+    }
   }
 
   const getStatusIcon = (status: string) => {
@@ -325,18 +317,6 @@ export function AdvancedSupplierManager() {
                           className="flex-1"
                           onClick={(e) => {
                             e.stopPropagation()
-                            navigate(`/products/suppliers/${supplier.id}`)
-                          }}
-                        >
-                          <BarChart3 className="h-3 w-3 mr-1" />
-                          Analytics
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1"
-                          onClick={(e) => {
-                            e.stopPropagation()
                             handleSyncSupplier(supplier.id)
                           }}
                           disabled={isSyncing}
@@ -344,16 +324,40 @@ export function AdvancedSupplierManager() {
                           <RefreshCw className={`h-3 w-3 mr-1 ${isSyncing ? 'animate-spin' : ''}`} />
                           Sync
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            navigate(`/products/suppliers/${supplier.id}/edit`)
-                          }}
-                        >
-                          <Settings className="h-3 w-3" />
-                        </Button>
+                        
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Settings className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => navigate(`/products/suppliers/${supplier.id}`)}>
+                              <BarChart3 className="h-4 w-4 mr-2" />
+                              Voir Analytics
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => navigate(`/products/suppliers/${supplier.id}/edit`)}>
+                              <Settings className="h-4 w-4 mr-2" />
+                              Paramètres
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDisconnect(supplier.id, supplier.name)
+                              }}
+                              disabled={isDisconnecting}
+                              className="text-red-600"
+                            >
+                              <AlertCircle className="h-4 w-4 mr-2" />
+                              Déconnecter
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </>
                     ) : (
                       <Button 

@@ -7,8 +7,16 @@ import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useNavigate } from 'react-router-dom'
 import { useRealSuppliers } from '@/hooks/useRealSuppliers'
+import { useSupplierConnection } from '@/hooks/useSupplierConnection'
 import { ImportSuppliersDialog } from '@/components/suppliers/ImportSuppliersDialog'
 import { SupplierStatsChart } from '@/components/suppliers/SupplierStatsChart'
 import { TrendingSuppliers } from '@/components/suppliers/TrendingSuppliers'
@@ -16,7 +24,7 @@ import { RecentActivity } from '@/components/suppliers/RecentActivity'
 import {
   Store, ShoppingCart, Settings, TrendingUp, Package, Globe, Zap,
   CheckCircle, AlertCircle, Search, Plus, Upload, Download, RefreshCw,
-  Eye, Edit, Trash2, Star, MapPin, Filter, BarChart3, Users, Clock
+  Eye, Edit, Trash2, Star, MapPin, Filter, BarChart3, Users, Clock, MoreVertical, Link2Off
 } from 'lucide-react'
 
 export default function SuppliersHub() {
@@ -33,6 +41,12 @@ export default function SuppliersHub() {
     search: searchTerm
   })
 
+  const { 
+    isSupplierConnected, 
+    disconnectSupplier, 
+    isDisconnecting 
+  } = useSupplierConnection()
+
   const countries = Array.from(new Set(suppliers.map(s => s.country).filter(Boolean)))
   const recentSuppliers = suppliers.slice(0, 5)
 
@@ -42,6 +56,12 @@ export default function SuppliersHub() {
     const matchesCountry = countryFilter === 'all' || supplier.country === countryFilter
     return matchesSearch && matchesStatus && matchesCountry
   })
+
+  const handleDisconnect = async (supplierId: string, supplierName: string) => {
+    if (confirm(`Voulez-vous vraiment déconnecter ${supplierName} ?`)) {
+      await disconnectSupplier(supplierId)
+    }
+  }
 
   return (
     <>
@@ -396,23 +416,48 @@ export default function SuppliersHub() {
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                              <Button variant="ghost" size="sm" onClick={() => navigate(`/products/suppliers/${supplier.id}`)}>
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm" onClick={() => navigate(`/products/suppliers/${supplier.id}/edit`)}>
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => {
-                                  if (confirm('Supprimer ce fournisseur ?')) {
-                                    deleteSupplier(supplier.id)
-                                  }
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => navigate(`/products/suppliers/${supplier.id}`)}>
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    Voir détails
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => navigate(`/products/suppliers/${supplier.id}/edit`)}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Modifier
+                                  </DropdownMenuItem>
+                                  {isSupplierConnected(supplier.id) && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem 
+                                        onClick={() => handleDisconnect(supplier.id, supplier.name)}
+                                        disabled={isDisconnecting}
+                                        className="text-orange-600"
+                                      >
+                                        <Link2Off className="h-4 w-4 mr-2" />
+                                        Déconnecter
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      if (confirm('Supprimer ce fournisseur ?')) {
+                                        deleteSupplier(supplier.id)
+                                      }
+                                    }}
+                                    className="text-red-600"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Supprimer
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </TableCell>
                         </TableRow>
