@@ -167,12 +167,12 @@ Deno.serve(async (req) => {
       }
     }
     
-    // Update connection test timestamp
+    // Update connection test timestamp using actual table structure
     await supabase
       .from('supplier_credentials_vault')
       .update({
-        last_test_at: new Date().toISOString(),
-        test_result: testResult,
+        last_validation_at: new Date().toISOString(),
+        last_error: testResult.success ? null : testResult.message,
         connection_status: testResult.success ? 'connected' : 'error'
       })
       .eq('user_id', user.id)

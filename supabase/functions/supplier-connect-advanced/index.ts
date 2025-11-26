@@ -25,9 +25,13 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized')
     }
 
-    const { supplierId, credentials, settings } = await req.json()
+    const { supplierId, credentials, settings, connectionType = 'api' } = await req.json()
     
-    console.log('Connecting supplier:', supplierId)
+    console.log('Connecting supplier:', supplierId, 'type:', connectionType)
+    
+    if (!supplierId) {
+      throw new Error('supplierId is required')
+    }
     
     // Test connection based on supplier type
     let connectionStatus = 'connected'
@@ -54,17 +58,20 @@ Deno.serve(async (req) => {
       testResult = { error: error.message }
     }
     
-    // Store encrypted credentials
+    // Store credentials using actual table structure
     const { data: connection, error: insertError } = await supabase
       .from('supplier_credentials_vault')
       .upsert({
         user_id: user.id,
         supplier_id: supplierId,
-        credentials_encrypted: credentials, // Should be encrypted in production
+        api_key_encrypted: credentials?.apiKey || null,
+        api_secret_encrypted: credentials?.apiSecret || null,
+        access_token_encrypted: credentials?.accessToken || null,
+        oauth_data: settings || {},
+        connection_type: connectionType,
         connection_status: connectionStatus,
-        connection_settings: settings || {},
-        last_test_at: new Date().toISOString(),
-        test_result: testResult
+        last_validation_at: new Date().toISOString(),
+        last_error: testResult?.success ? null : testResult?.message
       })
       .select()
       .single()
