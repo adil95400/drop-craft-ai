@@ -66,6 +66,9 @@ export class ProductsUnifiedService {
   private static async getProductsTable(userId: string, filters?: any): Promise<UnifiedProduct[]> {
     let query = supabase.from('products').select('*').eq('user_id', userId)
 
+    // Filtrer les produits avec au moins un nom valide
+    query = query.not('name', 'is', null).not('name', 'eq', '')
+
     if (filters?.status) query = query.eq('status', filters.status)
     if (filters?.category) query = query.eq('category', filters.category)
     if (filters?.search) {
@@ -89,6 +92,9 @@ export class ProductsUnifiedService {
    */
   private static async getImportedProducts(userId: string, filters?: any): Promise<UnifiedProduct[]> {
     let query = supabase.from('imported_products').select('*').eq('user_id', userId)
+
+    // Filtrer les produits avec au moins un nom valide
+    query = query.not('name', 'is', null).not('name', 'eq', '')
 
     if (filters?.category) query = query.eq('category', filters.category)
     if (filters?.search) {
