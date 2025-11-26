@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
         .update({
           last_validation_at: new Date().toISOString(),
           last_error: testResult.success ? null : testResult.message,
-          connection_status: testResult.success ? 'connected' : 'error'
+          connection_status: testResult.success ? 'active' : 'error'
         })
         .eq('user_id', user.id)
         .eq('supplier_id', supplierId)
