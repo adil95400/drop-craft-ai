@@ -9,6 +9,9 @@ import { useRealSuppliers } from '@/hooks/useRealSuppliers'
 import { useNavigate } from 'react-router-dom'
 import { AdvancedSupplierManager } from '@/components/suppliers/AdvancedSupplierManager'
 import { SupplierStatsChart } from '@/components/suppliers/SupplierStatsChart'
+import { MultiSupplierStock } from '@/components/suppliers/MultiSupplierStock'
+import { DynamicPricingEngine } from '@/components/suppliers/DynamicPricingEngine'
+import { SupplierAnalyticsDashboard } from '@/components/suppliers/SupplierAnalyticsDashboard'
 import {
   Settings, BarChart3, Zap, Link as LinkIcon,
   TrendingUp, Package, CheckCircle, Globe, Clock, AlertTriangle, Target
@@ -95,10 +98,18 @@ export default function SuppliersManage() {
 
         {/* Tabs */}
         <Tabs defaultValue="monitoring" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="monitoring">
               <BarChart3 className="h-4 w-4 mr-2" />
               Monitoring
+            </TabsTrigger>
+            <TabsTrigger value="stock">
+              <Package className="h-4 w-4 mr-2" />
+              Stocks
+            </TabsTrigger>
+            <TabsTrigger value="pricing">
+              <Target className="h-4 w-4 mr-2" />
+              Prix
             </TabsTrigger>
             <TabsTrigger value="analytics">
               <TrendingUp className="h-4 w-4 mr-2" />
@@ -125,7 +136,17 @@ export default function SuppliersManage() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="stock" className="space-y-6">
+            <MultiSupplierStock />
+          </TabsContent>
+
+          <TabsContent value="pricing" className="space-y-6">
+            <DynamicPricingEngine />
+          </TabsContent>
+
           <TabsContent value="analytics" className="space-y-6">
+            <SupplierAnalyticsDashboard />
+            
             <SupplierStatsChart suppliers={suppliers} />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

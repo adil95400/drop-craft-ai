@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useSupplierActions } from '@/hooks/useSupplierActions'
 import { ImportSuppliersDialog } from '@/components/suppliers/ImportSuppliersDialog'
 import { SupplierPreviewModal } from '@/components/suppliers/SupplierPreviewModal'
+import { QuickConnectSuppliers } from '@/components/suppliers/QuickConnectSuppliers'
 import { useNavigate } from 'react-router-dom'
 import {
   Store, Search, Filter, Globe, Clock, Star, Zap, Package,
@@ -118,6 +119,9 @@ export default function SuppliersBrowse() {
   const [showOnlyFeatured, setShowOnlyFeatured] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [previewSupplier, setPreviewSupplier] = useState<any>(null)
+  const [showQuickConnect, setShowQuickConnect] = useState(false)
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>()
+  const [selectedSupplierName, setSelectedSupplierName] = useState<string>()
   const { connectSupplier, isConnecting } = useSupplierActions()
   const navigate = useNavigate()
 
@@ -398,7 +402,9 @@ export default function SuppliersBrowse() {
                     className="flex-1 gap-2"
                     onClick={(e) => {
                       e.stopPropagation()
-                      setPreviewSupplier(supplier)
+                      setSelectedSupplierId(supplier.id)
+                      setSelectedSupplierName(supplier.name)
+                      setShowQuickConnect(true)
                     }}
                     disabled={isConnecting}
                   >
@@ -423,6 +429,12 @@ export default function SuppliersBrowse() {
             }
           }}
           isConnecting={isConnecting}
+        />
+        <QuickConnectSuppliers
+          open={showQuickConnect}
+          onOpenChange={setShowQuickConnect}
+          supplierId={selectedSupplierId}
+          supplierName={selectedSupplierName}
         />
       </div>
     </>
