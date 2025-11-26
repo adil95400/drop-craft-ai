@@ -30,16 +30,20 @@ Deno.serve(async (req) => {
     console.log('Syncing products from supplier:', supplierId)
     
     // Get supplier credentials
-    const { data: credentials, error: credError } = await supabase
+    const { data: credentialData, error: credError } = await supabase
       .from('supplier_credentials_vault')
       .select('*')
       .eq('user_id', user.id)
       .eq('supplier_id', supplierId)
       .single()
     
-    if (credError || !credentials) {
+    if (credError || !credentialData) {
       throw new Error('Supplier not connected')
     }
+    
+    // Extract credentials from oauth_data or direct fields
+    const credentials = credentialData.oauth_data || {}
+    const connectorId = credentials.connectorId || supplierId
     
     let products: any[] = []
     let syncStats = {
@@ -51,12 +55,13 @@ Deno.serve(async (req) => {
     }
     
     // Fetch products based on supplier
-    switch (supplierId) {
+    switch (connectorId) {
       case 'bigbuy': {
         try {
+          const apiKey = credentials.apiKey || credentialData.api_key_encrypted
           const response = await fetch(`https://api.bigbuy.eu/rest/catalog/products.json?page=1&pageSize=${limit}`, {
             headers: {
-              'Authorization': `Bearer ${credentials.credentials_encrypted.apiKey}`,
+              'Authorization': `Bearer ${apiKey}`,
               'Content-Type': 'application/json'
             }
           })
@@ -93,9 +98,10 @@ Deno.serve(async (req) => {
       
       case 'vidaxl': {
         try {
+          const apiKey = credentials.apiKey || credentialData.api_key_encrypted
           const response = await fetch(`https://api.vidaxl.com/v1/products?limit=${limit}`, {
             headers: {
-              'X-API-Key': credentials.credentials_encrypted.apiKey,
+              'X-API-Key': apiKey,
               'Content-Type': 'application/json'
             }
           })
@@ -126,14 +132,66 @@ Deno.serve(async (req) => {
         break
       }
       
+      case 'btswholesaler': {
+        try {
+          const apiKey = credentials.apiKey || credentials.username
+          const response = await fetch('https://api.btswholesaler.com/v1/api/getListProducts', {
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Accept': 'application/json'
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            products = data.slice(0, limit).map((p: any) => ({
+              supplier_id: supplierId,
+              external_id: p.id.toString(),
+              sku: p.ean,
+              name: p.name,
+              description: p.description || '',
+              price: p.recommended_price || (p.price * 1.3),
+              cost_price: p.price,
+              currency: 'EUR',
+              stock_quantity: p.stock || 0,
+              images: p.image ? [p.image] : [],
+              category: p.categories?.split('/')[0] || 'General',
+              attributes: {
+                brand: p.manufacturer_name,
+                gender: p.gender,
+                ean: p.ean
+              },
+              status: p.stock > 0 ? 'active' : 'inactive'
+            }))
+            syncStats.fetched = products.length
+          }
+        } catch (error) {
+          console.error('BTSWholesaler sync failed:', error)
+          syncStats.errors.push(`BTSWholesaler: ${error.message}`)
+        }
+        break
+      }
+      
+      case 'matterhorn': {
+        try {
+          const apiKey = credentials.apiKey || credentialData.api_key_encrypted
+          // Matterhorn sync would go here
+          console.log('Matterhorn sync - connector ready, API integration pending')
+        } catch (error) {
+          console.error('Matterhorn sync failed:', error)
+          syncStats.errors.push(`Matterhorn: ${error.message}`)
+        }
+        break
+      }
+      
       default: {
         // Generate sample products for demonstration
         products = Array.from({ length: Math.min(limit, 20) }, (_, i) => ({
           supplier_id: supplierId,
-          external_id: `${supplierId}-${Date.now()}-${i}`,
-          sku: `SKU-${supplierId.toUpperCase()}-${i + 1}`,
-          name: `Product ${i + 1} from ${supplierId}`,
-          description: `High quality product from ${supplierId}`,
+          external_id: `${connectorId}-${Date.now()}-${i}`,
+          sku: `SKU-${connectorId.toUpperCase()}-${i + 1}`,
+          name: `Product ${i + 1} from ${connectorId}`,
+          description: `High quality product from ${connectorId}`,
           price: 29.99 + (i * 5),
           cost_price: 19.99 + (i * 3),
           currency: 'EUR',

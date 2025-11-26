@@ -36,7 +36,7 @@ export class SupplierEcosystemService {
   // CONNECTION MANAGEMENT
   // ============================================
 
-  async connectSupplier(request: ConnectSupplierRequest): Promise<ConnectSupplierResponse> {
+  async connectSupplier(request: ConnectSupplierRequest): Promise<any> {
     try {
       const { data, error } = await supabase.functions.invoke('supplier-connect-advanced', {
         body: request,

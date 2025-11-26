@@ -153,11 +153,6 @@ export function SupplierConnectionDialog({ supplier, open, onOpenChange }: Suppl
       onOpenChange(false);
       setCredentials({});
       setTestStatus('idle');
-      
-      toast({
-        title: "Succès",
-        description: `${supplier.displayName} a été connecté avec succès`,
-      });
     } catch (error) {
       console.error('Connection error:', error);
       toast({
