@@ -8119,6 +8119,56 @@ export type Database = {
         }
         Relationships: []
       }
+      product_supplier_mapping: {
+        Row: {
+          auto_switch_enabled: boolean | null
+          backup_suppliers: Json | null
+          created_at: string | null
+          id: string
+          last_switch_at: string | null
+          primary_supplier_id: string | null
+          product_id: string
+          switch_count: number | null
+          switch_threshold: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_switch_enabled?: boolean | null
+          backup_suppliers?: Json | null
+          created_at?: string | null
+          id?: string
+          last_switch_at?: string | null
+          primary_supplier_id?: string | null
+          product_id: string
+          switch_count?: number | null
+          switch_threshold?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_switch_enabled?: boolean | null
+          backup_suppliers?: Json | null
+          created_at?: string | null
+          id?: string
+          last_switch_at?: string | null
+          primary_supplier_id?: string | null
+          product_id?: string
+          switch_count?: number | null
+          switch_threshold?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_supplier_mapping_primary_supplier_id_fkey"
+            columns: ["primary_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_translations: {
         Row: {
           ai_translation_metadata: Json | null
@@ -10535,6 +10585,63 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_ai_recommendations: {
+        Row: {
+          acted_at: string | null
+          confidence_score: number | null
+          created_at: string | null
+          description: string
+          estimated_impact: Json | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          reasoning: Json | null
+          recommendation_type: string
+          status: string | null
+          suggested_actions: Json | null
+          target_entity_id: string | null
+          target_entity_type: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          acted_at?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          description: string
+          estimated_impact?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          reasoning?: Json | null
+          recommendation_type: string
+          status?: string | null
+          suggested_actions?: Json | null
+          target_entity_id?: string | null
+          target_entity_type?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          acted_at?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          description?: string
+          estimated_impact?: Json | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          reasoning?: Json | null
+          recommendation_type?: string
+          status?: string | null
+          suggested_actions?: Json | null
+          target_entity_id?: string | null
+          target_entity_type?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       supplier_alerts: {
         Row: {
           alert_type: string
@@ -10922,6 +11029,80 @@ export type Database = {
           },
         ]
       }
+      supplier_import_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          duration_seconds: number | null
+          error_log: Json | null
+          failed_products: number | null
+          id: string
+          import_config: Json
+          import_type: string
+          imported_products: number | null
+          next_run_at: string | null
+          progress: number | null
+          schedule: string | null
+          started_at: string | null
+          status: string | null
+          supplier_id: string | null
+          total_products: number | null
+          updated_at: string | null
+          updated_products: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          error_log?: Json | null
+          failed_products?: number | null
+          id?: string
+          import_config: Json
+          import_type: string
+          imported_products?: number | null
+          next_run_at?: string | null
+          progress?: number | null
+          schedule?: string | null
+          started_at?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          total_products?: number | null
+          updated_at?: string | null
+          updated_products?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          error_log?: Json | null
+          failed_products?: number | null
+          id?: string
+          import_config?: Json
+          import_type?: string
+          imported_products?: number | null
+          next_run_at?: string | null
+          progress?: number | null
+          schedule?: string | null
+          started_at?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          total_products?: number | null
+          updated_at?: string | null
+          updated_products?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_import_jobs_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_marketplace: {
         Row: {
           commission_rate: number | null
@@ -11022,6 +11203,71 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      supplier_notifications: {
+        Row: {
+          action_label: string | null
+          action_url: string | null
+          created_at: string | null
+          data: Json | null
+          id: string
+          is_archived: boolean | null
+          is_read: boolean | null
+          message: string
+          notification_type: string
+          order_id: string | null
+          priority: string | null
+          product_id: string | null
+          read_at: string | null
+          supplier_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          action_label?: string | null
+          action_url?: string | null
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_archived?: boolean | null
+          is_read?: boolean | null
+          message: string
+          notification_type: string
+          order_id?: string | null
+          priority?: string | null
+          product_id?: string | null
+          read_at?: string | null
+          supplier_id?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          action_label?: string | null
+          action_url?: string | null
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_archived?: boolean | null
+          is_read?: boolean | null
+          message?: string
+          notification_type?: string
+          order_id?: string | null
+          priority?: string | null
+          product_id?: string | null
+          read_at?: string | null
+          supplier_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_notifications_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       supplier_orders: {
         Row: {
@@ -11337,6 +11583,107 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "supplier_products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_products_unified: {
+        Row: {
+          ai_insights: Json | null
+          ai_score: number | null
+          category: string | null
+          conversion_rate: number | null
+          cost_price: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          images: Json | null
+          is_active: boolean | null
+          last_synced_at: string | null
+          main_image_url: string | null
+          profit_margin: number | null
+          retail_price: number | null
+          sku: string | null
+          stock_quantity: number | null
+          stock_status: string | null
+          suggested_price: number | null
+          supplier_id: string | null
+          supplier_name: string | null
+          supplier_product_id: string | null
+          sync_error: string | null
+          sync_status: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          view_count: number | null
+        }
+        Insert: {
+          ai_insights?: Json | null
+          ai_score?: number | null
+          category?: string | null
+          conversion_rate?: number | null
+          cost_price?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: Json | null
+          is_active?: boolean | null
+          last_synced_at?: string | null
+          main_image_url?: string | null
+          profit_margin?: number | null
+          retail_price?: number | null
+          sku?: string | null
+          stock_quantity?: number | null
+          stock_status?: string | null
+          suggested_price?: number | null
+          supplier_id?: string | null
+          supplier_name?: string | null
+          supplier_product_id?: string | null
+          sync_error?: string | null
+          sync_status?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          view_count?: number | null
+        }
+        Update: {
+          ai_insights?: Json | null
+          ai_score?: number | null
+          category?: string | null
+          conversion_rate?: number | null
+          cost_price?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          images?: Json | null
+          is_active?: boolean | null
+          last_synced_at?: string | null
+          main_image_url?: string | null
+          profit_margin?: number | null
+          retail_price?: number | null
+          sku?: string | null
+          stock_quantity?: number | null
+          stock_status?: string | null
+          suggested_price?: number | null
+          supplier_id?: string | null
+          supplier_name?: string | null
+          supplier_product_id?: string | null
+          sync_error?: string | null
+          sync_status?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_products_unified_supplier_id_fkey"
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
@@ -13684,6 +14031,43 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_catalog_enriched: {
+        Row: {
+          ai_score: number | null
+          alternative_suppliers_count: number | null
+          category: string | null
+          conversion_rate: number | null
+          cost_price: number | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          images: Json | null
+          last_synced_at: string | null
+          profit_margin: number | null
+          retail_price: number | null
+          stock_quantity: number | null
+          stock_status: string | null
+          suggested_price: number | null
+          supplier_id: string | null
+          supplier_name: string | null
+          supplier_rating: number | null
+          supplier_status: string | null
+          sync_status: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+          view_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_products_unified_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       admin_change_user_role: {
@@ -13735,6 +14119,10 @@ export type Database = {
       calculate_next_sync:
         | { Args: { integration_id: string }; Returns: string }
         | { Args: { base_time: string; frequency: string }; Returns: string }
+      calculate_product_ai_score: {
+        Args: { p_product_id: string }
+        Returns: number
+      }
       calculate_profit_margin: {
         Args: { cost_price: number; price: number }
         Returns: number
@@ -13804,6 +14192,18 @@ export type Database = {
       create_imported_reviews_table_if_not_exists: {
         Args: never
         Returns: undefined
+      }
+      create_supplier_notification: {
+        Args: {
+          p_data?: Json
+          p_message: string
+          p_priority?: string
+          p_supplier_id?: string
+          p_title: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: string
       }
       detect_suspicious_activity: { Args: never; Returns: Json }
       generate_api_key: { Args: never; Returns: string }

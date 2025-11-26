@@ -27,6 +27,7 @@ const SuppliersHub = lazy(() => import('@/pages/suppliers/SuppliersHub'));
 const SuppliersBrowse = lazy(() => import('@/pages/suppliers/SuppliersBrowse'));
 const SuppliersManage = lazy(() => import('@/pages/suppliers/SuppliersManage'));
 const SupplierMarketplace = lazy(() => import('@/pages/suppliers/marketplace'));
+const UnifiedCatalog = lazy(() => import('@/pages/suppliers/catalog'));
 
 // Winners & Research
 const WinnersPage = lazy(() => import('@/pages/WinnersPage'));
@@ -77,6 +78,7 @@ export function ProductRoutes() {
       <Route path="suppliers" element={<SuppliersHub />} />
       <Route path="suppliers/browse" element={<SuppliersBrowse />} />
       <Route path="suppliers/marketplace" element={<SupplierMarketplace />} />
+      <Route path="suppliers/catalog" element={<UnifiedCatalog />} />
       <Route path="suppliers/manage" element={<SuppliersManage />} />
       <Route path="suppliers/create" element={<CreateSupplier />} />
       <Route path="suppliers/:id" element={<SupplierDetails />} />
