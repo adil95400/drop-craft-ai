@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
     }
     
     // Test connection based on supplier type
-    let connectionStatus = 'connected'
+    let connectionStatus = 'active'
     let testResult = null
     
     try {
