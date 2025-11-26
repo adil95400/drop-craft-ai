@@ -43,9 +43,11 @@ import {
   Trash2,
   RefreshCw,
   Link as LinkIcon,
-  Eye
+  Eye,
+  Link2Off
 } from 'lucide-react'
 import { useRealSuppliers } from '@/hooks/useRealSuppliers'
+import { useSupplierConnection } from '@/hooks/useSupplierConnection'
 import { useNavigate } from 'react-router-dom'
 
 export default function ManageSuppliers() {
@@ -62,6 +64,12 @@ export default function ManageSuppliers() {
     isAnalyzing
   } = useRealSuppliers()
 
+  const { 
+    isSupplierConnected, 
+    disconnectSupplier, 
+    isDisconnecting 
+  } = useSupplierConnection()
+
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [countryFilter, setCountryFilter] = useState('all')
@@ -75,6 +83,12 @@ export default function ManageSuppliers() {
     
     return matchesSearch && matchesStatus && matchesCountry
   })
+
+  const handleDisconnect = async (supplierId: string, supplierName: string) => {
+    if (confirm(`Voulez-vous vraiment déconnecter ${supplierName} ?`)) {
+      await disconnectSupplier(supplierId)
+    }
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -383,6 +397,19 @@ export default function ManageSuppliers() {
                                 <RefreshCw className="h-4 w-4 mr-2" />
                                 {supplier.status === 'active' ? 'Désactiver' : 'Activer'}
                               </DropdownMenuItem>
+                              {isSupplierConnected(supplier.id) && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => handleDisconnect(supplier.id, supplier.name)}
+                                    disabled={isDisconnecting}
+                                    className="text-orange-600"
+                                  >
+                                    <Link2Off className="h-4 w-4 mr-2" />
+                                    Déconnecter
+                                  </DropdownMenuItem>
+                                </>
+                              )}
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 onClick={(e) => {
