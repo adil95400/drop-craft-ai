@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { useSupplierEcosystem } from "@/hooks/useSupplierEcosystem";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import type { BaseSupplier } from "@/types/suppliers";
 
 interface SupplierConnectionDialogProps {
@@ -53,6 +55,7 @@ export function SupplierConnectionDialog({ supplier, open, onOpenChange }: Suppl
   const [testMessage, setTestMessage] = useState('');
 
   const { connectSupplier, testConnection, isConnecting, isTesting } = useSupplierEcosystem();
+  const { toast } = useToast();
 
   if (!supplier) return null;
 
@@ -84,7 +87,10 @@ export function SupplierConnectionDialog({ supplier, open, onOpenChange }: Suppl
         creds[key] = credentials[key] || '';
       });
 
-      testConnection(supplier.id);
+      const mappedCreds = mapCredentials(creds);
+      
+      // Pass the mapped credentials to testConnection
+      await testConnection(supplier.id, mappedCreds);
       setTestStatus('success');
       setTestMessage('Connexion réussie');
     } catch (error) {
@@ -94,23 +100,72 @@ export function SupplierConnectionDialog({ supplier, open, onOpenChange }: Suppl
   };
 
   const handleConnect = async () => {
-    const creds: Record<string, string> = {};
-    fields.forEach((field) => {
-      const key = field.label.toLowerCase().replace(/\s+/g, '');
-      creds[key] = credentials[key] || '';
-    });
-
-    const mappedCreds = mapCredentials(creds);
-
-    connectSupplier({
-      supplierId: supplier.id,
-      credentials: mappedCreds,
-      connectionType: 'api'
-    });
-
-    onOpenChange(false);
-    setCredentials({});
     setTestStatus('idle');
+    try {
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Create supplier record first to get a UUID
+      const { data: supplierRecord, error: supplierError } = await supabase
+        .from('suppliers')
+        .insert({
+          user_id: user.id,
+          name: supplier.displayName,
+          status: 'active'
+        })
+        .select()
+        .single();
+
+      if (supplierError) {
+        console.error('Failed to create supplier:', supplierError);
+        toast({
+          title: "Erreur",
+          description: "Impossible de créer le fournisseur",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Now connect with the UUID
+      const creds: Record<string, string> = {};
+      fields.forEach((field) => {
+        const key = field.label.toLowerCase().replace(/\s+/g, '');
+        creds[key] = credentials[key] || '';
+      });
+
+      const mappedCreds = mapCredentials(creds);
+
+      connectSupplier({
+        supplierId: supplierRecord.id, // Use the UUID from database
+        credentials: mappedCreds,
+        connectionType: 'api',
+        settings: { connectorId: supplier.id } // Store the original connector ID
+      });
+
+      onOpenChange(false);
+      setCredentials({});
+      setTestStatus('idle');
+      
+      toast({
+        title: "Succès",
+        description: `${supplier.displayName} a été connecté avec succès`,
+      });
+    } catch (error) {
+      console.error('Connection error:', error);
+      toast({
+        title: "Erreur",
+        description: "Erreur lors de la connexion",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

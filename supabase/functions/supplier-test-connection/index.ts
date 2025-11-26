@@ -27,7 +27,13 @@ Deno.serve(async (req) => {
 
     const { supplierId, credentials } = await req.json()
     
-    console.log('Testing connection for supplier:', supplierId)
+    console.log('Testing connection for supplier:', supplierId, 'has credentials:', !!credentials)
+    
+    // When testing, credentials are provided directly from the form
+    // supplierId is the connector ID (e.g., 'matterhorn', 'bigbuy')
+    if (!credentials) {
+      throw new Error('Credentials are required for testing')
+    }
     
     let testResult = {
       success: false,
@@ -167,16 +173,20 @@ Deno.serve(async (req) => {
       }
     }
     
-    // Update connection test timestamp using actual table structure
-    await supabase
-      .from('supplier_credentials_vault')
-      .update({
-        last_validation_at: new Date().toISOString(),
-        last_error: testResult.success ? null : testResult.message,
-        connection_status: testResult.success ? 'connected' : 'error'
-      })
-      .eq('user_id', user.id)
-      .eq('supplier_id', supplierId)
+    // Only update database if supplierId is a valid UUID (not a connector template ID)
+    // Connector IDs like 'matterhorn', 'bigbuy' are strings, not UUIDs
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (uuidRegex.test(supplierId)) {
+      await supabase
+        .from('supplier_credentials_vault')
+        .update({
+          last_validation_at: new Date().toISOString(),
+          last_error: testResult.success ? null : testResult.message,
+          connection_status: testResult.success ? 'connected' : 'error'
+        })
+        .eq('user_id', user.id)
+        .eq('supplier_id', supplierId)
+    }
     
     return new Response(
       JSON.stringify(testResult),
