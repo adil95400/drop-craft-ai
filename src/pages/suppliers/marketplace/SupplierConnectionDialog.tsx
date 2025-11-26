@@ -60,6 +60,21 @@ export function SupplierConnectionDialog({ supplier, open, onOpenChange }: Suppl
     { label: "API Key", type: "password", required: true }
   ];
 
+  const mapCredentials = (creds: Record<string, string>) => {
+    // Map form field keys to edge function expected keys
+    const mapped: Record<string, string> = {};
+    
+    if (creds.apikey) mapped.apiKey = creds.apikey;
+    if (creds.appkey) mapped.appKey = creds.appkey;
+    if (creds.appsecret) mapped.appSecret = creds.appsecret;
+    if (creds.clientid) mapped.clientId = creds.clientid;
+    if (creds.clientsecret) mapped.clientSecret = creds.clientsecret;
+    if (creds.username) mapped.username = creds.username;
+    if (creds.password) mapped.password = creds.password;
+    
+    return mapped;
+  };
+
   const handleTest = async () => {
     setTestStatus('testing');
     try {
@@ -85,10 +100,12 @@ export function SupplierConnectionDialog({ supplier, open, onOpenChange }: Suppl
       creds[key] = credentials[key] || '';
     });
 
+    const mappedCreds = mapCredentials(creds);
+
     connectSupplier({
-      supplier_id: supplier.id,
-      connection_type: 'api',
-      credentials: creds
+      supplierId: supplier.id,
+      credentials: mappedCreds,
+      connectionType: 'api'
     });
 
     onOpenChange(false);

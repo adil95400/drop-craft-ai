@@ -326,15 +326,22 @@ export interface SupplierExtended {
 
 // Connect supplier
 export interface ConnectSupplierRequest {
-  supplier_id: string;
-  connection_type: ConnectionType;
-  credentials: {
-    api_key?: string;
-    api_secret?: string;
-    access_token?: string;
-    oauth_code?: string;
+  supplierId: string;
+  connectionType?: ConnectionType;
+  credentials?: {
+    apiKey?: string;
+    apiSecret?: string;
+    appKey?: string;
+    appSecret?: string;
+    clientId?: string;
+    clientSecret?: string;
+    username?: string;
+    password?: string;
+    accessToken?: string;
+    oauthCode?: string;
     [key: string]: any;
   };
+  settings?: Record<string, any>;
 }
 
 export interface ConnectSupplierResponse {

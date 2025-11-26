@@ -64,10 +64,10 @@ export class SupplierEcosystemService {
     if (error) throw error;
   }
 
-  async testConnection(supplierId: string): Promise<boolean> {
+  async testConnection(supplierId: string, credentials?: any): Promise<boolean> {
     try {
       const { data, error } = await supabase.functions.invoke('supplier-test-connection', {
-        body: { supplier_id: supplierId },
+        body: { supplierId, credentials },
       });
 
       if (error) throw error;
