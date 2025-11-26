@@ -7,6 +7,7 @@ import { SupplierCard } from "./SupplierCard";
 import { SupplierConnectionDialog } from "./SupplierConnectionDialog";
 import { RealSupplierStats } from "./RealSupplierStats";
 import { useRealSuppliers } from "@/hooks/useRealSuppliers";
+import { useSupplierEcosystem } from "@/hooks/useSupplierEcosystem";
 import { SUPPLIER_TEMPLATES } from "@/data/supplierTemplates";
 import type { BaseSupplier } from "@/types/suppliers";
 
@@ -18,6 +19,7 @@ export function SupplierMarketplace() {
   const [connectionDialogOpen, setConnectionDialogOpen] = useState(false);
 
   const { suppliers: userSuppliers } = useRealSuppliers();
+  const { disconnectSupplier, isDisconnecting } = useSupplierEcosystem();
 
   // Merge template suppliers with user connected suppliers
   const allSuppliers = SUPPLIER_TEMPLATES.map(template => {
@@ -40,6 +42,12 @@ export function SupplierMarketplace() {
   const handleConnect = (supplier: BaseSupplier) => {
     setSelectedSupplier(supplier);
     setConnectionDialogOpen(true);
+  };
+
+  const handleDisconnect = (supplierId: string) => {
+    if (confirm('Êtes-vous sûr de vouloir déconnecter ce fournisseur ?')) {
+      disconnectSupplier(supplierId);
+    }
   };
 
   return (
@@ -100,14 +108,18 @@ export function SupplierMarketplace() {
               ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               : "space-y-4"
           }>
-            {filteredSuppliers.map(supplier => (
-              <SupplierCard
-                key={supplier.id}
-                supplier={supplier}
-                viewMode={viewMode}
-                onConnect={() => handleConnect(supplier)}
-              />
-            ))}
+            {filteredSuppliers.map(supplier => {
+              const userSupplier = userSuppliers.find(s => s.name.toLowerCase() === supplier.id);
+              return (
+                <SupplierCard
+                  key={supplier.id}
+                  supplier={supplier}
+                  viewMode={viewMode}
+                  onConnect={() => handleConnect(supplier)}
+                  onDisconnect={userSupplier ? () => handleDisconnect(userSupplier.id) : undefined}
+                />
+              );
+            })}
           </div>
 
           {filteredSuppliers.length === 0 && (

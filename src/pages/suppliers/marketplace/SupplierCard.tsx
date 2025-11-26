@@ -1,16 +1,17 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Star, Globe, MapPin, Package, CheckCircle2, Plug } from "lucide-react";
+import { Star, Globe, MapPin, Package, CheckCircle2, Plug, Unplug } from "lucide-react";
 import type { BaseSupplier } from "@/types/suppliers";
 
 interface SupplierCardProps {
   supplier: BaseSupplier;
   viewMode: "grid" | "list";
   onConnect: () => void;
+  onDisconnect?: () => void;
 }
 
-export function SupplierCard({ supplier, viewMode, onConnect }: SupplierCardProps) {
+export function SupplierCard({ supplier, viewMode, onConnect, onDisconnect }: SupplierCardProps) {
   const isConnected = supplier.status === "connected";
 
   if (viewMode === "list") {
@@ -71,14 +72,24 @@ export function SupplierCard({ supplier, viewMode, onConnect }: SupplierCardProp
             </div>
           </div>
 
-          <Button 
-            onClick={onConnect}
-            variant={isConnected ? "outline" : "default"}
-            className="flex-shrink-0"
-          >
-            <Plug className="h-4 w-4 mr-2" />
-            {isConnected ? "Gérer" : "Connecter"}
-          </Button>
+          <div className="flex gap-2 flex-shrink-0">
+            <Button 
+              onClick={onConnect}
+              variant={isConnected ? "outline" : "default"}
+            >
+              <Plug className="h-4 w-4 mr-2" />
+              {isConnected ? "Gérer" : "Connecter"}
+            </Button>
+            {isConnected && onDisconnect && (
+              <Button 
+                onClick={onDisconnect}
+                variant="destructive"
+                size="icon"
+              >
+                <Unplug className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </Card>
     );
@@ -147,15 +158,24 @@ export function SupplierCard({ supplier, viewMode, onConnect }: SupplierCardProp
         </div>
       </CardContent>
 
-      <CardFooter>
+      <CardFooter className="flex gap-2">
         <Button 
           onClick={onConnect}
           variant={isConnected ? "outline" : "default"}
-          className="w-full"
+          className="flex-1"
         >
           <Plug className="h-4 w-4 mr-2" />
-          {isConnected ? "Gérer la connexion" : "Connecter"}
+          {isConnected ? "Gérer" : "Connecter"}
         </Button>
+        {isConnected && onDisconnect && (
+          <Button 
+            onClick={onDisconnect}
+            variant="destructive"
+          >
+            <Unplug className="h-4 w-4 mr-2" />
+            Déconnecter
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
