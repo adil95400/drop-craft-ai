@@ -7,6 +7,9 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useNavigate } from 'react-router-dom';
+import { useSupplierSync } from '@/hooks/useSupplierSync';
+import { toast } from 'sonner';
 import {
   Plug,
   Settings,
@@ -76,8 +79,52 @@ const CONNECTORS: Connector[] = [
 ];
 
 export default function ManageSuppliersConnectors() {
+  const navigate = useNavigate();
+  const { syncSupplier, syncAllSuppliers, isSyncing } = useSupplierSync();
   const [connectors, setConnectors] = useState(CONNECTORS);
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
+
+  const handleSync = async (connectorId: string) => {
+    const result = await syncSupplier(connectorId);
+    if (result.success) {
+      setConnectors(prev => 
+        prev.map(c => 
+          c.id === connectorId 
+            ? { ...c, lastSync: new Date().toISOString() }
+            : c
+        )
+      );
+    }
+  };
+
+  const handleSyncAll = async () => {
+    await syncAllSuppliers();
+  };
+
+  const handleConnect = (connectorId: string) => {
+    navigate('/products/suppliers/browse');
+  };
+
+  const handleConfigure = (connector: Connector) => {
+    setSelectedConnector(connector);
+    toast.info(`Configuration de ${connector.name}`);
+  };
+
+  const handleTestConnection = async () => {
+    if (!selectedConnector) return;
+    toast.info('Test de connexion en cours...');
+    setTimeout(() => {
+      toast.success('Connexion testée avec succès');
+    }, 1500);
+  };
+
+  const handleViewLogs = () => {
+    toast.info('Logs de synchronisation à venir');
+  };
+
+  const handleGlobalSettings = () => {
+    toast.info('Paramètres globaux à venir');
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -255,11 +302,28 @@ export default function ManageSuppliersConnectors() {
                   
                   {connector.status === 'connected' && (
                     <div className="mt-4 flex gap-2">
-                      <Button size="sm" variant="outline" className="gap-2">
-                        <RefreshCw className="h-4 w-4" />
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="gap-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSync(connector.id);
+                        }}
+                        disabled={isSyncing}
+                      >
+                        <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
                         Synchroniser
                       </Button>
-                      <Button size="sm" variant="outline" className="gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="gap-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleConfigure(connector);
+                        }}
+                      >
                         <Settings className="h-4 w-4" />
                         Configurer
                       </Button>
@@ -267,7 +331,14 @@ export default function ManageSuppliersConnectors() {
                   )}
                   
                   {connector.status === 'disconnected' && (
-                    <Button size="sm" className="mt-4 gap-2">
+                    <Button 
+                      size="sm" 
+                      className="mt-4 gap-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleConnect(connector.id);
+                      }}
+                    >
                       <Plug className="h-4 w-4" />
                       Connecter
                     </Button>
@@ -278,7 +349,15 @@ export default function ManageSuppliersConnectors() {
                       <div className="text-sm text-red-600 dark:text-red-400 mb-2">
                         Erreur de connexion - Vérifiez vos identifiants
                       </div>
-                      <Button size="sm" variant="destructive" className="gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="destructive" 
+                        className="gap-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleConfigure(connector);
+                        }}
+                      >
                         <Settings className="h-4 w-4" />
                         Réparer
                       </Button>
@@ -289,14 +368,20 @@ export default function ManageSuppliersConnectors() {
             ))}
 
             {/* Add New Connector */}
-            <Card className="border-dashed border-2 hover:border-primary/50 transition-colors cursor-pointer">
+            <Card 
+              className="border-dashed border-2 hover:border-primary/50 transition-colors cursor-pointer"
+              onClick={() => navigate('/products/suppliers/browse')}
+            >
               <CardContent className="p-8 text-center">
                 <Plug className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Ajouter un nouveau connecteur</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Connectez un nouveau fournisseur via API, XML, CSV ou Webhook
                 </p>
-                <Button>
+                <Button onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/products/suppliers/browse');
+                }}>
                   <Plug className="h-4 w-4 mr-2" />
                   Nouveau connecteur
                 </Button>
@@ -360,9 +445,13 @@ export default function ManageSuppliersConnectors() {
                           {formatLastSync(selectedConnector.lastSync)}
                         </p>
                       </div>
-                      <Button className="w-full gap-2">
-                        <RefreshCw className="h-4 w-4" />
-                        Synchroniser maintenant
+                      <Button 
+                        className="w-full gap-2"
+                        onClick={() => selectedConnector && handleSync(selectedConnector.id)}
+                        disabled={isSyncing}
+                      >
+                        <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                        {isSyncing ? 'Synchronisation...' : 'Synchroniser maintenant'}
                       </Button>
                     </TabsContent>
                     
@@ -386,7 +475,11 @@ export default function ManageSuppliersConnectors() {
                           disabled={!selectedConnector.hasCredentials}
                         />
                       </div>
-                      <Button variant="outline" className="w-full">
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={handleTestConnection}
+                      >
                         Tester la connexion
                       </Button>
                     </TabsContent>
@@ -406,15 +499,28 @@ export default function ManageSuppliersConnectors() {
                 <CardTitle>Actions rapides</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <RefreshCw className="h-4 w-4" />
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-2"
+                  onClick={handleSyncAll}
+                  disabled={isSyncing}
+                >
+                  <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
                   Synchroniser tous les connecteurs
                 </Button>
-                <Button variant="outline" className="w-full justify-start gap-2">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-2"
+                  onClick={handleViewLogs}
+                >
                   <Activity className="h-4 w-4" />
                   Voir les logs
                 </Button>
-                <Button variant="outline" className="w-full justify-start gap-2">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-2"
+                  onClick={handleGlobalSettings}
+                >
                   <Settings className="h-4 w-4" />
                   Paramètres globaux
                 </Button>

@@ -226,7 +226,7 @@ export default function SuppliersManage() {
                   <p className="text-sm mb-4">
                     Configurez des règles pour automatiser la gestion de vos fournisseurs
                   </p>
-                  <Button>
+                  <Button onClick={() => navigate('/automation/workflows')}>
                     <Zap className="h-4 w-4 mr-2" />
                     Créer une règle
                   </Button>
