@@ -31,12 +31,18 @@ export function useSupplierEcosystem(supplierId?: string) {
   const connectMutation = useMutation({
     mutationFn: (request: ConnectSupplierRequest) =>
       supplierEcosystemService.connectSupplier(request),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['supplier-connection'] });
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      
+      // Show sync info if available
+      const syncInfo = data?.syncResult?.success 
+        ? ` ${data.syncResult.syncStats?.imported || 0} produits synchronisés.`
+        : '';
+      
       toast({
         title: 'Fournisseur connecté',
-        description: 'La connexion a été établie avec succès',
+        description: `La connexion a été établie avec succès.${syncInfo}`,
       });
     },
     onError: (error: Error) => {
