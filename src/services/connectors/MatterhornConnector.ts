@@ -3,7 +3,7 @@ import { SupplierProduct, SupplierCredentials } from '@/types/suppliers'
 
 export class MatterhornConnector extends BaseConnector {
   constructor(credentials: SupplierCredentials) {
-    super(credentials, 'https://api.matterhorn.eu/v1')
+    super(credentials, 'https://matterhorn-wholesale.com/B2BAPI')
     this.rateLimitDelay = 600
   }
 
@@ -13,14 +13,16 @@ export class MatterhornConnector extends BaseConnector {
 
   protected getAuthHeaders(): Record<string, string> {
     return {
-      'X-API-Key': this.credentials.apiKey || '',
+      'Authorization': this.credentials.apiKey || '',
+      'accept': 'application/json'
     }
   }
 
   async validateCredentials(): Promise<boolean> {
     try {
-      const data = await this.makeRequest('/auth/verify')
-      return data.valid === true
+      // Try to fetch first page of products to validate credentials
+      const data = await this.makeRequest('/ITEMS/?page=1&limit=1')
+      return Array.isArray(data) || (data && typeof data === 'object')
     } catch (error) {
       this.handleError(error, 'validateCredentials')
       return false
@@ -33,8 +35,9 @@ export class MatterhornConnector extends BaseConnector {
         page: (options.page || 1).toString(),
         limit: (options.limit || 100).toString(),
       })
-      const data = await this.makeRequest(`/products?${params}`)
-      return data.products.map((product: any) => this.normalizeProduct(product) as SupplierProduct)
+      const data = await this.makeRequest(`/ITEMS/?${params}`)
+      const products = Array.isArray(data) ? data : []
+      return products.map((product: any) => this.normalizeProduct(product) as SupplierProduct)
     } catch (error) {
       this.handleError(error, 'fetchProducts')
       return []
@@ -43,11 +46,46 @@ export class MatterhornConnector extends BaseConnector {
 
   async fetchProduct(sku: string): Promise<SupplierProduct | null> {
     try {
-      const data = await this.makeRequest(`/products/${encodeURIComponent(sku)}`)
-      return this.normalizeProduct(data.product) as SupplierProduct
+      const data = await this.makeRequest(`/ITEMS/${encodeURIComponent(sku)}`)
+      return this.normalizeProduct(data) as SupplierProduct
     } catch (error) {
       console.error(`Failed to fetch product ${sku}:`, error)
       return null
+    }
+  }
+
+  protected normalizeProduct(product: any): Partial<SupplierProduct> {
+    const variants = product.variants?.map((v: any) => ({
+      id: v.variant_uid,
+      sku: v.variant_uid,
+      title: v.name,
+      price: product.prices?.EUR || 0,
+      stock: parseInt(v.stock) || 0,
+      attributes: { size: v.name }
+    })) || []
+
+    return {
+      id: product.id,
+      sku: product.id,
+      title: product.name_without_number || product.name,
+      description: product.description || '',
+      price: product.prices?.EUR || 0,
+      currency: 'EUR',
+      stock: parseInt(product.stock_total) || 0,
+      images: product.images || [],
+      category: product.category_name || '',
+      brand: product.brand,
+      variants,
+      attributes: {
+        color: product.color,
+        category_path: product.category_path,
+        new_collection: product.new_collection
+      },
+      supplier: {
+        id: 'matterhorn',
+        name: 'Matterhorn',
+        sku: product.id
+      }
     }
   }
 
@@ -66,19 +104,8 @@ export class MatterhornConnector extends BaseConnector {
     }
 
     try {
-      const response = await fetch(`https://api.matterhorn.eu/v1/inventory/${sku}`, {
-        headers: {
-          'X-API-Key': this.credentials.apiKey,
-          'Content-Type': 'application/json'
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`)
-      }
-
-      const data = await response.json()
-      return data.available || 0
+      const product = await this.fetchProduct(sku)
+      return product?.stock || 0
     } catch (error) {
       console.error('Matterhorn inventory check failed:', error)
       return 0
@@ -91,39 +118,47 @@ export class MatterhornConnector extends BaseConnector {
     }
 
     try {
-      const response = await fetch('https://api.matterhorn.eu/v1/orders', {
-        method: 'POST',
-        headers: {
-          'X-API-Key': this.credentials.apiKey,
-          'Content-Type': 'application/json'
+      const payload = {
+        items: orderData.items.map((item: any) => ({
+          variant_uid: parseInt(item.variantId || item.sku),
+          quantity: item.quantity
+        })),
+        delivery_to: {
+          first_name: orderData.shippingAddress.firstName || orderData.shippingAddress.name?.split(' ')[0],
+          second_name: orderData.shippingAddress.lastName || orderData.shippingAddress.name?.split(' ').slice(1).join(' '),
+          country: orderData.shippingAddress.country?.toLowerCase(),
+          street: orderData.shippingAddress.street || orderData.shippingAddress.address,
+          house_number: orderData.shippingAddress.houseNumber || '',
+          zip: orderData.shippingAddress.postalCode || orderData.shippingAddress.zip,
+          city: orderData.shippingAddress.city
         },
-        body: JSON.stringify({
-          order_items: orderData.items.map((item: any) => ({
-            sku: item.sku,
-            quantity: item.quantity,
-            variant_id: item.variantId
-          })),
-          shipping: {
-            name: orderData.shippingAddress.name,
-            address: orderData.shippingAddress.address,
-            city: orderData.shippingAddress.city,
-            postal_code: orderData.shippingAddress.postalCode,
-            country: orderData.shippingAddress.country
-          },
-          reference: orderData.orderNumber
-        })
+        currency: 'EUR',
+        delivery_method_id: orderData.deliveryMethodId || 160
+      }
+
+      const response = await fetch('https://matterhorn-wholesale.com/B2BAPI/ACCOUNT/ORDERS/', {
+        method: 'PUT',
+        headers: {
+          'Authorization': this.credentials.apiKey,
+          'Content-Type': 'application/json',
+          'accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
       })
 
       if (!response.ok) {
-        throw new Error(`Order failed: ${response.status}`)
+        const errorText = await response.text()
+        throw new Error(`Order failed: ${response.status} - ${errorText}`)
       }
 
       const result = await response.json()
       return {
         success: true,
-        orderId: result.order_id,
-        tracking: result.tracking_number,
-        estimatedDelivery: result.estimated_delivery
+        orderId: result.id,
+        tracking: result.shipping_number,
+        trackingUrl: result.tracking_url,
+        paymentUrl: result.payment_url,
+        estimatedDelivery: null
       }
     } catch (error) {
       console.error('Matterhorn order failed:', error)
