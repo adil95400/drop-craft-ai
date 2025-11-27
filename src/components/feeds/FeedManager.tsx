@@ -56,6 +56,8 @@ const platformIcons: Record<string, string> = {
   etsy: '🎨',
   facebook: '👥',
   google: '🔍',
+  meta: '📸',
+  tiktok: '🎵',
   cdiscount: '🛍️',
   allegro: '⚡',
   manomano: '🔧'
@@ -337,6 +339,8 @@ export default function FeedManager() {
                       <SelectItem value="etsy">🎨 Etsy</SelectItem>
                       <SelectItem value="facebook">👥 Facebook</SelectItem>
                       <SelectItem value="google">🔍 Google Shopping</SelectItem>
+                      <SelectItem value="meta">📸 Meta Commerce (Instagram/Facebook)</SelectItem>
+                      <SelectItem value="tiktok">🎵 TikTok Shop</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

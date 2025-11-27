@@ -2382,36 +2382,42 @@ export type Database = {
       }
       category_mapping_rules: {
         Row: {
-          confidence: number
-          created_at: string
+          confidence_score: number | null
+          created_at: string | null
           id: string
-          is_ai: boolean
-          keywords: string[] | null
-          supplier_category: string
+          is_active: boolean | null
+          is_manual: boolean | null
+          source_category: string
           target_category: string
-          updated_at: string
+          target_category_id: string | null
+          target_platform: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
-          confidence?: number
-          created_at?: string
+          confidence_score?: number | null
+          created_at?: string | null
           id?: string
-          is_ai?: boolean
-          keywords?: string[] | null
-          supplier_category: string
+          is_active?: boolean | null
+          is_manual?: boolean | null
+          source_category: string
           target_category: string
-          updated_at?: string
+          target_category_id?: string | null
+          target_platform: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
-          confidence?: number
-          created_at?: string
+          confidence_score?: number | null
+          created_at?: string | null
           id?: string
-          is_ai?: boolean
-          keywords?: string[] | null
-          supplier_category?: string
+          is_active?: boolean | null
+          is_manual?: boolean | null
+          source_category?: string
           target_category?: string
-          updated_at?: string
+          target_category_id?: string | null
+          target_platform?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -4435,6 +4441,154 @@ export type Database = {
         }
         Relationships: []
       }
+      feed_generations: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          duration_seconds: number | null
+          error_details: Json | null
+          failed_products: number | null
+          feed_id: string
+          generation_type: string
+          id: string
+          output_url: string | null
+          processed_products: number | null
+          started_at: string | null
+          status: string
+          successful_products: number | null
+          total_products: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          error_details?: Json | null
+          failed_products?: number | null
+          feed_id: string
+          generation_type?: string
+          id?: string
+          output_url?: string | null
+          processed_products?: number | null
+          started_at?: string | null
+          status?: string
+          successful_products?: number | null
+          total_products?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          error_details?: Json | null
+          failed_products?: number | null
+          feed_id?: string
+          generation_type?: string
+          id?: string
+          output_url?: string | null
+          processed_products?: number | null
+          started_at?: string | null
+          status?: string
+          successful_products?: number | null
+          total_products?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_generations_feed_id_fkey"
+            columns: ["feed_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_feeds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_products: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          description_score: number | null
+          excluded_reason: string | null
+          feed_id: string
+          feed_price: number | null
+          id: string
+          image_score: number | null
+          is_excluded: boolean | null
+          optimized_category: string | null
+          optimized_description: string | null
+          optimized_images: string[] | null
+          optimized_tags: string[] | null
+          optimized_title: string | null
+          original_price: number | null
+          platform_category_id: string | null
+          seo_score: number | null
+          source_product_id: string | null
+          source_sku: string
+          title_score: number | null
+          updated_at: string | null
+          user_id: string
+          validation_errors: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          description_score?: number | null
+          excluded_reason?: string | null
+          feed_id: string
+          feed_price?: number | null
+          id?: string
+          image_score?: number | null
+          is_excluded?: boolean | null
+          optimized_category?: string | null
+          optimized_description?: string | null
+          optimized_images?: string[] | null
+          optimized_tags?: string[] | null
+          optimized_title?: string | null
+          original_price?: number | null
+          platform_category_id?: string | null
+          seo_score?: number | null
+          source_product_id?: string | null
+          source_sku: string
+          title_score?: number | null
+          updated_at?: string | null
+          user_id: string
+          validation_errors?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          description_score?: number | null
+          excluded_reason?: string | null
+          feed_id?: string
+          feed_price?: number | null
+          id?: string
+          image_score?: number | null
+          is_excluded?: boolean | null
+          optimized_category?: string | null
+          optimized_description?: string | null
+          optimized_images?: string[] | null
+          optimized_tags?: string[] | null
+          optimized_title?: string | null
+          original_price?: number | null
+          platform_category_id?: string | null
+          seo_score?: number | null
+          source_product_id?: string | null
+          source_sku?: string
+          title_score?: number | null
+          updated_at?: string | null
+          user_id?: string
+          validation_errors?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_products_feed_id_fkey"
+            columns: ["feed_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_feeds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       field_mappings: {
         Row: {
           created_at: string
@@ -6154,6 +6308,75 @@ export type Database = {
           updated_at?: string | null
           verified?: boolean | null
           version?: string
+        }
+        Relationships: []
+      }
+      marketplace_feeds: {
+        Row: {
+          auto_categorize: boolean | null
+          clicks: number | null
+          conversions: number | null
+          created_at: string | null
+          feed_url: string | null
+          format: string
+          id: string
+          impressions: number | null
+          last_generated_at: string | null
+          name: string
+          next_update_at: string | null
+          optimize_descriptions: boolean | null
+          optimize_titles: boolean | null
+          platform: string
+          product_count: number | null
+          status: string
+          target_country: string | null
+          update_frequency_hours: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_categorize?: boolean | null
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          feed_url?: string | null
+          format?: string
+          id?: string
+          impressions?: number | null
+          last_generated_at?: string | null
+          name: string
+          next_update_at?: string | null
+          optimize_descriptions?: boolean | null
+          optimize_titles?: boolean | null
+          platform: string
+          product_count?: number | null
+          status?: string
+          target_country?: string | null
+          update_frequency_hours?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_categorize?: boolean | null
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          feed_url?: string | null
+          format?: string
+          id?: string
+          impressions?: number | null
+          last_generated_at?: string | null
+          name?: string
+          next_update_at?: string | null
+          optimize_descriptions?: boolean | null
+          optimize_titles?: boolean | null
+          platform?: string
+          product_count?: number | null
+          status?: string
+          target_country?: string | null
+          update_frequency_hours?: number | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -10440,6 +10663,60 @@ export type Database = {
           target_url?: string | null
           tracking_active?: boolean | null
           trends?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      seo_templates: {
+        Row: {
+          created_at: string | null
+          description_max_length: number | null
+          description_template: string | null
+          forbidden_words: string[] | null
+          id: string
+          image_requirements: Json | null
+          is_active: boolean | null
+          keywords_strategy: string | null
+          platform: string
+          required_attributes: string[] | null
+          template_name: string
+          title_max_length: number | null
+          title_template: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description_max_length?: number | null
+          description_template?: string | null
+          forbidden_words?: string[] | null
+          id?: string
+          image_requirements?: Json | null
+          is_active?: boolean | null
+          keywords_strategy?: string | null
+          platform: string
+          required_attributes?: string[] | null
+          template_name: string
+          title_max_length?: number | null
+          title_template?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description_max_length?: number | null
+          description_template?: string | null
+          forbidden_words?: string[] | null
+          id?: string
+          image_requirements?: Json | null
+          is_active?: boolean | null
+          keywords_strategy?: string | null
+          platform?: string
+          required_attributes?: string[] | null
+          template_name?: string
+          title_max_length?: number | null
+          title_template?: string | null
           updated_at?: string | null
           user_id?: string
         }
