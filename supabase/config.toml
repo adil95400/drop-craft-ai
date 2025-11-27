@@ -142,6 +142,9 @@ verify_jwt = true
 [functions.repricing-engine]
 verify_jwt = true
 
+[functions.import-to-shopify]
+verify_jwt = true
+
 [functions.auto-reorder-executor]
 verify_jwt = true
 
