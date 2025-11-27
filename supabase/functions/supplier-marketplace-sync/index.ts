@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     const { data: marketplaceSuppliers, error: suppliersError } = await supabase
       .from('premium_suppliers')
       .select('*')
-      .order('priority', { ascending: false })
+      .order('created_at', { ascending: false })
     
     if (suppliersError) throw suppliersError
 
