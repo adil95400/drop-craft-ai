@@ -1247,6 +1247,99 @@ export type Database = {
           },
         ]
       }
+      audit_analytics: {
+        Row: {
+          avg_description_score: number | null
+          avg_image_score: number | null
+          avg_overall_score: number | null
+          avg_seo_score: number | null
+          avg_title_score: number | null
+          created_at: string | null
+          date: string
+          id: string
+          products_optimized: number | null
+          products_with_errors: number | null
+          total_audits: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avg_description_score?: number | null
+          avg_image_score?: number | null
+          avg_overall_score?: number | null
+          avg_seo_score?: number | null
+          avg_title_score?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          products_optimized?: number | null
+          products_with_errors?: number | null
+          total_audits?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avg_description_score?: number | null
+          avg_image_score?: number | null
+          avg_overall_score?: number | null
+          avg_seo_score?: number | null
+          avg_title_score?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          products_optimized?: number | null
+          products_with_errors?: number | null
+          total_audits?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      audit_rules: {
+        Row: {
+          condition: Json
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          message: string
+          priority: number | null
+          recommendation: string | null
+          rule_name: string
+          rule_type: string
+          severity: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          condition: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          message: string
+          priority?: number | null
+          recommendation?: string | null
+          rule_name: string
+          rule_type: string
+          severity: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          condition?: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          message?: string
+          priority?: number | null
+          recommendation?: string | null
+          rule_name?: string
+          rule_type?: string
+          severity?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_trail: {
         Row: {
           action: string
@@ -7886,6 +7979,147 @@ export type Database = {
         }
         Relationships: []
       }
+      product_ai_attributes: {
+        Row: {
+          ai_category: string | null
+          ai_subcategory: string | null
+          category_confidence: number | null
+          chatgpt_shopping_ready: boolean | null
+          color: string[] | null
+          created_at: string | null
+          google_shopping_ready: boolean | null
+          id: string
+          material: string | null
+          meta_description: string | null
+          meta_title: string | null
+          product_id: string
+          product_source: string
+          season: string[] | null
+          seo_keywords: string[] | null
+          shopping_readiness_issues: Json | null
+          style: string[] | null
+          target_audience: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_category?: string | null
+          ai_subcategory?: string | null
+          category_confidence?: number | null
+          chatgpt_shopping_ready?: boolean | null
+          color?: string[] | null
+          created_at?: string | null
+          google_shopping_ready?: boolean | null
+          id?: string
+          material?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          product_id: string
+          product_source: string
+          season?: string[] | null
+          seo_keywords?: string[] | null
+          shopping_readiness_issues?: Json | null
+          style?: string[] | null
+          target_audience?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_category?: string | null
+          ai_subcategory?: string | null
+          category_confidence?: number | null
+          chatgpt_shopping_ready?: boolean | null
+          color?: string[] | null
+          created_at?: string | null
+          google_shopping_ready?: boolean | null
+          id?: string
+          material?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          product_id?: string
+          product_source?: string
+          season?: string[] | null
+          seo_keywords?: string[] | null
+          shopping_readiness_issues?: Json | null
+          style?: string[] | null
+          target_audience?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      product_audits: {
+        Row: {
+          audit_duration_ms: number | null
+          audit_type: string
+          created_at: string | null
+          description_score: number | null
+          errors: Json | null
+          id: string
+          image_score: number | null
+          overall_score: number | null
+          pricing_score: number | null
+          product_id: string
+          product_source: string
+          recommendations: Json | null
+          seo_score: number | null
+          suggested_description: string | null
+          suggested_tags: string[] | null
+          suggested_title: string | null
+          title_score: number | null
+          updated_at: string | null
+          user_id: string
+          variants_score: number | null
+          warnings: Json | null
+        }
+        Insert: {
+          audit_duration_ms?: number | null
+          audit_type: string
+          created_at?: string | null
+          description_score?: number | null
+          errors?: Json | null
+          id?: string
+          image_score?: number | null
+          overall_score?: number | null
+          pricing_score?: number | null
+          product_id: string
+          product_source: string
+          recommendations?: Json | null
+          seo_score?: number | null
+          suggested_description?: string | null
+          suggested_tags?: string[] | null
+          suggested_title?: string | null
+          title_score?: number | null
+          updated_at?: string | null
+          user_id: string
+          variants_score?: number | null
+          warnings?: Json | null
+        }
+        Update: {
+          audit_duration_ms?: number | null
+          audit_type?: string
+          created_at?: string | null
+          description_score?: number | null
+          errors?: Json | null
+          id?: string
+          image_score?: number | null
+          overall_score?: number | null
+          pricing_score?: number | null
+          product_id?: string
+          product_source?: string
+          recommendations?: Json | null
+          seo_score?: number | null
+          suggested_description?: string | null
+          suggested_tags?: string[] | null
+          suggested_title?: string | null
+          title_score?: number | null
+          updated_at?: string | null
+          user_id?: string
+          variants_score?: number | null
+          warnings?: Json | null
+        }
+        Relationships: []
+      }
       product_bundles: {
         Row: {
           bundle_name: string
@@ -8149,6 +8383,57 @@ export type Database = {
           user_id?: string
           viral_score?: number | null
           winning_score?: number | null
+        }
+        Relationships: []
+      }
+      product_rewrites: {
+        Row: {
+          ai_model: string | null
+          applied_at: string | null
+          created_at: string | null
+          id: string
+          original_description: string | null
+          original_title: string | null
+          product_id: string
+          product_source: string
+          rewrite_type: string
+          rewritten_description: string | null
+          rewritten_title: string | null
+          tone: string
+          user_id: string
+          was_applied: boolean | null
+        }
+        Insert: {
+          ai_model?: string | null
+          applied_at?: string | null
+          created_at?: string | null
+          id?: string
+          original_description?: string | null
+          original_title?: string | null
+          product_id: string
+          product_source: string
+          rewrite_type: string
+          rewritten_description?: string | null
+          rewritten_title?: string | null
+          tone: string
+          user_id: string
+          was_applied?: boolean | null
+        }
+        Update: {
+          ai_model?: string | null
+          applied_at?: string | null
+          created_at?: string | null
+          id?: string
+          original_description?: string | null
+          original_title?: string | null
+          product_id?: string
+          product_source?: string
+          rewrite_type?: string
+          rewritten_description?: string | null
+          rewritten_title?: string | null
+          tone?: string
+          user_id?: string
+          was_applied?: boolean | null
         }
         Relationships: []
       }

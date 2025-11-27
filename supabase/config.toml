@@ -118,6 +118,9 @@ verify_jwt = true
 [functions.order-automation-processor]
 verify_jwt = true
 
+[functions.audit-product]
+verify_jwt = true
+
 [functions.auto-reorder-executor]
 verify_jwt = true
 
