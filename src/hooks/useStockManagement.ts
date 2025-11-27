@@ -46,17 +46,13 @@ export const useStockManagement = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('stock_alerts')
-        .select(`
-          *,
-          product:products(name, sku, image_url),
-          warehouse:warehouses(name)
-        `)
-        .eq('is_resolved', false)
+        .select('*')
+        .eq('alert_status', 'active')
         .order('severity', { ascending: false })
         .order('created_at', { ascending: false })
       
       if (error) throw error
-      return data as StockAlert[]
+      return data as any[]
     }
   })
 
@@ -193,15 +189,11 @@ export const useStockManagement = () => {
   // Resolve alert mutation
   const resolveAlert = useMutation({
     mutationFn: async (alertId: string) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
       const { data, error } = await supabase
         .from('stock_alerts')
         .update({
-          is_resolved: true,
-          resolved_at: new Date().toISOString(),
-          resolved_by: user.id
+          alert_status: 'resolved',
+          resolved_at: new Date().toISOString()
         })
         .eq('id', alertId)
         .select()

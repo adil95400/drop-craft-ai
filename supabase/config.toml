@@ -136,6 +136,12 @@ verify_jwt = true
 [functions.batch-audit-catalog]
 verify_jwt = true
 
+[functions.stock-sync-realtime]
+verify_jwt = true
+
+[functions.repricing-engine]
+verify_jwt = true
+
 [functions.auto-reorder-executor]
 verify_jwt = true
 
