@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { useUnifiedProducts } from '@/hooks/useUnifiedProducts';
 import { useProductFilters } from '@/hooks/useProductFilters';
@@ -17,12 +18,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Page principale de gestion des produits
  * Utilise le hook unifié et le wrapper pour toutes les actions
  */
 export default function ProductsMainPage() {
+  const navigate = useNavigate();
   const { products, stats, isLoading, error, refetch } = useUnifiedProducts();
   const { filters, filteredProducts, categories, updateFilter, resetFilters, hasActiveFilters } = useProductFilters(products);
   const { 
@@ -34,7 +37,7 @@ export default function ProductsMainPage() {
   } = useAuditFilters(filteredProducts);
   const { openModal } = useModals();
   const { toast } = useToast();
-  const { invalidateQueries } = useQueryClient();
+  const queryClient = useQueryClient();
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'standard' | 'audit'>('standard');
 
@@ -49,8 +52,20 @@ export default function ProductsMainPage() {
     }
 
     try {
-      const { importExportService } = await import('@/services/importExportService');
-      await importExportService.bulkDelete([id]);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Non authentifié');
+
+      // Déterminer la table source du produit
+      const product = products.find(p => p.id === id);
+      const tableName = product?.source === 'products' ? 'products' : 'imported_products';
+
+      const { error } = await supabase
+        .from(tableName)
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
       
       toast({
         title: 'Produit supprimé',
@@ -58,7 +73,7 @@ export default function ProductsMainPage() {
       });
       
       // Invalider le cache pour recharger les produits
-      invalidateQueries({ queryKey: ['unified-products'] });
+      queryClient.invalidateQueries({ queryKey: ['unified-products'] });
     } catch (error) {
       toast({
         title: 'Erreur',
@@ -69,7 +84,7 @@ export default function ProductsMainPage() {
   };
 
   const handleView = (product: any) => {
-    openModal('productDetails', { productId: product.id });
+    navigate(`/products/${product.id}`);
   };
 
   if (isLoading) {
@@ -93,7 +108,7 @@ export default function ProductsMainPage() {
 
   const handleRefresh = () => {
     refetch();
-    invalidateQueries({ queryKey: ['unified-products'] });
+    queryClient.invalidateQueries({ queryKey: ['unified-products'] });
   };
 
   const finalFilteredProducts = viewMode === 'audit' ? auditFilteredProducts : filteredProducts;
