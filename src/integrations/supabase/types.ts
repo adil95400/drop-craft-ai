@@ -4742,108 +4742,114 @@ export type Database = {
       }
       import_history: {
         Row: {
-          created_at: string
+          action_type: string
+          created_at: string | null
           error_message: string | null
           id: string
-          platform: string
-          products_failed: number | null
-          products_imported: number | null
-          settings: Json | null
-          source_url: string
+          import_data: Json | null
+          import_job_id: string | null
+          shopify_product_id: string | null
           status: string
+          supplier_product_id: string | null
           user_id: string
         }
         Insert: {
-          created_at?: string
+          action_type: string
+          created_at?: string | null
           error_message?: string | null
           id?: string
-          platform: string
-          products_failed?: number | null
-          products_imported?: number | null
-          settings?: Json | null
-          source_url: string
+          import_data?: Json | null
+          import_job_id?: string | null
+          shopify_product_id?: string | null
           status: string
+          supplier_product_id?: string | null
           user_id: string
         }
         Update: {
-          created_at?: string
+          action_type?: string
+          created_at?: string | null
           error_message?: string | null
           id?: string
-          platform?: string
-          products_failed?: number | null
-          products_imported?: number | null
-          settings?: Json | null
-          source_url?: string
+          import_data?: Json | null
+          import_job_id?: string | null
+          shopify_product_id?: string | null
           status?: string
+          supplier_product_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "import_history_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_history_supplier_product_id_fkey"
+            columns: ["supplier_product_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       import_jobs: {
         Row: {
           completed_at: string | null
-          configuration: Json | null
-          created_at: string
-          error_rows: number | null
-          errors: string[] | null
-          file_data: Json | null
+          created_at: string | null
+          error_log: Json | null
+          failed_imports: number | null
           id: string
-          import_type: string | null
-          mapping_config: Json | null
-          processed_rows: number | null
-          result_data: Json | null
-          scheduled_at: string | null
-          source_type: string
-          source_url: string | null
+          import_settings: Json | null
+          job_type: string
+          processed_products: number | null
+          product_ids: string[] | null
+          progress_percentage: number | null
           started_at: string | null
-          status: string
-          success_rows: number | null
-          total_rows: number | null
-          updated_at: string
+          status: string | null
+          successful_imports: number | null
+          supplier_id: string | null
+          total_products: number | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
           completed_at?: string | null
-          configuration?: Json | null
-          created_at?: string
-          error_rows?: number | null
-          errors?: string[] | null
-          file_data?: Json | null
+          created_at?: string | null
+          error_log?: Json | null
+          failed_imports?: number | null
           id?: string
-          import_type?: string | null
-          mapping_config?: Json | null
-          processed_rows?: number | null
-          result_data?: Json | null
-          scheduled_at?: string | null
-          source_type: string
-          source_url?: string | null
+          import_settings?: Json | null
+          job_type: string
+          processed_products?: number | null
+          product_ids?: string[] | null
+          progress_percentage?: number | null
           started_at?: string | null
-          status?: string
-          success_rows?: number | null
-          total_rows?: number | null
-          updated_at?: string
+          status?: string | null
+          successful_imports?: number | null
+          supplier_id?: string | null
+          total_products?: number | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
           completed_at?: string | null
-          configuration?: Json | null
-          created_at?: string
-          error_rows?: number | null
-          errors?: string[] | null
-          file_data?: Json | null
+          created_at?: string | null
+          error_log?: Json | null
+          failed_imports?: number | null
           id?: string
-          import_type?: string | null
-          mapping_config?: Json | null
-          processed_rows?: number | null
-          result_data?: Json | null
-          scheduled_at?: string | null
-          source_type?: string
-          source_url?: string | null
+          import_settings?: Json | null
+          job_type?: string
+          processed_products?: number | null
+          product_ids?: string[] | null
+          progress_percentage?: number | null
           started_at?: string | null
-          status?: string
-          success_rows?: number | null
-          total_rows?: number | null
-          updated_at?: string
+          status?: string | null
+          successful_imports?: number | null
+          supplier_id?: string | null
+          total_products?: number | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -5126,13 +5132,6 @@ export type Database = {
           width?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "imported_products_import_id_fkey"
-            columns: ["import_id"]
-            isOneToOne: false
-            referencedRelation: "import_jobs"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "imported_products_published_product_id_fkey"
             columns: ["published_product_id"]
@@ -12140,6 +12139,53 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_product_mappings: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_synced_at: string | null
+          mapping_status: string | null
+          shopify_product_id: string | null
+          shopify_variant_ids: Json | null
+          supplier_product_id: string | null
+          sync_settings: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_synced_at?: string | null
+          mapping_status?: string | null
+          shopify_product_id?: string | null
+          shopify_variant_ids?: Json | null
+          supplier_product_id?: string | null
+          sync_settings?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_synced_at?: string | null
+          mapping_status?: string | null
+          shopify_product_id?: string | null
+          shopify_variant_ids?: Json | null
+          supplier_product_id?: string | null
+          sync_settings?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_product_mappings_supplier_product_id_fkey"
+            columns: ["supplier_product_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_products"
             referencedColumns: ["id"]
           },
         ]
