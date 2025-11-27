@@ -35,12 +35,16 @@ const WebScrapingPage: React.FC = () => {
         .from('import_jobs')
         .select('*')
         .eq('user_id', user?.id)
-        .eq('source_type', 'url')
+        .eq('job_type', 'url')
         .order('created_at', { ascending: false })
         .limit(5);
 
       if (error) throw error;
-      setRecentScrapings(data || []);
+      setRecentScrapings((data || []).map((job: any) => ({
+        ...job,
+        source_type: job.job_type,
+        source_url: job.supplier_id
+      })));
     } catch (error) {
       console.error('Error loading recent scrapings:', error);
     }
@@ -106,12 +110,14 @@ const WebScrapingPage: React.FC = () => {
         .from('import_jobs')
         .insert({
           user_id: user.id,
-          source_type: 'url',
-          source_url: url,
-          file_data: { scrapedProducts: scrapedData },
+          job_type: 'url',
+          supplier_id: url,
+          import_settings: { scrapedProducts: scrapedData },
           status: 'completed',
-          total_rows: scrapedData.length,
-          success_rows: scrapedData.length,
+          total_products: scrapedData.length,
+          successful_imports: scrapedData.length,
+          processed_products: scrapedData.length,
+          failed_imports: 0,
           started_at: new Date().toISOString(),
           completed_at: new Date().toISOString()
         })

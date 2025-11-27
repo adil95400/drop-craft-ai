@@ -117,7 +117,13 @@ export default function AdvancedImportPage() {
       .limit(10);
 
     if (!error && data) {
-      setJobs(data);
+      setJobs(data.map((job: any) => ({
+        ...job,
+        import_type: job.job_type,
+        total_rows: job.total_products,
+        processed_rows: job.processed_products,
+        error_rows: job.failed_imports
+      })));
     }
   };
 

@@ -55,20 +55,20 @@ export const useRealImportMethods = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      const { data, error } = await supabase
-        .from('import_jobs')
-        .insert([{
-          user_id: user.id,
-          source_type: methodData.source_type || methodData.method_type,
-          mapping_config: methodData.configuration,
-          status: 'pending',
-          total_rows: 0,
-          processed_rows: 0,
-          success_rows: 0,
-          error_rows: 0
-        }])
-        .select()
-        .maybeSingle()
+        const { data, error } = await supabase
+          .from('import_jobs')
+          .insert([{
+            user_id: user.id,
+            job_type: methodData.source_type || methodData.method_type,
+            import_settings: methodData.configuration,
+            status: 'pending',
+            total_products: 0,
+            processed_products: 0,
+            successful_imports: 0,
+            failed_imports: 0
+          }])
+          .select()
+          .maybeSingle()
 
       if (error) throw error
       return data
@@ -92,21 +92,21 @@ export const useRealImportMethods = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      const { data, error } = await supabase
-        .from('import_jobs')
-        .insert([{
-          user_id: user.id,
-          source_type: jobData.source_type,
-          source_url: jobData.source_url,
-          mapping_config: jobData.mapping_config,
-          status: 'pending',
-          total_rows: 0,
-          processed_rows: 0,
-          success_rows: 0,
-          error_rows: 0
-        }])
-        .select()
-        .maybeSingle()
+        const { data, error } = await supabase
+          .from('import_jobs')
+          .insert([{
+            user_id: user.id,
+            job_type: jobData.source_type,
+            supplier_id: jobData.source_url,
+            import_settings: jobData.mapping_config,
+            status: 'pending',
+            total_products: 0,
+            processed_products: 0,
+            successful_imports: 0,
+            failed_imports: 0
+          }])
+          .select()
+          .maybeSingle()
 
       if (error) throw error
       return data
