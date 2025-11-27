@@ -104,6 +104,7 @@ export function ProductsTableView({
   const table = useReactTable({
     data: products,
     columns,
+    getRowId: (row) => `${row.source}-${row.id}`,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
