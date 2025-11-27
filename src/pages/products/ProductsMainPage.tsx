@@ -1,9 +1,14 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useUnifiedProducts } from '@/hooks/useUnifiedProducts';
 import { useProductFilters } from '@/hooks/useProductFilters';
+import { useAuditFilters } from '@/hooks/useAuditFilters';
 import { ProductsPageWrapper } from '@/components/products/ProductsPageWrapper';
+import { CatalogQualityDashboard } from '@/components/products/CatalogQualityDashboard';
+import { AdvancedAuditFilters } from '@/components/products/AdvancedAuditFilters';
+import { BulkAIActions } from '@/components/products/BulkAIActions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Loader2, TrendingUp, AlertCircle, Archive, DollarSign } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Package, Loader2, TrendingUp, AlertCircle, Archive, DollarSign, Target, Sparkles } from 'lucide-react';
 import { useModals } from '@/hooks/useModals';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
@@ -17,9 +22,18 @@ import { Button } from '@/components/ui/button';
 export default function ProductsMainPage() {
   const { products, stats, isLoading, error, refetch } = useUnifiedProducts();
   const { filters, filteredProducts, categories, updateFilter, resetFilters, hasActiveFilters } = useProductFilters(products);
+  const { 
+    filters: auditFilters, 
+    filteredProducts: auditFilteredProducts, 
+    updateFilter: updateAuditFilter, 
+    resetFilters: resetAuditFilters,
+    activeCount: auditActiveCount 
+  } = useAuditFilters(filteredProducts);
   const { openModal } = useModals();
   const { toast } = useToast();
   const { invalidateQueries } = useQueryClient();
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'standard' | 'audit'>('standard');
 
   const handleEdit = (product: any) => {
     openModal('createProduct', { productId: product.id });
@@ -79,6 +93,8 @@ export default function ProductsMainPage() {
     invalidateQueries({ queryKey: ['unified-products'] });
   };
 
+  const finalFilteredProducts = viewMode === 'audit' ? auditFilteredProducts : filteredProducts;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <div className="container mx-auto p-6 space-y-6 animate-in fade-in duration-500">
@@ -91,6 +107,24 @@ export default function ProductsMainPage() {
             <p className="text-muted-foreground mt-2">
               Gérez tous vos produits en un seul endroit
             </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant={viewMode === 'standard' ? 'default' : 'outline'}
+              onClick={() => setViewMode('standard')}
+              className="gap-2"
+            >
+              <Package className="h-4 w-4" />
+              Vue Standard
+            </Button>
+            <Button
+              variant={viewMode === 'audit' ? 'default' : 'outline'}
+              onClick={() => setViewMode('audit')}
+              className="gap-2"
+            >
+              <Target className="h-4 w-4" />
+              Vue Audit
+            </Button>
           </div>
         </div>
 
@@ -218,32 +252,138 @@ export default function ProductsMainPage() {
           </Card>
         )}
 
-        {/* Table/Grid produits optimisée */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Tous les produits</span>
-              <span className="text-sm font-normal text-muted-foreground">
-                {stats.total} produit(s)
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProductsPageWrapper
-              products={filteredProducts}
-              allProducts={products}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onView={handleView}
-              onRefresh={handleRefresh}
-              filters={filters}
-              categories={categories}
-              onFilterChange={updateFilter}
-              onResetFilters={resetFilters}
-              hasActiveFilters={hasActiveFilters}
-            />
-          </CardContent>
-        </Card>
+        {/* Vue conditionnelle selon le mode */}
+        {viewMode === 'audit' ? (
+          <Tabs defaultValue="quality" className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="quality" className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                Qualité Catalogue
+              </TabsTrigger>
+              <TabsTrigger value="filters" className="gap-2">
+                <Target className="h-4 w-4" />
+                Filtres Audit
+              </TabsTrigger>
+              <TabsTrigger value="products" className="gap-2">
+                <Package className="h-4 w-4" />
+                Liste Produits ({finalFilteredProducts.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="quality" className="space-y-6">
+              <CatalogQualityDashboard products={products} />
+            </TabsContent>
+
+            <TabsContent value="filters" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1">
+                  <AdvancedAuditFilters
+                    filters={auditFilters}
+                    onFilterChange={updateAuditFilter}
+                    onReset={resetAuditFilters}
+                    activeCount={auditActiveCount}
+                  />
+                </div>
+                <div className="lg:col-span-2 space-y-4">
+                  {selectedProducts.length > 0 && (
+                    <BulkAIActions
+                      selectedProducts={selectedProducts}
+                      onComplete={() => {
+                        setSelectedProducts([]);
+                        handleRefresh();
+                      }}
+                    />
+                  )}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>
+                        Produits filtrés ({finalFilteredProducts.length})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ProductsPageWrapper
+                        products={finalFilteredProducts}
+                        allProducts={products}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        onView={handleView}
+                        onRefresh={handleRefresh}
+                        filters={filters}
+                        categories={categories}
+                        onFilterChange={updateFilter}
+                        onResetFilters={resetFilters}
+                        hasActiveFilters={auditActiveCount > 0}
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="products" className="space-y-6">
+              {selectedProducts.length > 0 && (
+                <BulkAIActions
+                  selectedProducts={selectedProducts}
+                  onComplete={() => {
+                    setSelectedProducts([]);
+                    handleRefresh();
+                  }}
+                />
+              )}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Tous les produits</span>
+                    <span className="text-sm font-normal text-muted-foreground">
+                      {finalFilteredProducts.length} produit(s)
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ProductsPageWrapper
+                    products={finalFilteredProducts}
+                    allProducts={products}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onView={handleView}
+                    onRefresh={handleRefresh}
+                    filters={filters}
+                    categories={categories}
+                    onFilterChange={updateFilter}
+                    onResetFilters={resetFilters}
+                    hasActiveFilters={auditActiveCount > 0}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        ) : (
+          <Card className="border-border/50 bg-card/50 backdrop-blur shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Tous les produits</span>
+                <span className="text-sm font-normal text-muted-foreground">
+                  {stats.total} produit(s)
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProductsPageWrapper
+                products={filteredProducts}
+                allProducts={products}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onView={handleView}
+                onRefresh={handleRefresh}
+                filters={filters}
+                categories={categories}
+                onFilterChange={updateFilter}
+                onResetFilters={resetFilters}
+                hasActiveFilters={hasActiveFilters}
+              />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
