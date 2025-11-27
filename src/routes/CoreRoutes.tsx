@@ -43,6 +43,10 @@ const MultiStoreAnalyticsDashboard = lazy(() => import('@/pages/MultiStoreAnalyt
 // Order Management
 const ReturnManagementPage = lazy(() => import('@/pages/ReturnManagementPage'));
 const ShippingManagementPage = lazy(() => import('@/pages/ShippingManagementPage'));
+const AIStoreBuilderHub = lazy(() => import('@/pages/store/AIStoreBuilderHub'));
+const BrandingInvoicesHub = lazy(() => import('@/pages/invoices/BrandingInvoicesHub'));
+const PrintOnDemandHub = lazy(() => import('@/pages/pod/PrintOnDemandHub'));
+const CompetitiveIntelligenceHub = lazy(() => import('@/pages/research/CompetitiveIntelligenceHub'));
 
 // Stock & Reports
 const StockManagement = lazy(() => import('@/pages/StockManagement'));
@@ -103,6 +107,18 @@ export function CoreRoutes() {
       <Route path="orders/notifications" element={<CustomerNotificationsPage />} />
       <Route path="orders/shipping" element={<ShippingManagementPage />} />
       <Route path="orders/list" element={<OrdersPage />} />
+      
+      {/* Module E: AI Store Builder */}
+      <Route path="store/builder" element={<AIStoreBuilderHub />} />
+      
+      {/* Module G: Custom Invoices */}
+      <Route path="invoices" element={<BrandingInvoicesHub />} />
+      
+      {/* Module H: Print On Demand */}
+      <Route path="pod" element={<PrintOnDemandHub />} />
+      
+      {/* Module F: Competitive Intelligence */}
+      <Route path="research/intelligence" element={<CompetitiveIntelligenceHub />} />
       
       {/* Import */}
       <Route path="import/advanced" element={<ImportAdvancedPage />} />
