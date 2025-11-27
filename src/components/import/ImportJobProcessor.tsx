@@ -10,16 +10,15 @@ import { Play, Pause, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react'
 interface ImportJob {
   id: string
   user_id: string
-  source_type: string
-  source_url?: string
-  file_data?: any
-  mapping_config?: any
-  status: 'pending' | 'processing' | 'completed' | 'failed'
-  total_rows: number
-  processed_rows: number
-  success_rows: number
-  error_rows: number
-  errors?: any
+  job_type: string
+  supplier_id?: string
+  import_settings?: any
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
+  total_products: number
+  processed_products: number
+  successful_imports: number
+  failed_imports: number
+  error_log?: any
   created_at: string
   updated_at: string
   started_at?: string
@@ -138,10 +137,10 @@ export function ImportJobProcessor() {
     const fileSize = job.file_data?.size || 1000000
     const estimatedRows = Math.floor(fileSize / 1000) // Rough estimate
     
-    // Update total rows
+    // Update total products
     await supabase
       .from('import_jobs')
-      .update({ total_rows: estimatedRows })
+      .update({ total_products: estimatedRows })
       .eq('id', job.id)
 
     // Simulate processing time based on file size

@@ -98,12 +98,13 @@ class ImportService {
         .from('import_jobs')
         .insert([{
           user_id: user.user.id,
-          source_type: 'url_import',
-          source_url: url,
+          job_type: 'single',
+          supplier_id: 'url_import',
+          import_settings: { source_url: url },
           status: 'pending'
         }])
         .select()
-        .single()
+        .maybeSingle()
 
       if (error) throw error
 
@@ -123,12 +124,13 @@ class ImportService {
         .from('import_jobs')
         .insert([{
           user_id: user.user.id,
-          source_type: 'api_sync',
-          source_url: `${supplier} API`,
+          job_type: 'single',
+          supplier_id: supplier,
+          import_settings: { source: `${supplier} API` },
           status: 'pending'
         }])
         .select()
-        .single()
+        .maybeSingle()
 
       if (error) throw error
 

@@ -89,9 +89,13 @@ export function ImportMethodModal({ method, isOpen, onClose, onImportStart }: Im
         .from('import_jobs')
         .insert({
           user_id: user.id,
-          source_type: sourceTypeMap[method.id] || 'csv',
-          source_url: importConfig.sourceUrl || null,
-          file_data: { sourceName: importConfig.sourceName, ...importConfig.configuration },
+          job_type: 'single',
+          supplier_id: sourceTypeMap[method.id] || 'csv',
+          import_settings: { 
+            sourceName: importConfig.sourceName, 
+            sourceUrl: importConfig.sourceUrl,
+            ...importConfig.configuration 
+          },
           status: 'pending'
         })
         .select()

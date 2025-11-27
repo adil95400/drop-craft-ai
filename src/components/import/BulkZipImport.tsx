@@ -55,13 +55,14 @@ export const BulkZipImport = () => {
         .from('import_jobs')
         .insert({
           user_id: user.id,
-          source_type: 'bulk_zip',
-          source_url: uploadData.path,
+          job_type: 'bulk',
+          supplier_id: 'bulk_zip',
           status: 'processing',
-          file_data: {
+          import_settings: {
             filename: zipFile.name,
             size: zipFile.size,
-            type: 'application/zip'
+            type: 'application/zip',
+            source_url: uploadData.path
           }
         })
         .select()

@@ -192,13 +192,13 @@ export function AdvancedImportHub() {
 
       const formattedImports = data.map((job, index) => ({
         id: index + 1, // Use index as number ID
-        source: (job.file_data as any)?.sourceName || job.source_type || 'Source inconnue',
-        products: job.success_rows || 0,
+        source: (job.import_settings as any)?.sourceName || job.job_type || 'Source inconnue',
+        products: job.successful_imports || 0,
         status: job.status,
         time: job.completed_at && job.started_at 
           ? `${Math.round((new Date(job.completed_at).getTime() - new Date(job.started_at).getTime()) / (1000 * 60))} min`
           : '-- min',
-        accuracy: job.total_rows > 0 ? Math.round((job.success_rows || 0) / job.total_rows * 100) : 0
+        accuracy: job.total_products > 0 ? Math.round((job.successful_imports || 0) / job.total_products * 100) : 0
       }))
 
       setRecentImports(formattedImports)
@@ -228,7 +228,7 @@ export function AdvancedImportHub() {
         new Date(job.created_at) >= thisMonth
       )
 
-      const totalProducts = thisMonthImports.reduce((sum, job) => sum + (job.success_rows || 0), 0)
+      const totalProducts = thisMonthImports.reduce((sum, job) => sum + (job.successful_imports || 0), 0)
       const totalJobs = data.length
       const successfulJobs = data.filter(job => job.status === 'completed').length
       const successRate = totalJobs > 0 ? Math.round(successfulJobs / totalJobs * 100) : 0

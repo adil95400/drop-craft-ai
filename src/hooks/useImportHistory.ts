@@ -3,13 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface ImportHistory {
   id: string;
-  source_url: string;
-  platform: string;
-  status: 'success' | 'failed' | 'partial';
-  products_imported: number;
-  products_failed: number;
+  user_id: string;
+  import_job_id: string;
+  supplier_product_id: string | null;
+  shopify_product_id: string | null;
+  action_type: 'create' | 'update' | 'skip' | 'error';
+  status: 'success' | 'failed' | 'skipped';
   error_message: string | null;
-  settings: any;
+  import_data: any;
   created_at: string;
 }
 

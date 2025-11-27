@@ -5,23 +5,22 @@ import { toast } from 'sonner';
 export interface ImportJob {
   id: string;
   user_id: string;
-  source_type: string;
-  source_url?: string;
-  file_data?: any;
-  mapping_config?: any;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  total_rows: number;
-  processed_rows: number;
-  success_rows: number;
-  error_rows: number;
-  errors?: any[];
+  job_type: string;
+  supplier_id?: string;
+  product_ids?: string[];
+  import_settings?: any;
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  total_products: number;
+  processed_products: number;
+  successful_imports: number;
+  failed_imports: number;
+  progress_percentage?: number;
+  error_log?: any[];
   result_data?: any;
   created_at: string;
   updated_at: string;
   started_at?: string;
   completed_at?: string;
-  configuration?: any;
-  import_type?: string;
 }
 
 export function useImportJobsReal() {
@@ -57,17 +56,16 @@ export function useImportJobsReal() {
         .from('import_jobs')
         .insert({
           user_id: user.id,
-          source_type: jobData.source_type || 'manual',
-          source_url: jobData.source_url,
-          file_data: jobData.file_data,
-          mapping_config: jobData.mapping_config,
-          total_rows: 0,
-          processed_rows: 0,
-          success_rows: 0,
-          error_rows: 0,
+          job_type: jobData.job_type || 'single',
+          supplier_id: jobData.supplier_id,
+          import_settings: jobData.import_settings,
+          total_products: 0,
+          processed_products: 0,
+          successful_imports: 0,
+          failed_imports: 0,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -157,16 +155,16 @@ export function useImportStatsReal() {
 
       if (allError) throw allError;
 
-      const totalImportsToday = todayJobs?.reduce((sum, j) => sum + (j.success_rows || 0), 0) || 0;
-      const totalProcessed = allJobs?.reduce((sum, j) => sum + (j.processed_rows || 0), 0) || 0;
-      const totalSuccess = allJobs?.reduce((sum, j) => sum + (j.success_rows || 0), 0) || 0;
+      const totalImportsToday = todayJobs?.reduce((sum, j) => sum + (j.successful_imports || 0), 0) || 0;
+      const totalProcessed = allJobs?.reduce((sum, j) => sum + (j.processed_products || 0), 0) || 0;
+      const totalSuccess = allJobs?.reduce((sum, j) => sum + (j.successful_imports || 0), 0) || 0;
       const successRate = totalProcessed > 0 ? (totalSuccess / totalProcessed) * 100 : 0;
 
       // Calculate source distribution
       const sourceDistribution: Record<string, number> = {};
       todayJobs?.forEach(job => {
-        const source = job.source_type || 'unknown';
-        sourceDistribution[source] = (sourceDistribution[source] || 0) + (job.success_rows || 0);
+        const source = job.job_type || 'unknown';
+        sourceDistribution[source] = (sourceDistribution[source] || 0) + (job.successful_imports || 0);
       });
 
       const topSources = Object.entries(sourceDistribution)
