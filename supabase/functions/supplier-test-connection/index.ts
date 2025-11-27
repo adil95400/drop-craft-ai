@@ -27,12 +27,57 @@ Deno.serve(async (req) => {
 
     const { supplierId, credentials } = await req.json()
     
-    console.log('Testing connection for supplier:', supplierId, 'has credentials:', !!credentials)
+    console.log('Testing connection for supplier:', supplierId, 'has credentials:', !!credentials, 'credentials value:', credentials)
     
-    // When testing, credentials are provided directly from the form
-    // supplierId is the connector ID (e.g., 'matterhorn', 'bigbuy')
-    if (!credentials) {
-      throw new Error('Credentials are required for testing')
+    // Determine if supplierId is a UUID or a connector ID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    const isUUID = uuidRegex.test(supplierId)
+    
+    let testCredentials = credentials
+    let connectorId = supplierId
+    
+    // If credentials not provided and supplierId is a UUID, fetch from database
+    if ((!testCredentials || Object.keys(testCredentials).length === 0) && isUUID) {
+      const { data: storedCreds, error: credError } = await supabase
+        .from('supplier_credentials_vault')
+        .select('oauth_data, supplier:suppliers!inner(name)')
+        .eq('user_id', user.id)
+        .eq('supplier_id', supplierId)
+        .single()
+      
+      if (credError || !storedCreds?.oauth_data) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: 'No stored credentials found. Please provide credentials to test.',
+            timestamp: new Date().toISOString()
+          }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+      
+      testCredentials = storedCreds.oauth_data
+      // Extract connector ID from supplier name if available
+      connectorId = (storedCreds as any).supplier?.name?.toLowerCase().replace(/\s+/g, '-') || supplierId
+      console.log('Using stored credentials from database, connector:', connectorId)
+    }
+    
+    // When testing, credentials must be provided
+    if (!testCredentials || Object.keys(testCredentials).length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: 'Credentials are required for testing. Please fill in the connection form.',
+          timestamp: new Date().toISOString()
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
     }
     
     let testResult = {
@@ -42,16 +87,19 @@ Deno.serve(async (req) => {
       timestamp: new Date().toISOString()
     }
     
-    switch (supplierId) {
+    // Use the connector ID from supplierId if not UUID, or extract from stored data
+    const connectorId = isUUID ? testCredentials.connectorId || supplierId : supplierId
+    
+    switch (connectorId) {
       case 'bigbuy': {
-        if (!credentials.apiKey) {
+        if (!testCredentials.apiKey) {
           throw new Error('BigBuy requires API key')
         }
         
         try {
           const response = await fetch('https://api.bigbuy.eu/rest/catalog/products.json', {
             headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
+              'Authorization': `Bearer ${testCredentials.apiKey}`,
               'Content-Type': 'application/json'
             }
           })
@@ -77,14 +125,14 @@ Deno.serve(async (req) => {
       }
       
       case 'vidaxl': {
-        if (!credentials.apiKey) {
+        if (!testCredentials.apiKey) {
           throw new Error('VidaXL requires API key')
         }
         
         try {
           const response = await fetch('https://api.vidaxl.com/v1/products', {
             headers: {
-              'X-API-Key': credentials.apiKey,
+              'X-API-Key': testCredentials.apiKey,
               'Content-Type': 'application/json'
             }
           })
@@ -108,7 +156,7 @@ Deno.serve(async (req) => {
       }
       
       case 'aliexpress': {
-        if (!credentials.appKey || !credentials.appSecret) {
+        if (!testCredentials.appKey || !testCredentials.appSecret) {
           throw new Error('AliExpress requires App Key and App Secret')
         }
         
@@ -116,7 +164,7 @@ Deno.serve(async (req) => {
           success: true,
           message: 'AliExpress credentials validated',
           details: {
-            appKey: credentials.appKey.substring(0, 8) + '...',
+            appKey: testCredentials.appKey.substring(0, 8) + '...',
             note: 'Full API test requires additional OAuth flow'
           },
           timestamp: new Date().toISOString()
@@ -125,7 +173,7 @@ Deno.serve(async (req) => {
       }
       
       case 'alibaba': {
-        if (!credentials.clientId || !credentials.clientSecret) {
+        if (!testCredentials.clientId || !testCredentials.clientSecret) {
           throw new Error('Alibaba requires Client ID and Client Secret')
         }
         
@@ -133,7 +181,7 @@ Deno.serve(async (req) => {
           success: true,
           message: 'Alibaba credentials validated',
           details: {
-            clientId: credentials.clientId.substring(0, 8) + '...',
+            clientId: testCredentials.clientId.substring(0, 8) + '...',
             note: 'Full API test requires additional OAuth flow'
           },
           timestamp: new Date().toISOString()
@@ -146,13 +194,13 @@ Deno.serve(async (req) => {
       case 'watchimport':
       case 'btswholesaler':
       case 'dropshipping-europe': {
-        if (!credentials.apiKey && !credentials.username) {
-          throw new Error(`${supplierId} requires API key or credentials`)
+        if (!testCredentials.apiKey && !testCredentials.username) {
+          throw new Error(`${connectorId} requires API key or credentials`)
         }
         
         testResult = {
           success: true,
-          message: `${supplierId} credentials validated`,
+          message: `${connectorId} credentials validated`,
           details: {
             note: 'Connection test passed - ready for sync'
           },
@@ -175,8 +223,7 @@ Deno.serve(async (req) => {
     
     // Only update database if supplierId is a valid UUID (not a connector template ID)
     // Connector IDs like 'matterhorn', 'bigbuy' are strings, not UUIDs
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-    if (uuidRegex.test(supplierId)) {
+    if (isUUID) {
       await supabase
         .from('supplier_credentials_vault')
         .update({

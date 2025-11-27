@@ -66,7 +66,8 @@ export function useSupplierEcosystem(supplierId?: string) {
   });
 
   const testConnectionMutation = useMutation({
-    mutationFn: (supplierId: string) => supplierEcosystemService.testConnection(supplierId),
+    mutationFn: ({ supplierId, credentials }: { supplierId: string; credentials?: any }) => 
+      supplierEcosystemService.testConnection(supplierId, credentials),
     onSuccess: (success) => {
       toast({
         title: success ? 'Connexion OK' : 'Échec du test',
@@ -230,7 +231,7 @@ export function useSupplierEcosystem(supplierId?: string) {
     connectionLoading,
     connectSupplier: connectMutation.mutate,
     disconnectSupplier: disconnectMutation.mutate,
-    testConnection: testConnectionMutation.mutate,
+    testConnection: testConnectionMutation.mutateAsync,
     isConnecting: connectMutation.isPending,
     isDisconnecting: disconnectMutation.isPending,
     isTesting: testConnectionMutation.isPending,
