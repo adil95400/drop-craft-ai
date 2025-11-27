@@ -18,6 +18,22 @@ export interface UnifiedProduct {
   variants?: ProductVariant[]
   created_at: string
   updated_at: string
+  // AI Scores & Analytics
+  ai_score?: number
+  trend_score?: number
+  competition_score?: number
+  profit_potential?: number
+  is_winner?: boolean
+  is_trending?: boolean
+  is_bestseller?: boolean
+  view_count?: number
+  conversion_rate?: number
+  last_optimized_at?: string
+  // Multi-supplier
+  supplier_ids?: string[]
+  best_supplier_id?: string
+  best_supplier_price?: number
+  supplier_count?: number
 }
 
 export interface ProductVariant {

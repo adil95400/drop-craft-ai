@@ -4792,11 +4792,14 @@ export type Database = {
           ai_recommendations: Json | null
           ai_score: number | null
           barcode: string | null
+          best_supplier_id: string | null
           brand: string | null
           category: string | null
           color: string | null
           compare_at_price: number | null
+          competition_score: number | null
           condition: string | null
+          conversion_rate: number | null
           cost_price: number | null
           country_of_origin: string | null
           created_at: string | null
@@ -4811,8 +4814,12 @@ export type Database = {
           image_urls: string[] | null
           import_id: string | null
           import_quality_score: number | null
+          is_bestseller: boolean | null
+          is_trending: boolean | null
+          is_winner: boolean | null
           keywords: string[] | null
           language: string | null
+          last_optimized_at: string | null
           last_synced_at: string | null
           length: number | null
           material: string | null
@@ -4823,6 +4830,7 @@ export type Database = {
           min_order: number | null
           name: string
           price: number
+          profit_potential: number | null
           published_at: string | null
           published_product_id: string | null
           review_status: string | null
@@ -4839,6 +4847,7 @@ export type Database = {
           style: string | null
           sub_category: string | null
           suggested_price: number | null
+          supplier_ids: string[] | null
           supplier_name: string | null
           supplier_price: number | null
           supplier_product_id: string | null
@@ -4846,6 +4855,7 @@ export type Database = {
           supplier_url: string | null
           sync_status: string | null
           tags: string[] | null
+          trend_score: number | null
           upc: string | null
           updated_at: string | null
           user_id: string
@@ -4853,6 +4863,7 @@ export type Database = {
           variant_name: string | null
           variant_sku: string | null
           video_urls: string[] | null
+          view_count: number | null
           weight: number | null
           weight_unit: string | null
           width: number | null
@@ -4863,11 +4874,14 @@ export type Database = {
           ai_recommendations?: Json | null
           ai_score?: number | null
           barcode?: string | null
+          best_supplier_id?: string | null
           brand?: string | null
           category?: string | null
           color?: string | null
           compare_at_price?: number | null
+          competition_score?: number | null
           condition?: string | null
+          conversion_rate?: number | null
           cost_price?: number | null
           country_of_origin?: string | null
           created_at?: string | null
@@ -4882,8 +4896,12 @@ export type Database = {
           image_urls?: string[] | null
           import_id?: string | null
           import_quality_score?: number | null
+          is_bestseller?: boolean | null
+          is_trending?: boolean | null
+          is_winner?: boolean | null
           keywords?: string[] | null
           language?: string | null
+          last_optimized_at?: string | null
           last_synced_at?: string | null
           length?: number | null
           material?: string | null
@@ -4894,6 +4912,7 @@ export type Database = {
           min_order?: number | null
           name: string
           price: number
+          profit_potential?: number | null
           published_at?: string | null
           published_product_id?: string | null
           review_status?: string | null
@@ -4910,6 +4929,7 @@ export type Database = {
           style?: string | null
           sub_category?: string | null
           suggested_price?: number | null
+          supplier_ids?: string[] | null
           supplier_name?: string | null
           supplier_price?: number | null
           supplier_product_id?: string | null
@@ -4917,6 +4937,7 @@ export type Database = {
           supplier_url?: string | null
           sync_status?: string | null
           tags?: string[] | null
+          trend_score?: number | null
           upc?: string | null
           updated_at?: string | null
           user_id: string
@@ -4924,6 +4945,7 @@ export type Database = {
           variant_name?: string | null
           variant_sku?: string | null
           video_urls?: string[] | null
+          view_count?: number | null
           weight?: number | null
           weight_unit?: string | null
           width?: number | null
@@ -4934,11 +4956,14 @@ export type Database = {
           ai_recommendations?: Json | null
           ai_score?: number | null
           barcode?: string | null
+          best_supplier_id?: string | null
           brand?: string | null
           category?: string | null
           color?: string | null
           compare_at_price?: number | null
+          competition_score?: number | null
           condition?: string | null
+          conversion_rate?: number | null
           cost_price?: number | null
           country_of_origin?: string | null
           created_at?: string | null
@@ -4953,8 +4978,12 @@ export type Database = {
           image_urls?: string[] | null
           import_id?: string | null
           import_quality_score?: number | null
+          is_bestseller?: boolean | null
+          is_trending?: boolean | null
+          is_winner?: boolean | null
           keywords?: string[] | null
           language?: string | null
+          last_optimized_at?: string | null
           last_synced_at?: string | null
           length?: number | null
           material?: string | null
@@ -4965,6 +4994,7 @@ export type Database = {
           min_order?: number | null
           name?: string
           price?: number
+          profit_potential?: number | null
           published_at?: string | null
           published_product_id?: string | null
           review_status?: string | null
@@ -4981,6 +5011,7 @@ export type Database = {
           style?: string | null
           sub_category?: string | null
           suggested_price?: number | null
+          supplier_ids?: string[] | null
           supplier_name?: string | null
           supplier_price?: number | null
           supplier_product_id?: string | null
@@ -4988,6 +5019,7 @@ export type Database = {
           supplier_url?: string | null
           sync_status?: string | null
           tags?: string[] | null
+          trend_score?: number | null
           upc?: string | null
           updated_at?: string | null
           user_id?: string
@@ -4995,6 +5027,7 @@ export type Database = {
           variant_name?: string | null
           variant_sku?: string | null
           video_urls?: string[] | null
+          view_count?: number | null
           weight?: number | null
           weight_unit?: string | null
           width?: number | null
@@ -8293,16 +8326,25 @@ export type Database = {
       }
       products: {
         Row: {
+          ai_score: number | null
+          best_supplier_id: string | null
           category: string | null
+          competition_score: number | null
+          conversion_rate: number | null
           cost_price: number | null
           created_at: string
           description: string | null
           dimensions: Json | null
           id: string
           image_url: string | null
+          is_bestseller: boolean | null
+          is_trending: boolean | null
+          is_winner: boolean | null
+          last_optimized_at: string | null
           name: string
           price: number
           profit_margin: number | null
+          profit_potential: number | null
           seo_description: string | null
           seo_keywords: string[] | null
           seo_title: string | null
@@ -8312,22 +8354,34 @@ export type Database = {
           stock_quantity: number | null
           supplier: string | null
           supplier_id: string | null
+          supplier_ids: string[] | null
           tags: string[] | null
+          trend_score: number | null
           updated_at: string
           user_id: string
+          view_count: number | null
           weight: number | null
         }
         Insert: {
+          ai_score?: number | null
+          best_supplier_id?: string | null
           category?: string | null
+          competition_score?: number | null
+          conversion_rate?: number | null
           cost_price?: number | null
           created_at?: string
           description?: string | null
           dimensions?: Json | null
           id?: string
           image_url?: string | null
+          is_bestseller?: boolean | null
+          is_trending?: boolean | null
+          is_winner?: boolean | null
+          last_optimized_at?: string | null
           name: string
           price?: number
           profit_margin?: number | null
+          profit_potential?: number | null
           seo_description?: string | null
           seo_keywords?: string[] | null
           seo_title?: string | null
@@ -8337,22 +8391,34 @@ export type Database = {
           stock_quantity?: number | null
           supplier?: string | null
           supplier_id?: string | null
+          supplier_ids?: string[] | null
           tags?: string[] | null
+          trend_score?: number | null
           updated_at?: string
           user_id: string
+          view_count?: number | null
           weight?: number | null
         }
         Update: {
+          ai_score?: number | null
+          best_supplier_id?: string | null
           category?: string | null
+          competition_score?: number | null
+          conversion_rate?: number | null
           cost_price?: number | null
           created_at?: string
           description?: string | null
           dimensions?: Json | null
           id?: string
           image_url?: string | null
+          is_bestseller?: boolean | null
+          is_trending?: boolean | null
+          is_winner?: boolean | null
+          last_optimized_at?: string | null
           name?: string
           price?: number
           profit_margin?: number | null
+          profit_potential?: number | null
           seo_description?: string | null
           seo_keywords?: string[] | null
           seo_title?: string | null
@@ -8362,9 +8428,12 @@ export type Database = {
           stock_quantity?: number | null
           supplier?: string | null
           supplier_id?: string | null
+          supplier_ids?: string[] | null
           tags?: string[] | null
+          trend_score?: number | null
           updated_at?: string
           user_id?: string
+          view_count?: number | null
           weight?: number | null
         }
         Relationships: [
@@ -14067,6 +14136,40 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      unified_products_view: {
+        Row: {
+          ai_score: number | null
+          best_supplier_id: string | null
+          best_supplier_price: number | null
+          calculated_margin: number | null
+          category: string | null
+          competition_score: number | null
+          conversion_rate: number | null
+          cost_price: number | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          image_url: string | null
+          is_bestseller: boolean | null
+          is_trending: boolean | null
+          is_winner: boolean | null
+          name: string | null
+          price: number | null
+          profit_margin: number | null
+          profit_potential: number | null
+          sku: string | null
+          source: string | null
+          status: string | null
+          stock_quantity: number | null
+          supplier_count: number | null
+          supplier_ids: string[] | null
+          trend_score: number | null
+          updated_at: string | null
+          user_id: string | null
+          view_count: number | null
+        }
+        Relationships: []
       }
     }
     Functions: {
