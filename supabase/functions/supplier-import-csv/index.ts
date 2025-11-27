@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { parse } from 'https://deno.land/std@0.188.0/encoding/csv.ts'
+import { parse } from 'https://deno.land/std@0.218.0/csv/parse.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
