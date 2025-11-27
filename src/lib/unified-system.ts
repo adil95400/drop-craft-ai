@@ -277,8 +277,12 @@ export class UnifiedSystem {
         .insert([{ 
           ...jobData, 
           user_id: userId,
-          source_type: jobData.source_type,
-          status: jobData.status || 'pending'
+          job_type: jobData.source_type,
+          status: jobData.status || 'pending',
+          total_products: 0,
+          processed_products: 0,
+          successful_imports: 0,
+          failed_imports: 0
         }])
         .select()
         .single()
