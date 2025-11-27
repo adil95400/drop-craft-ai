@@ -51,10 +51,11 @@ export const ProductsGridView = memo(function ProductsGridView({
       {products.map((product) => {
         const isSelected = selectedProducts.includes(product.id);
         const imageUrl = product.image_url;
+        const uniqueKey = `${product.source}-${product.id}`;
 
         return (
           <Card 
-            key={product.id}
+            key={uniqueKey}
             className={cn(
               "relative group transition-all duration-300",
               "hover:shadow-xl hover:scale-[1.02]",
