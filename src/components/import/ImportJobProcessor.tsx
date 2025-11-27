@@ -78,9 +78,9 @@ export function ImportJobProcessor() {
           status: 'completed',
           completed_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          processed_rows: job.total_rows || 100,
-          success_rows: Math.floor((job.total_rows || 100) * 0.9),
-          error_rows: Math.floor((job.total_rows || 100) * 0.1)
+          processed_products: job.total_products || 100,
+          successful_imports: Math.floor((job.total_products || 100) * 0.9),
+          failed_imports: Math.floor((job.total_products || 100) * 0.1)
         })
         .eq('id', job.id)
 

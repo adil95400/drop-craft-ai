@@ -110,14 +110,14 @@ export default function CatalogPage() {
         .limit(10);
 
       if (error) throw error;
-      const mappedJobs = data?.map(j => ({
-        ...j,
-        progress: Math.floor(((j.processed_rows || 0) / Math.max(j.total_rows || 1, 1)) * 100),
-        total_items: j.total_rows || 0,
-        processed_items: j.processed_rows || 0,
-        success_items: j.success_rows || 0,
-        error_items: j.error_rows || 0
-      })) || [];
+              const mappedJobs = data?.map(j => ({
+                ...j,
+                progress: Math.floor(((j.processed_products || 0) / Math.max(j.total_products || 1, 1)) * 100),
+                total_items: j.total_products || 0,
+                processed_items: j.processed_products || 0,
+                success_items: j.successful_imports || 0,
+                error_items: j.failed_imports || 0
+              })) || [];
       setImportJobs(mappedJobs);
     } catch (error) {
       console.error('Error loading import jobs:', error);
@@ -135,16 +135,20 @@ export default function CatalogPage() {
       formData.append('file', file);
 
       // Create import job
-      const { data: importJob, error: jobError } = await supabase
-        .from('import_jobs')
-        .insert({
-          source_type: 'csv',
-          status: 'pending',
-          file_data: { name: file.name, size: file.size },
-          user_id: (await supabase.auth.getUser()).data.user?.id
-        })
-        .select()
-        .single();
+        const { data: importJob, error: jobError } = await supabase
+          .from('import_jobs')
+          .insert({
+            job_type: 'csv',
+            status: 'pending',
+            import_settings: { name: file.name, size: file.size },
+            total_products: 0,
+            processed_products: 0,
+            successful_imports: 0,
+            failed_imports: 0,
+            user_id: (await supabase.auth.getUser()).data.user?.id
+          })
+          .select()
+          .single();
 
       if (jobError) throw jobError;
 
@@ -527,11 +531,11 @@ export default function CatalogPage() {
                   <div key={job.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center gap-4">
                       <div className="text-2xl">
-                        {job.source_type === 'csv' ? '📁' : '🔄'}
+                        {job.job_type === 'csv' ? '📁' : '🔄'}
                       </div>
                       <div>
                         <div className="font-medium">
-                          {`Import ${job.source_type.toUpperCase()}`}
+                          {`Import ${job.job_type.toUpperCase()}`}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {new Date(job.created_at).toLocaleString()}

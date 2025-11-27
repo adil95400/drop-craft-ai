@@ -63,15 +63,17 @@ class UnifiedImportService {
         .from('import_jobs')
         .insert({
           user_id: user.id,
-          source_type: config.source_type,
-          source_url: config.source_url || null,
-          configuration: config.configuration || {},
-          mapping_config: config.field_mapping || {},
+          job_type: config.source_type,
+          supplier_id: config.source_url || null,
+          import_settings: {
+            ...config.configuration || {},
+            field_mapping: config.field_mapping || {}
+          },
           status: 'pending',
-          total_rows: 0,
-          processed_rows: 0,
-          success_rows: 0,
-          error_rows: 0
+          total_products: 0,
+          processed_products: 0,
+          successful_imports: 0,
+          failed_imports: 0
         })
         .select()
         .single()
@@ -148,22 +150,22 @@ class UnifiedImportService {
 
       if (error) throw error
 
-      const progress = data.total_rows > 0 
-        ? Math.round((data.processed_rows / data.total_rows) * 100)
+      const progress = data.total_products > 0 
+        ? Math.round((data.processed_products / data.total_products) * 100)
         : 0
 
       return {
         id: data.id,
         user_id: data.user_id,
         status: data.status as ImportStatus,
-        source_type: data.source_type,
-        source_url: data.source_url,
+        source_type: data.job_type,
+        source_url: data.supplier_id,
         progress,
-        total_rows: data.total_rows,
-        processed_rows: data.processed_rows,
-        success_rows: data.success_rows,
-        error_rows: data.error_rows,
-        errors: data.errors as string[] | null,
+        total_rows: data.total_products,
+        processed_rows: data.processed_products,
+        success_rows: data.successful_imports,
+        error_rows: data.failed_imports,
+        errors: (data.error_log as any) ? Object.keys(data.error_log as any) : null,
         started_at: data.started_at,
         completed_at: data.completed_at,
         created_at: data.created_at,
@@ -285,10 +287,10 @@ class UnifiedImportService {
 
       // Create new job with same config  
       return this.startImport({
-        source_type: originalJob.source_type as ImportSourceType,
-        source_url: originalJob.source_url || undefined,
-        configuration: (originalJob.file_data as Record<string, any>) || {},
-        field_mapping: (originalJob.mapping_config as Record<string, string>) || {}
+        source_type: originalJob.job_type as ImportSourceType,
+        source_url: originalJob.supplier_id || undefined,
+        configuration: (originalJob.import_settings as Record<string, any>) || {},
+        field_mapping: (originalJob.import_settings as any)?.field_mapping || {}
       })
     } catch (error) {
       console.error('[UnifiedImport] Retry error', error)
@@ -313,16 +315,16 @@ class UnifiedImportService {
         id: job.id,
         user_id: job.user_id,
         status: job.status as ImportStatus,
-        source_type: job.source_type,
-        source_url: job.source_url,
-        progress: job.total_rows > 0 
-          ? Math.round((job.processed_rows / job.total_rows) * 100)
+        source_type: job.job_type,
+        source_url: job.supplier_id,
+        progress: job.total_products > 0 
+          ? Math.round((job.processed_products / job.total_products) * 100)
           : 0,
-        total_rows: job.total_rows,
-        processed_rows: job.processed_rows,
-        success_rows: job.success_rows,
-        error_rows: job.error_rows,
-        errors: job.errors as string[] | null,
+        total_rows: job.total_products,
+        processed_rows: job.processed_products,
+        success_rows: job.successful_imports,
+        error_rows: job.failed_imports,
+        errors: (job.error_log as any) ? Object.keys(job.error_log as any) : null,
         started_at: job.started_at,
         completed_at: job.completed_at,
         created_at: job.created_at,

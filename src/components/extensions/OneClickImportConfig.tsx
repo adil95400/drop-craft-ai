@@ -158,86 +158,75 @@ export const OneClickImportConfig: React.FC = () => {
 
             {/* Onglet Import */}
             <TabsContent value="import" className="space-y-6 mt-6">
-              <div className="space-y-2">
-                <Label>Type d'import</Label>
-                <RadioGroup value={importType} onValueChange={(value: any) => setImportType(value)}>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="products" id="products" />
-                    <Label htmlFor="products" className="flex items-center gap-2 cursor-pointer">
-                      <Package className="w-4 h-4" />
-                      Produits
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="reviews" id="reviews" />
-                    <Label htmlFor="reviews" className="flex items-center gap-2 cursor-pointer">
-                      <Star className="w-4 h-4" />
-                      Avis clients
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="urls">
-                  URLs à importer (une par ligne)
-                </Label>
-                <Textarea
-                  id="urls"
-                  placeholder={`https://www.aliexpress.com/item/123456.html
-https://www.amazon.com/dp/B08XYZ123
-https://www.ebay.com/itm/789012
-https://store.myshopify.com/products/example`}
-                  value={urls}
-                  onChange={(e) => setUrls(e.target.value)}
-                  rows={8}
-                  className="font-mono text-sm"
-                />
-                <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
-                  <span>Supporté:</span>
-                  <Badge variant="outline" className="gap-1">🛍️ AliExpress</Badge>
-                  <Badge variant="outline" className="gap-1">📦 Amazon</Badge>
-                  <Badge variant="outline" className="gap-1">🔨 eBay</Badge>
-                  <Badge variant="outline" className="gap-1">🏪 Shopify</Badge>
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="urls">URLs à importer</Label>
+                  <Textarea
+                    id="urls"
+                    placeholder="Entrez une URL par ligne"
+                    value={urls}
+                    onChange={e => setUrls(e.target.value)}
+                  />
                 </div>
-              </div>
 
-              {importType === 'products' && (
-                <>
-                  <Separator />
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="auto-publish">Publication automatique</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Publier les produits immédiatement après import
-                      </p>
+                <div className="grid gap-2">
+                  <Label htmlFor="importType">Type d'import</Label>
+                  <RadioGroup defaultValue={importType} onValueChange={value => setImportType(value as any)}>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="products" id="products" />
+                      <Label htmlFor="products">Produits</Label>
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="reviews" id="reviews" />
+                      <Label htmlFor="reviews">Avis</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                {importType === 'products' && (
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="autoPublish">Publier automatiquement</Label>
                     <Switch
-                      id="auto-publish"
+                      id="autoPublish"
                       checked={autoPublish}
-                      onCheckedChange={setAutoPublish}
+                      onCheckedChange={checked => setAutoPublish(checked)}
                     />
                   </div>
+                )}
 
-                  <div className="space-y-2">
-                    <Label htmlFor="price-multiplier">Multiplicateur de prix</Label>
+                {importType === 'products' && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="priceMultiplier">Multiplicateur de prix</Label>
                     <Input
-                      id="price-multiplier"
                       type="number"
-                      step="0.1"
-                      min="1"
-                      max="5"
+                      id="priceMultiplier"
+                      placeholder="1.5"
                       value={priceMultiplier}
-                      onChange={(e) => setPriceMultiplier(e.target.value)}
+                      onChange={e => setPriceMultiplier(e.target.value)}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Prix de vente = Prix d'achat × {priceMultiplier} (Marge: {((parseFloat(priceMultiplier) - 1) * 100).toFixed(0)}%)
-                    </p>
                   </div>
-                </>
-              )}
+                )}
 
+                {lastResults.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold">Derniers résultats</h3>
+                    <div className="space-y-1">
+                      {lastResults.map((result, i) => (
+                        <div
+                          key={i}
+                          className={`flex items-center gap-2 p-2 rounded-md ${result.success ? 'bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400' : 'bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400'}`}
+                        >
+                          {result.success ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                          <a href={result.url} target="_blank" rel="noopener noreferrer" className="underline">
+                            {result.url}
+                          </a>
+                          <span className="ml-auto">{getPlatformIcon(result.platform)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               <Button
                 onClick={handleImport}
                 disabled={loading || !urls.trim()}
@@ -256,285 +245,70 @@ https://store.myshopify.com/products/example`}
                   </>
                 )}
               </Button>
-
-              {/* Résultats du dernier import */}
-              {lastResults.length > 0 && (
-                <div className="space-y-3">
-                  <Separator />
-                  <h4 className="font-semibold text-sm">Résultats de l'import</h4>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {lastResults.map((result, index) => (
-                      <div
-                        key={index}
-                        className={`p-3 rounded-lg border ${
-                          result.success 
-                            ? 'bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800' 
-                            : 'bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800'
-                        }`}
-                      >
-                        <div className="flex items-start gap-2">
-                          {result.success ? (
-                            <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                          ) : (
-                            <XCircle className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-lg">{getPlatformIcon(result.platform)}</span>
-                              <p className="text-xs font-mono truncate text-muted-foreground">
-                                {result.url}
-                              </p>
-                            </div>
-                            {result.success ? (
-                              <p className="text-sm">
-                                {result.product && `✅ ${result.product.name} (${result.product.sku})`}
-                                {result.reviews && `✅ ${result.reviews.length} avis importés`}
-                              </p>
-                            ) : (
-                              <p className="text-sm text-red-600 dark:text-red-400">
-                                ❌ {result.error}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <h4 className="font-semibold mb-2 text-sm flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" />
-                  Comment ça marche ?
-                </h4>
-                <ol className="text-sm space-y-1 text-muted-foreground list-decimal list-inside">
-                  <li>Copiez les URLs des produits depuis les marketplaces</li>
-                  <li>Collez-les dans le champ ci-dessus (une URL par ligne)</li>
-                  <li>Configurez vos options (prix, stock, catégories...)</li>
-                  <li>Cliquez sur "Importer maintenant" - automatique ! 🚀</li>
-                </ol>
-              </div>
-            </TabsContent>
-
-            {/* Onglet Options avancées */}
-            <TabsContent value="advanced" className="space-y-6 mt-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Settings className="w-5 h-5" />
-                    Configuration avancée
-                  </h3>
-                </div>
-
-                {/* Règles de pricing */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Règles de pricing intelligentes</CardTitle>
-                    <CardDescription>Définissez comment calculer vos prix de vente</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Type de pricing</Label>
-                      <Select value={pricingType} onValueChange={(value: any) => setPricingType(value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="fixed_multiplier">Multiplicateur fixe</SelectItem>
-                          <SelectItem value="fixed_margin">Marge fixe (€)</SelectItem>
-                          <SelectItem value="tiered">Pricing par paliers</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {pricingType === 'fixed_margin' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="fixed-margin">Marge fixe (€)</Label>
-                        <Input
-                          id="fixed-margin"
-                          type="number"
-                          step="0.5"
-                          min="0"
-                          value={fixedMargin}
-                          onChange={(e) => setFixedMargin(e.target.value)}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Prix de vente = Prix d'achat + {fixedMargin}€
-                        </p>
-                      </div>
-                    )}
-
-                    {pricingType === 'tiered' && (
-                      <div className="bg-muted/50 p-3 rounded-lg">
-                        <p className="text-sm font-semibold mb-2">Paliers automatiques :</p>
-                        <ul className="text-sm space-y-1 text-muted-foreground">
-                          <li>• Produits &lt; 10€ : Marge 150%</li>
-                          <li>• Produits 10-50€ : Marge 100%</li>
-                          <li>• Produits &gt; 50€ : Marge 50%</li>
-                        </ul>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="round-price">Prix arrondis</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Arrondir à X.99€ (ex: 19.99€)
-                        </p>
-                      </div>
-                      <Switch
-                        id="round-price"
-                        checked={roundPrice}
-                        onCheckedChange={setRoundPrice}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Gestion du stock */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Gestion du stock</CardTitle>
-                    <CardDescription>Configurez comment gérer les quantités en stock</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="import-stock">Importer le stock réel</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Utiliser les quantités des fournisseurs
-                        </p>
-                      </div>
-                      <Switch
-                        id="import-stock"
-                        checked={importActualStock}
-                        onCheckedChange={setImportActualStock}
-                      />
-                    </div>
-
-                    {!importActualStock && (
-                      <div className="space-y-2">
-                        <Label htmlFor="fixed-stock">Stock fixe</Label>
-                        <Input
-                          id="fixed-stock"
-                          type="number"
-                          min="0"
-                          value={fixedStock}
-                          onChange={(e) => setFixedStock(e.target.value)}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Tous les produits auront cette quantité en stock
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Configuration API */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Clés API (Optionnel)</CardTitle>
-                    <CardDescription>
-                      Pour un import optimal, configurez les clés API dans les secrets Supabase
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center justify-between p-2 rounded bg-muted/50">
-                        <span>AliExpress API</span>
-                        <Badge variant="outline">ALIEXPRESS_API_KEY</Badge>
-                      </div>
-                      <div className="flex items-center justify-between p-2 rounded bg-muted/50">
-                        <span>Amazon PA-API</span>
-                        <Badge variant="outline">AMAZON_ACCESS_KEY</Badge>
-                      </div>
-                      <div className="flex items-center justify-between p-2 rounded bg-muted/50">
-                        <span>eBay Shopping API</span>
-                        <Badge variant="outline">EBAY_API_KEY</Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-4">
-                        💡 Sans les clés API, le système utilise des données simulées pour le développement
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
             </TabsContent>
 
             {/* Onglet Historique */}
             <TabsContent value="history" className="space-y-4 mt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <History className="w-5 h-5" />
-                  <h3 className="text-lg font-semibold">Historique des imports</h3>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => refetchHistory()}
-                >
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Historique des imports</h3>
+                <Button variant="outline" size="sm" onClick={() => refetchHistory()}>
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Actualiser
                 </Button>
               </div>
-              
+
               {!importHistory || importHistory.length === 0 ? (
-                <div className="bg-muted/50 p-8 rounded-lg text-center">
-                  <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">
-                    Aucun import pour le moment
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Vos imports apparaîtront ici avec tous les détails
-                  </p>
+                <div className="text-center py-12 text-muted-foreground">
+                  <History className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Aucun import pour le moment</p>
+                  <p className="text-sm">Vos imports apparaîtront ici</p>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {importHistory.map((item) => (
+                <div className="space-y-3">
+                  {importHistory.map((history) => (
                     <div
-                      key={item.id}
-                      className="p-4 rounded-lg border hover:bg-accent/5 transition-colors"
+                      key={history.id}
+                      className="border rounded-lg p-4 hover:border-primary/50 transition-colors"
                     >
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3">
                         <div className="flex-1 space-y-2">
                           <div className="flex items-center gap-2">
-                            {item.status === 'success' ? (
+                            {history.status === 'success' ? (
                               <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
-                            ) : item.status === 'failed' ? (
+                            ) : history.status === 'failed' ? (
                               <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
                             ) : (
                               <AlertCircle className="w-4 h-4 text-yellow-500 flex-shrink-0" />
                             )}
-                            <span className="text-lg">{getPlatformIcon(item.platform)}</span>
+                            <span className="text-lg">{getPlatformIcon(history.job_type)}</span>
                             <Badge variant="outline" className="uppercase text-xs">
-                              {item.platform}
+                              {history.job_type || 'import'}
                             </Badge>
                             <span className="text-xs text-muted-foreground">
-                              {format(new Date(item.created_at), 'PPp', { locale: fr })}
+                              {format(new Date(history.created_at), 'PPp', { locale: fr })}
                             </span>
                           </div>
                           
                           <p className="text-sm text-muted-foreground truncate font-mono">
-                            {item.source_url}
+                            {history.supplier_id || 'Import manuel'}
                           </p>
                           
                           <div className="flex items-center gap-4 text-xs">
                             <span className="flex items-center gap-1 text-green-600">
                               <CheckCircle2 className="w-3 h-3" />
-                              {item.products_imported} importé{item.products_imported > 1 ? 's' : ''}
+                              {history.successful_imports} importé{history.successful_imports > 1 ? 's' : ''}
                             </span>
-                            {item.products_failed > 0 && (
+                            {history.failed_imports > 0 && (
                               <span className="flex items-center gap-1 text-red-600">
                                 <XCircle className="w-3 h-3" />
-                                {item.products_failed} échoué{item.products_failed > 1 ? 's' : ''}
+                                {history.failed_imports} échoué{history.failed_imports > 1 ? 's' : ''}
                               </span>
                             )}
                           </div>
                           
-                          {item.error_message && (
+                          {history.error_message && (
                             <p className="text-xs text-red-600 bg-red-50 dark:bg-red-950 p-2 rounded">
-                              Erreur: {item.error_message}
+                              Erreur: {history.error_message}
                             </p>
                           )}
                         </div>
@@ -543,7 +317,7 @@ https://store.myshopify.com/products/example`}
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            setUrls(item.source_url);
+                            setUrls(history.supplier_id || '');
                             toast({
                               title: "URL chargée",
                               description: "Vous pouvez maintenant ré-importer ce produit",
@@ -557,6 +331,102 @@ https://store.myshopify.com/products/example`}
                   ))}
                 </div>
               )}
+            </TabsContent>
+
+            {/* Options avancées */}
+            <TabsContent value="advanced" className="space-y-6 mt-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Options de pricing</h3>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="pricingType">Type de pricing</Label>
+                  <Select value={pricingType} onValueChange={value => setPricingType(value as any)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Multiplier fixe" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="fixed_multiplier">Multiplier fixe</SelectItem>
+                      <SelectItem value="fixed_margin">Marge fixe</SelectItem>
+                      {/* <SelectItem value="tiered">Tiered Pricing (Coming Soon)</SelectItem> */}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {pricingType === 'fixed_multiplier' && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="priceMultiplier">Multiplicateur</Label>
+                    <Input
+                      type="number"
+                      id="priceMultiplier"
+                      placeholder="1.5"
+                      value={priceMultiplier}
+                      onChange={e => setPriceMultiplier(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                {pricingType === 'fixed_margin' && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="fixedMargin">Marge fixe (€)</Label>
+                    <Input
+                      type="number"
+                      id="fixedMargin"
+                      placeholder="10"
+                      value={fixedMargin}
+                      onChange={e => setFixedMargin(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="roundPrice">Arrondir le prix</Label>
+                  <Switch
+                    id="roundPrice"
+                    checked={roundPrice}
+                    onCheckedChange={checked => setRoundPrice(checked)}
+                  />
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Options de stock</h3>
+
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="importActualStock">Importer le stock actuel</Label>
+                  <Switch
+                    id="importActualStock"
+                    checked={importActualStock}
+                    onCheckedChange={checked => setImportActualStock(checked)}
+                  />
+                </div>
+
+                {!importActualStock && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="fixedStock">Stock fixe</Label>
+                    <Input
+                      type="number"
+                      id="fixedStock"
+                      placeholder="50"
+                      value={fixedStock}
+                      onChange={e => setFixedStock(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Mapping des catégories</h3>
+                <p className="text-sm text-muted-foreground">
+                  Associez les catégories d'origine à vos catégories de boutique.
+                </p>
+
+                {/* TODO: Implémenter le mapping des catégories */}
+                <Badge variant="secondary">Bientôt disponible</Badge>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
