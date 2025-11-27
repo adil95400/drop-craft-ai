@@ -137,12 +137,13 @@ export const useProductImports = () => {
         .from('import_jobs')
         .insert([{
           user_id: user.user.id,
-          source_type: importData.import_type || 'url',
-          source_url: importData.source_url,
+          job_type: importData.import_type || 'url',
+          supplier_id: importData.source_url,
           status: 'pending',
-          total_rows: 0,
-          success_rows: 0,
-          error_rows: 0
+          total_products: 0,
+          processed_products: 0,
+          successful_imports: 0,
+          failed_imports: 0
         }])
         .select()
         .single();
@@ -151,9 +152,9 @@ export const useProductImports = () => {
 
       const newImport: ProductImport = {
         id: newJob.id,
-        import_type: newJob.source_type as any,
-        source_name: importData.source_name || newJob.source_url,
-        source_url: newJob.source_url,
+        import_type: newJob.job_type as any,
+        source_name: importData.source_name || newJob.job_type,
+        source_url: newJob.job_type,
         status: newJob.status as any,
         products_imported: 0,
         products_failed: 0,

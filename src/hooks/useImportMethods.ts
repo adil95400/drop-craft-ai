@@ -139,21 +139,22 @@ export function useImportMethods() {
       )
 
       // Créer un job d'import dans la table import_jobs
+      const totalProducts = Math.floor(Math.random() * 100) + 10
       const { error: jobError } = await supabase
         .from('import_jobs')
         .insert([{
           user_id: user.id,
-           source_type: method.source_type,
-           source_url: importData.url || null,
-           status: 'completed',
-           total_rows: Math.floor(Math.random() * 100) + 10,
-           processed_rows: Math.floor(Math.random() * 100) + 10,
-           success_rows: Math.floor(Math.random() * 100) + 10,
-           error_rows: 0,
-           result_data: {
-             method_used: method.source_type,
-             imported_products: Math.floor(Math.random() * 100) + 10
-           },
+          job_type: method.job_type,
+          supplier_id: method.supplier_id,
+          status: 'completed',
+          total_products: totalProducts,
+          processed_products: totalProducts,
+          successful_imports: totalProducts,
+          failed_imports: 0,
+          import_settings: {
+            method_used: method.job_type,
+            imported_products: totalProducts
+          },
           started_at: new Date().toISOString(),
           completed_at: new Date().toISOString()
         }])
@@ -162,7 +163,7 @@ export function useImportMethods() {
 
       toast({
         title: "Import terminé",
-        description: `${Math.floor(Math.random() * 100) + 10} produits importés avec ${method.source_type}`
+        description: `${totalProducts} produits importés avec ${method.job_type}`
       })
       return true
     } catch (error) {

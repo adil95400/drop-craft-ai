@@ -106,12 +106,12 @@ export function useImportJobsReal() {
     processing: jobs.filter(j => j.status === 'processing').length,
     completed: jobs.filter(j => j.status === 'completed').length,
     failed: jobs.filter(j => j.status === 'failed').length,
-    totalProcessed: jobs.reduce((sum, j) => sum + (j.processed_rows || 0), 0),
-    totalSuccess: jobs.reduce((sum, j) => sum + (j.success_rows || 0), 0),
-    totalFailed: jobs.reduce((sum, j) => sum + (j.error_rows || 0), 0),
+    totalProcessed: jobs.reduce((sum, j) => sum + (j.processed_products || 0), 0),
+    totalSuccess: jobs.reduce((sum, j) => sum + (j.successful_imports || 0), 0),
+    totalFailed: jobs.reduce((sum, j) => sum + (j.failed_imports || 0), 0),
     successRate: jobs.length > 0 
-      ? (jobs.reduce((sum, j) => sum + (j.success_rows || 0), 0) / 
-         Math.max(1, jobs.reduce((sum, j) => sum + (j.processed_rows || 0), 0)) * 100)
+      ? (jobs.reduce((sum, j) => sum + (j.successful_imports || 0), 0) / 
+         Math.max(1, jobs.reduce((sum, j) => sum + (j.processed_products || 0), 0)) * 100)
       : 0,
   };
 
