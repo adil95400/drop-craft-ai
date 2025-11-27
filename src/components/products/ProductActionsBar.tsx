@@ -76,24 +76,27 @@ export function ProductActionsBar({
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
                 <SelectContent className="z-[100] bg-popover">
+                  <SelectItem value="all">Tous</SelectItem>
                   <SelectItem value="active">Actif</SelectItem>
                   <SelectItem value="inactive">Inactif</SelectItem>
                 </SelectContent>
             </Select>
           )}
           
-          <Select defaultValue="created_at">
-            <SelectTrigger className="w-[140px] bg-background/50 backdrop-blur border-border/50">
-              <SortAsc className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Trier" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="created_at">Plus récent</SelectItem>
-              <SelectItem value="name">Nom A-Z</SelectItem>
-              <SelectItem value="price">Prix croissant</SelectItem>
-              <SelectItem value="stock">Stock</SelectItem>
-            </SelectContent>
-          </Select>
+          {onSortChange && (
+            <Select defaultValue="created_at" onValueChange={onSortChange}>
+              <SelectTrigger className="w-[140px] bg-background/50 backdrop-blur border-border/50">
+                <SortAsc className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Trier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created_at">Plus récent</SelectItem>
+                <SelectItem value="name">Nom A-Z</SelectItem>
+                <SelectItem value="price">Prix croissant</SelectItem>
+                <SelectItem value="stock">Stock</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
         </div>
         
         <div className="flex items-center space-x-2 flex-wrap">
@@ -157,21 +160,17 @@ export function ProductActionsBar({
           )}
         </div>
         
-        <div className="flex items-center space-x-2">
-          <span className="hidden sm:inline">Affichage:</span>
-          <Select defaultValue="20">
-            <SelectTrigger className="w-16 h-8 bg-background/50 backdrop-blur border-border/50">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="20">20</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
-          <span>par page</span>
-        </div>
+        {hasActiveFilters && onResetFilters && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onResetFilters}
+            className="gap-2"
+          >
+            <X className="h-4 w-4" />
+            Réinitialiser les filtres
+          </Button>
+        )}
       </div>
     </div>
   )

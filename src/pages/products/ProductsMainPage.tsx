@@ -133,7 +133,10 @@ export default function ProductsMainPage() {
 
         {/* Statistiques rapides basées sur vraies données */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <Card className="hover:shadow-lg transition-all duration-300 border-border/50 bg-card/50 backdrop-blur">
+          <Card 
+            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
+            onClick={() => setViewMode('standard')}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -150,7 +153,10 @@ export default function ProductsMainPage() {
             </CardContent>
           </Card>
           
-          <Card className="hover:shadow-lg transition-all duration-300 border-border/50 bg-card/50 backdrop-blur">
+          <Card 
+            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
+            onClick={() => updateFilter('status', 'active')}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -167,7 +173,10 @@ export default function ProductsMainPage() {
             </CardContent>
           </Card>
           
-          <Card className="hover:shadow-lg transition-all duration-300 border-border/50 bg-card/50 backdrop-blur">
+          <Card 
+            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
+            onClick={() => updateFilter('lowStock', true)}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -189,7 +198,10 @@ export default function ProductsMainPage() {
             </CardContent>
           </Card>
           
-          <Card className="hover:shadow-lg transition-all duration-300 border-border/50 bg-card/50 backdrop-blur">
+          <Card 
+            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
+            onClick={() => updateFilter('status', 'inactive')}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -206,7 +218,10 @@ export default function ProductsMainPage() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-all duration-300 border-border/50 bg-card/50 backdrop-blur">
+          <Card 
+            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
+            onClick={() => setViewMode('audit')}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
