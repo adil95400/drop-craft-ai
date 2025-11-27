@@ -6784,6 +6784,53 @@ export type Database = {
           },
         ]
       }
+      mockup_variants: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          id: string
+          is_primary: boolean | null
+          mockup_id: string
+          mockup_url: string
+          size: string | null
+          user_id: string
+          variant_name: string
+          variant_sku: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          mockup_id: string
+          mockup_url: string
+          size?: string | null
+          user_id: string
+          variant_name: string
+          variant_sku: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          mockup_id?: string
+          mockup_url?: string
+          size?: string | null
+          user_id?: string
+          variant_name?: string
+          variant_sku?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mockup_variants_mockup_id_fkey"
+            columns: ["mockup_id"]
+            isOneToOne: false
+            referencedRelation: "pod_mockups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monitoring_metrics: {
         Row: {
           created_at: string
@@ -7499,6 +7546,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      pdf_exports: {
+        Row: {
+          export_type: string
+          file_size_kb: number | null
+          file_url: string
+          generated_at: string | null
+          id: string
+          invoice_id: string | null
+          user_id: string
+        }
+        Insert: {
+          export_type: string
+          file_size_kb?: number | null
+          file_url: string
+          generated_at?: string | null
+          id?: string
+          invoice_id?: string | null
+          user_id: string
+        }
+        Update: {
+          export_type?: string
+          file_size_kb?: number | null
+          file_url?: string
+          generated_at?: string | null
+          id?: string
+          invoice_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdf_exports_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_history"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       performance_metrics: {
         Row: {
@@ -8439,103 +8524,81 @@ export type Database = {
       }
       price_alerts: {
         Row: {
-          catalog_product_id: string
+          alert_condition: string
           created_at: string | null
-          current_price: number
           id: string
           is_active: boolean | null
+          last_checked_at: string | null
+          product_name: string | null
+          product_url: string
           target_price: number
           triggered_at: string | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
-          catalog_product_id: string
+          alert_condition: string
           created_at?: string | null
-          current_price: number
           id?: string
           is_active?: boolean | null
+          last_checked_at?: string | null
+          product_name?: string | null
+          product_url: string
           target_price: number
           triggered_at?: string | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
-          catalog_product_id?: string
+          alert_condition?: string
           created_at?: string | null
-          current_price?: number
           id?: string
           is_active?: boolean | null
+          last_checked_at?: string | null
+          product_name?: string | null
+          product_url?: string
           target_price?: number
           triggered_at?: string | null
+          updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "price_alerts_catalog_product_id_fkey"
-            columns: ["catalog_product_id"]
-            isOneToOne: false
-            referencedRelation: "catalog_products"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       price_history: {
         Row: {
-          change_reason: string
+          competitor_name: string | null
           created_at: string | null
+          currency: string | null
           id: string
-          new_cost: number | null
-          new_margin_percent: number | null
-          new_price: number
-          previous_cost: number | null
-          previous_margin_percent: number | null
-          previous_price: number
-          price_change_percent: number | null
-          pricing_rule_id: string | null
-          product_id: string
-          product_source: string
+          price: number
+          product_name: string | null
+          product_url: string
+          recorded_at: string | null
           user_id: string
         }
         Insert: {
-          change_reason: string
+          competitor_name?: string | null
           created_at?: string | null
+          currency?: string | null
           id?: string
-          new_cost?: number | null
-          new_margin_percent?: number | null
-          new_price: number
-          previous_cost?: number | null
-          previous_margin_percent?: number | null
-          previous_price: number
-          price_change_percent?: number | null
-          pricing_rule_id?: string | null
-          product_id: string
-          product_source: string
+          price: number
+          product_name?: string | null
+          product_url: string
+          recorded_at?: string | null
           user_id: string
         }
         Update: {
-          change_reason?: string
+          competitor_name?: string | null
           created_at?: string | null
+          currency?: string | null
           id?: string
-          new_cost?: number | null
-          new_margin_percent?: number | null
-          new_price?: number
-          previous_cost?: number | null
-          previous_margin_percent?: number | null
-          previous_price?: number
-          price_change_percent?: number | null
-          pricing_rule_id?: string | null
-          product_id?: string
-          product_source?: string
+          price?: number
+          product_name?: string | null
+          product_url?: string
+          recorded_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "price_history_pricing_rule_id_fkey"
-            columns: ["pricing_rule_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_rules"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       price_stock_alerts: {
         Row: {
@@ -11988,6 +12051,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      store_previews: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_current: boolean | null
+          preview_html: string | null
+          preview_screenshot_url: string | null
+          preview_url: string
+          store_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_current?: boolean | null
+          preview_html?: string | null
+          preview_screenshot_url?: string | null
+          preview_url: string
+          store_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_current?: boolean | null
+          preview_html?: string | null
+          preview_screenshot_url?: string | null
+          preview_url?: string
+          store_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_previews_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "generated_stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       store_templates: {
         Row: {
