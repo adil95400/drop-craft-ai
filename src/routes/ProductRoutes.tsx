@@ -6,6 +6,7 @@ import { lazy } from 'react';
 
 // Products
 const ModernProductsPage = lazy(() => import('@/pages/products/ProductsMainPage'));
+const EnhancedCatalog = lazy(() => import('@/pages/products/EnhancedCatalog'));
 const ProductDetailsPage = lazy(() => import('@/pages/ProductDetailsPage'));
 const ProductPublishing = lazy(() => import('@/pages/ProductPublishing'));
 const Catalogue = lazy(() => import('@/pages/CatalogueReal'));
@@ -57,6 +58,7 @@ export function ProductRoutes() {
     <Routes>
       {/* Products Management */}
       <Route index element={<ModernProductsPage />} />
+      <Route path="enhanced-catalog" element={<EnhancedCatalog />} />
       <Route path=":id" element={<ProductDetailsPage />} />
       <Route path="publish" element={<ProductPublishing />} />
       <Route path="catalogue" element={<Catalogue />} />
