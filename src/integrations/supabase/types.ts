@@ -2342,6 +2342,48 @@ export type Database = {
         }
         Relationships: []
       }
+      catalog_quality_issues: {
+        Row: {
+          affected_products: string[]
+          auto_fixable: boolean | null
+          created_at: string | null
+          id: string
+          issue_details: Json
+          issue_type: string
+          resolved: boolean | null
+          resolved_at: string | null
+          severity: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          affected_products: string[]
+          auto_fixable?: boolean | null
+          created_at?: string | null
+          id?: string
+          issue_details: Json
+          issue_type: string
+          resolved?: boolean | null
+          resolved_at?: string | null
+          severity: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          affected_products?: string[]
+          auto_fixable?: boolean | null
+          created_at?: string | null
+          id?: string
+          issue_details?: Json
+          issue_type?: string
+          resolved?: boolean | null
+          resolved_at?: string | null
+          severity?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -7166,6 +7208,48 @@ export type Database = {
         }
         Relationships: []
       }
+      optimization_simulations: {
+        Row: {
+          actual_results: Json | null
+          confidence_level: number | null
+          created_at: string | null
+          executed: boolean | null
+          executed_at: string | null
+          id: string
+          optimization_types: string[]
+          predicted_impact: Json
+          product_ids: string[]
+          simulation_name: string
+          user_id: string
+        }
+        Insert: {
+          actual_results?: Json | null
+          confidence_level?: number | null
+          created_at?: string | null
+          executed?: boolean | null
+          executed_at?: string | null
+          id?: string
+          optimization_types: string[]
+          predicted_impact: Json
+          product_ids: string[]
+          simulation_name: string
+          user_id: string
+        }
+        Update: {
+          actual_results?: Json | null
+          confidence_level?: number | null
+          created_at?: string | null
+          executed?: boolean | null
+          executed_at?: string | null
+          id?: string
+          optimization_types?: string[]
+          predicted_impact?: Json
+          product_ids?: string[]
+          simulation_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_fulfillment_logs: {
         Row: {
           completed_at: string | null
@@ -9002,6 +9086,105 @@ export type Database = {
         }
         Relationships: []
       }
+      product_channel_data: {
+        Row: {
+          age_group: string | null
+          availability: string | null
+          bullet_point_1: string | null
+          bullet_point_2: string | null
+          bullet_point_3: string | null
+          bullet_point_4: string | null
+          bullet_point_5: string | null
+          channel: string
+          condition: string | null
+          created_at: string | null
+          custom_label_0: string | null
+          custom_label_1: string | null
+          custom_label_2: string | null
+          custom_label_3: string | null
+          custom_label_4: string | null
+          fb_product_category: string | null
+          gender: string | null
+          google_product_category: string | null
+          gtin: string | null
+          id: string
+          missing_fields: Json | null
+          mpn: string | null
+          product_id: string
+          readiness_score: Json | null
+          search_terms: string[] | null
+          source_table: string
+          tiktok_category: string | null
+          updated_at: string | null
+          user_id: string
+          video_url: string | null
+        }
+        Insert: {
+          age_group?: string | null
+          availability?: string | null
+          bullet_point_1?: string | null
+          bullet_point_2?: string | null
+          bullet_point_3?: string | null
+          bullet_point_4?: string | null
+          bullet_point_5?: string | null
+          channel: string
+          condition?: string | null
+          created_at?: string | null
+          custom_label_0?: string | null
+          custom_label_1?: string | null
+          custom_label_2?: string | null
+          custom_label_3?: string | null
+          custom_label_4?: string | null
+          fb_product_category?: string | null
+          gender?: string | null
+          google_product_category?: string | null
+          gtin?: string | null
+          id?: string
+          missing_fields?: Json | null
+          mpn?: string | null
+          product_id: string
+          readiness_score?: Json | null
+          search_terms?: string[] | null
+          source_table: string
+          tiktok_category?: string | null
+          updated_at?: string | null
+          user_id: string
+          video_url?: string | null
+        }
+        Update: {
+          age_group?: string | null
+          availability?: string | null
+          bullet_point_1?: string | null
+          bullet_point_2?: string | null
+          bullet_point_3?: string | null
+          bullet_point_4?: string | null
+          bullet_point_5?: string | null
+          channel?: string
+          condition?: string | null
+          created_at?: string | null
+          custom_label_0?: string | null
+          custom_label_1?: string | null
+          custom_label_2?: string | null
+          custom_label_3?: string | null
+          custom_label_4?: string | null
+          fb_product_category?: string | null
+          gender?: string | null
+          google_product_category?: string | null
+          gtin?: string | null
+          id?: string
+          missing_fields?: Json | null
+          mpn?: string | null
+          product_id?: string
+          readiness_score?: Json | null
+          search_terms?: string[] | null
+          source_table?: string
+          tiktok_category?: string | null
+          updated_at?: string | null
+          user_id?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       product_history: {
         Row: {
           change_type: string
@@ -9119,6 +9302,60 @@ export type Database = {
         }
         Relationships: []
       }
+      product_optimization_history: {
+        Row: {
+          after_data: Json
+          ai_confidence: number | null
+          ai_model: string | null
+          applied: boolean | null
+          applied_at: string | null
+          before_data: Json
+          created_at: string | null
+          created_by: string | null
+          id: string
+          optimization_type: string
+          product_id: string
+          reverted: boolean | null
+          reverted_at: string | null
+          source_table: string
+          user_id: string
+        }
+        Insert: {
+          after_data: Json
+          ai_confidence?: number | null
+          ai_model?: string | null
+          applied?: boolean | null
+          applied_at?: string | null
+          before_data: Json
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          optimization_type: string
+          product_id: string
+          reverted?: boolean | null
+          reverted_at?: string | null
+          source_table: string
+          user_id: string
+        }
+        Update: {
+          after_data?: Json
+          ai_confidence?: number | null
+          ai_model?: string | null
+          applied?: boolean | null
+          applied_at?: string | null
+          before_data?: Json
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          optimization_type?: string
+          product_id?: string
+          reverted?: boolean | null
+          reverted_at?: string | null
+          source_table?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       product_options: {
         Row: {
           created_at: string | null
@@ -9156,6 +9393,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      product_performance: {
+        Row: {
+          add_to_cart: number | null
+          conversion_rate: number | null
+          created_at: string | null
+          date: string
+          id: string
+          product_id: string
+          purchases: number | null
+          revenue: number | null
+          source_table: string
+          updated_at: string | null
+          user_id: string
+          views: number | null
+        }
+        Insert: {
+          add_to_cart?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          product_id: string
+          purchases?: number | null
+          revenue?: number | null
+          source_table: string
+          updated_at?: string | null
+          user_id: string
+          views?: number | null
+        }
+        Update: {
+          add_to_cart?: number | null
+          conversion_rate?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          product_id?: string
+          purchases?: number | null
+          revenue?: number | null
+          source_table?: string
+          updated_at?: string | null
+          user_id?: string
+          views?: number | null
+        }
+        Relationships: []
       }
       product_research_results: {
         Row: {
