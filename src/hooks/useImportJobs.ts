@@ -6,18 +6,21 @@ import { useToast } from '@/hooks/use-toast'
 export interface ImportJob {
   id: string
   user_id: string
-  source_type: string
-  source_url?: string
-  file_name?: string
+  job_type: string
+  supplier_id?: string
+  product_ids?: string[]
+  total_products: number
+  processed_products: number
+  successful_imports: number
+  failed_imports: number
   status: string
-  total_rows?: number
-  processed_rows?: number
-  failed_rows?: number
-  errors?: any
-  mapping_config?: any
-  created_at: string
+  progress_percentage?: number
+  error_log?: any
+  import_settings?: any
   started_at?: string
   completed_at?: string
+  created_at: string
+  updated_at?: string
 }
 
 export function useImportJobs() {
@@ -52,13 +55,16 @@ export function useImportJobs() {
         .from('import_jobs')
         .insert([{
           user_id: user.id,
-          source_type: jobData.source_type || 'csv',
-          source_url: jobData.source_url,
-          file_name: jobData.file_name,
-          mapping_config: jobData.mapping_config,
+          job_type: jobData.job_type || 'single',
+          supplier_id: jobData.supplier_id,
+          import_settings: jobData.import_settings,
+          total_products: 0,
+          processed_products: 0,
+          successful_imports: 0,
+          failed_imports: 0
         }])
         .select()
-        .single()
+        .maybeSingle()
 
       if (error) throw error
       return data

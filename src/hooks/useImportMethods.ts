@@ -6,14 +6,14 @@ import { useToast } from '@/hooks/use-toast'
 export interface ImportMethod {
   id: string
   user_id: string
-  source_type: string
-  source_url?: string
+  job_type: string
+  supplier_id?: string
   status: string
-  total_rows: number
-  processed_rows: number
-  success_rows: number
-  error_rows: number
-  mapping_config?: any
+  total_products: number
+  processed_products: number
+  successful_imports: number
+  failed_imports: number
+  import_settings?: any
   created_at: string
   updated_at: string
   started_at?: string
@@ -74,17 +74,17 @@ export function useImportMethods() {
         .from('import_jobs')
         .insert([{
           user_id: user.id,
-          source_type: template.category.toLowerCase(),
-          source_url: configuration.url || null,
+          job_type: template.category.toLowerCase(),
+          supplier_id: configuration.supplier || null,
           status: 'pending',
-          total_rows: 0,
-          processed_rows: 0,
-          success_rows: 0,
-          error_rows: 0,
-          mapping_config: configuration
+          total_products: 0,
+          processed_products: 0,
+          successful_imports: 0,
+          failed_imports: 0,
+          import_settings: configuration
         }])
         .select()
-        .single()
+        .maybeSingle()
 
       if (error) throw error
 

@@ -76,7 +76,7 @@ export const ImportStatistics = () => {
 
         // Total produits
         const totalProducts = allJobs.reduce((sum, job) => 
-          sum + (job.success_rows || 0), 0
+          sum + (job.successful_imports || 0), 0
         )
 
         // Tendance

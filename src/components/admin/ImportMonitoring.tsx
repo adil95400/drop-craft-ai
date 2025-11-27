@@ -114,16 +114,16 @@ export const ImportMonitoring = () => {
       if (error) throw error
 
       const csv = [
-        ['ID', 'Status', 'Type', 'Started', 'Completed', 'Total Rows', 'Success', 'Errors'].join(','),
+        ['ID', 'Status', 'Type', 'Started', 'Completed', 'Total Products', 'Success', 'Errors'].join(','),
         ...data.map(j => [
           j.id,
           j.status,
-          j.source_type,
+          j.job_type || 'import',
           j.started_at || '',
           j.completed_at || '',
-          j.total_rows,
-          j.success_rows,
-          j.error_rows
+          j.total_products || 0,
+          j.successful_imports || 0,
+          j.failed_imports || 0
         ].join(','))
       ].join('\n')
 

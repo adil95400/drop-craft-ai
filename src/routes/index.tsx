@@ -27,6 +27,9 @@ import { RewriteRoutes } from './RewriteRoutes';
 import { AttributesRoutes } from './AttributesRoutes';
 import { StockRoutes } from './StockRoutes';
 
+// Import pages
+import ShopifyImportHub from '@/pages/import/ShopifyImportHub';
+
 // Pages directes
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const AvisPositifUltraPro = lazy(() => import('@/pages/AvisPositifUltraPro'));
@@ -82,6 +85,7 @@ export function AppRoutes() {
         <Route path="/attributes/*" element={<ProtectedRoute><AppLayout><AttributesRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/stock/*" element={<ProtectedRoute><AppLayout><StockRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/reviews" element={<ProtectedRoute><AppLayout><AvisPositifUltraPro /></AppLayout></ProtectedRoute>} />
+        <Route path="/import/shopify" element={<ProtectedRoute><AppLayout><ShopifyImportHub /></AppLayout></ProtectedRoute>} />
         
         {/* Pages manquantes ajoutées - Phase 1 */}
         <Route path="/import/advanced" element={<ProtectedRoute><AppLayout><AdvancedImportPage /></AppLayout></ProtectedRoute>} />

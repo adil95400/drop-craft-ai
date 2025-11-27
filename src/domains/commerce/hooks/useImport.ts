@@ -60,7 +60,7 @@ export const useImport = (filters?: ImportFilters) => {
       queryClient.invalidateQueries({ queryKey: ['import'] })
       toast({
         title: "Import démarré !",
-        description: `Import depuis ${data.source_type || 'fournisseur'} en cours`
+        description: `Import depuis ${data.job_type || 'fournisseur'} en cours`
       })
     },
     onError: (error: Error) => {

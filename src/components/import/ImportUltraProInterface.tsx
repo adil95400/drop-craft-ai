@@ -221,13 +221,13 @@ export const ImportUltraProInterface = ({ onImportComplete }: ImportUltraProInte
           .from('import_jobs')
           .insert({
             user_id: user.id,
-            source_type: 'csv',
+            job_type: 'bulk',
             status: 'processing',
-            total_rows: rows.length,
-            processed_rows: 0,
-            success_rows: 0,
-            error_rows: 0,
-            mapping_config: mapping
+            total_products: rows.length,
+            processed_products: 0,
+            successful_imports: 0,
+            failed_imports: 0,
+            import_settings: { mapping_config: mapping }
           })
           .select()
           .single()
