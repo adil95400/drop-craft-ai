@@ -23,6 +23,9 @@ const ShopifyManagementPage = lazy(() => import('@/pages/ShopifyManagementPage')
 const ModernOrdersPage = lazy(() => import('@/pages/ModernOrdersPage'));
 const OrdersCenterPage = lazy(() => import('@/pages/OrdersCenterPage'));
 const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
+const ReturnsManagementPage = lazy(() => import('@/pages/orders/ReturnsManagementPage'));
+const TrackingDashboardPage = lazy(() => import('@/pages/orders/TrackingDashboardPage'));
+const CustomerNotificationsPage = lazy(() => import('@/pages/orders/CustomerNotificationsPage'));
 
 // Customers
 const ModernCustomersPage = lazy(() => import('@/pages/ModernCustomersPage'));
@@ -95,7 +98,9 @@ export function CoreRoutes() {
       {/* Orders Management */}
       <Route path="orders" element={<ModernOrdersPage />} />
       <Route path="orders-center" element={<OrdersCenterPage />} />
-      <Route path="orders/returns" element={<ReturnManagementPage />} />
+      <Route path="orders/returns" element={<ReturnsManagementPage />} />
+      <Route path="orders/tracking" element={<TrackingDashboardPage />} />
+      <Route path="orders/notifications" element={<CustomerNotificationsPage />} />
       <Route path="orders/shipping" element={<ShippingManagementPage />} />
       <Route path="orders/list" element={<OrdersPage />} />
       
