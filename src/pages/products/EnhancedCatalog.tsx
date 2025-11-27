@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useUnifiedProducts } from '@/hooks/useUnifiedProducts'
 import { useProductScores } from '@/hooks/useProductScores'
 import { ProductCardEnhanced } from '@/components/products/ProductCardEnhanced'
@@ -17,12 +18,14 @@ import {
   DollarSign,
   Copy,
   RefreshCw,
-  BarChart3
+  BarChart3,
+  Download
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 
 export default function EnhancedCatalog() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState<string>('all')
@@ -246,6 +249,32 @@ export default function EnhancedCatalog() {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Winners Import Banner */}
+      {view === 'winners' && (
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Trophy className="h-8 w-8 text-primary" />
+                <div>
+                  <h3 className="font-semibold text-lg">Recherche de Produits Gagnants</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Découvrez et importez des produits à fort potentiel depuis Winners
+                  </p>
+                </div>
+              </div>
+              <Button 
+                onClick={() => navigate('/winners')}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Importer Winners
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Products Grid */}
       {isLoading ? (

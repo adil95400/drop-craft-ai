@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { MoreVertical, Edit, Trash2, Copy, Sparkles, Eye, TrendingUp, DollarSign } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { MoreVertical, Edit, Trash2, Copy, Sparkles, Eye, TrendingUp, DollarSign, Package } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -8,8 +8,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
 import { ProductScoreBadge, ProductBadgeGroup } from './ProductScoreBadge'
+import { ProductPerformanceWidget } from './ProductPerformanceWidget'
+import { MultiSupplierComparison } from './MultiSupplierComparison'
+import { useSupplierComparison } from '@/hooks/useSupplierComparison'
+import { useProductTracking } from '@/hooks/useProductTracking'
+import { supabase } from '@/integrations/supabase/client'
 import { cn } from '@/lib/utils'
 
 interface ProductCardEnhancedProps {
@@ -34,6 +40,21 @@ export function ProductCardEnhanced({
   onSelect
 }: ProductCardEnhancedProps) {
   const [imageError, setImageError] = useState(false)
+  const [userId, setUserId] = useState<string>('')
+  
+  const { data: comparisonData, isLoading: isLoadingComparison } = useSupplierComparison(
+    product.id, 
+    userId
+  )
+  const { trackView } = useProductTracking()
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) setUserId(user.id)
+    }
+    fetchUser()
+  }, [])
 
   const imageUrl = product.image_url || product.image_urls?.[0] || '/placeholder.svg'
   const profitMargin = product.profit_margin || (product.price && product.cost_price 
@@ -44,8 +65,13 @@ export function ProductCardEnhanced({
     if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('[role="menuitem"]')) {
       return
     }
+    if (userId && product.id) {
+      trackView.mutate({ productId: product.id, userId, source: 'catalog' })
+    }
     onClick?.()
   }
+
+  const hasMultipleSuppliers = (comparisonData?.comparisons?.length || 0) > 1
 
   return (
     <Card
@@ -197,23 +223,42 @@ export function ProductCardEnhanced({
           )}
         </div>
 
-        {/* Stats */}
-        {(product.view_count > 0 || product.conversion_rate > 0) && (
-          <div className="flex items-center gap-3 text-xs text-muted-foreground pt-2 border-t">
-            {product.view_count > 0 && (
-              <div className="flex items-center gap-1">
-                <Eye className="h-3 w-3" />
-                {product.view_count}
-              </div>
-            )}
-            {product.conversion_rate > 0 && (
-              <div className="flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
-                {product.conversion_rate.toFixed(1)}%
-              </div>
-            )}
+        {/* Performance Widget */}
+        {(product.view_count || 0) > 0 && (
+          <div className="pt-2 border-t">
+            <ProductPerformanceWidget
+              viewCount={product.view_count || 0}
+              conversionRate={product.conversion_rate || 0}
+              revenue={0}
+              orders={0}
+            />
           </div>
         )}
+
+        {/* Actions Footer */}
+        <div className="flex items-center gap-2 pt-2 border-t">
+          {hasMultipleSuppliers && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => e.stopPropagation()}
+                  className="gap-1 flex-1 text-xs"
+                >
+                  <Package className="h-3 w-3" />
+                  Comparer ({comparisonData?.comparisons?.length})
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-96" onClick={(e) => e.stopPropagation()}>
+                <MultiSupplierComparison
+                  comparisons={comparisonData?.comparisons || []}
+                  isLoading={isLoadingComparison}
+                />
+              </PopoverContent>
+            </Popover>
+          )}
+        </div>
 
         {/* Category & Status */}
         <div className="flex items-center justify-between pt-2 border-t">
