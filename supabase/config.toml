@@ -121,6 +121,21 @@ verify_jwt = true
 [functions.audit-product]
 verify_jwt = true
 
+[functions.generate-product-attributes]
+verify_jwt = true
+
+[functions.rewrite-product-content]
+verify_jwt = true
+
+[functions.categorize-products-ai]
+verify_jwt = true
+
+[functions.analyze-shopping-readiness]
+verify_jwt = true
+
+[functions.batch-audit-catalog]
+verify_jwt = true
+
 [functions.auto-reorder-executor]
 verify_jwt = true
 

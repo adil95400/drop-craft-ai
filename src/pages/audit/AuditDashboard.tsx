@@ -53,10 +53,16 @@ export default function AuditDashboard() {
             Analyse IA de vos produits pour maximiser les conversions
           </p>
         </div>
-        <Button onClick={() => navigate('/audit/products')} size="lg">
-          <Sparkles className="mr-2 h-4 w-4" />
-          Auditer des produits
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => navigate('/audit/products')} size="lg">
+            <Sparkles className="mr-2 h-4 w-4" />
+            Auditer des produits
+          </Button>
+          <Button onClick={() => navigate('/audit/batch')} size="lg" variant="outline">
+            <Sparkles className="mr-2 h-4 w-4" />
+            Audit en Masse
+          </Button>
+        </div>
       </div>
 
       {/* Statistiques */}
