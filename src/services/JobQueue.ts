@@ -223,21 +223,21 @@ export class JobQueueManager {
 
   private async saveJobToDatabase(job: ImportJob): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('import_jobs')
-        .insert({
-          id: job.id,
-          user_id: job.userId,
-          source_type: job.type,
-          status: job.status,
-          total_rows: job.totalItems,
-          mapping_config: { 
-            priority: job.priority,
-            supplier_id: job.supplierId,
-            scheduled_at: job.scheduledAt.toISOString(),
-            ...job.metadata 
-          },
-        });
+        const { error } = await supabase
+          .from('import_jobs')
+          .insert({
+            id: job.id,
+            user_id: job.userId,
+            job_type: job.type,
+            status: job.status,
+            total_products: job.totalItems,
+            import_settings: { 
+              priority: job.priority,
+              supplier_id: job.supplierId,
+              scheduled_at: job.scheduledAt.toISOString(),
+              ...job.metadata 
+            },
+          });
 
       if (error) {
         console.error('Failed to save job to database:', error);

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-interface ImportHistory {
+export interface ImportHistory {
   id: string;
   user_id: string;
   import_job_id: string;
@@ -12,6 +12,11 @@ interface ImportHistory {
   error_message: string | null;
   import_data: any;
   created_at: string;
+  // Compatibility mappings for legacy code
+  job_type?: string;
+  supplier_id?: string;
+  successful_imports?: number;
+  failed_imports?: number;
 }
 
 export const useImportHistory = () => {
@@ -25,7 +30,17 @@ export const useImportHistory = () => {
         .limit(50);
 
       if (error) throw error;
-      return data as ImportHistory[];
+      
+      // Map data to include compatibility fields
+      const mappedData = (data || []).map(item => ({
+        ...item,
+        job_type: item.action_type,
+        supplier_id: item.supplier_product_id,
+        successful_imports: item.status === 'success' ? 1 : 0,
+        failed_imports: item.status === 'failed' ? 1 : 0
+      }));
+      
+      return mappedData as ImportHistory[];
     },
   });
 };

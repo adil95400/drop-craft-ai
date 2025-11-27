@@ -3317,6 +3317,75 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_confirmations: {
+        Row: {
+          channels_used: string[] | null
+          clicked_at: string | null
+          confirmation_type: string
+          created_at: string | null
+          email_body: string | null
+          email_subject: string | null
+          id: string
+          opened_at: string | null
+          order_id: string | null
+          personalization_data: Json | null
+          return_id: string | null
+          sent_at: string | null
+          sms_body: string | null
+          template_id: string | null
+          user_id: string
+        }
+        Insert: {
+          channels_used?: string[] | null
+          clicked_at?: string | null
+          confirmation_type: string
+          created_at?: string | null
+          email_body?: string | null
+          email_subject?: string | null
+          id?: string
+          opened_at?: string | null
+          order_id?: string | null
+          personalization_data?: Json | null
+          return_id?: string | null
+          sent_at?: string | null
+          sms_body?: string | null
+          template_id?: string | null
+          user_id: string
+        }
+        Update: {
+          channels_used?: string[] | null
+          clicked_at?: string | null
+          confirmation_type?: string
+          created_at?: string | null
+          email_body?: string | null
+          email_subject?: string | null
+          id?: string
+          opened_at?: string | null
+          order_id?: string | null
+          personalization_data?: Json | null
+          return_id?: string | null
+          sent_at?: string | null
+          sms_body?: string | null
+          template_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_confirmations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_confirmations_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "returns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: Json | null
@@ -9393,6 +9462,177 @@ export type Database = {
           },
         ]
       }
+      return_automation_rules: {
+        Row: {
+          ai_confidence_threshold: number | null
+          auto_approve: boolean | null
+          auto_generate_label: boolean | null
+          auto_refund: boolean | null
+          auto_send_confirmation: boolean | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          priority: number | null
+          refund_method: string | null
+          refund_type: string | null
+          require_manual_review: boolean | null
+          restocking_fee_percentage: number | null
+          rule_name: string
+          trigger_conditions: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_confidence_threshold?: number | null
+          auto_approve?: boolean | null
+          auto_generate_label?: boolean | null
+          auto_refund?: boolean | null
+          auto_send_confirmation?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          priority?: number | null
+          refund_method?: string | null
+          refund_type?: string | null
+          require_manual_review?: boolean | null
+          restocking_fee_percentage?: number | null
+          rule_name: string
+          trigger_conditions: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_confidence_threshold?: number | null
+          auto_approve?: boolean | null
+          auto_generate_label?: boolean | null
+          auto_refund?: boolean | null
+          auto_send_confirmation?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          priority?: number | null
+          refund_method?: string | null
+          refund_type?: string | null
+          require_manual_review?: boolean | null
+          restocking_fee_percentage?: number | null
+          rule_name?: string
+          trigger_conditions?: Json
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      returns: {
+        Row: {
+          ai_decision_confidence: number | null
+          ai_decision_reason: string | null
+          approved_at: string | null
+          auto_processed: boolean | null
+          created_at: string | null
+          customer_confirmation_opened: boolean | null
+          customer_confirmation_sent: boolean | null
+          customer_id: string | null
+          customer_notified_at: string | null
+          id: string
+          inspection_notes: string | null
+          inspection_photos: string[] | null
+          items_returned: Json
+          order_id: string
+          reason: string
+          reason_details: string | null
+          received_at: string | null
+          refund_approved_amount: number | null
+          refunded_at: string | null
+          requested_action: string
+          restocking_fee: number | null
+          return_carrier: string | null
+          return_label_url: string | null
+          return_number: string
+          return_tracking_number: string | null
+          status: string
+          total_refund_amount: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_decision_confidence?: number | null
+          ai_decision_reason?: string | null
+          approved_at?: string | null
+          auto_processed?: boolean | null
+          created_at?: string | null
+          customer_confirmation_opened?: boolean | null
+          customer_confirmation_sent?: boolean | null
+          customer_id?: string | null
+          customer_notified_at?: string | null
+          id?: string
+          inspection_notes?: string | null
+          inspection_photos?: string[] | null
+          items_returned?: Json
+          order_id: string
+          reason: string
+          reason_details?: string | null
+          received_at?: string | null
+          refund_approved_amount?: number | null
+          refunded_at?: string | null
+          requested_action: string
+          restocking_fee?: number | null
+          return_carrier?: string | null
+          return_label_url?: string | null
+          return_number: string
+          return_tracking_number?: string | null
+          status?: string
+          total_refund_amount?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_decision_confidence?: number | null
+          ai_decision_reason?: string | null
+          approved_at?: string | null
+          auto_processed?: boolean | null
+          created_at?: string | null
+          customer_confirmation_opened?: boolean | null
+          customer_confirmation_sent?: boolean | null
+          customer_id?: string | null
+          customer_notified_at?: string | null
+          id?: string
+          inspection_notes?: string | null
+          inspection_photos?: string[] | null
+          items_returned?: Json
+          order_id?: string
+          reason?: string
+          reason_details?: string | null
+          received_at?: string | null
+          refund_approved_amount?: number | null
+          refunded_at?: string | null
+          requested_action?: string
+          restocking_fee?: number | null
+          return_carrier?: string | null
+          return_label_url?: string | null
+          return_number?: string
+          return_tracking_number?: string | null
+          status?: string
+          total_refund_amount?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "returns_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           content: string | null
@@ -13439,6 +13679,74 @@ export type Database = {
           usage_limits?: Json | null
         }
         Relationships: []
+      }
+      tracking_auto_updates: {
+        Row: {
+          auto_sync_enabled: boolean | null
+          carrier: string
+          created_at: string | null
+          current_status: string | null
+          customer_notification_sent: boolean | null
+          estimated_delivery: string | null
+          id: string
+          last_checkpoint_time: string | null
+          last_location: string | null
+          last_synced_at: string | null
+          notification_events: string[] | null
+          order_id: string
+          sync_frequency_minutes: number | null
+          tracking_events: Json | null
+          tracking_number: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_sync_enabled?: boolean | null
+          carrier: string
+          created_at?: string | null
+          current_status?: string | null
+          customer_notification_sent?: boolean | null
+          estimated_delivery?: string | null
+          id?: string
+          last_checkpoint_time?: string | null
+          last_location?: string | null
+          last_synced_at?: string | null
+          notification_events?: string[] | null
+          order_id: string
+          sync_frequency_minutes?: number | null
+          tracking_events?: Json | null
+          tracking_number: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_sync_enabled?: boolean | null
+          carrier?: string
+          created_at?: string | null
+          current_status?: string | null
+          customer_notification_sent?: boolean | null
+          estimated_delivery?: string | null
+          id?: string
+          last_checkpoint_time?: string | null
+          last_location?: string | null
+          last_synced_at?: string | null
+          notification_events?: string[] | null
+          order_id?: string
+          sync_frequency_minutes?: number | null
+          tracking_events?: Json | null
+          tracking_number?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracking_auto_updates_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       translation_jobs: {
         Row: {

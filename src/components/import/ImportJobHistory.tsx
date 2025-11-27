@@ -94,16 +94,16 @@ export function ImportJobHistory() {
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
                           <span className="font-medium capitalize">
-                            {job.source_type || 'Import'}
+                            {job.job_type || 'Import'}
                           </span>
                           {getStatusBadge(job.status)}
                         </div>
                         
                         <div className="text-sm text-muted-foreground">
-                          {job.source_url && (
+                          {job.supplier_id && (
                             <div className="flex items-center gap-1">
                               <FileText className="w-3 h-3" />
-                              <span className="truncate max-w-md">{job.source_url}</span>
+                              <span className="truncate max-w-md">{job.supplier_id}</span>
                             </div>
                           )}
                           <div className="mt-1">
@@ -112,18 +112,18 @@ export function ImportJobHistory() {
                         </div>
 
                         {/* Progress */}
-                        {(job.status === 'processing' || job.status === 'completed') && job.total_rows > 0 && (
+                        {(job.status === 'processing' || job.status === 'completed') && job.total_products > 0 && (
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-xs">
                               <span>
-                                {job.processed_rows} / {job.total_rows} lignes
+                                {job.processed_products} / {job.total_products} lignes
                               </span>
                               <span className="text-muted-foreground">
-                                {((job.processed_rows / job.total_rows) * 100).toFixed(0)}%
+                                {((job.processed_products / job.total_products) * 100).toFixed(0)}%
                               </span>
                             </div>
                             <Progress 
-                              value={(job.processed_rows / job.total_rows) * 100} 
+                              value={(job.processed_products / job.total_products) * 100} 
                               className="h-2"
                             />
                           </div>
@@ -131,16 +131,16 @@ export function ImportJobHistory() {
 
                         {/* Stats */}
                         <div className="flex items-center gap-4 text-xs">
-                          {job.success_rows > 0 && (
+                          {job.successful_imports > 0 && (
                             <div className="flex items-center gap-1 text-green-600">
                               <CheckCircle className="w-3 h-3" />
-                              <span>{job.success_rows} réussis</span>
+                              <span>{job.successful_imports} réussis</span>
                             </div>
                           )}
-                          {job.error_rows > 0 && (
+                          {job.failed_imports > 0 && (
                             <div className="flex items-center gap-1 text-red-600">
                               <XCircle className="w-3 h-3" />
-                              <span>{job.error_rows} échoués</span>
+                              <span>{job.failed_imports} échoués</span>
                             </div>
                           )}
                         </div>
@@ -148,13 +148,13 @@ export function ImportJobHistory() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {job.result_data && (
+                      {job.import_settings && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => {
                             // Download results
-                            const dataStr = JSON.stringify(job.result_data, null, 2)
+                            const dataStr = JSON.stringify(job.import_settings, null, 2)
                             const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
                             const exportFileDefaultName = `import-${job.id}.json`
                             const linkElement = document.createElement('a')

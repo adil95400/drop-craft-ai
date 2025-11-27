@@ -413,11 +413,16 @@ export class StockSyncService {
     if (!user.user) throw new Error('User not authenticated');
 
     // Create scheduled job
+    // Create scheduled job
     await supabase.from('import_jobs').insert({
       user_id: userId,
-      source_type: 'stock_sync',
+      job_type: 'stock_sync',
       status: 'pending',
-      mapping_config: config as any
+      import_settings: config as any,
+      total_products: 0,
+      processed_products: 0,
+      successful_imports: 0,
+      failed_imports: 0
     });
 
     console.log(`⏰ Stock sync scheduled for ${config.sync_frequency} intervals`);
@@ -471,11 +476,11 @@ export class StockSyncService {
       .from('import_jobs')
       .select('created_at')
       .eq('user_id', userId)
-      .eq('source_type', 'stock_sync')
+      .eq('job_type', 'stock_sync')
       .eq('status', 'pending')
       .order('created_at', { ascending: true })
       .limit(1)
-      .single();
+      .maybeSingle() as { data: { created_at: string } | null };
 
     // Get today's sync statistics
     const today = new Date();

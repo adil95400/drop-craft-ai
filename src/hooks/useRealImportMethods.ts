@@ -33,7 +33,27 @@ export const useRealImportMethods = () => {
         .order('created_at', { ascending: false })
       
       if (error) throw error
-      return data as ImportMethod[]
+      
+      // Map to ImportMethod format with correct field names
+      const mappedData = (data || []).map((job: any) => ({
+        id: job.id,
+        user_id: job.user_id,
+        source_type: job.job_type,
+        method_name: job.job_type,
+        configuration: job.import_settings,
+        status: job.status,
+        total_rows: job.total_products,
+        processed_rows: job.processed_products,
+        success_rows: job.successful_imports,
+        error_rows: job.failed_imports,
+        mapping_config: job.import_settings,
+        created_at: job.created_at,
+        updated_at: job.updated_at,
+        started_at: job.started_at,
+        completed_at: job.completed_at
+      }));
+      
+      return mappedData as ImportMethod[];
     },
     refetchInterval: (query) => {
       // Intelligent polling: only refetch if there are active jobs
@@ -55,20 +75,20 @@ export const useRealImportMethods = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-        const { data, error } = await supabase
-          .from('import_jobs')
-          .insert([{
-            user_id: user.id,
-            job_type: methodData.source_type || methodData.method_type,
-            import_settings: methodData.configuration,
-            status: 'pending',
-            total_products: 0,
-            processed_products: 0,
-            successful_imports: 0,
-            failed_imports: 0
-          }])
-          .select()
-          .maybeSingle()
+      const { data, error } = await supabase
+        .from('import_jobs')
+        .insert([{
+          user_id: user.id,
+          job_type: methodData.source_type || methodData.method_type,
+          import_settings: methodData.configuration,
+          status: 'pending',
+          total_products: 0,
+          processed_products: 0,
+          successful_imports: 0,
+          failed_imports: 0
+        }])
+        .select()
+        .maybeSingle()
 
       if (error) throw error
       return data
@@ -92,21 +112,21 @@ export const useRealImportMethods = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-        const { data, error } = await supabase
-          .from('import_jobs')
-          .insert([{
-            user_id: user.id,
-            job_type: jobData.source_type,
-            supplier_id: jobData.source_url,
-            import_settings: jobData.mapping_config,
-            status: 'pending',
-            total_products: 0,
-            processed_products: 0,
-            successful_imports: 0,
-            failed_imports: 0
-          }])
-          .select()
-          .maybeSingle()
+      const { data, error } = await supabase
+        .from('import_jobs')
+        .insert([{
+          user_id: user.id,
+          job_type: jobData.source_type,
+          supplier_id: jobData.source_url,
+          import_settings: jobData.mapping_config,
+          status: 'pending',
+          total_products: 0,
+          processed_products: 0,
+          successful_imports: 0,
+          failed_imports: 0
+        }])
+        .select()
+        .maybeSingle()
 
       if (error) throw error
       return data

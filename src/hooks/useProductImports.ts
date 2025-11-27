@@ -59,15 +59,15 @@ export const useProductImports = () => {
       // Transformer les données pour correspondre à notre interface
       const transformedImports: ProductImport[] = (importJobs || []).map(job => ({
         id: job.id,
-        import_type: job.source_type as any,
-        source_name: job.source_url || job.source_type,
-        source_url: job.source_url,
+        import_type: job.job_type as any,
+        source_name: job.supplier_id || job.job_type,
+        source_url: job.supplier_id,
         status: job.status as any,
-        products_imported: job.success_rows || 0,
-        products_failed: job.error_rows || 0,
-        total_products: job.total_rows || 0,
-        import_data: job.result_data,
-        error_message: job.errors?.[0],
+        products_imported: job.successful_imports || 0,
+        products_failed: job.failed_imports || 0,
+        total_products: job.total_products || 0,
+        import_data: job.import_settings,
+        error_message: (job.error_log as any)?.[0],
         created_at: job.created_at,
         completed_at: job.completed_at,
       }));
