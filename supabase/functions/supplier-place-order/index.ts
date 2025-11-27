@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
       throw new Error('Supplier not connected')
     }
     
-    if (credentials.connection_status !== 'connected') {
+    if (credentials.connection_status !== 'active') {
       throw new Error('Supplier connection is not active')
     }
     
@@ -63,14 +63,18 @@ Deno.serve(async (req) => {
     let supplierResponse = null
     let orderStatus = 'pending'
     
+    // Get connector ID from credentials
+    const connectorId = credentials.oauth_data?.connectorId || supplierId
+    
     // Place order with supplier API
-    switch (supplierId) {
+    switch (connectorId) {
       case 'bigbuy': {
         try {
+          const apiKey = credentials.oauth_data?.apiKey || credentials.api_key_encrypted
           const response = await fetch('https://api.bigbuy.eu/rest/order', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${credentials.credentials_encrypted.apiKey}`,
+              'Authorization': `Bearer ${apiKey}`,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -92,6 +96,126 @@ Deno.serve(async (req) => {
           }
         } catch (error) {
           console.error('BigBuy order failed:', error)
+          orderStatus = 'failed'
+          supplierResponse = { error: error.message }
+        }
+        break
+      }
+      
+      case 'btswholesaler': {
+        try {
+          const apiKey = credentials.oauth_data?.apiKey
+          
+          // First get shipping prices
+          const productsParam = lineItems.map((item: any, i: number) => 
+            `products[${i}][sku]=${item.sku}&products[${i}][quantity]=${item.quantity}`
+          ).join('&')
+
+          const shippingResponse = await fetch(
+            `https://api.btswholesaler.com/v1/api/getShippingPrices?` +
+            `address[country_code]=${shippingAddress.countryCode}&` +
+            `address[postal_code]=${shippingAddress.postalCode}&` +
+            productsParam,
+            {
+              headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Accept': 'application/json'
+              }
+            }
+          )
+
+          if (!shippingResponse.ok) {
+            throw new Error('Failed to get shipping prices')
+          }
+
+          const shippingOptions = await shippingResponse.json()
+          const shippingMethodId = shippingOptions[0]?.id
+
+          // Place order
+          const formData = new URLSearchParams()
+          formData.append('payment_method', 'wallet')
+          formData.append('shipping_id', shippingMethodId)
+          formData.append('client_name', `${shippingAddress.firstName} ${shippingAddress.lastName}`)
+          formData.append('address', shippingAddress.address)
+          formData.append('postal_code', shippingAddress.postalCode)
+          formData.append('city', shippingAddress.city)
+          formData.append('country_code', shippingAddress.countryCode)
+          formData.append('telephone', shippingAddress.phone)
+          formData.append('dropshipping', '1')
+
+          lineItems.forEach((item: any, i: number) => {
+            formData.append(`products[${i}][sku]`, item.sku)
+            formData.append(`products[${i}][quantity]`, item.quantity.toString())
+          })
+
+          const orderResponse = await fetch('https://api.btswholesaler.com/v1/api/setCreateOrder', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: formData.toString()
+          })
+
+          if (orderResponse.ok) {
+            const result = await orderResponse.json()
+            supplierOrderId = result.order_number
+            orderStatus = 'confirmed'
+            supplierResponse = result
+          } else {
+            throw new Error(`BTSWholesaler API error: ${orderResponse.status}`)
+          }
+        } catch (error) {
+          console.error('BTSWholesaler order failed:', error)
+          orderStatus = 'failed'
+          supplierResponse = { error: error.message }
+        }
+        break
+      }
+      
+      case 'cjdropshipping': {
+        try {
+          const accessToken = credentials.oauth_data?.accessToken || credentials.access_token_encrypted
+          const response = await fetch('https://developers.cjdropshipping.com/api2.0/v1/shopping/order/createOrder', {
+            method: 'POST',
+            headers: {
+              'CJ-Access-Token': accessToken,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              products: lineItems.map((item: any) => ({
+                vid: item.variant || item.sku,
+                quantity: item.quantity
+              })),
+              shippingAddress: {
+                firstName: shippingAddress.firstName,
+                lastName: shippingAddress.lastName,
+                address: shippingAddress.address,
+                city: shippingAddress.city,
+                zip: shippingAddress.postalCode,
+                countryCode: shippingAddress.countryCode,
+                province: shippingAddress.stateCode,
+                phone: shippingAddress.phone,
+                email: customerDetails?.email
+              },
+              shippingMethodId: 'CJ_PACKET_B'
+            })
+          })
+          
+          if (response.ok) {
+            const result = await response.json()
+            if (result.code === 200) {
+              supplierOrderId = result.data.orderId
+              orderStatus = 'confirmed'
+              supplierResponse = result.data
+            } else {
+              throw new Error(`CJ Dropshipping error: ${result.message}`)
+            }
+          } else {
+            throw new Error(`CJ Dropshipping API error: ${response.status}`)
+          }
+        } catch (error) {
+          console.error('CJ Dropshipping order failed:', error)
           orderStatus = 'failed'
           supplierResponse = { error: error.message }
         }

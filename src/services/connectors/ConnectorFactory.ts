@@ -30,6 +30,7 @@ import { VidaXLConnector } from './VidaXLConnector';
 import { AlibabaConnector } from './AlibabaConnector';
 import { MatterhornConnector } from './MatterhornConnector';
 import { BTSWholesalerConnector } from './BTSWholesalerConnector';
+import { CJDropshippingConnector } from './CJDropshippingConnector';
 
 export class ConnectorFactory {
   private static connectors: Map<string, SupplierConnector> = new Map([
@@ -338,6 +339,16 @@ export class ConnectorFactory {
       features: { products: true, inventory: true, orders: true, webhooks: false },
       rateLimits: { requestsPerMinute: 60, requestsPerHour: 1000 },
     }],
+    ['cjdropshipping', {
+      id: 'cjdropshipping',
+      name: 'cjdropshipping',
+      displayName: 'CJ Dropshipping',
+      description: 'Complete dropshipping solution with fulfillment and POD services',
+      category: 'supplier',
+      authType: 'credentials',
+      features: { products: true, inventory: true, orders: true, webhooks: false },
+      rateLimits: { requestsPerMinute: 60, requestsPerHour: 3000 },
+    }],
   ]);
 
   static getAvailableConnectors(): SupplierConnector[] {
@@ -418,6 +429,8 @@ export class ConnectorFactory {
         return new MatterhornConnector(credentials);
       case 'btswholesaler':
         return new BTSWholesalerConnector(credentials);
+      case 'cjdropshipping':
+        return new CJDropshippingConnector(credentials);
         
       default:
         console.warn(`Connector ${connectorId} not found`);

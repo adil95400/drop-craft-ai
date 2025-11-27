@@ -184,6 +184,52 @@ Deno.serve(async (req) => {
         break
       }
       
+      case 'cjdropshipping': {
+        try {
+          const apiKey = credentials.apiKey || credentialData.api_key_encrypted
+          const response = await fetch('https://developers.cjdropshipping.com/api2.0/v1/product/list', {
+            method: 'POST',
+            headers: {
+              'CJ-Access-Token': apiKey,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              pageNum: 1,
+              pageSize: Math.min(limit, 100)
+            })
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            if (data.code === 200 && data.data?.list) {
+              products = data.data.list.map((p: any) => ({
+                supplier_id: supplierId,
+                external_id: p.pid,
+                sku: p.productSku,
+                name: p.productNameEn,
+                description: p.productNameEn,
+                price: p.sellPrice,
+                cost_price: p.sellPrice * 0.8,
+                currency: 'USD',
+                stock_quantity: 999,
+                images: [p.productImage],
+                category: p.categoryName || 'General',
+                attributes: {
+                  categoryId: p.categoryId,
+                  productType: p.productType
+                },
+                status: 'active'
+              }))
+              syncStats.fetched = products.length
+            }
+          }
+        } catch (error) {
+          console.error('CJ Dropshipping sync failed:', error)
+          syncStats.errors.push(`CJ Dropshipping: ${error.message}`)
+        }
+        break
+      }
+      
       default: {
         // Generate sample products for demonstration
         products = Array.from({ length: Math.min(limit, 20) }, (_, i) => ({
@@ -251,7 +297,7 @@ Deno.serve(async (req) => {
     // Update connection last sync
     await supabase
       .from('supplier_credentials_vault')
-      .update({ last_sync_at: new Date().toISOString() })
+      .update({ last_validation_at: new Date().toISOString() })
       .eq('user_id', user.id)
       .eq('supplier_id', supplierId)
     
