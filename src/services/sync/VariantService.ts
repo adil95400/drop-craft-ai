@@ -116,7 +116,7 @@ export class VariantService {
       const { data: mappings } = await supabase
         .from('category_mapping_rules')
         .select('*')
-        .eq('supplier_category', supplierValue)
+        .eq('source_category', supplierValue)
         .limit(1)
 
       if (mappings && mappings.length > 0) {
@@ -377,16 +377,25 @@ export class VariantService {
     })
 
     try {
-      await supabase.from('category_mapping_rules').insert({
-        user_id: (await supabase.auth.getUser()).data.user?.id || '',
-        supplier_category: params.attribute_name,
-        target_category: params.standard_values.join(','),
-        keywords: params.supplier_values,
-        confidence: params.confidence || 0.9,
-        is_ai: true
-      })
+      const userId = (await supabase.auth.getUser()).data.user?.id || ''
+      
+      // Create mapping rules for each supplier value to standard value
+      const mappingsToInsert = params.supplier_values.map((supplierValue, index) => ({
+        user_id: userId,
+        source_category: supplierValue,
+        target_platform: 'shopify',
+        target_category: params.standard_values[index] || params.standard_values[0],
+        target_category_id: null,
+        confidence_score: params.confidence || 0.9,
+        is_manual: false,
+        is_active: true
+      }))
 
-      console.log(`Created mapping rule for ${params.attribute_name}`)
+      if (mappingsToInsert.length > 0) {
+        await supabase.from('category_mapping_rules').insert(mappingsToInsert)
+      }
+
+      console.log(`Created ${mappingsToInsert.length} mapping rules for ${params.attribute_name}`)
     } catch (error) {
       console.error('Failed to create mapping rule:', error)
     }

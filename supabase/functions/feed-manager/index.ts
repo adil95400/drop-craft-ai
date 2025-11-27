@@ -231,6 +231,26 @@ serve(async (req) => {
             'Home & Garden': { category: 'Home & Garden', id: '11700' },
             'Sports': { category: 'Sporting Goods', id: '888' },
             'Beauty': { category: 'Health & Beauty', id: '26395' }
+          },
+          meta: {
+            'Fashion': { category: 'Apparel & Accessories', id: 'apparel_accessories' },
+            'Electronics': { category: 'Electronics & Media', id: 'electronics_media' },
+            'Home & Garden': { category: 'Home & Garden', id: 'home_garden' },
+            'Sports': { category: 'Sporting Goods', id: 'sporting_goods' },
+            'Beauty': { category: 'Health & Beauty', id: 'health_beauty' },
+            'Toys': { category: 'Toys & Games', id: 'toys_games' },
+            'Food': { category: 'Food & Beverage', id: 'food_beverage' },
+            'Jewelry': { category: 'Jewelry & Watches', id: 'jewelry_watches' }
+          },
+          tiktok: {
+            'Fashion': { category: 'Fashion & Accessories', id: '100001' },
+            'Electronics': { category: 'Electronics', id: '100002' },
+            'Home & Garden': { category: 'Home & Living', id: '100003' },
+            'Sports': { category: 'Sports & Outdoors', id: '100004' },
+            'Beauty': { category: 'Beauty & Personal Care', id: '100005' },
+            'Toys': { category: 'Toys & Hobbies', id: '100006' },
+            'Food': { category: 'Food & Beverage', id: '100007' },
+            'Jewelry': { category: 'Jewelry & Accessories', id: '100008' }
           }
         }
 
@@ -324,6 +344,98 @@ serve(async (req) => {
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
+      }
+
+      case 'export_feed': {
+        // Export feed in platform-specific format
+        const { data: feed } = await supabaseClient
+          .from('marketplace_feeds')
+          .select('*')
+          .eq('id', feed_id)
+          .single()
+
+        if (!feed) throw new Error('Feed not found')
+
+        const { data: products } = await supabaseClient
+          .from('feed_products')
+          .select('*')
+          .eq('feed_id', feed_id)
+          .eq('is_excluded', false)
+
+        let feedContent = ''
+        let contentType = 'application/xml'
+
+        // Generate platform-specific feed format
+        if (feed.platform === 'meta') {
+          // Meta Commerce CSV format
+          contentType = 'text/csv'
+          const headers = ['id', 'title', 'description', 'availability', 'condition', 'price', 'link', 'image_link', 'brand', 'google_product_category']
+          const rows = products?.map(p => [
+            p.source_sku,
+            p.optimized_title,
+            p.optimized_description,
+            'in stock',
+            'new',
+            `${p.feed_price} ${p.currency}`,
+            `https://yourstore.com/products/${p.source_sku}`,
+            p.optimized_images?.[0] || '',
+            'YourBrand',
+            p.platform_category_id || ''
+          ].join(',')) || []
+          feedContent = [headers.join(','), ...rows].join('\n')
+        } else if (feed.platform === 'tiktok') {
+          // TikTok Shop JSON format
+          contentType = 'application/json'
+          feedContent = JSON.stringify({
+            products: products?.map(p => ({
+              product_id: p.source_sku,
+              title: p.optimized_title,
+              description: p.optimized_description,
+              price: p.feed_price,
+              currency: p.currency,
+              stock_quantity: 100,
+              images: p.optimized_images || [],
+              category_id: p.platform_category_id || '100001',
+              brand: 'YourBrand',
+              condition: 'NEW',
+              shipping_info: { weight: 1, dimensions: { length: 10, width: 10, height: 10 } }
+            })) || []
+          }, null, 2)
+        } else {
+          // Default XML format for Amazon, eBay, etc.
+          const productsXml = products?.map(p => `
+    <item>
+      <sku>${p.source_sku}</sku>
+      <title><![CDATA[${p.optimized_title}]]></title>
+      <description><![CDATA[${p.optimized_description}]]></description>
+      <category>${p.optimized_category}</category>
+      <price>${p.feed_price}</price>
+      <currency>${p.currency}</currency>
+      <images>
+        ${p.optimized_images?.map(img => `<image>${img}</image>`).join('\n        ') || ''}
+      </images>
+      <seo_score>${p.seo_score}</seo_score>
+    </item>`).join('\n') || ''
+
+          feedContent = `<?xml version="1.0" encoding="UTF-8"?>
+<feed>
+  <metadata>
+    <platform>${feed.platform}</platform>
+    <generated_at>${new Date().toISOString()}</generated_at>
+    <product_count>${products?.length || 0}</product_count>
+  </metadata>
+  <products>${productsXml}
+  </products>
+</feed>`
+        }
+
+        return new Response(feedContent, {
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': contentType,
+            'Content-Disposition': `attachment; filename="${feed.name}_${feed.platform}.${feed.format}"`
+          }
+        })
       }
 
       default:
