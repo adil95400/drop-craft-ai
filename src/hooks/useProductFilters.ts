@@ -8,7 +8,7 @@ export interface FilterState {
   priceRange: [number, number]
   sortBy: 'name' | 'price' | 'created_at' | 'stock_quantity'
   sortOrder: 'asc' | 'desc'
-  source: 'all' | 'products' | 'imported' | 'premium' | 'catalog'
+  source: 'all' | 'products' | 'imported' | 'premium' | 'catalog' | 'shopify' | 'published' | 'feed' | 'supplier'
   lowStock: boolean
 }
 
