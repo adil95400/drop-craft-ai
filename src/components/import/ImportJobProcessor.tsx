@@ -117,7 +117,7 @@ export function ImportJobProcessor() {
   }
 
   const processJobByType = async (job: ImportJob) => {
-    switch (job.source_type) {
+    switch (job.job_type) {
       case 'csv':
         await processCsvJob(job)
         break
@@ -134,7 +134,8 @@ export function ImportJobProcessor() {
 
   const processCsvJob = async (job: ImportJob) => {
     // Simulate CSV processing
-    const fileSize = job.file_data?.size || 1000000
+    const fileData = (job.import_settings as any)?.file_data
+    const fileSize = fileData?.size || 1000000
     const estimatedRows = Math.floor(fileSize / 1000) // Rough estimate
     
     // Update total products
@@ -251,7 +252,7 @@ export function ImportJobProcessor() {
                     {getStatusIcon(job.status)}
                     <div>
                       <p className="font-medium">
-                        {job.source_type.toUpperCase()} Import
+                        {job.job_type.toUpperCase()} Import
                       </p>
                       <p className="text-sm text-muted-foreground">
                         ID: {job.id.slice(0, 8)}...
@@ -282,23 +283,23 @@ export function ImportJobProcessor() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>Progression</span>
-                      <span>{job.processed_rows}/{job.total_rows || '?'}</span>
+                      <span>{job.processed_products}/{job.total_products || '?'}</span>
                     </div>
                     <Progress 
-                      value={job.total_rows > 0 ? (job.processed_rows / job.total_rows) * 100 : 0} 
+                      value={job.total_products > 0 ? (job.processed_products / job.total_products) * 100 : 0} 
                     />
                   </div>
                 )}
                 
                 {job.status === 'completed' && (
                   <div className="text-sm text-green-600">
-                    ✓ {job.success_rows} succès, {job.error_rows} erreurs
+                    ✓ {job.successful_imports} succès, {job.failed_imports} erreurs
                   </div>
                 )}
                 
-                {job.status === 'failed' && job.errors && (
+                {job.status === 'failed' && job.error_log && (
                   <div className="text-sm text-red-600">
-                    ✗ Erreur: {Array.isArray(job.errors) ? job.errors[0] : 'Erreur inconnue'}
+                    ✗ Erreur: {Object.keys(job.error_log as any)[0] || 'Erreur inconnue'}
                   </div>
                 )}
                 

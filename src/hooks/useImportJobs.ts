@@ -117,8 +117,8 @@ export function useImportJobs() {
     processing: jobs.filter(j => j.status === 'processing').length,
     completed: jobs.filter(j => j.status === 'completed').length,
     failed: jobs.filter(j => j.status === 'failed').length,
-    totalProcessed: jobs.reduce((sum, job) => sum + (job.processed_rows || 0), 0),
-    totalFailed: jobs.reduce((sum, job) => sum + (job.failed_rows || 0), 0)
+    totalProcessed: jobs.reduce((sum, job) => sum + (job.processed_products || 0), 0),
+    totalFailed: jobs.reduce((sum, job) => sum + (job.failed_imports || 0), 0)
   }
 
   return {

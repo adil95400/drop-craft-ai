@@ -57,7 +57,7 @@ class ImportService {
       if (error) throw error
 
       return {
-        jobs: data as ImportJob[],
+        jobs: data as any[],
         total: count || data?.length || 0
       }
     } catch (error) {
