@@ -75,7 +75,11 @@ export function useUnifiedProducts(filters?: ProductFilters) {
       products: products.filter(p => p.source === 'products').length,
       imported: products.filter(p => p.source === 'imported').length,
       premium: products.filter(p => p.source === 'premium').length,
-      catalog: products.filter(p => p.source === 'catalog').length
+      catalog: products.filter(p => p.source === 'catalog').length,
+      shopify: products.filter(p => p.source === 'shopify').length,
+      published: products.filter(p => p.source === 'published').length,
+      feed: products.filter(p => p.source === 'feed').length,
+      supplier: products.filter(p => p.source === 'supplier').length
     }
 
     // Top catégories

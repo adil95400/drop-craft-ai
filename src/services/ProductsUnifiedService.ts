@@ -14,7 +14,7 @@ export interface UnifiedProduct {
   images?: string[]
   profit_margin?: number
   user_id: string
-  source: 'products' | 'imported' | 'premium' | 'catalog'
+  source: 'products' | 'imported' | 'premium' | 'catalog' | 'shopify' | 'published' | 'feed' | 'supplier'
   variants?: ProductVariant[]
   created_at: string
   updated_at: string
@@ -61,17 +61,22 @@ export class ProductsUnifiedService {
       this.getProductsTable(userId, filters),
       this.getImportedProducts(userId, filters),
       this.getPremiumProducts(userId, filters),
-      this.getCatalogProducts(filters)
+      this.getCatalogProducts(filters),
+      this.getShopifyProducts(userId, filters),
+      this.getPublishedProducts(userId, filters),
+      this.getFeedProducts(userId, filters),
+      this.getSupplierProducts(userId, filters)
     ]
 
-    const [products, imported, premium, catalog] = await Promise.allSettled(promises)
+    const results = await Promise.allSettled(promises)
 
     const allProducts: UnifiedProduct[] = []
     
-    if (products.status === 'fulfilled') allProducts.push(...products.value)
-    if (imported.status === 'fulfilled') allProducts.push(...imported.value)
-    if (premium.status === 'fulfilled') allProducts.push(...premium.value)
-    if (catalog.status === 'fulfilled') allProducts.push(...catalog.value)
+    results.forEach(result => {
+      if (result.status === 'fulfilled') {
+        allProducts.push(...result.value)
+      }
+    })
 
     return allProducts
   }
@@ -81,9 +86,6 @@ export class ProductsUnifiedService {
    */
   private static async getProductsTable(userId: string, filters?: any): Promise<UnifiedProduct[]> {
     let query = supabase.from('products').select('*').eq('user_id', userId)
-
-    // Filtrer les produits avec au moins un nom valide
-    query = query.not('name', 'is', null).not('name', 'eq', '')
 
     if (filters?.status) query = query.eq('status', filters.status)
     if (filters?.category) query = query.eq('category', filters.category)
@@ -97,6 +99,7 @@ export class ProductsUnifiedService {
 
     return (data || []).map(p => ({
       ...p,
+      name: p.name || 'Produit sans nom',
       status: p.status as 'active' | 'inactive',
       source: 'products' as const,
       images: p.image_url ? [p.image_url] : []
@@ -108,9 +111,6 @@ export class ProductsUnifiedService {
    */
   private static async getImportedProducts(userId: string, filters?: any): Promise<UnifiedProduct[]> {
     let query = supabase.from('imported_products').select('*').eq('user_id', userId)
-
-    // Filtrer les produits avec au moins un nom valide
-    query = query.not('name', 'is', null).not('name', 'eq', '')
 
     if (filters?.category) query = query.eq('category', filters.category)
     if (filters?.search) {
@@ -191,7 +191,7 @@ export class ProductsUnifiedService {
       query = query.or(`name.ilike.%${filters.search}%`)
     }
 
-    const { data, error } = await query.limit(50)
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(10000)
     if (error) throw error
 
     return (data || []).map(p => ({
@@ -212,6 +212,158 @@ export class ProductsUnifiedService {
       created_at: p.created_at || new Date().toISOString(),
       updated_at: p.updated_at || new Date().toISOString()
     }))
+  }
+
+  /**
+   * Table shopify_products
+   */
+  private static async getShopifyProducts(userId: string, filters?: any): Promise<UnifiedProduct[]> {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('shopify_products')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(10000)
+
+      if (error) throw error
+
+      return (data || []).map((p: any) => ({
+        id: p.id,
+        name: p.title || p.name || 'Produit sans nom',
+        description: p.description || p.body_html,
+        price: p.price || p.variants?.[0]?.price || 0,
+        cost_price: undefined,
+        status: (p.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
+        stock_quantity: p.inventory_quantity || p.variants?.[0]?.inventory_quantity,
+        sku: p.sku || p.variants?.[0]?.sku,
+        category: p.product_type || p.category,
+        image_url: p.image_url || p.image?.src,
+        images: Array.isArray(p.images) ? (p.images as any[]).map((img: any) => img?.src || img).filter(Boolean) : [],
+        profit_margin: undefined,
+        user_id: userId,
+        source: 'shopify' as const,
+        created_at: p.created_at || new Date().toISOString(),
+        updated_at: p.updated_at || new Date().toISOString()
+      }))
+    } catch (error) {
+      console.error('Error loading shopify_products:', error)
+      return []
+    }
+  }
+
+  /**
+   * Table published_products
+   */
+  private static async getPublishedProducts(userId: string, filters?: any): Promise<UnifiedProduct[]> {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('published_products')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(10000)
+
+      if (error) throw error
+
+      return (data || []).map((p: any) => ({
+        id: p.id,
+        name: p.title || p.name || 'Produit sans nom',
+        description: p.description,
+        price: p.price || p.price_override || 0,
+        cost_price: p.cost_price,
+        status: 'active' as 'active' | 'inactive',
+        stock_quantity: p.stock_quantity,
+        sku: p.sku,
+        category: p.category,
+        image_url: p.image_url,
+        images: p.image_url ? [p.image_url] : [],
+        profit_margin: p.profit_margin,
+        user_id: userId,
+        source: 'published' as const,
+        created_at: p.created_at || new Date().toISOString(),
+        updated_at: p.updated_at || new Date().toISOString()
+      }))
+    } catch (error) {
+      console.error('Error loading published_products:', error)
+      return []
+    }
+  }
+
+  /**
+   * Table feed_products
+   */
+  private static async getFeedProducts(userId: string, filters?: any): Promise<UnifiedProduct[]> {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('feed_products')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(10000)
+
+      if (error) throw error
+
+      return (data || []).map((p: any) => ({
+        id: p.id,
+        name: p.optimized_title || p.title || 'Produit sans nom',
+        description: p.optimized_description || p.description,
+        price: p.feed_price || 0,
+        cost_price: undefined,
+        status: (p.is_excluded ? 'inactive' : 'active') as 'active' | 'inactive',
+        stock_quantity: undefined,
+        sku: p.sku,
+        category: p.optimized_category,
+        image_url: p.image_url,
+        images: p.image_url ? [p.image_url] : [],
+        profit_margin: undefined,
+        user_id: userId,
+        source: 'feed' as const,
+        created_at: p.created_at || new Date().toISOString(),
+        updated_at: p.updated_at || new Date().toISOString()
+      }))
+    } catch (error) {
+      console.error('Error loading feed_products:', error)
+      return []
+    }
+  }
+
+  /**
+   * Table supplier_products
+   */
+  private static async getSupplierProducts(userId: string, filters?: any): Promise<UnifiedProduct[]> {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('supplier_products')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(10000)
+
+      if (error) throw error
+
+      return (data || []).map((p: any) => ({
+        id: p.id,
+        name: p.name || 'Produit sans nom',
+        description: p.description,
+        price: p.price || 0,
+        cost_price: p.wholesale_price || p.cost_price,
+        status: (p.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
+        stock_quantity: p.stock_quantity,
+        sku: p.global_sku || p.external_sku,
+        category: p.category,
+        image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : undefined,
+        images: Array.isArray(p.image_urls) ? p.image_urls : [],
+        profit_margin: p.profit_margin,
+        user_id: userId,
+        source: 'supplier' as const,
+        created_at: p.created_at || new Date().toISOString(),
+        updated_at: p.updated_at || new Date().toISOString()
+      }))
+    } catch (error) {
+      console.error('Error loading supplier_products:', error)
+      return []
+    }
   }
 
   /**
