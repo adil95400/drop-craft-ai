@@ -20,6 +20,8 @@ interface ProductsPageWrapperProps {
   onFilterChange?: <K extends keyof FilterState>(key: K, value: FilterState[K]) => void;
   onResetFilters?: () => void;
   hasActiveFilters?: boolean;
+  onSelectionChange?: (selected: string[]) => void;
+  selectedProducts?: string[];
 }
 
 /**
@@ -36,14 +38,22 @@ export function ProductsPageWrapper({
   categories = [],
   onFilterChange,
   onResetFilters,
-  hasActiveFilters = false
+  hasActiveFilters = false,
+  onSelectionChange,
+  selectedProducts = []
 }: ProductsPageWrapperProps) {
   const [searchTerm, setSearchTerm] = useState(filters?.search || '');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [localSelectedProducts, setLocalSelectedProducts] = useState<string[]>(selectedProducts || []);
   
   const { handleImport, handleExport } = useProductActions();
   const { openModal } = useModals();
+
+  // Sync local selection with parent
+  const handleSelectionChange = (newSelection: string[]) => {
+    setLocalSelectedProducts(newSelection);
+    onSelectionChange?.(newSelection);
+  };
 
   // Recherche locale rapide
   const displayedProducts = useMemo(() => {
@@ -85,7 +95,7 @@ export function ProductsPageWrapper({
       <ProductActionsBar
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
-        selectedCount={selectedProducts.length}
+        selectedCount={localSelectedProducts.length}
         totalCount={displayedProducts.length}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
@@ -100,10 +110,10 @@ export function ProductsPageWrapper({
         onResetFilters={onResetFilters}
       />
 
-      {selectedProducts.length > 0 && (
+      {localSelectedProducts.length > 0 && (
         <ProductBulkOperations
-          selectedProducts={selectedProducts}
-          onClearSelection={() => setSelectedProducts([])}
+          selectedProducts={localSelectedProducts}
+          onClearSelection={() => handleSelectionChange([])}
         />
       )}
 
@@ -113,8 +123,8 @@ export function ProductsPageWrapper({
           onEdit={onEdit}
           onDelete={onDelete}
           onView={onView}
-          selectedProducts={selectedProducts}
-          onSelectionChange={setSelectedProducts}
+          selectedProducts={localSelectedProducts}
+          onSelectionChange={handleSelectionChange}
         />
       ) : (
         <ProductsTableView
@@ -124,7 +134,7 @@ export function ProductsPageWrapper({
           onView={onView}
           onBulkDelete={(ids) => {
             ids.forEach(id => onDelete(id));
-            setSelectedProducts([]);
+            handleSelectionChange([]);
             onRefresh?.();
           }}
           onBulkEdit={(ids) => {

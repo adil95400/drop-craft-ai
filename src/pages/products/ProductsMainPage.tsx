@@ -6,6 +6,9 @@ import { ProductsPageWrapper } from '@/components/products/ProductsPageWrapper';
 import { CatalogQualityDashboard } from '@/components/products/CatalogQualityDashboard';
 import { AdvancedAuditFilters } from '@/components/products/AdvancedAuditFilters';
 import { BulkAIActions } from '@/components/products/BulkAIActions';
+import { DuplicateDetector } from '@/components/products/DuplicateDetector';
+import { OptimizationSimulator } from '@/components/products/OptimizationSimulator';
+import { PriorityManager } from '@/components/products/PriorityManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Package, Loader2, TrendingUp, AlertCircle, Archive, DollarSign, Target, Sparkles } from 'lucide-react';
@@ -264,6 +267,14 @@ export default function ProductsMainPage() {
                 <Target className="h-4 w-4" />
                 Filtres Audit
               </TabsTrigger>
+              <TabsTrigger value="duplicates" className="gap-2">
+                <AlertCircle className="h-4 w-4" />
+                Doublons
+              </TabsTrigger>
+              <TabsTrigger value="simulator" className="gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Simulateur
+              </TabsTrigger>
               <TabsTrigger value="products" className="gap-2">
                 <Package className="h-4 w-4" />
                 Liste Produits ({finalFilteredProducts.length})
@@ -272,6 +283,23 @@ export default function ProductsMainPage() {
 
             <TabsContent value="quality" className="space-y-6">
               <CatalogQualityDashboard products={products} />
+            </TabsContent>
+
+            <TabsContent value="duplicates" className="space-y-6">
+              <DuplicateDetector products={products} />
+            </TabsContent>
+
+            <TabsContent value="simulator" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <PriorityManager 
+                  products={products}
+                  onSelectProducts={(ids) => setSelectedProducts(ids)}
+                />
+                <OptimizationSimulator 
+                  productIds={selectedProducts.length > 0 ? selectedProducts : products.slice(0, 10).map(p => p.id)}
+                  onExecute={handleRefresh}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="filters" className="space-y-6">
@@ -302,18 +330,20 @@ export default function ProductsMainPage() {
                     </CardHeader>
                     <CardContent>
                       <ProductsPageWrapper
-                        products={finalFilteredProducts}
-                        allProducts={products}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        onView={handleView}
-                        onRefresh={handleRefresh}
-                        filters={filters}
-                        categories={categories}
-                        onFilterChange={updateFilter}
-                        onResetFilters={resetFilters}
-                        hasActiveFilters={auditActiveCount > 0}
-                      />
+              products={finalFilteredProducts}
+              allProducts={products}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onView={handleView}
+              onRefresh={handleRefresh}
+              filters={filters}
+              categories={categories}
+              onFilterChange={updateFilter}
+              onResetFilters={resetFilters}
+              hasActiveFilters={auditActiveCount > 0}
+              onSelectionChange={setSelectedProducts}
+              selectedProducts={selectedProducts}
+            />
                     </CardContent>
                   </Card>
                 </div>

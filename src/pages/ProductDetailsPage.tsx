@@ -2,11 +2,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProductTranslations, ProductReviews } from '@/components/products'
 import { ProductImageManager } from '@/components/products/ProductImageManager'
 import { ProductAuditBlock } from '@/components/products/ProductAuditBlock'
+import { ProductPerformanceMetrics } from '@/components/products/ProductPerformanceMetrics'
+import { OptimizationHistory } from '@/components/products/OptimizationHistory'
+import { MultiChannelReadiness } from '@/components/products/MultiChannelReadiness'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Package, Languages, MessageSquare, Images, Target } from 'lucide-react'
+import { ArrowLeft, Package, Languages, MessageSquare, Images, Target, TrendingUp, History, Globe } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useProduct } from '@/hooks/useUnifiedProducts'
 import { Loader2 } from 'lucide-react'
@@ -70,14 +73,26 @@ export default function ProductDetailsPage() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="audit" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-7">
                 <TabsTrigger value="audit" className="gap-2">
                   <Target className="h-4 w-4" />
                   Audit IA
                 </TabsTrigger>
+                <TabsTrigger value="performance" className="gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Performance
+                </TabsTrigger>
+                <TabsTrigger value="history" className="gap-2">
+                  <History className="h-4 w-4" />
+                  Historique
+                </TabsTrigger>
+                <TabsTrigger value="channels" className="gap-2">
+                  <Globe className="h-4 w-4" />
+                  Multi-canal
+                </TabsTrigger>
                 <TabsTrigger value="gallery" className="gap-2">
                   <Images className="h-4 w-4" />
-                  Galerie Images
+                  Images
                 </TabsTrigger>
                 <TabsTrigger value="translations" className="gap-2">
                   <Languages className="h-4 w-4" />
@@ -85,7 +100,7 @@ export default function ProductDetailsPage() {
                 </TabsTrigger>
                 <TabsTrigger value="reviews" className="gap-2">
                   <MessageSquare className="h-4 w-4" />
-                  Avis Clients
+                  Avis
                 </TabsTrigger>
               </TabsList>
 
@@ -109,6 +124,24 @@ export default function ProductDetailsPage() {
                     </div>
                   </div>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="performance">
+                <ProductPerformanceMetrics 
+                  productId={product.id} 
+                  sourceTable={product.source === 'products' ? 'products' : 'imported_products'} 
+                />
+              </TabsContent>
+
+              <TabsContent value="history">
+                <OptimizationHistory 
+                  productId={product.id}
+                  sourceTable={product.source === 'products' ? 'products' : 'imported_products'}
+                />
+              </TabsContent>
+
+              <TabsContent value="channels">
+                <MultiChannelReadiness product={product} />
               </TabsContent>
 
               <TabsContent value="gallery">
