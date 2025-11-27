@@ -4522,6 +4522,62 @@ export type Database = {
         }
         Relationships: []
       }
+      generated_stores: {
+        Row: {
+          ai_optimizations: Json | null
+          completed_at: string | null
+          created_at: string | null
+          generation_status: string | null
+          id: string
+          pages_created: number | null
+          products_imported: number | null
+          seo_score: number | null
+          store_name: string
+          store_url: string | null
+          template_id: string | null
+          theme_data: Json | null
+          user_id: string
+        }
+        Insert: {
+          ai_optimizations?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          generation_status?: string | null
+          id?: string
+          pages_created?: number | null
+          products_imported?: number | null
+          seo_score?: number | null
+          store_name: string
+          store_url?: string | null
+          template_id?: string | null
+          theme_data?: Json | null
+          user_id: string
+        }
+        Update: {
+          ai_optimizations?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          generation_status?: string | null
+          id?: string
+          pages_created?: number | null
+          products_imported?: number | null
+          seo_score?: number | null
+          store_name?: string
+          store_url?: string | null
+          template_id?: string | null
+          theme_data?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_stores_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "store_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       geo_targeting_rules: {
         Row: {
           content_variations: Json | null
@@ -5520,6 +5576,119 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      invoice_history: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          customer_email: string | null
+          customer_name: string
+          due_date: string | null
+          id: string
+          invoice_date: string
+          invoice_number: string
+          order_id: string | null
+          paid_at: string | null
+          pdf_url: string | null
+          sent_at: string | null
+          status: string | null
+          template_id: string | null
+          total_amount: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          customer_email?: string | null
+          customer_name: string
+          due_date?: string | null
+          id?: string
+          invoice_date?: string
+          invoice_number: string
+          order_id?: string | null
+          paid_at?: string | null
+          pdf_url?: string | null
+          sent_at?: string | null
+          status?: string | null
+          template_id?: string | null
+          total_amount?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          customer_email?: string | null
+          customer_name?: string
+          due_date?: string | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          order_id?: string | null
+          paid_at?: string | null
+          pdf_url?: string | null
+          sent_at?: string | null
+          status?: string | null
+          template_id?: string | null
+          total_amount?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_history_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_templates: {
+        Row: {
+          company_info: Json | null
+          created_at: string | null
+          design_config: Json | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          language: string | null
+          legal_mentions: string | null
+          logo_url: string | null
+          template_name: string
+          template_type: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          company_info?: Json | null
+          created_at?: string | null
+          design_config?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          language?: string | null
+          legal_mentions?: string | null
+          logo_url?: string | null
+          template_name: string
+          template_type?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          company_info?: Json | null
+          created_at?: string | null
+          design_config?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          language?: string | null
+          legal_mentions?: string | null
+          logo_url?: string | null
+          template_name?: string
+          template_type?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       locale_settings: {
         Row: {
@@ -7069,6 +7238,45 @@ export type Database = {
           },
         ]
       }
+      packaging_messages: {
+        Row: {
+          apply_to_orders: boolean | null
+          conditions: Json | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          language: string | null
+          message_content: string
+          message_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          apply_to_orders?: boolean | null
+          conditions?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          language?: string | null
+          message_content: string
+          message_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          apply_to_orders?: boolean | null
+          conditions?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          language?: string | null
+          message_content?: string
+          message_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       performance_metrics: {
         Row: {
           collected_at: string
@@ -7354,6 +7562,163 @@ export type Database = {
           sync_details?: Json | null
           sync_type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      pod_mockups: {
+        Row: {
+          ai_generated: boolean | null
+          created_at: string | null
+          id: string
+          mockup_url: string
+          pod_product_id: string | null
+          user_id: string
+          variant_name: string | null
+          view_angle: string | null
+        }
+        Insert: {
+          ai_generated?: boolean | null
+          created_at?: string | null
+          id?: string
+          mockup_url: string
+          pod_product_id?: string | null
+          user_id: string
+          variant_name?: string | null
+          view_angle?: string | null
+        }
+        Update: {
+          ai_generated?: boolean | null
+          created_at?: string | null
+          id?: string
+          mockup_url?: string
+          pod_product_id?: string | null
+          user_id?: string
+          variant_name?: string | null
+          view_angle?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pod_mockups_pod_product_id_fkey"
+            columns: ["pod_product_id"]
+            isOneToOne: false
+            referencedRelation: "pod_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pod_orders: {
+        Row: {
+          created_at: string | null
+          customer_name: string | null
+          delivered_at: string | null
+          estimated_delivery: string | null
+          id: string
+          order_number: string
+          pod_product_id: string | null
+          production_status: string | null
+          quantity: number | null
+          shipped_at: string | null
+          supplier_order_id: string | null
+          tracking_number: string | null
+          user_id: string
+          variant_selected: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_name?: string | null
+          delivered_at?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          order_number: string
+          pod_product_id?: string | null
+          production_status?: string | null
+          quantity?: number | null
+          shipped_at?: string | null
+          supplier_order_id?: string | null
+          tracking_number?: string | null
+          user_id: string
+          variant_selected?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_name?: string | null
+          delivered_at?: string | null
+          estimated_delivery?: string | null
+          id?: string
+          order_number?: string
+          pod_product_id?: string | null
+          production_status?: string | null
+          quantity?: number | null
+          shipped_at?: string | null
+          supplier_order_id?: string | null
+          tracking_number?: string | null
+          user_id?: string
+          variant_selected?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pod_orders_pod_product_id_fkey"
+            columns: ["pod_product_id"]
+            isOneToOne: false
+            referencedRelation: "pod_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pod_products: {
+        Row: {
+          ai_generated: boolean | null
+          base_cost: number | null
+          created_at: string | null
+          design_url: string | null
+          generation_prompt: string | null
+          id: string
+          mockup_urls: Json | null
+          product_name: string
+          product_type: string
+          selling_price: number | null
+          shopify_product_id: string | null
+          status: string | null
+          supplier: string
+          updated_at: string | null
+          user_id: string
+          variants: Json | null
+        }
+        Insert: {
+          ai_generated?: boolean | null
+          base_cost?: number | null
+          created_at?: string | null
+          design_url?: string | null
+          generation_prompt?: string | null
+          id?: string
+          mockup_urls?: Json | null
+          product_name: string
+          product_type: string
+          selling_price?: number | null
+          shopify_product_id?: string | null
+          status?: string | null
+          supplier: string
+          updated_at?: string | null
+          user_id: string
+          variants?: Json | null
+        }
+        Update: {
+          ai_generated?: boolean | null
+          base_cost?: number | null
+          created_at?: string | null
+          design_url?: string | null
+          generation_prompt?: string | null
+          id?: string
+          mockup_urls?: Json | null
+          product_name?: string
+          product_type?: string
+          selling_price?: number | null
+          shopify_product_id?: string | null
+          status?: string | null
+          supplier?: string
+          updated_at?: string | null
+          user_id?: string
+          variants?: Json | null
         }
         Relationships: []
       }
@@ -11342,6 +11707,51 @@ export type Database = {
           top_products?: Json | null
           total_orders?: number | null
           total_revenue?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      store_templates: {
+        Row: {
+          color_scheme: Json | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          navigation_structure: Json | null
+          preview_url: string | null
+          seo_config: Json | null
+          template_type: string
+          theme_config: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          color_scheme?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          navigation_structure?: Json | null
+          preview_url?: string | null
+          seo_config?: Json | null
+          template_type: string
+          theme_config?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          color_scheme?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          navigation_structure?: Json | null
+          preview_url?: string | null
+          seo_config?: Json | null
+          template_type?: string
+          theme_config?: Json | null
           updated_at?: string | null
           user_id?: string
         }

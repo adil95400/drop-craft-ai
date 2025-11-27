@@ -517,3 +517,21 @@ verify_jwt = true
 [functions.shopify-store-import]
 verify_jwt = true
 
+[functions.ai-store-builder]
+verify_jwt = true
+
+[functions.invoice-generator]
+verify_jwt = true
+
+[functions.pod-manager]
+verify_jwt = true
+
+[functions.ai-visual-generator]
+verify_jwt = true
+
+[functions.competitive-intelligence]
+verify_jwt = true
+
+[functions.feed-manager]
+verify_jwt = true
+
