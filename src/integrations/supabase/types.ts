@@ -7822,6 +7822,65 @@ export type Database = {
           },
         ]
       }
+      price_history: {
+        Row: {
+          change_reason: string
+          created_at: string | null
+          id: string
+          new_cost: number | null
+          new_margin_percent: number | null
+          new_price: number
+          previous_cost: number | null
+          previous_margin_percent: number | null
+          previous_price: number
+          price_change_percent: number | null
+          pricing_rule_id: string | null
+          product_id: string
+          product_source: string
+          user_id: string
+        }
+        Insert: {
+          change_reason: string
+          created_at?: string | null
+          id?: string
+          new_cost?: number | null
+          new_margin_percent?: number | null
+          new_price: number
+          previous_cost?: number | null
+          previous_margin_percent?: number | null
+          previous_price: number
+          price_change_percent?: number | null
+          pricing_rule_id?: string | null
+          product_id: string
+          product_source: string
+          user_id: string
+        }
+        Update: {
+          change_reason?: string
+          created_at?: string | null
+          id?: string
+          new_cost?: number | null
+          new_margin_percent?: number | null
+          new_price?: number
+          previous_cost?: number | null
+          previous_margin_percent?: number | null
+          previous_price?: number
+          price_change_percent?: number | null
+          pricing_rule_id?: string | null
+          product_id?: string
+          product_source?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_history_pricing_rule_id_fkey"
+            columns: ["pricing_rule_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       price_stock_alerts: {
         Row: {
           alert_data: Json
@@ -7942,42 +8001,89 @@ export type Database = {
       }
       pricing_rules: {
         Row: {
-          actions: Json
-          conditions: Json
-          created_at: string
+          applies_to: string | null
+          category_filter: string | null
+          competitor_price_offset: number | null
+          competitor_price_offset_percent: number | null
+          created_at: string | null
+          fixed_margin_percent: number | null
           id: string
-          is_active: boolean
-          priority: number
+          is_active: boolean | null
+          last_applied_at: string | null
+          max_price: number | null
+          min_margin_percent: number | null
+          min_price: number | null
+          priority: number | null
+          product_ids: string[] | null
+          products_affected: number | null
+          round_to: number | null
           rule_name: string
-          rule_type: string
-          updated_at: string
+          strategy: string
+          supplier_id: string | null
+          target_margin_percent: number | null
+          total_applications: number | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
-          actions?: Json
-          conditions?: Json
-          created_at?: string
+          applies_to?: string | null
+          category_filter?: string | null
+          competitor_price_offset?: number | null
+          competitor_price_offset_percent?: number | null
+          created_at?: string | null
+          fixed_margin_percent?: number | null
           id?: string
-          is_active?: boolean
-          priority?: number
+          is_active?: boolean | null
+          last_applied_at?: string | null
+          max_price?: number | null
+          min_margin_percent?: number | null
+          min_price?: number | null
+          priority?: number | null
+          product_ids?: string[] | null
+          products_affected?: number | null
+          round_to?: number | null
           rule_name: string
-          rule_type: string
-          updated_at?: string
+          strategy: string
+          supplier_id?: string | null
+          target_margin_percent?: number | null
+          total_applications?: number | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
-          actions?: Json
-          conditions?: Json
-          created_at?: string
+          applies_to?: string | null
+          category_filter?: string | null
+          competitor_price_offset?: number | null
+          competitor_price_offset_percent?: number | null
+          created_at?: string | null
+          fixed_margin_percent?: number | null
           id?: string
-          is_active?: boolean
-          priority?: number
+          is_active?: boolean | null
+          last_applied_at?: string | null
+          max_price?: number | null
+          min_margin_percent?: number | null
+          min_price?: number | null
+          priority?: number | null
+          product_ids?: string[] | null
+          products_affected?: number | null
+          round_to?: number | null
           rule_name?: string
-          rule_type?: string
-          updated_at?: string
+          strategy?: string
+          supplier_id?: string | null
+          target_margin_percent?: number | null
+          total_applications?: number | null
+          updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pricing_rules_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_ai_attributes: {
         Row: {
@@ -9220,6 +9326,74 @@ export type Database = {
           },
         ]
       }
+      repricing_queue: {
+        Row: {
+          apply_to_all: boolean | null
+          completed_at: string | null
+          created_at: string | null
+          errors: string[] | null
+          failed_updates: number | null
+          id: string
+          job_name: string
+          job_status: string | null
+          pricing_rule_id: string | null
+          processed_products: number | null
+          product_ids: string[] | null
+          results: Json | null
+          started_at: string | null
+          successful_updates: number | null
+          total_products: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          apply_to_all?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          errors?: string[] | null
+          failed_updates?: number | null
+          id?: string
+          job_name: string
+          job_status?: string | null
+          pricing_rule_id?: string | null
+          processed_products?: number | null
+          product_ids?: string[] | null
+          results?: Json | null
+          started_at?: string | null
+          successful_updates?: number | null
+          total_products?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          apply_to_all?: boolean | null
+          completed_at?: string | null
+          created_at?: string | null
+          errors?: string[] | null
+          failed_updates?: number | null
+          id?: string
+          job_name?: string
+          job_status?: string | null
+          pricing_rule_id?: string | null
+          processed_products?: number | null
+          product_ids?: string[] | null
+          results?: Json | null
+          started_at?: string | null
+          successful_updates?: number | null
+          total_products?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repricing_queue_pricing_rule_id_fkey"
+            columns: ["pricing_rule_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           content: string | null
@@ -10345,75 +10519,122 @@ export type Database = {
       }
       stock_alerts: {
         Row: {
+          acknowledged_at: string | null
+          alert_status: string | null
           alert_type: string
-          created_at: string
-          current_quantity: number
+          created_at: string | null
+          current_stock: number | null
           id: string
-          is_resolved: boolean
           message: string
-          notification_channels: string[] | null
-          notification_sent: boolean
           product_id: string
-          recommended_action: string | null
+          product_name: string
+          product_source: string
           resolved_at: string | null
-          resolved_by: string | null
-          severity: string
-          threshold_quantity: number
-          updated_at: string
+          severity: string | null
+          supplier_id: string | null
+          threshold: number | null
+          updated_at: string | null
           user_id: string
-          warehouse_id: string | null
         }
         Insert: {
+          acknowledged_at?: string | null
+          alert_status?: string | null
           alert_type: string
-          created_at?: string
-          current_quantity: number
+          created_at?: string | null
+          current_stock?: number | null
           id?: string
-          is_resolved?: boolean
           message: string
-          notification_channels?: string[] | null
-          notification_sent?: boolean
           product_id: string
-          recommended_action?: string | null
+          product_name: string
+          product_source: string
           resolved_at?: string | null
-          resolved_by?: string | null
-          severity?: string
-          threshold_quantity: number
-          updated_at?: string
+          severity?: string | null
+          supplier_id?: string | null
+          threshold?: number | null
+          updated_at?: string | null
           user_id: string
-          warehouse_id?: string | null
         }
         Update: {
+          acknowledged_at?: string | null
+          alert_status?: string | null
           alert_type?: string
-          created_at?: string
-          current_quantity?: number
+          created_at?: string | null
+          current_stock?: number | null
           id?: string
-          is_resolved?: boolean
           message?: string
-          notification_channels?: string[] | null
-          notification_sent?: boolean
           product_id?: string
-          recommended_action?: string | null
+          product_name?: string
+          product_source?: string
           resolved_at?: string | null
-          resolved_by?: string | null
-          severity?: string
-          threshold_quantity?: number
-          updated_at?: string
+          severity?: string | null
+          supplier_id?: string | null
+          threshold?: number | null
+          updated_at?: string | null
           user_id?: string
-          warehouse_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "stock_alerts_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: "stock_alerts_supplier_id_fkey"
+            columns: ["supplier_id"]
             isOneToOne: false
-            referencedRelation: "products"
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_history: {
+        Row: {
+          change_amount: number
+          change_reason: string | null
+          created_at: string | null
+          id: string
+          new_quantity: number
+          previous_quantity: number
+          product_id: string
+          product_source: string
+          supplier_id: string | null
+          sync_config_id: string | null
+          user_id: string
+        }
+        Insert: {
+          change_amount: number
+          change_reason?: string | null
+          created_at?: string | null
+          id?: string
+          new_quantity: number
+          previous_quantity: number
+          product_id: string
+          product_source: string
+          supplier_id?: string | null
+          sync_config_id?: string | null
+          user_id: string
+        }
+        Update: {
+          change_amount?: number
+          change_reason?: string | null
+          created_at?: string | null
+          id?: string
+          new_quantity?: number
+          previous_quantity?: number
+          product_id?: string
+          product_source?: string
+          supplier_id?: string | null
+          sync_config_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_history_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "stock_alerts_warehouse_id_fkey"
-            columns: ["warehouse_id"]
+            foreignKeyName: "stock_history_sync_config_id_fkey"
+            columns: ["sync_config_id"]
             isOneToOne: false
-            referencedRelation: "warehouses"
+            referencedRelation: "stock_sync_configs"
             referencedColumns: ["id"]
           },
         ]
@@ -10641,6 +10862,65 @@ export type Database = {
             columns: ["warehouse_id"]
             isOneToOne: false
             referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_sync_configs: {
+        Row: {
+          created_at: string | null
+          failed_syncs: number | null
+          id: string
+          last_error: string | null
+          last_sync_at: string | null
+          low_stock_threshold: number | null
+          next_sync_at: string | null
+          out_of_stock_action: string | null
+          supplier_id: string | null
+          sync_enabled: boolean | null
+          sync_frequency_minutes: number | null
+          total_syncs: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          failed_syncs?: number | null
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          low_stock_threshold?: number | null
+          next_sync_at?: string | null
+          out_of_stock_action?: string | null
+          supplier_id?: string | null
+          sync_enabled?: boolean | null
+          sync_frequency_minutes?: number | null
+          total_syncs?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          failed_syncs?: number | null
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          low_stock_threshold?: number | null
+          next_sync_at?: string | null
+          out_of_stock_action?: string | null
+          supplier_id?: string | null
+          sync_enabled?: boolean | null
+          sync_frequency_minutes?: number | null
+          total_syncs?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_sync_configs_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -14364,17 +14644,6 @@ export type Database = {
       }
     }
     Views: {
-      pricing_analytics: {
-        Row: {
-          avg_margin: number | null
-          competitors_tracked: number | null
-          products_tracked: number | null
-          total_profit: number | null
-          total_rules: number | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
       shopify_import_stats: {
         Row: {
           active_products: number | null

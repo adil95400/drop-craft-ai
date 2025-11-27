@@ -29,8 +29,8 @@ export function StockAlerts() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('stock_alerts')
-        .select('*, product:products!inner(name, sku, image_url), warehouse:warehouses(name, location)')
-        .eq('is_resolved', false)
+        .select('*')
+        .eq('alert_status', 'active')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -43,7 +43,7 @@ export function StockAlerts() {
       const { error } = await supabase
         .from('stock_alerts')
         .update({ 
-          is_resolved: true,
+          alert_status: 'resolved',
           resolved_at: new Date().toISOString()
         })
         .eq('id', alertId);
@@ -206,39 +206,19 @@ export function StockAlerts() {
                             </Badge>
                           </div>
                           
-                          <div className="flex items-center gap-2 mb-2">
-                            {alert.product?.image_url && (
-                              <img 
-                                src={alert.product.image_url} 
-                                alt={alert.product.name}
-                                className="h-10 w-10 rounded object-cover"
-                              />
-                            )}
-                            <div>
-                              <p className="font-medium">{alert.product?.name || 'Produit'}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {alert.product?.sku} • {alert.warehouse?.name}
-                              </p>
-                            </div>
+                          <div className="mb-2">
+                            <p className="font-medium">{alert.product_name}</p>
                           </div>
 
                           <p className="text-sm mb-2">{alert.message}</p>
 
-                          {alert.recommended_action && (
-                            <Alert className="mb-3">
-                              <AlertDescription className="text-sm">
-                                <strong>💡 Action recommandée:</strong> {alert.recommended_action}
-                              </AlertDescription>
-                            </Alert>
-                          )}
-
                           <div className="flex items-center gap-4 text-xs text-muted-foreground">
                             <span>
-                              Stock actuel: <strong>{alert.current_quantity}</strong>
+                              Stock actuel: <strong>{alert.current_stock || 0}</strong>
                             </span>
                             <span>•</span>
                             <span>
-                              Seuil: <strong>{alert.threshold_quantity}</strong>
+                              Seuil: <strong>{alert.threshold || 0}</strong>
                             </span>
                             <span>•</span>
                             <span>

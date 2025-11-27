@@ -25,6 +25,7 @@ import { ExtensionRoutes } from './ExtensionRoutes';
 import { AuditRoutes } from './AuditRoutes';
 import { RewriteRoutes } from './RewriteRoutes';
 import { AttributesRoutes } from './AttributesRoutes';
+import { StockRoutes } from './StockRoutes';
 
 // Pages directes
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -79,6 +80,7 @@ export function AppRoutes() {
         <Route path="/audit/*" element={<ProtectedRoute><AppLayout><AuditRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/rewrite/*" element={<ProtectedRoute><AppLayout><RewriteRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/attributes/*" element={<ProtectedRoute><AppLayout><AttributesRoutes /></AppLayout></ProtectedRoute>} />
+        <Route path="/stock/*" element={<ProtectedRoute><AppLayout><StockRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/reviews" element={<ProtectedRoute><AppLayout><AvisPositifUltraPro /></AppLayout></ProtectedRoute>} />
         
         {/* Pages manquantes ajoutées - Phase 1 */}

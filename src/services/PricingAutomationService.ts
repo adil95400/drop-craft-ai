@@ -27,9 +27,10 @@ export class PricingAutomationService {
       .from('pricing_rules')
       .insert({ 
         rule_name: rule.rule_name,
-        rule_type: rule.rule_type,
-        conditions: rule.conditions || {},
-        actions: rule.actions || {},
+        strategy: rule.strategy || 'fixed_margin',
+        applies_to: rule.applies_to || 'all',
+        fixed_margin_percent: rule.fixed_margin_percent,
+        target_margin_percent: rule.target_margin_percent,
         priority: rule.priority || 1,
         is_active: rule.is_active !== undefined ? rule.is_active : true,
         user_id: currentUser.user.id
