@@ -27,3 +27,4 @@ export { BTSWholesalerConnector } from './BTSWholesalerConnector';
 export { MatterhornConnector } from './MatterhornConnector';
 export { B2BSportsWholesaleConnector } from './B2BSportsWholesaleConnector';
 export { WatchImportConnector } from './WatchImportConnector';
+export { CJDropshippingConnector } from './CJDropshippingConnector';
