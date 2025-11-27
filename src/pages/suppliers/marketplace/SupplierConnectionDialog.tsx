@@ -91,6 +91,8 @@ export function SupplierConnectionDialog({ supplier, open, onOpenChange }: Suppl
 
   const handleTest = async () => {
     setTestStatus('testing');
+    setTestMessage('Test de connexion en cours...');
+    
     try {
       const creds: Record<string, string> = {};
       
@@ -107,13 +109,34 @@ export function SupplierConnectionDialog({ supplier, open, onOpenChange }: Suppl
       }
 
       const mappedCreds = mapCredentials(creds);
-      await testConnection(supplier.id, mappedCreds);
-      setTestStatus('success');
-      setTestMessage('Connexion réussie');
-    } catch (error) {
+      
+      console.log('Testing with credentials:', Object.keys(mappedCreds), 'for supplier:', supplier.id);
+      
+      const result = await testConnection({ supplierId: supplier.id, credentials: mappedCreds });
+      
+      setTestStatus(result ? 'success' : 'error');
+      setTestMessage(result ? 'Connexion réussie' : 'Échec du test de connexion');
+    } catch (error: any) {
+      console.error('Test connection error:', error);
       setTestStatus('error');
-      setTestMessage('Erreur lors du test de connexion');
+      setTestMessage(error?.message || 'Erreur lors du test de connexion');
     }
+  };
+
+  // Vérifier si les champs requis sont remplis pour la méthode sélectionnée
+  const canTest = () => {
+    if (connectionMethod === 'api') {
+      const requiredFields = fields.filter(f => f.required);
+      return requiredFields.every(field => {
+        const key = field.label.toLowerCase().replace(/\s+/g, '');
+        return credentials[key] && credentials[key].trim().length > 0;
+      });
+    } else if (connectionMethod === 'csv' || connectionMethod === 'xml') {
+      return !!(credentials.csvUrl || credentials.xmlUrl);
+    } else if (connectionMethod === 'ftp') {
+      return !!(credentials.ftpHost && credentials.ftpUsername);
+    }
+    return false;
   };
 
   const handleConnect = async () => {
@@ -365,7 +388,7 @@ export function SupplierConnectionDialog({ supplier, open, onOpenChange }: Suppl
           <Button 
             variant="outline" 
             onClick={handleTest}
-            disabled={isTesting || !Object.values(credentials).some(v => v)}
+            disabled={isTesting || !canTest()}
           >
             {isTesting ? (
               <>
