@@ -331,20 +331,37 @@ class ImportExportService {
   }
 
   /**
-   * Import from URL
+   * Import from URL - Real implementation
    */
-  async importFromURL(url: string): Promise<{ success: boolean; imported: number; errors: string[] }> {
+  async importFromURL(url: string, userId: string): Promise<{ success: boolean; imported: number; errors: string[] }> {
     try {
       const response = await fetch(url)
       if (!response.ok) throw new Error('Échec du chargement depuis l\'URL')
       
       const data = await response.json()
-      // Simulate import
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      // Insérer les produits dans la DB
+      const products = Array.isArray(data) ? data : [data]
+      const productsToInsert = products.map(p => ({
+        user_id: userId,
+        name: p.name || 'Produit importé',
+        description: p.description || '',
+        price: parseFloat(p.price) || 0,
+        sku: p.sku || '',
+        category: p.category || '',
+        stock_quantity: parseInt(p.stock_quantity) || 0,
+        status: (p.status || 'active') as 'active' | 'inactive'
+      }))
+      
+      const { error } = await supabase
+        .from('products')
+        .insert(productsToInsert)
+      
+      if (error) throw error
       
       return {
         success: true,
-        imported: Array.isArray(data) ? data.length : 1,
+        imported: productsToInsert.length,
         errors: []
       }
     } catch (error) {
@@ -357,17 +374,29 @@ class ImportExportService {
   }
 
   /**
-   * Generate products with AI
+   * Generate products with AI - Real implementation using edge function
    */
-  async generateWithAI(prompt: string, count: number = 5): Promise<{ success: boolean; imported: number; errors: string[] }> {
+  async generateWithAI(prompt: string, userId: string, count: number = 5): Promise<{ success: boolean; imported: number; errors: string[] }> {
     try {
-      // Simulate AI generation
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      // Appel à l'edge function AI pour générer les produits
+      const { data, error } = await supabase.functions.invoke('ai-generate-products', {
+        body: {
+          userId,
+          prompt,
+          count
+        }
+      })
       
-      return {
-        success: true,
-        imported: count,
-        errors: []
+      if (error) throw error
+      
+      if (data?.success) {
+        return {
+          success: true,
+          imported: data.imported || count,
+          errors: []
+        }
+      } else {
+        throw new Error(data?.error || 'Erreur de génération')
       }
     } catch (error) {
       return {
@@ -379,16 +408,39 @@ class ImportExportService {
   }
 
   /**
-   * Import from catalog
+   * Import from catalog - Real implementation
    */
-  async importFromCatalog(productIds: string[]): Promise<{ success: boolean; imported: number; errors: string[] }> {
+  async importFromCatalog(productIds: string[], userId: string): Promise<{ success: boolean; imported: number; errors: string[] }> {
     try {
-      // Simulate catalog import
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Récupérer les produits du catalogue
+      const { data: catalogProducts, error: fetchError } = await supabase
+        .from('catalog_products')
+        .select('*')
+        .in('id', productIds)
+      
+      if (fetchError) throw fetchError
+      
+      // Copier dans la table products de l'utilisateur
+      const productsToInsert = catalogProducts?.map(p => ({
+        user_id: userId,
+        name: p.name,
+        description: p.description,
+        price: p.price,
+        sku: p.sku,
+        category: p.category,
+        image_url: p.image_url,
+        status: 'active' as const
+      })) || []
+      
+      const { error: insertError } = await supabase
+        .from('products')
+        .insert(productsToInsert)
+      
+      if (insertError) throw insertError
       
       return {
         success: true,
-        imported: productIds.length,
+        imported: productsToInsert.length,
         errors: []
       }
     } catch (error) {

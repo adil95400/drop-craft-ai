@@ -107,15 +107,50 @@ export default function CreateProduct() {
     setVariants(variants.filter(v => v.id !== id));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.price) {
       toast.error('Nom et prix sont requis');
       return;
     }
     
-    toast.success('Produit créé avec succès');
-    navigate('/products');
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error('Non authentifié');
+        return;
+      }
+
+      // Insertion dans la base de données
+      const { data, error } = await supabase
+        .from('products')
+        .insert({
+          user_id: user.id,
+          name: formData.name,
+          description: formData.description,
+          price: parseFloat(formData.price),
+          cost_price: formData.cost ? parseFloat(formData.cost) : null,
+          sku: formData.sku,
+          category: formData.category,
+          status: formData.status,
+          stock_quantity: formData.stock ? parseInt(formData.stock) : null,
+          image_url: images[0] || null,
+          tags: formData.tags,
+          weight: formData.weight ? parseFloat(formData.weight) : null
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast.success('Produit créé avec succès');
+      navigate('/products');
+    } catch (error) {
+      console.error('Erreur création produit:', error);
+      toast.error('Erreur lors de la création du produit');
+    }
   };
 
   return (

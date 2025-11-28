@@ -53,24 +53,25 @@ export function ProductImportDialog({ open, onOpenChange }: ProductImportDialogP
         setImportProgress(prev => Math.min(prev + 10, 90))
       }, 200)
 
+      const userId = (await supabase.auth.getUser()).data.user?.id
+      if (!userId) throw new Error('Utilisateur non authentifié')
+
       switch (selectedMethod) {
         case 'csv':
           if (!file) throw new Error('Veuillez sélectionner un fichier CSV')
-          const userId = (await supabase.auth.getUser()).data.user?.id
-          if (!userId) throw new Error('Utilisateur non authentifié')
           result = await importExportService.importFromCSV(file, userId)
           break
         case 'url':
           if (!url.trim()) throw new Error('Veuillez saisir une URL valide')
-          result = await importExportService.importFromURL(url.trim())
+          result = await importExportService.importFromURL(url.trim(), userId)
           break
         case 'ai':
           if (!aiPrompt.trim()) throw new Error('Veuillez saisir une description pour générer les produits')
-          result = await importExportService.generateWithAI(aiPrompt.trim(), 5)
+          result = await importExportService.generateWithAI(aiPrompt.trim(), userId, 5)
           break
         case 'catalog':
           if (selectedCatalogProducts.length === 0) throw new Error('Veuillez sélectionner au moins un produit du catalogue')
-          result = await importExportService.importFromCatalog(selectedCatalogProducts)
+          result = await importExportService.importFromCatalog(selectedCatalogProducts, userId)
           break
         default:
           throw new Error('Méthode d\'import non supportée')
