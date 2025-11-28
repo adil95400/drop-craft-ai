@@ -270,12 +270,13 @@ export default function ImportPublishingPage() {
             <CardHeader>
               <CardTitle>Publication Multi-Canaux</CardTitle>
               <CardDescription>
-                Publiez vos produits sur Amazon, eBay, et d'autres marketplaces
+                Publiez vos produits sur toutes les plateformes e-commerce
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Amazon */}
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center">
                       <Package className="w-5 h-5 text-orange-600" />
@@ -285,33 +286,133 @@ export default function ImportPublishingPage() {
                       <p className="text-sm text-muted-foreground">Marketplace mondiale</p>
                     </div>
                   </div>
-                  <Badge variant="outline">Bientôt disponible</Badge>
+                  <Button size="sm" variant="outline">Connecter</Button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                {/* eBay */}
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
                       <Package className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
                       <p className="font-medium">eBay</p>
-                      <p className="text-sm text-muted-foreground">Plateforme d'enchères</p>
+                      <p className="text-sm text-muted-foreground">Enchères et ventes</p>
                     </div>
                   </div>
-                  <Badge variant="outline">Bientôt disponible</Badge>
+                  <Button size="sm" variant="outline">Connecter</Button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                {/* TikTok Shop */}
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-black/10 rounded-lg flex items-center justify-center">
+                      <Package className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">TikTok Shop</p>
+                      <p className="text-sm text-muted-foreground">Social commerce</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline">Connecter</Button>
+                </div>
+
+                {/* Meta/Facebook */}
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-600/10 rounded-lg flex items-center justify-center">
+                      <Package className="w-5 h-5 text-blue-700" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Meta Commerce</p>
+                      <p className="text-sm text-muted-foreground">Facebook & Instagram</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline">Connecter</Button>
+                </div>
+
+                {/* Google Shopping */}
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                      <Package className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Google Shopping</p>
+                      <p className="text-sm text-muted-foreground">Publicité produits</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline">Connecter</Button>
+                </div>
+
+                {/* Etsy */}
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-orange-600/10 rounded-lg flex items-center justify-center">
+                      <Package className="w-5 h-5 text-orange-700" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Etsy</p>
+                      <p className="text-sm text-muted-foreground">Produits artisanaux</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline">Connecter</Button>
+                </div>
+
+                {/* Walmart */}
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-800/10 rounded-lg flex items-center justify-center">
+                      <Package className="w-5 h-5 text-blue-900" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Walmart</p>
+                      <p className="text-sm text-muted-foreground">Retail américain</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline">Connecter</Button>
+                </div>
+
+                {/* Cdiscount */}
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center">
                       <Package className="w-5 h-5 text-red-600" />
                     </div>
                     <div>
                       <p className="font-medium">Cdiscount</p>
-                      <p className="text-sm text-muted-foreground">Marketplace française</p>
+                      <p className="text-sm text-muted-foreground">Leader français</p>
                     </div>
                   </div>
-                  <Badge variant="outline">Bientôt disponible</Badge>
+                  <Button size="sm" variant="outline">Connecter</Button>
+                </div>
+
+                {/* AliExpress */}
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-red-600/10 rounded-lg flex items-center justify-center">
+                      <Package className="w-5 h-5 text-red-700" />
+                    </div>
+                    <div>
+                      <p className="font-medium">AliExpress</p>
+                      <p className="text-sm text-muted-foreground">Marketplace chinoise</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline">Connecter</Button>
+                </div>
+
+                {/* Wish */}
+                <div className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                      <Package className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Wish</p>
+                      <p className="text-sm text-muted-foreground">Petits prix</p>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="outline">Connecter</Button>
                 </div>
               </div>
             </CardContent>

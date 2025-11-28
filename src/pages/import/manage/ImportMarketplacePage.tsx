@@ -25,11 +25,17 @@ export default function ImportMarketplacePage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { importedProducts, loading } = useProductImports();
-  const [syncEnabled, setSyncEnabled] = useState({
+  const [syncEnabled, setSyncEnabled] = useState<Record<string, boolean>>({
     amazon: false,
     ebay: false,
-    cdiscount: false,
+    tiktok: false,
+    meta: false,
     google: false,
+    etsy: false,
+    walmart: false,
+    cdiscount: false,
+    aliexpress: false,
+    wish: false,
   });
 
   const publishedProducts = importedProducts.filter(p => p.status === 'published');
@@ -64,11 +70,25 @@ export default function ImportMarketplacePage() {
       }
     },
     {
-      id: 'cdiscount',
-      name: 'Cdiscount',
-      description: 'Leader français du e-commerce',
+      id: 'tiktok',
+      name: 'TikTok Shop',
+      description: 'Social commerce sur TikTok',
       icon: Package,
-      color: 'red',
+      color: 'black',
+      status: 'available',
+      connected: false,
+      stats: {
+        published: 0,
+        pending: 0,
+        rejected: 0,
+      }
+    },
+    {
+      id: 'meta',
+      name: 'Meta Commerce',
+      description: 'Facebook Marketplace & Instagram Shopping',
+      icon: Store,
+      color: 'blue',
       status: 'available',
       connected: false,
       stats: {
@@ -83,6 +103,76 @@ export default function ImportMarketplacePage() {
       description: 'Plateforme publicitaire de Google',
       icon: Globe,
       color: 'green',
+      status: 'available',
+      connected: false,
+      stats: {
+        published: 0,
+        pending: 0,
+        rejected: 0,
+      }
+    },
+    {
+      id: 'etsy',
+      name: 'Etsy',
+      description: 'Marketplace pour produits artisanaux et vintage',
+      icon: Package,
+      color: 'orange',
+      status: 'available',
+      connected: false,
+      stats: {
+        published: 0,
+        pending: 0,
+        rejected: 0,
+      }
+    },
+    {
+      id: 'walmart',
+      name: 'Walmart',
+      description: 'Géant américain du retail en ligne',
+      icon: Store,
+      color: 'blue',
+      status: 'available',
+      connected: false,
+      stats: {
+        published: 0,
+        pending: 0,
+        rejected: 0,
+      }
+    },
+    {
+      id: 'cdiscount',
+      name: 'Cdiscount',
+      description: 'Leader français du e-commerce',
+      icon: ShoppingCart,
+      color: 'red',
+      status: 'available',
+      connected: false,
+      stats: {
+        published: 0,
+        pending: 0,
+        rejected: 0,
+      }
+    },
+    {
+      id: 'aliexpress',
+      name: 'AliExpress',
+      description: 'Marketplace chinoise B2C mondiale',
+      icon: Package,
+      color: 'red',
+      status: 'available',
+      connected: false,
+      stats: {
+        published: 0,
+        pending: 0,
+        rejected: 0,
+      }
+    },
+    {
+      id: 'wish',
+      name: 'Wish',
+      description: 'Plateforme de commerce à petits prix',
+      icon: Store,
+      color: 'purple',
       status: 'available',
       connected: false,
       stats: {
