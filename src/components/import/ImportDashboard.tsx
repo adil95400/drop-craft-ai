@@ -45,15 +45,34 @@ export const ImportDashboard = () => {
     { name: 'XML', value: imports.filter(i => i.import_type === 'xml').length, color: '#ff7300' },
   ];
 
-  const successRateData = [
-    { name: 'Lun', success: 95, failed: 5 },
-    { name: 'Mar', success: 88, failed: 12 },
-    { name: 'Mer', success: 92, failed: 8 },
-    { name: 'Jeu', success: 97, failed: 3 },
-    { name: 'Ven', success: 89, failed: 11 },
-    { name: 'Sam', success: 94, failed: 6 },
-    { name: 'Dim', success: 91, failed: 9 },
-  ];
+  // Calculate success rate from real import_jobs data
+  const calculateSuccessRateData = () => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return date;
+    });
+
+    return last7Days.map(date => {
+      const dayName = date.toLocaleDateString('fr-FR', { weekday: 'short' });
+      const dayImports = imports.filter(imp => {
+        const importDate = new Date(imp.created_at);
+        return importDate.toDateString() === date.toDateString();
+      });
+
+      const totalProducts = dayImports.reduce((sum, imp) => sum + (imp.products_imported || 0), 0);
+      const failedProducts = dayImports.reduce((sum, imp) => sum + (imp.products_failed || 0), 0);
+      const successProducts = totalProducts - failedProducts;
+
+      return {
+        name: dayName,
+        success: totalProducts > 0 ? Math.round((successProducts / totalProducts) * 100) : 0,
+        failed: totalProducts > 0 ? Math.round((failedProducts / totalProducts) * 100) : 0,
+      };
+    });
+  };
+
+  const successRateData = calculateSuccessRateData();
 
   return (
     <div className="space-y-6">

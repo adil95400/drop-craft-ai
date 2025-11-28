@@ -44,54 +44,121 @@ export const BulkActionsPanel = ({
     setIsProcessing(true);
     
     try {
-      // Simulate API call - replace with actual implementation
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { supabase } = await import('@/integrations/supabase/client');
       
       switch (action) {
-        case 'approve':
+        case 'approve': {
+          const { error } = await supabase
+            .from('imported_products')
+            .update({ review_status: 'approved', updated_at: new Date().toISOString() })
+            .in('id', selectedProducts);
+          
+          if (error) throw error;
+          
           toast({
             title: "Produits approuvés",
             description: `${selectedCount} produits ont été approuvés avec succès.`,
           });
           break;
-        case 'publish':
+        }
+        
+        case 'publish': {
+          const { error } = await supabase
+            .from('imported_products')
+            .update({ status: 'published', updated_at: new Date().toISOString() })
+            .in('id', selectedProducts);
+          
+          if (error) throw error;
+          
           toast({
             title: "Produits publiés",
             description: `${selectedCount} produits ont été publiés avec succès.`,
           });
           break;
-        case 'reject':
+        }
+        
+        case 'reject': {
+          const { error } = await supabase
+            .from('imported_products')
+            .update({ review_status: 'rejected', updated_at: new Date().toISOString() })
+            .in('id', selectedProducts);
+          
+          if (error) throw error;
+          
           toast({
             title: "Produits rejetés",
             description: `${selectedCount} produits ont été rejetés.`,
           });
           break;
-        case 'delete':
+        }
+        
+        case 'delete': {
+          const { error } = await supabase
+            .from('imported_products')
+            .delete()
+            .in('id', selectedProducts);
+          
+          if (error) throw error;
+          
           toast({
             title: "Produits supprimés",
             description: `${selectedCount} produits ont été supprimés.`,
             variant: "destructive",
           });
           break;
-        case 'export':
+        }
+        
+        case 'export': {
+          const { data: products, error } = await supabase
+            .from('imported_products')
+            .select('*')
+            .in('id', selectedProducts);
+          
+          if (error) throw error;
+          
+          // Create CSV export
+          const csv = [
+            ['Name', 'SKU', 'Price', 'Category', 'Status'],
+            ...products.map((p: any) => [p.name, p.sku, p.price, p.category, p.status])
+          ].map(row => row.join(',')).join('\n');
+          
+          const blob = new Blob([csv], { type: 'text/csv' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `products-export-${Date.now()}.csv`;
+          a.click();
+          
           toast({
-            title: "Export en cours",
-            description: `Export de ${selectedCount} produits en cours...`,
+            title: "Export réussi",
+            description: `${selectedCount} produits ont été exportés.`,
           });
           break;
-        case 'category':
-          toast({
-            title: "Catégories mises à jour",
-            description: `${selectedCount} produits ont été recatégorisés.`,
-          });
-          break;
+        }
+        
+        default:
+          if (action.startsWith('category-')) {
+            const category = action.replace('category-', '');
+            const { error } = await supabase
+              .from('imported_products')
+              .update({ category, updated_at: new Date().toISOString() })
+              .in('id', selectedProducts);
+            
+            if (error) throw error;
+            
+            toast({
+              title: "Catégories mises à jour",
+              description: `${selectedCount} produits ont été recatégorisés.`,
+            });
+          }
       }
       
       onClearSelection();
     } catch (error) {
+      console.error('Erreur bulk action:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'opération.",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de l'opération.",
         variant: "destructive",
       });
     } finally {

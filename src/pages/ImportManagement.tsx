@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AdvancedImportResults } from '@/components/import/AdvancedImportResults';
 import { ImportDashboard } from '@/components/import/ImportDashboard';
 import { ImportUltraProInterface } from '@/components/import/ImportUltraProInterface';
+import { useProductImports } from '@/hooks/useProductImports';
 import {
   BarChart3,
   Package,
@@ -14,6 +15,53 @@ import {
 } from 'lucide-react';
 
 const ImportManagement = () => {
+  const { imports, importedProducts } = useProductImports();
+
+  // Calculate real statistics
+  const calculateSuccessRate = () => {
+    const totalProducts = imports.reduce((sum, imp) => sum + (imp.products_imported || 0), 0);
+    const failedProducts = imports.reduce((sum, imp) => sum + (imp.products_failed || 0), 0);
+    if (totalProducts === 0) return 0;
+    return Math.round(((totalProducts - failedProducts) / totalProducts) * 100);
+  };
+
+  const calculateAverageTime = () => {
+    const completedImports = imports.filter(i => i.status === 'completed' && i.created_at);
+    if (completedImports.length === 0) return 0;
+    
+    const totalSeconds = completedImports.reduce((sum, imp) => {
+      if (!imp.created_at) return sum;
+      const start = new Date(imp.created_at).getTime();
+      const end = new Date().getTime();
+      return sum + (end - start) / 1000;
+    }, 0);
+    
+    return Math.round(totalSeconds / completedImports.length);
+  };
+
+  const calculateProductQuality = () => {
+    if (importedProducts.length === 0) return { completeness: 0, withImages: 0, withDescriptions: 0 };
+    
+    const withImages = importedProducts.filter(p => p.image_urls && p.image_urls.length > 0).length;
+    const withDescriptions = importedProducts.filter(p => p.description && p.description.length > 50).length;
+    const withAllFields = importedProducts.filter(p => 
+      p.name && p.sku && p.price && p.description && p.image_urls?.length
+    ).length;
+
+    return {
+      completeness: Math.round((withAllFields / importedProducts.length) * 100),
+      withImages: Math.round((withImages / importedProducts.length) * 100),
+      withDescriptions: Math.round((withDescriptions / importedProducts.length) * 100),
+    };
+  };
+
+  const stats = {
+    successRate: calculateSuccessRate(),
+    averageTime: calculateAverageTime(),
+    productQuality: calculateProductQuality(),
+    optimizedProducts: importedProducts.filter(p => p.ai_optimized).length,
+  };
+
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
@@ -81,15 +129,15 @@ const ImportManagement = () => {
                 <div className="text-sm space-y-2">
                   <div className="flex justify-between">
                     <span>Taux de succès:</span>
-                    <span className="font-medium">92.5%</span>
+                    <span className="font-medium">{stats.successRate}%</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Temps moyen:</span>
-                    <span className="font-medium">45 sec</span>
+                    <span className="font-medium">{stats.averageTime} sec</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Erreurs résolues:</span>
-                    <span className="font-medium">98.2%</span>
+                    <span>Imports réussis:</span>
+                    <span className="font-medium">{imports.filter(i => i.status === 'completed').length}</span>
                   </div>
                 </div>
               </CardContent>
@@ -109,15 +157,15 @@ const ImportManagement = () => {
                 <div className="text-sm space-y-2">
                   <div className="flex justify-between">
                     <span>Complétude moyenne:</span>
-                    <span className="font-medium">87.3%</span>
+                    <span className="font-medium">{stats.productQuality.completeness}%</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Images présentes:</span>
-                    <span className="font-medium">94.1%</span>
+                    <span className="font-medium">{stats.productQuality.withImages}%</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Descriptions OK:</span>
-                    <span className="font-medium">89.7%</span>
+                    <span className="font-medium">{stats.productQuality.withDescriptions}%</span>
                   </div>
                 </div>
               </CardContent>
@@ -137,15 +185,19 @@ const ImportManagement = () => {
                 <div className="text-sm space-y-2">
                   <div className="flex justify-between">
                     <span>Produits optimisés:</span>
-                    <span className="font-medium">156</span>
+                    <span className="font-medium">{stats.optimizedProducts}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Amélioration SEO:</span>
-                    <span className="font-medium">+23%</span>
+                    <span>Taux optimisation:</span>
+                    <span className="font-medium">
+                      {importedProducts.length > 0 
+                        ? Math.round((stats.optimizedProducts / importedProducts.length) * 100)
+                        : 0}%
+                    </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Prix optimisés:</span>
-                    <span className="font-medium">67</span>
+                    <span>Total produits:</span>
+                    <span className="font-medium">{importedProducts.length}</span>
                   </div>
                 </div>
               </CardContent>

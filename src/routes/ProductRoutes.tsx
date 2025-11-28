@@ -22,6 +22,8 @@ const ImportedProductsList = lazy(() => import('@/pages/import/manage/ImportedPr
 const ImportHistoryPage = lazy(() => import('@/pages/import/history/SimpleHistoryPage'));
 const ImportResults = lazy(() => import('@/pages/import/ImportResults'));
 const ImportSources = lazy(() => import('@/pages/import/ImportSources'));
+const ImportPublishingPage = lazy(() => import('@/pages/import/manage/ImportPublishingPage'));
+const ImportMarketplacePage = lazy(() => import('@/pages/import/manage/ImportMarketplacePage'));
 
 // Suppliers - Nouvelle structure consolidée
 const SuppliersHub = lazy(() => import('@/pages/suppliers/SuppliersHub'));
@@ -73,6 +75,8 @@ export function ProductRoutes() {
       <Route path="import/manage" element={<ImportManagement />} />
       <Route path="import/manage/products" element={<ImportedProductsList />} />
       <Route path="import/manage/history" element={<ImportHistoryPage />} />
+      <Route path="import/manage/publishing" element={<ImportPublishingPage />} />
+      <Route path="import/manage/marketplace" element={<ImportMarketplacePage />} />
       <Route path="import/results" element={<ImportResults />} />
       <Route path="import/sources" element={<ImportSources />} />
       
