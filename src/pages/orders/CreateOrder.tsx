@@ -139,7 +139,7 @@ export default function CreateOrder() {
     setFormData({ ...formData, tags: formData.tags.filter(t => t !== tag) });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCustomer) {
       toast.error('Client requis');
@@ -150,8 +150,58 @@ export default function CreateOrder() {
       return;
     }
     
-    toast.success('Commande créée avec succès');
-    navigate('/dashboard/orders');
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error('Non authentifié');
+        return;
+      }
+
+      const total = calculateTotal();
+      const orderNumber = `ORD-${Date.now()}`;
+
+      // Créer la commande
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          customer_id: selectedCustomer,
+          order_number: orderNumber,
+          status: formData.orderStatus,
+          total_amount: total,
+          currency: 'EUR',
+          payment_status: formData.paymentStatus,
+          notes: formData.customerNote
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Créer les items de commande
+      const orderItems = items.map(item => ({
+        order_id: order.id,
+        user_id: user.id,
+        product_name: item.product,
+        quantity: parseInt(item.quantity),
+        unit_price: parseFloat(item.price),
+        total_price: (parseFloat(item.price) * parseInt(item.quantity)) - parseFloat(item.discount || '0')
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      toast.success('Commande créée avec succès');
+      navigate('/dashboard/orders');
+    } catch (error) {
+      console.error('Erreur création commande:', error);
+      toast.error('Erreur lors de la création de la commande');
+    }
   };
 
   const selectedCustomerData = sampleCustomers.find(c => c.id === selectedCustomer);

@@ -72,8 +72,20 @@ export function ProductBulkOperations({ selectedProducts, onClearSelection }: Pr
 
   const handleBulkDuplicate = async () => {
     try {
-      // Simuler la duplication des produits sélectionnés
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const { importExportService } = await import('@/services/importExportService')
+      const { supabase } = await import('@/integrations/supabase/client')
+      
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+      
+      // Appel réel à la fonction de duplication
+      const success = await importExportService.bulkDuplicate(selectedProducts, user.id)
+      
+      if (!success) throw new Error('Échec de la duplication')
+      
+      // Invalider les queries pour rafraîchir
+      queryClient.invalidateQueries({ queryKey: ['real-products'] })
+      queryClient.invalidateQueries({ queryKey: ['products'] })
       
       toast({
         title: "Duplication réussie",
@@ -84,7 +96,7 @@ export function ProductBulkOperations({ selectedProducts, onClearSelection }: Pr
     } catch (error) {
       toast({
         title: "Erreur lors de la duplication",
-        description: "Une erreur est survenue lors de la duplication",
+        description: error instanceof Error ? error.message : "Une erreur est survenue lors de la duplication",
         variant: "destructive"
       })
     }

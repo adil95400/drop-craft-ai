@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { BackButton } from '@/components/navigation/BackButton';
 
 export default function OrdersCenterPage() {
+  const navigate = useNavigate();
   const { data: orders = [] } = useQuery({
     queryKey: ['orders-center'],
     queryFn: async () => {
@@ -162,7 +164,13 @@ export default function OrdersCenterPage() {
                           <div className="text-right">
                             <div className="font-semibold">€{order.total_amount?.toFixed(2)}</div>
                           </div>
-                          <Button variant="outline" size="sm">Voir</Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => navigate(`/dashboard/orders/${order.id}`)}
+                          >
+                            Voir
+                          </Button>
                         </div>
                       </div>
                     ))}

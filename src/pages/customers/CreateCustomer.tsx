@@ -105,15 +105,61 @@ export default function CreateCustomer() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.firstName || !formData.lastName || !formData.email) {
       toast.error('Prénom, nom et email sont requis');
       return;
     }
     
-    toast.success('Client créé avec succès');
-    navigate('/customers');
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error('Non authentifié');
+        return;
+      }
+
+      // Préparer les adresses
+      const addressData = addresses.reduce((acc, addr) => {
+        const key = addr.type === 'billing' ? 'billing_address' : 'shipping_address';
+        if (addr.isDefault) {
+          acc[key] = {
+            street: addr.address,
+            city: addr.city,
+            postal_code: addr.postalCode,
+            country: addr.country
+          };
+        }
+        return acc;
+      }, {} as any);
+
+      // Insertion dans la base de données
+      const { data, error } = await supabase
+        .from('customers')
+        .insert({
+          user_id: user.id,
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          phone: formData.phone,
+          status: 'active',
+          address: addressData,
+          tags: formData.tags,
+          total_orders: 0,
+          total_spent: 0
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast.success('Client créé avec succès');
+      navigate('/customers');
+    } catch (error) {
+      console.error('Erreur création client:', error);
+      toast.error('Erreur lors de la création du client');
+    }
   };
 
   const getInitials = () => {
