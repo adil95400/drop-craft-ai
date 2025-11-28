@@ -36,19 +36,19 @@ const Header = () => {
   const productItems = [
     {
       title: "Import Produits",
-      href: "/import",
+      href: "/products/import",
       description: "Importez depuis AliExpress, BigBuy, Cdiscount",
       icon: Package
     },
     {
       title: "Catalogue",
-      href: "/catalogue",
+      href: "/products",
       description: "Gérez votre catalogue de produits",
       icon: ShoppingCart
     },
     {
       title: "Commandes",
-      href: "/orders", 
+      href: "/dashboard/orders", 
       description: "Suivez vos commandes en temps réel",
       icon: TrendingUp
     },
@@ -63,7 +63,7 @@ const Header = () => {
   const solutionsItems = [
     {
       title: "CRM",
-      href: "/crm",
+      href: "/marketing/crm",
       description: "Gérez vos clients et prospects",
       icon: Users
     },
@@ -81,7 +81,7 @@ const Header = () => {
     },
     {
       title: "Sécurité",
-      href: "/security",
+      href: "/enterprise/security",
       description: "Protégez votre business",
       icon: Shield
     }
