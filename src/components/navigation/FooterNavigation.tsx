@@ -21,38 +21,48 @@ const FooterNavigation = () => {
         { name: "Fonctionnalités", href: "/features" },
         { name: "Tarifs", href: "/pricing" },
         { name: "Documentation", href: "/documentation" },
-        { name: "API", href: "/api-documentation" },
-        { name: "Changelog", href: "/changelog" }
+        { name: "API", href: "/integrations/api/documentation" },
+        { name: "Guide de démarrage", href: "/guides/getting-started" }
+      ]
+    },
+    {
+      title: "Solutions",
+      links: [
+        { name: "IA d'optimisation", href: "/features/ai-optimization" },
+        { name: "Multi-marketplace", href: "/features/multi-marketplace" },
+        { name: "Analytics", href: "/features/analytics" },
+        { name: "Automatisation", href: "/automation" },
+        { name: "CRM & Marketing", href: "/marketing" }
       ]
     },
     {
       title: "Ressources",
       links: [
-        { name: "Centre d'aide", href: "/support" },
-        { name: "Guides", href: "/guides" },
         { name: "Blog", href: "/blog" },
-        { name: "Communauté", href: "/community" },
-        { name: "Webinaires", href: "/webinars" }
+        { name: "Académie", href: "/academy" },
+        { name: "Centre d'aide", href: "/faq" },
+        { name: "Support", href: "/contact" },
+        { name: "Extensions", href: "/extensions" }
       ]
     },
     {
       title: "Entreprise", 
       links: [
         { name: "À propos", href: "/about" },
-        { name: "Équipe", href: "/company" },
-        { name: "Carrières", href: "/careers" },
-        { name: "Partenaires", href: "/partners" },
-        { name: "Presse", href: "/press" }
+        { name: "Contact", href: "/contact" },
+        { name: "Enterprise", href: "/pricing" },
+        { name: "Partenaires", href: "/about" },
+        { name: "Carrières", href: "/about" }
       ]
     },
     {
       title: "Légal",
       links: [
-        { name: "Conditions d'utilisation", href: "/terms" },
-        { name: "Politique de confidentialité", href: "/privacy" },
-        { name: "Mentions légales", href: "/legal" },
-        { name: "RGPD", href: "/gdpr" },
-        { name: "Cookies", href: "/cookies" }
+        { name: "Mentions légales", href: "/terms" },
+        { name: "Confidentialité", href: "/privacy" },
+        { name: "Conditions", href: "/terms" },
+        { name: "RGPD", href: "/privacy" },
+        { name: "Cookies", href: "/privacy" }
       ]
     }
   ];

@@ -52,6 +52,11 @@ const ModernPage = lazy(() => import('@/pages/modern/ModernPage'));
 const MonitoringPage = lazy(() => import('@/pages/MonitoringPage'));
 const CatalogPage = lazy(() => import('@/pages/modern/CatalogPage'));
 const ProductDemoPage = lazy(() => import('@/pages/products/ProductDemoPage'));
+const APIDocumentationDetailPage = lazy(() => import('@/pages/integrations/APIDocumentationDetailPage'));
+const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'));
+const AcademyHomePage = lazy(() => import('@/pages/academy/AcademyHomePage'));
+const SupportCenterPage = lazy(() => import('@/pages/support/SupportCenterPage'));
+const ExtensionsMarketplacePage = lazy(() => import('@/pages/extensions/ExtensionsMarketplacePage'));
 
 // Loading component
 const PageLoader = () => (
@@ -132,6 +137,14 @@ export function AppRoutes() {
         
         {/* Product Demo */}
         <Route path="/products/demo" element={<ProtectedRoute><AppLayout><ProductDemoPage /></AppLayout></ProtectedRoute>} />
+        
+        {/* Guides & Documentation */}
+        <Route path="/integrations/api/documentation" element={<ProtectedRoute><AppLayout><APIDocumentationDetailPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/guides/getting-started" element={<GettingStartedPage />} />
+        <Route path="/academy" element={<AcademyHomePage />} />
+        <Route path="/academy/course/:id" element={<AcademyHomePage />} />
+        <Route path="/support" element={<SupportCenterPage />} />
+        <Route path="/extensions" element={<ExtensionsMarketplacePage />} />
         
         {/* Admin Routes - Rôle admin requis */}
         <Route path="/admin/*" element={
