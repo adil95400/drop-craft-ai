@@ -42,7 +42,7 @@ export const useCatalogProducts = (filters: any = {}) => {
       const { data, error } = await supabase.rpc('get_marketplace_products', {
         category_filter: filters.category || null,
         search_term: filters.search || null,
-        limit_count: 100
+        limit_count: 10000 // Allow displaying all products without artificial limits
       });
       
       if (error) {
