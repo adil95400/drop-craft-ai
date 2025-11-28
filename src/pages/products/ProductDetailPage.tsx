@@ -5,13 +5,15 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useRealProducts } from '@/hooks/useRealProducts'
+import { useProductAudit } from '@/hooks/useProductAuditEngine'
 import { ProductEditDialog } from '@/components/products/ProductEditDialog'
 import { ProductQuickEditDialog } from '@/components/products/ProductQuickEditDialog'
+import { ProductAuditPanel } from '@/components/products/ProductAuditPanel'
 import { 
   ArrowLeft, Edit, MoreHorizontal, Share, Heart, 
   Package, DollarSign, BarChart3, Users, TrendingUp,
   Star, Eye, ShoppingCart, AlertTriangle, Settings,
-  Copy, Trash2, RefreshCw, Download
+  Copy, Trash2, RefreshCw, Download, Target
 } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 
@@ -23,6 +25,9 @@ export function ProductDetailPage() {
   const [showQuickEdit, setShowQuickEdit] = useState(false)
 
   const product = products.find(p => p.id === id)
+  
+  // Audit du produit
+  const auditResult = useProductAudit(product as any);
 
   // Données simulées pour les analytics
   const salesData = [
@@ -203,6 +208,10 @@ export function ProductDetailPage() {
             <TabsList>
               <TabsTrigger value="overview">Aperçu</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="audit" className="gap-2">
+                <Target className="h-4 w-4" />
+                Audit Qualité
+              </TabsTrigger>
               <TabsTrigger value="reviews">Avis (23)</TabsTrigger>
               <TabsTrigger value="inventory">Stock</TabsTrigger>
             </TabsList>
@@ -302,6 +311,27 @@ export function ProductDetailPage() {
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="audit" className="space-y-4">
+              {auditResult ? (
+                <ProductAuditPanel 
+                  auditResult={auditResult}
+                  onAIAction={(action) => {
+                    console.log('AI Action:', action);
+                    // TODO: Implémenter les actions IA
+                  }}
+                />
+              ) : (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">
+                      Chargement de l'audit...
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="reviews" className="space-y-4">
