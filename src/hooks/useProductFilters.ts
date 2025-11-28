@@ -101,12 +101,16 @@ export function useProductFilters(products: UnifiedProduct[]) {
     setFilters(DEFAULT_FILTERS)
   }
 
+  const hasActiveFilters = useMemo(() => {
+    return JSON.stringify(filters) !== JSON.stringify(DEFAULT_FILTERS)
+  }, [filters])
+
   return {
     filters,
     filteredProducts,
     categories,
     updateFilter,
     resetFilters,
-    hasActiveFilters: JSON.stringify(filters) !== JSON.stringify(DEFAULT_FILTERS)
+    hasActiveFilters
   }
 }

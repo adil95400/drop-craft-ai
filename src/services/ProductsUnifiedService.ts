@@ -45,47 +45,96 @@ export interface ProductVariant {
   attributes: Record<string, string>
 }
 
+// Configuration pour la limite de produits (augmentable si besoin)
+export const PRODUCT_FETCH_LIMIT = 100000; // Support pour catalogues jusqu'à 100k produits
+
+export interface ProductFetchOptions {
+  includeEmptyNames?: boolean; // Inclure les produits sans nom (mode correction)
+  includeGlobalProducts?: boolean; // Inclure les produits globaux (user_id vide)
+  limit?: number; // Limite personnalisée (défaut: PRODUCT_FETCH_LIMIT)
+}
+
 export class ProductsUnifiedService {
   /**
-   * Charge tous les produits de toutes les tables
+   * Charge tous les produits de toutes les tables consolidées
+   * 
+   * Tables fusionnées (par ordre de priorité):
+   * 1. products - Produits principaux de l'utilisateur
+   * 2. imported_products - Produits importés depuis CSV/API
+   * 3. premium_products - Produits premium depuis fournisseurs premium
+   * 4. catalog_products - Catalogue global disponible pour tous
+   * 5. shopify_products - Produits synchronisés depuis Shopify
+   * 6. published_products - Produits publiés sur marketplace
+   * 7. feed_products - Produits optimisés pour les flux (Google Shopping, etc.)
+   * 8. supplier_products - Produits depuis les fournisseurs connectés
+   * 
+   * Options configurables:
+   * - includeEmptyNames: inclure produits sans nom (défaut: true, pour mode audit/correction)
+   * - includeGlobalProducts: inclure produits sans user_id (défaut: false)
+   * - limit: limite de produits par table (défaut: 100000)
    */
-  static async getAllProducts(userId: string, filters?: {
-    search?: string
-    category?: string
-    status?: 'active' | 'inactive'
-    minPrice?: number
-    maxPrice?: number
-    lowStock?: boolean
-  }): Promise<UnifiedProduct[]> {
+  static async getAllProducts(
+    userId: string, 
+    filters?: {
+      search?: string
+      category?: string
+      status?: 'active' | 'inactive'
+      minPrice?: number
+      maxPrice?: number
+      lowStock?: boolean
+    },
+    options: ProductFetchOptions = {}
+  ): Promise<UnifiedProduct[]> {
+    const {
+      includeEmptyNames = true, // Par défaut, on inclut tout pour permettre la correction
+      includeGlobalProducts = false,
+      limit = PRODUCT_FETCH_LIMIT
+    } = options;
+
+    // Lancer toutes les requêtes en parallèle pour maximiser les performances
     const promises = [
-      this.getProductsTable(userId, filters),
-      this.getImportedProducts(userId, filters),
-      this.getPremiumProducts(userId, filters),
-      this.getCatalogProducts(filters),
-      this.getShopifyProducts(userId, filters),
-      this.getPublishedProducts(userId, filters),
-      this.getFeedProducts(userId, filters),
-      this.getSupplierProducts(userId, filters)
+      this.getProductsTable(userId, filters, { includeEmptyNames, includeGlobalProducts, limit }),
+      this.getImportedProducts(userId, filters, { includeEmptyNames, includeGlobalProducts, limit }),
+      this.getPremiumProducts(userId, filters, { includeEmptyNames, includeGlobalProducts, limit }),
+      this.getCatalogProducts(filters, { includeEmptyNames, limit }),
+      this.getShopifyProducts(userId, filters, { includeEmptyNames, includeGlobalProducts, limit }),
+      this.getPublishedProducts(userId, filters, { includeEmptyNames, includeGlobalProducts, limit }),
+      this.getFeedProducts(userId, filters, { includeEmptyNames, includeGlobalProducts, limit }),
+      this.getSupplierProducts(userId, filters, { includeEmptyNames, includeGlobalProducts, limit })
     ]
 
     const results = await Promise.allSettled(promises)
 
     const allProducts: UnifiedProduct[] = []
     
-    results.forEach(result => {
+    // Consolider tous les résultats
+    results.forEach((result, index) => {
       if (result.status === 'fulfilled') {
+        console.log(`✓ Table ${index + 1}/8 loaded: ${result.value.length} products`)
         allProducts.push(...result.value)
+      } else {
+        console.error(`✗ Table ${index + 1}/8 failed:`, result.reason)
       }
     })
 
+    console.log(`Total consolidated products: ${allProducts.length}`)
     return allProducts
   }
 
   /**
-   * Table products
+   * Table products - Produits principaux de l'utilisateur
    */
-  private static async getProductsTable(userId: string, filters?: any): Promise<UnifiedProduct[]> {
-    let query = supabase.from('products').select('*').eq('user_id', userId)
+  private static async getProductsTable(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
+    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
+    
+    let query = supabase.from('products').select('*')
+    
+    // Filtre user_id (sauf si on veut les produits globaux)
+    if (!options?.includeGlobalProducts) {
+      query = query.eq('user_id', userId)
+    } else {
+      query = query.or(`user_id.eq.${userId},user_id.is.null`)
+    }
 
     if (filters?.status) query = query.eq('status', filters.status)
     if (filters?.category) query = query.eq('category', filters.category)
@@ -94,12 +143,12 @@ export class ProductsUnifiedService {
     }
     if (filters?.lowStock) query = query.lt('stock_quantity', 10)
 
-    const { data, error } = await query.order('created_at', { ascending: false }).limit(10000)
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(limit)
     if (error) throw error
 
     return (data || []).map(p => ({
       ...p,
-      name: p.name || 'Produit sans nom',
+      name: p.name || 'Produit sans nom', // Garder le nom vide visible pour correction
       status: p.status as 'active' | 'inactive',
       source: 'products' as const,
       images: p.image_url ? [p.image_url] : []
@@ -107,17 +156,25 @@ export class ProductsUnifiedService {
   }
 
   /**
-   * Table imported_products
+   * Table imported_products - Produits importés depuis CSV/API
    */
-  private static async getImportedProducts(userId: string, filters?: any): Promise<UnifiedProduct[]> {
-    let query = supabase.from('imported_products').select('*').eq('user_id', userId)
+  private static async getImportedProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
+    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
+    
+    let query = supabase.from('imported_products').select('*')
+    
+    if (!options?.includeGlobalProducts) {
+      query = query.eq('user_id', userId)
+    } else {
+      query = query.or(`user_id.eq.${userId},user_id.is.null`)
+    }
 
     if (filters?.category) query = query.eq('category', filters.category)
     if (filters?.search) {
       query = query.or(`name.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`)
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false }).limit(10000)
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(limit)
     if (error) throw error
 
     return (data || []).map(p => ({
@@ -141,9 +198,9 @@ export class ProductsUnifiedService {
   }
 
   /**
-   * Table premium_products
+   * Table premium_products - Produits premium depuis fournisseurs premium
    */
-  private static async getPremiumProducts(userId: string, filters?: any): Promise<UnifiedProduct[]> {
+  private static async getPremiumProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
     const { data, error } = await supabase
       .from('premium_products')
       .select(`
@@ -181,9 +238,11 @@ export class ProductsUnifiedService {
   }
 
   /**
-   * Table catalog_products (disponibles pour tous)
+   * Table catalog_products - Catalogue global disponible pour tous les utilisateurs
    */
-  private static async getCatalogProducts(filters?: any): Promise<UnifiedProduct[]> {
+  private static async getCatalogProducts(filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
+    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
+    
     let query = supabase.from('catalog_products').select('*')
 
     if (filters?.category) query = query.eq('category', filters.category)
@@ -191,7 +250,7 @@ export class ProductsUnifiedService {
       query = query.or(`name.ilike.%${filters.search}%`)
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false }).limit(10000)
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(limit)
     if (error) throw error
 
     return (data || []).map(p => ({
@@ -215,16 +274,17 @@ export class ProductsUnifiedService {
   }
 
   /**
-   * Table shopify_products
+   * Table shopify_products - Produits synchronisés depuis Shopify
    */
-  private static async getShopifyProducts(userId: string, filters?: any): Promise<UnifiedProduct[]> {
+  private static async getShopifyProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
+    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
     try {
       const { data, error } = await (supabase as any)
         .from('shopify_products')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(10000)
+        .limit(limit)
 
       if (error) throw error
 
@@ -253,16 +313,17 @@ export class ProductsUnifiedService {
   }
 
   /**
-   * Table published_products
+   * Table published_products - Produits publiés sur marketplace
    */
-  private static async getPublishedProducts(userId: string, filters?: any): Promise<UnifiedProduct[]> {
+  private static async getPublishedProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
+    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
     try {
       const { data, error } = await (supabase as any)
         .from('published_products')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(10000)
+        .limit(limit)
 
       if (error) throw error
 
@@ -291,16 +352,17 @@ export class ProductsUnifiedService {
   }
 
   /**
-   * Table feed_products
+   * Table feed_products - Produits optimisés pour les flux (Google Shopping, etc.)
    */
-  private static async getFeedProducts(userId: string, filters?: any): Promise<UnifiedProduct[]> {
+  private static async getFeedProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
+    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
     try {
       const { data, error } = await (supabase as any)
         .from('feed_products')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(10000)
+        .limit(limit)
 
       if (error) throw error
 
@@ -329,16 +391,17 @@ export class ProductsUnifiedService {
   }
 
   /**
-   * Table supplier_products
+   * Table supplier_products - Produits depuis les fournisseurs connectés
    */
-  private static async getSupplierProducts(userId: string, filters?: any): Promise<UnifiedProduct[]> {
+  private static async getSupplierProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
+    const limit = options?.limit || PRODUCT_FETCH_LIMIT;
     try {
       const { data, error } = await (supabase as any)
         .from('supplier_products')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-        .limit(10000)
+        .limit(limit)
 
       if (error) throw error
 

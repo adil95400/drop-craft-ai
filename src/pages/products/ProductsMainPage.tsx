@@ -3,7 +3,9 @@ import { useMemo, useState } from 'react';
 import { useUnifiedProducts } from '@/hooks/useUnifiedProducts';
 import { useProductFilters } from '@/hooks/useProductFilters';
 import { useAuditFilters } from '@/hooks/useAuditFilters';
+import { useProductsAudit } from '@/hooks/useProductAuditEngine';
 import { ProductsPageWrapper } from '@/components/products/ProductsPageWrapper';
+import { ProductAuditBadge } from '@/components/products/ProductAuditBadge';
 import { CatalogQualityDashboard } from '@/components/products/CatalogQualityDashboard';
 import { AdvancedAuditFilters } from '@/components/products/AdvancedAuditFilters';
 import { BulkAIActions } from '@/components/products/BulkAIActions';
@@ -12,7 +14,7 @@ import { OptimizationSimulator } from '@/components/products/OptimizationSimulat
 import { PriorityManager } from '@/components/products/PriorityManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Package, Loader2, TrendingUp, AlertCircle, Archive, DollarSign, Target, Sparkles } from 'lucide-react';
+import { Package, Loader2, TrendingUp, AlertCircle, Archive, DollarSign, Target, Sparkles, CheckCircle } from 'lucide-react';
 import { useModals } from '@/hooks/useModals';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
@@ -35,6 +37,10 @@ export default function ProductsMainPage() {
     resetFilters: resetAuditFilters,
     activeCount: auditActiveCount 
   } = useAuditFilters(filteredProducts);
+  
+  // Calcul des audits pour tous les produits
+  const { auditResults, stats: auditStats } = useProductsAudit(products);
+  
   const { openModal } = useModals();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -146,8 +152,8 @@ export default function ProductsMainPage() {
           </div>
         </div>
 
-        {/* Statistiques rapides basées sur vraies données */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Statistiques rapides basées sur vraies données + Audit */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
           <Card 
             className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
             onClick={() => setViewMode('standard')}
@@ -167,6 +173,53 @@ export default function ProductsMainPage() {
               </p>
             </CardContent>
           </Card>
+
+          {/* Score moyen d'audit */}
+          <Card 
+            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
+            onClick={() => setViewMode('audit')}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Score Moyen
+                </CardTitle>
+                <Target className="h-5 w-5 text-purple-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-purple-600">{auditStats.averageScore}/100</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {auditStats.excellentCount} excellents ({((auditStats.excellentCount / auditStats.totalProducts) * 100).toFixed(1)}%)
+              </p>
+            </CardContent>
+          </Card>
+          
+          {/* Produits à corriger */}
+          <Card 
+            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
+            onClick={() => setViewMode('audit')}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  À Corriger
+                </CardTitle>
+                <AlertCircle className="h-5 w-5 text-red-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className={cn(
+                "text-3xl font-bold",
+                auditStats.poorCount > 0 ? "text-red-600" : "text-muted-foreground"
+              )}>
+                {auditStats.poorCount}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Score &lt; 40 - Issues critiques
+              </p>
+            </CardContent>
+          </Card>
           
           <Card 
             className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
@@ -177,7 +230,7 @@ export default function ProductsMainPage() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Produits Actifs
                 </CardTitle>
-                <TrendingUp className="h-5 w-5 text-green-600" />
+                <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
             </CardHeader>
             <CardContent>
