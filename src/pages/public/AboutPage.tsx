@@ -3,11 +3,43 @@ import { PublicLayout } from '@/layouts/PublicLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Target, Users, TrendingUp, Sparkles, Shield, Globe, Heart, Zap } from 'lucide-react';
+import { Target, Users, TrendingUp, Sparkles, Shield, Globe, Heart, Zap, Award, Rocket, Clock, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { VideoPlayer } from '@/components/public/VideoPlayer';
+import featureAI from '@/assets/feature-ai.jpg';
 
 const AboutPage = () => {
   const navigate = useNavigate();
+
+  const timeline = [
+    {
+      year: '2024 Q1',
+      title: 'Lancement officiel',
+      description: 'Lancement de ShopOpti avec les fonctionnalités core : import produits, automatisation et IA.'
+    },
+    {
+      year: '2024 Q2',
+      title: '1 000 utilisateurs',
+      description: 'Franchissement du cap des 1000 boutiques connectées et premières intégrations partenaires.'
+    },
+    {
+      year: '2024 Q3',
+      title: 'Série A - 2M€',
+      description: 'Levée de fonds pour accélérer le développement et expansion européenne.'
+    },
+    {
+      year: '2024 Q4',
+      title: '15k+ utilisateurs',
+      description: 'Leader français de l\'automatisation e-commerce avec IA. 99+ fournisseurs intégrés.'
+    }
+  ];
+
+  const achievements = [
+    { icon: Users, value: '15 000+', label: 'E-commerçants actifs' },
+    { icon: Rocket, value: '250M€', label: 'GMV traité annuellement' },
+    { icon: Award, value: '99+', label: 'Fournisseurs partenaires' },
+    { icon: Clock, value: '400k+', label: 'Heures économisées' }
+  ];
 
   const values = [
     {
@@ -86,7 +118,99 @@ const AboutPage = () => {
           </div>
         </section>
 
-        {/* Stats Section */}
+        {/* Video Section */}
+        <section className="py-20">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="text-center space-y-4 mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold">Découvrez ShopOpti en action</h2>
+              <p className="text-lg text-muted-foreground">
+                2 minutes pour comprendre comment nous révolutionnons l'e-commerce
+              </p>
+            </div>
+            
+            <div className="max-w-4xl mx-auto">
+              <VideoPlayer
+                thumbnail={featureAI}
+                title="Comment ShopOpti transforme votre e-commerce"
+                description="Automatisation IA, import multi-fournisseurs, optimisation des prix en temps réel"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Timeline */}
+        <section className="py-20 bg-secondary/30">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="text-center space-y-4 mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold">Notre parcours</h2>
+              <p className="text-lg text-muted-foreground">
+                De l'idée à la référence du marché
+              </p>
+            </div>
+            
+            <div className="max-w-4xl mx-auto">
+              <div className="relative">
+                {/* Timeline line */}
+                <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-primary/20 hidden md:block" />
+                
+                <div className="space-y-8">
+                  {timeline.map((item, index) => (
+                    <div key={index} className="relative pl-0 md:pl-20 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                      {/* Timeline dot */}
+                      <div className="absolute left-6 top-2 hidden md:block">
+                        <div className="h-4 w-4 rounded-full bg-primary border-4 border-background" />
+                      </div>
+                      
+                      <Card className="hover:shadow-lg transition-all">
+                        <CardContent className="p-6">
+                          <div className="flex flex-col md:flex-row md:items-center gap-4">
+                            <Badge className="w-fit bg-primary/10 text-primary border-primary/20">
+                              {item.year}
+                            </Badge>
+                            <div className="flex-1">
+                              <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                              <p className="text-muted-foreground">{item.description}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Achievements */}
+        <section className="py-20">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="text-center space-y-4 mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold">Nos réalisations</h2>
+            </div>
+            
+            <div className="grid md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+              {achievements.map((achievement, index) => {
+                const Icon = achievement.icon;
+                return (
+                  <Card key={index} className="border-2 hover:border-primary/50 transition-all hover:-translate-y-2 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                    <CardContent className="pt-6 text-center space-y-3">
+                      <div className="flex justify-center">
+                        <div className="p-4 bg-gradient-to-br from-primary to-primary-glow rounded-full">
+                          <Icon className="h-8 w-8 text-white" />
+                        </div>
+                      </div>
+                      <div className="text-4xl font-bold text-primary">{achievement.value}</div>
+                      <div className="text-sm text-muted-foreground">{achievement.label}</div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Values Section */}
         <section className="py-16 bg-secondary/30">
           <div className="container mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">

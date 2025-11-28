@@ -3,8 +3,12 @@ import { PublicLayout } from '@/layouts/PublicLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Crown, Zap, Rocket, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Crown, Zap, Rocket, ArrowRight, Users, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ROICalculator } from '@/components/public/ROICalculator';
+import { ComparisonTable } from '@/components/public/ComparisonTable';
+import { TestimonialCard } from '@/components/public/TestimonialCard';
+import { TrustBadges } from '@/components/public/TrustBadges';
 
 const PricingPage = () => {
   const navigate = useNavigate();
@@ -185,8 +189,83 @@ const PricingPage = () => {
           </div>
         </section>
 
-        {/* FAQ Section */}
+        {/* ROI Calculator */}
+        <section className="py-20 bg-secondary/30">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="text-center space-y-4 mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold">Calculez votre retour sur investissement</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Découvrez combien vous pourriez économiser avec ShopOpti
+              </p>
+            </div>
+            <div className="max-w-5xl mx-auto">
+              <ROICalculator />
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials */}
         <section className="py-20">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="text-center space-y-4 mb-12">
+              <Badge className="px-4 py-2 bg-success/10 text-success border-success/20">
+                <Users className="h-4 w-4 mr-2" />
+                +15 000 e-commerçants satisfaits
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold">Ce que disent nos clients</h2>
+              <p className="text-lg text-muted-foreground">
+                Des résultats concrets et mesurables
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              <TestimonialCard
+                name="Sophie Martin"
+                role="Fondatrice"
+                company="BelleMode.fr"
+                rating={5}
+                text="ShopOpti a transformé ma boutique. En 3 mois, j'ai doublé mon chiffre d'affaires tout en divisant mon temps de gestion par 3. L'automatisation IA est bluffante."
+                metrics={{ label: "CA en 3 mois", value: "+142%" }}
+              />
+              <TestimonialCard
+                name="Marc Dubois"
+                role="CEO"
+                company="TechDrop"
+                rating={5}
+                text="Le meilleur investissement pour mon dropshipping. L'import automatique depuis 15+ fournisseurs et l'optimisation des prix m'ont permis de passer à l'échelle rapidement."
+                metrics={{ label: "Temps économisé", value: "25h/sem" }}
+              />
+              <TestimonialCard
+                name="Julie Chen"
+                role="Manager"
+                company="MultiStores Pro"
+                rating={5}
+                text="Je gère 8 boutiques avec ShopOpti. La centralisation et l'IA prédictive m'ont permis d'augmenter mes marges de 38% sans effort supplémentaire."
+                metrics={{ label: "Marge nette", value: "+38%" }}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Comparison Table */}
+        <section className="py-20 bg-secondary/30">
+          <div className="container mx-auto px-4 sm:px-6">
+            <ComparisonTable />
+          </div>
+        </section>
+
+        {/* Trust Badges */}
+        <section className="py-20">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="text-center space-y-4 mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold">Une plateforme de confiance</h2>
+            </div>
+            <TrustBadges />
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-20 bg-secondary/30">
           <div className="container mx-auto px-4 sm:px-6">
             <div className="text-center space-y-4 mb-12">
               <h2 className="text-3xl md:text-4xl font-bold">Questions fréquentes</h2>
@@ -197,9 +276,12 @@ const PricingPage = () => {
             
             <div className="max-w-3xl mx-auto space-y-4">
               {faq.map((item, index) => (
-                <Card key={index}>
+                <Card key={index} className="hover:shadow-lg transition-all">
                   <CardHeader>
-                    <CardTitle className="text-lg">{item.question}</CardTitle>
+                    <CardTitle className="text-lg flex items-start gap-3">
+                      <MessageSquare className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
+                      {item.question}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">{item.answer}</p>
