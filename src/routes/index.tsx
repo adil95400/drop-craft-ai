@@ -46,6 +46,13 @@ const CreateOrder = lazy(() => import('@/pages/orders/CreateOrder'));
 const CreateCustomer = lazy(() => import('@/pages/customers/CreateCustomer'));
 const CreateNotification = lazy(() => import('@/pages/notifications/CreateNotification'));
 
+// Additional pages
+const AdvancedModulesPage = lazy(() => import('@/pages/AdvancedModulesPage'));
+const ModernPage = lazy(() => import('@/pages/modern/ModernPage'));
+const MonitoringPage = lazy(() => import('@/pages/MonitoringPage'));
+const CatalogPage = lazy(() => import('@/pages/modern/CatalogPage'));
+const ProductDemoPage = lazy(() => import('@/pages/products/ProductDemoPage'));
+
 // Loading component
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -106,6 +113,25 @@ export function AppRoutes() {
         <Route path="/orders/create" element={<ProtectedRoute><CreateOrder /></ProtectedRoute>} />
         <Route path="/customers/create" element={<ProtectedRoute><CreateCustomer /></ProtectedRoute>} />
         <Route path="/notifications/create" element={<ProtectedRoute><CreateNotification /></ProtectedRoute>} />
+        
+        {/* Additional Feature Pages */}
+        <Route path="/advanced" element={<ProtectedRoute><AppLayout><AdvancedModulesPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/modern" element={<ProtectedRoute><AppLayout><ModernPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/monitoring" element={<ProtectedRoute><AppLayout><MonitoringPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/catalog" element={<ProtectedRoute><AppLayout><CatalogPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/subscription" element={<Navigate to="/dashboard/subscription" replace />} />
+        
+        {/* Modern Routes - Redirections vers interfaces principales */}
+        <Route path="/modern/products" element={<Navigate to="/products" replace />} />
+        <Route path="/modern/customers" element={<Navigate to="/dashboard/customers" replace />} />
+        <Route path="/modern/orders" element={<Navigate to="/dashboard/orders" replace />} />
+        <Route path="/modern/marketing" element={<Navigate to="/marketing" replace />} />
+        <Route path="/modern/suppliers" element={<Navigate to="/products/suppliers" replace />} />
+        <Route path="/modern/import" element={<Navigate to="/products/import" replace />} />
+        <Route path="/modern/billing" element={<Navigate to="/dashboard/billing" replace />} />
+        
+        {/* Product Demo */}
+        <Route path="/products/demo" element={<ProtectedRoute><AppLayout><ProductDemoPage /></AppLayout></ProtectedRoute>} />
         
         {/* Admin Routes - Rôle admin requis */}
         <Route path="/admin/*" element={
