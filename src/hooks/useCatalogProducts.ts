@@ -42,7 +42,7 @@ export const useCatalogProducts = (filters: any = {}) => {
       const { data, error } = await supabase.rpc('get_marketplace_products', {
         category_filter: filters.category || null,
         search_term: filters.search || null,
-        limit_count: 10000 // Allow displaying all products without artificial limits
+        limit_count: 100000 // Support large catalogs up to 100k products
       });
       
       if (error) {
@@ -106,7 +106,7 @@ export const useCatalogProducts = (filters: any = {}) => {
     queryFn: async () => {
       // Get categories from the secure marketplace function
       const { data, error } = await supabase.rpc('get_marketplace_products', {
-        limit_count: 1000
+        limit_count: 100000
       });
       if (error) throw error;
       const categories = [...new Set(data?.map((item: any) => item.category))]
@@ -123,7 +123,7 @@ export const useCatalogProducts = (filters: any = {}) => {
       const { data, error } = await supabase.rpc('get_secure_catalog_products', {
         category_filter: null,
         search_term: null,
-        limit_count: 1000
+        limit_count: 100000
       });
       if (error) throw error;
       

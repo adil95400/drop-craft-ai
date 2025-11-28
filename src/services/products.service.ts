@@ -15,7 +15,7 @@ export class ProductsService {
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(10000);
+      .limit(100000);
 
     if (error) throw error;
     return data;
