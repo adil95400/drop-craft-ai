@@ -28,23 +28,25 @@ export class StockPriceMonitor {
    */
   async checkProducts(userId: string): Promise<ProductMonitoringStatus[]> {
     const { data: products } = await supabase
-      .from('catalog_products')
-      .select('id, name, price, quantity_available, updated_at')
+      .from('products')
+      .select('id, name, price, stock_quantity, updated_at')
       .eq('user_id', userId)
+      .limit(100)
 
     const statuses: ProductMonitoringStatus[] = []
 
     for (const product of products || []) {
       const alerts: string[] = []
       let needsSync = false
+      const stock = product.stock_quantity || 0
 
-      // Vérifier stock
-      if ((product.quantity_available || 0) < 10) {
-        alerts.push(`Stock faible: ${product.quantity_available || 0} unités`)
+      // Check stock
+      if (stock < 10) {
+        alerts.push(`Stock faible: ${stock} unités`)
         needsSync = true
       }
 
-      // Vérifier ancienneté mise à jour
+      // Check last update
       const daysSinceUpdate = Math.floor(
         (Date.now() - new Date(product.updated_at).getTime()) / (1000 * 60 * 60 * 24)
       )
@@ -55,7 +57,7 @@ export class StockPriceMonitor {
       statuses.push({
         productId: product.id,
         productName: product.name,
-        currentStock: product.quantity_available || 0,
+        currentStock: stock,
         currentPrice: product.price || 0,
         lastChecked: new Date().toISOString(),
         needsSync,
@@ -71,7 +73,7 @@ export class StockPriceMonitor {
    */
   async updateProductPrice(productId: string, newPrice: number): Promise<void> {
     const { error } = await supabase
-      .from('catalog_products')
+      .from('products')
       .update({ price: newPrice, updated_at: new Date().toISOString() })
       .eq('id', productId)
 
@@ -83,8 +85,8 @@ export class StockPriceMonitor {
    */
   async updateProductStock(productId: string, newStock: number): Promise<void> {
     const { error } = await supabase
-      .from('catalog_products')
-      .update({ quantity_available: newStock, updated_at: new Date().toISOString() })
+      .from('products')
+      .update({ stock_quantity: newStock, updated_at: new Date().toISOString() })
       .eq('id', productId)
 
     if (error) throw error

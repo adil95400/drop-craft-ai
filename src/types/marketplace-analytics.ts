@@ -134,6 +134,9 @@ export interface AlertSummary {
   warning_alerts: number
   info_alerts: number
   unresolved_count: number
+  low_stock_count: number
+  price_alerts_count: number
+  sync_errors_count: number
   
   top_alerts: Array<{
     id: string
