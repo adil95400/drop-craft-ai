@@ -50,7 +50,6 @@ const CreateNotification = lazy(() => import('@/pages/notifications/CreateNotifi
 const AdvancedModulesPage = lazy(() => import('@/pages/AdvancedModulesPage'));
 const ModernPage = lazy(() => import('@/pages/modern/ModernPage'));
 const MonitoringPage = lazy(() => import('@/pages/MonitoringPage'));
-const ProductDemoPage = lazy(() => import('@/pages/products/ProductDemoPage'));
 const APIDocumentationDetailPage = lazy(() => import('@/pages/integrations/APIDocumentationDetailPage'));
 const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'));
 const AcademyHomePage = lazy(() => import('@/pages/academy/AcademyHomePage'));
@@ -140,8 +139,6 @@ export function AppRoutes() {
         <Route path="/modern/import" element={<Navigate to="/products/import" replace />} />
         <Route path="/modern/billing" element={<Navigate to="/dashboard/billing" replace />} />
         
-        {/* Product Demo */}
-        <Route path="/products/demo" element={<ProtectedRoute><AppLayout><ProductDemoPage /></AppLayout></ProtectedRoute>} />
         
         {/* Guides & Documentation */}
         <Route path="/integrations/api/documentation" element={<ProtectedRoute><AppLayout><APIDocumentationDetailPage /></AppLayout></ProtectedRoute>} />
