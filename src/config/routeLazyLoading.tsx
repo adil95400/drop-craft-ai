@@ -18,7 +18,7 @@ export const withSuspense = (Component: React.LazyExoticComponent<any>) => {
 
 // Pages principales - Chargées avec priorité
 export const LazyDashboardHome = lazyWithRetry(() => import('@/pages/DashboardHome'));
-export const LazyModernProductsPage = lazyWithRetry(() => import('@/pages/ModernProductsPage'));
+export const LazyModernProductsPage = lazyWithRetry(() => import('@/pages/products/ProductsMainPage'));
 export const LazyModernOrdersPage = lazyWithRetry(() => import('@/pages/ModernOrdersPage'));
 export const LazyModernCustomersPage = lazyWithRetry(() => import('@/pages/ModernCustomersPage'));
 
