@@ -50,7 +50,6 @@ const CreateNotification = lazy(() => import('@/pages/notifications/CreateNotifi
 const AdvancedModulesPage = lazy(() => import('@/pages/AdvancedModulesPage'));
 const ModernPage = lazy(() => import('@/pages/modern/ModernPage'));
 const MonitoringPage = lazy(() => import('@/pages/MonitoringPage'));
-const CatalogPage = lazy(() => import('@/pages/modern/CatalogPage'));
 const ProductDemoPage = lazy(() => import('@/pages/products/ProductDemoPage'));
 const APIDocumentationDetailPage = lazy(() => import('@/pages/integrations/APIDocumentationDetailPage'));
 const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'));
@@ -125,7 +124,7 @@ export function AppRoutes() {
         <Route path="/advanced" element={<ProtectedRoute><AppLayout><AdvancedModulesPage /></AppLayout></ProtectedRoute>} />
         <Route path="/modern" element={<ProtectedRoute><AppLayout><ModernPage /></AppLayout></ProtectedRoute>} />
         <Route path="/monitoring" element={<ProtectedRoute><AppLayout><MonitoringPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/catalog" element={<ProtectedRoute><AppLayout><CatalogPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/catalog" element={<Navigate to="/products/catalogue" replace />} />
         <Route path="/subscription" element={<Navigate to="/dashboard/subscription" replace />} />
         
         {/* Catalog Intelligence & Rules */}
