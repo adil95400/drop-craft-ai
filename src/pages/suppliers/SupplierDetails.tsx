@@ -145,9 +145,17 @@ export default function SupplierDetails() {
               </div>
 
               <div className="flex gap-2">
-                <Button variant="outline">
+                <Button onClick={() => navigate(`/suppliers/${id}/catalog`)}>
+                  <Package className="h-4 w-4 mr-2" />
+                  Catalogue
+                </Button>
+                <Button variant="outline" onClick={() => navigate(`/suppliers/${id}/import`)}>
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Synchroniser
+                  Importer
+                </Button>
+                <Button variant="outline" onClick={() => navigate(`/suppliers/${id}/feeds`)}>
+                  <Globe className="h-4 w-4 mr-2" />
+                  Feeds
                 </Button>
                 <Button variant="outline" onClick={() => navigate(`/suppliers/${id}/edit`)}>
                   <Edit className="h-4 w-4 mr-2" />
@@ -238,6 +246,66 @@ export default function SupplierDetails() {
 
           {/* Overview */}
           <TabsContent value="overview" className="space-y-6">
+            {/* Actions Rapides */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card 
+                className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20"
+                onClick={() => navigate(`/suppliers/${id}/catalog`)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-lg bg-primary/10">
+                      <Package className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Catalogue</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Produits du fournisseur
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 bg-gradient-to-br from-green-500/5 to-green-500/10 border-green-500/20"
+                onClick={() => navigate(`/suppliers/${id}/import`)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-lg bg-green-500/10">
+                      <RefreshCw className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Importer</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Synchroniser les produits
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card 
+                className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 bg-gradient-to-br from-blue-500/5 to-blue-500/10 border-blue-500/20"
+                onClick={() => navigate(`/suppliers/${id}/feeds`)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-lg bg-blue-500/10">
+                      <Globe className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Feeds</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Flux multi-canaux
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Informations */}
               <Card>
