@@ -4703,6 +4703,217 @@ export type Database = {
         }
         Relationships: []
       }
+      fulfillment_automation_rules: {
+        Row: {
+          applies_to_categories: string[] | null
+          applies_to_products: string[] | null
+          auto_generate_label: boolean
+          auto_select_carrier: boolean
+          auto_send_tracking: boolean
+          created_at: string
+          destination_countries: string[] | null
+          execution_count: number
+          id: string
+          is_active: boolean
+          last_executed_at: string | null
+          max_order_value: number | null
+          min_order_value: number | null
+          name: string
+          preferred_carrier_id: string | null
+          trigger_on: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applies_to_categories?: string[] | null
+          applies_to_products?: string[] | null
+          auto_generate_label?: boolean
+          auto_select_carrier?: boolean
+          auto_send_tracking?: boolean
+          created_at?: string
+          destination_countries?: string[] | null
+          execution_count?: number
+          id?: string
+          is_active?: boolean
+          last_executed_at?: string | null
+          max_order_value?: number | null
+          min_order_value?: number | null
+          name: string
+          preferred_carrier_id?: string | null
+          trigger_on: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          applies_to_categories?: string[] | null
+          applies_to_products?: string[] | null
+          auto_generate_label?: boolean
+          auto_select_carrier?: boolean
+          auto_send_tracking?: boolean
+          created_at?: string
+          destination_countries?: string[] | null
+          execution_count?: number
+          id?: string
+          is_active?: boolean
+          last_executed_at?: string | null
+          max_order_value?: number | null
+          min_order_value?: number | null
+          name?: string
+          preferred_carrier_id?: string | null
+          trigger_on?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fulfillment_automation_rules_preferred_carrier_id_fkey"
+            columns: ["preferred_carrier_id"]
+            isOneToOne: false
+            referencedRelation: "fulfillment_carriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fulfillment_carriers: {
+        Row: {
+          api_credentials: Json | null
+          avg_delivery_days: number | null
+          base_cost: number | null
+          carrier_code: string
+          cost_per_kg: number | null
+          created_at: string
+          default_service_level: string | null
+          id: string
+          is_active: boolean
+          name: string
+          success_rate: number | null
+          supports_insurance: boolean
+          supports_tracking: boolean
+          total_shipments: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_credentials?: Json | null
+          avg_delivery_days?: number | null
+          base_cost?: number | null
+          carrier_code: string
+          cost_per_kg?: number | null
+          created_at?: string
+          default_service_level?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          success_rate?: number | null
+          supports_insurance?: boolean
+          supports_tracking?: boolean
+          total_shipments?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_credentials?: Json | null
+          avg_delivery_days?: number | null
+          base_cost?: number | null
+          carrier_code?: string
+          cost_per_kg?: number | null
+          created_at?: string
+          default_service_level?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          success_rate?: number | null
+          supports_insurance?: boolean
+          supports_tracking?: boolean
+          total_shipments?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      fulfillment_shipments: {
+        Row: {
+          carrier_id: string | null
+          carrier_name: string
+          created_at: string
+          delivered_at: string | null
+          dimensions: Json | null
+          estimated_delivery_at: string | null
+          id: string
+          insurance_cost: number | null
+          label_url: string | null
+          last_tracking_update: string | null
+          order_id: string
+          return_address: Json | null
+          service_level: string | null
+          shipped_at: string | null
+          shipping_address: Json
+          shipping_cost: number | null
+          status: string
+          tracking_events: Json | null
+          tracking_number: string | null
+          updated_at: string
+          user_id: string
+          weight_kg: number | null
+        }
+        Insert: {
+          carrier_id?: string | null
+          carrier_name: string
+          created_at?: string
+          delivered_at?: string | null
+          dimensions?: Json | null
+          estimated_delivery_at?: string | null
+          id?: string
+          insurance_cost?: number | null
+          label_url?: string | null
+          last_tracking_update?: string | null
+          order_id: string
+          return_address?: Json | null
+          service_level?: string | null
+          shipped_at?: string | null
+          shipping_address: Json
+          shipping_cost?: number | null
+          status: string
+          tracking_events?: Json | null
+          tracking_number?: string | null
+          updated_at?: string
+          user_id: string
+          weight_kg?: number | null
+        }
+        Update: {
+          carrier_id?: string | null
+          carrier_name?: string
+          created_at?: string
+          delivered_at?: string | null
+          dimensions?: Json | null
+          estimated_delivery_at?: string | null
+          id?: string
+          insurance_cost?: number | null
+          label_url?: string | null
+          last_tracking_update?: string | null
+          order_id?: string
+          return_address?: Json | null
+          service_level?: string | null
+          shipped_at?: string | null
+          shipping_address?: Json
+          shipping_cost?: number | null
+          status?: string
+          tracking_events?: Json | null
+          tracking_number?: string | null
+          updated_at?: string
+          user_id?: string
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fulfillment_shipments_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "fulfillment_carriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       generated_content: {
         Row: {
           ai_model: string | null
@@ -6628,6 +6839,51 @@ export type Database = {
           total_amount?: number
           tracking_number?: string | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      marketplace_price_data: {
+        Row: {
+          avg_competitor_price: number | null
+          buybox_price: number | null
+          buybox_seller: string | null
+          competitor_count: number
+          created_at: string
+          current_price: number
+          id: string
+          last_checked_at: string
+          marketplace: string
+          min_competitor_price: number | null
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          avg_competitor_price?: number | null
+          buybox_price?: number | null
+          buybox_seller?: string | null
+          competitor_count?: number
+          created_at?: string
+          current_price: number
+          id?: string
+          last_checked_at?: string
+          marketplace: string
+          min_competitor_price?: number | null
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          avg_competitor_price?: number | null
+          buybox_price?: number | null
+          buybox_seller?: string | null
+          competitor_count?: number
+          created_at?: string
+          current_price?: number
+          id?: string
+          last_checked_at?: string
+          marketplace?: string
+          min_competitor_price?: number | null
+          product_id?: string
           user_id?: string
         }
         Relationships: []
@@ -8835,6 +9091,72 @@ export type Database = {
           },
         ]
       }
+      pricing_recommendations: {
+        Row: {
+          applied_at: string | null
+          confidence_score: number
+          created_at: string
+          current_margin_percent: number | null
+          current_price: number
+          current_sales_velocity: number | null
+          estimated_profit_impact: number | null
+          estimated_revenue_impact: number | null
+          expected_margin_percent: number
+          expected_sales_increase_percent: number | null
+          expires_at: string
+          generated_at: string
+          id: string
+          marketplace: string
+          product_id: string
+          recommendation_reason: string
+          recommended_price: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          confidence_score: number
+          created_at?: string
+          current_margin_percent?: number | null
+          current_price: number
+          current_sales_velocity?: number | null
+          estimated_profit_impact?: number | null
+          estimated_revenue_impact?: number | null
+          expected_margin_percent: number
+          expected_sales_increase_percent?: number | null
+          expires_at?: string
+          generated_at?: string
+          id?: string
+          marketplace: string
+          product_id: string
+          recommendation_reason: string
+          recommended_price: number
+          status: string
+          user_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          confidence_score?: number
+          created_at?: string
+          current_margin_percent?: number | null
+          current_price?: number
+          current_sales_velocity?: number | null
+          estimated_profit_impact?: number | null
+          estimated_revenue_impact?: number | null
+          expected_margin_percent?: number
+          expected_sales_increase_percent?: number | null
+          expires_at?: string
+          generated_at?: string
+          id?: string
+          marketplace?: string
+          product_id?: string
+          recommendation_reason?: string
+          recommended_price?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pricing_rules: {
         Row: {
           applies_to: string | null
@@ -10132,6 +10454,131 @@ export type Database = {
         }
         Relationships: []
       }
+      promotion_campaigns: {
+        Row: {
+          applies_to: string
+          campaign_type: string
+          category_ids: string[] | null
+          conversion_rate: number | null
+          created_at: string
+          discount_type: string | null
+          discount_value: number | null
+          ends_at: string | null
+          id: string
+          max_discount_amount: number | null
+          max_uses_per_customer: number | null
+          max_uses_total: number | null
+          min_purchase_amount: number | null
+          min_quantity: number | null
+          name: string
+          product_ids: string[] | null
+          starts_at: string
+          status: string
+          target_customer_segments: string[] | null
+          target_marketplaces: string[] | null
+          total_discount_given: number
+          total_revenue: number
+          total_uses: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applies_to: string
+          campaign_type: string
+          category_ids?: string[] | null
+          conversion_rate?: number | null
+          created_at?: string
+          discount_type?: string | null
+          discount_value?: number | null
+          ends_at?: string | null
+          id?: string
+          max_discount_amount?: number | null
+          max_uses_per_customer?: number | null
+          max_uses_total?: number | null
+          min_purchase_amount?: number | null
+          min_quantity?: number | null
+          name: string
+          product_ids?: string[] | null
+          starts_at: string
+          status: string
+          target_customer_segments?: string[] | null
+          target_marketplaces?: string[] | null
+          total_discount_given?: number
+          total_revenue?: number
+          total_uses?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          applies_to?: string
+          campaign_type?: string
+          category_ids?: string[] | null
+          conversion_rate?: number | null
+          created_at?: string
+          discount_type?: string | null
+          discount_value?: number | null
+          ends_at?: string | null
+          id?: string
+          max_discount_amount?: number | null
+          max_uses_per_customer?: number | null
+          max_uses_total?: number | null
+          min_purchase_amount?: number | null
+          min_quantity?: number | null
+          name?: string
+          product_ids?: string[] | null
+          starts_at?: string
+          status?: string
+          target_customer_segments?: string[] | null
+          target_marketplaces?: string[] | null
+          total_discount_given?: number
+          total_revenue?: number
+          total_uses?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      promotion_executions: {
+        Row: {
+          campaign_id: string
+          customer_id: string | null
+          discount_amount: number
+          executed_at: string
+          id: string
+          order_id: string | null
+          order_total: number
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          customer_id?: string | null
+          discount_amount: number
+          executed_at?: string
+          id?: string
+          order_id?: string | null
+          order_total: number
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          customer_id?: string | null
+          discount_amount?: number
+          executed_at?: string
+          id?: string
+          order_id?: string | null
+          order_total?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_executions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "promotion_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       published_products: {
         Row: {
           created_at: string | null
@@ -10423,6 +10870,74 @@ export type Database = {
           },
         ]
       }
+      repricing_executions: {
+        Row: {
+          avg_competitor_price: number | null
+          competitor_count: number | null
+          error_message: string | null
+          executed_at: string
+          id: string
+          margin_percent: number | null
+          marketplace: string
+          min_competitor_price: number | null
+          new_price: number
+          old_price: number
+          price_change: number
+          price_change_percent: number
+          product_id: string
+          reason: string | null
+          rule_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          avg_competitor_price?: number | null
+          competitor_count?: number | null
+          error_message?: string | null
+          executed_at?: string
+          id?: string
+          margin_percent?: number | null
+          marketplace: string
+          min_competitor_price?: number | null
+          new_price: number
+          old_price: number
+          price_change: number
+          price_change_percent: number
+          product_id: string
+          reason?: string | null
+          rule_id: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          avg_competitor_price?: number | null
+          competitor_count?: number | null
+          error_message?: string | null
+          executed_at?: string
+          id?: string
+          margin_percent?: number | null
+          marketplace?: string
+          min_competitor_price?: number | null
+          new_price?: number
+          old_price?: number
+          price_change?: number
+          price_change_percent?: number
+          product_id?: string
+          reason?: string | null
+          rule_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repricing_executions_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "repricing_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       repricing_queue: {
         Row: {
           apply_to_all: boolean | null
@@ -10490,6 +11005,132 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      repricing_rules: {
+        Row: {
+          applies_to_categories: string[] | null
+          applies_to_products: string[] | null
+          check_interval_minutes: number | null
+          competitor_offset: number | null
+          created_at: string
+          execution_count: number
+          id: string
+          is_active: boolean
+          last_executed_at: string | null
+          marketplace: string
+          max_margin_percent: number | null
+          max_price: number | null
+          min_margin_percent: number
+          min_price: number | null
+          name: string
+          rounding_method: string | null
+          schedule_type: string | null
+          strategy: string
+          target_position: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applies_to_categories?: string[] | null
+          applies_to_products?: string[] | null
+          check_interval_minutes?: number | null
+          competitor_offset?: number | null
+          created_at?: string
+          execution_count?: number
+          id?: string
+          is_active?: boolean
+          last_executed_at?: string | null
+          marketplace: string
+          max_margin_percent?: number | null
+          max_price?: number | null
+          min_margin_percent?: number
+          min_price?: number | null
+          name: string
+          rounding_method?: string | null
+          schedule_type?: string | null
+          strategy: string
+          target_position?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          applies_to_categories?: string[] | null
+          applies_to_products?: string[] | null
+          check_interval_minutes?: number | null
+          competitor_offset?: number | null
+          created_at?: string
+          execution_count?: number
+          id?: string
+          is_active?: boolean
+          last_executed_at?: string | null
+          marketplace?: string
+          max_margin_percent?: number | null
+          max_price?: number | null
+          min_margin_percent?: number
+          min_price?: number | null
+          name?: string
+          rounding_method?: string | null
+          schedule_type?: string | null
+          strategy?: string
+          target_position?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      restock_recommendations: {
+        Row: {
+          acknowledged_at: string | null
+          avg_daily_sales: number
+          created_at: string
+          current_stock: number
+          days_until_stockout: number | null
+          estimated_cost: number | null
+          generated_at: string
+          id: string
+          potential_lost_sales: number | null
+          product_id: string
+          recommended_reorder_date: string
+          recommended_reorder_quantity: number
+          status: string
+          urgency: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          avg_daily_sales: number
+          created_at?: string
+          current_stock: number
+          days_until_stockout?: number | null
+          estimated_cost?: number | null
+          generated_at?: string
+          id?: string
+          potential_lost_sales?: number | null
+          product_id: string
+          recommended_reorder_date: string
+          recommended_reorder_quantity: number
+          status: string
+          urgency: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          avg_daily_sales?: number
+          created_at?: string
+          current_stock?: number
+          days_until_stockout?: number | null
+          estimated_cost?: number | null
+          generated_at?: string
+          id?: string
+          potential_lost_sales?: number | null
+          product_id?: string
+          recommended_reorder_date?: string
+          recommended_reorder_quantity?: number
+          status?: string
+          urgency?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       return_automation_rules: {
         Row: {
@@ -10819,6 +11460,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sales_forecasts: {
+        Row: {
+          actual_revenue: number | null
+          actual_units: number | null
+          confidence_level: number
+          created_at: string
+          forecast_accuracy: number | null
+          forecast_date: string
+          forecast_period: string
+          forecast_type: string
+          generated_at: string
+          id: string
+          model_version: string | null
+          predicted_revenue: number
+          predicted_units: number
+          product_id: string | null
+          promotion_factor: number | null
+          seasonality_factor: number | null
+          training_data_points: number | null
+          trend_factor: number | null
+          user_id: string
+        }
+        Insert: {
+          actual_revenue?: number | null
+          actual_units?: number | null
+          confidence_level: number
+          created_at?: string
+          forecast_accuracy?: number | null
+          forecast_date: string
+          forecast_period: string
+          forecast_type: string
+          generated_at?: string
+          id?: string
+          model_version?: string | null
+          predicted_revenue: number
+          predicted_units: number
+          product_id?: string | null
+          promotion_factor?: number | null
+          seasonality_factor?: number | null
+          training_data_points?: number | null
+          trend_factor?: number | null
+          user_id: string
+        }
+        Update: {
+          actual_revenue?: number | null
+          actual_units?: number | null
+          confidence_level?: number
+          created_at?: string
+          forecast_accuracy?: number | null
+          forecast_date?: string
+          forecast_period?: string
+          forecast_type?: string
+          generated_at?: string
+          id?: string
+          model_version?: string | null
+          predicted_revenue?: number
+          predicted_units?: number
+          product_id?: string | null
+          promotion_factor?: number | null
+          seasonality_factor?: number | null
+          training_data_points?: number | null
+          trend_factor?: number | null
+          user_id?: string
+        }
+        Relationships: []
       }
       sales_intelligence: {
         Row: {
@@ -16211,6 +16918,30 @@ export type Database = {
       }
     }
     Views: {
+      fulfillment_dashboard: {
+        Row: {
+          avg_delivery_days: number | null
+          delivered_shipments: number | null
+          failed_shipments: number | null
+          in_transit_shipments: number | null
+          total_shipments: number | null
+          total_shipping_cost: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      repricing_dashboard: {
+        Row: {
+          active_rules_count: number | null
+          avg_price_change_percent: number | null
+          rules_executed_today: number | null
+          successful_executions_24h: number | null
+          total_executions_24h: number | null
+          total_price_adjustments: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       shopify_import_stats: {
         Row: {
           active_products: number | null
