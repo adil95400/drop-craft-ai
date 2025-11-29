@@ -215,6 +215,89 @@ export class FulfillmentService {
       failed_shipments: 5
     }
   }
+
+  /**
+   * Liste les transporteurs
+   */
+  async listCarriers(userId: string): Promise<FulfillmentCarrier[]> {
+    const { data, error } = await supabase
+      .from('fulfillment_carriers' as any)
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return (data || []) as any
+  }
+
+  /**
+   * Crée un transporteur
+   */
+  async createCarrier(carrier: Partial<FulfillmentCarrier>): Promise<FulfillmentCarrier> {
+    const { data, error } = await supabase
+      .from('fulfillment_carriers' as any)
+      .insert(carrier as any)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data as any
+  }
+
+  /**
+   * Liste les règles d'automatisation
+   */
+  async listAutomationRules(userId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('fulfillment_automation_rules' as any)
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return (data || []) as any
+  }
+
+  /**
+   * Crée une règle d'automatisation
+   */
+  async createAutomationRule(rule: any): Promise<any> {
+    const { data, error } = await supabase
+      .from('fulfillment_automation_rules' as any)
+      .insert(rule as any)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data as any
+  }
+
+  /**
+   * Toggle règle active/inactive
+   */
+  async toggleRule(ruleId: string, isActive: boolean): Promise<void> {
+    const { error } = await supabase
+      .from('fulfillment_automation_rules' as any)
+      .update({ is_active: isActive })
+      .eq('id', ruleId)
+    
+    if (error) throw error
+  }
+
+  /**
+   * Liste les expéditions
+   */
+  async listShipments(userId: string, limit = 50): Promise<FulfillmentShipment[]> {
+    const { data, error } = await supabase
+      .from('fulfillment_shipments' as any)
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+    
+    if (error) throw error
+    return (data || []) as any
+  }
 }
 
 export const fulfillmentService = new FulfillmentService()

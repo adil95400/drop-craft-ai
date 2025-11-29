@@ -2,13 +2,15 @@ import { Helmet } from 'react-helmet-async';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAutoFulfillment } from '@/hooks/useMarketplacePhase2';
-import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
+import { useAuthOptimized } from '@/shared';
 import { Package, Truck, CheckCircle, Clock } from 'lucide-react';
+import { CarriersManager } from '@/components/fulfillment/CarriersManager';
+import { ShipmentsList } from '@/components/fulfillment/ShipmentsList';
 
 export default function AutoFulfillmentPhase2Page() {
-  const { user } = useUnifiedAuth();
-  const userId = user?.id || '';
-  const { stats, isLoadingStats } = useAutoFulfillment(userId);
+  const { user } = useAuthOptimized()
+  const userId = user?.id || ''
+  const { stats, isLoadingStats, carriers, isLoadingCarriers, createCarrier, shipments, isLoadingShipments } = useAutoFulfillment(userId);
 
   return (
     <>
@@ -136,9 +138,11 @@ export default function AutoFulfillmentPhase2Page() {
                 <CardDescription>Configurez vos transporteurs et leurs tarifs</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  Interface de configuration des transporteurs à venir
-                </div>
+                <CarriersManager 
+                  carriers={carriers} 
+                  isLoading={isLoadingCarriers}
+                  onCreate={createCarrier}
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -164,9 +168,10 @@ export default function AutoFulfillmentPhase2Page() {
                 <CardDescription>Toutes vos expéditions en cours et passées</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  Liste des expéditions à venir
-                </div>
+                <ShipmentsList 
+                  shipments={shipments}
+                  isLoading={isLoadingShipments}
+                />
               </CardContent>
             </Card>
           </TabsContent>
