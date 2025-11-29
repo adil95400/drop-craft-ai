@@ -35,14 +35,16 @@ serve(async (req) => {
 
     // Créer la connexion fournisseur
     const { data: connection, error: connectionError } = await supabase
-      .from('supplier_connections')
+      .from('premium_supplier_connections')
       .insert({
         user_id: user.id,
         supplier_id,
-        api_key: api_key || null,
-        settings: settings || {},
         status: 'active',
-        last_sync_at: new Date().toISOString()
+        last_sync_at: new Date().toISOString(),
+        metadata: {
+          api_key: api_key || null,
+          ...settings
+        }
       })
       .select()
       .single()
