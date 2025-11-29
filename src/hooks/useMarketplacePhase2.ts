@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { dynamicRepricingService } from '@/services/marketplace/DynamicRepricingService'
 import { fulfillmentService } from '@/services/marketplace/FulfillmentService'
 import { predictiveAnalyticsService } from '@/services/marketplace/PredictiveAnalyticsService'
+import { promotionService } from '@/services/marketplace/PromotionService'
 
 /**
  * Hook pour le repricing dynamique
@@ -98,5 +99,36 @@ export function usePredictiveAnalytics(userId: string) {
     isLoadingDashboard: dashboard.isLoading,
     generateForecast: generateForecast.mutate,
     isGenerating: generateForecast.isPending,
+  }
+}
+
+/**
+ * Hook pour les promotions automatisées
+ */
+export function usePromotionsAutomation(userId: string) {
+  const queryClient = useQueryClient()
+
+  const stats = useQuery({
+    queryKey: ['promotions-stats', userId],
+    queryFn: () => promotionService.getStats(userId),
+  })
+
+  const campaigns = useQuery({
+    queryKey: ['promotion-campaigns', userId],
+    queryFn: () => promotionService.listCampaigns(userId),
+  })
+
+  const rules = useQuery({
+    queryKey: ['promotion-rules', userId],
+    queryFn: () => promotionService.listAutomationRules(userId),
+  })
+
+  return {
+    stats: stats.data,
+    isLoadingStats: stats.isLoading,
+    campaigns: campaigns.data || [],
+    isLoadingCampaigns: campaigns.isLoading,
+    rules: rules.data || [],
+    isLoadingRules: rules.isLoading,
   }
 }
