@@ -2222,6 +2222,39 @@ export type Database = {
         }
         Relationships: []
       }
+      catalog_events: {
+        Row: {
+          created_at: string | null
+          details: Json
+          event_type: string
+          id: string
+          product_id: string
+          product_name: string
+          severity: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          details?: Json
+          event_type: string
+          id?: string
+          product_id: string
+          product_name: string
+          severity: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          details?: Json
+          event_type?: string
+          id?: string
+          product_id?: string
+          product_name?: string
+          severity?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       catalog_products: {
         Row: {
           attributes: Json | null
@@ -9544,6 +9577,69 @@ export type Database = {
         }
         Relationships: []
       }
+      product_rules: {
+        Row: {
+          actions: Json
+          channel: string
+          condition_group: Json
+          created_at: string | null
+          description: string | null
+          enabled: boolean | null
+          error_count: number | null
+          execution_count: number | null
+          id: string
+          last_executed_at: string | null
+          log_changes: boolean | null
+          name: string
+          priority: number
+          skip_if_already_modified: boolean | null
+          stop_on_error: boolean | null
+          success_count: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          actions: Json
+          channel?: string
+          condition_group: Json
+          created_at?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          error_count?: number | null
+          execution_count?: number | null
+          id?: string
+          last_executed_at?: string | null
+          log_changes?: boolean | null
+          name: string
+          priority: number
+          skip_if_already_modified?: boolean | null
+          stop_on_error?: boolean | null
+          success_count?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          actions?: Json
+          channel?: string
+          condition_group?: Json
+          created_at?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          error_count?: number | null
+          execution_count?: number | null
+          id?: string
+          last_executed_at?: string | null
+          log_changes?: boolean | null
+          name?: string
+          priority?: number
+          skip_if_already_modified?: boolean | null
+          stop_on_error?: boolean | null
+          success_count?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       product_supplier_mapping: {
         Row: {
           auto_switch_enabled: boolean | null
@@ -10679,6 +10775,50 @@ export type Database = {
           role_name?: string
         }
         Relationships: []
+      }
+      rule_executions: {
+        Row: {
+          applied_actions: Json
+          created_at: string | null
+          error: string | null
+          execution_time: number | null
+          id: string
+          product_id: string
+          rule_id: string
+          success: boolean
+          user_id: string
+        }
+        Insert: {
+          applied_actions?: Json
+          created_at?: string | null
+          error?: string | null
+          execution_time?: number | null
+          id?: string
+          product_id: string
+          rule_id: string
+          success: boolean
+          user_id: string
+        }
+        Update: {
+          applied_actions?: Json
+          created_at?: string | null
+          error?: string | null
+          execution_time?: number | null
+          id?: string
+          product_id?: string
+          rule_id?: string
+          success?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rule_executions_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "product_rules"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sales_intelligence: {
         Row: {
