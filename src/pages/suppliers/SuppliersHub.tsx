@@ -100,7 +100,7 @@ export default function SuppliersHub() {
               <Download className="h-4 w-4 mr-2" />
               Exporter
             </Button>
-            <Button onClick={() => navigate('/products/suppliers/create')}>
+            <Button onClick={() => navigate('/suppliers/create')}>
               <Plus className="h-4 w-4 mr-2" />
               Nouveau Fournisseur
             </Button>
@@ -171,7 +171,7 @@ export default function SuppliersHub() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card 
             className="cursor-pointer hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20"
-            onClick={() => navigate('/products/suppliers/browse')}
+            onClick={() => navigate('/suppliers/marketplace')}
           >
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -204,7 +204,7 @@ export default function SuppliersHub() {
 
           <Card 
             className="cursor-pointer hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-br from-green-500/5 to-green-500/10 border-green-500/20"
-            onClick={() => navigate('/products/suppliers/manage')}
+            onClick={() => navigate('/suppliers/settings')}
           >
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -237,7 +237,7 @@ export default function SuppliersHub() {
 
           <Card 
             className="cursor-pointer hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-br from-purple-500/5 to-purple-500/10 border-purple-500/20"
-            onClick={() => navigate('/products/suppliers/create')}
+            onClick={() => navigate('/suppliers/create')}
           >
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -265,6 +265,96 @@ export default function SuppliersHub() {
                 </div>
               </div>
               <Button className="w-full mt-4" variant="outline">Créer</Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Secondary Navigation Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card 
+            className="cursor-pointer hover:shadow-xl transition-all hover:scale-105 border-2"
+            onClick={() => navigate('/suppliers/my')}
+          >
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="p-3 rounded-lg bg-blue-500/10">
+                  <Users className="h-8 w-8 text-blue-600" />
+                </div>
+                <Badge variant="secondary">Mes Fournisseurs</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <h3 className="text-xl font-bold mb-2">Mes Fournisseurs</h3>
+                <p className="text-sm text-muted-foreground">
+                  Gérez vos fournisseurs connectés
+                </p>
+              </div>
+              <div className="space-y-2 pt-4 border-t">
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                  <span>{stats.active} fournisseurs actifs</span>
+                </div>
+              </div>
+              <Button className="w-full mt-4" variant="outline">Voir mes fournisseurs</Button>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-br from-yellow-500/5 to-yellow-500/10 border-yellow-500/20"
+            onClick={() => navigate('/suppliers/premium')}
+          >
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="p-3 rounded-lg bg-yellow-500/10">
+                  <Star className="h-8 w-8 text-yellow-600" />
+                </div>
+                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Premium</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <h3 className="text-xl font-bold mb-2">Fournisseurs Premium</h3>
+                <p className="text-sm text-muted-foreground">
+                  Accédez aux fournisseurs premium
+                </p>
+              </div>
+              <div className="space-y-2 pt-4 border-t">
+                <div className="flex items-center gap-2 text-sm">
+                  <Star className="h-4 w-4 text-muted-foreground" />
+                  <span>Qualité supérieure</span>
+                </div>
+              </div>
+              <Button className="w-full mt-4" variant="outline">Explorer Premium</Button>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-br from-orange-500/5 to-orange-500/10 border-orange-500/20"
+            onClick={() => navigate('/suppliers/analytics')}
+          >
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="p-3 rounded-lg bg-orange-500/10">
+                  <BarChart3 className="h-8 w-8 text-orange-600" />
+                </div>
+                <Badge variant="secondary" className="bg-orange-100 text-orange-800">Analytics</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <h3 className="text-xl font-bold mb-2">Analytics</h3>
+                <p className="text-sm text-muted-foreground">
+                  Performances et KPIs
+                </p>
+              </div>
+              <div className="space-y-2 pt-4 border-t">
+                <div className="flex items-center gap-2 text-sm">
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  <span>Statistiques détaillées</span>
+                </div>
+              </div>
+              <Button className="w-full mt-4" variant="outline">Voir Analytics</Button>
             </CardContent>
           </Card>
         </div>
@@ -363,7 +453,7 @@ export default function SuppliersHub() {
                         <TableRow 
                           key={supplier.id}
                           className="cursor-pointer hover:bg-muted/50"
-                          onClick={() => navigate(`/products/suppliers/${supplier.id}`)}
+                          onClick={() => navigate(`/suppliers/${supplier.id}`)}
                         >
                           <TableCell>
                             <div className="flex items-center gap-3">
