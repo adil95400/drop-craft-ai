@@ -17,6 +17,51 @@ import { RuleBuilder } from '@/components/rules/RuleBuilder'
 import { RuleTemplatesDialog } from '@/components/rules/RuleTemplatesDialog'
 import { RuleTesterDialog } from '@/components/rules/RuleTesterDialog'
 
+// Mapper DB → ProductRule
+function mapDbToProductRule(dbRecord: any): ProductRule {
+  return {
+    id: dbRecord.id,
+    name: dbRecord.name,
+    description: dbRecord.description,
+    enabled: dbRecord.enabled,
+    priority: dbRecord.priority,
+    channel: dbRecord.channel,
+    conditionGroup: dbRecord.condition_group as any,
+    actions: dbRecord.actions as any,
+    createdAt: dbRecord.created_at,
+    updatedAt: dbRecord.updated_at,
+    createdBy: dbRecord.created_by,
+    executionCount: dbRecord.execution_count,
+    successCount: dbRecord.success_count,
+    errorCount: dbRecord.error_count,
+    lastExecutedAt: dbRecord.last_executed_at,
+    stopOnError: dbRecord.stop_on_error,
+    skipIfAlreadyModified: dbRecord.skip_if_already_modified,
+    logChanges: dbRecord.log_changes
+  }
+}
+
+// Mapper ProductRule → DB
+function mapProductRuleToDb(rule: Partial<ProductRule>): any {
+  return {
+    name: rule.name,
+    description: rule.description,
+    enabled: rule.enabled,
+    priority: rule.priority,
+    channel: rule.channel,
+    condition_group: rule.conditionGroup,
+    actions: rule.actions,
+    created_by: rule.createdBy,
+    execution_count: rule.executionCount,
+    success_count: rule.successCount,
+    error_count: rule.errorCount,
+    last_executed_at: rule.lastExecutedAt,
+    stop_on_error: rule.stopOnError,
+    skip_if_already_modified: rule.skipIfAlreadyModified,
+    log_changes: rule.logChanges
+  }
+}
+
 export default function ProductRulesPage() {
   const [selectedRule, setSelectedRule] = useState<ProductRule | null>(null)
   const [showBuilder, setShowBuilder] = useState(false)
@@ -38,7 +83,7 @@ export default function ProductRulesPage() {
         .order('priority', { ascending: true })
 
       if (error) throw error
-      return data as ProductRule[]
+      return data.map(mapDbToProductRule)
     }
   })
 
@@ -87,20 +132,18 @@ export default function ProductRulesPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      const newRule = {
+      const dbRule = mapProductRuleToDb({
         ...rule,
-        id: undefined,
-        user_id: user.id,
         name: `${rule.name} (copie)`,
-        execution_count: 0,
-        success_count: 0,
-        error_count: 0,
-        last_executed_at: undefined
-      }
+        executionCount: 0,
+        successCount: 0,
+        errorCount: 0,
+        lastExecutedAt: undefined
+      })
 
       const { error } = await supabase
         .from('product_rules')
-        .insert(newRule)
+        .insert({ ...dbRule, user_id: user.id })
 
       if (error) throw error
     },
@@ -117,17 +160,16 @@ export default function ProductRulesPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const newRule: Partial<ProductRule> = {
+    const dbRule = mapProductRuleToDb({
       ...template.rule,
-      user_id: user.id,
-      execution_count: 0,
-      success_count: 0,
-      error_count: 0
-    }
+      executionCount: 0,
+      successCount: 0,
+      errorCount: 0
+    } as ProductRule)
 
     const { error } = await supabase
       .from('product_rules')
-      .insert(newRule)
+      .insert({ ...dbRule, user_id: user.id })
 
     if (error) {
       toast.error('Erreur lors de la création')
@@ -212,7 +254,7 @@ export default function ProductRulesPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {rules.reduce((sum, r) => sum + (r.execution_count || 0), 0)}
+                {rules.reduce((sum, r) => sum + (r.executionCount || 0), 0)}
               </div>
             </CardContent>
           </Card>
@@ -269,9 +311,9 @@ export default function ProductRulesPage() {
                           <span>
                             {rule.actions.length} action(s)
                           </span>
-                          {rule.execution_count! > 0 && (
+                          {(rule.executionCount || 0) > 0 && (
                             <span>
-                              {rule.execution_count} exécution(s) • {Math.round((rule.success_count! / rule.execution_count!) * 100)}% succès
+                              {rule.executionCount} exécution(s) • {Math.round(((rule.successCount || 0) / (rule.executionCount || 1)) * 100)}% succès
                             </span>
                           )}
                         </div>
