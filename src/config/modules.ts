@@ -259,6 +259,104 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 9.5,
     groupId: 'suppliers'
   },
+  
+  // ============= MODULES IMPORT & FEEDS =============
+  
+  import: {
+    id: 'import',
+    name: 'Import Hub',
+    icon: 'Upload',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/import',
+    features: ['import-csv', 'import-url', 'import-api', 'import-db'],
+    description: 'Centre de gestion des imports multi-sources',
+    category: 'product',
+    order: 11,
+    groupId: 'import_feeds',
+    subModules: [
+      {
+        id: 'import-quick',
+        name: 'Import Rapide',
+        route: '/import/quick',
+        icon: 'Zap',
+        description: 'Import simple et rapide',
+        features: ['csv-upload', 'drag-drop'],
+        order: 1
+      },
+      {
+        id: 'import-advanced',
+        name: 'Import Avancé',
+        route: '/import/advanced',
+        icon: 'Settings',
+        description: 'Import avec mapping intelligent',
+        features: ['field-mapping', 'bulk-import'],
+        order: 2
+      },
+      {
+        id: 'import-history',
+        name: 'Historique',
+        route: '/import/history',
+        icon: 'Clock',
+        description: 'Historique des imports',
+        features: ['import-logs', 'tracking'],
+        order: 3
+      },
+      {
+        id: 'import-scheduled',
+        name: 'Imports Planifiés',
+        route: '/import/scheduled',
+        icon: 'Calendar',
+        description: 'Automatisation des imports',
+        features: ['schedule', 'automation'],
+        order: 4
+      },
+      {
+        id: 'import-config',
+        name: 'Configurations',
+        route: '/import/config',
+        icon: 'Settings',
+        description: 'Configurations par source',
+        features: ['csv-config', 'xml-config', 'api-config'],
+        order: 5
+      }
+    ]
+  },
+  
+  feeds: {
+    id: 'feeds',
+    name: 'Gestion des Feeds',
+    icon: 'Rss',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/feeds',
+    features: ['feed-google', 'feed-meta', 'feed-tiktok', 'feed-amazon'],
+    description: 'Feeds multi-canaux (Google, Meta, TikTok, Amazon)',
+    category: 'product',
+    order: 12,
+    groupId: 'import_feeds',
+    subModules: [
+      {
+        id: 'feeds-manager',
+        name: 'Gestion Feeds',
+        route: '/feeds',
+        icon: 'Rss',
+        description: 'Créer et gérer les feeds',
+        features: ['feed-creation', 'feed-export'],
+        order: 1
+      },
+      {
+        id: 'feeds-optimization',
+        name: 'Optimisation',
+        route: '/feeds/optimization',
+        icon: 'Zap',
+        description: 'Optimiser les feeds avec IA',
+        features: ['ai-optimization', 'feed-quality'],
+        order: 2
+      }
+    ]
+  },
+  
   premiumCatalog: {
     id: 'premiumCatalog',
     name: 'Catalogue Premium',
