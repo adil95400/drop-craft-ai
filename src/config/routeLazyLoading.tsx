@@ -41,7 +41,6 @@ export const LazyWebScrapingPage = lazyWithRetry(() => import('@/pages/import/We
 export const LazyAPIImportPage = lazyWithRetry(() => import('@/pages/import/APIImportPage'));
 
 // Pages de marketing - Lazy load
-export const LazyModernMarketingPage = lazyWithRetry(() => import('@/pages/ModernMarketingPage'));
 export const LazyAdsMarketingPage = lazyWithRetry(() => import('@/pages/AdsMarketingPage'));
 export const LazyMarketplaceHubPage = lazyWithRetry(() => import('@/pages/MarketplaceHubPage'));
 
@@ -51,7 +50,6 @@ export const LazyAdminPanel = lazyWithRetry(() => import('@/pages/AdminPanel'));
 // Pages de settings - Lazy load
 export const LazySettings = lazyWithRetry(() => import('@/pages/Settings'));
 export const LazyProfile = lazyWithRetry(() => import('@/pages/Profile'));
-export const LazyModernSettingsPage = lazyWithRetry(() => import('@/pages/ModernSettingsPage'));
 
 // Pages d'intégrations - Lazy load
 export const LazyModernIntegrationsHub = lazyWithRetry(() => import('@/pages/ModernIntegrationsHub'));
