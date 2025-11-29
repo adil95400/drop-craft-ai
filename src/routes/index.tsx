@@ -57,6 +57,8 @@ const GettingStartedPage = lazy(() => import('@/pages/guides/GettingStartedPage'
 const AcademyHomePage = lazy(() => import('@/pages/academy/AcademyHomePage'));
 const SupportCenterPage = lazy(() => import('@/pages/support/SupportCenterPage'));
 const ExtensionsMarketplacePage = lazy(() => import('@/pages/extensions/ExtensionsMarketplacePage'));
+const ProductRulesPage = lazy(() => import('@/pages/rules/ProductRulesPage'));
+const CatalogIntelligencePage = lazy(() => import('@/pages/catalog/CatalogIntelligencePage'));
 
 // Loading component
 const PageLoader = () => (
@@ -125,6 +127,10 @@ export function AppRoutes() {
         <Route path="/monitoring" element={<ProtectedRoute><AppLayout><MonitoringPage /></AppLayout></ProtectedRoute>} />
         <Route path="/catalog" element={<ProtectedRoute><AppLayout><CatalogPage /></AppLayout></ProtectedRoute>} />
         <Route path="/subscription" element={<Navigate to="/dashboard/subscription" replace />} />
+        
+        {/* Catalog Intelligence & Rules */}
+        <Route path="/rules" element={<ProtectedRoute><AppLayout><ProductRulesPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/catalog-intelligence" element={<ProtectedRoute><AppLayout><CatalogIntelligencePage /></AppLayout></ProtectedRoute>} />
         
         {/* Modern Routes - Redirections vers interfaces principales */}
         <Route path="/modern/products" element={<Navigate to="/products" replace />} />
