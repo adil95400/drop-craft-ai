@@ -135,16 +135,31 @@ Deno.serve(async (req) => {
       case 'btswholesaler': {
         try {
           const apiKey = credentials.apiKey || credentials.username
-          const response = await fetch('https://api.btswholesaler.com/v1/api/getListProducts', {
-            headers: {
-              'Authorization': `Bearer ${apiKey}`,
-              'Accept': 'application/json'
-            }
+          
+          // API v2.0: Use pagination
+          const pageSize = Math.min(limit, 500)
+          const params = new URLSearchParams({
+            page: '1',
+            page_size: pageSize.toString(),
+            format_file: 'json',
+            language_code: 'fr-FR'
           })
+
+          const response = await fetch(
+            `https://api.btswholesaler.com/v1/api/getListProducts?${params}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Accept': 'application/json'
+              }
+            }
+          )
           
           if (response.ok) {
             const data = await response.json()
-            products = data.slice(0, limit).map((p: any) => ({
+            const productsData = data.products || []
+            
+            products = productsData.map((p: any) => ({
               supplier_id: supplierId,
               external_id: p.id.toString(),
               sku: p.ean,
@@ -164,6 +179,8 @@ Deno.serve(async (req) => {
               status: p.stock > 0 ? 'active' : 'inactive'
             }))
             syncStats.fetched = products.length
+            
+            console.log(`BTSWholesaler v2.0: Fetched ${syncStats.fetched} products (page 1/${data.pagination?.total_pages || 1})`)
           }
         } catch (error) {
           console.error('BTSWholesaler sync failed:', error)

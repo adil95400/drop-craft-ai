@@ -64,7 +64,17 @@ export class BTSWholesalerConnector extends BaseConnector {
 
   async fetchProducts(options: FetchOptions = {}): Promise<SupplierProduct[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/v1/api/getListProducts`, {
+      const page = options?.page || 1;
+      const pageSize = Math.min(options?.limit || 200, 500); // Max 500 per API v2.0
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        page_size: pageSize.toString(),
+        format_file: 'json',
+        language_code: 'fr-FR'
+      });
+
+      const response = await fetch(`${this.baseUrl}/v1/api/getListProducts?${params}`, {
         method: 'GET',
         headers: this.getAuthHeaders()
       });
@@ -73,9 +83,10 @@ export class BTSWholesalerConnector extends BaseConnector {
         throw new Error(`Failed to fetch products: ${response.statusText}`);
       }
 
-      const products: BTSProduct[] = await response.json();
+      const data = await response.json();
+      const products: BTSProduct[] = data.products || [];
       
-      // Apply filtering if category is specified
+      // Apply category filter if specified
       let filteredProducts = products;
       if (options?.category) {
         filteredProducts = products.filter(p => 
@@ -83,13 +94,7 @@ export class BTSWholesalerConnector extends BaseConnector {
         );
       }
 
-      // Apply pagination
-      const page = options?.page || 1;
-      const limit = options?.limit || 100;
-      const start = (page - 1) * limit;
-      const paginatedProducts = filteredProducts.slice(start, start + limit);
-
-      return paginatedProducts.map(product => this.normalizeBTSProduct(product));
+      return filteredProducts.map(product => this.normalizeBTSProduct(product));
     } catch (error) {
       this.handleError(error, 'fetchProducts');
       return [];

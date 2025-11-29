@@ -37,31 +37,57 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     const { userId, supplierId, jwtToken, format = 'json', language = 'fr-FR' } = await req.json() as SyncRequest
 
-    console.log('🔄 Starting BTSWholesaler sync...')
+    console.log('🔄 Starting BTSWholesaler sync (API v2.0)...')
     console.log(`Format: ${format}, Language: ${language}`)
 
-    // Fetch products from BTSWholesaler API
-    const apiUrl = `https://api.btswholesaler.com/v1/api/getListProducts`
+    // Fetch all products with pagination (API v2.0 requirement)
+    let allProducts: BTSProduct[] = []
+    let page = 1
+    let hasMore = true
     
-    console.log('📡 Fetching products from BTSWholesaler API...')
+    console.log('📡 Fetching products from BTSWholesaler API v2.0 with pagination...')
     
-    const response = await fetch(apiUrl, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${jwtToken}`,
-        'Accept': 'application/json'
+    while (hasMore) {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        page_size: '500',
+        format_file: format,
+        language_code: language
+      })
+
+      const response = await fetch(
+        `https://api.btswholesaler.com/v1/api/getListProducts?${params}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${jwtToken}`,
+            'Accept': 'application/json'
+          }
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error(`BTSWholesaler API error: ${response.status} ${response.statusText}`)
       }
-    })
 
-    if (!response.ok) {
-      throw new Error(`BTSWholesaler API error: ${response.status} ${response.statusText}`)
+      const data = await response.json()
+      allProducts.push(...(data.products || []))
+      
+      console.log(`✅ Page ${page}/${data.pagination?.total_pages || page}: Fetched ${data.products?.length || 0} products`)
+      
+      hasMore = data.pagination?.has_next_page || false
+      page++
+      
+      // Respect rate limits
+      if (hasMore) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
     }
-
-    const productsData = await response.json() as BTSProduct[]
-    console.log(`✅ Fetched ${productsData.length} products from BTSWholesaler`)
+    
+    console.log(`✅ Total fetched: ${allProducts.length} products from BTSWholesaler`)
 
     // Transform BTSWholesaler products to our format
-    const transformedProducts = productsData.slice(0, 500).map((product) => {
+    const transformedProducts = allProducts.map((product) => {
       // Calculate profit margin (30% markup by default)
       const costPrice = product.price
       const sellPrice = product.recommended_price || (costPrice * 1.3)
