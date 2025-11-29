@@ -535,3 +535,6 @@ verify_jwt = true
 [functions.feed-manager]
 verify_jwt = true
 
+[functions.ai-product-optimizer]
+verify_jwt = true
+

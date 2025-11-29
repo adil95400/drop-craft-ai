@@ -317,10 +317,8 @@ export function ProductDetailPage() {
               {auditResult ? (
                 <ProductAuditPanel 
                   auditResult={auditResult}
-                  onAIAction={(action) => {
-                    console.log('AI Action:', action);
-                    // TODO: Implémenter les actions IA
-                  }}
+                  product={product}
+                  productSource="products"
                 />
               ) : (
                 <Card>
