@@ -285,6 +285,19 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 4.5,
     groupId: 'customers'
   },
+  extensions: {
+    id: 'extensions',
+    name: 'Extensions',
+    icon: 'Puzzle',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/extensions',
+    features: ['extensions-marketplace', 'white-label', 'developer-api'],
+    description: 'Extensions et personnalisations avancées',
+    category: 'system',
+    order: 13,
+    groupId: 'settings'
+  },
   marketplaceHub: {
     id: 'marketplaceHub',
     name: 'Marketplace Hub',
