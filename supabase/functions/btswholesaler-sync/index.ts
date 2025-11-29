@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
         sync_details: {
           format,
           language,
-          total_fetched: productsData.length,
+          total_fetched: allProducts.length,
           imported,
           errors
         },
