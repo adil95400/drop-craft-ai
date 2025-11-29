@@ -1,6 +1,57 @@
 import type { PlanType } from '@/lib/unified-plan-system';
 
 /**
+ * Identifiants des groupes de navigation
+ */
+export type NavGroupId =
+  | 'overview'
+  | 'products'
+  | 'suppliers'
+  | 'import_feeds'
+  | 'orders'
+  | 'customers'
+  | 'marketing'
+  | 'analytics'
+  | 'ai'
+  | 'automation'
+  | 'stock'
+  | 'stores_channels'
+  | 'billing'
+  | 'settings'
+  | 'support';
+
+/**
+ * Configuration d'un groupe de navigation
+ */
+export interface NavGroupConfig {
+  id: NavGroupId;
+  label: string;
+  icon: string;
+  order: number;
+}
+
+/**
+ * Configuration des groupes de navigation - Structure organisée par métier
+ */
+export const NAV_GROUPS: NavGroupConfig[] = [
+  { id: 'overview', label: 'Vue d\'ensemble', icon: 'Home', order: 1 },
+  { id: 'products', label: 'Catalogue & Produits', icon: 'Package', order: 2 },
+  { id: 'suppliers', label: 'Fournisseurs & Marketplace', icon: 'Truck', order: 3 },
+  { id: 'import_feeds', label: 'Import & Flux', icon: 'Upload', order: 4 },
+  { id: 'orders', label: 'Commandes', icon: 'ShoppingCart', order: 5 },
+  { id: 'customers', label: 'Clients & CRM', icon: 'Users', order: 6 },
+  { id: 'marketing', label: 'Marketing & Growth', icon: 'Megaphone', order: 7 },
+  { id: 'analytics', label: 'Analytics & BI', icon: 'BarChart3', order: 8 },
+  { id: 'ai', label: 'IA & Intelligence', icon: 'Bot', order: 9 },
+  { id: 'automation', label: 'Automations & Workflows', icon: 'Zap', order: 10 },
+  { id: 'stock', label: 'Stock & Logistique', icon: 'Boxes', order: 11 },
+  { id: 'stores_channels', label: 'Boutiques & Canaux', icon: 'Store', order: 12 },
+  { id: 'billing', label: 'Abonnements & Facturation', icon: 'CreditCard', order: 13 },
+  { id: 'settings', label: 'Paramètres & Administration', icon: 'Settings', order: 14 },
+  { id: 'support', label: 'Support & Aide', icon: 'LifeBuoy', order: 15 },
+];
+
+/**
  * Configuration d'un sous-module
  */
 export interface SubModule {
@@ -28,6 +79,7 @@ export interface ModuleConfig {
   category: 'core' | 'product' | 'learning' | 'analytics' | 'automation' | 'customer' | 'enterprise' | 'integrations' | 'system';
   subModules?: SubModule[];
   order: number;
+  groupId: NavGroupId; // Nouveau: Association au groupe de navigation
 }
 
 /**
@@ -48,7 +100,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['basic-analytics', 'product-overview'],
     description: 'Vue d\'ensemble de votre activité',
     category: 'core',
-    order: 1
+    order: 1,
+    groupId: 'overview'
   },
   products: {
     id: 'products',
@@ -60,7 +113,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['product-management', 'basic-search'],
     description: 'Gestion de votre catalogue produit',
     category: 'product',
-    order: 4
+    order: 4,
+    groupId: 'products'
   },
   import: {
     id: 'import',
@@ -72,7 +126,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['basic-import', 'bulk-import', 'url-scraping'],
     description: 'Import de données produits',
     category: 'product',
-    order: 5
+    order: 5,
+    groupId: 'import_feeds'
   },
   winners: {
     id: 'winners',
@@ -84,7 +139,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['product-research', 'trend-analysis', 'competitor-analysis'],
     description: 'Découvrez les produits gagnants',
     category: 'product',
-    order: 6
+    order: 6,
+    groupId: 'products'
   },
   productResearch: {
     id: 'productResearch',
@@ -96,7 +152,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['trend-scanner', 'viral-finder', 'saturation-analyzer', 'winning-score'],
     description: 'Recherche de produits tendances et analyse',
     category: 'product',
-    order: 7
+    order: 7,
+    groupId: 'products'
   },
   marketplace: {
     id: 'marketplace',
@@ -108,7 +165,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['ai-validated-products', 'virality-score', 'winning-database'],
     description: '10,000+ produits analysés par IA',
     category: 'product',
-    order: 8
+    order: 8,
+    groupId: 'products'
   },
   suppliers: {
     id: 'suppliers',
@@ -116,11 +174,12 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Truck',
     enabled: true,
     minPlan: 'standard',
-    route: '/products/suppliers',
+    route: '/suppliers',
     features: ['supplier-management', 'basic-import'],
     description: 'Gestion des fournisseurs',
     category: 'product',
-    order: 9
+    order: 9,
+    groupId: 'suppliers'
   },
   premiumSuppliers: {
     id: 'premiumSuppliers',
@@ -128,11 +187,12 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     icon: 'Crown',
     enabled: true,
     minPlan: 'pro',
-    route: '/products/suppliers/marketplace',
+    route: '/suppliers/premium',
     features: ['premium-suppliers', 'supplier-sync', 'bts-wholesaler'],
     description: 'Synchronisez BTS Wholesaler',
     category: 'product',
-    order: 9.5
+    order: 9.5,
+    groupId: 'suppliers'
   },
   premiumCatalog: {
     id: 'premiumCatalog',
@@ -144,7 +204,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['premium-products', 'quick-import', 'supplier-catalog'],
     description: 'Produits premium de vos fournisseurs',
     category: 'product',
-    order: 10
+    order: 10,
+    groupId: 'products'
   },
   profitCalculator: {
     id: 'profitCalculator',
@@ -156,7 +217,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['margin-calculator', 'pricing-optimizer', 'cost-analysis'],
     description: 'Calculez vos marges et optimisez vos prix',
     category: 'product',
-    order: 11
+    order: 11,
+    groupId: 'products'
   },
   stores: {
     id: 'stores',
@@ -168,7 +230,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['store-management', 'multi-store', 'store-sync'],
     description: 'Gestion de vos boutiques e-commerce',
     category: 'core',
-    order: 2
+    order: 2,
+    groupId: 'stores_channels'
   },
   orders: {
     id: 'orders',
@@ -180,7 +243,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['order-management', 'tracking', 'fulfillment'],
     description: 'Gestion de vos commandes',
     category: 'core',
-    order: 3
+    order: 3,
+    groupId: 'orders'
   },
   customers: {
     id: 'customers',
@@ -192,7 +256,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['customer-management', 'customer-insights'],
     description: 'Gestion de vos clients',
     category: 'customer',
-    order: 4
+    order: 4,
+    groupId: 'customers'
   },
   marketplaceHub: {
     id: 'marketplaceHub',
@@ -204,7 +269,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['marketplace-listing', 'multi-marketplace', 'centralized-management'],
     description: 'Hub centralisé pour vos marketplaces',
     category: 'core',
-    order: 5
+    order: 5,
+    groupId: 'import_feeds'
   },
 
   // Catégorie: Product Management
@@ -218,7 +284,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['premium-suppliers', 'exclusive-deals', 'fast-shipping'],
     description: 'Réseau de fournisseurs premium',
     category: 'product',
-    order: 12
+    order: 12,
+    groupId: 'suppliers'
   },
   bulkContent: {
     id: 'bulkContent',
@@ -230,7 +297,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['bulk-description-ai', 'seo-content', 'product-naming'],
     description: 'Création en masse de contenu par IA',
     category: 'product',
-    order: 13
+    order: 13,
+    groupId: 'ai'
   },
   inventoryPredictor: {
     id: 'inventoryPredictor',
@@ -242,7 +310,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['stock-prediction', 'demand-forecasting', 'reorder-alerts'],
     description: 'Prédiction intelligente des stocks',
     category: 'product',
-    order: 14
+    order: 14,
+    groupId: 'stock'
   },
   importSources: {
     id: 'importSources',
@@ -254,7 +323,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['source-management', 'custom-sources', 'api-connectors'],
     description: 'Gestion des sources d\'importation',
     category: 'product',
-    order: 15
+    order: 15,
+    groupId: 'import_feeds'
   },
 
   // Catégorie: Learning
@@ -268,7 +338,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['video-courses', 'guides', 'webinars', 'certifications'],
     description: 'Formation dropshipping complète',
     category: 'learning',
-    order: 16
+    order: 16,
+    groupId: 'support'
   },
 
   // ============= MODULES PRO (+8 modules = 19 total) =============
@@ -284,7 +355,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['advanced-analytics', 'custom-reports', 'ai-insights'],
     description: 'Analytics avancés avec IA',
     category: 'analytics',
-    order: 17
+    order: 17,
+    groupId: 'analytics'
   },
   customerIntelligence: {
     id: 'customerIntelligence',
@@ -296,7 +368,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['customer-insights', 'behavior-analysis', 'segmentation'],
     description: 'Analyse comportementale des clients',
     category: 'customer',
-    order: 18
+    order: 18,
+    groupId: 'customers'
   },
   competitiveComparison: {
     id: 'competitiveComparison',
@@ -308,7 +381,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['competitor-comparison', 'market-positioning', 'competitive-insights'],
     description: 'Comparez vos concurrents',
     category: 'analytics',
-    order: 18.5
+    order: 18.5,
+    groupId: 'analytics'
   },
 
   // Catégorie: Automation & Tools
@@ -322,7 +396,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['workflow-builder', 'auto-pricing', 'inventory-sync'],
     description: 'Automatisation des processus',
     category: 'automation',
-    order: 19
+    order: 19,
+    groupId: 'automation'
   },
   autoFulfillment: {
     id: 'autoFulfillment',
@@ -334,7 +409,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['automated-ordering', 'supplier-sync', 'inventory-automation'],
     description: 'Automatisation du traitement des commandes',
     category: 'automation',
-    order: 20
+    order: 20,
+    groupId: 'stock'
   },
   adsManager: {
     id: 'adsManager',
@@ -346,7 +422,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['ad-campaigns', 'multi-platform', 'performance-tracking'],
     description: 'Gestion des campagnes publicitaires',
     category: 'automation',
-    order: 21
+    order: 21,
+    groupId: 'marketing'
   },
   extension: {
     id: 'extension',
@@ -358,7 +435,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['browser-extension', 'quick-import', 'extension-marketplace', 'real-time-sync'],
     description: 'Extension Chrome pour import rapide',
     category: 'automation',
-    order: 22
+    order: 22,
+    groupId: 'automation'
   },
 
   // Catégorie: Customer Relations
@@ -372,7 +450,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['customer-management', 'lead-tracking', 'sales-pipeline'],
     description: 'Gestion de la relation client',
     category: 'customer',
-    order: 23
+    order: 23,
+    groupId: 'customers'
   },
   seo: {
     id: 'seo',
@@ -384,7 +463,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['seo-optimization', 'keyword-tracking', 'content-analysis'],
     description: 'Optimisation SEO avancée',
     category: 'customer',
-    order: 24
+    order: 24,
+    groupId: 'marketing'
   },
 
   // ============= MODULES ULTRA PRO (+7 modules = 23 total) =============
@@ -400,7 +480,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['ai-analysis', 'predictive-analytics', 'ai-import', 'smart-recommendations'],
     description: 'Suite complète d\'intelligence artificielle',
     category: 'enterprise',
-    order: 17
+    order: 17,
+    groupId: 'ai'
   },
   commerce: {
     id: 'commerce',
@@ -412,7 +493,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['multi-channel', 'inventory-management', 'order-management'],
     description: 'Solution e-commerce complète',
     category: 'enterprise',
-    order: 18
+    order: 18,
+    groupId: 'stores_channels'
   },
   multiTenant: {
     id: 'multiTenant',
@@ -424,7 +506,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['tenant-management', 'white-label', 'tenant-isolation'],
     description: 'Gestion multi-tenant enterprise',
     category: 'enterprise',
-    order: 19
+    order: 19,
+    groupId: 'settings'
   },
   adminPanel: {
     id: 'adminPanel',
@@ -436,7 +519,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['admin-access', 'user-management', 'system-config', 'advanced-settings'],
     description: 'Panneau d\'administration système',
     category: 'enterprise',
-    order: 20
+    order: 20,
+    groupId: 'settings'
   },
   supplierAdmin: {
     id: 'supplierAdmin',
@@ -448,7 +532,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['supplier-crud', 'import-api', 'export-data', 'advanced-filters'],
     description: 'Administration complète des fournisseurs',
     category: 'enterprise',
-    order: 21
+    order: 21,
+    groupId: 'suppliers'
   },
 
   // Catégorie: Integrations
@@ -462,7 +547,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['premium-apis', 'custom-connectors', 'webhooks'],
     description: 'Intégrations avancées et API premium',
     category: 'integrations',
-    order: 22
+    order: 22,
+    groupId: 'settings'
   },
   security: {
     id: 'security',
@@ -474,7 +560,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['security-monitoring', 'audit-logs', 'access-control'],
     description: 'Sécurité et conformité enterprise',
     category: 'integrations',
-    order: 23
+    order: 23,
+    groupId: 'settings'
   },
   videoTutorials: {
     id: 'videoTutorials',
@@ -486,7 +573,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['video-management', 'upload-videos', 'tutorial-guides'],
     description: 'Gestion des vidéos tutoriels marketplace',
     category: 'integrations',
-    order: 24
+    order: 24,
+    groupId: 'support'
   },
 
   // Système et configuration
@@ -500,7 +588,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['advanced-monitoring', 'real-time-metrics', 'alerts', 'logs-analytics'],
     description: 'Monitoring et métriques avancés',
     category: 'system',
-    order: 25
+    order: 25,
+    groupId: 'settings'
   },
   support: {
     id: 'support',
@@ -512,7 +601,8 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     features: ['faq', 'tickets', 'live-chat', 'documentation'],
     description: 'Centre de support et assistance',
     category: 'system',
-    order: 25
+    order: 25,
+    groupId: 'support'
   }
 };
 
