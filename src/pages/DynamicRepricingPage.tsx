@@ -4,10 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useDynamicRepricing } from '@/hooks/useMarketplacePhase2';
 import { TrendingUp, Target, Zap, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuthOptimized } from '@/shared';
 
 export default function DynamicRepricingPage() {
-  const userId = 'current-user-id'; // TODO: Get from auth context
-  const { dashboard, isLoadingDashboard, executeRepricing, isRepricingExecuting } = useDynamicRepricing(userId);
+  const { user } = useAuthOptimized()
+  const { dashboard, isLoadingDashboard, executeRepricing, isRepricingExecuting } = useDynamicRepricing(user?.id || '');
 
   return (
     <>

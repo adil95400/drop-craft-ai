@@ -3,10 +3,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePredictiveAnalytics } from '@/hooks/useMarketplacePhase2';
 import { TrendingUp, TrendingDown, AlertTriangle, DollarSign } from 'lucide-react';
+import { useAuthOptimized } from '@/shared';
 
 export default function PredictiveAnalyticsPage() {
-  const userId = 'current-user-id'; // TODO: Get from auth context
-  const { dashboard, isLoadingDashboard } = usePredictiveAnalytics(userId);
+  const { user } = useAuthOptimized()
+  const { dashboard, isLoadingDashboard } = usePredictiveAnalytics(user?.id || '');
 
   return (
     <>
