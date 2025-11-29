@@ -61,6 +61,7 @@ const ProductCatalog = lazy(() => import('@/pages/ProductCatalog'));
 const SuppliersHub = lazy(() => import('@/pages/suppliers/SuppliersHub'));
 const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'));
 const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'));
+const BTSWholesalerTest = lazy(() => import('@/pages/suppliers/BTSWholesalerTest'));
 
 // AI & Automation
 const AIInsightsPage = lazy(() => import('@/pages/AIInsightsPage'));
@@ -148,6 +149,7 @@ export function CoreRoutes() {
       {/* Suppliers & Marketing */}
       <Route path="suppliers" element={<SuppliersHub />} />
       <Route path="suppliers/create" element={<CreateSupplier />} />
+      <Route path="suppliers/test-bts" element={<BTSWholesalerTest />} />
       <Route path="suppliers/:id" element={<SupplierDetails />} />
       <Route path="suppliers/:id/edit" element={<CreateSupplier />} />
       
