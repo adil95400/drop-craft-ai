@@ -28,6 +28,9 @@ export interface ImportConfig {
   source_url?: string
   configuration?: Record<string, any>
   field_mapping?: Record<string, string>
+  // Intégration module fournisseurs
+  supplierId?: string
+  supplierName?: string
 }
 
 class UnifiedImportService {
@@ -64,10 +67,11 @@ class UnifiedImportService {
         .insert({
           user_id: user.id,
           job_type: config.source_type,
-          supplier_id: config.source_url || null,
+          supplier_id: config.supplierId || config.source_url || null,
           import_settings: {
             ...config.configuration || {},
-            field_mapping: config.field_mapping || {}
+            field_mapping: config.field_mapping || {},
+            supplierName: config.supplierName || null
           },
           status: 'pending',
           total_products: 0,
