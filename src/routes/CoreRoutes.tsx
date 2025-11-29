@@ -8,7 +8,6 @@ import { lazy } from 'react';
 const DashboardHome = lazy(() => import('@/pages/Dashboard'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const Settings = lazy(() => import('@/pages/Settings'));
-const ImportAdvancedPage = lazy(() => import('@/pages/ImportAdvancedPage'));
 
 // Stores
 const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard'));
@@ -129,7 +128,7 @@ export function CoreRoutes() {
       <Route path="research/intelligence" element={<CompetitiveIntelligenceHub />} />
       
       {/* Import */}
-      <Route path="import/advanced" element={<ImportAdvancedPage />} />
+      {/* Import routes are now in ImportRoutes module */}
       
       {/* Customers */}
       <Route path="customers" element={<ModernCustomersPage />} />

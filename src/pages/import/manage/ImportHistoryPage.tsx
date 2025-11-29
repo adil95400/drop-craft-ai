@@ -1,132 +1,185 @@
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, CheckCircle, XCircle, Clock, Package } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { ArrowLeft, CheckCircle, XCircle, Clock, AlertCircle, Package, Search, Filter } from 'lucide-react'
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
+import { unifiedImportService } from '@/services/UnifiedImportService'
+import { Link } from 'react-router-dom'
 
 export default function ImportHistoryPage() {
-  const navigate = useNavigate()
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState('')
 
-  // Mock data - à remplacer par des données réelles
-  const importHistory = [
-    {
-      id: 1,
-      date: '2024-01-15 14:30',
-      supplier: 'AliExpress',
-      products: 25,
-      status: 'success',
-      duration: '2m 15s'
-    },
-    {
-      id: 2,
-      date: '2024-01-14 10:20',
-      supplier: 'CJDropshipping',
-      products: 42,
-      status: 'success',
-      duration: '3m 45s'
-    },
-    {
-      id: 3,
-      date: '2024-01-13 16:45',
-      supplier: 'AliExpress',
-      products: 15,
-      status: 'partial',
-      duration: '1m 30s'
-    },
-    {
-      id: 4,
-      date: '2024-01-12 09:00',
-      supplier: 'BTS Wholesaler',
-      products: 8,
-      status: 'failed',
-      duration: '45s'
-    }
-  ]
+  const { data: history = [], isLoading } = useQuery({
+    queryKey: ['import-history'],
+    queryFn: () => unifiedImportService.getHistory(100),
+    refetchInterval: 10000 // Refresh every 10s
+  })
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'success':
-        return <CheckCircle className="w-5 h-5 text-green-500" />
-      case 'failed':
-        return <XCircle className="w-5 h-5 text-red-500" />
-      case 'partial':
-        return <Clock className="w-5 h-5 text-orange-500" />
-      default:
-        return <Package className="w-5 h-5 text-muted-foreground" />
+      case 'completed': return <CheckCircle className="w-5 h-5 text-green-500" />
+      case 'processing': return <Clock className="w-5 h-5 text-blue-500 animate-pulse" />
+      case 'failed': return <XCircle className="w-5 h-5 text-red-500" />
+      default: return <AlertCircle className="w-5 h-5 text-yellow-500" />
     }
   }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'success':
-        return <Badge variant="default" className="bg-green-500">Réussi</Badge>
+      case 'completed':
+        return <Badge className="bg-green-500">Terminé</Badge>
+      case 'processing':
+        return <Badge className="bg-blue-500">En cours</Badge>
       case 'failed':
         return <Badge variant="destructive">Échoué</Badge>
-      case 'partial':
-        return <Badge variant="secondary" className="bg-orange-500 text-white">Partiel</Badge>
       default:
-        return <Badge variant="outline">Inconnu</Badge>
+        return <Badge variant="secondary">En attente</Badge>
     }
   }
 
+  // Filtrer l'historique
+  const filteredHistory = history.filter(item => {
+    if (statusFilter !== 'all' && item.status !== statusFilter) return false
+    if (typeFilter !== 'all' && item.source_type !== typeFilter) return false
+    if (searchQuery && !item.source_url?.toLowerCase().includes(searchQuery.toLowerCase())) return false
+    return true
+  })
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3 px-6 pt-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/products/import/manage')}>
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
+    <div className="container mx-auto p-6 space-y-6">
+      {/* En-tête */}
+      <div className="flex items-center gap-3">
+        <Link to="/import">
+          <Button variant="ghost" size="icon">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+        </Link>
         <div>
-          <h1 className="text-2xl font-bold">Historique Détaillé</h1>
+          <h1 className="text-2xl font-bold">Historique des Imports</h1>
           <p className="text-muted-foreground">
             Suivez tous vos imports en détail
           </p>
         </div>
       </div>
-      
-      <div className="px-6 pb-6">
-        <Card className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b pb-4">
-              <h2 className="text-lg font-semibold">Historique des Imports</h2>
-              <Button variant="outline" size="sm">
-                Exporter CSV
-              </Button>
-            </div>
 
+      {/* Filtres */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher par source..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrer par statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="pending">En attente</SelectItem>
+                <SelectItem value="processing">En cours</SelectItem>
+                <SelectItem value="completed">Terminé</SelectItem>
+                <SelectItem value="failed">Échoué</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrer par type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les types</SelectItem>
+                <SelectItem value="url">URL</SelectItem>
+                <SelectItem value="csv">CSV</SelectItem>
+                <SelectItem value="xml">XML</SelectItem>
+                <SelectItem value="json">JSON</SelectItem>
+                <SelectItem value="api">API</SelectItem>
+                <SelectItem value="ftp">FTP</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Liste des imports */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Imports ({filteredHistory.length})</CardTitle>
+            <Button variant="outline" size="sm">
+              <Filter className="w-4 h-4 mr-2" />
+              Exporter
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Package className="w-12 h-12 mx-auto mb-4 opacity-50 animate-pulse" />
+              <p>Chargement de l'historique...</p>
+            </div>
+          ) : filteredHistory.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>Aucun import trouvé</p>
+              <p className="text-sm mt-1">Essayez d'ajuster vos filtres</p>
+            </div>
+          ) : (
             <div className="space-y-3">
-              {importHistory.map((item) => (
+              {filteredHistory.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/5 transition-colors"
                 >
                   <div className="flex items-center gap-4">
                     {getStatusIcon(item.status)}
                     <div>
-                      <div className="font-medium">{item.supplier}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {item.date} • {item.products} produits • {item.duration}
+                      <div className="font-medium flex items-center gap-2">
+                        {item.source_type?.toUpperCase() || 'Import'}
+                        <Badge variant="outline" className="text-xs">
+                          {item.source_type}
+                        </Badge>
                       </div>
+                      <div className="text-sm text-muted-foreground">
+                        {format(new Date(item.created_at), 'dd MMM yyyy à HH:mm', { locale: fr })}
+                      </div>
+                      {item.source_url && (
+                        <div className="text-xs text-muted-foreground mt-1 truncate max-w-md">
+                          {item.source_url}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-sm font-medium">
+                        {item.success_rows} / {item.total_rows}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.error_rows > 0 && `${item.error_rows} erreurs`}
+                      </p>
+                    </div>
                     {getStatusBadge(item.status)}
-                    <Button variant="ghost" size="sm">
-                      Détails
-                    </Button>
                   </div>
                 </div>
               ))}
             </div>
-
-            {importHistory.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground">
-                <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Aucun historique d'import pour le moment</p>
-              </div>
-            )}
-          </div>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
