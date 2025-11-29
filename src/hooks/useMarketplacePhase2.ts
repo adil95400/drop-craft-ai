@@ -48,12 +48,47 @@ export function useAutoFulfillment(userId: string) {
     queryFn: () => fulfillmentService.getStats(userId),
   })
 
+  const carriers = useQuery({
+    queryKey: ['fulfillment-carriers', userId],
+    queryFn: () => fulfillmentService.listCarriers(userId),
+  })
+
+  const rules = useQuery({
+    queryKey: ['fulfillment-rules', userId],
+    queryFn: () => fulfillmentService.listAutomationRules(userId),
+  })
+
+  const shipments = useQuery({
+    queryKey: ['fulfillment-shipments', userId],
+    queryFn: () => fulfillmentService.listShipments(userId),
+  })
+
+  const createCarrier = useMutation({
+    mutationFn: (carrier: any) => fulfillmentService.createCarrier({ ...carrier, user_id: userId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fulfillment-carriers', userId] })
+      toast.success('Transporteur créé')
+    },
+    onError: (error: Error) => {
+      toast.error(`Erreur: ${error.message}`)
+    },
+  })
+
+  const createRule = useMutation({
+    mutationFn: (rule: any) => fulfillmentService.createAutomationRule({ ...rule, user_id: userId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fulfillment-rules', userId] })
+      toast.success('Règle créée')
+    },
+  })
+
   const autoFulfill = useMutation({
     mutationFn: async (orderId: string) => {
       return fulfillmentService.autoFulfillOrder(orderId)
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['fulfillment-stats', userId] })
+      queryClient.invalidateQueries({ queryKey: ['fulfillment-shipments', userId] })
       if (result.success) {
         toast.success(`Expédition créée - Tracking: ${result.trackingNumber}`)
       } else {
@@ -68,6 +103,14 @@ export function useAutoFulfillment(userId: string) {
   return {
     stats: stats.data,
     isLoadingStats: stats.isLoading,
+    carriers: carriers.data || [],
+    isLoadingCarriers: carriers.isLoading,
+    createCarrier: createCarrier.mutate,
+    rules: rules.data || [],
+    isLoadingRules: rules.isLoading,
+    createRule: createRule.mutate,
+    shipments: shipments.data || [],
+    isLoadingShipments: shipments.isLoading,
     autoFulfill: autoFulfill.mutate,
     isAutoFulfilling: autoFulfill.isPending,
   }
