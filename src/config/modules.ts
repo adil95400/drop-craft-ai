@@ -181,19 +181,6 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       }
     ]
   },
-  import: {
-    id: 'import',
-    name: 'Import Produits',
-    icon: 'Upload',
-    enabled: true,
-    minPlan: 'standard',
-    route: '/products/import',
-    features: ['basic-import', 'bulk-import', 'url-scraping'],
-    description: 'Import de données produits',
-    category: 'product',
-    order: 5,
-    groupId: 'import_feeds'
-  },
   winners: {
     id: 'winners',
     name: 'Winning Products',
