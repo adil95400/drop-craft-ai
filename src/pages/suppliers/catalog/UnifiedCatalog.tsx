@@ -29,7 +29,11 @@ interface UnifiedProduct {
   last_synced_at: string;
 }
 
-export function UnifiedCatalog() {
+interface UnifiedCatalogProps {
+  supplierId?: string;
+}
+
+export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [stockFilter, setStockFilter] = useState<string>("all");
@@ -39,12 +43,17 @@ export function UnifiedCatalog() {
 
   // Charger les produits du catalogue unifié
   const { data: products = [], isLoading, refetch } = useQuery({
-    queryKey: ['unified-catalog', searchQuery, selectedCategory, stockFilter, sortBy],
+    queryKey: ['unified-catalog', searchQuery, selectedCategory, stockFilter, sortBy, supplierId],
     queryFn: async () => {
       let query = supabase
         .from('supplier_products_unified')
         .select('*')
         .eq('is_active', true);
+
+      // Filtre par fournisseur si spécifié
+      if (supplierId) {
+        query = query.eq('supplier_id', supplierId);
+      }
 
       if (searchQuery) {
         query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
@@ -156,9 +165,14 @@ export function UnifiedCatalog() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Catalogue Unifié</h1>
+          <h1 className="text-3xl font-bold text-foreground">
+            {supplierId ? "Catalogue du Fournisseur" : "Catalogue Unifié"}
+          </h1>
           <p className="text-muted-foreground mt-2">
-            Tous vos produits fournisseurs en un seul endroit
+            {supplierId 
+              ? "Tous les produits de ce fournisseur"
+              : "Tous vos produits fournisseurs en un seul endroit"
+            }
           </p>
         </div>
         <Button onClick={() => syncMutation.mutate()} disabled={syncMutation.isPending}>

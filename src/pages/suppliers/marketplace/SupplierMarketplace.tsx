@@ -11,7 +11,11 @@ import { useSupplierEcosystem } from "@/hooks/useSupplierEcosystem";
 import { SUPPLIER_TEMPLATES } from "@/data/supplierTemplates";
 import type { BaseSupplier } from "@/types/suppliers";
 
-export function SupplierMarketplace() {
+interface SupplierMarketplaceProps {
+  isPremiumOnly?: boolean;
+}
+
+export function SupplierMarketplace({ isPremiumOnly = false }: SupplierMarketplaceProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -34,7 +38,8 @@ export function SupplierMarketplace() {
     const matchesSearch = supplier.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          supplier.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "all" || supplier.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesPremium = !isPremiumOnly || supplier.category === "premium"; // Filtre premium
+    return matchesSearch && matchesCategory && matchesPremium;
   });
 
   const categories = ["all", ...Array.from(new Set(SUPPLIER_TEMPLATES.map(s => s.category)))];
@@ -54,9 +59,14 @@ export function SupplierMarketplace() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Marketplace Fournisseurs</h1>
+        <h1 className="text-3xl font-bold text-foreground">
+          {isPremiumOnly ? "Fournisseurs Premium" : "Marketplace Fournisseurs"}
+        </h1>
         <p className="text-muted-foreground mt-2">
-          Connectez-vous aux meilleurs fournisseurs et automatisez votre dropshipping
+          {isPremiumOnly 
+            ? "Découvrez nos fournisseurs premium avec des produits de haute qualité"
+            : "Connectez-vous aux meilleurs fournisseurs et automatisez votre dropshipping"
+          }
         </p>
       </div>
 

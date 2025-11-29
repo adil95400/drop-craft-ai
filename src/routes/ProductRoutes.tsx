@@ -25,11 +25,16 @@ const ImportSources = lazy(() => import('@/pages/import/ImportSources'));
 const ImportPublishingPage = lazy(() => import('@/pages/import/manage/ImportPublishingPage'));
 const ImportMarketplacePage = lazy(() => import('@/pages/import/manage/ImportMarketplacePage'));
 
-// Suppliers - Nouvelle structure consolidée
+// Suppliers - Nouvelle structure unifiée
 const SuppliersHub = lazy(() => import('@/pages/suppliers/SuppliersHub'));
-const SuppliersBrowse = lazy(() => import('@/pages/suppliers/SuppliersBrowse'));
-const SuppliersManage = lazy(() => import('@/pages/suppliers/SuppliersManage'));
+const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'));
+const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'));
 const SupplierMarketplace = lazy(() => import('@/pages/suppliers/marketplace'));
+const MySuppliersPage = lazy(() => import('@/pages/suppliers/my/MySuppliersPage'));
+const PremiumSuppliersPage = lazy(() => import('@/pages/suppliers/premium/PremiumSuppliersPage'));
+const SupplierAnalyticsPage = lazy(() => import('@/pages/suppliers/analytics/SupplierAnalyticsPage'));
+const SupplierCatalogPage = lazy(() => import('@/pages/suppliers/catalog/SupplierCatalogPage'));
+const SupplierSettingsPage = lazy(() => import('@/pages/suppliers/settings/SupplierSettingsPage'));
 const UnifiedCatalog = lazy(() => import('@/pages/suppliers/catalog'));
 
 // Winners & Research
@@ -52,8 +57,6 @@ const VendorManagementPage = lazy(() => import('@/pages/VendorManagementPage'));
 
 // Advanced Products
 const AdvancedProductsPage = lazy(() => import('@/pages/products/AdvancedProductsPage'));
-const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'));
-const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'));
 
 export function ProductRoutes() {
   return (
@@ -82,12 +85,15 @@ export function ProductRoutes() {
       
       {/* Suppliers - Structure unifiée */}
       <Route path="suppliers" element={<SuppliersHub />} />
-      <Route path="suppliers/browse" element={<SuppliersBrowse />} />
       <Route path="suppliers/marketplace" element={<SupplierMarketplace />} />
+      <Route path="suppliers/my" element={<MySuppliersPage />} />
+      <Route path="suppliers/premium" element={<PremiumSuppliersPage />} />
+      <Route path="suppliers/analytics" element={<SupplierAnalyticsPage />} />
+      <Route path="suppliers/settings" element={<SupplierSettingsPage />} />
       <Route path="suppliers/catalog" element={<UnifiedCatalog />} />
-      <Route path="suppliers/manage" element={<SuppliersManage />} />
       <Route path="suppliers/create" element={<CreateSupplier />} />
       <Route path="suppliers/:id" element={<SupplierDetails />} />
+      <Route path="suppliers/:id/catalog" element={<SupplierCatalogPage />} />
       <Route path="suppliers/:id/edit" element={<CreateSupplier />} />
       
       {/* Product Research */}
