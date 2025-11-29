@@ -46,6 +46,7 @@ export default function ProductsMainPage() {
   const queryClient = useQueryClient();
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'standard' | 'audit'>('standard');
+  const [expertMode, setExpertMode] = useState<boolean>(false);
 
   const handleEdit = (product: any) => {
     openModal('createProduct', { productId: product.id });
@@ -148,6 +149,14 @@ export default function ProductsMainPage() {
             >
               <Target className="h-4 w-4" />
               Vue Audit
+            </Button>
+            <Button
+              variant={expertMode ? 'default' : 'outline'}
+              onClick={() => setExpertMode(!expertMode)}
+              className="gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              {expertMode ? 'Mode Expert' : 'Mode Simple'}
             </Button>
           </div>
         </div>
@@ -369,23 +378,55 @@ export default function ProductsMainPage() {
             </TabsContent>
 
             <TabsContent value="duplicates" className="space-y-6">
-              <DuplicateDetector products={products} />
+              {expertMode ? (
+                <DuplicateDetector products={products} />
+              ) : (
+                <Card className="bg-muted/50 border-dashed">
+                  <CardContent className="pt-6 text-center">
+                    <AlertCircle className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Activez le <strong>Mode Expert</strong> pour accéder au détecteur de doublons
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="simulator" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <PriorityManager 
-                  products={products}
-                  onSelectProducts={(ids) => setSelectedProducts(ids)}
-                />
-                <OptimizationSimulator 
-                  productIds={selectedProducts.length > 0 ? selectedProducts : products.slice(0, 10).map(p => p.id)}
-                  onExecute={handleRefresh}
-                />
-              </div>
+              {expertMode ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <PriorityManager 
+                    products={products}
+                    onSelectProducts={(ids) => setSelectedProducts(ids)}
+                  />
+                  <OptimizationSimulator 
+                    productIds={selectedProducts.length > 0 ? selectedProducts : products.slice(0, 10).map(p => p.id)}
+                    onExecute={handleRefresh}
+                  />
+                </div>
+              ) : (
+                <Card className="bg-muted/50 border-dashed">
+                  <CardContent className="pt-6 text-center">
+                    <TrendingUp className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Activez le <strong>Mode Expert</strong> pour accéder au simulateur d'optimisation et au gestionnaire de priorités
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="filters" className="space-y-6">
+              {!expertMode && (
+                <Card className="bg-muted/50 border-dashed">
+                  <CardContent className="pt-6 text-center">
+                    <Sparkles className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Activez le <strong>Mode Expert</strong> pour accéder aux outils avancés (simulateur, détection doublons, gestionnaire de priorités)
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-1">
                   <AdvancedAuditFilters

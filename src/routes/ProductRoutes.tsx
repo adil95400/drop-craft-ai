@@ -58,6 +58,14 @@ const VendorManagementPage = lazy(() => import('@/pages/VendorManagementPage'));
 // Advanced Products
 const AdvancedProductsPage = lazy(() => import('@/pages/products/AdvancedProductsPage'));
 
+// New Product Module Routes
+const ProductRulesPage = lazy(() => import('@/pages/products/ProductRulesPage'));
+const ProductAuditPage = lazy(() => import('@/pages/products/ProductAuditPage'));
+const ProductResearchPageNew = lazy(() => import('@/pages/products/ProductResearchPage'));
+const ProductIntelligencePage = lazy(() => import('@/pages/ProductIntelligencePage'));
+const ProductQAPage = lazy(() => import('@/pages/qa/ProductsQA'));
+const ProductSourcingPage = lazy(() => import('@/pages/products/ProductSourcingPage'));
+
 export function ProductRoutes() {
   return (
     <Routes>
@@ -68,6 +76,14 @@ export function ProductRoutes() {
       <Route path="publish" element={<ProductPublishing />} />
       <Route path="catalogue" element={<Catalogue />} />
       <Route path="advanced" element={<AdvancedProductsPage />} />
+      
+      {/* New Product Module Structure */}
+      <Route path="rules" element={<ProductRulesPage />} />
+      <Route path="audit" element={<ProductAuditPage />} />
+      <Route path="research" element={<ProductResearchPageNew />} />
+      <Route path="intelligence" element={<ProductIntelligencePage />} />
+      <Route path="qa" element={<ProductQAPage />} />
+      <Route path="sourcing" element={<ProductSourcingPage />} />
       
       {/* Import Hub */}
       <Route path="import" element={<ImportHub />} />

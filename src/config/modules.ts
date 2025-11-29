@@ -110,11 +110,76 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     enabled: true,
     minPlan: 'standard',
     route: '/products',
-    features: ['product-management', 'basic-search'],
+    features: ['product-management', 'basic-search', 'audit-engine', 'ai-optimization'],
     description: 'Gestion de votre catalogue produit',
     category: 'product',
     order: 4,
-    groupId: 'products'
+    groupId: 'products',
+    subModules: [
+      {
+        id: 'products-catalog',
+        name: 'Catalogue',
+        route: '/products',
+        icon: 'Package',
+        description: 'Liste complète de vos produits',
+        features: ['product-list', 'filters', 'bulk-actions'],
+        order: 1
+      },
+      {
+        id: 'products-audit',
+        name: 'Audit',
+        route: '/products/audit',
+        icon: 'Target',
+        description: 'Audit qualité du catalogue',
+        features: ['quality-scoring', 'issue-detection', 'recommendations'],
+        order: 2
+      },
+      {
+        id: 'products-intelligence',
+        name: 'Intelligence',
+        route: '/products/intelligence',
+        icon: 'Brain',
+        description: 'Hub IA du catalogue',
+        features: ['ai-insights', 'recommendations', 'predictions'],
+        order: 3
+      },
+      {
+        id: 'products-research',
+        name: 'Recherche',
+        route: '/products/research',
+        icon: 'Search',
+        description: 'Recherche de produits gagnants',
+        features: ['trend-detection', 'winning-products', 'market-analysis'],
+        order: 4
+      },
+      {
+        id: 'products-rules',
+        name: 'Règles',
+        route: '/products/rules',
+        icon: 'Settings',
+        description: 'Automatisation du catalogue',
+        features: ['rule-engine', 'automation', 'bulk-updates'],
+        order: 5
+      },
+      {
+        id: 'products-qa',
+        name: 'QA Finale',
+        route: '/products/qa',
+        icon: 'CheckCircle',
+        description: 'Contrôle qualité avant publication',
+        features: ['quality-check', 'validation', 'pre-publish'],
+        order: 6
+      },
+      {
+        id: 'products-sourcing',
+        name: 'Sourcing',
+        route: '/products/sourcing',
+        icon: 'Search',
+        description: 'Sourcing et import produits',
+        features: ['product-sourcing', 'supplier-search', 'import'],
+        order: 7
+      }
+    ]
   },
   import: {
     id: 'import',
