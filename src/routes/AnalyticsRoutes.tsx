@@ -8,6 +8,7 @@ import { lazy } from 'react';
 const ModernAnalyticsPage = lazy(() => import('@/pages/ModernAnalyticsPage'));
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 const AnalyticsStudio = lazy(() => import('@/pages/AnalyticsStudio'));
+const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
 
 // Intelligence
 const AIIntelligencePage = lazy(() => import('@/pages/AIIntelligencePage'));
@@ -35,6 +36,7 @@ export function AnalyticsRoutes() {
       <Route index element={<ModernAnalyticsPage />} />
       <Route path="advanced" element={<AdvancedAnalyticsPage />} />
       <Route path="studio" element={<AnalyticsStudio />} />
+      <Route path="predictive" element={<PredictiveAnalyticsPage />} />
       
       {/* Intelligence */}
       <Route path="ai-intelligence" element={<AIIntelligencePage />} />

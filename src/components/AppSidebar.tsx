@@ -8,7 +8,7 @@ import {
   Zap, Users, Brain, Shield, Plug, Settings, ChevronDown, Package, Sparkles, 
   Crown, Calculator, Megaphone, FileText, Globe, Store, Puzzle, GitCompare, 
   Database, ShoppingBag, GraduationCap, HelpCircle, Activity, Building2, 
-  Home, Boxes, CreditCard, LifeBuoy, Video 
+  Home, Boxes, CreditCard, LifeBuoy, Video, Tag 
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { 
@@ -95,6 +95,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'CreditCard': CreditCard,
   'LifeBuoy': LifeBuoy,
   'Video': Video,
+  'Tag': Tag,
 };
 
 export function AppSidebar() {

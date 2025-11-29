@@ -13,9 +13,12 @@ const AIAutomationHub = lazy(() => import('@/pages/AIAutomationHub'));
 const AIPage = lazy(() => import('@/pages/AIPage'));
 const AIStudio = lazy(() => import('@/pages/AIStudio'));
 
-// Fulfillment
+// Fulfillment & Phase 2 Marketplace
 const AutoFulfillmentPage = lazy(() => import('@/pages/AutoFulfillmentPage'));
 const AutoFulfillmentDashboard = lazy(() => import('@/pages/AutoFulfillmentDashboard'));
+const DynamicRepricingPage = lazy(() => import('@/pages/DynamicRepricingPage'));
+const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
+const PromotionsAutomationPage = lazy(() => import('@/pages/PromotionsAutomationPage'));
 
 // Optimization
 const OptimizationHub = lazy(() => import('@/pages/OptimizationHub'));
@@ -45,6 +48,10 @@ export function AutomationRoutes() {
       {/* Auto-Fulfillment */}
       <Route path="fulfillment" element={<AutoFulfillmentPage />} />
       <Route path="fulfillment/dashboard" element={<AutoFulfillmentDashboard />} />
+      
+      {/* Phase 2 - Marketplace Avancée */}
+      <Route path="repricing" element={<DynamicRepricingPage />} />
+      <Route path="promotions" element={<PromotionsAutomationPage />} />
       
       {/* Optimization */}
       <Route path="optimization" element={<OptimizationHub />} />
