@@ -207,6 +207,19 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 10,
     groupId: 'products'
   },
+  audit: {
+    id: 'audit',
+    name: 'Audit Produits',
+    icon: 'CheckCircle',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/audit',
+    features: ['product-audit', 'quality-scoring', 'seo-audit', 'auto-fix'],
+    description: 'Audit qualité et optimisation des produits',
+    category: 'product',
+    order: 10.5,
+    groupId: 'products'
+  },
   profitCalculator: {
     id: 'profitCalculator',
     name: 'Calculateur de Marge',
