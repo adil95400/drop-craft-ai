@@ -100,7 +100,7 @@ export default function ImportHub() {
       {/* 3 grandes cartes de navigation */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Carte Import par URL - NOUVEAU */}
-        <Link to="/products/import/url">
+        <Link to="/import/config">
           <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer border-2 hover:border-primary bg-gradient-to-br from-primary/5 to-primary/10">
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
@@ -142,7 +142,7 @@ export default function ImportHub() {
         </Link>
 
         {/* Carte Import Shopify Store - NOUVEAU */}
-        <Link to="/products/import/shopify-store">
+        <Link to="/import/shopify">
           <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer border-2 hover:border-primary bg-gradient-to-br from-green-500/5 to-green-500/10">
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
@@ -184,7 +184,7 @@ export default function ImportHub() {
         </Link>
 
         {/* Carte Import Rapide */}
-        <Link to="/products/import/quick">
+        <Link to="/import/quick">
           <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer border-2 hover:border-primary">
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
@@ -220,7 +220,7 @@ export default function ImportHub() {
         </Link>
 
         {/* Carte Import Avancé */}
-        <Link to="/products/import/advanced">
+        <Link to="/import/advanced">
           <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer border-2 hover:border-primary">
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
@@ -256,7 +256,7 @@ export default function ImportHub() {
         </Link>
 
         {/* Carte Gestion */}
-        <Link to="/import/manage">
+        <Link to="/import/publishing">
           <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer border-2 hover:border-primary">
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
@@ -297,7 +297,7 @@ export default function ImportHub() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Derniers Imports</CardTitle>
-            <Link to="/import/manage/history">
+            <Link to="/import/history">
               <Button variant="ghost" size="sm">
                 Voir tout
               </Button>
