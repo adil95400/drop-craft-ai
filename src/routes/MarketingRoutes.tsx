@@ -6,6 +6,7 @@ import { lazy } from 'react';
 
 // Marketing
 const ModernMarketingPage = lazy(() => import('@/pages/ModernMarketingPage'));
+const PromotionsAutomationPage = lazy(() => import('@/pages/PromotionsAutomationPage'));
 
 // CRM
 const CRM = lazy(() => import('@/pages/CRM'));
@@ -45,6 +46,7 @@ export function MarketingRoutes() {
     <Routes>
       {/* Marketing Overview */}
       <Route index element={<ModernMarketingPage />} />
+      <Route path="promotions" element={<PromotionsAutomationPage />} />
       
       {/* CRM */}
       <Route path="crm" element={<CRM />} />

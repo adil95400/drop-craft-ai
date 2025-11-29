@@ -462,6 +462,50 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     groupId: 'import_feeds'
   },
 
+  // ============= MODULES PHASE 2 - MARKETPLACE AVANCÉE =============
+  
+  dynamicRepricing: {
+    id: 'dynamicRepricing',
+    name: 'Repricing Dynamique',
+    icon: 'TrendingUp',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/automation/repricing',
+    features: ['dynamic-repricing', 'competitor-analysis', 'buybox-optimization', 'margin-protection'],
+    description: 'Repricing automatique basé sur la concurrence et les marges',
+    category: 'automation',
+    order: 5.5,
+    groupId: 'automation'
+  },
+
+  predictiveAnalytics: {
+    id: 'predictiveAnalytics',
+    name: 'Analytics Prédictive',
+    icon: 'Brain',
+    enabled: true,
+    minPlan: 'ultra_pro',
+    route: '/analytics/predictive',
+    features: ['sales-forecasting', 'restock-recommendations', 'pricing-recommendations', 'trend-analysis'],
+    description: 'Prévisions IA pour stock et prix',
+    category: 'analytics',
+    order: 8.5,
+    groupId: 'analytics'
+  },
+
+  promotionsAutomation: {
+    id: 'promotionsAutomation',
+    name: 'Promotions Auto',
+    icon: 'Tag',
+    enabled: true,
+    minPlan: 'pro',
+    route: '/marketing/promotions',
+    features: ['automated-campaigns', 'multi-marketplace-promotions', 'rule-based-triggers', 'performance-tracking'],
+    description: 'Promotions automatisées multi-canaux',
+    category: 'automation',
+    order: 5.7,
+    groupId: 'marketing'
+  },
+
   // Catégorie: Product Management
   network: {
     id: 'network',
