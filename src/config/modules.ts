@@ -272,6 +272,19 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     order: 4,
     groupId: 'customers'
   },
+  reviews: {
+    id: 'reviews',
+    name: 'Avis Clients',
+    icon: 'Star',
+    enabled: true,
+    minPlan: 'standard',
+    route: '/reviews',
+    features: ['review-management', 'review-moderation', 'review-import'],
+    description: 'Gestion des avis et témoignages clients',
+    category: 'customer',
+    order: 4.5,
+    groupId: 'customers'
+  },
   marketplaceHub: {
     id: 'marketplaceHub',
     name: 'Marketplace Hub',
