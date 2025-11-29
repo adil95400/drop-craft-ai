@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ProductAuditResult } from '@/types/audit';
+import { useProductAIOptimizer } from '@/hooks/useProductAIOptimizer';
 import { 
   AlertCircle, 
   CheckCircle, 
@@ -17,16 +18,55 @@ import {
   FileText,
   Database,
   Target,
-  TrendingUp
+  TrendingUp,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface ProductAuditPanelProps {
   auditResult: ProductAuditResult;
-  onAIAction?: (action: string) => void;
+  product: any;
+  productSource?: 'products' | 'imported_products' | 'supplier_products';
 }
 
-export function ProductAuditPanel({ auditResult, onAIAction }: ProductAuditPanelProps) {
+export function ProductAuditPanel({ 
+  auditResult, 
+  product, 
+  productSource = 'products' 
+}: ProductAuditPanelProps) {
+  const { optimizeProduct, isOptimizing } = useProductAIOptimizer();
+
+  const handleAIOptimization = async (type: 'title' | 'description' | 'attributes' | 'seo_meta') => {
+    try {
+      const result = await optimizeProduct({
+        productId: product.id,
+        productSource,
+        optimizationType: type,
+        tone: 'professional',
+        currentData: {
+          name: product.name,
+          description: product.description,
+          category: product.category,
+          price: product.price
+        }
+      });
+
+      // Show result
+      console.log('AI Optimization result:', result);
+      
+      // Show success with a preview of the result
+      if (result.result.optimized_title) {
+        toast.success(`Nouveau titre: "${result.result.optimized_title.substring(0, 50)}..."`);
+      } else if (result.result.optimized_description) {
+        toast.success(`Description optimisée avec succès !`);
+      } else {
+        toast.success('Optimisation terminée !');
+      }
+    } catch (error) {
+      console.error('AI optimization error:', error);
+    }
+  };
   const { score, issues, strengths } = auditResult;
 
   const getSeverityIcon = (severity: string) => {
@@ -245,7 +285,7 @@ export function ProductAuditPanel({ auditResult, onAIAction }: ProductAuditPanel
             Actions IA Recommandées
           </CardTitle>
           <CardDescription>
-            Corrigez rapidement les problèmes détectés avec l'IA
+            Corrigez rapidement les problèmes détectés avec OpenAI GPT-4o-mini
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -253,33 +293,53 @@ export function ProductAuditPanel({ auditResult, onAIAction }: ProductAuditPanel
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => onAIAction?.('rewrite-title')}
-              disabled={!issues.some(i => i.field === 'name')}
+              onClick={() => handleAIOptimization('title')}
+              disabled={isOptimizing || !issues.some(i => i.field === 'name')}
             >
-              Corriger le titre avec l'IA
+              {isOptimizing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4 mr-2" />
+              )}
+              Corriger le titre
             </Button>
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => onAIAction?.('rewrite-description')}
-              disabled={!issues.some(i => i.field === 'description')}
+              onClick={() => handleAIOptimization('description')}
+              disabled={isOptimizing || !issues.some(i => i.field === 'description')}
             >
-              Réécrire la description
+              {isOptimizing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <FileText className="h-4 w-4 mr-2" />
+              )}
+              Réécrire description
             </Button>
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => onAIAction?.('complete-attributes')}
-              disabled={!issues.some(i => i.category === 'data')}
+              onClick={() => handleAIOptimization('attributes')}
+              disabled={isOptimizing || !issues.some(i => i.category === 'data')}
             >
-              Compléter les attributs
+              {isOptimizing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Database className="h-4 w-4 mr-2" />
+              )}
+              Compléter attributs
             </Button>
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => onAIAction?.('generate-metas')}
-              disabled={!issues.some(i => i.category === 'seo')}
+              onClick={() => handleAIOptimization('seo_meta')}
+              disabled={isOptimizing || !issues.some(i => i.category === 'seo')}
             >
+              {isOptimizing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Target className="h-4 w-4 mr-2" />
+              )}
               Générer metas SEO
             </Button>
           </div>
