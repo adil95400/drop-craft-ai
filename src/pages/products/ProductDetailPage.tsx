@@ -11,8 +11,9 @@ import { ProductsUnifiedService } from '@/services/ProductsUnifiedService'
 import { ProductAnalyticsService } from '@/services/ProductAnalyticsService'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { ArrowLeft, Loader2, Package, TrendingUp, History, Globe, Images, Languages, MessageSquare, Target } from 'lucide-react'
+import { ArrowLeft, Loader2, Package, TrendingUp, History, Globe, Images, Languages, MessageSquare, Target, Settings } from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
+import { ProductVariantsAdvancedManager } from '@/components/products/ProductVariantsAdvancedManager'
 
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -88,7 +89,7 @@ export function ProductDetailPage() {
         <Card>
           <CardContent className="pt-6">
             <Tabs defaultValue="overview" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="overview" className="gap-2">
                   <Package className="h-4 w-4" />
                   Vue d'ensemble
@@ -100,6 +101,10 @@ export function ProductDetailPage() {
                 <TabsTrigger value="audit" className="gap-2">
                   <Target className="h-4 w-4" />
                   Audit Qualité
+                </TabsTrigger>
+                <TabsTrigger value="variants" className="gap-2">
+                  <Settings className="h-4 w-4" />
+                  Variants
                 </TabsTrigger>
                 <TabsTrigger value="raw" className="gap-2">
                   <Package className="h-4 w-4" />
@@ -205,6 +210,21 @@ export function ProductDetailPage() {
                     <p className="text-sm text-muted-foreground">
                       Fonctionnalité d'audit en cours d'intégration avec le moteur d'audit unifié
                     </p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="variants">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Gestion des Variants</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ProductVariantsAdvancedManager 
+                      productId={product.id}
+                      open={true}
+                      onOpenChange={() => {}}
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
