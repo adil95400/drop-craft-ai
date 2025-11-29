@@ -44,93 +44,130 @@ Deno.serve(async (req) => {
       throw new Error('Connection not found. Please configure the connection first.')
     }
 
-    // 3. Appeler l'API BTS Wholesaler
     // 3. Récupérer les informations de connexion
     const metadata = connection.metadata as any || {}
-    const apiPassword = metadata.jwt_token || metadata.api_password
+    const jwtToken = metadata.jwt_token || metadata.api_password
     const format = metadata.format || 'json'
     const language = metadata.language || 'fr-FR'
 
-    if (!apiPassword) {
-      throw new Error('API Password not configured in connection metadata')
+    if (!jwtToken) {
+      throw new Error('JWT Token not configured in connection metadata')
     }
 
-    console.log(`📡 Fetching products from BTS Wholesaler API (v1/api/getListProducts)...`)
+    console.log(`📡 Fetching products from BTS Wholesaler API v2.0 with pagination...`)
 
-    // 4. Appeler l'API BTS Wholesaler avec la bonne URL et authentification
-    const apiUrl = `https://api.btswholesaler.com/v1/api/getListProducts`
+    // 4. Appeler l'API BTS Wholesaler v2.0 avec pagination obligatoire
+    let allProducts: any[] = []
+    let page = 1
+    let hasMore = true
     
-    let apiProducts = []
-    try {
-      const apiResponse = await fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${apiPassword}`,
-          'Accept': 'application/json'
-        }
+    while (hasMore) {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        page_size: '500', // Maximum autorisé par l'API v2.0
+        format_file: format,
+        language_code: language
       })
+
+      const apiUrl = `https://api.btswholesaler.com/v1/api/getListProducts?${params}`
       
-      if (!apiResponse.ok) {
-        const errorText = await apiResponse.text()
-        console.error(`API Error Response (${apiResponse.status}):`, errorText.substring(0, 500))
-        throw new Error(`API returned ${apiResponse.status}: ${apiResponse.statusText}`)
+      try {
+        const apiResponse = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${jwtToken}`,
+            'Accept': 'application/json'
+          }
+        })
+        
+        if (!apiResponse.ok) {
+          const errorText = await apiResponse.text()
+          console.error(`API Error Response (${apiResponse.status}):`, errorText.substring(0, 500))
+          throw new Error(`API returned ${apiResponse.status}: ${apiResponse.statusText}`)
+        }
+
+        const apiData = await apiResponse.json()
+        const pageProducts = apiData.products || []
+        allProducts.push(...pageProducts)
+        
+        console.log(`✅ Page ${page}/${apiData.pagination?.total_pages || page}: Fetched ${pageProducts.length} products`)
+        
+        // Vérifier s'il y a d'autres pages
+        hasMore = apiData.pagination?.has_next_page || false
+        page++
+        
+        // Respecter les limites de taux - pause d'1 seconde entre les pages
+        if (hasMore) {
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      } catch (apiError) {
+        console.error(`API fetch error on page ${page}:`, apiError)
+        throw new Error(`Failed to fetch from BTS Wholesaler: ${apiError.message}`)
       }
-
-      const apiData = await apiResponse.json()
-      apiProducts = Array.isArray(apiData) ? apiData : apiData.products || []
-      
-      console.log(`✅ Fetched ${apiProducts.length} products from API`)
-    } catch (apiError) {
-      console.error('API fetch error:', apiError)
-      throw new Error(`Failed to fetch from BTS Wholesaler: ${apiError.message}`)
     }
+    
+    console.log(`✅ Total fetched: ${allProducts.length} products from BTSWholesaler`)
 
-    // 4. Importer les produits dans la table imported_products
+    // 5. Importer les produits dans la table imported_products
     let importedCount = 0
-    if (apiProducts.length > 0) {
-      const productsToImport = apiProducts.slice(0, 100).map((product: any) => ({
-        user_id: userId,
-        name: product.name || product.title || 'Unnamed Product',
-        description: product.description || '',
-        price: parseFloat(product.price) || 0,
-        cost_price: parseFloat(product.cost_price || product.wholesale_price) || 0,
-        currency: 'EUR',
-        sku: product.sku || product.id || `BTS-${Date.now()}`,
-        category: product.category || 'General',
-        stock_quantity: parseInt(product.stock || product.quantity) || 0,
-        status: 'active' as const,
-        supplier_name: supplier.name,
-        supplier_product_id: product.id || product.sku,
-        image_urls: product.image ? [product.image] : (product.images || []),
-        tags: ['premium', 'BTS Wholesaler', product.category].filter(Boolean),
-        brand: product.manufacturer_name || null,
-        ean: product.ean || null
-      }))
+    if (allProducts.length > 0) {
+      // Importer par batch de 100 produits
+      const batchSize = 100
+      
+      for (let i = 0; i < allProducts.length; i += batchSize) {
+        const batch = allProducts.slice(i, i + batchSize)
+        
+        const productsToImport = batch.map((product: any) => ({
+          user_id: userId,
+          name: product.name || product.title || 'Unnamed Product',
+          description: product.description || '',
+          price: parseFloat(product.recommended_price || product.price) || 0,
+          cost_price: parseFloat(product.price || product.wholesale_price) || 0,
+          currency: 'EUR',
+          sku: product.ean || product.sku || product.id || `BTS-${Date.now()}-${i}`,
+          category: product.categories?.split('/')[0] || 'General',
+          stock_quantity: parseInt(product.stock || product.quantity) || 0,
+          status: (parseInt(product.stock) > 0 ? 'active' : 'inactive') as const,
+          supplier_name: supplier.name,
+          supplier_product_id: product.id || product.sku,
+          image_urls: product.image ? [product.image] : (product.images || []),
+          tags: ['premium', 'BTS Wholesaler', product.categories?.split('/')[0]].filter(Boolean),
+          brand: product.manufacturer_name || null,
+          ean: product.ean || null
+        }))
 
-      const { data: imported, error: importError } = await supabase
-        .from('imported_products')
-        .insert(productsToImport)
-        .select()
+        const { data: imported, error: importError } = await supabase
+          .from('imported_products')
+          .upsert(productsToImport, {
+            onConflict: 'user_id,sku',
+            ignoreDuplicates: false
+          })
+          .select()
 
-      if (importError) {
-        console.error('Import error:', importError)
-        throw new Error(`Failed to import products: ${importError.message}`)
+        if (importError) {
+          console.error(`Import error for batch ${i}-${i + batchSize}:`, importError)
+        } else {
+          importedCount += imported?.length || 0
+          console.log(`✅ Imported batch ${i}-${i + batchSize}: ${imported?.length || 0} products`)
+        }
       }
-
-      importedCount = imported?.length || 0
-      console.log(`✅ Imported ${importedCount} products`)
     }
 
-    // 5. Mettre à jour le statut de la connexion
+    // 6. Mettre à jour le statut de la connexion
     await supabase
       .from('premium_supplier_connections')
       .update({
         status: 'active',
-        last_sync_at: new Date().toISOString()
+        last_sync_at: new Date().toISOString(),
+        metadata: {
+          ...metadata,
+          products_imported: importedCount,
+          last_product_count: allProducts.length
+        }
       })
       .eq('id', connection.id)
 
-    // 6. Créer un log de synchronisation
+    // 7. Créer un log de synchronisation
     await supabase
       .from('premium_sync_logs')
       .insert({
@@ -142,9 +179,13 @@ Deno.serve(async (req) => {
         items_synced: importedCount,
         items_failed: 0,
         sync_details: {
+          api_version: 'v2.0',
           initial_import: true,
-          products_available: apiProducts.length,
-          products_imported: importedCount
+          products_available: allProducts.length,
+          products_imported: importedCount,
+          pages_fetched: page - 1,
+          format,
+          language
         },
         completed_at: new Date().toISOString()
       })
@@ -152,11 +193,13 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Successfully connected to premium supplier',
+        message: 'Successfully connected to BTSWholesaler',
         data: {
           connection_id: connection.id,
           supplier_name: supplier.name,
+          products_fetched: allProducts.length,
           products_imported: importedCount,
+          pages_fetched: page - 1,
           status: 'active'
         }
       }),
