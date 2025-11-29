@@ -461,6 +461,110 @@ export class ProductsUnifiedService {
   }
 
   /**
+   * Récupère un produit par ID depuis toutes les tables
+   */
+  static async getProductById(productId: string, userId: string): Promise<UnifiedProduct | null> {
+    // Essayer de récupérer depuis chaque table
+    const promises = [
+      this.getFromTable('products', productId, userId),
+      this.getFromTable('imported_products', productId, userId),
+      this.getFromTable('premium_products', productId, userId),
+      this.getFromTable('catalog_products', productId, 'catalog'),
+      this.getFromTable('shopify_products', productId, userId),
+      this.getFromTable('published_products', productId, userId),
+      this.getFromTable('feed_products', productId, userId),
+      this.getFromTable('supplier_products', productId, userId)
+    ];
+
+    const results = await Promise.allSettled(promises);
+    
+    for (const result of results) {
+      if (result.status === 'fulfilled' && result.value) {
+        return result.value;
+      }
+    }
+    
+    return null;
+  }
+
+  /**
+   * Helper: Récupère un produit d'une table spécifique
+   */
+  private static async getFromTable(
+    table: string,
+    productId: string,
+    userId: string
+  ): Promise<UnifiedProduct | null> {
+    try {
+      let query = (supabase as any).from(table).select('*').eq('id', productId);
+      
+      if (userId !== 'catalog') {
+        query = query.eq('user_id', userId);
+      }
+      
+      const { data, error } = await query.maybeSingle();
+      
+      if (error || !data) return null;
+      
+      // Normaliser selon la table
+      return this.normalizeProduct(data, table);
+    } catch (error) {
+      console.error(`Error fetching from ${table}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Helper: Normalise un produit selon sa source
+   */
+  private static normalizeProduct(data: any, source: string): UnifiedProduct {
+    const baseProduct: UnifiedProduct = {
+      id: data.id,
+      name: data.name || data.title || 'Produit sans nom',
+      description: data.description || data.body_html,
+      price: data.price || 0,
+      cost_price: data.cost_price || data.wholesale_price,
+      status: (data.status === 'active' || data.status === 'published') ? 'active' : 'inactive',
+      stock_quantity: data.stock_quantity || data.inventory_quantity,
+      sku: data.sku || data.global_sku || data.external_sku,
+      category: data.category || data.product_type,
+      image_url: data.image_url || (Array.isArray(data.images) && data.images[0]) || (Array.isArray(data.image_urls) && data.image_urls[0]),
+      images: Array.isArray(data.images) ? data.images : (Array.isArray(data.image_urls) ? data.image_urls : (data.image_url ? [data.image_url] : [])),
+      profit_margin: data.profit_margin,
+      user_id: data.user_id || 'catalog',
+      source: this.mapSourceName(source),
+      created_at: data.created_at || new Date().toISOString(),
+      updated_at: data.updated_at || new Date().toISOString(),
+      // AI Scores
+      ai_score: data.ai_score || data.virality_score,
+      trend_score: data.trend_score || data.trending_score,
+      competition_score: data.competition_score,
+      is_winner: data.is_winner,
+      is_trending: data.is_trending,
+      is_bestseller: data.is_bestseller
+    };
+    
+    return baseProduct;
+  }
+
+  /**
+   * Helper: Mappe le nom de table vers le type source
+   */
+  private static mapSourceName(table: string): UnifiedProduct['source'] {
+    const mapping: Record<string, UnifiedProduct['source']> = {
+      'products': 'products',
+      'imported_products': 'imported',
+      'premium_products': 'premium',
+      'catalog_products': 'catalog',
+      'shopify_products': 'shopify',
+      'published_products': 'published',
+      'feed_products': 'feed',
+      'supplier_products': 'supplier'
+    };
+    return mapping[table] || 'products';
+  }
+
+  /**
    * Supprimer un produit (toutes les tables)
    */
   static async deleteProduct(userId: string, productId: string): Promise<void> {
