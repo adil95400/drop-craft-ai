@@ -57,6 +57,83 @@ const ShopoptiLogo = memo(() => (
 ));
 ShopoptiLogo.displayName = "ShopoptiLogo";
 
+// Section Favoris mémorisée pour éviter les re-renders
+interface FavoritesSectionProps {
+  favorites: Array<{ moduleId: string }>;
+  collapsed: boolean;
+  isActive: (path: string) => boolean;
+  canAccess: (moduleId: string) => boolean;
+  handleNavigate: (url: string, moduleId: string) => void;
+}
+
+const FavoritesSection = memo<FavoritesSectionProps>(({ 
+  favorites, 
+  collapsed, 
+  isActive, 
+  canAccess, 
+  handleNavigate 
+}) => (
+  <SidebarGroup className="mb-3">
+    <SidebarGroupLabel className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 shadow-sm">
+      {!collapsed && (
+        <>
+          <div className="relative">
+            <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 drop-shadow-lg" />
+            <div className="absolute inset-0 blur-sm">
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+            </div>
+          </div>
+          <span className="text-xs font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+            FAVORIS
+          </span>
+          <Badge variant="secondary" className="text-xs ml-auto bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/30">
+            {favorites.length}
+          </Badge>
+        </>
+      )}
+    </SidebarGroupLabel>
+    <SidebarGroupContent>
+      <SidebarMenu>
+        {favorites.map(fav => {
+          const module = MODULE_REGISTRY[fav.moduleId];
+          if (!module || !canAccess(module.id)) return null;
+          const Icon = iconMap[module.icon] || Settings;
+          const active = isActive(module.route);
+          
+          return (
+            <SidebarMenuItem key={module.id}>
+              <SidebarMenuButton
+                onClick={() => handleNavigate(module.route, module.id)}
+                tooltip={collapsed ? module.name : undefined}
+                className={cn(
+                  "w-full justify-start transition-all duration-300 group relative overflow-hidden rounded-lg",
+                  active 
+                    ? "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-lg shadow-primary/30 scale-[1.02]" 
+                    : "hover:bg-accent/80 hover:text-accent-foreground hover:shadow-md hover:scale-[1.01] backdrop-blur-sm"
+                )}
+                isActive={active}
+              >
+                <Icon className={cn("h-4 w-4 transition-transform duration-300", active && "scale-110 drop-shadow-lg")} />
+                {!collapsed && (
+                  <div className="flex items-center justify-between w-full gap-2">
+                    <span className="truncate text-sm font-medium">{module.name}</span>
+                    <FavoriteButton 
+                      moduleId={module.id} 
+                      size="icon" 
+                      className="h-6 w-6 opacity-60 group-hover:opacity-100 transition-opacity" 
+                    />
+                  </div>
+                )}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          );
+        })}
+      </SidebarMenu>
+    </SidebarGroupContent>
+  </SidebarGroup>
+));
+FavoritesSection.displayName = "FavoritesSection";
+
 // Map des icônes
 const iconMap: Record<string, React.ComponentType<any>> = {
   'Home': Home,
@@ -164,10 +241,11 @@ export function AppSidebar() {
     setOpenSubMenus(prev => ({ ...prev, [moduleId]: !prev[moduleId] }));
   }, []);
 
-  // Grouper les modules par NavGroup
-  const modulesByGroup = useMemo(() => {
+  // Grouper et filtrer les modules par NavGroup - optimisé en un seul pass
+  const { modulesByGroup, filteredGroups } = useMemo(() => {
     const grouped: Record<NavGroupId, typeof availableModules> = {} as any;
     
+    // Grouper et trier en un seul pass
     availableModules.forEach(module => {
       if (!module.groupId || !isModuleEnabled(module.id)) return;
       if (!grouped[module.groupId]) {
@@ -176,40 +254,40 @@ export function AppSidebar() {
       grouped[module.groupId].push(module);
     });
 
-    // Trier les modules dans chaque groupe par order
-    Object.keys(grouped).forEach(groupId => {
-      grouped[groupId as NavGroupId].sort((a, b) => a.order - b.order);
+    // Trier les modules dans chaque groupe
+    Object.values(grouped).forEach(modules => {
+      modules.sort((a, b) => a.order - b.order);
     });
 
-    return grouped;
-  }, [availableModules, isModuleEnabled]);
-
-  // Filtrer les groupes par recherche - optimisé
-  const filteredGroups = useMemo(() => {
-    const groupsWithModules = NAV_GROUPS.filter(group => modulesByGroup[group.id]?.length > 0);
+    // Filtrer les groupes
+    const groupsWithModules = NAV_GROUPS.filter(group => grouped[group.id]?.length > 0);
     
-    if (!debouncedSearchQuery) return groupsWithModules;
+    if (!debouncedSearchQuery) {
+      return { modulesByGroup: grouped, filteredGroups: groupsWithModules };
+    }
     
     const query = debouncedSearchQuery.toLowerCase();
-    return groupsWithModules.filter(group => {
-      const groupModules = modulesByGroup[group.id] || [];
+    const filtered = groupsWithModules.filter(group => {
+      const groupModules = grouped[group.id] || [];
       return groupModules.some(m => 
         m.name.toLowerCase().includes(query) || 
         m.description?.toLowerCase().includes(query)
       );
     });
-  }, [debouncedSearchQuery, modulesByGroup]);
+    
+    return { modulesByGroup: grouped, filteredGroups: filtered };
+  }, [availableModules, isModuleEnabled, debouncedSearchQuery]);
+
+  // Badge variants - mémorisé en objet constant
+  const badgeVariants = useMemo(() => ({
+    pro: 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-md shadow-purple-500/30',
+    ultra_pro: 'bg-gradient-to-r from-yellow-500 via-orange-500 to-orange-600 hover:from-yellow-600 hover:via-orange-600 hover:to-orange-700 text-white border-0 shadow-lg shadow-orange-500/40',
+    default: 'bg-secondary/80 text-secondary-foreground border border-border/50 shadow-sm'
+  }), []);
 
   const getBadgeVariant = useCallback((plan: string) => {
-    switch (plan) {
-      case 'pro':
-        return 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-md shadow-purple-500/30';
-      case 'ultra_pro':
-        return 'bg-gradient-to-r from-yellow-500 via-orange-500 to-orange-600 hover:from-yellow-600 hover:via-orange-600 hover:to-orange-700 text-white border-0 shadow-lg shadow-orange-500/40';
-      default:
-        return 'bg-secondary/80 text-secondary-foreground border border-border/50 shadow-sm';
-    }
-  }, []);
+    return badgeVariants[plan as keyof typeof badgeVariants] || badgeVariants.default;
+  }, [badgeVariants]);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/50 bg-gradient-to-b from-card/80 to-background/60 backdrop-blur-xl backdrop-saturate-150 shadow-xl transition-all duration-300">
@@ -269,66 +347,15 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-3 py-3 custom-scrollbar">
-        {/* Section Favoris */}
+        {/* Section Favoris - mémorisée */}
         {favorites.length > 0 && (
-          <SidebarGroup className="mb-3">
-            <SidebarGroupLabel className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 shadow-sm">
-              {state !== "collapsed" && (
-                <>
-                  <div className="relative">
-                    <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 drop-shadow-lg" />
-                    <div className="absolute inset-0 blur-sm">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    </div>
-                  </div>
-                  <span className="text-xs font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
-                    FAVORIS
-                  </span>
-                  <Badge variant="secondary" className="text-xs ml-auto bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/30">
-                    {favorites.length}
-                  </Badge>
-                </>
-              )}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {favorites.slice(0, 5).map(fav => {
-                  const module = MODULE_REGISTRY[fav.moduleId];
-                  if (!module || !canAccess(module.id)) return null;
-                  const Icon = iconMap[module.icon] || Settings;
-                  const active = isActive(module.route);
-                  
-                  return (
-                    <SidebarMenuItem key={module.id}>
-                      <SidebarMenuButton
-                        onClick={() => handleNavigate(module.route, module.id)}
-                        tooltip={state === "collapsed" ? module.name : undefined}
-                        className={cn(
-                          "w-full justify-start transition-all duration-300 group relative overflow-hidden rounded-lg",
-                          active 
-                            ? "bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-lg shadow-primary/30 scale-[1.02]" 
-                            : "hover:bg-accent/80 hover:text-accent-foreground hover:shadow-md hover:scale-[1.01] backdrop-blur-sm"
-                        )}
-                        isActive={active}
-                      >
-                        <Icon className={cn("h-4 w-4 transition-transform duration-300", active && "scale-110 drop-shadow-lg")} />
-                        {state !== "collapsed" && (
-                          <div className="flex items-center justify-between w-full gap-2">
-                            <span className="truncate text-sm font-medium">{module.name}</span>
-                            <FavoriteButton 
-                              moduleId={module.id} 
-                              size="icon" 
-                              className="h-6 w-6 opacity-60 group-hover:opacity-100 transition-opacity" 
-                            />
-                          </div>
-                        )}
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+          <FavoritesSection 
+            favorites={favorites.slice(0, 5)}
+            collapsed={state === "collapsed"}
+            isActive={isActive}
+            canAccess={canAccess}
+            handleNavigate={handleNavigate}
+          />
         )}
 
         {/* Groupes de navigation dynamiques */}
