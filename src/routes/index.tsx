@@ -49,6 +49,11 @@ const CreateProduct = lazy(() => import('@/pages/products/CreateProduct'));
 const CreateOrder = lazy(() => import('@/pages/orders/CreateOrder'));
 const CreateCustomer = lazy(() => import('@/pages/customers/CreateCustomer'));
 const CreateNotification = lazy(() => import('@/pages/notifications/CreateNotification'));
+const CouponsManagementPage = lazy(() => import('@/pages/CouponsManagementPage'));
+const FreeTrialActivationPage = lazy(() => import('@/pages/FreeTrialActivationPage'));
+const FulfillmentDashboardPage = lazy(() => import('@/pages/FulfillmentDashboardPage'));
+const FulfillmentRulesPage = lazy(() => import('@/pages/FulfillmentRulesPage'));
+const CarriersManagementPage = lazy(() => import('@/pages/CarriersManagementPage'));
 
 // Additional pages
 const AdvancedModulesPage = lazy(() => import('@/pages/AdvancedModulesPage'));
@@ -135,6 +140,13 @@ export function AppRoutes() {
         {/* Catalog Intelligence & Rules */}
         <Route path="/rules" element={<ProtectedRoute><AppLayout><ProductRulesPage /></AppLayout></ProtectedRoute>} />
         <Route path="/catalog-intelligence" element={<ProtectedRoute><AppLayout><CatalogIntelligencePage /></AppLayout></ProtectedRoute>} />
+        
+        {/* Fulfillment & Promotions */}
+        <Route path="/fulfillment" element={<ProtectedRoute><AppLayout><FulfillmentDashboardPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/fulfillment/rules" element={<ProtectedRoute><AppLayout><FulfillmentRulesPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/fulfillment/carriers" element={<ProtectedRoute><AppLayout><CarriersManagementPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/coupons" element={<ProtectedRoute><AppLayout><CouponsManagementPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/trial" element={<ProtectedRoute><AppLayout><FreeTrialActivationPage /></AppLayout></ProtectedRoute>} />
         
         {/* Modern Routes - Redirections vers interfaces principales */}
         <Route path="/modern/products" element={<Navigate to="/products" replace />} />

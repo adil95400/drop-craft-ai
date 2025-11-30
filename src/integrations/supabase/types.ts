@@ -2764,6 +2764,56 @@ export type Database = {
         }
         Relationships: []
       }
+      coupon_redemptions: {
+        Row: {
+          coupon_id: string | null
+          created_at: string | null
+          discount_applied: number
+          final_amount: number | null
+          id: string
+          metadata: Json | null
+          order_id: string | null
+          original_amount: number | null
+          redeemed_at: string | null
+          subscription_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          coupon_id?: string | null
+          created_at?: string | null
+          discount_applied: number
+          final_amount?: number | null
+          id?: string
+          metadata?: Json | null
+          order_id?: string | null
+          original_amount?: number | null
+          redeemed_at?: string | null
+          subscription_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          coupon_id?: string | null
+          created_at?: string | null
+          discount_applied?: number
+          final_amount?: number | null
+          id?: string
+          metadata?: Json | null
+          order_id?: string | null
+          original_amount?: number | null
+          redeemed_at?: string | null
+          subscription_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_redemptions_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "promotional_coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_activities: {
         Row: {
           activity_type: string
@@ -4700,6 +4750,54 @@ export type Database = {
           transform_function?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      free_trial_subscriptions: {
+        Row: {
+          conversion_date: string | null
+          converted_to_paid: boolean | null
+          coupon_code: string | null
+          created_at: string | null
+          ends_at: string
+          id: string
+          referral_source: string | null
+          started_at: string | null
+          status: string | null
+          trial_days: number
+          trial_plan: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          conversion_date?: string | null
+          converted_to_paid?: boolean | null
+          coupon_code?: string | null
+          created_at?: string | null
+          ends_at: string
+          id?: string
+          referral_source?: string | null
+          started_at?: string | null
+          status?: string | null
+          trial_days: number
+          trial_plan: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          conversion_date?: string | null
+          converted_to_paid?: boolean | null
+          coupon_code?: string | null
+          created_at?: string | null
+          ends_at?: string
+          id?: string
+          referral_source?: string | null
+          started_at?: string | null
+          status?: string | null
+          trial_days?: number
+          trial_plan?: string
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -10578,6 +10676,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      promotional_coupons: {
+        Row: {
+          applies_to: string[] | null
+          code: string
+          coupon_type: string
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          description: string | null
+          discount_value: number
+          id: string
+          is_active: boolean | null
+          max_discount_amount: number | null
+          min_purchase_amount: number | null
+          per_user_limit: number | null
+          trial_days: number | null
+          updated_at: string | null
+          usage_count: number | null
+          usage_limit: number | null
+          user_id: string | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          applies_to?: string[] | null
+          code: string
+          coupon_type: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          discount_value: number
+          id?: string
+          is_active?: boolean | null
+          max_discount_amount?: number | null
+          min_purchase_amount?: number | null
+          per_user_limit?: number | null
+          trial_days?: number | null
+          updated_at?: string | null
+          usage_count?: number | null
+          usage_limit?: number | null
+          user_id?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          applies_to?: string[] | null
+          code?: string
+          coupon_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          discount_value?: number
+          id?: string
+          is_active?: boolean | null
+          max_discount_amount?: number | null
+          min_purchase_amount?: number | null
+          per_user_limit?: number | null
+          trial_days?: number | null
+          updated_at?: string | null
+          usage_count?: number | null
+          usage_limit?: number | null
+          user_id?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
       }
       published_products: {
         Row: {
