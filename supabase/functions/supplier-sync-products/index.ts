@@ -310,23 +310,7 @@ Deno.serve(async (req) => {
       }
       
       default: {
-        // Generate sample products for demonstration
-        products = Array.from({ length: Math.min(limit, 20) }, (_, i) => ({
-          supplier_id: supplierId,
-          external_id: `${connectorId}-${Date.now()}-${i}`,
-          sku: `SKU-${connectorId.toUpperCase()}-${i + 1}`,
-          name: `Product ${i + 1} from ${connectorId}`,
-          description: `High quality product from ${connectorId}`,
-          price: 29.99 + (i * 5),
-          cost_price: 19.99 + (i * 3),
-          currency: 'EUR',
-          stock_quantity: Math.floor(Math.random() * 100) + 10,
-          images: [`https://picsum.photos/400/400?random=${i}`],
-          category: 'General',
-          attributes: {},
-          status: 'active'
-        }))
-        syncStats.fetched = products.length
+        throw new Error(`Supplier connector "${connectorId}" is not implemented yet. Please implement the API integration for this supplier.`)
       }
     }
     
