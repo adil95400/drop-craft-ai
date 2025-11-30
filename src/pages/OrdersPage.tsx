@@ -23,8 +23,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Package, Search, Filter, Eye, Edit, Download } from 'lucide-react'
+import { Package, Search, Filter, Eye, Edit, Download, TruckIcon } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { ShipmentCreationDialog } from '@/components/fulfillment/ShipmentCreationDialog'
 
 export default function OrdersPage() {
   const { toast } = useToast()
@@ -32,6 +33,13 @@ export default function OrdersPage() {
   const { exportData, isExporting } = useDataExport()
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [shipmentDialogOpen, setShipmentDialogOpen] = useState(false)
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+
+  const handleCreateShipment = (orderId: string) => {
+    setSelectedOrderId(orderId)
+    setShipmentDialogOpen(true)
+  }
 
   const handleExport = async () => {
     await exportData('orders', 'csv')
@@ -140,6 +148,7 @@ export default function OrdersPage() {
                 <TableHead>Status</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead>Expédition</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -161,6 +170,18 @@ export default function OrdersPage() {
                     {formatDistanceToNow(new Date(order.created_at), {
                       addSuffix: true,
                     })}
+                  </TableCell>
+                  <TableCell>
+                    {(order.status === 'processing' || order.status === 'shipped') && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCreateShipment(order.id)}
+                      >
+                        <TruckIcon className="w-4 h-4 mr-1" />
+                        Expédier
+                      </Button>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
@@ -186,6 +207,14 @@ export default function OrdersPage() {
           </Table>
         )}
       </Card>
+
+      {selectedOrderId && (
+        <ShipmentCreationDialog
+          open={shipmentDialogOpen}
+          onOpenChange={setShipmentDialogOpen}
+          orderId={selectedOrderId}
+        />
+      )}
     </div>
   )
 }
