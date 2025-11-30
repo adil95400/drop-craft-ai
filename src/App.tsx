@@ -17,9 +17,24 @@ import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
 import '@/lib/i18n';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { PWAInstallBanner } from '@/components/mobile/PWAInstallBanner';
+import { useEffect } from 'react';
 
 const AppContent = memo(() => {
   useAutoTheme();
+  
+  useEffect(() => {
+    // Enregistrer le Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+          console.log('✅ Service Worker registered:', registration);
+        })
+        .catch(error => {
+          console.error('❌ Service Worker registration failed:', error);
+        });
+    }
+  }, []);
   
   return (
     <>
@@ -28,6 +43,7 @@ const AppContent = memo(() => {
       <ModalManager />
       <Toaster />
       <SonnerToaster position="top-right" />
+      <PWAInstallBanner />
     </>
   );
 });
