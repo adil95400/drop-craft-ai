@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRealOrders } from '@/hooks/useRealOrders';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Package,
   Truck,
@@ -15,66 +18,22 @@ import {
   Download,
   Eye,
   Printer,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  customer: string;
-  total: number;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-  platform: string;
-  date: string;
-  items: number;
-}
+import { useQueryClient } from '@tanstack/react-query';
 
 const OrdersCenter = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { orders: realOrders, isLoading } = useRealOrders();
   const [searchTerm, setSearchTerm] = useState("");
-  const [orders] = useState<Order[]>([
-    {
-      id: "1",
-      orderNumber: "ORD-2024-001",
-      customer: "Jean Dupont",
-      total: 450.00,
-      status: "delivered",
-      platform: "Shopify",
-      date: "2024-01-15",
-      items: 2,
-    },
-    {
-      id: "2",
-      orderNumber: "ORD-2024-002",
-      customer: "Marie Martin",
-      total: 320.00,
-      status: "processing",
-      platform: "Amazon",
-      date: "2024-01-20",
-      items: 1,
-    },
-    {
-      id: "3",
-      orderNumber: "ORD-2024-003",
-      customer: "Pierre Durant",
-      total: 180.00,
-      status: "shipped",
-      platform: "eBay",
-      date: "2024-01-25",
-      items: 3,
-    },
-    {
-      id: "4",
-      orderNumber: "ORD-2024-004",
-      customer: "Sophie Bernard",
-      total: 625.00,
-      status: "pending",
-      platform: "Shopify",
-      date: "2024-01-28",
-      items: 4,
-    },
-  ]);
+  
+  const orders = realOrders || [];
+  
+  const refetch = () => queryClient.invalidateQueries({ queryKey: ['orders'] });
 
-  const getStatusIcon = (status: Order["status"]) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case "pending":
         return <Clock className="h-4 w-4" />;
@@ -86,11 +45,13 @@ const OrdersCenter = () => {
         return <CheckCircle className="h-4 w-4" />;
       case "cancelled":
         return <XCircle className="h-4 w-4" />;
+      default:
+        return <Package className="h-4 w-4" />;
     }
   };
 
-  const getStatusBadge = (status: Order["status"]) => {
-    const variants: Record<Order["status"], "default" | "secondary" | "destructive" | "outline"> = {
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       pending: "outline",
       processing: "default",
       shipped: "secondary",
@@ -98,7 +59,7 @@ const OrdersCenter = () => {
       cancelled: "destructive",
     };
 
-    const labels: Record<Order["status"], string> = {
+    const labels: Record<string, string> = {
       pending: "En attente",
       processing: "En traitement",
       shipped: "Expédié",
@@ -107,25 +68,61 @@ const OrdersCenter = () => {
     };
 
     return (
-      <Badge variant={variants[status]} className="flex items-center gap-1">
+      <Badge variant={variants[status] || "outline"} className="flex items-center gap-1">
         {getStatusIcon(status)}
-        {labels[status]}
+        {labels[status] || status}
       </Badge>
     );
   };
 
   const handleViewOrder = (orderId: string) => {
-    toast.info(`Affichage de la commande ${orderId}`);
+    navigate(`/dashboard/orders/${orderId}`);
   };
 
   const handlePrintLabel = (orderId: string) => {
-    toast.success(`Étiquette d'expédition générée pour ${orderId}`);
+    toast.success(`Étiquette d'expédition générée pour la commande ${orderId}`);
+  };
+
+  const handleExport = () => {
+    if (!orders || orders.length === 0) {
+      toast.error('Aucune commande à exporter');
+      return;
+    }
+
+    const headers = ['Numéro', 'Client', 'Date', 'Statut', 'Montant', 'Devise', 'Articles', 'Plateforme'];
+    const csvData = orders.map(order => [
+      order.order_number || '',
+      order.customer_name || '',
+      new Date(order.created_at).toLocaleDateString('fr-FR'),
+      order.status || '',
+      order.total_amount?.toFixed(2) || '0',
+      order.currency || 'EUR',
+      order.items?.length || 0,
+      order.platform || 'N/A'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `commandes_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success(`${orders.length} commandes exportées`);
   };
 
   const filteredOrders = orders.filter(
     (order) =>
-      order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.toLowerCase().includes(searchTerm.toLowerCase())
+      order.order_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customer_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const ordersByStatus = {
@@ -135,6 +132,15 @@ const OrdersCenter = () => {
     shipped: filteredOrders.filter((o) => o.status === "shipped").length,
     delivered: filteredOrders.filter((o) => o.status === "delivered").length,
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6 space-y-6">
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -205,13 +211,13 @@ const OrdersCenter = () => {
               <CardDescription>Vue unifiée de toutes vos marketplaces</CardDescription>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                Filtres
+              <Button variant="outline" size="sm" onClick={refetch}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Actualiser
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleExport}>
                 <Download className="h-4 w-4 mr-2" />
-                Exporter
+                Exporter CSV
               </Button>
             </div>
           </div>
@@ -245,30 +251,30 @@ const OrdersCenter = () => {
                   <div className="flex items-center justify-between">
                     <div className="space-y-2">
                       <div className="flex items-center gap-3">
-                        <p className="font-medium">{order.orderNumber}</p>
+                        <p className="font-medium">{order.order_number}</p>
                         {getStatusBadge(order.status)}
-                        <Badge variant="outline">{order.platform}</Badge>
+                        <Badge variant="outline">{order.platform || 'Direct'}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Client: {order.customer} • {order.items} article(s) • {order.date}
+                        Client: {order.customer_name} • {order.items?.length || 0} article(s) • {new Date(order.created_at).toLocaleDateString('fr-FR')}
                       </p>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-lg font-bold">{order.total.toFixed(2)} €</p>
+                        <p className="text-lg font-bold">{order.total_amount?.toFixed(2) || '0.00'} {order.currency || 'EUR'}</p>
                       </div>
                       <div className="flex gap-2">
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleViewOrder(order.orderNumber)}
+                          onClick={() => handleViewOrder(order.id)}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handlePrintLabel(order.orderNumber)}
+                          onClick={() => handlePrintLabel(order.order_number || order.id)}
                         >
                           <Printer className="h-4 w-4" />
                         </Button>
@@ -291,30 +297,30 @@ const OrdersCenter = () => {
                       <div className="flex items-center justify-between">
                         <div className="space-y-2">
                           <div className="flex items-center gap-3">
-                            <p className="font-medium">{order.orderNumber}</p>
+                            <p className="font-medium">{order.order_number}</p>
                             {getStatusBadge(order.status)}
-                            <Badge variant="outline">{order.platform}</Badge>
+                            <Badge variant="outline">{order.platform || 'Direct'}</Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            Client: {order.customer} • {order.items} article(s) • {order.date}
+                            Client: {order.customer_name} • {order.items?.length || 0} article(s) • {new Date(order.created_at).toLocaleDateString('fr-FR')}
                           </p>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-                            <p className="text-lg font-bold">{order.total.toFixed(2)} €</p>
+                            <p className="text-lg font-bold">{order.total_amount?.toFixed(2) || '0.00'} {order.currency || 'EUR'}</p>
                           </div>
                           <div className="flex gap-2">
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleViewOrder(order.orderNumber)}
+                              onClick={() => handleViewOrder(order.id)}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handlePrintLabel(order.orderNumber)}
+                              onClick={() => handlePrintLabel(order.order_number || order.id)}
                             >
                               <Printer className="h-4 w-4" />
                             </Button>
