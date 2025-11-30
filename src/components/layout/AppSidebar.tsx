@@ -43,28 +43,20 @@ const navigationGroups = [
     title: "E-Commerce",
     items: [
       { title: "Produits", url: "/products", icon: Package },
-      { title: "Commandes", url: "/orders", icon: ShoppingCart },
+      { title: "Commandes", url: "/dashboard/orders", icon: ShoppingCart },
       { title: "Centre Commandes", url: "/orders-center", icon: Activity, badge: "Nouveau" },
-      { title: "Clients", url: "/customers", icon: Users },
+      { title: "Clients", url: "/dashboard/customers", icon: Users },
       { title: "Fournisseurs", url: "/suppliers", icon: Truck },
-      { title: "Winning Products", url: "/winners", icon: Trophy, badge: "AI" },
+      { title: "Winning Products", url: "/products/research", icon: Trophy, badge: "AI" },
     ]
   },
   {
     title: "Import & Synchronisation",
     items: [
-      { title: "Hub Import", url: "/import-management", icon: Upload, badge: "Hub" },
-      { title: "Import Standard", url: "/import", icon: Upload },
+      { title: "Hub Import", url: "/import", icon: Upload, badge: "Hub" },
       { title: "Import Avancé", url: "/import/advanced", icon: Upload, badge: "Pro" },
-      { title: "Import CSV", url: "/import/csv", icon: FileText },
-      { title: "Import API", url: "/import/api", icon: Code },
-      { title: "Import Database", url: "/import/database", icon: Database },
-      { title: "Web Scraping", url: "/import/url", icon: Globe },
-      { title: "IA Generation", url: "/import/ai-generation", icon: Brain, badge: "AI" },
-      { title: "Extension Navigator", url: "/import/extension-navigator", icon: Puzzle, badge: "Premium" },
-      { title: "Imports Programmés", url: "/import/scheduled", icon: Clock },
-      { title: "Historique", url: "/import/history", icon: History },
-      { title: "Configuration Import", url: "/import/configuration", icon: Settings },
+      { title: "Import Simplifié", url: "/import/simplified", icon: FileText },
+      { title: "Shopify Import", url: "/import/shopify", icon: Store },
       { title: "Sync Manager", url: "/sync-manager", icon: Activity, badge: "Nouveau" },
     ]
   },
@@ -90,72 +82,57 @@ const navigationGroups = [
   {
     title: "CRM & Marketing",
     items: [
-      { title: "CRM", url: "/crm", icon: MessageSquare },
-      { title: "CRM Calendrier", url: "/crm/calendar", icon: Calendar, badge: "Nouveau" },
+      { title: "CRM", url: "/dashboard/customers", icon: MessageSquare },
       { title: "Marketing", url: "/marketing", icon: Megaphone },
-      { title: "Marketing Ads", url: "/ads-marketing", icon: Target, badge: "Ultra Pro" },
-      { title: "Affiliation", url: "/affiliation", icon: Share, badge: "Ultra Pro" },
+      { title: "Marketing Ads", url: "/marketing/ads", icon: Target, badge: "Ultra Pro" },
     ]
   },
   {
-    title: "Intégrations & Stores",
+    title: "Intégrations",
     items: [
-      { title: "Intégrations Hub", url: "/integrations", icon: Network, badge: "Hub" },
-      { title: "Stores", url: "/stores", icon: Building2 },
-      { title: "Connecter Store", url: "/stores/connect", icon: Globe },
-      { title: "Marketplace", url: "/marketplace", icon: Store },
-      { title: "Connecteurs", url: "/connectors", icon: Zap, badge: "Nouveau" },
+      { title: "Intégrations", url: "/integrations", icon: Network },
+      { title: "Shopify Store", url: "/store", icon: Store },
+      { title: "Feeds & Export", url: "/feeds", icon: Globe },
     ]
   },
   {
     title: "Automation & Outils",
     items: [
-      { title: "Automation Studio", url: "/automation-studio", icon: Zap, badge: "Auto" },
       { title: "Automation", url: "/automation", icon: Workflow },
-      { title: "Stock Management", url: "/stock-management", icon: Package },
-      { title: "Stock Avancé", url: "/stock", icon: Database, badge: "Pro" },
-      { title: "Returns", url: "/returns", icon: RefreshCw, badge: "Ultra Pro" },
+      { title: "Stock", url: "/stock", icon: Database },
+      { title: "Fulfillment", url: "/fulfillment", icon: Truck, badge: "Nouveau" },
+      { title: "Rules & Repricing", url: "/rules", icon: Zap },
     ]
   },
   {
-    title: "Extensions & Développement",
+    title: "Extensions",
     items: [
-      { title: "Extensions", url: "/extensions", icon: Puzzle, badge: "Nouveau" },
-      { title: "Extensions Hub", url: "/extensions/hub", icon: Layers },
-      { title: "Extensions Marketplace", url: "/extensions-marketplace", icon: Store, badge: "Phase 3" },
-      { title: "Extension API", url: "/extensions-api", icon: Code, badge: "Pro" },
-      { title: "Developer", url: "/extensions/developer", icon: Code },
+      { title: "Extensions", url: "/extensions", icon: Puzzle },
+      { title: "API Documentation", url: "/integrations/api/documentation", icon: Code },
     ]
   },
   {
-    title: "Entreprise & Avancé",
+    title: "Avancé",
     items: [
-      { title: "Multi-Tenant", url: "/multi-tenant", icon: Building2, badge: "Phase 3" },
-      { title: "Enterprise API", url: "/enterprise-api", icon: Network, badge: "Phase 3" },
-      { title: "Enterprise Scalability", url: "/enterprise-scalability", icon: Cloud, badge: "Phase 4" },
-      { title: "AI Predictive Analytics", url: "/ai-predictive-analytics", icon: Brain, badge: "Phase 5" },
-      { title: "White Label", url: "/white-label", icon: Crown, badge: "Ultra Pro" },
-      { title: "Team Collaboration", url: "/team-collaboration", icon: Users },
-      { title: "Observability", url: "/observability", icon: Eye, badge: "Phase 3" },
+      { title: "Audit Produits", url: "/audit", icon: CheckCircle },
+      { title: "QA Dashboard", url: "/qa", icon: Eye },
+      { title: "Catalog Intelligence", url: "/catalog-intelligence", icon: Brain, badge: "AI" },
     ]
   },
   {
-    title: "Mobile & Applications",
+    title: "Plus",
     items: [
-      { title: "Mobile Dashboard", url: "/mobile-dashboard", icon: Smartphone },
-      { title: "Mobile Apps", url: "/mobile-apps", icon: Smartphone },
+      { title: "Coupons", url: "/coupons", icon: Star },
+      { title: "Academy", url: "/academy", icon: BookOpen },
       { title: "PWA Install", url: "/pwa-install", icon: Download },
-      { title: "Flutter Mobile", url: "/flutter-mobile", icon: Smartphone },
     ]
   },
   {
     title: "Support & Configuration",
     items: [
-      { title: "Centre d'aide", url: "/help", icon: BookOpen, badge: "Support" },
       { title: "Support", url: "/support", icon: MessageSquare },
-      { title: "Settings", url: "/settings", icon: Settings },
-      { title: "Profile", url: "/profile", icon: Users },
-      { title: "Status Application", url: "/app-status", icon: CheckCircle },
+      { title: "Paramètres", url: "/dashboard/settings", icon: Settings },
+      { title: "Profil", url: "/dashboard/profile", icon: Users },
     ]
   }
 ]
