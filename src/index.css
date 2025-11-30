@@ -58,15 +58,22 @@
     --success-foreground: 210 40% 98%;
     --success-light: 142 76% 96%;
     
-    /* Warning colors */
+    /* Warning colors - Orange/Yellow for badges */
     --warning: 38 92% 50%;
-    --warning-foreground: 210 40% 98%;
+    --warning-foreground: 48 100% 5%;
     --warning-light: 38 92% 96%;
     
     /* Info colors */
     --info: 199 89% 48%;
     --info-foreground: 210 40% 98%;
     --info-light: 199 89% 96%;
+    
+    /* Sidebar specific tokens */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222.2 84% 4.9%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222.2 47.4% 11.2%;
+    --sidebar-border: 214.3 31.8% 91.4%;
     
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
@@ -127,12 +134,19 @@
     --success-light: 142 71% 15%;
     
     --warning: 38 92% 50%;
-    --warning-foreground: 210 40% 98%;
+    --warning-foreground: 48 100% 96%;
     --warning-light: 38 92% 15%;
     
     --info: 199 89% 48%;
     --info-foreground: 210 40% 98%;
     --info-light: 199 89% 15%;
+    
+    /* Sidebar specific tokens - dark mode */
+    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
     
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
     --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--muted)));
@@ -192,7 +206,10 @@
   
   /* Text gradient */
   .text-gradient-primary {
-    @apply bg-gradient-primary bg-clip-text text-transparent;
+    background: var(--gradient-primary);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
   
   /* Smooth transitions */

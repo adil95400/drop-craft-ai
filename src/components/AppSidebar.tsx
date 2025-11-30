@@ -38,7 +38,7 @@ const ShopoptiLogo = memo(() => (
       </div>
     </div>
     <div className="flex flex-col">
-      <span className="font-bold bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text transition-all duration-300 group-hover:from-primary/90 group-hover:via-primary group-hover:to-secondary/90 drop-shadow-sm text-lg text-blue-700">
+      <span className="font-bold text-gradient-primary text-lg transition-all duration-300">
         ShopOpti
       </span>
       <div className="flex items-center gap-1.5 -mt-0.5">
@@ -74,19 +74,19 @@ const FavoritesSection = memo<FavoritesSectionProps>(({
   handleNavigate 
 }) => (
   <SidebarGroup className="mb-3">
-    <SidebarGroupLabel className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 shadow-sm">
+    <SidebarGroupLabel className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-warning/10 to-warning/5 border border-warning/20 shadow-sm">
       {!collapsed && (
         <>
           <div className="relative">
-            <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 drop-shadow-lg" />
+            <Star className="h-4 w-4 fill-warning text-warning drop-shadow-lg" />
             <div className="absolute inset-0 blur-sm">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              <Star className="h-4 w-4 fill-warning/80 text-warning/80" />
             </div>
           </div>
-          <span className="text-xs font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+          <span className="text-xs font-bold text-gradient-primary">
             FAVORIS
           </span>
-          <Badge variant="secondary" className="text-xs ml-auto bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/30">
+          <Badge variant="secondary" className="text-xs ml-auto bg-warning/20 text-warning-foreground border-warning/30">
             {favorites.length}
           </Badge>
         </>
@@ -278,10 +278,10 @@ export function AppSidebar() {
     return { modulesByGroup: grouped, filteredGroups: filtered };
   }, [availableModules, isModuleEnabled, debouncedSearchQuery]);
 
-  // Badge variants - mémorisé en objet constant
+  // Badge variants - utilisant les tokens sémantiques
   const badgeVariants = useMemo(() => ({
-    pro: 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-md shadow-purple-500/30',
-    ultra_pro: 'bg-gradient-to-r from-yellow-500 via-orange-500 to-orange-600 hover:from-yellow-600 hover:via-orange-600 hover:to-orange-700 text-white border-0 shadow-lg shadow-orange-500/40',
+    pro: 'bg-gradient-to-r from-primary to-primary-dark text-primary-foreground border-0 shadow-md hover:opacity-90 transition-opacity',
+    ultra_pro: 'bg-gradient-to-r from-warning via-warning to-destructive text-warning-foreground border-0 shadow-lg hover:opacity-90 transition-opacity',
     default: 'bg-secondary/80 text-secondary-foreground border border-border/50 shadow-sm'
   }), []);
 
@@ -304,8 +304,8 @@ export function AppSidebar() {
               
               {isAdminBypass && (
                 <div className="relative overflow-hidden rounded-lg">
-                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 blur-md" />
-                  <Badge className="relative w-full justify-center bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg shadow-orange-500/25 animate-pulse border-0">
+                  <div className="absolute inset-0 bg-gradient-to-r from-warning/20 to-destructive/20 blur-md" />
+                  <Badge className="relative w-full justify-center bg-gradient-to-r from-warning to-destructive text-warning-foreground shadow-lg animate-pulse border-0">
                     <Crown className="w-3 h-3 mr-1" />
                     ADMIN - ACCÈS TOTAL
                   </Badge>
