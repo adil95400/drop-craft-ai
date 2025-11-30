@@ -11955,6 +11955,53 @@ export type Database = {
           },
         ]
       }
+      shipping_labels: {
+        Row: {
+          created_at: string | null
+          file_size_bytes: number | null
+          generated_at: string | null
+          id: string
+          label_format: string | null
+          label_url: string
+          print_count: number | null
+          printed_at: string | null
+          shipment_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          file_size_bytes?: number | null
+          generated_at?: string | null
+          id?: string
+          label_format?: string | null
+          label_url: string
+          print_count?: number | null
+          printed_at?: string | null
+          shipment_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          file_size_bytes?: number | null
+          generated_at?: string | null
+          id?: string
+          label_format?: string | null
+          label_url?: string
+          print_count?: number | null
+          printed_at?: string | null
+          shipment_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipping_labels_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "fulfillment_shipments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shopify_customers: {
         Row: {
           accepts_marketing: boolean | null

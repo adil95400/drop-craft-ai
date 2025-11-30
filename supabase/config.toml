@@ -538,3 +538,21 @@ verify_jwt = true
 [functions.ai-product-optimizer]
 verify_jwt = true
 
+[functions.carrier-connect]
+verify_jwt = true
+
+[functions.shipment-create]
+verify_jwt = true
+
+[functions.tracking-sync]
+verify_jwt = true
+
+[functions.carrier-select-auto]
+verify_jwt = true
+
+[functions.label-generate]
+verify_jwt = true
+
+[functions.mobile-notifications]
+verify_jwt = true
+
