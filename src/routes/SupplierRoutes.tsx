@@ -8,6 +8,7 @@ const MySuppliersPage = lazy(() => import('@/pages/suppliers/my/MySuppliersPage'
 const PremiumSuppliersPage = lazy(() => import('@/pages/suppliers/premium/PremiumSuppliersPage'))
 const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'))
 const SupplierCatalogPage = lazy(() => import('@/pages/suppliers/catalog/SupplierCatalogPage'))
+const SupplierAdvancedPage = lazy(() => import('@/pages/suppliers/SupplierAdvancedPage'))
 const SupplierImportPage = lazy(() => import('@/pages/suppliers/import/SupplierImportPage'))
 const SupplierFeedsPage = lazy(() => import('@/pages/suppliers/feeds/SupplierFeedsPage'))
 const SupplierAnalyticsPage = lazy(() => import('@/pages/suppliers/analytics/SupplierAnalyticsPage'))
@@ -45,6 +46,7 @@ export default function SupplierRoutes() {
       {/* Routes par fournisseur */}
       <Route path=":supplierId" element={<SupplierDetails />} />
       <Route path=":supplierId/catalog" element={<SupplierCatalogPage />} />
+      <Route path=":supplierId/advanced" element={<SupplierAdvancedPage />} />
       <Route path=":supplierId/import" element={<SupplierImportPage />} />
       <Route path=":supplierId/feeds" element={<SupplierFeedsPage />} />
     </Routes>
