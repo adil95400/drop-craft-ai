@@ -161,6 +161,18 @@ export const SUPPLIER_TEMPLATES: BaseSupplier[] = [
     rating: 4.0
   },
   {
+    id: "cjdropshipping",
+    name: "CJ Dropshipping",
+    displayName: "CJ Dropshipping",
+    description: "Plateforme tout-en-un: sourcing, warehousing et fulfillment avec entrepôts EU/US et 500K+ produits",
+    category: "dropshipping",
+    logo: "/logos/cjdropshipping.png",
+    website: "https://cjdropshipping.com",
+    country: "China",
+    status: "active",
+    rating: 4.5
+  },
+  {
     id: "spocket",
     name: "Spocket",
     displayName: "Spocket",

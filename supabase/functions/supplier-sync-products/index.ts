@@ -265,11 +265,18 @@ Deno.serve(async (req) => {
       
       case 'cjdropshipping': {
         try {
-          const apiKey = credentials.apiKey || credentialData.api_key_encrypted
+          const accessToken = credentials.accessToken || credentials.apiKey || credentialData.api_key_encrypted || credentialData.access_token_encrypted
+          
+          if (!accessToken) {
+            throw new Error('Missing CJ Dropshipping Access Token')
+          }
+          
+          console.log('CJ Dropshipping: Fetching products...')
+          
           const response = await fetch('https://developers.cjdropshipping.com/api2.0/v1/product/list', {
             method: 'POST',
             headers: {
-              'CJ-Access-Token': apiKey,
+              'CJ-Access-Token': accessToken,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -278,29 +285,36 @@ Deno.serve(async (req) => {
             })
           })
           
-          if (response.ok) {
-            const data = await response.json()
-            if (data.code === 200 && data.data?.list) {
-              products = data.data.list.map((p: any) => ({
-                supplier_id: supplierId,
-                external_id: p.pid,
-                sku: p.productSku,
-                name: p.productNameEn,
-                description: p.productNameEn,
-                price: p.sellPrice,
-                cost_price: p.sellPrice * 0.8,
-                currency: 'USD',
-                stock_quantity: 999,
-                images: [p.productImage],
-                category: p.categoryName || 'General',
-                attributes: {
-                  categoryId: p.categoryId,
-                  productType: p.productType
-                },
-                status: 'active'
-              }))
-              syncStats.fetched = products.length
-            }
+          if (!response.ok) {
+            throw new Error(`CJ API error: ${response.status} - ${await response.text()}`)
+          }
+          
+          const data = await response.json()
+          
+          if (data.code === 200 && data.data?.list) {
+            products = data.data.list.map((p: any) => ({
+              supplier_id: supplierId,
+              external_id: p.pid,
+              sku: p.productSku,
+              name: p.productNameEn,
+              description: p.description || p.productNameEn,
+              price: parseFloat(p.sellPrice) || 0,
+              cost_price: parseFloat(p.sellPrice) * 0.7 || 0,
+              currency: 'USD',
+              stock_quantity: 999, // CJ has high availability
+              images: p.productImage ? [p.productImage] : [],
+              category: p.categoryName || 'General',
+              attributes: {
+                categoryId: p.categoryId,
+                productType: p.productType,
+                variants: p.variants
+              },
+              status: 'active'
+            }))
+            syncStats.fetched = products.length
+            console.log(`CJ Dropshipping: Fetched ${syncStats.fetched} products`)
+          } else {
+            throw new Error(`CJ API returned error code: ${data.code} - ${data.message || 'Unknown error'}`)
           }
         } catch (error) {
           console.error('CJ Dropshipping sync failed:', error)

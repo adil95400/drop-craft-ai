@@ -87,8 +87,12 @@ Deno.serve(async (req) => {
       timestamp: new Date().toISOString()
     }
     
-    // Use the connector ID from supplierId if not UUID, or extract from stored data
-    const connectorId = isUUID ? testCredentials.connectorId || supplierId : supplierId
+    // Use the connector ID from credentials if available
+    if (testCredentials.connectorId) {
+      connectorId = testCredentials.connectorId
+    }
+    
+    console.log('Testing connector:', connectorId, 'with credentials:', Object.keys(testCredentials))
     
     switch (connectorId) {
       case 'bigbuy': {
@@ -205,6 +209,42 @@ Deno.serve(async (req) => {
             note: 'Connection test passed - ready for sync'
           },
           timestamp: new Date().toISOString()
+        }
+        break
+      }
+      
+      case 'cjdropshipping': {
+        if (!testCredentials.accessToken && !testCredentials.apiKey) {
+          throw new Error('CJ Dropshipping requires Access Token')
+        }
+        
+        try {
+          const accessToken = testCredentials.accessToken || testCredentials.apiKey
+          const response = await fetch('https://developers.cjdropshipping.com/api2.0/v1/authentication/getAuthorization', {
+            method: 'GET',
+            headers: {
+              'CJ-Access-Token': accessToken,
+              'Content-Type': 'application/json'
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            testResult = {
+              success: data.code === 200,
+              message: data.code === 200 ? 'Connected to CJ Dropshipping successfully' : `CJ API error: ${data.message}`,
+              details: {
+                apiVersion: 'v2.0',
+                productsAvailable: '500K+',
+                warehouses: 'US, EU, China'
+              },
+              timestamp: new Date().toISOString()
+            }
+          } else {
+            throw new Error(`CJ API returned ${response.status}`)
+          }
+        } catch (error) {
+          testResult.message = `CJ Dropshipping connection failed: ${error.message}`
         }
         break
       }

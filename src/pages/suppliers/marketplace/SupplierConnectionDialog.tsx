@@ -48,6 +48,9 @@ const CREDENTIAL_FIELDS: Record<string, { label: string; type: string; required:
   watchimport: [
     { label: "Username", type: "text", required: true },
     { label: "Password", type: "password", required: true }
+  ],
+  cjdropshipping: [
+    { label: "Access Token", type: "password", required: true }
   ]
 };
 
@@ -70,6 +73,7 @@ export function SupplierConnectionDialog({ supplier, open, onOpenChange }: Suppl
     const mapped: Record<string, string> = {};
     
     if (creds.apikey) mapped.apiKey = creds.apikey;
+    if (creds.accesstoken) mapped.accessToken = creds.accesstoken;
     if (creds.appkey) mapped.appKey = creds.appkey;
     if (creds.appsecret) mapped.appSecret = creds.appsecret;
     if (creds.clientid) mapped.clientId = creds.clientid;

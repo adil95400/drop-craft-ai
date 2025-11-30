@@ -114,6 +114,9 @@ Deno.serve(async (req) => {
     if (credentials?.clientSecret) {
       oauth_data.clientSecret = credentials.clientSecret
     }
+    if (credentials?.accessToken) {
+      oauth_data.accessToken = credentials.accessToken
+    }
     
     console.log('Storing credentials for:', supplierId, 'with oauth_data:', { ...oauth_data, apiKey: oauth_data.apiKey ? '***' : undefined })
     
