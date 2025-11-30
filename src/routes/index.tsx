@@ -94,6 +94,12 @@ export function AppRoutes() {
         <Route path="/profile" element={<Navigate to="/dashboard/profile" replace />} />
         <Route path="/settings" element={<Navigate to="/dashboard/settings" replace />} />
         
+        {/* Redirections routes legacy */}
+        <Route path="/tracking" element={<Navigate to="/dashboard/orders" replace />} />
+        <Route path="/crm" element={<Navigate to="/dashboard/customers" replace />} />
+        <Route path="/customers" element={<Navigate to="/dashboard/customers" replace />} />
+        <Route path="/orders" element={<Navigate to="/dashboard/orders" replace />} />
+        
         {/* Protected App Routes - Authentification requise */}
         <Route path="/dashboard/*" element={<ProtectedRoute><AppLayout><CoreRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/products/*" element={<ProtectedRoute><AppLayout><ProductRoutes /></AppLayout></ProtectedRoute>} />

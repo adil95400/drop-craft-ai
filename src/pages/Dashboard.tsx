@@ -70,7 +70,7 @@ export default function Dashboard() {
               case 'Revenus totaux': return '/analytics';
               case 'Commandes': return '/dashboard/orders';
               case 'Produits': return '/products';
-              case 'Clients': return '/customers';
+              case 'Clients': return '/dashboard/customers'; // ✅ Corrigé: était /customers
               default: return '#';
             }
           };
