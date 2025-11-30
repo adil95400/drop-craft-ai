@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useRealOrders } from '@/hooks/useRealOrders';
 import { RefreshCw, Search, Download, Filter } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 import {
   Select,
   SelectContent,
@@ -24,12 +26,50 @@ const statusConfig = {
 };
 
 export default function Orders() {
+  const navigate = useNavigate();
   const { orders, isLoading } = useRealOrders();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   
   const refetch = () => queryClient.invalidateQueries({ queryKey: ['orders'] });
+
+  const handleExport = () => {
+    if (!orders || orders.length === 0) {
+      toast.error('Aucune commande à exporter');
+      return;
+    }
+
+    // Créer les données CSV
+    const headers = ['Numéro', 'Client', 'Date', 'Statut', 'Montant', 'Devise', 'Articles'];
+    const csvData = orders.map(order => [
+      order.order_number || '',
+      order.customer_name || '',
+      new Date(order.created_at).toLocaleDateString('fr-FR'),
+      order.status || '',
+      order.total_amount?.toFixed(2) || '0',
+      order.currency || 'EUR',
+      order.items?.length || 0
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.join(','))
+    ].join('\n');
+
+    // Télécharger le fichier
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `commandes_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success(`${orders.length} commandes exportées`);
+  };
 
   const filteredOrders = orders?.filter(order => {
     const matchesSearch = order.order_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -59,9 +99,9 @@ export default function Orders() {
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualiser
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
-            Exporter
+            Exporter CSV
           </Button>
         </div>
       </div>
@@ -121,7 +161,13 @@ export default function Orders() {
                     <p className="text-sm text-muted-foreground">{order.items?.length || 0} article(s)</p>
                   </div>
                   <div className="ml-4">
-                    <Button variant="ghost" size="sm">Détails</Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => navigate(`/dashboard/orders/${order.id}`)}
+                    >
+                      Détails
+                    </Button>
                   </div>
                 </div>
               );
