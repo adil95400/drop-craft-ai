@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
       connectorId: connectorId
     }
     
-    // Store credentials based on type
+    // Store credentials based on type - preserve all credential formats
     if (credentials?.apiKey) {
       oauth_data.apiKey = credentials.apiKey
     }
@@ -89,6 +89,8 @@ Deno.serve(async (req) => {
     if (credentials?.clientSecret) {
       oauth_data.clientSecret = credentials.clientSecret
     }
+    
+    console.log('Storing credentials for:', supplierId, 'with oauth_data:', { ...oauth_data, apiKey: oauth_data.apiKey ? '***' : undefined })
     
     // Store credentials using actual table structure
     const { data: connection, error: insertError } = await supabase

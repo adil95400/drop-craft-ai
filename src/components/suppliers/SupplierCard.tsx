@@ -17,9 +17,9 @@ import {
   ExternalLink,
   Package,
   TrendingUp,
-  Calendar
+  Calendar,
+  Loader2
 } from 'lucide-react'
-// Force refresh to clear Sync import cache
 import { Supplier } from '@/hooks/useSuppliers'
 import { useTranslation } from 'react-i18next'
 
@@ -28,10 +28,19 @@ interface SupplierCardProps {
   onEdit: (supplier: Supplier) => void
   onDelete: (id: string) => void
   onSync: (id: string) => void
+  isSyncing?: boolean
+  syncProgress?: {
+    supplierId: string
+    status: 'idle' | 'syncing' | 'success' | 'error'
+    productsImported: number
+  } | null
 }
 
-export const SupplierCard = ({ supplier, onEdit, onDelete, onSync }: SupplierCardProps) => {
+export const SupplierCard = ({ supplier, onEdit, onDelete, onSync, isSyncing, syncProgress }: SupplierCardProps) => {
   const { t } = useTranslation(['common', 'navigation'])
+  
+  const isCurrentlySyncing = syncProgress?.supplierId === supplier.id && syncProgress?.status === 'syncing'
+  const syncSuccessRecent = syncProgress?.supplierId === supplier.id && syncProgress?.status === 'success'
 
   const getStatusBadge = (status: string) => {
     const statusColors = {
@@ -115,9 +124,16 @@ export const SupplierCard = ({ supplier, onEdit, onDelete, onSync }: SupplierCar
               <Edit className="h-4 w-4 mr-2" />
               Modifier
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onSync(supplier.id)}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Synchroniser
+            <DropdownMenuItem 
+              onClick={() => onSync(supplier.id)}
+              disabled={isCurrentlySyncing}
+            >
+              {isCurrentlySyncing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              {isCurrentlySyncing ? 'Synchronisation...' : 'Synchroniser'}
             </DropdownMenuItem>
             {supplier.website && (
               <DropdownMenuItem asChild>
@@ -160,6 +176,20 @@ export const SupplierCard = ({ supplier, onEdit, onDelete, onSync }: SupplierCar
             </span>
           </div>
         </div>
+
+        {isCurrentlySyncing && (
+          <div className="flex items-center gap-2 text-sm text-primary">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Synchronisation en cours...</span>
+          </div>
+        )}
+        
+        {syncSuccessRecent && (
+          <div className="flex items-center gap-2 text-sm text-green-600">
+            <Package className="h-4 w-4" />
+            <span>{syncProgress?.productsImported} produits importés</span>
+          </div>
+        )}
 
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
