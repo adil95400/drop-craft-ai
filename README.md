@@ -262,14 +262,24 @@ Voir [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) pour les instructions compl
 ## 🎯 Navigation Commerciale
 
 ### Accès Direct aux Fonctionnalités Premium
-- **`/catalog`** - Catalogue produits avec éditeur IA
-- **`/crm`** - CRM complet et marketing automation
+- **`/products`** - Catalogue produits avec éditeur IA
+- **`/dashboard/customers`** - CRM complet et marketing automation
 - **`/monitoring`** - Dashboard de surveillance système
-- **`/modern/billing`** - Gestion des abonnements Stripe
+- **`/billing`** - Gestion des abonnements Stripe
+
+### Gestion des Commandes & Stock
+- **`/dashboard/orders`** - Centre de commandes unifié
+- **`/orders-center`** - Gestion avancée des commandes
+- **`/stock`** - Gestion des stocks en temps réel
+
+### Fournisseurs & Import
+- **`/suppliers`** - Hub fournisseurs
+- **`/import`** - Centre d'import avancé
+- **`/sync-manager`** - Gestionnaire de synchronisation
 
 ### Interface d'Administration
 - **`/admin-panel`** - Panel admin avec quicklinks commercialisation
-- **`/modern`** - Hub des interfaces modernes
+- **`/dashboard`** - Hub principal d'administration
 
 ## 🤝 Contribution
 
