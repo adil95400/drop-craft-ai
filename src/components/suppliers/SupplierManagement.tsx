@@ -36,6 +36,7 @@ import { useToast } from '@/hooks/use-toast'
 import { SupplierCard } from './SupplierCard'
 import { SupplierForm } from './SupplierForm'
 import { useTranslation } from 'react-i18next'
+import { useSupplierSync } from '@/hooks/useSupplierSync'
 
 // Interface pour les connecteurs marketplace
 interface MarketplaceConnector {
@@ -72,6 +73,7 @@ export const SupplierManagement = () => {
     syncSupplier 
   } = useSuppliers()
   
+  const { syncSupplier: syncSupplierNew, isSyncing, syncProgress: newSyncProgress } = useSupplierSync()
   const { user, getImportJobs } = useUnifiedSystem()
   const { toast } = useToast()
 
@@ -632,6 +634,8 @@ export const SupplierManagement = () => {
                   if (supplier) handleDelete(supplier)
                 }}
                 onSync={(id) => handleSync(id)}
+                isSyncing={isSyncing}
+                syncProgress={newSyncProgress}
               />
             ))}
           </div>

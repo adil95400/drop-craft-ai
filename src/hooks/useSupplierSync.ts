@@ -5,28 +5,42 @@ import { useQueryClient } from '@tanstack/react-query'
 
 export function useSupplierSync() {
   const [isSyncing, setIsSyncing] = useState(false)
+  const [syncProgress, setSyncProgress] = useState<{
+    supplierId: string
+    status: 'idle' | 'syncing' | 'success' | 'error'
+    productsImported: number
+  } | null>(null)
   const queryClient = useQueryClient()
 
   const syncSupplier = async (supplierId: string) => {
     setIsSyncing(true)
+    setSyncProgress({ supplierId, status: 'syncing', productsImported: 0 })
+    
     try {
       const { data, error } = await supabase.functions.invoke('supplier-sync-products', {
-        body: { supplierId }
+        body: { supplierId, limit: 1000 }
       })
 
       if (error) throw error
 
-      toast.success(`Synchronisation réussie: ${data.productsImported || 0} produits importés`)
+      const productsImported = data?.syncStats?.imported || 0
+      
+      setSyncProgress({ supplierId, status: 'success', productsImported })
+      toast.success(`Synchronisation réussie: ${productsImported} produits importés`)
+      
       queryClient.invalidateQueries({ queryKey: ['supplier-products'] })
       queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+      queryClient.invalidateQueries({ queryKey: ['catalog-products'] })
       
       return { success: true, data }
     } catch (error) {
       console.error('Sync error:', error)
+      setSyncProgress({ supplierId, status: 'error', productsImported: 0 })
       toast.error('Erreur de synchronisation')
       return { success: false, error }
     } finally {
       setIsSyncing(false)
+      setTimeout(() => setSyncProgress(null), 3000)
     }
   }
 
@@ -46,7 +60,7 @@ export function useSupplierSync() {
       const results = await Promise.allSettled(
         credentials.map(({ supplier_id }) => 
           supabase.functions.invoke('supplier-sync-products', {
-            body: { supplierId: supplier_id }
+            body: { supplierId: supplier_id, limit: 1000 }
           })
         )
       )
@@ -56,6 +70,7 @@ export function useSupplierSync() {
       
       queryClient.invalidateQueries({ queryKey: ['supplier-products'] })
       queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+      queryClient.invalidateQueries({ queryKey: ['catalog-products'] })
 
       return { success: true, count: successCount }
     } catch (error) {
@@ -70,6 +85,7 @@ export function useSupplierSync() {
   return {
     syncSupplier,
     syncAllSuppliers,
-    isSyncing
+    isSyncing,
+    syncProgress
   }
 }

@@ -192,8 +192,70 @@ Deno.serve(async (req) => {
       case 'matterhorn': {
         try {
           const apiKey = credentials.apiKey || credentialData.api_key_encrypted
-          // Matterhorn sync would go here
-          console.log('Matterhorn sync - connector ready, API integration pending')
+          
+          if (!apiKey) {
+            throw new Error('Missing Matterhorn API key')
+          }
+          
+          // Pagination pour récupérer tous les produits
+          let page = 1
+          let hasMore = true
+          const allProducts: any[] = []
+          
+          while (hasMore && page <= 10) { // Max 10 pages = 1000 produits
+            console.log(`Matterhorn: Fetching page ${page}...`)
+            
+            const response = await fetch(
+              `https://matterhorn-wholesale.com/B2BAPI/ITEMS/?page=${page}&limit=100`,
+              {
+                headers: {
+                  'Authorization': apiKey,
+                  'accept': 'application/json'
+                }
+              }
+            )
+            
+            if (!response.ok) {
+              throw new Error(`API error: ${response.status} - ${await response.text()}`)
+            }
+            
+            const data = await response.json()
+            const items = Array.isArray(data) ? data : []
+            
+            if (items.length === 0) {
+              hasMore = false
+            } else {
+              allProducts.push(...items)
+              page++
+            }
+          }
+          
+          // Normaliser les produits
+          products = allProducts.map((p: any) => ({
+            supplier_id: supplierId,
+            external_id: p.id?.toString() || `MATTERHORN-${Math.random()}`,
+            sku: `MATTERHORN-${p.id}`,
+            name: p.name_without_number || p.name || 'Produit Matterhorn',
+            description: p.description || '',
+            price: p.prices?.EUR || 0,
+            cost_price: (p.prices?.EUR || 0) * 0.7,
+            currency: 'EUR',
+            stock_quantity: parseInt(p.stock_total) || 0,
+            images: Array.isArray(p.images) ? p.images : [],
+            category: p.category_name || 'Uncategorized',
+            attributes: {
+              color: p.color,
+              category_path: p.category_path,
+              new_collection: p.new_collection,
+              brand: p.brand,
+              variants: p.variants
+            },
+            status: (parseInt(p.stock_total) || 0) > 0 ? 'active' : 'inactive'
+          }))
+          
+          syncStats.fetched = products.length
+          console.log(`Matterhorn: Fetched ${products.length} products`)
+          
         } catch (error) {
           console.error('Matterhorn sync failed:', error)
           syncStats.errors.push(`Matterhorn: ${error.message}`)
