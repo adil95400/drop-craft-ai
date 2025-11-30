@@ -9,7 +9,7 @@ const ModernProductsPage = lazy(() => import('@/pages/products/ProductsMainPage'
 const EnhancedCatalog = lazy(() => import('@/pages/products/EnhancedCatalog'));
 const ProductDetailsPage = lazy(() => import('@/pages/ProductDetailsPage'));
 const ProductPublishing = lazy(() => import('@/pages/ProductPublishing'));
-const Catalogue = lazy(() => import('@/pages/CatalogueReal'));
+const Catalogue = lazy(() => import('@/pages/products/EnhancedCatalog'));
 
 // Import
 const ImportHub = lazy(() => import('@/pages/import/ImportHub'));
