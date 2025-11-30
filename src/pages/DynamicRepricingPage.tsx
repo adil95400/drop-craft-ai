@@ -5,8 +5,10 @@ import { useDynamicRepricing } from '@/hooks/useMarketplacePhase2';
 import { TrendingUp, Target, Zap, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthOptimized } from '@/shared';
+import { useToast } from '@/hooks/use-toast';
 
 export default function DynamicRepricingPage() {
+  const { toast } = useToast();
   const { user } = useAuthOptimized()
   const { dashboard, isLoadingDashboard, executeRepricing, isRepricingExecuting } = useDynamicRepricing(user?.id || '');
 
@@ -142,7 +144,16 @@ export default function DynamicRepricingPage() {
                 <div className="text-center py-8 text-muted-foreground">
                   Interface de configuration des règles à venir
                 </div>
-                <Button className="w-full" onClick={() => {}}>
+                <Button 
+                  className="w-full" 
+                  onClick={() => {
+                    toast({
+                      title: "Fonctionnalité en développement",
+                      description: "La création de règles sera disponible prochainement",
+                    });
+                  }}
+                  disabled
+                >
                   Créer une nouvelle règle
                 </Button>
               </CardContent>
