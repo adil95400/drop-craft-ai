@@ -55,13 +55,25 @@ serve(async (req) => {
     // Check if user has admin role for multi-tenant features
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, plan')
+      .select('is_admin, plan')
       .eq('id', user.id)
       .single()
 
-    if (!profile || (profile.role !== 'admin' && profile.plan !== 'ultra_pro')) {
+    console.log('User profile:', { is_admin: profile?.is_admin, plan: profile?.plan, user_id: user.id })
+
+    // Check admin using is_admin field OR ultra_pro plan
+    const isAdmin = profile?.is_admin === true
+    const hasUltraPlan = profile?.plan === 'ultra_pro'
+
+    if (!profile || (!isAdmin && !hasUltraPlan)) {
+      console.log('Access denied:', { isAdmin, hasUltraPlan, profile })
       return new Response(
-        JSON.stringify({ error: 'Insufficient permissions' }),
+        JSON.stringify({ 
+          error: 'Insufficient permissions',
+          details: 'Multi-tenant features require admin role or Ultra Pro plan',
+          current_plan: profile?.plan,
+          is_admin: profile?.is_admin 
+        }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
