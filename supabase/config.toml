@@ -556,3 +556,21 @@ verify_jwt = true
 [functions.mobile-notifications]
 verify_jwt = true
 
+[functions.coupon-validate]
+verify_jwt = true
+
+[functions.coupon-redeem]
+verify_jwt = true
+
+[functions.trial-activate]
+verify_jwt = true
+
+[functions.coupon-validate]
+verify_jwt = true
+
+[functions.coupon-redeem]
+verify_jwt = true
+
+[functions.trial-activate]
+verify_jwt = true
+
