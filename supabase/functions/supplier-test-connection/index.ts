@@ -220,31 +220,60 @@ Deno.serve(async (req) => {
         
         try {
           const accessToken = testCredentials.accessToken || testCredentials.apiKey
-          const response = await fetch('https://developers.cjdropshipping.com/api2.0/v1/authentication/getAuthorization', {
-            method: 'GET',
+          
+          // Test connection using product list endpoint (more reliable than auth endpoint)
+          const response = await fetch('https://developers.cjdropshipping.com/api2.0/v1/product/list', {
+            method: 'POST',
             headers: {
               'CJ-Access-Token': accessToken,
               'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({
+              pageNum: 1,
+              pageSize: 1 // Just test with 1 product
+            })
           })
           
           if (response.ok) {
             const data = await response.json()
-            testResult = {
-              success: data.code === 200,
-              message: data.code === 200 ? 'Connected to CJ Dropshipping successfully' : `CJ API error: ${data.message}`,
-              details: {
-                apiVersion: 'v2.0',
-                productsAvailable: '500K+',
-                warehouses: 'US, EU, China'
-              },
-              timestamp: new Date().toISOString()
+            
+            if (data.code === 200) {
+              const productCount = data.data?.total || 0
+              testResult = {
+                success: true,
+                message: 'Connected to CJ Dropshipping successfully',
+                details: {
+                  apiVersion: 'v2.0',
+                  productsAvailable: productCount > 0 ? `${productCount.toLocaleString()}+` : '500K+',
+                  warehouses: 'US, EU, China',
+                  testProduct: data.data?.list?.[0]?.productNameEn || 'Products accessible'
+                },
+                timestamp: new Date().toISOString()
+              }
+            } else {
+              testResult = {
+                success: false,
+                message: `CJ API error: ${data.message || 'Authentication failed'}`,
+                details: {
+                  errorCode: data.code,
+                  hint: 'Vérifiez que votre Access Token est valide et actif'
+                },
+                timestamp: new Date().toISOString()
+              }
             }
           } else {
-            throw new Error(`CJ API returned ${response.status}`)
+            const errorText = await response.text()
+            throw new Error(`CJ API returned ${response.status}: ${errorText}`)
           }
         } catch (error) {
-          testResult.message = `CJ Dropshipping connection failed: ${error.message}`
+          testResult = {
+            success: false,
+            message: `CJ Dropshipping connection failed: ${error.message}`,
+            details: {
+              hint: 'Vérifiez votre connexion internet et que votre token est correct'
+            },
+            timestamp: new Date().toISOString()
+          }
         }
         break
       }
