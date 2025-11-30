@@ -556,6 +556,9 @@ verify_jwt = true
 [functions.mobile-notifications]
 verify_jwt = true
 
+[functions.push-notification]
+verify_jwt = false
+
 [functions.coupon-validate]
 verify_jwt = true
 

@@ -54,6 +54,7 @@ const FreeTrialActivationPage = lazy(() => import('@/pages/FreeTrialActivationPa
 const FulfillmentDashboardPage = lazy(() => import('@/pages/FulfillmentDashboardPage'));
 const FulfillmentRulesPage = lazy(() => import('@/pages/FulfillmentRulesPage'));
 const CarriersManagementPage = lazy(() => import('@/pages/CarriersManagementPage'));
+const PWAInstallPage = lazy(() => import('@/pages/PWAInstallPage'));
 
 // Additional pages
 const AdvancedModulesPage = lazy(() => import('@/pages/AdvancedModulesPage'));
@@ -147,6 +148,7 @@ export function AppRoutes() {
         <Route path="/fulfillment/carriers" element={<ProtectedRoute><AppLayout><CarriersManagementPage /></AppLayout></ProtectedRoute>} />
         <Route path="/coupons" element={<ProtectedRoute><AppLayout><CouponsManagementPage /></AppLayout></ProtectedRoute>} />
         <Route path="/trial" element={<ProtectedRoute><AppLayout><FreeTrialActivationPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/pwa-install" element={<PWAInstallPage />} />
         
         {/* Modern Routes - Redirections vers interfaces principales */}
         <Route path="/modern/products" element={<Navigate to="/products" replace />} />
