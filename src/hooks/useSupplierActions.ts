@@ -15,11 +15,30 @@ export function useSupplierActions() {
 
     setIsConnecting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('supplier-connect', {
+      // Build credentials object from apiKey and settings
+      const credentials: Record<string, any> = {};
+      
+      if (apiKey) {
+        credentials.apiKey = apiKey;
+      }
+      
+      // Extract specific credential fields from settings
+      if (settings?.apiKey) credentials.apiKey = settings.apiKey;
+      if (settings?.apiSecret) credentials.apiSecret = settings.apiSecret;
+      if (settings?.username) credentials.username = settings.username;
+      if (settings?.password) credentials.password = settings.password;
+      if (settings?.feedUrl) credentials.feedUrl = settings.feedUrl;
+      if (settings?.ftpHost) credentials.ftpHost = settings.ftpHost;
+      if (settings?.ftpUsername) credentials.ftpUsername = settings.ftpUsername;
+      if (settings?.ftpPassword) credentials.ftpPassword = settings.ftpPassword;
+      if (settings?.ftpPath) credentials.ftpPath = settings.ftpPath;
+
+      const { data, error } = await supabase.functions.invoke('supplier-connect-advanced', {
         body: {
-          supplier_id: supplierId,
-          api_key: apiKey,
-          settings
+          supplierId: supplierId,
+          credentials: credentials,
+          settings: settings || {},
+          connectionType: settings?.connectionType || 'api'
         }
       });
 
