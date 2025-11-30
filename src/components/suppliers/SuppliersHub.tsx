@@ -9,6 +9,7 @@ import { Search, Globe, MapPin, Package, Star, Plus, Settings, CheckCircle, XCir
 import { supabase } from '@/integrations/supabase/client';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { QuickConnectSuppliers } from './QuickConnectSuppliers';
 
 interface Supplier {
   id: string;
@@ -51,6 +52,8 @@ export const SuppliersHub: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedCountry, setSelectedCountry] = useState<string>('all');
+  const [connectDialogOpen, setConnectDialogOpen] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<{ id: string; name: string } | null>(null);
   const { user, effectivePlan, canAccess } = useUnifiedAuth();
   const { toast } = useToast();
 
@@ -81,43 +84,13 @@ export const SuppliersHub: React.FC = () => {
     }
   };
 
-  const connectSupplier = async (supplierId: string) => {
-    try {
-      const { error } = await supabase
-        .from('suppliers')
-        .update({ 
-          connection_status: 'connecting',
-          user_id: user?.id
-        })
-        .eq('id', supplierId);
+  const openConnectDialog = (supplierId: string, supplierName: string) => {
+    setSelectedSupplier({ id: supplierId, name: supplierName });
+    setConnectDialogOpen(true);
+  };
 
-      if (error) throw error;
-
-      // Simulate connection process
-      setTimeout(async () => {
-        const { error: updateError } = await supabase
-          .from('suppliers')
-          .update({ connection_status: 'connected' })
-          .eq('id', supplierId);
-
-        if (!updateError) {
-          toast({
-            title: "Fournisseur connecté",
-            description: "La connexion a été établie avec succès",
-          });
-          fetchSuppliers();
-        }
-      }, 2000);
-
-      fetchSuppliers();
-    } catch (error: any) {
-      console.error('Error connecting supplier:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de se connecter au fournisseur",
-        variant: "destructive"
-      });
-    }
+  const handleConnectionSuccess = () => {
+    fetchSuppliers();
   };
 
   const disconnectSupplier = async (supplierId: string) => {
@@ -302,7 +275,7 @@ export const SuppliersHub: React.FC = () => {
 
                   <div className="flex items-center gap-2">
                     <Button 
-                      onClick={() => connectSupplier(supplier.id)}
+                      onClick={() => openConnectDialog(supplier.id, supplier.name)}
                       disabled={supplier.connection_status === 'connecting'}
                       className="flex-1"
                     >
@@ -414,6 +387,18 @@ export const SuppliersHub: React.FC = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      <QuickConnectSuppliers
+        open={connectDialogOpen}
+        onOpenChange={(open) => {
+          setConnectDialogOpen(open);
+          if (!open) {
+            handleConnectionSuccess();
+          }
+        }}
+        supplierId={selectedSupplier?.id}
+        supplierName={selectedSupplier?.name}
+      />
     </div>
   );
 };
