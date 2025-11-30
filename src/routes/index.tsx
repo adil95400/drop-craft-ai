@@ -55,6 +55,7 @@ const FulfillmentDashboardPage = lazy(() => import('@/pages/FulfillmentDashboard
 const FulfillmentRulesPage = lazy(() => import('@/pages/FulfillmentRulesPage'));
 const CarriersManagementPage = lazy(() => import('@/pages/CarriersManagementPage'));
 const PWAInstallPage = lazy(() => import('@/pages/PWAInstallPage'));
+const SimplifiedImportPage = lazy(() => import('@/pages/import/SimplifiedImportPage'));
 
 // Additional pages
 const AdvancedModulesPage = lazy(() => import('@/pages/AdvancedModulesPage'));
@@ -149,6 +150,7 @@ export function AppRoutes() {
         <Route path="/coupons" element={<ProtectedRoute><AppLayout><CouponsManagementPage /></AppLayout></ProtectedRoute>} />
         <Route path="/trial" element={<ProtectedRoute><AppLayout><FreeTrialActivationPage /></AppLayout></ProtectedRoute>} />
         <Route path="/pwa-install" element={<PWAInstallPage />} />
+        <Route path="/import/simplified" element={<ProtectedRoute><AppLayout><SimplifiedImportPage /></AppLayout></ProtectedRoute>} />
         
         {/* Modern Routes - Redirections vers interfaces principales */}
         <Route path="/modern/products" element={<Navigate to="/products" replace />} />
