@@ -28,6 +28,7 @@ import { AttributesRoutes } from './AttributesRoutes';
 import { StockRoutes } from './StockRoutes';
 import { ImportRoutes } from './ImportRoutes';
 import { FeedRoutes } from './FeedRoutes';
+import { AdminRoutes } from './AdminRoutes';
 import SupplierRoutes from './SupplierRoutes';
 
 // Import pages
@@ -156,7 +157,11 @@ export function AppRoutes() {
         {/* Admin Routes - Rôle admin requis */}
         <Route path="/admin/*" element={
           <ProtectedRoute>
-            <AdminLayout />
+            <AdminRoute>
+              <AppLayout>
+                <AdminRoutes />
+              </AppLayout>
+            </AdminRoute>
           </ProtectedRoute>
         } />
         

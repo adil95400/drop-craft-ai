@@ -184,18 +184,18 @@ export function AppSidebar() {
     return grouped;
   }, [availableModules, isModuleEnabled]);
 
-  // Filtrer les groupes par recherche
+  // Filtrer les groupes par recherche - optimisé
   const filteredGroups = useMemo(() => {
-    if (!debouncedSearchQuery) {
-      return NAV_GROUPS.filter(group => modulesByGroup[group.id]?.length > 0);
-    }
+    const groupsWithModules = NAV_GROUPS.filter(group => modulesByGroup[group.id]?.length > 0);
+    
+    if (!debouncedSearchQuery) return groupsWithModules;
     
     const query = debouncedSearchQuery.toLowerCase();
-    return NAV_GROUPS.filter(group => {
+    return groupsWithModules.filter(group => {
       const groupModules = modulesByGroup[group.id] || [];
-      return groupModules.some(module => 
-        module.name.toLowerCase().includes(query) || 
-        module.description.toLowerCase().includes(query)
+      return groupModules.some(m => 
+        m.name.toLowerCase().includes(query) || 
+        m.description?.toLowerCase().includes(query)
       );
     });
   }, [debouncedSearchQuery, modulesByGroup]);
