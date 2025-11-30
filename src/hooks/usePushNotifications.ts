@@ -52,8 +52,7 @@ export function usePushNotifications() {
       return null;
     }
 
-    // Générer un token unique pour ce device (simulation)
-    // Dans un environnement de production, vous utiliseriez FCM ou APNs pour obtenir un vrai token
+    // Générer un token unique pour ce device
     const deviceToken = `web-${crypto.randomUUID()}`;
     const platform = /iPhone|iPad|iPod/.test(navigator.userAgent) ? 'ios' : 
                      /Android/.test(navigator.userAgent) ? 'android' : 'web';
@@ -66,24 +65,52 @@ export function usePushNotifications() {
       return null;
     }
 
-    // Enregistrer le token dans la base de données
-    const { data, error } = await supabase
+    // Vérifier si le token existe déjà
+    const { data: existingToken } = await supabase
       .from('device_tokens')
-      .upsert({
-        user_id: user.id,
-        token: deviceToken,
-        platform,
-        active: true,
-        last_used_at: new Date().toISOString()
-      }, {
-        onConflict: 'user_id,token'
-      })
-      .select()
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('token', deviceToken)
       .single();
 
-    if (error) {
-      console.error('Error registering device:', error);
-      return null;
+    let result;
+
+    if (existingToken) {
+      // Mettre à jour le token existant
+      const { data, error } = await supabase
+        .from('device_tokens')
+        .update({
+          active: true,
+          last_used_at: new Date().toISOString()
+        })
+        .eq('id', existingToken.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating device token:', error);
+        return null;
+      }
+      result = data;
+    } else {
+      // Insérer un nouveau token
+      const { data, error } = await supabase
+        .from('device_tokens')
+        .insert({
+          user_id: user.id,
+          token: deviceToken,
+          platform,
+          active: true,
+          last_used_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error registering device:', error);
+        return null;
+      }
+      result = data;
     }
 
     toast({
@@ -91,7 +118,7 @@ export function usePushNotifications() {
       description: "Vous recevrez des notifications push"
     });
 
-    return data;
+    return result;
   };
 
   return {
