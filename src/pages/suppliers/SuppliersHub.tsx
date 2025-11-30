@@ -17,6 +17,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useRealSuppliers } from '@/hooks/useRealSuppliers'
 import { useSupplierConnection } from '@/hooks/useSupplierConnection'
+import { useSupplierSync } from '@/hooks/useSupplierSync'
 import { ImportSuppliersDialog } from '@/components/suppliers/ImportSuppliersDialog'
 import { SupplierStatsChart } from '@/components/suppliers/SupplierStatsChart'
 import { TrendingSuppliers } from '@/components/suppliers/TrendingSuppliers'
@@ -47,6 +48,13 @@ export default function SuppliersHub() {
     isDisconnecting 
   } = useSupplierConnection()
 
+  const { 
+    syncSupplier, 
+    syncAllSuppliers, 
+    isSyncing, 
+    syncProgress 
+  } = useSupplierSync()
+
   const countries = Array.from(new Set(suppliers.map(s => s.country).filter(Boolean)))
   const recentSuppliers = suppliers.slice(0, 5)
 
@@ -61,6 +69,14 @@ export default function SuppliersHub() {
     if (confirm(`Voulez-vous vraiment déconnecter ${supplierName} ?`)) {
       await disconnectSupplier(supplierId)
     }
+  }
+
+  const handleSync = async (supplierId: string) => {
+    await syncSupplier(supplierId)
+  }
+
+  const handleSyncAll = async () => {
+    await syncAllSuppliers()
   }
 
   return (
@@ -86,6 +102,14 @@ export default function SuppliersHub() {
             <Button variant="outline" onClick={() => setShowImportDialog(true)}>
               <Upload className="h-4 w-4 mr-2" />
               Importer
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleSyncAll}
+              disabled={isSyncing}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+              {isSyncing ? 'Synchronisation...' : 'Synchroniser tous'}
             </Button>
             <Button variant="outline" onClick={() => {
               const dataStr = JSON.stringify(suppliers, null, 2)
@@ -524,6 +548,14 @@ export default function SuppliersHub() {
                                   {isSupplierConnected(supplier.id) && (
                                     <>
                                       <DropdownMenuSeparator />
+                                      <DropdownMenuItem 
+                                        onClick={() => handleSync(supplier.id)}
+                                        disabled={isSyncing}
+                                        className="text-blue-600"
+                                      >
+                                        <RefreshCw className={`h-4 w-4 mr-2 ${syncProgress?.supplierId === supplier.id ? 'animate-spin' : ''}`} />
+                                        {syncProgress?.supplierId === supplier.id ? 'Synchronisation...' : 'Synchroniser'}
+                                      </DropdownMenuItem>
                                       <DropdownMenuItem 
                                         onClick={() => handleDisconnect(supplier.id, supplier.name)}
                                         disabled={isDisconnecting}
