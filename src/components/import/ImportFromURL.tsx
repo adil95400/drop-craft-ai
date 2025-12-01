@@ -27,36 +27,25 @@ export function ImportFromURL({ onPreview }: ImportFromURLProps) {
     setError(null);
 
     try {
-      const { data, error: functionError } = await supabase.functions.invoke('analyze-supplier', {
+      // Step 1: Scrape product data from URL
+      const { data: scrapedData, error: scrapeError } = await supabase.functions.invoke('product-scraper', {
         body: { url }
       });
 
-      if (functionError) throw functionError;
+      if (scrapeError) throw scrapeError;
 
-      // Simuler des données de preview pour l'instant
-      const previewData = {
-        source: 'url',
-        url,
-        products: [
-          {
-            id: '1',
-            title: data?.name || 'Produit importé',
-            price: 29.99,
-            supplier: data?.supplier_name || 'Fournisseur externe',
-            image: data?.logo_url || '/placeholder.svg',
-            stock: 'En stock',
-            errors: []
-          }
-        ],
-        summary: {
-          total: 1,
-          valid: 1,
-          errors: 0,
-          warnings: 0
+      // Step 2: Generate import preview
+      const { data: previewResponse, error: previewError } = await supabase.functions.invoke('import-preview', {
+        body: {
+          source: 'url',
+          data: scrapedData
         }
-      };
+      });
 
-      onPreview(previewData);
+      if (previewError) throw previewError;
+
+      // Pass preview to parent
+      onPreview(previewResponse.preview);
       
       toast({
         title: "✅ Analyse terminée",

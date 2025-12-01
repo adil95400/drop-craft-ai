@@ -3,47 +3,41 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, Package } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ImportFromSupplierProps {
   onPreview: (data: any) => void;
 }
 
 export function ImportFromSupplier({ onPreview }: ImportFromSupplierProps) {
-  const handleBrowse = () => {
-    // Simuler des produits du fournisseur
-    const previewData = {
-      source: 'supplier',
-      supplierId: 'demo',
-      supplierName: 'Fournisseur Demo',
-      products: [
-        {
-          id: '1',
-          title: 'Produit Fournisseur 1',
-          price: 24.99,
-          supplier: 'Fournisseur Demo',
-          image: '/placeholder.svg',
-          stock: 'En stock',
-          errors: []
-        },
-        {
-          id: '2',
-          title: 'Produit Fournisseur 2',
-          price: 34.99,
-          supplier: 'Fournisseur Demo',
-          image: '/placeholder.svg',
-          stock: 'En stock',
-          errors: []
-        }
-      ],
-      summary: {
-        total: 2,
-        valid: 2,
-        errors: 0,
-        warnings: 0
-      }
-    };
+  const [isLoading, setIsLoading] = useState(false);
 
-    onPreview(previewData);
+  const handleBrowseSuppliers = () => {
+    // Redirect to supplier marketplace for browsing and selection
+    window.location.href = '/suppliers/marketplace';
+  };
+
+  // This would be called after user selects products from supplier catalog
+  const handleGeneratePreview = async (selectedProducts: any[], supplierId: string) => {
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('import-preview', {
+        body: {
+          source: 'supplier',
+          data: selectedProducts,
+          supplierId
+        }
+      });
+
+      if (error) throw error;
+      
+      onPreview(data.preview);
+    } catch (err) {
+      console.error('Preview generation failed:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -62,9 +56,9 @@ export function ImportFromSupplier({ onPreview }: ImportFromSupplierProps) {
       </Alert>
 
       <div className="flex justify-end">
-        <Button onClick={handleBrowse}>
+        <Button onClick={handleBrowseSuppliers}>
           <Eye className="w-4 h-4 mr-2" />
-          Voir un exemple
+          Parcourir les fournisseurs
         </Button>
       </div>
 

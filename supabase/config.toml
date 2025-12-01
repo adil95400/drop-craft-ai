@@ -592,3 +592,6 @@ verify_jwt = true
 [functions.woocommerce-product-create]
 verify_jwt = true
 
+[functions.import-preview]
+verify_jwt = true
+
