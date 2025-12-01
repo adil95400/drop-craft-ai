@@ -18,6 +18,8 @@ import { NotificationBell } from "@/components/notifications/NotificationService
 import { ExtensionMenu } from "@/components/navigation/ExtensionMenu";
 import { Settings } from "lucide-react";
 import React from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileHeader, MobileNav } from "@/components/mobile/MobileNav";
 
 interface SidebarLayoutProps {
   children: React.ReactNode;
@@ -25,6 +27,22 @@ interface SidebarLayoutProps {
 
 export function SidebarLayout({ children }: SidebarLayoutProps) {
   const { user, signOut } = useAuth();
+  const isMobile = useIsMobile();
+
+  // Version mobile avec navigation en bas
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-background">
+        <MobileHeader />
+        <main className="pb-20 pt-4">
+          <div className="container max-w-screen-sm mx-auto px-4">
+            {children}
+          </div>
+        </main>
+        <MobileNav />
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider defaultOpen={true}>

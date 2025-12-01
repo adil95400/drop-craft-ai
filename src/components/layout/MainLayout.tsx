@@ -4,12 +4,32 @@ import { AppSidebar } from '@/components/AppSidebar'
 import { RealTimeNotifications } from '@/components/notifications/RealTimeNotifications'
 import { InteractiveOnboarding } from '@/components/onboarding/InteractiveOnboarding'
 import { AccessibilityMenu } from '@/components/ux/AccessibilityMenu'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { MobileHeader, MobileNav } from '@/components/mobile/MobileNav'
 
 interface MainLayoutProps {
   children: React.ReactNode
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
+  const isMobile = useIsMobile()
+
+  // Version mobile avec navigation en bas
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-background">
+        <MobileHeader />
+        <main className="pb-20 pt-4">
+          <div className="container max-w-screen-sm mx-auto px-4">
+            {children}
+          </div>
+        </main>
+        <MobileNav />
+        <InteractiveOnboarding />
+      </div>
+    )
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">

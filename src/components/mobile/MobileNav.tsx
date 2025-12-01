@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { 
   Home, 
   Package, 
@@ -11,7 +12,15 @@ import {
   Settings,
   Sparkles,
   Bell,
-  Search
+  Search,
+  MoreHorizontal,
+  Megaphone,
+  Truck,
+  Brain,
+  Plug,
+  GraduationCap,
+  HelpCircle,
+  Crown
 } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 
@@ -21,41 +30,47 @@ interface MobileNavProps {
 
 export function MobileNav({ notifications = 0 }: MobileNavProps) {
   const location = useLocation();
+  const [moreOpen, setMoreOpen] = useState(false);
   
   const navItems = [
     {
       icon: Home,
       label: 'Accueil',
       path: '/dashboard',
-      color: 'text-blue-600'
+      color: 'text-blue-500'
     },
     {
       icon: Package,
       label: 'Produits',
       path: '/products',
-      color: 'text-green-600'
+      color: 'text-green-500'
     },
     {
       icon: ShoppingCart,
       label: 'Commandes',
       path: '/orders',
-      color: 'text-orange-600'
+      color: 'text-orange-500'
     },
     {
       icon: BarChart3,
       label: 'Analytics',
       path: '/analytics',
-      color: 'text-purple-600'
-    },
-    {
-      icon: Settings,
-      label: 'Paramètres',
-      path: '/settings',
-      color: 'text-gray-600'
+      color: 'text-purple-500'
     }
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const moreNavItems = [
+    { icon: Users, label: 'Clients', path: '/customers', color: 'text-cyan-500' },
+    { icon: Truck, label: 'Fournisseurs', path: '/suppliers', color: 'text-amber-500' },
+    { icon: Megaphone, label: 'Marketing', path: '/marketing', color: 'text-pink-500' },
+    { icon: Brain, label: 'IA Hub', path: '/automation/ai-hub', color: 'text-violet-500' },
+    { icon: Plug, label: 'Intégrations', path: '/integrations', color: 'text-indigo-500' },
+    { icon: GraduationCap, label: 'Academy', path: '/academy', color: 'text-emerald-500' },
+    { icon: HelpCircle, label: 'Support', path: '/support', color: 'text-sky-500' },
+    { icon: Settings, label: 'Paramètres', path: '/settings', color: 'text-slate-500' },
+  ];
+
+  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t z-50 pb-safe">
@@ -91,6 +106,51 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
             </Link>
           );
         })}
+        
+        {/* Menu Plus */}
+        <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+          <SheetTrigger asChild>
+            <button
+              className={`flex flex-col items-center justify-center space-y-0.5 sm:space-y-1 transition-all duration-200 ${
+                moreOpen 
+                  ? 'bg-primary/10 text-primary' 
+                  : 'text-muted-foreground hover:text-foreground active:scale-95'
+              }`}
+            >
+              <MoreHorizontal className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="text-[10px] sm:text-xs font-medium">Plus</span>
+            </button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="h-[70vh] rounded-t-2xl">
+            <SheetHeader className="pb-4">
+              <SheetTitle className="text-left flex items-center gap-2">
+                <Crown className="h-5 w-5 text-primary" />
+                Menu complet
+              </SheetTitle>
+            </SheetHeader>
+            <div className="grid grid-cols-3 gap-3 pb-safe">
+              {moreNavItems.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.path);
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setMoreOpen(false)}
+                    className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-200 ${
+                      active 
+                        ? 'bg-primary/10 text-primary border border-primary/20' 
+                        : 'bg-muted/50 hover:bg-muted active:scale-95'
+                    }`}
+                  >
+                    <Icon className={`h-6 w-6 mb-2 ${active ? item.color : 'text-muted-foreground'}`} />
+                    <span className="text-xs font-medium text-center">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   );
