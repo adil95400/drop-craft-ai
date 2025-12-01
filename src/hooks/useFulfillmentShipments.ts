@@ -84,8 +84,8 @@ export function useFulfillmentShipments(filters?: {
 
   const syncTrackingMutation = useMutation({
     mutationFn: async (shipmentId: string) => {
-      const { data, error } = await supabase.functions.invoke('tracking-sync', {
-        body: { shipmentId }
+      const { data, error } = await supabase.functions.invoke('carrier-tracking-fetch', {
+        body: { shipment_id: shipmentId }
       });
 
       if (error) throw error;
@@ -102,8 +102,8 @@ export function useFulfillmentShipments(filters?: {
 
   const generateLabelsMutation = useMutation({
     mutationFn: async (shipmentIds: string[]) => {
-      const { data, error } = await supabase.functions.invoke('label-generate', {
-        body: { shipmentIds, format: 'pdf' }
+      const { data, error } = await supabase.functions.invoke('label-generate-real', {
+        body: { shipment_ids: shipmentIds, format: 'pdf' }
       });
 
       if (error) throw error;

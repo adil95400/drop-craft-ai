@@ -217,7 +217,7 @@ export class SupplierEcosystemService {
 
   async placeOrder(request: PlaceOrderRequest): Promise<PlaceOrderResponse> {
     try {
-      const { data, error } = await supabase.functions.invoke('supplier-place-order', {
+      const { data, error } = await supabase.functions.invoke('supplier-order-place', {
         body: request,
       });
 
