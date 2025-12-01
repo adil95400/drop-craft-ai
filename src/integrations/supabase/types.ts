@@ -3745,6 +3745,51 @@ export type Database = {
         }
         Relationships: []
       }
+      disputes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          marketplace: string | null
+          opened_at: string | null
+          order_id: string | null
+          resolution: string | null
+          resolved_at: string | null
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          marketplace?: string | null
+          opened_at?: string | null
+          order_id?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          marketplace?: string | null
+          opened_at?: string | null
+          order_id?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dropshipping_configs: {
         Row: {
           auto_fulfill: boolean | null
@@ -7019,6 +7064,51 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_price_rules: {
+        Row: {
+          conditions: Json | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          marketplace: string
+          max_price: number | null
+          min_price: number | null
+          priority: number | null
+          rule_type: string
+          updated_at: string
+          user_id: string
+          value: number | null
+        }
+        Insert: {
+          conditions?: Json | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          marketplace: string
+          max_price?: number | null
+          min_price?: number | null
+          priority?: number | null
+          rule_type?: string
+          updated_at?: string
+          user_id: string
+          value?: number | null
+        }
+        Update: {
+          conditions?: Json | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          marketplace?: string
+          max_price?: number | null
+          min_price?: number | null
+          priority?: number | null
+          rule_type?: string
+          updated_at?: string
+          user_id?: string
+          value?: number | null
+        }
+        Relationships: []
+      }
       marketplace_product_mappings: {
         Row: {
           created_at: string | null
@@ -7071,6 +7161,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      marketplace_products: {
+        Row: {
+          created_at: string
+          description: string | null
+          external_id: string | null
+          id: string
+          last_synced_at: string | null
+          marketplace: string
+          metadata: Json | null
+          price: number | null
+          product_id: string | null
+          stock: number | null
+          sync_status: string | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          marketplace: string
+          metadata?: Json | null
+          price?: number | null
+          product_id?: string | null
+          stock?: number | null
+          sync_status?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          marketplace?: string
+          metadata?: Json | null
+          price?: number | null
+          product_id?: string | null
+          stock?: number | null
+          sync_status?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       marketplace_sync_jobs: {
         Row: {
