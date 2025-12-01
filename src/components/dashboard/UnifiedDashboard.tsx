@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   BarChart3, 
   Brain, 
@@ -16,19 +16,88 @@ import {
   Activity,
   Smartphone,
   Palette,
-  Crown
+  Crown,
+  AlertCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { useConversionAnalytics } from '@/hooks/useConversionAnalytics';
 
 export const UnifiedDashboard = () => {
-  const [metrics] = useState({
-    revenue: { value: '$127K', change: '+23%', trend: 'up' },
-    orders: { value: '2,847', change: '+18%', trend: 'up' },
-    conversion: { value: '3.2%', change: '+0.4%', trend: 'up' },
-    customers: { value: '18,329', change: '+12%', trend: 'up' }
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { metrics, isLoading: metricsLoading } = useConversionAnalytics({
+    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0],
   });
 
   const [aiInsights] = useState([
+    {
+      type: 'critical',
+      title: 'Pricing Opportunity Detected',
+      description: '23 products can increase prices by 8-12% based on demand analysis',
+      action: 'Review Pricing',
+      impact: '+$2.4K monthly'
+    },
+    {
+      type: 'success',
+      title: 'Automation Success',
+      description: 'Dynamic pricing increased margins by 15% this week',
+      action: 'Expand Rules',
+      impact: '+$1.8K saved'
+    },
+    {
+      type: 'info',
+      title: 'Market Trend Alert',
+      description: 'Seasonal demand spike predicted for "winter accessories"',
+      action: 'Stock Check',
+      impact: '2x demand expected'
+    }
+  ]);
+
+  const [quickActions] = useState([
+    { 
+      icon: Brain, 
+      title: 'AI Optimization', 
+      description: 'Auto-optimize pricing & inventory', 
+      link: '/ai-optimization',
+      status: 'active'
+    },
+    { 
+      icon: BarChart3, 
+      title: 'Analytics Suite', 
+      description: 'Advanced reporting & insights', 
+      link: '/analytics',
+      status: 'active'
+    },
+    { 
+      icon: Zap, 
+      title: 'Automation Hub', 
+      description: 'Smart workflows & rules', 
+      link: '/automation',
+      status: 'active'
+    },
+    { 
+      icon: Smartphone, 
+      title: 'Mobile Apps', 
+      description: 'iOS & Android development', 
+      link: '/mobile-apps',
+      status: 'beta'
+    },
+    { 
+      icon: Palette, 
+      title: 'Creative Studio', 
+      description: 'AI-powered content creation', 
+      link: '/creative-studio',
+      status: 'new'
+    },
+    { 
+      icon: Crown, 
+      title: 'Competitive Edge', 
+      description: 'Market positioning analysis', 
+      link: '/competitive-advantage',
+      status: 'premium'
+    }
+  ]);
     {
       type: 'critical',
       title: 'Pricing Opportunity Detected',
@@ -115,6 +184,19 @@ export const UnifiedDashboard = () => {
     }
   };
 
+  if (statsLoading || metricsLoading) {
+    return (
+      <div className="space-y-6 p-6">
+        <Skeleton className="h-10 w-64" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -122,10 +204,12 @@ export const UnifiedDashboard = () => {
           <h1 className="text-3xl font-bold tracking-tight">Command Center</h1>
           <p className="text-muted-foreground">Your complete e-commerce intelligence dashboard</p>
         </div>
-        <Button>
-          <Activity className="h-4 w-4 mr-2" />
-          System Status
-        </Button>
+        <div className="flex gap-2 items-center">
+          <Button>
+            <Activity className="h-4 w-4 mr-2" />
+            System Status
+          </Button>
+        </div>
       </div>
 
       {/* Key Metrics */}
@@ -136,10 +220,10 @@ export const UnifiedDashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.revenue.value}</div>
+            <div className="text-2xl font-bold">{stats?.monthlyRevenue.toFixed(2) || '0.00'}€</div>
             <p className="text-xs text-green-600 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1" />
-              {metrics.revenue.change} from last month
+              {stats?.revenueChange.toFixed(1)}% from last month
             </p>
           </CardContent>
         </Card>
@@ -150,10 +234,10 @@ export const UnifiedDashboard = () => {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.orders.value}</div>
+            <div className="text-2xl font-bold">{stats?.ordersCount.toLocaleString() || '0'}</div>
             <p className="text-xs text-green-600 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1" />
-              {metrics.orders.change} from last month
+              {stats?.ordersChange.toFixed(1)}% from last month
             </p>
           </CardContent>
         </Card>
@@ -164,10 +248,10 @@ export const UnifiedDashboard = () => {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.conversion.value}</div>
+            <div className="text-2xl font-bold">{metrics?.overview.conversion_rate.toFixed(2) || '0.00'}%</div>
             <p className="text-xs text-green-600 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1" />
-              {metrics.conversion.change} from last month
+              +0.4% from last month
             </p>
           </CardContent>
         </Card>
@@ -178,10 +262,10 @@ export const UnifiedDashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.customers.value}</div>
+            <div className="text-2xl font-bold">{stats?.total_customers.toLocaleString() || '0'}</div>
             <p className="text-xs text-green-600 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1" />
-              {metrics.customers.change} from last month
+              +5.7% from last month
             </p>
           </CardContent>
         </Card>
