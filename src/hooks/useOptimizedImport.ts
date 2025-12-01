@@ -37,7 +37,7 @@ export function useOptimizedImport() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
-      // Parse le fichier selon le format
+      // Parse file
       let parseResult;
       
       if (options.format === 'excel') {
@@ -62,67 +62,31 @@ export function useOptimizedImport() {
         failed: parseResult.errors.length
       });
 
-      // Import par batch
-      const batchSize = options.batchSize || 50;
-      const batches = [];
-      for (let i = 0; i < parseResult.data.length; i += batchSize) {
-        batches.push(parseResult.data.slice(i, i + batchSize));
-      }
-
-      let imported = 0;
-      let failed = parseResult.errors.length;
-      const allErrors = [...parseResult.errors];
-
-      for (let i = 0; i < batches.length; i++) {
-        const batch = batches[i];
-        
-        try {
-          const products = batch.map((item: ProductImport) => ({
-            user_id: user.id,
-            name: item.name,
-            sku: item.sku,
-            price: item.price,
-            cost_price: item.cost_price || 0,
-            stock_quantity: item.stock || 0,
-            category: item.category,
-            description: item.description,
-            image_urls: item.image_url ? [item.image_url] : [],
-            supplier_name: 'Import manuel',
-            status: 'draft' as const,
-          }));
-
-          const { error } = await supabase
-            .from('imported_products')
-            .insert(products);
-
-          if (error) {
-            console.error('❌ Erreur insertion batch:', error);
-            failed += batch.length;
-            allErrors.push({
-              row: i * batchSize,
-              error: error.message || 'Erreur d\'insertion dans la base de données'
-            });
-          } else {
-            imported += batch.length;
+      // Use bulk-import-products edge function for real import
+      try {
+        const { data, error } = await supabase.functions.invoke('bulk-import-products', {
+          body: {
+            products: parseResult.data,
+            source: 'csv',
+            options: {
+              auto_optimize: false,
+              auto_publish: false
+            }
           }
-        } catch (error) {
-          failed += batch.length;
-          allErrors.push({
-            row: i * batchSize,
-            error: error instanceof Error ? error.message : 'Erreur inconnue'
-          });
-        }
-
-        const progressPercent = Math.floor(((i + 1) / batches.length) * 100);
-        setProgress(progressPercent);
-        setDetails({
-          total: parseResult.data.length,
-          processed: imported,
-          failed
         });
-      }
 
-      return { imported, failed, errors: allErrors };
+        if (error) throw error;
+
+        const imported = data.succeeded || 0;
+        const failed = data.failed || 0;
+        const allErrors = [...parseResult.errors, ...(data.errors || [])];
+
+        setProgress(100);
+        return { imported, failed, errors: allErrors };
+      } catch (error) {
+        console.error('Import error:', error);
+        throw error;
+      }
     },
     onSuccess: (result) => {
       setProgress(100);
@@ -142,6 +106,7 @@ export function useOptimizedImport() {
       }
 
       queryClient.invalidateQueries({ queryKey: ['imported-products'] });
+      queryClient.invalidateQueries({ queryKey: ['catalog-products'] });
       queryClient.invalidateQueries({ queryKey: ['import-history'] });
       
       setTimeout(() => {
