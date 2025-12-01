@@ -109,16 +109,15 @@ export const OrderAutomationPanel: React.FC = () => {
     try {
       setProcessingOrder(orderId)
       
-      // Simulate sending order to supplier
       const order = orders.find(o => o.id === orderId)
       if (!order) return
 
-      const { data, error } = await supabase.functions.invoke('supplier-order-automation', {
+      const { data, error } = await supabase.functions.invoke('supplier-order-place', {
         body: {
-          orderId: order.order_id,
+          order_id: orderId,
+          supplier_id: order.supplier_id,
           items: order.items,
-          customerId: order.supplier_id,
-          totalAmount: order.total_amount
+          total_amount: order.total_amount
         }
       })
 
