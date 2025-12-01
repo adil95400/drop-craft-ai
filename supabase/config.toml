@@ -604,3 +604,9 @@ verify_jwt = true
 [functions.bulk-import-products]
 verify_jwt = true
 
+[functions.supplier-health-check]
+verify_jwt = true
+
+[functions.stock-auto-update]
+verify_jwt = true
+
