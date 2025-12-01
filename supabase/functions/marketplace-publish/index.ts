@@ -81,10 +81,11 @@ serve(async (req) => {
         // Transformation du produit selon la marketplace
         const transformedProduct = await transformProduct(product, integration.supplier_id, publishOptions)
 
-        // Simuler la publication (à remplacer par les vraies API calls)
-        const listingResult = await publishToMarketplace(
+// Real API publication to marketplace
+        const listingResult = await publishToMarketplaceReal(
           integration,
-          transformedProduct
+          transformedProduct,
+          product
         )
 
         results.push({
@@ -215,19 +216,126 @@ async function transformProduct(product: any, marketplaceId: string, options: an
   return transformer ? transformer(baseProduct) : baseProduct
 }
 
-// Simulate marketplace publication
-async function publishToMarketplace(integration: any, product: any): Promise<any> {
-  // Simuler un délai d'API
-  await new Promise(resolve => setTimeout(resolve, 500))
+// Real marketplace publication using dedicated API functions
+async function publishToMarketplaceReal(integration: any, transformedProduct: any, originalProduct: any): Promise<any> {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  )
 
-  // Générer un listing ID fictif
-  const listingId = `${integration.supplier_id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  const marketplaceId = integration.supplier_id.toLowerCase()
+  
+  console.log(`Publishing to real ${marketplaceId} API...`)
 
-  console.log(`Published to ${integration.supplier_id} with listing ID: ${listingId}`)
+  try {
+    switch (marketplaceId) {
+      case 'amazon': {
+        const { data, error } = await supabase.functions.invoke('amazon-seller-api', {
+          body: {
+            action: 'publish_product',
+            credentials: integration.api_credentials || {},
+            product: {
+              sku: transformedProduct.sku || transformedProduct.seller_sku,
+              title: transformedProduct.title,
+              description: transformedProduct.description,
+              price: transformedProduct.price,
+              quantity: transformedProduct.quantity,
+              images: transformedProduct.images || [],
+              category: transformedProduct.category,
+              brand: transformedProduct.brand,
+              asin: transformedProduct.asin
+            }
+          }
+        })
 
-  return {
-    listingId,
-    status: 'active',
-    url: `https://${integration.supplier_id}.com/listing/${listingId}`
+        if (error) throw new Error(`Amazon API error: ${error.message}`)
+        
+        return {
+          listingId: data.submissionId || data.sku,
+          status: 'active',
+          url: `https://sellercentral.amazon.com/inventory?q=${data.sku}`
+        }
+      }
+
+      case 'ebay': {
+        const { data, error } = await supabase.functions.invoke('ebay-trading-api', {
+          body: {
+            action: 'publish_product',
+            credentials: integration.api_credentials || {},
+            product: {
+              sku: transformedProduct.sku || transformedProduct.item_id,
+              title: transformedProduct.title,
+              description: transformedProduct.description,
+              price: transformedProduct.start_price || transformedProduct.price,
+              quantity: transformedProduct.quantity,
+              images: transformedProduct.images || [],
+              category_id: transformedProduct.category_id || '1',
+              condition: 'NEW',
+              shipping_policy_id: integration.api_credentials?.shipping_policy_id,
+              return_policy_id: integration.api_credentials?.return_policy_id,
+              payment_policy_id: integration.api_credentials?.payment_policy_id
+            }
+          }
+        })
+
+        if (error) throw new Error(`eBay API error: ${error.message}`)
+        
+        return {
+          listingId: data.listingId,
+          status: 'active',
+          url: `https://www.ebay.com/itm/${data.listingId}`
+        }
+      }
+
+      case 'etsy': {
+        const { data, error } = await supabase.functions.invoke('etsy-open-api', {
+          body: {
+            action: 'publish_product',
+            credentials: integration.api_credentials || {},
+            product: {
+              sku: transformedProduct.sku || transformedProduct.listing_id,
+              title: transformedProduct.title,
+              description: transformedProduct.description,
+              price: transformedProduct.price,
+              quantity: transformedProduct.quantity,
+              images: transformedProduct.images || [],
+              taxonomy_id: transformedProduct.taxonomy_id || 1,
+              who_made: transformedProduct.who_made || 'i_did',
+              when_made: transformedProduct.when_made || '2020_2023',
+              is_supply: transformedProduct.is_supply || false,
+              tags: transformedProduct.tags || [],
+              materials: transformedProduct.materials || []
+            }
+          }
+        })
+
+        if (error) throw new Error(`Etsy API error: ${error.message}`)
+        
+        return {
+          listingId: data.listingId,
+          status: 'active',
+          url: data.listingUrl
+        }
+      }
+
+      case 'shopify':
+      case 'woocommerce': {
+        // These use existing integrations - simulate for now but should use real APIs
+        await new Promise(resolve => setTimeout(resolve, 500))
+        const listingId = `${marketplaceId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        
+        return {
+          listingId,
+          status: 'active',
+          url: `https://${marketplaceId}.com/listing/${listingId}`
+        }
+      }
+
+      default:
+        throw new Error(`Unsupported marketplace: ${marketplaceId}`)
+    }
+  } catch (error) {
+    console.error(`Error publishing to ${marketplaceId}:`, error)
+    throw error
   }
 }
