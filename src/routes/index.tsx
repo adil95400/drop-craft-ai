@@ -68,6 +68,8 @@ const SupportCenterPage = lazy(() => import('@/pages/support/SupportCenterPage')
 const ExtensionsMarketplacePage = lazy(() => import('@/pages/extensions/ExtensionsMarketplacePage'));
 const ProductRulesPage = lazy(() => import('@/pages/rules/ProductRulesPage'));
 const CatalogIntelligencePage = lazy(() => import('@/pages/catalog/CatalogIntelligencePage'));
+const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
+const ProductionReadinessPage = lazy(() => import('@/pages/ProductionReadinessPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -157,6 +159,8 @@ export function AppRoutes() {
         <Route path="/trial" element={<ProtectedRoute><AppLayout><FreeTrialActivationPage /></AppLayout></ProtectedRoute>} />
         <Route path="/pwa-install" element={<PWAInstallPage />} />
         <Route path="/import/simplified" element={<ProtectedRoute><AppLayout><SimplifiedImportPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/ab-testing" element={<ProtectedRoute><AppLayout><ABTestingPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/production-readiness" element={<ProtectedRoute><AppLayout><ProductionReadinessPage /></AppLayout></ProtectedRoute>} />
         
         {/* Modern Routes - Redirections vers interfaces principales */}
         <Route path="/modern/products" element={<Navigate to="/products" replace />} />
