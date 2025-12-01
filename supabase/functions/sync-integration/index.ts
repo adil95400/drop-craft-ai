@@ -60,12 +60,17 @@ serve(async (req) => {
     EdgeRuntime.waitUntil((async () => {
       try {
         const creds = integration.encrypted_credentials || integration.credentials || {}
-        const domain = creds.shop_domain
+        // Get domain from integration.shop_domain, store_config.domain, or credentials
+        const domain = integration.shop_domain || integration.store_config?.domain || creds.shop_domain
         const token = creds.access_token || creds.accessToken
 
         if (!domain || !token) {
+          console.error('Missing credentials - domain:', !!domain, 'token:', !!token)
+          console.error('Integration data:', JSON.stringify({ shop_domain: integration.shop_domain, store_config: integration.store_config }))
           throw new Error('Missing credentials')
         }
+        
+        console.log(`✅ Credentials found for domain: ${domain}`)
 
         console.log(`📦 Syncing ALL products from ${domain}`)
         
