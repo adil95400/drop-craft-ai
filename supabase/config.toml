@@ -586,3 +586,9 @@ verify_jwt = true
 [functions.label-generate-real]
 verify_jwt = true
 
+[functions.shopify-product-create]
+verify_jwt = true
+
+[functions.woocommerce-product-create]
+verify_jwt = true
+
