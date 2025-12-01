@@ -622,6 +622,15 @@ verify_jwt = true
 [functions.marketplace-webhook]
 verify_jwt = false
 
+[functions.returns-disputes-manager]
+verify_jwt = true
+
+[functions.conversion-analytics]
+verify_jwt = true
+
+[functions.cross-marketplace-sync]
+verify_jwt = true
+
 [functions.prestashop-sync-products]
 verify_jwt = true
 
