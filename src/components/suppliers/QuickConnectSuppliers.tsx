@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useSupplierActions } from '@/hooks/useSupplierActions'
+import { SupplierConnectionTest } from './SupplierConnectionTest'
 import { toast } from 'sonner'
 import { 
   Zap, Key, Link2, FileText, Server, Upload, CheckCircle, Loader2 
@@ -287,6 +288,15 @@ export function QuickConnectSuppliers({
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Test de connexion */}
+        {connectionType === 'api' && apiKey && (
+          <SupplierConnectionTest
+            supplierId={supplierId || ''}
+            supplierName={supplierName || ''}
+            credentials={{ apiKey, apiSecret }}
+          />
+        )}
 
         <div className="flex gap-3 pt-4 border-t">
           <Button 

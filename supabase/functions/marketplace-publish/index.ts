@@ -318,16 +318,37 @@ async function publishToMarketplaceReal(integration: any, transformedProduct: an
         }
       }
 
-      case 'shopify':
-      case 'woocommerce': {
-        // These use existing integrations - simulate for now but should use real APIs
-        await new Promise(resolve => setTimeout(resolve, 500))
-        const listingId = `${marketplaceId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      case 'shopify': {
+        const { data: shopifyResult, error: shopifyError } = await supabaseAdmin.functions.invoke('shopify-product-create', {
+          body: { 
+            product: transformedProduct,
+            storeId: credentials.storeId
+          }
+        })
+
+        if (shopifyError) throw new Error(`Shopify error: ${shopifyError.message}`)
         
         return {
-          listingId,
+          listingId: shopifyResult.productId?.toString(),
           status: 'active',
-          url: `https://${marketplaceId}.com/listing/${listingId}`
+          url: shopifyResult.url
+        }
+      }
+
+      case 'woocommerce': {
+        const { data: wooResult, error: wooError } = await supabaseAdmin.functions.invoke('woocommerce-product-create', {
+          body: { 
+            product: transformedProduct,
+            storeId: credentials.storeId
+          }
+        })
+
+        if (wooError) throw new Error(`WooCommerce error: ${wooError.message}`)
+        
+        return {
+          listingId: wooResult.productId?.toString(),
+          status: 'active',
+          url: wooResult.url
         }
       }
 
