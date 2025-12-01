@@ -53,14 +53,14 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Tableau de bord</h1>
-        <p className="text-muted-foreground">Vue d'ensemble de votre activité</p>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Tableau de bord</h1>
+        <p className="text-xs sm:text-sm text-muted-foreground">Vue d'ensemble de votre activité</p>
       </div>
 
       {/* Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {metrics.map((metric) => {
           const Icon = metric.icon;
           const isPositive = metric.trend >= 0;
@@ -78,27 +78,27 @@ export default function Dashboard() {
           return (
             <Card 
               key={metric.title} 
-              className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+              className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
               onClick={() => window.location.href = getMetricLink(metric.title)}
             >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{metric.title}</CardTitle>
-                <Icon className={`h-4 w-4 ${metric.color}`} />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+                <CardTitle className="text-[10px] sm:text-xs lg:text-sm font-medium truncate pr-2">{metric.title}</CardTitle>
+                <Icon className={`h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 ${metric.color}`} />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
+              <CardContent className="p-3 sm:p-6 pt-0">
+                <div className="text-base sm:text-lg lg:text-2xl font-bold truncate">
                   {metric.format ? metric.format(metric.value) : metric.value}
                 </div>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <p className="text-[9px] sm:text-xs text-muted-foreground flex items-center gap-1 mt-1">
                   {isPositive ? (
-                    <TrendingUp className="h-3 w-3 text-green-600" />
+                    <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600 flex-shrink-0" />
                   ) : (
-                    <TrendingDown className="h-3 w-3 text-red-600" />
+                    <TrendingDown className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-red-600 flex-shrink-0" />
                   )}
                   <span className={isPositive ? 'text-green-600' : 'text-red-600'}>
                     {Math.abs(metric.trend)}%
                   </span>
-                  vs. mois dernier
+                  <span className="hidden sm:inline">vs. mois dernier</span>
                 </p>
               </CardContent>
             </Card>
