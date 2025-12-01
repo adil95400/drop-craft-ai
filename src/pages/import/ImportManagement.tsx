@@ -11,82 +11,80 @@ export default function ImportManagement() {
   const navigate = useNavigate()
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
       {/* En-tête */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Gestion des Imports</h1>
-          <p className="text-muted-foreground">
-            Module complet de gestion, analyse et publication de vos imports
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2">Gestion des Imports</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Gestion, analyse et publication de vos imports
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate('/products/import/quick')}>
-            Import Rapide
-          </Button>
-          <Button variant="outline" onClick={() => navigate('/import')}>
-            Hub Import
+          <Button variant="outline" size="sm" onClick={() => navigate('/products/import/quick')}>
+            <Upload className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Import Rapide</span>
           </Button>
         </div>
       </div>
 
       {/* Navigation rapide */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer hover:shadow-md transition-shadow active:scale-95"
           onClick={() => navigate('/products/import/manage/products')}
         >
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <Package className="w-8 h-8 text-primary" />
-              <div>
-                <p className="font-semibold">Produits</p>
-                <p className="text-sm text-muted-foreground">Liste complète</p>
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Package className="w-6 h-6 sm:w-8 sm:h-8 text-primary flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="font-semibold text-xs sm:text-sm truncate">Produits</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Liste complète</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer hover:shadow-md transition-shadow active:scale-95"
           onClick={() => navigate('/products/import/manage/publishing')}
         >
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <Upload className="w-8 h-8 text-green-600" />
-              <div>
-                <p className="font-semibold">Publication</p>
-                <p className="text-sm text-muted-foreground">Publier produits</p>
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Upload className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="font-semibold text-xs sm:text-sm truncate">Publication</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Publier produits</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer hover:shadow-md transition-shadow active:scale-95"
           onClick={() => navigate('/products/import/manage/marketplace')}
         >
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="w-8 h-8 text-purple-600" />
-              <div>
-                <p className="font-semibold">Marketplace</p>
-                <p className="text-sm text-muted-foreground">Sync & export</p>
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="font-semibold text-xs sm:text-sm truncate">Marketplace</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Sync & export</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          className="cursor-pointer hover:shadow-md transition-shadow active:scale-95"
           onClick={() => navigate('/products/import/manage/history')}
         >
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <FileText className="w-8 h-8 text-blue-600" />
-              <div>
-                <p className="font-semibold">Historique</p>
-                <p className="text-sm text-muted-foreground">Voir tout</p>
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="font-semibold text-xs sm:text-sm truncate">Historique</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Voir tout</p>
               </div>
             </div>
           </CardContent>
@@ -94,22 +92,25 @@ export default function ImportManagement() {
       </div>
 
       {/* Tabs principales */}
-      <Tabs defaultValue="dashboard" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="dashboard" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
-            Tableau de Bord
+      <Tabs defaultValue="dashboard" className="space-y-4 sm:space-y-6">
+        <TabsList className="w-full justify-start overflow-x-auto scrollbar-hide">
+          <TabsTrigger value="dashboard" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Tableau de Bord</span>
+            <span className="sm:hidden">Dashboard</span>
           </TabsTrigger>
-          <TabsTrigger value="products" className="flex items-center gap-2">
-            <Package className="w-4 h-4" />
-            Produits Importés
+          <TabsTrigger value="products" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Package className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Produits Importés</span>
+            <span className="sm:hidden">Produits</span>
           </TabsTrigger>
-          <TabsTrigger value="import" className="flex items-center gap-2">
-            <Upload className="w-4 h-4" />
-            Nouvel Import
+          <TabsTrigger value="import" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Upload className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Nouvel Import</span>
+            <span className="sm:hidden">Import</span>
           </TabsTrigger>
-          <TabsTrigger value="reports" className="flex items-center gap-2">
-            <FileText className="w-4 h-4" />
+          <TabsTrigger value="reports" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
             Rapports
           </TabsTrigger>
         </TabsList>

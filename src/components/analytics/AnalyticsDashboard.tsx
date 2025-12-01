@@ -210,19 +210,19 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   };
 
   return (
-    <div className={cn("space-y-6", className)}>
+    <div className={cn("space-y-4 sm:space-y-6", className)}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Analytics</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Analytics</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Suivez les performances de votre business
           </p>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Select value={timeRange} onValueChange={onTimeRangeChange}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-[110px] sm:w-32">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -234,24 +234,24 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           </Select>
           
           <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Exporter
+            <Download className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Exporter</span>
           </Button>
         </div>
       </div>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {mockMetrics.map((metric, index) => (
           <Card key={index}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">{metric.title}</p>
-                  <p className="text-2xl font-bold">{metric.value}</p>
+            <CardContent className="p-3 sm:p-4 lg:p-6">
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-1 sm:space-y-2 min-w-0">
+                  <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground truncate">{metric.title}</p>
+                  <p className="text-base sm:text-lg lg:text-2xl font-bold truncate">{metric.value}</p>
                   {formatChange(metric.change)}
                 </div>
-                <div className="p-2 bg-primary/10 rounded-lg">
+                <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
                   {metric.icon}
                 </div>
               </div>
@@ -260,12 +260,12 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         ))}
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-          <TabsTrigger value="sales">Ventes</TabsTrigger>
-          <TabsTrigger value="products">Produits</TabsTrigger>
-          <TabsTrigger value="traffic">Trafic</TabsTrigger>
+      <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+        <TabsList className="w-full justify-start">
+          <TabsTrigger value="overview" className="text-xs sm:text-sm">Vue d'ensemble</TabsTrigger>
+          <TabsTrigger value="sales" className="text-xs sm:text-sm">Ventes</TabsTrigger>
+          <TabsTrigger value="products" className="text-xs sm:text-sm">Produits</TabsTrigger>
+          <TabsTrigger value="traffic" className="text-xs sm:text-sm">Trafic</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -292,7 +292,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Répartition par catégorie</CardTitle>
@@ -416,7 +416,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center gap-2">

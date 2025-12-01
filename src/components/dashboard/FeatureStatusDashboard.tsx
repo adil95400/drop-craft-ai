@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,7 +26,7 @@ export const FeatureStatusDashboard = () => {
     },
     {
       id: 'url-import',
-      name: 'Importation de produits basée sur une URL',
+      name: 'Import URL',
       description: 'Edge function product-url-scraper déployée',
       status: 'active',
       edgeFunctionName: 'product-url-scraper',
@@ -34,28 +34,28 @@ export const FeatureStatusDashboard = () => {
     },
     {
       id: 'supplier-catalog',
-      name: 'Interface utilisateur du catalogue fournisseur',
+      name: 'Catalogue fournisseur',
       description: 'Gestion avancée des fournisseurs',
       status: 'active',
       path: '/products/suppliers'
     },
     {
       id: 'dynamic-pricing',
-      name: 'Automatisation de la tarification dynamique',
+      name: 'Tarification dynamique',
       description: 'Règles de prix automatiques et optimisation IA',
       status: 'active',
       path: '/automation/pricing-automation'
     },
     {
       id: 'auto-fulfillment',
-      name: 'Automatisation de l\'exécution automatique',
+      name: 'Auto-exécution',
       description: 'Workflows d\'automatisation complets',
       status: 'active',
       path: '/automation/workflow-builder'
     },
     {
       id: 'integration-flow',
-      name: 'Flux d\'intégration',
+      name: 'Intégrations',
       description: 'Système d\'intégration multi-plateforme',
       status: 'active',
       path: '/integrations'
@@ -65,22 +65,22 @@ export const FeatureStatusDashboard = () => {
   const getStatusIcon = (status: FeatureStatus['status']) => {
     switch (status) {
       case 'active':
-        return <CheckCircle2 className="h-5 w-5 text-green-600" />;
+        return <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />;
       case 'inactive':
-        return <XCircle className="h-5 w-5 text-red-600" />;
+        return <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 flex-shrink-0" />;
       case 'pending':
-        return <AlertCircle className="h-5 w-5 text-yellow-600" />;
+        return <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 flex-shrink-0" />;
     }
   };
 
   const getStatusBadge = (status: FeatureStatus['status']) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-600">Actif</Badge>;
+        return <Badge className="bg-green-600 text-[10px] sm:text-xs px-1.5 py-0">Actif</Badge>;
       case 'inactive':
-        return <Badge variant="destructive">Inactif</Badge>;
+        return <Badge variant="destructive" className="text-[10px] sm:text-xs px-1.5 py-0">Inactif</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-600">En attente</Badge>;
+        return <Badge className="bg-yellow-600 text-[10px] sm:text-xs px-1.5 py-0">En attente</Badge>;
     }
   };
 
@@ -89,62 +89,36 @@ export const FeatureStatusDashboard = () => {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Statut des fonctionnalités</span>
-          <Badge variant="outline" className="text-lg">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center justify-between text-base sm:text-lg">
+          <span>Fonctionnalités</span>
+          <Badge variant="outline" className="text-sm sm:text-lg">
             {activeCount}/{totalCount}
           </Badge>
         </CardTitle>
-        <CardDescription>
-          État en temps réel des fonctionnalités principales du système
+        <CardDescription className="text-xs sm:text-sm">
+          État en temps réel des fonctionnalités
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="px-3 sm:px-6">
+        <div className="space-y-2 sm:space-y-3">
           {features.map((feature) => (
             <div
               key={feature.id}
-              className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+              className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+              onClick={() => feature.path && navigate(feature.path)}
             >
-              <div className="flex items-start gap-3 flex-1">
-                {getStatusIcon(feature.status)}
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-semibold">{feature.name}</h4>
-                    {getStatusBadge(feature.status)}
-                  </div>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
-                  {feature.edgeFunctionName && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Edge Function: <code className="bg-muted px-1 py-0.5 rounded">{feature.edgeFunctionName}</code>
-                    </p>
-                  )}
+              {getStatusIcon(feature.status)}
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                  <h4 className="font-medium text-xs sm:text-sm truncate">{feature.name}</h4>
+                  {getStatusBadge(feature.status)}
                 </div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{feature.description}</p>
               </div>
-              <div className="flex gap-2">
-                {feature.path && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(feature.path!)}
-                  >
-                    Ouvrir
-                  </Button>
-                )}
-                {feature.edgeFunctionName && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(
-                      `https://supabase.com/dashboard/project/dtozyrmmekdnvekissuh/functions/${feature.edgeFunctionName}/logs`,
-                      '_blank'
-                    )}
-                  >
-                    Logs
-                  </Button>
-                )}
-              </div>
+              
+              <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             </div>
           ))}
         </div>
