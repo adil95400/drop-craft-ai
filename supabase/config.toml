@@ -616,6 +616,12 @@ verify_jwt = true
 [functions.price-change-monitor]
 verify_jwt = true
 
+[functions.price-sync-auto]
+verify_jwt = true
+
+[functions.marketplace-webhook]
+verify_jwt = false
+
 [functions.prestashop-sync-products]
 verify_jwt = true
 
