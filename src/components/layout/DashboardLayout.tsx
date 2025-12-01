@@ -8,12 +8,31 @@ import { Input } from '@/components/ui/input'
 import { Bell, Search, Crown, Menu } from 'lucide-react'
 import { useUnifiedSystem } from '@/hooks/useUnifiedSystem'
 import { UserDropdown } from '@/shared/components/UserDropdown'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { MobileHeader, MobileNav } from '@/components/mobile/MobileNav'
 
 export function DashboardLayout() {
   const { isAdmin } = useUnifiedSystem()
   const navigate = useNavigate()
   const [notificationCount] = useState(0)
+  const isMobile = useIsMobile()
 
+  // Version mobile avec navigation en bas
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-background">
+        <MobileHeader />
+        <main className="pb-20 pt-4">
+          <div className="container max-w-screen-sm mx-auto px-4">
+            <Outlet />
+          </div>
+        </main>
+        <MobileNav notifications={notificationCount} />
+      </div>
+    )
+  }
+
+  // Version desktop avec sidebar
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -23,7 +42,7 @@ export function DashboardLayout() {
           {/* Header */}
           <header className="h-16 border-b bg-card flex items-center justify-between px-6 sticky top-0 z-50">
             <div className="flex items-center gap-4">
-              <SidebarTrigger className="lg:hidden">
+              <SidebarTrigger>
                 <Menu className="h-5 w-5" />
               </SidebarTrigger>
               

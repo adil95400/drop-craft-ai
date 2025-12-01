@@ -9,6 +9,8 @@ import { LoadingSpinner, useAuthOptimized } from '@/shared'
 import { NavigationProvider } from '@/contexts/NavigationContext'
 import { EnhancedNavigationBar } from '@/components/navigation/EnhancedNavigationBar'
 import { cn } from '@/lib/utils'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { MobileHeader, MobileNav } from '@/components/mobile/MobileNav'
 
 interface OptimizedLayoutProps {
   className?: string
@@ -16,6 +18,7 @@ interface OptimizedLayoutProps {
 
 const OptimizedLayoutComponent = ({ className }: OptimizedLayoutProps) => {
   const { isAuthenticated, loading } = useAuthOptimized()
+  const isMobile = useIsMobile()
 
   if (loading) {
     return <LoadingSpinner variant="fullscreen" text="Chargement..." />
@@ -23,6 +26,25 @@ const OptimizedLayoutComponent = ({ className }: OptimizedLayoutProps) => {
 
   if (!isAuthenticated) {
     return <Outlet />
+  }
+
+  // Version mobile avec navigation en bas
+  if (isMobile) {
+    return (
+      <NavigationProvider>
+        <div className="min-h-screen bg-background">
+          <MobileHeader />
+          <main className="pb-20 pt-4">
+            <div className="container max-w-screen-sm mx-auto px-4">
+              <Suspense fallback={<LoadingSpinner text="Chargement de la page..." />}>
+                <Outlet />
+              </Suspense>
+            </div>
+          </main>
+          <MobileNav />
+        </div>
+      </NavigationProvider>
+    )
   }
 
   return (
