@@ -16,8 +16,7 @@ import {
   Activity,
   Smartphone,
   Palette,
-  Crown,
-  AlertCircle
+  Crown
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
@@ -31,73 +30,6 @@ export const UnifiedDashboard = () => {
   });
 
   const [aiInsights] = useState([
-    {
-      type: 'critical',
-      title: 'Pricing Opportunity Detected',
-      description: '23 products can increase prices by 8-12% based on demand analysis',
-      action: 'Review Pricing',
-      impact: '+$2.4K monthly'
-    },
-    {
-      type: 'success',
-      title: 'Automation Success',
-      description: 'Dynamic pricing increased margins by 15% this week',
-      action: 'Expand Rules',
-      impact: '+$1.8K saved'
-    },
-    {
-      type: 'info',
-      title: 'Market Trend Alert',
-      description: 'Seasonal demand spike predicted for "winter accessories"',
-      action: 'Stock Check',
-      impact: '2x demand expected'
-    }
-  ]);
-
-  const [quickActions] = useState([
-    { 
-      icon: Brain, 
-      title: 'AI Optimization', 
-      description: 'Auto-optimize pricing & inventory', 
-      link: '/ai-optimization',
-      status: 'active'
-    },
-    { 
-      icon: BarChart3, 
-      title: 'Analytics Suite', 
-      description: 'Advanced reporting & insights', 
-      link: '/analytics',
-      status: 'active'
-    },
-    { 
-      icon: Zap, 
-      title: 'Automation Hub', 
-      description: 'Smart workflows & rules', 
-      link: '/automation',
-      status: 'active'
-    },
-    { 
-      icon: Smartphone, 
-      title: 'Mobile Apps', 
-      description: 'iOS & Android development', 
-      link: '/mobile-apps',
-      status: 'beta'
-    },
-    { 
-      icon: Palette, 
-      title: 'Creative Studio', 
-      description: 'AI-powered content creation', 
-      link: '/creative-studio',
-      status: 'new'
-    },
-    { 
-      icon: Crown, 
-      title: 'Competitive Edge', 
-      description: 'Market positioning analysis', 
-      link: '/competitive-advantage',
-      status: 'premium'
-    }
-  ]);
     {
       type: 'critical',
       title: 'Pricing Opportunity Detected',
@@ -204,12 +136,10 @@ export const UnifiedDashboard = () => {
           <h1 className="text-3xl font-bold tracking-tight">Command Center</h1>
           <p className="text-muted-foreground">Your complete e-commerce intelligence dashboard</p>
         </div>
-        <div className="flex gap-2 items-center">
-          <Button>
-            <Activity className="h-4 w-4 mr-2" />
-            System Status
-          </Button>
-        </div>
+        <Button>
+          <Activity className="h-4 w-4 mr-2" />
+          System Status
+        </Button>
       </div>
 
       {/* Key Metrics */}
@@ -258,14 +188,14 @@ export const UnifiedDashboard = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Customers</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Products</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.total_customers.toLocaleString() || '0'}</div>
+            <div className="text-2xl font-bold">{stats?.productsCount.toLocaleString() || '0'}</div>
             <p className="text-xs text-green-600 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1" />
-              +5.7% from last month
+              {stats?.productsChange.toFixed(1)}% from last month
             </p>
           </CardContent>
         </Card>
