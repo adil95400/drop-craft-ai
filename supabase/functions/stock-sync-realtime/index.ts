@@ -223,11 +223,105 @@ async function syncSupplierStock(supabaseClient: any, userId: string, config: an
 }
 
 async function fetchSupplierStock(supplier: any, externalId: string): Promise<number | null> {
-  // En production, appeler l'API réelle du fournisseur
-  // Pour la démo, simuler des variations de stock
-  const variation = Math.floor(Math.random() * 20) - 10; // -10 à +10
-  const baseStock = Math.floor(Math.random() * 100);
-  return Math.max(0, baseStock + variation);
+  console.log(`[FETCH-STOCK] Fetching stock for ${supplier.name}, product: ${externalId}`);
+  
+  try {
+    // Get supplier credentials
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: credentials } = await supabaseClient
+      .from('supplier_credentials_vault')
+      .select('*')
+      .eq('supplier_id', supplier.id)
+      .single();
+
+    if (!credentials) {
+      console.error(`[FETCH-STOCK] No credentials for supplier: ${supplier.name}`);
+      return null;
+    }
+
+    const oauth = credentials.oauth_data || {};
+    const connectorId = oauth.connectorId || supplier.id;
+
+    // Call real supplier APIs
+    switch (connectorId) {
+      case 'bigbuy': {
+        const apiKey = oauth.apiKey || credentials.api_key_encrypted;
+        const response = await fetch(`https://api.bigbuy.eu/rest/catalog/product/${externalId}.json`, {
+          headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          return data.stock || 0;
+        }
+        break;
+      }
+
+      case 'cjdropshipping': {
+        const accessToken = oauth.accessToken || credentials.access_token_encrypted;
+        const response = await fetch('https://developers.cjdropshipping.com/api2.0/v1/product/query', {
+          method: 'POST',
+          headers: {
+            'CJ-Access-Token': accessToken,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ pid: externalId })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          return data.data?.variants?.[0]?.vid ? 999 : 0; // CJ has high availability
+        }
+        break;
+      }
+
+      case 'btswholesaler': {
+        const apiKey = oauth.apiKey || oauth.username;
+        const response = await fetch(`https://api.btswholesaler.com/v1/api/getProduct?id=${externalId}`, {
+          headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          return data.product?.stock || 0;
+        }
+        break;
+      }
+
+      case 'matterhorn': {
+        const apiKey = oauth.apiKey || credentials.api_key_encrypted;
+        const response = await fetch(`https://matterhorn-wholesale.com/B2BAPI/ITEMS/${externalId}`, {
+          headers: { 'Authorization': apiKey }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          return parseInt(data.stock_total) || 0;
+        }
+        break;
+      }
+
+      case 'vidaxl': {
+        const apiKey = oauth.apiKey || credentials.api_key_encrypted;
+        const response = await fetch(`https://api.vidaxl.com/v1/products/${externalId}`, {
+          headers: { 'X-API-Key': apiKey }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          return data.stock || 0;
+        }
+        break;
+      }
+
+      default:
+        console.log(`[FETCH-STOCK] No API implementation for: ${connectorId}`);
+        return null;
+    }
+  } catch (error) {
+    console.error(`[FETCH-STOCK] Error:`, error);
+  }
+  
+  return null;
 }
 
 async function createStockAlert(supabaseClient: any, userId: string, product: any, alertType: string, currentStock: number, config: any) {
