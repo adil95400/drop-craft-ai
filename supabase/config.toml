@@ -568,12 +568,21 @@ verify_jwt = true
 [functions.trial-activate]
 verify_jwt = true
 
-[functions.coupon-validate]
+[functions.amazon-seller-api]
 verify_jwt = true
 
-[functions.coupon-redeem]
+[functions.ebay-trading-api]
 verify_jwt = true
 
-[functions.trial-activate]
+[functions.etsy-open-api]
+verify_jwt = true
+
+[functions.carrier-tracking-fetch]
+verify_jwt = true
+
+[functions.supplier-order-place]
+verify_jwt = true
+
+[functions.label-generate-real]
 verify_jwt = true
 
