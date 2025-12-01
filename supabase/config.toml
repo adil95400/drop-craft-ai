@@ -631,15 +631,8 @@ verify_jwt = true
 [functions.cross-marketplace-sync]
 verify_jwt = true
 
-[functions.prestashop-sync-products]
+[functions.temu-connector]
 verify_jwt = true
 
-[functions.bulk-import-products]
+[functions.chatgpt-shopping-feed]
 verify_jwt = true
-
-[functions.supplier-health-check]
-verify_jwt = true
-
-[functions.stock-auto-update]
-verify_jwt = true
-

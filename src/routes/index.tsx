@@ -70,6 +70,8 @@ const ProductRulesPage = lazy(() => import('@/pages/rules/ProductRulesPage'));
 const CatalogIntelligencePage = lazy(() => import('@/pages/catalog/CatalogIntelligencePage'));
 const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
 const ProductionReadinessPage = lazy(() => import('@/pages/ProductionReadinessPage'));
+const UnifiedDashboardPage = lazy(() => import('@/pages/UnifiedDashboardPage'));
+const OptimizedHomePage = lazy(() => import('@/pages/OptimizedHomePage'));
 
 // Loading component
 const PageLoader = () => (
@@ -161,6 +163,8 @@ export function AppRoutes() {
         <Route path="/import/simplified" element={<ProtectedRoute><AppLayout><SimplifiedImportPage /></AppLayout></ProtectedRoute>} />
         <Route path="/ab-testing" element={<ProtectedRoute><AppLayout><ABTestingPage /></AppLayout></ProtectedRoute>} />
         <Route path="/production-readiness" element={<ProtectedRoute><AppLayout><ProductionReadinessPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/unified-dashboard" element={<ProtectedRoute><AppLayout><UnifiedDashboardPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/home-optimized" element={<ProtectedRoute><AppLayout><OptimizedHomePage /></AppLayout></ProtectedRoute>} />
         
         {/* Modern Routes - Redirections vers interfaces principales */}
         <Route path="/modern/products" element={<Navigate to="/products" replace />} />
