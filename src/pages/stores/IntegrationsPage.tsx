@@ -1,18 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Loader2, RefreshCw, Settings, Trash2, Activity, AlertCircle, CheckCircle, Clock, Plus, Search, Filter, Zap } from 'lucide-react'
+import { Loader2, RefreshCw, Settings, Trash2, Activity, AlertCircle, CheckCircle, Clock, Plus, Search, Zap } from 'lucide-react'
 import { BackButton } from '@/components/navigation/BackButton'
 import { useStoreIntegrations } from '@/hooks/useStoreIntegrations'
 import { useSyncLogs } from '@/hooks/useSyncLogs'
 import { AutoConfigWizard } from '@/components/integrations/AutoConfigWizard'
-import { SyncProgressModal } from './components/SyncProgressModal'
+import { SyncStatusInline } from './components/SyncStatusInline'
 import type { Integration } from '@/hooks/useIntegrations'
-import { supabase } from '@/integrations/supabase/client'
 
 export default function IntegrationsPage() {
   const navigate = useNavigate()
@@ -20,10 +19,6 @@ export default function IntegrationsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [wizardOpen, setWizardOpen] = useState(false)
   const [selectedPlatform, setSelectedPlatform] = useState<{ name: string; type: string } | null>(null)
-  const [syncModalOpen, setSyncModalOpen] = useState(false)
-  const [syncProgress, setSyncProgress] = useState(0)
-  const [syncSteps, setSyncSteps] = useState<any[]>([])
-  const [currentIntegrationId, setCurrentIntegrationId] = useState<string | null>(null)
   
   const { 
     integrations, 
@@ -38,59 +33,6 @@ export default function IntegrationsPage() {
   
   const { stats: syncStats } = useSyncLogs()
 
-  // Track sync progress in real-time
-  useEffect(() => {
-    if (!syncModalOpen || !currentIntegrationId) return
-
-    let progressInterval: NodeJS.Timeout
-
-    // Subscribe to integration updates for real-time progress
-    const channel = supabase
-      .channel('sync-progress')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'integrations',
-          filter: `id=eq.${currentIntegrationId}`
-        },
-        (payload) => {
-          const newData = payload.new as any
-          const storeConfig = newData.store_config || {}
-          
-          if (storeConfig.last_products_synced) {
-            const productsCount = storeConfig.last_products_synced
-            setSyncSteps(steps => steps.map(s => 
-              s.id === 'products' ? { 
-                ...s, 
-                status: 'running', 
-                progress: 50,
-                name: `Synchronisation produits (${productsCount} produits)` 
-              } : s
-            ))
-          }
-          
-          if (newData.sync_status === 'synced' && !storeConfig.sync_in_progress) {
-            setSyncProgress(100)
-            setSyncSteps(steps => steps.map(s => ({ ...s, status: 'completed', progress: 100 })))
-            clearInterval(progressInterval)
-            
-            setTimeout(() => {
-              setSyncModalOpen(false)
-              refetch()
-            }, 1500)
-          }
-        }
-      )
-      .subscribe()
-
-    return () => {
-      clearInterval(progressInterval)
-      supabase.removeChannel(channel)
-    }
-  }, [syncModalOpen, currentIntegrationId, refetch])
-
   // Filter integrations based on search and status
   const filteredIntegrations = integrations.filter(integration => {
     const matchesSearch = !searchTerm || 
@@ -104,14 +46,6 @@ export default function IntegrationsPage() {
   });
 
   const handleSync = (integrationId: string) => {
-    setCurrentIntegrationId(integrationId)
-    setSyncModalOpen(true)
-    setSyncProgress(0)
-    setSyncSteps([
-      { id: 'init', name: 'Initialisation', status: 'running', progress: 0 },
-      { id: 'products', name: 'Synchronisation produits', status: 'pending', progress: 0 },
-      { id: 'complete', name: 'Finalisation', status: 'pending', progress: 0 }
-    ])
     syncIntegration(integrationId);
   };
 
@@ -399,81 +333,65 @@ export default function IntegrationsPage() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Créée le</p>
-                    <p className="text-sm text-gray-600">
-                      {formatDate(integration.created_at)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Dernière sync</p>
-                    <p className="text-sm text-gray-600">
-                      {formatDate(integration.last_sync_at)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Fréquence</p>
-                    <p className="text-sm text-gray-600 capitalize">
-                      {integration.sync_frequency}
-                    </p>
-                  </div>
-                </div>
+              <CardContent className="space-y-4">
+                {/* Sync Status Inline - Modern competitor-style */}
+                <SyncStatusInline
+                  integrationId={integration.id}
+                  lastSyncAt={integration.last_sync_at}
+                  syncStatus={integration.sync_status}
+                  storeConfig={integration.store_config}
+                  onSync={() => handleSync(integration.id)}
+                  isSyncing={isSyncing}
+                />
 
-                <div className="flex items-center space-x-2">
-                  <Button
-                    onClick={() => handleSync(integration.id)}
-                    disabled={isSyncing}
-                    size="sm"
-                  >
-                    {isSyncing ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                    )}
-                    Synchroniser
-                  </Button>
+                {/* Info & Actions */}
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span>Créée le {formatDate(integration.created_at)}</span>
+                    <span className="capitalize">Sync: {integration.sync_frequency}</span>
+                  </div>
                   
-                  <Button
-                    onClick={() => handleTest(integration.id)}
-                    variant="outline"
-                    size="sm"
-                    disabled={isTesting}
-                  >
-                    <Activity className="h-4 w-4 mr-2" />
-                    Tester
-                  </Button>
-                  
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Settings className="h-4 w-4 mr-2" />
-                        Gérer
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => navigate(`/dashboard/stores/integrations/${integration.id}`)}>
-                        <Settings className="h-4 w-4 mr-2" />
-                        Paramètres
-                      </DropdownMenuItem>
-                      {integration.platform_type === 'shopify' && (
-                        <DropdownMenuItem onClick={() => navigate('/dashboard/stores/shopify-management')}>
-                          <Zap className="h-4 w-4 mr-2" />
-                          Gestion Shopify
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => handleTest(integration.id)}
+                      variant="outline"
+                      size="sm"
+                      disabled={isTesting}
+                    >
+                      <Activity className="h-4 w-4 mr-2" />
+                      Tester
+                    </Button>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Settings className="h-4 w-4 mr-2" />
+                          Gérer
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => navigate(`/dashboard/stores/integrations/${integration.id}`)}>
+                          <Settings className="h-4 w-4 mr-2" />
+                          Paramètres
                         </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  
-                  <Button
-                    onClick={() => handleDelete(integration.id)}
-                    variant="outline"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                        {integration.platform_type === 'shopify' && (
+                          <DropdownMenuItem onClick={() => navigate('/dashboard/stores/shopify-management')}>
+                            <Zap className="h-4 w-4 mr-2" />
+                            Gestion Shopify
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    
+                    <Button
+                      onClick={() => handleDelete(integration.id)}
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -491,16 +409,6 @@ export default function IntegrationsPage() {
           onComplete={handleWizardComplete}
         />
       )}
-
-      {/* Sync Progress Modal */}
-      <SyncProgressModal
-        isOpen={syncModalOpen}
-        onClose={() => setSyncModalOpen(false)}
-        syncType="full"
-        overallProgress={syncProgress}
-        steps={syncSteps}
-        currentStep={syncSteps.find(s => s.status === 'running')?.name}
-      />
     </div>
   )
 }

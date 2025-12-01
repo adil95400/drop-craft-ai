@@ -37,10 +37,18 @@ serve(async (req) => {
       throw new Error(`Integration not found`)
     }
 
-    // Update status
+    // Update status to syncing
     await supabaseClient
       .from('integrations')
-      .update({ sync_status: 'syncing' })
+      .update({ 
+        sync_status: 'syncing',
+        store_config: {
+          ...(integration.store_config || {}),
+          sync_in_progress: true,
+          last_products_synced: 0,
+          sync_started_at: new Date().toISOString()
+        }
+      })
       .eq('id', integration_id)
 
     // Return immediately
@@ -56,32 +64,35 @@ serve(async (req) => {
       }
     )
 
-    // Background sync
+    // Background sync with cursor-based pagination
     EdgeRuntime.waitUntil((async () => {
       try {
         const creds = integration.encrypted_credentials || integration.credentials || {}
-        // Get domain from integration.shop_domain, store_config.domain, or credentials
         const domain = integration.shop_domain || integration.store_config?.domain || creds.shop_domain
         const token = creds.access_token || creds.accessToken
 
         if (!domain || !token) {
           console.error('Missing credentials - domain:', !!domain, 'token:', !!token)
-          console.error('Integration data:', JSON.stringify({ shop_domain: integration.shop_domain, store_config: integration.store_config }))
           throw new Error('Missing credentials')
         }
         
         console.log(`✅ Credentials found for domain: ${domain}`)
-
-        console.log(`📦 Syncing ALL products from ${domain}`)
+        console.log(`📦 Syncing ALL products from ${domain} using cursor pagination`)
         
         let total = 0
-        let page = 1
-        let hasMore = true
+        let pageInfo: string | null = null
+        let hasNextPage = true
 
-        while (hasMore) {
-          console.log(`   Page ${page}...`)
+        while (hasNextPage) {
+          // Build URL with cursor-based pagination
+          let url = `https://${domain}/admin/api/2024-01/products.json?limit=250`
+          if (pageInfo) {
+            url += `&page_info=${pageInfo}`
+          }
           
-          const res = await fetch(`https://${domain}/admin/api/2023-10/products.json?limit=250&page=${page}`, {
+          console.log(`   Fetching: ${url}`)
+          
+          const res = await fetch(url, {
             headers: {
               'X-Shopify-Access-Token': token,
               'Content-Type': 'application/json'
@@ -89,16 +100,35 @@ serve(async (req) => {
           })
 
           if (!res.ok) {
-            console.log(`   ❌ Error fetching page ${page}: ${res.status}`)
-            break
+            const errorText = await res.text()
+            console.error(`❌ Shopify API error: ${res.status} - ${errorText}`)
+            throw new Error(`Shopify API error: ${res.status}`)
           }
 
           const data = await res.json()
           const products = data.products || []
           
           if (products.length === 0) {
-            hasMore = false
+            hasNextPage = false
             break
+          }
+
+          // Parse Link header for cursor pagination
+          const linkHeader = res.headers.get('Link')
+          pageInfo = null
+          hasNextPage = false
+          
+          if (linkHeader) {
+            const links = linkHeader.split(',')
+            for (const link of links) {
+              if (link.includes('rel="next"')) {
+                const match = link.match(/page_info=([^>&]+)/)
+                if (match) {
+                  pageInfo = match[1]
+                  hasNextPage = true
+                }
+              }
+            }
           }
 
           const items = products.map((p: any) => ({
@@ -125,7 +155,7 @@ serve(async (req) => {
 
           if (!error) {
             total += items.length
-            console.log(`   ✅ ${total} products synced`)
+            console.log(`   ✅ ${total} products synced so far`)
             
             // Update progress in real-time
             await supabaseClient
@@ -138,12 +168,12 @@ serve(async (req) => {
                 }
               })
               .eq('id', integration_id)
+          } else {
+            console.error('Upsert error:', error)
           }
           
-          page++
-          
           // Rate limiting - wait 500ms between pages
-          if (hasMore && products.length > 0) {
+          if (hasNextPage) {
             await new Promise(resolve => setTimeout(resolve, 500))
           }
         }
@@ -157,17 +187,25 @@ serve(async (req) => {
             store_config: {
               ...(integration.store_config || {}),
               last_products_synced: total,
-              sync_in_progress: false
+              sync_in_progress: false,
+              sync_completed_at: new Date().toISOString()
             }
           })
           .eq('id', integration_id)
 
         console.log(`✅ Sync completed: ${total} products imported`)
       } catch (error) {
-        console.error('❌ Error:', error)
+        console.error('❌ Sync error:', error)
         await supabaseClient
           .from('integrations')
-          .update({ sync_status: 'error' })
+          .update({ 
+            sync_status: 'error',
+            store_config: {
+              ...(integration.store_config || {}),
+              sync_in_progress: false,
+              sync_error: error.message
+            }
+          })
           .eq('id', integration_id)
       }
     })())

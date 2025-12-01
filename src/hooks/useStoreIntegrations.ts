@@ -14,6 +14,7 @@ export interface StoreIntegration {
   sync_settings: Record<string, any> | null
   is_active: boolean | null
   connection_status: string | null
+  sync_status?: string | null
   last_sync_at: string | null
   sync_frequency: string | null
   last_error: string | null
