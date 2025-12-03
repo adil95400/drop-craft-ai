@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useAutoFulfillment } from '@/hooks/useAutoFulfillment';
-import { Plus, Plug, Check, X, Settings } from 'lucide-react';
+import { Plus, Plug, Settings } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
@@ -34,54 +34,55 @@ export function SupplierConnectionsManager() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
+        <CardHeader className="p-4 md:p-6">
+          <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3">
             <div>
-              <CardTitle>Connexions Fournisseurs</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-base md:text-lg">Connexions Fournisseurs</CardTitle>
+              <CardDescription className="text-xs md:text-sm">
                 Configurez vos fournisseurs pour l'auto-fulfillment
               </CardDescription>
             </div>
             <Dialog open={isAddingConnection} onOpenChange={setIsAddingConnection}>
               <DialogTrigger asChild>
-                <Button>
+                <Button size="sm" className="w-full xs:w-auto">
                   <Plus className="w-4 h-4 mr-2" />
-                  Ajouter Fournisseur
+                  <span className="hidden xs:inline">Ajouter </span>Fournisseur
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-[95vw] md:max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Nouvelle Connexion Fournisseur</DialogTitle>
-                  <DialogDescription>
+                  <DialogTitle className="text-base md:text-lg">Nouvelle Connexion Fournisseur</DialogTitle>
+                  <DialogDescription className="text-xs md:text-sm">
                     Connectez un fournisseur pour automatiser vos commandes
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="supplier-name">Nom du Fournisseur</Label>
+                    <Label htmlFor="supplier-name" className="text-sm">Nom du Fournisseur</Label>
                     <Input
                       id="supplier-name"
                       placeholder="AliExpress, CJ Dropshipping, etc."
                       value={newConnection.supplier_name}
                       onChange={(e) => setNewConnection({ ...newConnection, supplier_name: e.target.value })}
+                      className="h-10"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="connection-type">Type de Connexion</Label>
+                    <Label htmlFor="connection-type" className="text-sm">Type de Connexion</Label>
                     <Select
                       value={newConnection.connection_type}
                       onValueChange={(value) => setNewConnection({ ...newConnection, connection_type: value })}
                     >
-                      <SelectTrigger id="connection-type">
+                      <SelectTrigger id="connection-type" className="h-10">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="api">API (Automatique)</SelectItem>
                         <SelectItem value="dropshipping_platform">Plateforme Dropshipping</SelectItem>
-                        <SelectItem value="email">Email (Semi-automatique)</SelectItem>
+                        <SelectItem value="email">Email (Semi-auto)</SelectItem>
                         <SelectItem value="manual">Manuel</SelectItem>
                       </SelectContent>
                     </Select>
@@ -89,34 +90,36 @@ export function SupplierConnectionsManager() {
 
                   {newConnection.connection_type === 'api' && (
                     <div className="space-y-2">
-                      <Label htmlFor="api-endpoint">URL de l'API</Label>
+                      <Label htmlFor="api-endpoint" className="text-sm">URL de l'API</Label>
                       <Input
                         id="api-endpoint"
                         placeholder="https://api.supplier.com/orders"
                         value={newConnection.api_endpoint}
                         onChange={(e) => setNewConnection({ ...newConnection, api_endpoint: e.target.value })}
+                        className="h-10"
                       />
                     </div>
                   )}
 
                   {newConnection.connection_type === 'email' && (
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email du Fournisseur</Label>
+                      <Label htmlFor="email" className="text-sm">Email du Fournisseur</Label>
                       <Input
                         id="email"
                         type="email"
                         placeholder="orders@supplier.com"
                         value={newConnection.email_address}
                         onChange={(e) => setNewConnection({ ...newConnection, email_address: e.target.value })}
+                        className="h-10"
                       />
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                    <div className="space-y-0.5">
-                      <Label>Auto-commande Activée</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Les commandes seront envoyées automatiquement
+                  <div className="flex items-center justify-between p-3 md:p-4 bg-muted rounded-lg">
+                    <div className="space-y-0.5 pr-4">
+                      <Label className="text-sm">Auto-commande</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Envoi automatique des commandes
                       </p>
                     </div>
                     <Switch
@@ -126,7 +129,7 @@ export function SupplierConnectionsManager() {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col xs:flex-row gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setIsAddingConnection(false)}>
                     Annuler
                   </Button>
@@ -145,25 +148,28 @@ export function SupplierConnectionsManager() {
         </CardHeader>
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 md:gap-4 grid-cols-1 xs:grid-cols-2 lg:grid-cols-3">
         {connections && connections.length > 0 ? (
           connections.map((connection: any) => (
             <Card key={connection.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg">{connection.supplier_name}</CardTitle>
-                    <CardDescription className="capitalize">
+              <CardHeader className="p-4 md:p-6 pb-2 md:pb-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <CardTitle className="text-base md:text-lg truncate">{connection.supplier_name}</CardTitle>
+                    <CardDescription className="capitalize text-xs md:text-sm">
                       {connection.connection_type.replace('_', ' ')}
                     </CardDescription>
                   </div>
-                  <Badge variant={connection.status === 'active' ? 'default' : 'secondary'}>
+                  <Badge 
+                    variant={connection.status === 'active' ? 'default' : 'secondary'}
+                    className="text-[10px] md:text-xs shrink-0"
+                  >
                     {connection.status}
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+              <CardContent className="p-4 md:p-6 pt-0 space-y-3 md:space-y-4">
+                <div className="grid grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
                   <div>
                     <p className="text-muted-foreground">Commandes</p>
                     <p className="font-bold">{connection.total_orders || 0}</p>
@@ -174,8 +180,8 @@ export function SupplierConnectionsManager() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <span className="text-sm font-medium">Auto-commande</span>
+                <div className="flex items-center justify-between p-2 md:p-3 bg-muted rounded-lg">
+                  <span className="text-xs md:text-sm font-medium">Auto-commande</span>
                   <Switch
                     checked={connection.auto_order_enabled}
                     onCheckedChange={() => toggleAutoOrder(connection.id, !connection.auto_order_enabled)}
@@ -191,11 +197,11 @@ export function SupplierConnectionsManager() {
           ))
         ) : (
           <Card className="col-span-full">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Plug className="w-12 h-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium">Aucun fournisseur connecté</p>
-              <p className="text-sm text-muted-foreground text-center mt-2">
-                Commencez par ajouter votre premier fournisseur pour automatiser vos commandes
+            <CardContent className="flex flex-col items-center justify-center py-8 md:py-12 px-4">
+              <Plug className="w-10 h-10 md:w-12 md:h-12 text-muted-foreground mb-4" />
+              <p className="text-base md:text-lg font-medium text-center">Aucun fournisseur connecté</p>
+              <p className="text-xs md:text-sm text-muted-foreground text-center mt-2">
+                Ajoutez votre premier fournisseur pour automatiser vos commandes
               </p>
             </CardContent>
           </Card>
