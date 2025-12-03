@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Upload, Download, Mail, Bell, Settings, BarChart3, Users, Package, ShoppingCart, Zap, FileText } from 'lucide-react';
+import { Plus, Upload, Download, Mail, Bell, Settings, BarChart3, Users, Package, ShoppingCart, Zap, FileText, Link2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface QuickAction {
@@ -45,12 +45,21 @@ export const QuickActions: React.FC = () => {
       action: () => navigate('/customers/create')
     },
     {
+      id: 'quick-import-url',
+      title: 'Import URL',
+      description: 'Coller un lien',
+      icon: <Link2 className="h-5 w-5" />,
+      color: 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600',
+      action: () => navigate('/import/url'),
+      badge: 'Nouveau'
+    },
+    {
       id: 'import-data',
       title: 'Importer',
       description: 'Importer données',
       icon: <Upload className="h-5 w-5" />,
       color: 'bg-orange-500 hover:bg-orange-600',
-      action: () => navigate('/products/import/quick')
+      action: () => navigate('/import/quick')
     },
     {
       id: 'create-campaign',
@@ -107,7 +116,7 @@ export const QuickActions: React.FC = () => {
       description: 'Gérer fournisseurs',
       icon: <Package className="h-5 w-5" />,
       color: 'bg-cyan-500 hover:bg-cyan-600',
-      action: () => navigate('/products/suppliers')
+      action: () => navigate('/suppliers')
     },
     {
       id: 'integrations',
