@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Filter, Grid, List } from "lucide-react";
+import { Search, Filter, Grid, List, Package } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,6 +9,7 @@ import { RealSupplierStats } from "./RealSupplierStats";
 import { useRealSuppliers } from "@/hooks/useRealSuppliers";
 import { useSupplierEcosystem } from "@/hooks/useSupplierEcosystem";
 import { SUPPLIER_TEMPLATES } from "@/data/supplierTemplates";
+import { AddCJCredentialsButton } from "../AddCJCredentialsButton";
 import type { BaseSupplier } from "@/types/suppliers";
 
 interface SupplierMarketplaceProps {
@@ -68,6 +69,11 @@ export function SupplierMarketplace({ isPremiumOnly = false }: SupplierMarketpla
             : "Connectez-vous aux meilleurs fournisseurs"
           }
         </p>
+      </div>
+
+      {/* Quick Connect CJ */}
+      <div className="flex flex-wrap gap-2">
+        <AddCJCredentialsButton />
       </div>
 
       {/* Real-time Stats */}

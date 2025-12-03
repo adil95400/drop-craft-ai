@@ -1,8 +1,10 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 
 export function useAddCJCredentials() {
+  const queryClient = useQueryClient()
+  
   return useMutation({
     mutationFn: async (accessToken: string) => {
       const { data, error } = await supabase.functions.invoke('add-cj-credentials', {
@@ -10,14 +12,22 @@ export function useAddCJCredentials() {
       })
 
       if (error) throw error
+      if (data?.error) throw new Error(data.error)
       return data
     },
     onSuccess: (data) => {
-      toast.success('CJ Dropshipping connecté avec succès!')
-      console.log('CJ credentials added:', data)
+      const productsCount = data?.syncStats?.imported || 0
+      toast.success(`CJ Dropshipping connecté! ${productsCount} produits synchronisés.`)
+      
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] })
+      queryClient.invalidateQueries({ queryKey: ['supplier-products'] })
+      queryClient.invalidateQueries({ queryKey: ['marketplace-suppliers'] })
+      queryClient.invalidateQueries({ queryKey: ['catalog-products'] })
     },
     onError: (error: any) => {
-      toast.error(`Erreur: ${error.message}`)
+      const message = error.message || 'Erreur de connexion'
+      toast.error(`Erreur CJ: ${message}`)
       console.error('Failed to add CJ credentials:', error)
     }
   })
