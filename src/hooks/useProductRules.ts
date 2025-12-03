@@ -1,0 +1,215 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { ProductRule, RULE_TEMPLATES, ProductRuleConditionGroup, ProductRuleAction } from '@/lib/rules/ruleTypes';
+
+interface DBProductRule {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  enabled: boolean;
+  priority: number;
+  channel: string;
+  condition_group: any;
+  actions: any;
+  execution_count: number;
+  success_count: number;
+  error_count: number;
+  last_executed_at: string | null;
+  stop_on_error: boolean;
+  skip_if_already_modified: boolean;
+  log_changes: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useProductRules() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Récupérer toutes les règles
+  const { data: rules = [], isLoading } = useQuery({
+    queryKey: ['product-rules', user?.id],
+    queryFn: async (): Promise<ProductRule[]> => {
+      if (!user?.id) return [];
+
+      const { data, error } = await supabase
+        .from('product_rules')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('priority', { ascending: true });
+
+      if (error) throw error;
+      
+      return (data || []).map((row: any) => ({
+        id: row.id,
+        name: row.name,
+        description: row.description || undefined,
+        enabled: row.enabled,
+        priority: row.priority || 3,
+        channel: row.channel || 'global',
+        conditionGroup: row.condition_group || { logic: 'AND', conditions: [] },
+        actions: row.actions || [],
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        executionCount: row.execution_count || 0,
+        successCount: row.success_count || 0,
+        errorCount: row.error_count || 0,
+        lastExecutedAt: row.last_executed_at || undefined,
+        stopOnError: row.stop_on_error,
+        skipIfAlreadyModified: row.skip_if_already_modified,
+        logChanges: row.log_changes
+      }));
+    },
+    enabled: !!user?.id
+  });
+
+  // Statistiques
+  const stats = {
+    totalRules: rules.length,
+    activeRules: rules.filter(r => r.enabled).length,
+    pausedRules: rules.filter(r => !r.enabled).length,
+    aiRules: rules.filter(r => r.actions?.some(a => a.type === 'generate_ai')).length,
+    totalExecutions: rules.reduce((sum, r) => sum + (r.executionCount || 0), 0)
+  };
+
+  // Créer une règle
+  const createRule = useMutation({
+    mutationFn: async (rule: Partial<ProductRule>) => {
+      if (!user?.id) throw new Error('Non authentifié');
+
+      const insertData = {
+        user_id: user.id,
+        name: rule.name || 'Nouvelle règle',
+        description: rule.description || null,
+        enabled: rule.enabled ?? true,
+        priority: rule.priority || 3,
+        channel: rule.channel || 'global',
+        condition_group: (rule.conditionGroup || { logic: 'AND', conditions: [] }) as any,
+        actions: (rule.actions || []) as any
+      };
+
+      const { data, error } = await supabase
+        .from('product_rules')
+        .insert(insertData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product-rules'] });
+      toast({ title: 'Règle créée', description: 'La règle a été créée avec succès' });
+    },
+    onError: (error: any) => {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+    }
+  });
+
+  // Mettre à jour une règle
+  const updateRule = useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<ProductRule> & { id: string }) => {
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      };
+      
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.enabled !== undefined) updateData.enabled = updates.enabled;
+      if (updates.priority !== undefined) updateData.priority = updates.priority;
+      if (updates.channel !== undefined) updateData.channel = updates.channel;
+      if (updates.conditionGroup !== undefined) updateData.condition_group = updates.conditionGroup;
+      if (updates.actions !== undefined) updateData.actions = updates.actions;
+      if (updates.stopOnError !== undefined) updateData.stop_on_error = updates.stopOnError;
+      if (updates.skipIfAlreadyModified !== undefined) updateData.skip_if_already_modified = updates.skipIfAlreadyModified;
+      if (updates.logChanges !== undefined) updateData.log_changes = updates.logChanges;
+
+      const { data, error } = await supabase
+        .from('product_rules')
+        .update(updateData)
+        .eq('id', id)
+        .eq('user_id', user?.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product-rules'] });
+      toast({ title: 'Règle mise à jour' });
+    }
+  });
+
+  // Supprimer une règle
+  const deleteRule = useMutation({
+    mutationFn: async (ruleId: string) => {
+      const { error } = await supabase
+        .from('product_rules')
+        .delete()
+        .eq('id', ruleId)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product-rules'] });
+      toast({ title: 'Règle supprimée' });
+    }
+  });
+
+  // Activer/désactiver une règle
+  const toggleRule = useMutation({
+    mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
+      const { error } = await supabase
+        .from('product_rules')
+        .update({ enabled, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+    },
+    onSuccess: (_, { enabled }) => {
+      queryClient.invalidateQueries({ queryKey: ['product-rules'] });
+      toast({ title: enabled ? 'Règle activée' : 'Règle désactivée' });
+    }
+  });
+
+  // Créer depuis un template
+  const createFromTemplate = async (templateId: string) => {
+    const template = RULE_TEMPLATES.find(t => t.id === templateId);
+    if (!template) {
+      toast({ title: 'Erreur', description: 'Template non trouvé', variant: 'destructive' });
+      return;
+    }
+
+    await createRule.mutateAsync({
+      name: template.rule.name,
+      description: template.description,
+      enabled: template.rule.enabled ?? true,
+      priority: template.rule.priority || 3,
+      channel: template.rule.channel || 'global',
+      conditionGroup: template.rule.conditionGroup as ProductRuleConditionGroup,
+      actions: template.rule.actions as ProductRuleAction[]
+    });
+  };
+
+  return {
+    rules,
+    stats,
+    templates: RULE_TEMPLATES,
+    isLoading,
+    createRule: createRule.mutate,
+    updateRule: updateRule.mutate,
+    deleteRule: deleteRule.mutate,
+    toggleRule: toggleRule.mutate,
+    createFromTemplate,
+    isCreating: createRule.isPending,
+    isUpdating: updateRule.isPending,
+    isDeleting: deleteRule.isPending
+  };
+}
