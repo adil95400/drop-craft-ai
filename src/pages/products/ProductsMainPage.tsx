@@ -122,62 +122,67 @@ export default function ProductsMainPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="container mx-auto p-6 space-y-6 animate-in fade-in duration-500">
+      <div className="container mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6 animate-in fade-in duration-500">
         {/* En-tête optimisé */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Catalogue Produits
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Gérez tous vos produits en un seul endroit
-            </p>
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Catalogue Produits
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">
+                Gérez tous vos produits en un seul endroit
+              </p>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant={viewMode === 'standard' ? 'default' : 'outline'}
               onClick={() => setViewMode('standard')}
-              className="gap-2"
+              size="sm"
+              className="gap-1 sm:gap-2 text-xs sm:text-sm"
             >
-              <Package className="h-4 w-4" />
-              Vue Standard
+              <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Vue</span> Standard
             </Button>
             <Button
               variant={viewMode === 'audit' ? 'default' : 'outline'}
               onClick={() => setViewMode('audit')}
-              className="gap-2"
+              size="sm"
+              className="gap-1 sm:gap-2 text-xs sm:text-sm"
             >
-              <Target className="h-4 w-4" />
-              Vue Audit
+              <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Vue</span> Audit
             </Button>
             <Button
               variant={expertMode ? 'default' : 'outline'}
               onClick={() => setExpertMode(!expertMode)}
-              className="gap-2"
+              size="sm"
+              className="gap-1 sm:gap-2 text-xs sm:text-sm"
             >
-              <Sparkles className="h-4 w-4" />
-              {expertMode ? 'Mode Expert' : 'Mode Simple'}
+              <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              {expertMode ? 'Expert' : 'Simple'}
             </Button>
           </div>
         </div>
 
         {/* Statistiques rapides basées sur vraies données + Audit */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
           <Card 
             className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
             onClick={() => setViewMode('standard')}
           >
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-1 sm:pb-3 p-2 sm:p-6">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Produits
+                <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">
+                  Total
                 </CardTitle>
-                <Package className="h-5 w-5 text-primary" />
+                <Package className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">{stats.total}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+            <CardContent className="p-2 sm:p-6 pt-0">
+              <div className="text-lg sm:text-3xl font-bold text-foreground">{stats.total}</div>
+              <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">
                 {Object.values(stats.bySource).reduce((a, b) => a + b, 0)} au total
               </p>
             </CardContent>
@@ -188,18 +193,18 @@ export default function ProductsMainPage() {
             className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
             onClick={() => setViewMode('audit')}
           >
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-1 sm:pb-3 p-2 sm:p-6">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Score Moyen
+                <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">
+                  Score
                 </CardTitle>
-                <Target className="h-5 w-5 text-purple-600" />
+                <Target className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-purple-600 flex-shrink-0" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-purple-600">{auditStats.averageScore}/100</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {auditStats.excellentCount} excellents ({((auditStats.excellentCount / auditStats.totalProducts) * 100).toFixed(1)}%)
+            <CardContent className="p-2 sm:p-6 pt-0">
+              <div className="text-lg sm:text-3xl font-bold text-purple-600">{auditStats.averageScore}</div>
+              <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">
+                {auditStats.excellentCount} excellents
               </p>
             </CardContent>
           </Card>
@@ -209,23 +214,23 @@ export default function ProductsMainPage() {
             className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
             onClick={() => setViewMode('audit')}
           >
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-1 sm:pb-3 p-2 sm:p-6">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">
                   À Corriger
                 </CardTitle>
-                <AlertCircle className="h-5 w-5 text-red-600" />
+                <AlertCircle className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-red-600 flex-shrink-0" />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-2 sm:p-6 pt-0">
               <div className={cn(
-                "text-3xl font-bold",
+                "text-lg sm:text-3xl font-bold",
                 auditStats.poorCount > 0 ? "text-red-600" : "text-muted-foreground"
               )}>
                 {auditStats.poorCount}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Score &lt; 40 - Issues critiques
+              <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">
+                Score &lt; 40
               </p>
             </CardContent>
           </Card>
@@ -234,18 +239,18 @@ export default function ProductsMainPage() {
             className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
             onClick={() => updateFilter('status', 'active')}
           >
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-1 sm:pb-3 p-2 sm:p-6">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Produits Actifs
+                <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">
+                  Actifs
                 </CardTitle>
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <CheckCircle className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-600">{stats.active}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(1) : 0}% du total
+            <CardContent className="p-2 sm:p-6 pt-0">
+              <div className="text-lg sm:text-3xl font-bold text-green-600">{stats.active}</div>
+              <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">
+                {stats.total > 0 ? ((stats.active / stats.total) * 100).toFixed(1) : 0}%
               </p>
             </CardContent>
           </Card>
@@ -254,65 +259,45 @@ export default function ProductsMainPage() {
             className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
             onClick={() => updateFilter('lowStock', true)}
           >
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-1 sm:pb-3 p-2 sm:p-6">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Stock Faible
+                <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">
+                  Stock <span className="hidden sm:inline">Faible</span>
                 </CardTitle>
-                <AlertCircle className="h-5 w-5 text-orange-600" />
+                <AlertCircle className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-orange-600 flex-shrink-0" />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-2 sm:p-6 pt-0">
               <div className={cn(
-                "text-3xl font-bold",
+                "text-lg sm:text-3xl font-bold",
                 stats.lowStock > 0 ? "text-orange-600" : "text-muted-foreground"
               )}>
                 {stats.lowStock}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Produits nécessitant un réassort
+              <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">
+                Réassort
               </p>
             </CardContent>
           </Card>
           
           <Card 
             className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
-            onClick={() => updateFilter('status', 'inactive')}
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Produits Inactifs
-                </CardTitle>
-                <Archive className="h-5 w-5 text-muted-foreground" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-muted-foreground">{stats.inactive}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Non disponibles à la vente
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="hover:shadow-lg hover:scale-105 transition-all duration-300 border-border/50 bg-card/50 backdrop-blur cursor-pointer"
             onClick={() => setViewMode('audit')}
           >
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-1 sm:pb-3 p-2 sm:p-6">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Marge Moyenne
+                <CardTitle className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">
+                  Marge
                 </CardTitle>
-                <DollarSign className="h-5 w-5 text-blue-600" />
+                <DollarSign className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-blue-600">
+            <CardContent className="p-2 sm:p-6 pt-0">
+              <div className="text-lg sm:text-3xl font-bold text-blue-600">
                 {stats.avgMargin.toFixed(1)}%
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Profit: {stats.totalProfit.toFixed(2)} €
+              <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">
+                {stats.totalProfit.toFixed(0)} €
               </p>
             </CardContent>
           </Card>
@@ -321,15 +306,15 @@ export default function ProductsMainPage() {
         {/* Actions rapides */}
         {stats.lowStock > 0 && (
           <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20 dark:border-orange-900">
-            <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <AlertCircle className="h-5 w-5 text-orange-600" />
+            <CardContent className="p-3 sm:pt-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 flex-shrink-0" />
                   <div>
-                    <p className="font-medium text-foreground">
-                      Attention: {stats.lowStock} produit(s) en stock faible
+                    <p className="font-medium text-foreground text-sm sm:text-base">
+                      {stats.lowStock} produit(s) en stock faible
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
                       Pensez à réapprovisionner pour éviter les ruptures
                     </p>
                   </div>
@@ -338,7 +323,7 @@ export default function ProductsMainPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => updateFilter('lowStock', true)}
-                  className="bg-background"
+                  className="bg-background w-full sm:w-auto text-xs sm:text-sm"
                 >
                   Voir les produits
                 </Button>
@@ -349,29 +334,31 @@ export default function ProductsMainPage() {
 
         {/* Vue conditionnelle selon le mode */}
         {viewMode === 'audit' ? (
-          <Tabs defaultValue="quality" className="space-y-6">
-            <TabsList>
-              <TabsTrigger value="quality" className="gap-2">
-                <Sparkles className="h-4 w-4" />
-                Qualité Catalogue
-              </TabsTrigger>
-              <TabsTrigger value="filters" className="gap-2">
-                <Target className="h-4 w-4" />
-                Filtres Audit
-              </TabsTrigger>
-              <TabsTrigger value="duplicates" className="gap-2">
-                <AlertCircle className="h-4 w-4" />
-                Doublons
-              </TabsTrigger>
-              <TabsTrigger value="simulator" className="gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Simulateur
-              </TabsTrigger>
-              <TabsTrigger value="products" className="gap-2">
-                <Package className="h-4 w-4" />
-                Liste Produits ({finalFilteredProducts.length})
-              </TabsTrigger>
-            </TabsList>
+          <Tabs defaultValue="quality" className="space-y-4 sm:space-y-6">
+            <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+              <TabsList className="w-max sm:w-auto">
+                <TabsTrigger value="quality" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3">
+                  <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">Qualité</span>
+                </TabsTrigger>
+                <TabsTrigger value="filters" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3">
+                  <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">Filtres</span>
+                </TabsTrigger>
+                <TabsTrigger value="duplicates" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3">
+                  <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">Doublons</span>
+                </TabsTrigger>
+                <TabsTrigger value="simulator" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3">
+                  <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">Simulateur</span>
+                </TabsTrigger>
+                <TabsTrigger value="products" className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3">
+                  <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">Liste</span> ({finalFilteredProducts.length})
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="quality" className="space-y-6">
               <CatalogQualityDashboard products={products} />

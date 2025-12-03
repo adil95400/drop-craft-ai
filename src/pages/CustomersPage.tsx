@@ -40,134 +40,166 @@ export default function CustomersPage() {
   )
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Customers</h1>
-          <p className="text-muted-foreground">Manage your customer base</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Clients</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Gérez votre base clients</p>
         </div>
-        <Button>
+        <Button size="sm" className="w-full xs:w-auto">
           <UserPlus className="w-4 h-4 mr-2" />
-          Add Customer
+          <span className="hidden xs:inline">Ajouter Client</span>
+          <span className="xs:hidden">Ajouter</span>
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-primary/10">
-              <Users className="w-6 h-6 text-primary" />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-primary/10 flex-shrink-0">
+              <Users className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Customers</p>
-              <p className="text-2xl font-bold">{customers?.length || 0}</p>
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Total Clients</p>
+              <p className="text-lg sm:text-2xl font-bold">{customers?.length || 0}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-green-500/10">
-              <Users className="w-6 h-6 text-green-500" />
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-green-500/10 flex-shrink-0">
+              <Users className="w-4 h-4 sm:w-6 sm:h-6 text-green-500" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Active Customers</p>
-              <p className="text-2xl font-bold">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Actifs</p>
+              <p className="text-lg sm:text-2xl font-bold">
                 {customers?.filter((c) => c.status === 'active').length || 0}
               </p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-blue-500/10">
-              <Mail className="w-6 h-6 text-blue-500" />
+        <Card className="p-3 sm:p-6 col-span-2 lg:col-span-1">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-blue-500/10 flex-shrink-0">
+              <Mail className="w-4 h-4 sm:w-6 sm:h-6 text-blue-500" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Revenue</p>
-              <p className="text-2xl font-bold">
-                €
-                {customers
-                  ?.reduce((sum, c) => sum + (c.total_spent || 0), 0)
-                  .toFixed(2) || '0.00'}
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Revenus Total</p>
+              <p className="text-lg sm:text-2xl font-bold">
+                €{customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0).toFixed(2) || '0.00'}
               </p>
             </div>
           </div>
         </Card>
       </div>
 
-      <Card className="p-6">
-        <div className="flex gap-4 mb-6">
+      {/* Search & Table */}
+      <Card className="p-3 sm:p-6">
+        <div className="flex gap-2 sm:gap-4 mb-4 sm:mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search customers..."
+              placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 text-sm"
             />
           </div>
         </div>
 
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">
-            Loading customers...
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            Chargement...
           </div>
         ) : filteredCustomers?.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            No customers found
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            Aucun client trouvé
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Customer</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Orders</TableHead>
-                <TableHead>Total Spent</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Order</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <>
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Commandes</TableHead>
+                    <TableHead>Dépensé</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead>Dernière cmd</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCustomers?.map((customer) => (
+                    <TableRow key={customer.id}>
+                      <TableCell className="font-medium">{customer.name}</TableCell>
+                      <TableCell>{customer.email}</TableCell>
+                      <TableCell>{customer.total_orders}</TableCell>
+                      <TableCell>€{customer.total_spent?.toFixed(2)}</TableCell>
+                      <TableCell>
+                        <Badge variant={customer.status === 'active' ? 'default' : 'secondary'}>
+                          {customer.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {formatDistanceToNow(new Date(customer.created_at), { addSuffix: true })}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="sm">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Mail className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden space-y-3">
               {filteredCustomers?.map((customer) => (
-                <TableRow key={customer.id}>
-                  <TableCell className="font-medium">
-                    {customer.name}
-                  </TableCell>
-                  <TableCell>{customer.email}</TableCell>
-                  <TableCell>{customer.total_orders}</TableCell>
-                  <TableCell>€{customer.total_spent?.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        customer.status === 'active' ? 'default' : 'secondary'
-                      }
+                <Card key={customer.id} className="p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm truncate">{customer.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{customer.email}</p>
+                    </div>
+                    <Badge 
+                      variant={customer.status === 'active' ? 'default' : 'secondary'}
+                      className="text-[10px] flex-shrink-0"
                     >
                       {customer.status}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {formatDistanceToNow(new Date(customer.created_at), {
-                      addSuffix: true,
-                    })}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4" />
+                  </div>
+                  <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex gap-3">
+                      <span>{customer.total_orders} cmd</span>
+                      <span>€{customer.total_spent?.toFixed(2)}</span>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" className="h-7 w-7">
+                        <Eye className="w-3.5 h-3.5" />
                       </Button>
-                      <Button variant="ghost" size="sm">
-                        <Mail className="w-4 h-4" />
+                      <Button variant="ghost" size="icon" className="h-7 w-7">
+                        <Mail className="w-3.5 h-3.5" />
                       </Button>
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </div>
+                </Card>
               ))}
-            </TableBody>
-          </Table>
+            </div>
+          </>
         )}
       </Card>
     </div>

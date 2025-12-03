@@ -86,32 +86,36 @@ export default function SuppliersHub() {
         <meta name="description" content="Centre de gestion complet de vos fournisseurs et catalogues" />
       </Helmet>
 
-      <div className="container mx-auto p-6 space-y-8">
+      <div className="container mx-auto p-3 sm:p-6 space-y-4 sm:space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold flex items-center gap-3">
-              <Store className="h-10 w-10 text-primary" />
-              Hub Fournisseurs
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Centre de gestion complet de vos fournisseurs et catalogues
-            </p>
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold flex items-center gap-2 sm:gap-3">
+                <Store className="h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-primary" />
+                Hub Fournisseurs
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">
+                Centre de gestion de vos fournisseurs
+              </p>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowImportDialog(true)}>
-              <Upload className="h-4 w-4 mr-2" />
-              Importer
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)} className="text-xs sm:text-sm">
+              <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">Importer</span>
             </Button>
             <Button 
               variant="outline" 
+              size="sm"
               onClick={handleSyncAll}
               disabled={isSyncing}
+              className="text-xs sm:text-sm"
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-              {isSyncing ? 'Synchronisation...' : 'Synchroniser tous'}
+              <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{isSyncing ? 'Sync...' : 'Sync tous'}</span>
             </Button>
-            <Button variant="outline" onClick={() => {
+            <Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={() => {
               const dataStr = JSON.stringify(suppliers, null, 2)
               const dataBlob = new Blob([dataStr], { type: 'application/json' })
               const url = URL.createObjectURL(dataBlob)
@@ -121,68 +125,68 @@ export default function SuppliersHub() {
               link.click()
               URL.revokeObjectURL(url)
             }}>
-              <Download className="h-4 w-4 mr-2" />
-              Exporter
+              <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">Exporter</span>
             </Button>
-            <Button onClick={() => navigate('/suppliers/create')}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nouveau Fournisseur
+            <Button size="sm" onClick={() => navigate('/suppliers/create')} className="text-xs sm:text-sm">
+              <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Nouveau</span>
             </Button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-6">
           <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Fournisseurs</p>
-                  <p className="text-3xl font-bold">{stats.total}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{stats.active} actifs</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Total</p>
+                  <p className="text-lg sm:text-3xl font-bold">{stats.total}</p>
+                  <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">{stats.active} actifs</p>
                 </div>
-                <Store className="h-12 w-12 text-primary opacity-20" />
+                <Store className="h-8 w-8 sm:h-12 sm:w-12 text-primary opacity-20 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Actifs</p>
-                  <p className="text-3xl font-bold text-green-600">{stats.active}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {Math.round((stats.active / stats.total) * 100)}% du total
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Actifs</p>
+                  <p className="text-lg sm:text-3xl font-bold text-green-600">{stats.active}</p>
+                  <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">
+                    {Math.round((stats.active / stats.total) * 100)}%
                   </p>
                 </div>
-                <CheckCircle className="h-12 w-12 text-green-600 opacity-20" />
+                <CheckCircle className="h-8 w-8 sm:h-12 sm:w-12 text-green-600 opacity-20 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Note Moyenne</p>
-                  <p className="text-3xl font-bold">{stats.averageRating.toFixed(1)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">/ 5 étoiles</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Note</p>
+                  <p className="text-lg sm:text-3xl font-bold">{stats.averageRating.toFixed(1)}</p>
+                  <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">/ 5 étoiles</p>
                 </div>
-                <TrendingUp className="h-12 w-12 text-orange-600 opacity-20" />
+                <TrendingUp className="h-8 w-8 sm:h-12 sm:w-12 text-orange-600 opacity-20 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Pays</p>
-                  <p className="text-3xl font-bold">{Object.keys(stats.topCountries).length}</p>
-                  <p className="text-xs text-muted-foreground mt-1">représentés</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">Pays</p>
+                  <p className="text-lg sm:text-3xl font-bold">{Object.keys(stats.topCountries).length}</p>
+                  <p className="text-[9px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">représentés</p>
                 </div>
-                <Globe className="h-12 w-12 text-blue-600 opacity-20" />
+                <Globe className="h-8 w-8 sm:h-12 sm:w-12 text-blue-600 opacity-20 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
@@ -192,7 +196,7 @@ export default function SuppliersHub() {
         <SupplierStatsChart suppliers={suppliers} />
 
         {/* Main Navigation Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <Card 
             className="cursor-pointer hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20"
             onClick={() => navigate('/suppliers/marketplace')}
