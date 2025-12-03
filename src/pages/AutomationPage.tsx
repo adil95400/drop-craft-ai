@@ -9,29 +9,32 @@ export default function AutomationPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Automation & Workflows
+      <div className="container mx-auto px-4 py-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="space-y-1 sm:space-y-2">
+          <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            Automation
           </h1>
-          <p className="text-muted-foreground text-lg">
-            Automate repetitive tasks and create intelligent workflows
+          <p className="text-sm sm:text-lg text-muted-foreground">
+            Automate tasks and create workflows
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="list" className="flex items-center gap-2">
-              <List className="h-4 w-4" />
-              Automations
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <TabsList className="w-full max-w-md grid grid-cols-3 h-auto">
+            <TabsTrigger value="list" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
+              <List className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Automations</span>
+              <span className="xs:hidden">Auto</span>
             </TabsTrigger>
-            <TabsTrigger value="builder" className="flex items-center gap-2">
-              <Zap className="h-4 w-4" />
-              Create New
+            <TabsTrigger value="builder" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
+              <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Create New</span>
+              <span className="xs:hidden">New</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-2">
-              <Activity className="h-4 w-4" />
-              Activity
+            <TabsTrigger value="activity" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 py-1.5 sm:px-3 sm:py-2">
+              <Activity className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Activity</span>
+              <span className="xs:hidden">Log</span>
             </TabsTrigger>
           </TabsList>
 
