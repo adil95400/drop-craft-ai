@@ -1,0 +1,31 @@
+{
+  "title": "Marketing",
+  "description": "Gestiona tus campañas de marketing",
+  "tabs": {
+    "campaigns": "Campañas",
+    "automation": "Automatización",
+    "analytics": "Analíticas",
+    "seo": "SEO"
+  },
+  "campaigns": {
+    "title": "Campañas",
+    "create": "Crear campaña",
+    "active": "Activas",
+    "scheduled": "Programadas",
+    "completed": "Completadas",
+    "draft": "Borradores"
+  },
+  "channels": {
+    "email": "Email",
+    "sms": "SMS",
+    "social": "Redes sociales",
+    "ads": "Publicidad",
+    "push": "Notificaciones push"
+  },
+  "messages": {
+    "campaignCreated": "Campaña creada",
+    "campaignUpdated": "Campaña actualizada",
+    "campaignDeleted": "Campaña eliminada",
+    "campaignLaunched": "Campaña lanzada"
+  }
+}

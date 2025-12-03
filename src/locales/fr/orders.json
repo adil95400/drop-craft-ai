@@ -1,0 +1,75 @@
+{
+  "title": "Commandes",
+  "description": "Gérez toutes vos commandes",
+  "search": "Rechercher une commande...",
+  "filters": {
+    "all": "Toutes",
+    "pending": "En attente",
+    "processing": "En cours",
+    "shipped": "Expédiées",
+    "delivered": "Livrées",
+    "cancelled": "Annulées",
+    "refunded": "Remboursées"
+  },
+  "table": {
+    "orderNumber": "N° Commande",
+    "customer": "Client",
+    "date": "Date",
+    "status": "Statut",
+    "total": "Total",
+    "items": "Articles",
+    "payment": "Paiement",
+    "shipping": "Livraison",
+    "actions": "Actions"
+  },
+  "status": {
+    "pending": "En attente",
+    "processing": "En traitement",
+    "confirmed": "Confirmée",
+    "shipped": "Expédiée",
+    "delivered": "Livrée",
+    "cancelled": "Annulée",
+    "refunded": "Remboursée",
+    "onHold": "En suspens"
+  },
+  "actions": {
+    "view": "Voir détails",
+    "edit": "Modifier",
+    "cancel": "Annuler",
+    "refund": "Rembourser",
+    "ship": "Marquer expédiée",
+    "print": "Imprimer",
+    "export": "Exporter"
+  },
+  "details": {
+    "orderInfo": "Informations commande",
+    "customerInfo": "Informations client",
+    "shippingAddress": "Adresse de livraison",
+    "billingAddress": "Adresse de facturation",
+    "orderItems": "Articles commandés",
+    "paymentInfo": "Informations de paiement",
+    "timeline": "Historique"
+  },
+  "fulfillment": {
+    "title": "Fulfillment",
+    "autoFulfill": "Auto-fulfillment",
+    "manualFulfill": "Fulfillment manuel",
+    "tracking": "Suivi colis",
+    "trackingNumber": "Numéro de suivi",
+    "carrier": "Transporteur",
+    "estimatedDelivery": "Livraison estimée"
+  },
+  "messages": {
+    "created": "Commande créée",
+    "updated": "Commande mise à jour",
+    "cancelled": "Commande annulée",
+    "shipped": "Commande expédiée",
+    "refunded": "Commande remboursée"
+  },
+  "stats": {
+    "total": "Total commandes",
+    "pending": "En attente",
+    "processing": "En cours",
+    "revenue": "Chiffre d'affaires"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "title": "Lieferanten",
+  "description": "Verwalten Sie Ihre Lieferantenverbindungen",
+  "search": "Lieferant suchen...",
+  "tabs": {
+    "all": "Alle",
+    "connected": "Verbunden",
+    "available": "Verfügbar",
+    "premium": "Premium"
+  },
+  "status": {
+    "connected": "Verbunden",
+    "disconnected": "Getrennt",
+    "pending": "Ausstehend",
+    "error": "Fehler",
+    "syncing": "Synchronisierung"
+  },
+  "actions": {
+    "connect": "Verbinden",
+    "disconnect": "Trennen",
+    "sync": "Synchronisieren",
+    "configure": "Konfigurieren",
+    "viewProducts": "Produkte anzeigen"
+  },
+  "messages": {
+    "connected": "Lieferant erfolgreich verbunden",
+    "disconnected": "Lieferant getrennt",
+    "syncStarted": "Synchronisierung gestartet",
+    "syncCompleted": "Synchronisierung abgeschlossen",
+    "syncFailed": "Synchronisierung fehlgeschlagen"
+  }
+}

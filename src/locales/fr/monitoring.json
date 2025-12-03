@@ -1,0 +1,57 @@
+{
+  "title": "Monitoring",
+  "description": "Surveillez la santé de votre système",
+  "tabs": {
+    "overview": "Vue d'ensemble",
+    "suppliers": "Fournisseurs",
+    "orders": "Commandes",
+    "system": "Système"
+  },
+  "health": {
+    "title": "Santé du système",
+    "healthy": "Sain",
+    "warning": "Attention",
+    "critical": "Critique",
+    "unknown": "Inconnu"
+  },
+  "metrics": {
+    "uptime": "Disponibilité",
+    "responseTime": "Temps de réponse",
+    "errorRate": "Taux d'erreur",
+    "requests": "Requêtes",
+    "apiCalls": "Appels API",
+    "syncStatus": "Statut sync"
+  },
+  "alerts": {
+    "title": "Alertes",
+    "active": "Alertes actives",
+    "resolved": "Résolues",
+    "configure": "Configurer les alertes",
+    "noAlerts": "Aucune alerte"
+  },
+  "suppliers": {
+    "connected": "Connectés",
+    "syncing": "En synchronisation",
+    "errors": "Avec erreurs",
+    "lastSync": "Dernière sync"
+  },
+  "performance": {
+    "title": "Performance",
+    "cpu": "CPU",
+    "memory": "Mémoire",
+    "storage": "Stockage",
+    "network": "Réseau"
+  },
+  "logs": {
+    "title": "Logs",
+    "info": "Information",
+    "warning": "Avertissement",
+    "error": "Erreur",
+    "debug": "Debug"
+  },
+  "actions": {
+    "refresh": "Actualiser",
+    "exportLogs": "Exporter logs",
+    "runHealthCheck": "Lancer diagnostic"
+  }
+}

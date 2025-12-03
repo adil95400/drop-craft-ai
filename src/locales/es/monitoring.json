@@ -1,0 +1,37 @@
+{
+  "title": "Monitoreo",
+  "description": "Supervisa la salud de tu sistema",
+  "tabs": {
+    "overview": "Vista general",
+    "suppliers": "Proveedores",
+    "orders": "Pedidos",
+    "system": "Sistema"
+  },
+  "health": {
+    "title": "Salud del sistema",
+    "healthy": "Saludable",
+    "warning": "Advertencia",
+    "critical": "Crítico",
+    "unknown": "Desconocido"
+  },
+  "metrics": {
+    "uptime": "Disponibilidad",
+    "responseTime": "Tiempo de respuesta",
+    "errorRate": "Tasa de error",
+    "requests": "Solicitudes",
+    "apiCalls": "Llamadas API",
+    "syncStatus": "Estado de sync"
+  },
+  "alerts": {
+    "title": "Alertas",
+    "active": "Alertas activas",
+    "resolved": "Resueltas",
+    "configure": "Configurar alertas",
+    "noAlerts": "Sin alertas"
+  },
+  "actions": {
+    "refresh": "Actualizar",
+    "exportLogs": "Exportar logs",
+    "runHealthCheck": "Ejecutar diagnóstico"
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "title": "Orders",
+  "description": "Manage all your orders",
+  "search": "Search orders...",
+  "filters": {
+    "all": "All",
+    "pending": "Pending",
+    "processing": "Processing",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled",
+    "refunded": "Refunded"
+  },
+  "table": {
+    "orderNumber": "Order #",
+    "customer": "Customer",
+    "date": "Date",
+    "status": "Status",
+    "total": "Total",
+    "items": "Items",
+    "payment": "Payment",
+    "shipping": "Shipping",
+    "actions": "Actions"
+  },
+  "status": {
+    "pending": "Pending",
+    "processing": "Processing",
+    "confirmed": "Confirmed",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled",
+    "refunded": "Refunded",
+    "onHold": "On hold"
+  },
+  "actions": {
+    "view": "View details",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "refund": "Refund",
+    "ship": "Mark as shipped",
+    "print": "Print",
+    "export": "Export"
+  },
+  "details": {
+    "orderInfo": "Order information",
+    "customerInfo": "Customer information",
+    "shippingAddress": "Shipping address",
+    "billingAddress": "Billing address",
+    "orderItems": "Order items",
+    "paymentInfo": "Payment information",
+    "timeline": "Timeline"
+  },
+  "fulfillment": {
+    "title": "Fulfillment",
+    "autoFulfill": "Auto-fulfillment",
+    "manualFulfill": "Manual fulfillment",
+    "tracking": "Package tracking",
+    "trackingNumber": "Tracking number",
+    "carrier": "Carrier",
+    "estimatedDelivery": "Estimated delivery"
+  },
+  "messages": {
+    "created": "Order created",
+    "updated": "Order updated",
+    "cancelled": "Order cancelled",
+    "shipped": "Order shipped",
+    "refunded": "Order refunded"
+  },
+  "stats": {
+    "total": "Total orders",
+    "pending": "Pending",
+    "processing": "Processing",
+    "revenue": "Revenue"
+  }
+}

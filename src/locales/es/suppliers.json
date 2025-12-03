@@ -1,0 +1,32 @@
+{
+  "title": "Proveedores",
+  "description": "Gestiona tus conexiones de proveedores",
+  "search": "Buscar proveedor...",
+  "tabs": {
+    "all": "Todos",
+    "connected": "Conectados",
+    "available": "Disponibles",
+    "premium": "Premium"
+  },
+  "status": {
+    "connected": "Conectado",
+    "disconnected": "Desconectado",
+    "pending": "Pendiente",
+    "error": "Error",
+    "syncing": "Sincronizando"
+  },
+  "actions": {
+    "connect": "Conectar",
+    "disconnect": "Desconectar",
+    "sync": "Sincronizar",
+    "configure": "Configurar",
+    "viewProducts": "Ver productos"
+  },
+  "messages": {
+    "connected": "Proveedor conectado con éxito",
+    "disconnected": "Proveedor desconectado",
+    "syncStarted": "Sincronización iniciada",
+    "syncCompleted": "Sincronización completada",
+    "syncFailed": "Error en la sincronización"
+  }
+}

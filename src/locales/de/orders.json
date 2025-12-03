@@ -1,0 +1,39 @@
+{
+  "title": "Bestellungen",
+  "description": "Verwalten Sie alle Ihre Bestellungen",
+  "search": "Bestellung suchen...",
+  "filters": {
+    "all": "Alle",
+    "pending": "Ausstehend",
+    "processing": "In Bearbeitung",
+    "shipped": "Versendet",
+    "delivered": "Geliefert",
+    "cancelled": "Storniert",
+    "refunded": "Erstattet"
+  },
+  "status": {
+    "pending": "Ausstehend",
+    "processing": "In Bearbeitung",
+    "confirmed": "Bestätigt",
+    "shipped": "Versendet",
+    "delivered": "Geliefert",
+    "cancelled": "Storniert",
+    "refunded": "Erstattet"
+  },
+  "actions": {
+    "view": "Details anzeigen",
+    "edit": "Bearbeiten",
+    "cancel": "Stornieren",
+    "refund": "Erstatten",
+    "ship": "Als versendet markieren",
+    "print": "Drucken",
+    "export": "Exportieren"
+  },
+  "messages": {
+    "created": "Bestellung erstellt",
+    "updated": "Bestellung aktualisiert",
+    "cancelled": "Bestellung storniert",
+    "shipped": "Bestellung versendet",
+    "refunded": "Bestellung erstattet"
+  }
+}

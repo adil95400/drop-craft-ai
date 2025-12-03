@@ -1,0 +1,39 @@
+{
+  "title": "Pedidos",
+  "description": "Gestiona todos tus pedidos",
+  "search": "Buscar pedido...",
+  "filters": {
+    "all": "Todos",
+    "pending": "Pendientes",
+    "processing": "En proceso",
+    "shipped": "Enviados",
+    "delivered": "Entregados",
+    "cancelled": "Cancelados",
+    "refunded": "Reembolsados"
+  },
+  "status": {
+    "pending": "Pendiente",
+    "processing": "En proceso",
+    "confirmed": "Confirmado",
+    "shipped": "Enviado",
+    "delivered": "Entregado",
+    "cancelled": "Cancelado",
+    "refunded": "Reembolsado"
+  },
+  "actions": {
+    "view": "Ver detalles",
+    "edit": "Editar",
+    "cancel": "Cancelar",
+    "refund": "Reembolsar",
+    "ship": "Marcar como enviado",
+    "print": "Imprimir",
+    "export": "Exportar"
+  },
+  "messages": {
+    "created": "Pedido creado",
+    "updated": "Pedido actualizado",
+    "cancelled": "Pedido cancelado",
+    "shipped": "Pedido enviado",
+    "refunded": "Pedido reembolsado"
+  }
+}

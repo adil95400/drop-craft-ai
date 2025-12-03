@@ -1,0 +1,46 @@
+{
+  "title": "Auto-Fulfillment",
+  "description": "Automatisieren Sie Ihre Bestellungen und verfolgen Sie Lieferungen",
+  "tabs": {
+    "dashboard": "Dashboard",
+    "suppliers": "Lieferanten",
+    "routing": "Routing",
+    "orders": "Bestellungen"
+  },
+  "dashboard": {
+    "todayOrders": "Bestellungen heute",
+    "successRate": "Erfolgsrate",
+    "avgProcessingTime": "Durchschn. Zeit",
+    "pendingOrders": "Ausstehend"
+  },
+  "suppliers": {
+    "title": "Lieferantenverbindungen",
+    "description": "Konfigurieren Sie Lieferanten für Auto-Fulfillment",
+    "connected": "Verbunden",
+    "available": "Verfügbar",
+    "addSupplier": "Lieferant hinzufügen"
+  },
+  "routing": {
+    "title": "Routing-Regeln",
+    "description": "Definieren Sie, wie Bestellungen geroutet werden",
+    "addRule": "Neue Regel",
+    "noRules": "Keine Regeln konfiguriert",
+    "createFirst": "Erstellen Sie Ihre erste Regel"
+  },
+  "orders": {
+    "title": "Auto-Fulfillment Bestellungen",
+    "description": "Verfolgen Sie alle automatisierten Bestellungen",
+    "status": {
+      "pending": "Ausstehend",
+      "processing": "In Bearbeitung",
+      "confirmed": "Bestätigt",
+      "shipped": "Versendet",
+      "delivered": "Geliefert",
+      "failed": "Fehlgeschlagen"
+    }
+  },
+  "messages": {
+    "orderProcessed": "Bestellung erfolgreich verarbeitet",
+    "orderFailed": "Verarbeitung fehlgeschlagen"
+  }
+}

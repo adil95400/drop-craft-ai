@@ -1,0 +1,59 @@
+{
+  "title": "Produkte",
+  "description": "Verwalten Sie Ihren Produktkatalog",
+  "search": "Produkt suchen...",
+  "filters": {
+    "all": "Alle",
+    "active": "Aktiv",
+    "draft": "Entwürfe",
+    "archived": "Archiviert",
+    "category": "Kategorie",
+    "supplier": "Lieferant",
+    "priceRange": "Preisspanne",
+    "stock": "Bestand"
+  },
+  "sort": {
+    "newest": "Neueste",
+    "oldest": "Älteste",
+    "priceAsc": "Preis aufsteigend",
+    "priceDesc": "Preis absteigend",
+    "nameAsc": "Name A-Z",
+    "nameDesc": "Name Z-A"
+  },
+  "table": {
+    "name": "Name",
+    "sku": "SKU",
+    "price": "Preis",
+    "stock": "Bestand",
+    "status": "Status",
+    "category": "Kategorie",
+    "actions": "Aktionen"
+  },
+  "actions": {
+    "create": "Produkt erstellen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "duplicate": "Duplizieren",
+    "archive": "Archivieren",
+    "publish": "Veröffentlichen",
+    "import": "Importieren",
+    "export": "Exportieren",
+    "bulkEdit": "Massenbearbeitung",
+    "optimize": "Mit KI optimieren"
+  },
+  "status": {
+    "active": "Aktiv",
+    "draft": "Entwurf",
+    "archived": "Archiviert",
+    "outOfStock": "Nicht auf Lager"
+  },
+  "messages": {
+    "created": "Produkt erfolgreich erstellt",
+    "updated": "Produkt aktualisiert",
+    "deleted": "Produkt gelöscht",
+    "duplicated": "Produkt dupliziert",
+    "imported": "Produkte importiert",
+    "exported": "Export läuft...",
+    "optimized": "Produkt durch KI optimiert"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "title": "Überwachung",
+  "description": "Überwachen Sie die Systemgesundheit",
+  "tabs": {
+    "overview": "Übersicht",
+    "suppliers": "Lieferanten",
+    "orders": "Bestellungen",
+    "system": "System"
+  },
+  "health": {
+    "title": "Systemgesundheit",
+    "healthy": "Gesund",
+    "warning": "Warnung",
+    "critical": "Kritisch",
+    "unknown": "Unbekannt"
+  },
+  "metrics": {
+    "uptime": "Betriebszeit",
+    "responseTime": "Antwortzeit",
+    "errorRate": "Fehlerrate",
+    "requests": "Anfragen",
+    "apiCalls": "API-Aufrufe",
+    "syncStatus": "Sync-Status"
+  },
+  "alerts": {
+    "title": "Warnungen",
+    "active": "Aktive Warnungen",
+    "resolved": "Gelöst",
+    "configure": "Warnungen konfigurieren",
+    "noAlerts": "Keine Warnungen"
+  },
+  "actions": {
+    "refresh": "Aktualisieren",
+    "exportLogs": "Logs exportieren",
+    "runHealthCheck": "Diagnose starten"
+  }
+}

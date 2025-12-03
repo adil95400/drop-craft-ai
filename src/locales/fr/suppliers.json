@@ -1,0 +1,74 @@
+{
+  "title": "Fournisseurs",
+  "description": "Gérez vos connexions fournisseurs",
+  "search": "Rechercher un fournisseur...",
+  "tabs": {
+    "all": "Tous",
+    "connected": "Connectés",
+    "available": "Disponibles",
+    "premium": "Premium"
+  },
+  "filters": {
+    "category": "Catégorie",
+    "region": "Région",
+    "status": "Statut"
+  },
+  "status": {
+    "connected": "Connecté",
+    "disconnected": "Déconnecté",
+    "pending": "En attente",
+    "error": "Erreur",
+    "syncing": "Synchronisation"
+  },
+  "actions": {
+    "connect": "Connecter",
+    "disconnect": "Déconnecter",
+    "sync": "Synchroniser",
+    "configure": "Configurer",
+    "viewProducts": "Voir produits",
+    "viewAnalytics": "Voir analytics"
+  },
+  "details": {
+    "productsCount": "Produits",
+    "ordersCount": "Commandes",
+    "successRate": "Taux de succès",
+    "avgShipping": "Livraison moy.",
+    "lastSync": "Dernière sync",
+    "apiStatus": "Statut API"
+  },
+  "connection": {
+    "title": "Connexion fournisseur",
+    "apiKey": "Clé API",
+    "apiSecret": "Secret API",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "testConnection": "Tester la connexion",
+    "saveCredentials": "Sauvegarder"
+  },
+  "sync": {
+    "title": "Synchronisation",
+    "products": "Produits",
+    "inventory": "Inventaire",
+    "prices": "Prix",
+    "orders": "Commandes",
+    "auto": "Auto-sync",
+    "manual": "Sync manuelle",
+    "lastSync": "Dernière synchronisation",
+    "nextSync": "Prochaine synchronisation"
+  },
+  "messages": {
+    "connected": "Fournisseur connecté avec succès",
+    "disconnected": "Fournisseur déconnecté",
+    "syncStarted": "Synchronisation démarrée",
+    "syncCompleted": "Synchronisation terminée",
+    "syncFailed": "Échec de la synchronisation",
+    "credentialsSaved": "Identifiants sauvegardés"
+  },
+  "categories": {
+    "dropshipping": "Dropshipping",
+    "wholesale": "Grossiste",
+    "marketplace": "Marketplace",
+    "pod": "Print on Demand",
+    "fulfillment": "Fulfillment"
+  }
+}

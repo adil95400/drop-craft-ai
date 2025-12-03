@@ -1,0 +1,59 @@
+{
+  "title": "Productos",
+  "description": "Gestiona tu catálogo de productos",
+  "search": "Buscar producto...",
+  "filters": {
+    "all": "Todos",
+    "active": "Activos",
+    "draft": "Borradores",
+    "archived": "Archivados",
+    "category": "Categoría",
+    "supplier": "Proveedor",
+    "priceRange": "Rango de precio",
+    "stock": "Stock"
+  },
+  "sort": {
+    "newest": "Más recientes",
+    "oldest": "Más antiguos",
+    "priceAsc": "Precio ascendente",
+    "priceDesc": "Precio descendente",
+    "nameAsc": "Nombre A-Z",
+    "nameDesc": "Nombre Z-A"
+  },
+  "table": {
+    "name": "Nombre",
+    "sku": "SKU",
+    "price": "Precio",
+    "stock": "Stock",
+    "status": "Estado",
+    "category": "Categoría",
+    "actions": "Acciones"
+  },
+  "actions": {
+    "create": "Crear producto",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "duplicate": "Duplicar",
+    "archive": "Archivar",
+    "publish": "Publicar",
+    "import": "Importar",
+    "export": "Exportar",
+    "bulkEdit": "Edición masiva",
+    "optimize": "Optimizar con IA"
+  },
+  "status": {
+    "active": "Activo",
+    "draft": "Borrador",
+    "archived": "Archivado",
+    "outOfStock": "Sin stock"
+  },
+  "messages": {
+    "created": "Producto creado con éxito",
+    "updated": "Producto actualizado",
+    "deleted": "Producto eliminado",
+    "duplicated": "Producto duplicado",
+    "imported": "Productos importados",
+    "exported": "Exportación en curso...",
+    "optimized": "Producto optimizado por IA"
+  }
+}
