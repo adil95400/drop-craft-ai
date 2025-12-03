@@ -1,9 +1,52 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { handleError, ValidationError, AuthenticationError } from '../_shared/error-handler.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-extension-token',
+}
+
+// Input validation helper
+function validateUUID(value: unknown, fieldName: string): string {
+  if (!value || typeof value !== 'string') {
+    throw new ValidationError(`${fieldName} is required`)
+  }
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+  if (!uuidRegex.test(value)) {
+    throw new ValidationError(`Invalid ${fieldName} format`)
+  }
+  return value
+}
+
+function validateDeviceInfo(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object') {
+    return {}
+  }
+  // Sanitize device info - only allow safe fields
+  const allowedFields = ['browser', 'platform', 'version', 'userAgent']
+  const sanitized: Record<string, unknown> = {}
+  for (const key of allowedFields) {
+    if (key in (value as Record<string, unknown>)) {
+      const fieldValue = (value as Record<string, unknown>)[key]
+      if (typeof fieldValue === 'string' && fieldValue.length < 256) {
+        sanitized[key] = fieldValue.substring(0, 255)
+      }
+    }
+  }
+  return sanitized
+}
+
+function sanitizeToken(value: unknown): string | null {
+  if (!value || typeof value !== 'string') {
+    return null
+  }
+  // Tokens should be alphanumeric with dashes
+  const sanitized = value.replace(/[^a-zA-Z0-9-]/g, '')
+  if (sanitized.length < 10 || sanitized.length > 100) {
+    return null
+  }
+  return sanitized
 }
 
 serve(async (req) => {
@@ -18,9 +61,26 @@ serve(async (req) => {
   try {
     const { action, data } = await req.json()
 
+    if (!action || typeof action !== 'string') {
+      throw new ValidationError('Action is required')
+    }
+
     // Generate extension token
     if (action === 'generate_token') {
-      const { userId, deviceInfo } = data
+      // Validate inputs
+      const userId = validateUUID(data?.userId, 'userId')
+      const deviceInfo = validateDeviceInfo(data?.deviceInfo)
+      
+      // Verify user exists
+      const { data: userExists } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single()
+      
+      if (!userExists) {
+        throw new AuthenticationError('User not found')
+      }
       
       // Generate secure token
       const token = crypto.randomUUID() + '-' + Date.now()
@@ -40,6 +100,15 @@ serve(async (req) => {
 
       if (error) throw error
 
+      // Log security event
+      await supabase.from('security_events').insert({
+        user_id: userId,
+        event_type: 'extension_token_created',
+        severity: 'info',
+        description: 'Extension authentication token generated',
+        metadata: { device_info: deviceInfo }
+      })
+
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -52,13 +121,11 @@ serve(async (req) => {
 
     // Validate extension token
     if (action === 'validate_token') {
-      const token = req.headers.get('x-extension-token') || data.token
+      const rawToken = req.headers.get('x-extension-token') || data?.token
+      const token = sanitizeToken(rawToken)
       
       if (!token) {
-        return new Response(
-          JSON.stringify({ success: false, error: 'Token required' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        throw new AuthenticationError('Valid token required')
       }
 
       const { data: authData, error } = await supabase
@@ -69,18 +136,18 @@ serve(async (req) => {
         .single()
 
       if (error || !authData) {
-        return new Response(
-          JSON.stringify({ success: false, error: 'Invalid token' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        throw new AuthenticationError('Invalid token')
       }
 
       // Check expiration
       if (new Date(authData.expires_at) < new Date()) {
-        return new Response(
-          JSON.stringify({ success: false, error: 'Token expired' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        // Deactivate expired token
+        await supabase
+          .from('extension_auth_tokens')
+          .update({ is_active: false })
+          .eq('id', authData.id)
+        
+        throw new AuthenticationError('Token expired')
       }
 
       // Update last used
@@ -107,12 +174,33 @@ serve(async (req) => {
 
     // Revoke token
     if (action === 'revoke_token') {
-      const { token } = data
+      const token = sanitizeToken(data?.token)
       
+      if (!token) {
+        throw new ValidationError('Valid token required')
+      }
+      
+      const { data: tokenData } = await supabase
+        .from('extension_auth_tokens')
+        .select('user_id')
+        .eq('token', token)
+        .single()
+
       await supabase
         .from('extension_auth_tokens')
         .update({ is_active: false })
         .eq('token', token)
+
+      // Log security event
+      if (tokenData) {
+        await supabase.from('security_events').insert({
+          user_id: tokenData.user_id,
+          event_type: 'extension_token_revoked',
+          severity: 'info',
+          description: 'Extension authentication token revoked',
+          metadata: {}
+        })
+      }
 
       return new Response(
         JSON.stringify({ success: true, message: 'Token revoked' }),
@@ -120,16 +208,10 @@ serve(async (req) => {
       )
     }
 
-    return new Response(
-      JSON.stringify({ error: 'Invalid action' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    throw new ValidationError('Invalid action')
 
   } catch (error) {
     console.error('Extension auth error:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    return handleError(error, corsHeaders)
   }
 })
