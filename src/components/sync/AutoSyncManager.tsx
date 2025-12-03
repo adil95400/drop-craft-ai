@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -31,21 +31,47 @@ export function AutoSyncManager({
   const [saving, setSaving] = useState(false)
   const { toast } = useToast()
 
+  // Load current settings from store_integrations
+  useEffect(() => {
+    const loadSettings = async () => {
+      const { data } = await supabase
+        .from('store_integrations')
+        .select('sync_frequency, sync_settings, is_active')
+        .eq('id', connectionId)
+        .single()
+
+      if (data) {
+        setEnabled(data.is_active || false)
+        setFrequency(data.sync_frequency || 'hourly')
+        const settings = data.sync_settings as any
+        if (settings) {
+          setSyncProducts(settings.import_products ?? true)
+          setSyncOrders(settings.track_orders ?? true)
+          setSyncInventory(settings.sync_inventory ?? true)
+        }
+      }
+    }
+    loadSettings()
+  }, [connectionId])
+
   const handleSave = async () => {
     setSaving(true)
 
     try {
-      const syncTypes = []
-      if (syncProducts) syncTypes.push('products')
-      if (syncOrders) syncTypes.push('orders')
-      if (syncInventory) syncTypes.push('inventory')
+      const syncSettings = {
+        import_products: syncProducts,
+        track_orders: syncOrders,
+        sync_inventory: syncInventory,
+        auto_sync: enabled
+      }
 
       const { error } = await supabase
-        .from('marketplace_integrations')
+        .from('store_integrations')
         .update({
-          auto_sync_enabled: enabled,
+          is_active: enabled,
           sync_frequency: frequency,
-          sync_types: syncTypes,
+          sync_settings: syncSettings,
+          updated_at: new Date().toISOString()
         })
         .eq('id', connectionId)
 
