@@ -636,3 +636,9 @@ verify_jwt = true
 
 [functions.chatgpt-shopping-feed]
 verify_jwt = true
+
+[functions.reset-sync-status]
+verify_jwt = true
+
+[functions.quick-import-url]
+verify_jwt = true

@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { CheckCircle2, RefreshCw, AlertCircle, Package, Clock, Loader2 } from 'lucide-react'
+import { CheckCircle2, RefreshCw, AlertCircle, Package, Clock, Loader2, RotateCcw } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface SyncStatusInlineProps {
   integrationId: string
@@ -30,6 +31,27 @@ export function SyncStatusInline({
   const [localSyncStatus, setLocalSyncStatus] = useState(syncStatus)
   const [localConfig, setLocalConfig] = useState(storeConfig)
   const [productsCount, setProductsCount] = useState(storeConfig?.last_products_synced || 0)
+  const [isResetting, setIsResetting] = useState(false)
+
+  const handleResetSync = async () => {
+    setIsResetting(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('reset-sync-status', {
+        body: { integration_id: integrationId }
+      })
+      
+      if (error) throw error
+      
+      setLocalConfig(prev => ({ ...prev, sync_in_progress: false }))
+      setLocalSyncStatus('connected')
+      toast.success('Statut de synchronisation réinitialisé')
+    } catch (err) {
+      console.error('Reset error:', err)
+      toast.error('Erreur lors de la réinitialisation')
+    } finally {
+      setIsResetting(false)
+    }
+  }
 
   // Real-time subscription for sync updates
   useEffect(() => {
@@ -138,25 +160,44 @@ export function SyncStatusInline({
         </div>
       )}
 
-      {/* Sync button */}
-      <Button 
-        onClick={onSync} 
-        disabled={isInProgress}
-        className="w-full"
-        variant={isInProgress ? 'secondary' : 'default'}
-      >
-        {isInProgress ? (
-          <>
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            Synchronisation en cours...
-          </>
-        ) : (
-          <>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            {productsCount > 0 ? 'Resynchroniser' : 'Démarrer la synchronisation'}
-          </>
+      {/* Sync buttons */}
+      <div className="flex gap-2">
+        <Button 
+          onClick={onSync} 
+          disabled={isInProgress || isResetting}
+          className="flex-1"
+          variant={isInProgress ? 'secondary' : 'default'}
+        >
+          {isInProgress ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Sync en cours...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              {productsCount > 0 ? 'Resync' : 'Synchroniser'}
+            </>
+          )}
+        </Button>
+        
+        {/* Reset button - shown when stuck */}
+        {(isInProgress || localConfig?.sync_in_progress) && productsCount > 0 && (
+          <Button 
+            onClick={handleResetSync}
+            disabled={isResetting}
+            variant="outline"
+            size="icon"
+            title="Réinitialiser le statut (si bloqué)"
+          >
+            {isResetting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RotateCcw className="h-4 w-4" />
+            )}
+          </Button>
         )}
-      </Button>
+      </div>
     </div>
   )
 }
