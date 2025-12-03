@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useIsMobile } from '@/hooks/useResponsive';
-import { MobileHeader, MobileNav, MobileQuickActions } from '@/components/mobile/MobileNav';
+import { MobileHeader, MobileNav } from '@/components/mobile/MobileNav';
 import { Button } from '@/components/ui/button';
 import { Search, User, Settings, Menu } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -13,22 +13,22 @@ import { ExtensionMenu } from '@/components/navigation/ExtensionMenu';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SupportWidget } from '@/components/layout/SupportWidget';
+
 interface AppLayoutProps {
   children: React.ReactNode;
 }
-export function AppLayout({
-  children
-}: AppLayoutProps) {
+
+export function AppLayout({ children }: AppLayoutProps) {
   const isMobile = useIsMobile();
   const { user, signOut } = useAuth();
 
-  // Version mobile optimisée
+  // Version mobile optimisée avec navigation fixe
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <MobileHeader />
-        <main className="pb-20 pt-4">
-          <div className="container max-w-screen-sm mx-auto px-4">
+        <main className="flex-1 pb-20">
+          <div className="container max-w-screen-sm mx-auto px-4 py-4">
             {children}
           </div>
         </main>
