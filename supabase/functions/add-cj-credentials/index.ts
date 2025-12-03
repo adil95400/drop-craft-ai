@@ -37,65 +37,167 @@ serve(async (req) => {
 
     console.log('Adding CJ Dropshipping credentials for user:', user.id)
 
-    // Insert credentials into supplier_credentials_vault
-    const { data: credential, error: credError } = await supabase
-      .from('supplier_credentials_vault')
-      .insert({
-        user_id: user.id,
-        supplier_id: 'cjdropshipping',
-        connection_status: 'active',
-        oauth_data: {
-          accessToken: accessToken
-        },
-        last_validation_at: new Date().toISOString()
-      })
-      .select()
+    // 1. Find or create CJ Dropshipping supplier record
+    let supplierId: string
+    
+    const { data: existingSupplier } = await supabase
+      .from('suppliers')
+      .select('id')
+      .eq('user_id', user.id)
+      .ilike('name', '%cj%dropshipping%')
       .single()
-
-    if (credError) {
-      // If already exists, update it
-      if (credError.code === '23505') {
-        const { data: updated, error: updateError } = await supabase
-          .from('supplier_credentials_vault')
-          .update({
-            connection_status: 'active',
-            oauth_data: {
-              accessToken: accessToken
-            },
-            last_validation_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id)
-          .eq('supplier_id', 'cjdropshipping')
-          .select()
-          .single()
-
-        if (updateError) throw updateError
-        
-        console.log('Updated existing CJ credentials')
-      } else {
-        throw credError
-      }
+    
+    if (existingSupplier) {
+      supplierId = existingSupplier.id
+      console.log('Found existing CJ supplier:', supplierId)
     } else {
+      // Create new supplier entry
+      const { data: newSupplier, error: createError } = await supabase
+        .from('suppliers')
+        .insert({
+          user_id: user.id,
+          name: 'CJ Dropshipping',
+          website: 'https://cjdropshipping.com',
+          country: 'China',
+          status: 'active',
+          rating: 4.5,
+          contact_email: 'support@cjdropshipping.com',
+          product_count: 0,
+          api_type: 'rest',
+          sync_frequency: 60
+        })
+        .select('id')
+        .single()
+      
+      if (createError) {
+        console.error('Failed to create supplier:', createError)
+        throw new Error('Failed to create supplier record')
+      }
+      
+      supplierId = newSupplier.id
+      console.log('Created new CJ supplier:', supplierId)
+    }
+
+    // 2. Validate the access token with CJ API
+    console.log('Validating CJ access token...')
+    
+    const validationResponse = await fetch('https://developers.cjdropshipping.com/api2.0/v1/product/list', {
+      method: 'POST',
+      headers: {
+        'CJ-Access-Token': accessToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        pageNum: 1,
+        pageSize: 1
+      })
+    })
+    
+    const validationData = await validationResponse.json()
+    
+    if (validationData.code !== 200) {
+      throw new Error(`Invalid CJ Access Token: ${validationData.message || 'Authentication failed'}`)
+    }
+    
+    console.log('CJ token validated successfully')
+
+    // 3. Store credentials in vault
+    const { data: existingCred } = await supabase
+      .from('supplier_credentials_vault')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('supplier_id', supplierId)
+      .single()
+    
+    if (existingCred) {
+      // Update existing credentials
+      const { error: updateError } = await supabase
+        .from('supplier_credentials_vault')
+        .update({
+          connection_status: 'active',
+          access_token_encrypted: accessToken,
+          oauth_data: {
+            accessToken: accessToken,
+            connectorId: 'cjdropshipping',
+            platform: 'CJ Dropshipping',
+            validatedAt: new Date().toISOString()
+          },
+          last_validation_at: new Date().toISOString(),
+          last_error: null,
+          error_count: 0
+        })
+        .eq('id', existingCred.id)
+      
+      if (updateError) throw updateError
+      console.log('Updated existing CJ credentials')
+    } else {
+      // Insert new credentials
+      const { error: insertError } = await supabase
+        .from('supplier_credentials_vault')
+        .insert({
+          user_id: user.id,
+          supplier_id: supplierId,
+          connection_status: 'active',
+          connection_type: 'api',
+          access_token_encrypted: accessToken,
+          oauth_data: {
+            accessToken: accessToken,
+            connectorId: 'cjdropshipping',
+            platform: 'CJ Dropshipping',
+            validatedAt: new Date().toISOString()
+          },
+          last_validation_at: new Date().toISOString()
+        })
+      
+      if (insertError) throw insertError
       console.log('Created new CJ credentials')
     }
 
-    // Trigger product synchronization
+    // 4. Trigger immediate product synchronization
     console.log('Triggering product sync...')
+    
     const { data: syncData, error: syncError } = await supabase.functions.invoke('supplier-sync-products', {
-      body: { supplierId: 'cjdropshipping', limit: 1000 }
+      body: { supplierId, limit: 100 },
+      headers: {
+        Authorization: authHeader
+      }
     })
 
     if (syncError) {
-      console.error('Sync error:', syncError)
+      console.error('Sync trigger error:', syncError)
     } else {
-      console.log('Sync triggered successfully:', syncData)
+      console.log('Sync triggered successfully:', syncData?.syncStats)
+      
+      // Update supplier product count
+      if (syncData?.syncStats?.imported > 0) {
+        await supabase
+          .from('suppliers')
+          .update({ product_count: syncData.syncStats.imported })
+          .eq('id', supplierId)
+      }
     }
+
+    // 5. Log activity
+    await supabase
+      .from('activity_logs')
+      .insert({
+        user_id: user.id,
+        action: 'supplier_connect',
+        entity_type: 'supplier',
+        entity_id: supplierId,
+        description: 'Connected CJ Dropshipping supplier',
+        metadata: {
+          supplier: 'CJ Dropshipping',
+          productsImported: syncData?.syncStats?.imported || 0
+        }
+      })
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'CJ Dropshipping credentials added and sync triggered',
-        syncData
+        message: 'CJ Dropshipping connected and synchronized',
+        supplierId,
+        syncStats: syncData?.syncStats || null
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
