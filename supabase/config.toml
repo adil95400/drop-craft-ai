@@ -499,6 +499,12 @@ verify_jwt = true
 [functions.supplier-connect]
 verify_jwt = true
 
+[functions.cj-webhook]
+verify_jwt = false
+
+[functions.add-cj-credentials]
+verify_jwt = true
+
 [functions.extension-install]
 verify_jwt = true
 
