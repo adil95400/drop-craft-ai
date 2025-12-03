@@ -62,9 +62,7 @@ serve(async (req) => {
           status: 'active',
           rating: 4.5,
           contact_email: 'support@cjdropshipping.com',
-          product_count: 0,
-          api_type: 'rest',
-          sync_frequency: 60
+          product_count: 0
         })
         .select('id')
         .single()
