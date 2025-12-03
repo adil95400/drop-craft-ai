@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Package, Search, Filter, Eye, Edit, Download, TruckIcon } from 'lucide-react'
+import { Package, Search, Filter, Eye, Edit, Download, TruckIcon, Plus } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ShipmentCreationDialog } from '@/components/fulfillment/ShipmentCreationDialog'
 
@@ -86,125 +86,191 @@ export default function OrdersPage() {
     return colors[status] || 'bg-muted text-muted-foreground'
   }
 
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      pending: 'En attente',
+      processing: 'Traitement',
+      shipped: 'Expédié',
+      delivered: 'Livré',
+      cancelled: 'Annulé',
+    }
+    return labels[status] || status
+  }
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Orders</h1>
-          <p className="text-muted-foreground">Manage and track your orders</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport} disabled={isExporting}>
-            <Download className="w-4 h-4 mr-2" />
-            {isExporting ? 'Export...' : 'Exporter CSV'}
-          </Button>
-          <Button onClick={() => navigate('/orders/new')}>
-            <Package className="w-4 h-4 mr-2" />
-            Nouvelle commande
-          </Button>
+    <div className="container mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Commandes</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">Gérez et suivez vos commandes</p>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExport} 
+              disabled={isExporting}
+              className="flex-1 xs:flex-none"
+            >
+              <Download className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">{isExporting ? 'Export...' : 'Exporter'}</span>
+              <span className="sm:hidden">CSV</span>
+            </Button>
+            <Button size="sm" onClick={() => navigate('/orders/new')} className="flex-1 xs:flex-none">
+              <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Nouvelle commande</span>
+              <span className="sm:hidden">Nouveau</span>
+            </Button>
+          </div>
         </div>
       </div>
 
-      <Card className="p-6">
-        <div className="flex gap-4 mb-6">
+      {/* Filters */}
+      <Card className="p-3 sm:p-6">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4 sm:mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search by order number..."
+              placeholder="Rechercher par n° commande..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 text-sm"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder="Filtrer par statut" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Orders</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="shipped">Shipped</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="all">Toutes</SelectItem>
+              <SelectItem value="pending">En attente</SelectItem>
+              <SelectItem value="processing">Traitement</SelectItem>
+              <SelectItem value="shipped">Expédié</SelectItem>
+              <SelectItem value="delivered">Livré</SelectItem>
+              <SelectItem value="cancelled">Annulé</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">
-            Loading orders...
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            Chargement...
           </div>
         ) : filteredOrders?.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            No orders found
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            Aucune commande trouvée
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order Number</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Expédition</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <>
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>N° Commande</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead>Montant</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Expédition</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredOrders?.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-medium">{order.order_number}</TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(order.status)}>
+                          {getStatusLabel(order.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{order.total_amount} {order.currency}</TableCell>
+                      <TableCell>
+                        {formatDistanceToNow(new Date(order.created_at), { addSuffix: true })}
+                      </TableCell>
+                      <TableCell>
+                        {(order.status === 'processing' || order.status === 'shipped') && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCreateShipment(order.id)}
+                          >
+                            <TruckIcon className="w-4 h-4 mr-1" />
+                            Expédier
+                          </Button>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => handleViewOrder(order.id)}>
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleEditOrder(order.id)}>
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden space-y-3">
               {filteredOrders?.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">
-                    {order.order_number}
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(order.status)}>
-                      {order.status}
+                <Card key={order.id} className="p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm">{order.order_number}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(order.created_at), { addSuffix: true })}
+                      </p>
+                    </div>
+                    <Badge className={`${getStatusColor(order.status)} text-[10px] flex-shrink-0`}>
+                      {getStatusLabel(order.status)}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {order.total_amount} {order.currency}
-                  </TableCell>
-                  <TableCell>
-                    {formatDistanceToNow(new Date(order.created_at), {
-                      addSuffix: true,
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    {(order.status === 'processing' || order.status === 'shipped') && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCreateShipment(order.id)}
-                      >
-                        <TruckIcon className="w-4 h-4 mr-1" />
-                        Expédier
-                      </Button>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-sm font-semibold">
+                      {order.total_amount} {order.currency}
+                    </span>
+                    <div className="flex gap-1">
+                      {(order.status === 'processing' || order.status === 'shipped') && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => handleCreateShipment(order.id)}
+                        >
+                          <TruckIcon className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
                       <Button 
                         variant="ghost" 
-                        size="sm"
+                        size="icon" 
+                        className="h-7 w-7"
                         onClick={() => handleViewOrder(order.id)}
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-3.5 h-3.5" />
                       </Button>
                       <Button 
                         variant="ghost" 
-                        size="sm"
+                        size="icon" 
+                        className="h-7 w-7"
                         onClick={() => handleEditOrder(order.id)}
                       >
-                        <Edit className="w-4 h-4" />
+                        <Edit className="w-3.5 h-3.5" />
                       </Button>
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </div>
+                </Card>
               ))}
-            </TableBody>
-          </Table>
+            </div>
+          </>
         )}
       </Card>
 
