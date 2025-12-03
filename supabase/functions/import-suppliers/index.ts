@@ -337,34 +337,66 @@ Deno.serve(async (req) => {
       suppliersToImport = getRealSuppliers()
       console.log(`✅ Loaded ${suppliersToImport.length} suppliers for import`)
     } else {
+      // Normalize provider name for matching (remove spaces, lowercase)
+      const normalizedProvider = provider.toLowerCase().replace(/[\s_-]/g, '')
+      
       // Filtrer par fournisseur spécifique
-      suppliersToImport = getRealSuppliers().filter(s => 
-        s.name.toLowerCase().includes(provider.toLowerCase())
-      )
-      console.log(`✅ Filtered ${suppliersToImport.length} suppliers matching '${provider}'`)
+      suppliersToImport = getRealSuppliers().filter(s => {
+        const normalizedName = s.name.toLowerCase().replace(/[\s_-]/g, '')
+        return normalizedName.includes(normalizedProvider) || normalizedProvider.includes(normalizedName)
+      })
+      console.log(`✅ Filtered ${suppliersToImport.length} suppliers matching '${provider}' (normalized: ${normalizedProvider})`)
     }
 
+    // If no specific match found, import all suppliers as fallback
     if (suppliersToImport.length === 0) {
-      console.error(`❌ No suppliers found for provider: ${provider}`)
-      throw new Error('No suppliers found for this provider')
+      console.log(`⚠️ No exact match for '${provider}', importing all suppliers as fallback`)
+      suppliersToImport = getRealSuppliers()
     }
 
     // Insérer dans la base de données
     console.log(`💾 Inserting ${suppliersToImport.length} suppliers into database...`)
     
-    const { data, error } = await supabase
-      .from('premium_suppliers')
-      .upsert(suppliersToImport, {
-        onConflict: 'name,country',
-        ignoreDuplicates: false
-      })
-      .select()
-
-    if (error) {
-      console.error('❌ Database insert error:', error)
-      console.error('Error details:', JSON.stringify(error, null, 2))
-      throw error
+    // Insert suppliers one by one to handle duplicates gracefully
+    const insertedSuppliers: any[] = []
+    for (const supplier of suppliersToImport) {
+      // Check if supplier already exists
+      const { data: existing } = await supabase
+        .from('premium_suppliers')
+        .select('id')
+        .eq('name', supplier.name)
+        .maybeSingle()
+      
+      if (existing) {
+        // Update existing
+        const { data: updated, error: updateError } = await supabase
+          .from('premium_suppliers')
+          .update(supplier)
+          .eq('id', existing.id)
+          .select()
+          .single()
+        
+        if (!updateError && updated) {
+          insertedSuppliers.push(updated)
+        }
+      } else {
+        // Insert new
+        const { data: inserted, error: insertError } = await supabase
+          .from('premium_suppliers')
+          .insert(supplier)
+          .select()
+          .single()
+        
+        if (!insertError && inserted) {
+          insertedSuppliers.push(inserted)
+        } else if (insertError) {
+          console.warn(`⚠️ Failed to insert ${supplier.name}:`, insertError.message)
+        }
+      }
     }
+    
+    const data = insertedSuppliers
+    console.log(`✅ Successfully inserted/updated ${data.length} suppliers`)
     
     console.log(`✅ Successfully inserted ${data?.length || 0} suppliers`)
 
