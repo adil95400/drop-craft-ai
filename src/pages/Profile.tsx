@@ -32,7 +32,6 @@ const Profile = () => {
   const { isAdmin, role } = useEnhancedAuth();
   const { effectivePlan } = useUnifiedPlan();
   
-  // Auto-refresh pour les changements de plan
   useProfileRefresh();
 
   const [profileData, setProfileData] = useState({
@@ -90,33 +89,34 @@ const Profile = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
-      <div className="mb-4">
+    <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 max-w-4xl mx-auto">
+      <div className="mb-2 sm:mb-4">
         <BackButton to="/dashboard" />
       </div>
+      
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             Mon Profil
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Gérez vos informations personnelles et préférences de compte
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            Gérez vos informations personnelles
           </p>
         </div>
         <div className="flex gap-2">
           {!isEditing ? (
-            <Button onClick={() => setIsEditing(true)} variant="outline">
-              <Edit3 className="mr-2 h-4 w-4" />
+            <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="text-xs sm:text-sm">
+              <Edit3 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Modifier
             </Button>
           ) : (
             <>
-              <Button onClick={() => setIsEditing(false)} variant="outline">
+              <Button onClick={() => setIsEditing(false)} variant="outline" size="sm" className="text-xs sm:text-sm">
                 Annuler
               </Button>
-              <Button onClick={handleSaveProfile} variant="default">
-                <Save className="mr-2 h-4 w-4" />
+              <Button onClick={handleSaveProfile} variant="default" size="sm" className="text-xs sm:text-sm">
+                <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 Sauvegarder
               </Button>
             </>
@@ -124,11 +124,11 @@ const Profile = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Profile Card */}
         <Card className="lg:col-span-1">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
+          <CardHeader className="text-center p-4 sm:p-6">
+            <div className="flex justify-center mb-3 sm:mb-4">
               <AvatarUpload 
                 currentAvatarUrl={profile?.avatar_url}
                 userName={profileData.name}
@@ -136,55 +136,54 @@ const Profile = () => {
                 showUploadButton={isEditing}
               />
             </div>
-            <CardTitle className="text-xl">{profileData.name}</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">{profileData.name}</CardTitle>
             <CardDescription>
-              <div className="flex items-center justify-center gap-2 mb-2">
+              <div className="flex items-center justify-center gap-2 mb-2 text-xs sm:text-sm">
                 <Mail className="h-3 w-3" />
-                {profileData.email}
+                <span className="truncate max-w-[200px]">{profileData.email}</span>
               </div>
               <div className="flex justify-center">
                 <Badge 
-                  className={`${getRoleBadgeColor(role)} flex items-center gap-1`}
+                  className={`${getRoleBadgeColor(role)} flex items-center gap-1 text-xs`}
                 >
                   {getRoleIcon(role)}
-                  {role === 'admin' ? 'Administrateur' : 
-                   role === 'manager' ? 'Manager' : 'Utilisateur'}
+                  {role === 'admin' ? 'Admin' : 
+                   role === 'manager' ? 'Manager' : 'User'}
                 </Badge>
               </div>
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-4 sm:p-6 pt-0">
             {/* Quick Stats */}
-            <div className="grid grid-cols-2 gap-4 text-center">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 text-center">
               <div className="space-y-1">
-                <div className="text-2xl font-bold text-primary">
+                <div className="text-lg sm:text-2xl font-bold text-primary">
                   {new Date(user?.created_at || '').toLocaleDateString('fr-FR', { 
                     year: 'numeric', 
                     month: 'short' 
                   })}
                 </div>
-                <div className="text-xs text-muted-foreground">Membre depuis</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground">Membre depuis</div>
               </div>
               <div className="space-y-1">
-                <div className="text-2xl font-bold text-primary">
+                <div className="text-lg sm:text-2xl font-bold text-primary truncate">
                   {isAdmin ? 'Illimité' : effectivePlan || 'Standard'}
                 </div>
-                <div className="text-xs text-muted-foreground">Plan actuel</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground">Plan actuel</div>
               </div>
             </div>
 
             {/* Role Permissions for Admin */}
             {isAdmin && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <div className="flex items-center gap-2 text-red-800 font-medium text-sm">
-                  <Crown className="h-4 w-4" />
-                  Privilèges Administrateur
+              <div className="p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center gap-2 text-red-800 font-medium text-xs sm:text-sm">
+                  <Crown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  Privilèges Admin
                 </div>
-                <ul className="text-xs text-red-700 mt-2 space-y-1">
-                  <li>• Accès complet à toutes les fonctionnalités</li>
-                  <li>• Gestion des utilisateurs et plans</li>
-                  <li>• Configuration système avancée</li>
-                  <li>• Analytics et rapports détaillés</li>
+                <ul className="text-[10px] sm:text-xs text-red-700 mt-2 space-y-0.5 sm:space-y-1">
+                  <li>• Accès complet</li>
+                  <li>• Gestion utilisateurs</li>
+                  <li>• Configuration système</li>
                 </ul>
               </div>
             )}
@@ -193,20 +192,20 @@ const Profile = () => {
 
         {/* Main Profile Information */}
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Informations personnelles
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm">
               Votre profil public et informations de base
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="name" className="flex items-center gap-2 text-xs sm:text-sm">
+                  <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Nom complet
                 </Label>
                 <Input 
@@ -217,29 +216,27 @@ const Profile = () => {
                     name: e.target.value
                   })} 
                   disabled={!isEditing}
+                  className="text-sm"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Adresse e-mail
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="email" className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  E-mail
                 </Label>
                 <Input 
                   id="email" 
                   type="email" 
                   value={profileData.email} 
                   disabled
-                  className="bg-muted"
+                  className="bg-muted text-sm"
                 />
-                <p className="text-xs text-muted-foreground">
-                  L'adresse e-mail ne peut pas être modifiée
-                </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="phone" className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Téléphone
                 </Label>
                 <Input 
@@ -251,12 +248,13 @@ const Profile = () => {
                   })} 
                   disabled={!isEditing}
                   placeholder="+33 1 23 45 67 89"
+                  className="text-sm"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="company" className="flex items-center gap-2">
-                  <Building className="h-4 w-4" />
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="company" className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Building className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Entreprise
                 </Label>
                 <Input 
@@ -268,12 +266,13 @@ const Profile = () => {
                   })} 
                   disabled={!isEditing}
                   placeholder="Nom de votre entreprise"
+                  className="text-sm"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="location" className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="location" className="flex items-center gap-2 text-xs sm:text-sm">
+                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Localisation
                 </Label>
                 <Input 
@@ -285,12 +284,13 @@ const Profile = () => {
                   })} 
                   disabled={!isEditing}
                   placeholder="Ville, Pays"
+                  className="text-sm"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="website" className="flex items-center gap-2">
-                  <Globe className="h-4 w-4" />
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor="website" className="flex items-center gap-2 text-xs sm:text-sm">
+                  <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Site web
                 </Label>
                 <Input 
@@ -302,12 +302,13 @@ const Profile = () => {
                   })} 
                   disabled={!isEditing}
                   placeholder="https://votre-site.com"
+                  className="text-sm"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="bio">Biographie</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="bio" className="text-xs sm:text-sm">Biographie</Label>
               <Textarea 
                 id="bio" 
                 value={profileData.bio} 
@@ -317,36 +318,37 @@ const Profile = () => {
                 })} 
                 disabled={!isEditing}
                 placeholder="Parlez-nous de vous..."
-                rows={4}
+                rows={3}
+                className="text-sm"
               />
             </div>
 
             {/* Role Information */}
-            <div className="border-t pt-6">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Shield className="h-4 w-4" />
+            <div className="border-t pt-4 sm:pt-6">
+              <h3 className="font-semibold mb-2 sm:mb-3 flex items-center gap-2 text-sm sm:text-base">
+                <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 Informations du rôle
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div className="space-y-1">
-                  <Label className="text-sm text-muted-foreground">Rôle</Label>
-                  <div className="flex items-center gap-2">
+                  <Label className="text-[10px] sm:text-xs text-muted-foreground">Rôle</Label>
+                  <div className="flex items-center gap-2 text-sm">
                     {getRoleIcon(role)}
                     <span className="font-medium">
-                      {role === 'admin' ? 'Administrateur' : 
-                       role === 'manager' ? 'Manager' : 'Utilisateur'}
+                      {role === 'admin' ? 'Admin' : 
+                       role === 'manager' ? 'Manager' : 'User'}
                     </span>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-sm text-muted-foreground">Plan</Label>
-                  <div className="font-medium">
+                  <Label className="text-[10px] sm:text-xs text-muted-foreground">Plan</Label>
+                  <div className="font-medium text-sm truncate">
                     {isAdmin ? `${effectivePlan} (Admin)` : effectivePlan || 'Standard'}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-sm text-muted-foreground">Membre depuis</Label>
-                  <div className="font-medium flex items-center gap-2">
+                  <Label className="text-[10px] sm:text-xs text-muted-foreground">Membre depuis</Label>
+                  <div className="font-medium flex items-center gap-2 text-sm">
                     <Calendar className="h-3 w-3" />
                     {new Date(user?.created_at || '').toLocaleDateString('fr-FR')}
                   </div>

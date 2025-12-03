@@ -113,18 +113,18 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <Bell className="h-6 w-6 text-primary" />
+      <div className="container mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Notifications</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Notifications</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {unreadCount > 0
-                  ? `${unreadCount} notification${unreadCount > 1 ? 's' : ''} non lue${unreadCount > 1 ? 's' : ''}`
-                  : 'Aucune notification non lue'}
+                  ? `${unreadCount} non lue${unreadCount > 1 ? 's' : ''}`
+                  : 'Aucune non lue'}
               </p>
             </div>
           </div>
@@ -133,15 +133,18 @@ export default function NotificationsPage() {
             {unreadCount > 0 && (
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => markAllAsReadMutation.mutate()}
                 disabled={markAllAsReadMutation.isPending}
+                className="text-xs sm:text-sm"
               >
-                Tout marquer comme lu
+                <span className="hidden xs:inline">Tout marquer comme lu</span>
+                <span className="xs:hidden">Tout lu</span>
               </Button>
             )}
-            <Button variant="outline">
-              <Settings className="h-4 w-4 mr-2" />
-              Paramètres
+            <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+              <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5" />
+              <span className="hidden xs:inline">Paramètres</span>
             </Button>
           </div>
         </div>

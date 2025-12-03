@@ -20,62 +20,62 @@ export default function StockManagement() {
         badge="Smart Inventory"
       />
 
-      <div className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-8">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Stock Total</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-[10px] sm:text-sm font-medium">Stock Total</CardTitle>
+              <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1,247</div>
-              <p className="text-xs text-muted-foreground">
-                +12% par rapport au mois dernier
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-lg sm:text-2xl font-bold">1,247</div>
+              <p className="text-[9px] sm:text-xs text-muted-foreground">
+                +12% vs mois dernier
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Produits en Rupture</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-red-500" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-[10px] sm:text-sm font-medium">En Rupture</CardTitle>
+              <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-500" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">23</div>
-              <p className="text-xs text-muted-foreground">
-                Nécessite une action immédiate
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-lg sm:text-2xl font-bold text-red-600">23</div>
+              <p className="text-[9px] sm:text-xs text-muted-foreground">
+                Action requise
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Valeur du Stock</CardTitle>
-              <TrendingUp className="h-4 w-4 text-green-500" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-[10px] sm:text-sm font-medium">Valeur Stock</CardTitle>
+              <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">€89,432</div>
-              <p className="text-xs text-muted-foreground">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-lg sm:text-2xl font-bold">€89,432</div>
+              <p className="text-[9px] sm:text-xs text-muted-foreground">
                 +8.2% ce mois
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Rotation du Stock</CardTitle>
-              <RefreshCw className="h-4 w-4 text-blue-500" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-[10px] sm:text-sm font-medium">Rotation</CardTitle>
+              <RefreshCw className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">4.2x</div>
-              <p className="text-xs text-muted-foreground">
-                Rotation annuelle moyenne
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-lg sm:text-2xl font-bold">4.2x</div>
+              <p className="text-[9px] sm:text-xs text-muted-foreground">
+                Rotation annuelle
               </p>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
           <Card>
             <CardHeader>
               <CardTitle>Alertes de Stock</CardTitle>
