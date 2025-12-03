@@ -3,7 +3,7 @@ import { SupportCenter } from '@/components/support/SupportCenter'
 
 export default function SupportPage() {
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto px-4 py-4 sm:py-6">
       <SupportCenter />
     </div>
   )
