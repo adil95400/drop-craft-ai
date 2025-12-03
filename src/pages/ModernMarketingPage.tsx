@@ -178,28 +178,33 @@ const ModernMarketingPage: React.FC = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-5 w-full">
-            <TabsTrigger value="campaigns" className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              Campagnes
-            </TabsTrigger>
-            <TabsTrigger value="automation" className="flex items-center gap-2">
-              <Brain className="h-4 w-4" />
-              Automation IA
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <Activity className="h-4 w-4" />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="segments" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Segments
-            </TabsTrigger>
-            <TabsTrigger value="templates" className="flex items-center gap-2">
-              <Award className="h-4 w-4" />
-              Templates
-            </TabsTrigger>
-          </TabsList>
+          {/* Mobile: scrollable tabs, Desktop: grid */}
+          <div className="overflow-x-auto -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide">
+            <TabsList className="inline-flex w-max md:grid md:grid-cols-5 md:w-full min-w-full gap-1">
+              <TabsTrigger value="campaigns" className="flex items-center gap-1.5 px-3 py-2 whitespace-nowrap">
+                <Target className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline">Campagnes</span>
+                <span className="sm:hidden">Camp.</span>
+              </TabsTrigger>
+              <TabsTrigger value="automation" className="flex items-center gap-1.5 px-3 py-2 whitespace-nowrap">
+                <Brain className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline">Automation IA</span>
+                <span className="sm:hidden">Auto.</span>
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-1.5 px-3 py-2 whitespace-nowrap">
+                <Activity className="h-4 w-4 flex-shrink-0" />
+                <span>Analytics</span>
+              </TabsTrigger>
+              <TabsTrigger value="segments" className="flex items-center gap-1.5 px-3 py-2 whitespace-nowrap">
+                <Users className="h-4 w-4 flex-shrink-0" />
+                <span>Segments</span>
+              </TabsTrigger>
+              <TabsTrigger value="templates" className="flex items-center gap-1.5 px-3 py-2 whitespace-nowrap">
+                <Award className="h-4 w-4 flex-shrink-0" />
+                <span>Templates</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="campaigns" className="space-y-6">
             <Card>

@@ -136,32 +136,34 @@ export const QuickActions: React.FC = () => {
           Actions rapides
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-3 sm:px-6">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
-          {quickActions.map(action => (
-            <Button
-              key={action.id}
-              variant="outline"
-              className={`h-auto p-2 sm:p-3 flex flex-col items-center gap-1 sm:gap-2 relative ${action.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'} transition-all duration-200 min-h-[70px] sm:min-h-[90px]`}
-              onClick={action.action}
-              disabled={action.disabled}
-            >
-              {action.badge && (
-                <Badge variant="secondary" className="absolute -top-1.5 -right-1.5 text-[10px] px-1 py-0">
-                  {action.badge}
-                </Badge>
-              )}
-              
-              <div className={`p-1.5 sm:p-2 rounded-lg text-white ${action.color}`}>
-                {action.icon}
-              </div>
-              
-              <div className="text-center w-full overflow-hidden">
-                <div className="font-medium text-[11px] sm:text-xs leading-tight truncate">{action.title}</div>
-                <div className="text-[9px] sm:text-[10px] text-muted-foreground leading-tight truncate hidden sm:block">{action.description}</div>
-              </div>
-            </Button>
-          ))}
+      <CardContent className="px-2 sm:px-6">
+        {/* Mobile: horizontal scroll, Desktop: grid */}
+        <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0 sm:overflow-visible scrollbar-hide">
+          <div className="flex gap-2 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 sm:gap-3 min-w-max sm:min-w-0">
+            {quickActions.map(action => (
+              <Button
+                key={action.id}
+                variant="outline"
+                className={`h-auto p-2 sm:p-3 flex flex-col items-center gap-1 sm:gap-2 relative ${action.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'} transition-all duration-200 min-h-[70px] sm:min-h-[90px] w-[72px] sm:w-auto flex-shrink-0`}
+                onClick={action.action}
+                disabled={action.disabled}
+              >
+                {action.badge && (
+                  <Badge variant="secondary" className="absolute -top-1.5 -right-1.5 text-[10px] px-1 py-0">
+                    {action.badge}
+                  </Badge>
+                )}
+                
+                <div className={`p-1.5 sm:p-2 rounded-lg text-white ${action.color}`}>
+                  {action.icon}
+                </div>
+                
+                <div className="text-center w-full overflow-hidden">
+                  <div className="font-medium text-[10px] sm:text-xs leading-tight line-clamp-2">{action.title}</div>
+                </div>
+              </Button>
+            ))}
+          </div>
         </div>
       </CardContent>
     </Card>
