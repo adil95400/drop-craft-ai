@@ -151,23 +151,25 @@ export default function IntegrationsPage() {
         <meta name="description" content="Connectez votre application avec des centaines de services. Intégrations premium, webhooks personnalisés et API avancées." />
       </Helmet>
 
-      <div className="space-y-8">
+      <div className="space-y-4 sm:space-y-8 px-4 sm:px-0">
         {/* Header */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Intégrations Premium</h1>
-            <p className="text-muted-foreground">
-              Connectez votre application avec vos outils favoris
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Intégrations</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Connectez vos outils favoris
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline">
-              <Settings className="mr-2 h-4 w-4" />
-              Configuration
+            <Button variant="outline" size="sm" className="sm:size-default">
+              <Settings className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Configuration</span>
+              <span className="sm:hidden">Config</span>
             </Button>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Nouvelle Intégration
+            <Button size="sm" className="sm:size-default">
+              <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Nouvelle Intégration</span>
+              <span className="sm:hidden">Ajouter</span>
             </Button>
           </div>
         </div>
@@ -178,51 +180,51 @@ export default function IntegrationsPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Intégrations Actives</CardTitle>
-                <Plug className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium">Actives</CardTitle>
+                <Plug className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{activeIntegrations}</div>
-                <p className="text-xs text-muted-foreground">
+              <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+                <div className="text-xl sm:text-2xl font-bold">{activeIntegrations}</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">
                   Sur {integrationsData.length} total
                 </p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">API Calls</CardTitle>
-                <Zap className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium">API Calls</CardTitle>
+                <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{(totalApiCalls / 1000).toFixed(1)}K</div>
-                <p className="text-xs text-muted-foreground">
+              <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+                <div className="text-xl sm:text-2xl font-bold">{(totalApiCalls / 1000).toFixed(1)}K</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">
                   Ce mois-ci
                 </p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Webhooks</CardTitle>
-                <Settings className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium">Webhooks</CardTitle>
+                <Settings className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{webhooksCount}</div>
-                <p className="text-xs text-muted-foreground">
+              <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+                <div className="text-xl sm:text-2xl font-bold">{webhooksCount}</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">
                   Configurés
                 </p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Disponibilité</CardTitle>
-                <CheckCircle className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium">Uptime</CardTitle>
+                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">99.9%</div>
-                <p className="text-xs text-muted-foreground">
+              <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+                <div className="text-xl sm:text-2xl font-bold">99.9%</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">
                   7 derniers jours
                 </p>
               </CardContent>
@@ -232,12 +234,23 @@ export default function IntegrationsPage() {
 
         {/* Contenu Principal */}
         <Tabs defaultValue="integrations" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="integrations">Intégrations Live</TabsTrigger>
-              <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
-              <TabsTrigger value="api">Analytics Live</TabsTrigger>
-              <TabsTrigger value="marketplace">IA Opérationnelle</TabsTrigger>
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="w-max sm:w-auto">
+              <TabsTrigger value="integrations" className="text-xs sm:text-sm px-2 sm:px-3">
+                <span className="hidden sm:inline">Intégrations Live</span>
+                <span className="sm:hidden">Intégrations</span>
+              </TabsTrigger>
+              <TabsTrigger value="webhooks" className="text-xs sm:text-sm px-2 sm:px-3">Webhooks</TabsTrigger>
+              <TabsTrigger value="api" className="text-xs sm:text-sm px-2 sm:px-3">
+                <span className="hidden sm:inline">Analytics Live</span>
+                <span className="sm:hidden">Analytics</span>
+              </TabsTrigger>
+              <TabsTrigger value="marketplace" className="text-xs sm:text-sm px-2 sm:px-3">
+                <span className="hidden sm:inline">IA Opérationnelle</span>
+                <span className="sm:hidden">IA</span>
+              </TabsTrigger>
             </TabsList>
+          </div>
 
           <TabsContent value="integrations" className="space-y-4">
             <IntegrationsManager />

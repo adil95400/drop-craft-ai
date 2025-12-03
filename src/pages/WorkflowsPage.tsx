@@ -72,68 +72,68 @@ export default function WorkflowsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto px-4 py-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Zap className="w-8 h-8 text-primary" />
-            Automation Workflows
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 sm:gap-3">
+            <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+            Workflows
           </h1>
-          <p className="text-muted-foreground">
-            Automate repetitive tasks and optimize operations
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Automate tasks and optimize operations
           </p>
         </div>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Workflow
+        <Button size="sm" className="self-start sm:self-auto sm:size-default">
+          <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+          Create
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-primary/10">
-              <Zap className="w-6 h-6 text-primary" />
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-primary/10">
+              <Zap className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Workflows</p>
-              <p className="text-2xl font-bold">{workflows?.length || 0}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Total</p>
+              <p className="text-lg sm:text-2xl font-bold">{workflows?.length || 0}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-green-500/10">
-              <Play className="w-6 h-6 text-green-500" />
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-green-500/10">
+              <Play className="w-4 h-4 sm:w-6 sm:h-6 text-green-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-2xl font-bold">{activeWorkflows.length}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Active</p>
+              <p className="text-lg sm:text-2xl font-bold">{activeWorkflows.length}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-blue-500/10">
-              <CheckCircle2 className="w-6 h-6 text-blue-500" />
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-blue-500/10">
+              <CheckCircle2 className="w-4 h-4 sm:w-6 sm:h-6 text-blue-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Executions</p>
-              <p className="text-2xl font-bold">{totalExecutions || 0}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Runs</p>
+              <p className="text-lg sm:text-2xl font-bold">{totalExecutions || 0}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-purple-500/10">
-              <CheckCircle2 className="w-6 h-6 text-purple-500" />
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-purple-500/10">
+              <CheckCircle2 className="w-4 h-4 sm:w-6 sm:h-6 text-purple-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Success Rate</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xs sm:text-sm text-muted-foreground">Success</p>
+              <p className="text-lg sm:text-2xl font-bold">
                 {totalExecutions
                   ? ((totalSuccess! / totalExecutions) * 100).toFixed(0)
                   : 0}
@@ -144,28 +144,28 @@ export default function WorkflowsPage() {
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Active Workflows</h2>
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className="text-lg sm:text-xl font-semibold">Active Workflows</h2>
           {workflows?.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Zap className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">No workflows created yet</p>
+            <Card className="p-6 sm:p-8 text-center">
+              <Zap className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
+              <p className="text-sm sm:text-base text-muted-foreground">No workflows created yet</p>
             </Card>
           ) : (
             workflows?.map((workflow) => (
-              <Card key={workflow.id} className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold">{workflow.name}</h3>
-                        <Badge className={getStatusColor(workflow.status || '')}>
+              <Card key={workflow.id} className="p-4 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2 flex-wrap">
+                        <h3 className="text-sm sm:text-base font-semibold truncate">{workflow.name}</h3>
+                        <Badge className={`${getStatusColor(workflow.status || '')} text-xs`}>
                           {workflow.status}
                         </Badge>
                       </div>
                       {workflow.description && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                           {workflow.description}
                         </p>
                       )}
@@ -187,39 +187,39 @@ export default function WorkflowsPage() {
                     </Button>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-3 sm:pt-4 border-t">
                     <div>
-                      <p className="text-xs text-muted-foreground">Executions</p>
-                      <p className="text-lg font-semibold">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Runs</p>
+                      <p className="text-sm sm:text-lg font-semibold">
                         {workflow.execution_count || 0}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Success</p>
-                      <p className="text-lg font-semibold text-green-500">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Success</p>
+                      <p className="text-sm sm:text-lg font-semibold text-green-500">
                         {workflow.success_count || 0}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">Failed</p>
-                      <p className="text-lg font-semibold text-red-500">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Failed</p>
+                      <p className="text-sm sm:text-lg font-semibold text-red-500">
                         {workflow.failure_count || 0}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-3 border-t">
-                    <span className="text-xs text-muted-foreground">
+                  <div className="flex items-center justify-between pt-2 sm:pt-3 border-t gap-2">
+                    <span className="text-[10px] sm:text-xs text-muted-foreground truncate">
                       {workflow.last_executed_at
-                        ? `Last run ${formatDistanceToNow(
+                        ? `${formatDistanceToNow(
                             new Date(workflow.last_executed_at),
                             { addSuffix: true }
                           )}`
                         : 'Never executed'}
                     </span>
-                    <Button variant="outline" size="sm">
-                      <Settings className="w-4 h-4 mr-1" />
-                      Configure
+                    <Button variant="outline" size="sm" className="shrink-0">
+                      <Settings className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Configure</span>
                     </Button>
                   </div>
                 </div>
@@ -228,20 +228,20 @@ export default function WorkflowsPage() {
           )}
         </div>
 
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Recent Executions</h2>
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className="text-lg sm:text-xl font-semibold">Recent Executions</h2>
           {executions?.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">No executions yet</p>
+            <Card className="p-6 sm:p-8 text-center">
+              <Clock className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
+              <p className="text-sm sm:text-base text-muted-foreground">No executions yet</p>
             </Card>
           ) : (
             executions?.map((execution) => (
-              <Card key={execution.id} className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+              <Card key={execution.id} className="p-3 sm:p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <div
-                      className={`p-2 rounded-lg ${
+                      className={`p-1.5 sm:p-2 rounded-lg shrink-0 ${
                         execution.status === 'completed'
                           ? 'bg-green-500/10 text-green-500'
                           : execution.status === 'failed'
@@ -251,11 +251,11 @@ export default function WorkflowsPage() {
                     >
                       {getExecutionStatusIcon(execution.status || '')}
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        Workflow: {execution.workflow_id.slice(0, 8)}
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-medium truncate">
+                        ID: {execution.workflow_id.slice(0, 8)}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
                         {execution.started_at &&
                           formatDistanceToNow(new Date(execution.started_at), {
                             addSuffix: true,
@@ -264,7 +264,7 @@ export default function WorkflowsPage() {
                     </div>
                   </div>
                   {execution.execution_time_ms && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
                       {execution.execution_time_ms}ms
                     </span>
                   )}

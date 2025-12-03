@@ -49,87 +49,87 @@ export default function ReportsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="container mx-auto px-4 py-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              Rapports & Analytics
+            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Rapports
             </h1>
-            <p className="text-muted-foreground mt-2">
-              Générez et consultez vos rapports de performance
+            <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
+              Consultez vos rapports de performance
             </p>
           </div>
-          <Button onClick={handleExportReport}>
-            <Download className="h-4 w-4 mr-2" />
+          <Button onClick={handleExportReport} size="sm" className="self-start sm:self-auto sm:size-default">
+            <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             Exporter
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenus</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Revenus</CardTitle>
+              <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0 €</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                +0% vs période précédente
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">0 €</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                +0% vs précédent
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Commandes</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Commandes</CardTitle>
+              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.orders || 0}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Commandes totales
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{stats?.orders || 0}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                Total
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Produits</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Produits</CardTitle>
+              <Package className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.products || 0}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Produits en catalogue
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{stats?.products || 0}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                En catalogue
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Clients</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Clients</CardTitle>
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.customers || 0}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Clients actifs
+            <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+              <div className="text-lg sm:text-2xl font-bold">{stats?.customers || 0}</div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                Actifs
               </p>
             </CardContent>
           </Card>
         </div>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Générateur de Rapports</CardTitle>
-            <CardDescription>Créez des rapports personnalisés selon vos besoins</CardDescription>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">Générateur de Rapports</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Créez des rapports personnalisés</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0 space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Type de rapport</label>
+                <label className="text-xs sm:text-sm font-medium">Type de rapport</label>
                 <Select value={reportType} onValueChange={setReportType}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -143,9 +143,9 @@ export default function ReportsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Période</label>
+                <label className="text-xs sm:text-sm font-medium">Période</label>
                 <Select value={dateRange} onValueChange={setDateRange}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -157,10 +157,10 @@ export default function ReportsPage() {
                 </Select>
               </div>
 
-              <div className="flex items-end">
-                <Button onClick={handleGenerateReport} className="w-full">
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Générer le rapport
+              <div className="flex items-end sm:col-span-2 lg:col-span-1">
+                <Button onClick={handleGenerateReport} className="w-full" size="sm">
+                  <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                  Générer
                 </Button>
               </div>
             </div>
@@ -168,39 +168,41 @@ export default function ReportsPage() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Rapports Disponibles</CardTitle>
-            <CardDescription>Consultez vos rapports générés précédemment</CardDescription>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">Rapports Disponibles</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Consultez vos rapports générés</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
             <Tabs defaultValue="recent" className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="recent">Récents</TabsTrigger>
-                <TabsTrigger value="scheduled">Programmés</TabsTrigger>
-                <TabsTrigger value="custom">Personnalisés</TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                <TabsList className="w-max sm:w-auto">
+                  <TabsTrigger value="recent" className="text-xs sm:text-sm px-2 sm:px-3">Récents</TabsTrigger>
+                  <TabsTrigger value="scheduled" className="text-xs sm:text-sm px-2 sm:px-3">Programmés</TabsTrigger>
+                  <TabsTrigger value="custom" className="text-xs sm:text-sm px-2 sm:px-3">Personnalisés</TabsTrigger>
+                </TabsList>
+              </div>
 
               <TabsContent value="recent" className="space-y-4">
-                <div className="text-center py-12 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Aucun rapport récent</p>
-                  <p className="text-sm mt-2">Générez votre premier rapport ci-dessus</p>
+                <div className="text-center py-8 sm:py-12 text-muted-foreground">
+                  <FileText className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+                  <p className="text-sm sm:text-base">Aucun rapport récent</p>
+                  <p className="text-xs sm:text-sm mt-2">Générez votre premier rapport</p>
                 </div>
               </TabsContent>
 
               <TabsContent value="scheduled" className="space-y-4">
-                <div className="text-center py-12 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Aucun rapport programmé</p>
-                  <p className="text-sm mt-2">Configurez des rapports automatiques</p>
+                <div className="text-center py-8 sm:py-12 text-muted-foreground">
+                  <FileText className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+                  <p className="text-sm sm:text-base">Aucun rapport programmé</p>
+                  <p className="text-xs sm:text-sm mt-2">Configurez des rapports automatiques</p>
                 </div>
               </TabsContent>
 
               <TabsContent value="custom" className="space-y-4">
-                <div className="text-center py-12 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Aucun rapport personnalisé</p>
-                  <p className="text-sm mt-2">Créez des rapports sur mesure</p>
+                <div className="text-center py-8 sm:py-12 text-muted-foreground">
+                  <FileText className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+                  <p className="text-sm sm:text-base">Aucun rapport personnalisé</p>
+                  <p className="text-xs sm:text-sm mt-2">Créez des rapports sur mesure</p>
                 </div>
               </TabsContent>
             </Tabs>

@@ -45,141 +45,141 @@ export default function AIPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto px-4 py-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">IA Avancée</h1>
-          <p className="text-muted-foreground mt-1">Suite complète d'intelligence artificielle</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">IA Avancée</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">Suite d'intelligence artificielle</p>
         </div>
-        <Badge variant="secondary">Ultra Pro</Badge>
+        <Badge variant="secondary" className="text-xs sm:text-sm">Ultra Pro</Badge>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Brain className="h-5 w-5 text-primary" />
+      <div className="grid gap-3 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
+              <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Tâches IA/mois</p>
-              <p className="text-2xl font-bold">{aiStats.tasksPerMonth.toLocaleString()}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Tâches IA</p>
+              <p className="text-lg sm:text-2xl font-bold">{aiStats.tasksPerMonth.toLocaleString()}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Sparkles className="h-5 w-5 text-primary" />
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Précision</p>
-              <p className="text-2xl font-bold">{aiStats.precision.toFixed(1)}%</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Précision</p>
+              <p className="text-lg sm:text-2xl font-bold">{aiStats.precision.toFixed(1)}%</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-primary" />
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">ROI généré</p>
-              <p className="text-2xl font-bold">+{aiStats.roi}%</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">ROI</p>
+              <p className="text-lg sm:text-2xl font-bold">+{aiStats.roi}%</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Zap className="h-5 w-5 text-primary" />
+        <Card className="p-3 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg">
+              <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Temps économisé</p>
-              <p className="text-2xl font-bold">{aiStats.timeSaved}h</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Temps économisé</p>
+              <p className="text-lg sm:text-2xl font-bold">{aiStats.timeSaved}h</p>
             </div>
           </div>
         </Card>
       </div>
 
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Fonctionnalités IA</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <div className="p-4 border rounded-lg">
+      <Card className="p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Fonctionnalités IA</h2>
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="p-3 sm:p-4 border rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Brain className="h-5 w-5 text-primary" />
-              <h3 className="font-medium">Analyse prédictive</h3>
+              <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <h3 className="text-sm sm:text-base font-medium">Analyse prédictive</h3>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Prédisez les tendances et les opportunités de marché
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Prédisez tendances et opportunités
             </p>
           </div>
 
-          <div className="p-4 border rounded-lg">
+          <div className="p-3 sm:p-4 border rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Target className="h-5 w-5 text-primary" />
-              <h3 className="font-medium">Import intelligent</h3>
+              <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <h3 className="text-sm sm:text-base font-medium">Import intelligent</h3>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Import automatique avec enrichissement de données
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Import auto avec enrichissement
             </p>
           </div>
 
-          <div className="p-4 border rounded-lg">
+          <div className="p-3 sm:p-4 border rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <h3 className="font-medium">Recommandations</h3>
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <h3 className="text-sm sm:text-base font-medium">Recommandations</h3>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Suggestions personnalisées basées sur vos données
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Suggestions personnalisées IA
             </p>
           </div>
 
-          <div className="p-4 border rounded-lg">
+          <div className="p-3 sm:p-4 border rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <BarChart3 className="h-5 w-5 text-primary" />
-              <h3 className="font-medium">Optimisation des prix</h3>
+              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <h3 className="text-sm sm:text-base font-medium">Optimisation prix</h3>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Prix dynamiques optimisés par IA en temps réel
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Prix dynamiques temps réel
             </p>
           </div>
 
-          <div className="p-4 border rounded-lg">
+          <div className="p-3 sm:p-4 border rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              <h3 className="font-medium">Détection de tendances</h3>
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <h3 className="text-sm sm:text-base font-medium">Détection tendances</h3>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Identifiez les produits gagnants avant vos concurrents
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Produits gagnants en premier
             </p>
           </div>
 
-          <div className="p-4 border rounded-lg">
+          <div className="p-3 sm:p-4 border rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Zap className="h-5 w-5 text-primary" />
-              <h3 className="font-medium">Automatisation intelligente</h3>
+              <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <h3 className="text-sm sm:text-base font-medium">Automatisation</h3>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Workflows adaptatifs qui apprennent de vos actions
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Workflows adaptatifs IA
             </p>
           </div>
         </div>
 
-        <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-          <p className="text-sm text-muted-foreground mb-3">
-            Activez les fonctionnalités IA pour booster votre business
+        <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-muted/50 rounded-lg">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-3">
+            Activez les fonctionnalités IA
           </p>
-          <div className="flex gap-3">
-            <Button>
-              <Brain className="h-4 w-4 mr-2" />
-              Lancer une analyse
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <Button size="sm" className="sm:size-default">
+              <Brain className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+              Lancer analyse
             </Button>
-            <Button variant="outline">
-              <Sparkles className="h-4 w-4 mr-2" />
-              Voir les recommandations
+            <Button variant="outline" size="sm" className="sm:size-default">
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+              Recommandations
             </Button>
           </div>
         </div>
