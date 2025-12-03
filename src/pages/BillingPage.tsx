@@ -10,10 +10,8 @@ import {
   TrendingUp,
   Calendar,
 } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
 
 export default function BillingPage() {
-  // Mock data - replace with actual data from your backend
   const currentPlan = {
     name: 'Pro',
     price: 99,
@@ -51,49 +49,49 @@ export default function BillingPage() {
   ]
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="text-3xl font-bold">Billing & Payments</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Billing & Payments</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Manage your subscription and payment methods
           </p>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-primary/10">
-              <CreditCard className="w-6 h-6 text-primary" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-primary/10">
+              <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Current Plan</p>
-              <p className="text-2xl font-bold">{currentPlan.name}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Current Plan</p>
+              <p className="text-lg sm:text-2xl font-bold">{currentPlan.name}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-green-500/10">
-              <DollarSign className="w-6 h-6 text-green-500" />
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-green-500/10">
+              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Monthly Cost</p>
-              <p className="text-2xl font-bold">€{currentPlan.price}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Monthly Cost</p>
+              <p className="text-lg sm:text-2xl font-bold">€{currentPlan.price}</p>
             </div>
           </div>
         </Card>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-blue-500/10">
-              <Calendar className="w-6 h-6 text-blue-500" />
+        <Card className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-lg bg-blue-500/10">
+              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Next Billing</p>
-              <p className="text-lg font-bold">
+              <p className="text-xs sm:text-sm text-muted-foreground">Next Billing</p>
+              <p className="text-base sm:text-lg font-bold">
                 {new Date(currentPlan.nextBillingDate).toLocaleDateString()}
               </p>
             </div>
@@ -101,52 +99,60 @@ export default function BillingPage() {
         </Card>
       </div>
 
-      <Tabs defaultValue="plan" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="plan">Current Plan</TabsTrigger>
-          <TabsTrigger value="payment">Payment Methods</TabsTrigger>
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="plan" className="space-y-4 sm:space-y-6">
+        <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
+          <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
+            <TabsTrigger value="plan" className="text-xs sm:text-sm px-3 py-2">
+              <span className="hidden sm:inline">Current Plan</span>
+              <span className="sm:hidden">Plan</span>
+            </TabsTrigger>
+            <TabsTrigger value="payment" className="text-xs sm:text-sm px-3 py-2">
+              <span className="hidden sm:inline">Payment Methods</span>
+              <span className="sm:hidden">Payment</span>
+            </TabsTrigger>
+            <TabsTrigger value="invoices" className="text-xs sm:text-sm px-3 py-2">Invoices</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="plan" className="space-y-4">
-          <Card className="p-6">
-            <div className="flex items-start justify-between mb-6">
+          <Card className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4 sm:mb-6">
               <div>
-                <h2 className="text-2xl font-bold mb-2">{currentPlan.name} Plan</h2>
-                <p className="text-muted-foreground">
+                <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">{currentPlan.name} Plan</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Full access to all features and integrations
                 </p>
               </div>
-              <div className="text-right">
-                <p className="text-3xl font-bold">€{currentPlan.price}</p>
-                <p className="text-sm text-muted-foreground">per month</p>
+              <div className="text-left sm:text-right">
+                <p className="text-2xl sm:text-3xl font-bold">€{currentPlan.price}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">per month</p>
               </div>
             </div>
 
-            <div className="space-y-3 mb-6">
+            <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-green-500" />
-                <span>Unlimited products</span>
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                <span className="text-sm sm:text-base">Unlimited products</span>
               </div>
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-green-500" />
-                <span>Advanced analytics</span>
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                <span className="text-sm sm:text-base">Advanced analytics</span>
               </div>
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-green-500" />
-                <span>Priority support</span>
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                <span className="text-sm sm:text-base">Priority support</span>
               </div>
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-green-500" />
-                <span>API access</span>
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                <span className="text-sm sm:text-base">API access</span>
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <Button variant="outline" className="flex-1">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Button variant="outline" className="flex-1 text-sm">
                 Change Plan
               </Button>
-              <Button variant="destructive" className="flex-1">
+              <Button variant="destructive" className="flex-1 text-sm">
                 Cancel Subscription
               </Button>
             </div>
@@ -154,42 +160,42 @@ export default function BillingPage() {
         </TabsContent>
 
         <TabsContent value="payment" className="space-y-4">
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold">Payment Methods</h2>
-              <Button>
+          <Card className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold">Payment Methods</h2>
+              <Button size="sm" className="w-full sm:w-auto">
                 <CreditCard className="w-4 h-4 mr-2" />
                 Add Payment Method
               </Button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {paymentMethods.map((method) => (
-                <Card key={method.id} className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-lg bg-primary/10">
-                        <CreditCard className="w-6 h-6 text-primary" />
+                <Card key={method.id} className="p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="p-2 sm:p-3 rounded-lg bg-primary/10">
+                        <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-semibold">
+                          <p className="text-sm sm:text-base font-semibold">
                             {method.brand} •••• {method.last4}
                           </p>
                           {method.isDefault && (
-                            <Badge variant="secondary">Default</Badge>
+                            <Badge variant="secondary" className="text-xs">Default</Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           Expires {method.expiryMonth}/{method.expiryYear}
                         </p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
+                    <div className="flex gap-2 ml-auto sm:ml-0">
+                      <Button variant="outline" size="sm" className="text-xs">
                         Edit
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="text-xs">
                         Remove
                       </Button>
                     </div>
@@ -201,39 +207,40 @@ export default function BillingPage() {
         </TabsContent>
 
         <TabsContent value="invoices" className="space-y-4">
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-6">Invoice History</h2>
-            <div className="space-y-4">
+          <Card className="p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Invoice History</h2>
+            <div className="space-y-3 sm:space-y-4">
               {invoices.map((invoice) => (
                 <div
                   key={invoice.id}
-                  className="flex items-center justify-between p-4 rounded-lg bg-muted/50"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/50"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-lg bg-primary/10">
-                      <Receipt className="w-5 h-5 text-primary" />
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="p-2 sm:p-3 rounded-lg bg-primary/10">
+                      <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-semibold">{invoice.number}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm sm:text-base font-semibold">{invoice.number}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         {new Date(invoice.date).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="font-semibold">€{invoice.amount.toFixed(2)}</p>
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 ml-auto">
+                    <div className="text-left sm:text-right">
+                      <p className="text-sm sm:text-base font-semibold">€{invoice.amount.toFixed(2)}</p>
                       <Badge
                         variant={
                           invoice.status === 'paid' ? 'default' : 'secondary'
                         }
+                        className="text-xs"
                       >
                         {invoice.status}
                       </Badge>
                     </div>
-                    <Button variant="outline" size="sm">
-                      <Download className="w-4 h-4 mr-1" />
-                      Download
+                    <Button variant="outline" size="sm" className="text-xs">
+                      <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                      <span className="hidden xs:inline">Download</span>
                     </Button>
                   </div>
                 </div>

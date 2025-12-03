@@ -429,28 +429,30 @@ const Settings = () => {
   }];
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
-      <div className="mb-4">
+    <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 max-w-full overflow-x-hidden">
+      <div className="mb-2 sm:mb-4">
         <BackButton to="/dashboard" />
       </div>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             {t('settings:title')}
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             {t('settings:description')}
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleLogout} className="border-destructive/20 text-destructive hover:bg-destructive/10">
-            <LogOut className="mr-2 h-4 w-4" />
-            {t('navigation:logout')}
+          <Button variant="outline" onClick={handleLogout} size="sm" className="border-destructive/20 text-destructive hover:bg-destructive/10 text-xs sm:text-sm">
+            <LogOut className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">{t('navigation:logout')}</span>
+            <span className="xs:hidden">Quit</span>
           </Button>
-          <Button variant="default" onClick={handleSaveProfile} className="bg-primary hover:bg-primary/90">
-            <Save className="mr-2 h-4 w-4" />
-            Sauvegarder
+          <Button variant="default" onClick={handleSaveProfile} size="sm" className="bg-primary hover:bg-primary/90 text-xs sm:text-sm">
+            <Save className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Sauvegarder</span>
+            <span className="xs:hidden">Save</span>
           </Button>
         </div>
       </div>
@@ -488,42 +490,76 @@ const Settings = () => {
       )}
 
       <Tabs defaultValue="profile" className="w-full">
-        <div className="grid lg:grid-cols-4 gap-6">
-          {/* Left Sidebar - Navigation */}
-          <Card className="border-border bg-card shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <SettingsIcon className="h-5 w-5 text-primary" />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
+          {/* Left Sidebar - Navigation (hidden on mobile, shown as horizontal scroll) */}
+          <Card className="border-border bg-card shadow-card lg:block">
+            <CardHeader className="p-3 sm:p-6 hidden lg:block">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                <SettingsIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 Configuration
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <TabsList className="grid w-full grid-cols-1 h-auto bg-transparent p-1 space-y-1">
-                <TabsTrigger value="profile" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              {/* Mobile horizontal scroll tabs */}
+              <div className="lg:hidden overflow-x-auto scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
+                <TabsList className="inline-flex w-auto min-w-full h-auto bg-transparent p-1 gap-1">
+                  <TabsTrigger value="profile" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <User className="h-3.5 w-3.5" />
+                    Profil
+                  </TabsTrigger>
+                  <TabsTrigger value="notifications" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <Bell className="h-3.5 w-3.5" />
+                    Notifs
+                  </TabsTrigger>
+                  <TabsTrigger value="security" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <Shield className="h-3.5 w-3.5" />
+                    Sécurité
+                  </TabsTrigger>
+                  <TabsTrigger value="integrations" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <Database className="h-3.5 w-3.5" />
+                    Intégrations
+                  </TabsTrigger>
+                  <TabsTrigger value="billing" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <CreditCard className="h-3.5 w-3.5" />
+                    Billing
+                  </TabsTrigger>
+                  <TabsTrigger value="api" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <Key className="h-3.5 w-3.5" />
+                    API
+                  </TabsTrigger>
+                  <TabsTrigger value="appearance" className="flex items-center gap-1.5 px-3 py-2 text-xs whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <Palette className="h-3.5 w-3.5" />
+                    Thème
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+              {/* Desktop vertical tabs */}
+              <TabsList className="hidden lg:grid w-full grid-cols-1 h-auto bg-transparent p-1 space-y-1">
+                <TabsTrigger value="profile" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <User className="mr-2 h-4 w-4" />
                   {t('settings:general.profile')}
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger value="notifications" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Bell className="mr-2 h-4 w-4" />
                   {t('settings:tabs.notifications')}
                 </TabsTrigger>
-                <TabsTrigger value="security" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger value="security" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Shield className="mr-2 h-4 w-4" />
                   {t('settings:tabs.security')}
                 </TabsTrigger>
-                <TabsTrigger value="integrations" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger value="integrations" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Database className="mr-2 h-4 w-4" />
                   {t('settings:tabs.integrations')}
                 </TabsTrigger>
-                <TabsTrigger value="billing" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger value="billing" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <CreditCard className="mr-2 h-4 w-4" />
                   Facturation
                 </TabsTrigger>
-                <TabsTrigger value="api" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger value="api" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Key className="mr-2 h-4 w-4" />
                   API
                 </TabsTrigger>
-                <TabsTrigger value="appearance" className="justify-start w-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger value="appearance" className="justify-start w-full text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <Palette className="mr-2 h-4 w-4" />
                   {t('settings:tabs.appearance')}
                 </TabsTrigger>
