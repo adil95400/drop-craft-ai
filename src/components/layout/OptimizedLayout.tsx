@@ -32,10 +32,10 @@ const OptimizedLayoutComponent = ({ className }: OptimizedLayoutProps) => {
   if (isMobile) {
     return (
       <NavigationProvider>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background flex flex-col">
           <MobileHeader />
-          <main className="pb-20 pt-4">
-            <div className="container max-w-screen-sm mx-auto px-4">
+          <main className="flex-1 pb-20">
+            <div className="container max-w-screen-sm mx-auto px-4 py-4">
               <Suspense fallback={<LoadingSpinner text="Chargement de la page..." />}>
                 <Outlet />
               </Suspense>
