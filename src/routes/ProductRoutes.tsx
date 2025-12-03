@@ -43,6 +43,7 @@ const ProductResearchPage = lazy(() => import('@/pages/ProductResearchPage'));
 const AIMarketplacePage = lazy(() => import('@/pages/AIMarketplacePage'));
 const PremiumCatalog = lazy(() => import('@/pages/PremiumCatalog'));
 const PremiumNetworkPage = lazy(() => import('@/pages/PremiumNetworkPage'));
+const GlobalProductMarketplace = lazy(() => import('@/pages/GlobalProductMarketplace'));
 
 // Tools
 const ProfitCalculatorPage = lazy(() => import('@/pages/ProfitCalculatorPage'));
@@ -112,12 +113,13 @@ export function ProductRoutes() {
       <Route path="suppliers/:id/catalog" element={<SupplierCatalogPage />} />
       <Route path="suppliers/:id/edit" element={<CreateSupplier />} />
       
-      {/* Product Research */}
+      {/* Product Research & Marketplace */}
       <Route path="winners" element={<WinnersPage />} />
       <Route path="research" element={<ProductResearchPage />} />
       <Route path="ai-marketplace" element={<AIMarketplacePage />} />
       <Route path="premium-catalog" element={<PremiumCatalog />} />
       <Route path="premium-network" element={<PremiumNetworkPage />} />
+      <Route path="global-marketplace" element={<GlobalProductMarketplace />} />
       
       {/* Tools */}
       <Route path="profit-calculator" element={<ProfitCalculatorPage />} />

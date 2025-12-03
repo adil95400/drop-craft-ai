@@ -1,0 +1,104 @@
+{
+  "title": "Produits",
+  "description": "Gérez votre catalogue de produits",
+  "search": "Rechercher un produit...",
+  "filters": {
+    "all": "Tous",
+    "active": "Actifs",
+    "draft": "Brouillons",
+    "archived": "Archivés",
+    "category": "Catégorie",
+    "supplier": "Fournisseur",
+    "priceRange": "Fourchette de prix",
+    "stock": "Stock"
+  },
+  "sort": {
+    "newest": "Plus récents",
+    "oldest": "Plus anciens",
+    "priceAsc": "Prix croissant",
+    "priceDesc": "Prix décroissant",
+    "nameAsc": "Nom A-Z",
+    "nameDesc": "Nom Z-A"
+  },
+  "table": {
+    "name": "Nom",
+    "sku": "SKU",
+    "price": "Prix",
+    "stock": "Stock",
+    "status": "Statut",
+    "category": "Catégorie",
+    "actions": "Actions"
+  },
+  "actions": {
+    "create": "Créer un produit",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "duplicate": "Dupliquer",
+    "archive": "Archiver",
+    "publish": "Publier",
+    "import": "Importer",
+    "export": "Exporter",
+    "bulkEdit": "Modification en masse",
+    "optimize": "Optimiser avec IA"
+  },
+  "form": {
+    "basicInfo": "Informations de base",
+    "name": "Nom du produit",
+    "description": "Description",
+    "shortDescription": "Description courte",
+    "pricing": "Tarification",
+    "price": "Prix de vente",
+    "comparePrice": "Prix barré",
+    "costPrice": "Prix d'achat",
+    "inventory": "Inventaire",
+    "sku": "SKU",
+    "barcode": "Code-barres",
+    "quantity": "Quantité",
+    "trackInventory": "Suivre le stock",
+    "images": "Images",
+    "addImages": "Ajouter des images",
+    "mainImage": "Image principale",
+    "seo": "SEO",
+    "metaTitle": "Meta titre",
+    "metaDescription": "Meta description",
+    "urlHandle": "URL personnalisée"
+  },
+  "status": {
+    "active": "Actif",
+    "draft": "Brouillon",
+    "archived": "Archivé",
+    "outOfStock": "Rupture de stock"
+  },
+  "messages": {
+    "created": "Produit créé avec succès",
+    "updated": "Produit mis à jour",
+    "deleted": "Produit supprimé",
+    "duplicated": "Produit dupliqué",
+    "imported": "Produits importés",
+    "exported": "Export en cours...",
+    "optimized": "Produit optimisé par IA"
+  },
+  "audit": {
+    "title": "Audit qualité",
+    "score": "Score global",
+    "seo": "SEO",
+    "content": "Contenu",
+    "images": "Images",
+    "data": "Données",
+    "excellent": "Excellent",
+    "good": "Bon",
+    "needsWork": "À améliorer",
+    "critical": "Critique"
+  },
+  "marketplace": {
+    "title": "Marketplace Globale",
+    "description": "Découvrez et importez des produits de tous vos fournisseurs",
+    "totalProducts": "Produits disponibles",
+    "avgMargin": "Marge moyenne",
+    "suppliers": "Fournisseurs",
+    "winners": "Winners",
+    "trending": "Tendance",
+    "fastShip": "Livraison rapide",
+    "importProduct": "Importer ce produit"
+  }
+}

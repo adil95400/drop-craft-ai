@@ -1,0 +1,57 @@
+{
+  "title": "Monitoring",
+  "description": "Monitor your system health",
+  "tabs": {
+    "overview": "Overview",
+    "suppliers": "Suppliers",
+    "orders": "Orders",
+    "system": "System"
+  },
+  "health": {
+    "title": "System health",
+    "healthy": "Healthy",
+    "warning": "Warning",
+    "critical": "Critical",
+    "unknown": "Unknown"
+  },
+  "metrics": {
+    "uptime": "Uptime",
+    "responseTime": "Response time",
+    "errorRate": "Error rate",
+    "requests": "Requests",
+    "apiCalls": "API calls",
+    "syncStatus": "Sync status"
+  },
+  "alerts": {
+    "title": "Alerts",
+    "active": "Active alerts",
+    "resolved": "Resolved",
+    "configure": "Configure alerts",
+    "noAlerts": "No alerts"
+  },
+  "suppliers": {
+    "connected": "Connected",
+    "syncing": "Syncing",
+    "errors": "With errors",
+    "lastSync": "Last sync"
+  },
+  "performance": {
+    "title": "Performance",
+    "cpu": "CPU",
+    "memory": "Memory",
+    "storage": "Storage",
+    "network": "Network"
+  },
+  "logs": {
+    "title": "Logs",
+    "info": "Information",
+    "warning": "Warning",
+    "error": "Error",
+    "debug": "Debug"
+  },
+  "actions": {
+    "refresh": "Refresh",
+    "exportLogs": "Export logs",
+    "runHealthCheck": "Run health check"
+  }
+}

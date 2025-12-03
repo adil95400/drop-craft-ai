@@ -1,0 +1,104 @@
+{
+  "title": "Products",
+  "description": "Manage your product catalog",
+  "search": "Search products...",
+  "filters": {
+    "all": "All",
+    "active": "Active",
+    "draft": "Drafts",
+    "archived": "Archived",
+    "category": "Category",
+    "supplier": "Supplier",
+    "priceRange": "Price range",
+    "stock": "Stock"
+  },
+  "sort": {
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "priceAsc": "Price: Low to High",
+    "priceDesc": "Price: High to Low",
+    "nameAsc": "Name A-Z",
+    "nameDesc": "Name Z-A"
+  },
+  "table": {
+    "name": "Name",
+    "sku": "SKU",
+    "price": "Price",
+    "stock": "Stock",
+    "status": "Status",
+    "category": "Category",
+    "actions": "Actions"
+  },
+  "actions": {
+    "create": "Create product",
+    "edit": "Edit",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "archive": "Archive",
+    "publish": "Publish",
+    "import": "Import",
+    "export": "Export",
+    "bulkEdit": "Bulk edit",
+    "optimize": "Optimize with AI"
+  },
+  "form": {
+    "basicInfo": "Basic information",
+    "name": "Product name",
+    "description": "Description",
+    "shortDescription": "Short description",
+    "pricing": "Pricing",
+    "price": "Selling price",
+    "comparePrice": "Compare at price",
+    "costPrice": "Cost price",
+    "inventory": "Inventory",
+    "sku": "SKU",
+    "barcode": "Barcode",
+    "quantity": "Quantity",
+    "trackInventory": "Track inventory",
+    "images": "Images",
+    "addImages": "Add images",
+    "mainImage": "Main image",
+    "seo": "SEO",
+    "metaTitle": "Meta title",
+    "metaDescription": "Meta description",
+    "urlHandle": "URL handle"
+  },
+  "status": {
+    "active": "Active",
+    "draft": "Draft",
+    "archived": "Archived",
+    "outOfStock": "Out of stock"
+  },
+  "messages": {
+    "created": "Product created successfully",
+    "updated": "Product updated",
+    "deleted": "Product deleted",
+    "duplicated": "Product duplicated",
+    "imported": "Products imported",
+    "exported": "Export in progress...",
+    "optimized": "Product optimized by AI"
+  },
+  "audit": {
+    "title": "Quality audit",
+    "score": "Overall score",
+    "seo": "SEO",
+    "content": "Content",
+    "images": "Images",
+    "data": "Data",
+    "excellent": "Excellent",
+    "good": "Good",
+    "needsWork": "Needs improvement",
+    "critical": "Critical"
+  },
+  "marketplace": {
+    "title": "Global Marketplace",
+    "description": "Discover and import products from all your suppliers",
+    "totalProducts": "Available products",
+    "avgMargin": "Average margin",
+    "suppliers": "Suppliers",
+    "winners": "Winners",
+    "trending": "Trending",
+    "fastShip": "Fast shipping",
+    "importProduct": "Import this product"
+  }
+}

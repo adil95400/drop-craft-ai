@@ -1,0 +1,53 @@
+{
+  "title": "Marketing",
+  "description": "Manage your marketing campaigns",
+  "tabs": {
+    "campaigns": "Campaigns",
+    "automation": "Automation",
+    "analytics": "Analytics",
+    "seo": "SEO"
+  },
+  "campaigns": {
+    "title": "Campaigns",
+    "create": "Create campaign",
+    "active": "Active",
+    "scheduled": "Scheduled",
+    "completed": "Completed",
+    "draft": "Drafts"
+  },
+  "automation": {
+    "title": "Automation",
+    "emailSequences": "Email sequences",
+    "triggers": "Triggers",
+    "workflows": "Workflows",
+    "rules": "Rules"
+  },
+  "channels": {
+    "email": "Email",
+    "sms": "SMS",
+    "social": "Social media",
+    "ads": "Advertising",
+    "push": "Push notifications"
+  },
+  "metrics": {
+    "sent": "Sent",
+    "delivered": "Delivered",
+    "opened": "Opened",
+    "clicked": "Clicked",
+    "converted": "Converted",
+    "revenue": "Revenue generated"
+  },
+  "seo": {
+    "title": "SEO",
+    "keywords": "Keywords",
+    "rankings": "Rankings",
+    "backlinks": "Backlinks",
+    "audit": "SEO audit"
+  },
+  "messages": {
+    "campaignCreated": "Campaign created",
+    "campaignUpdated": "Campaign updated",
+    "campaignDeleted": "Campaign deleted",
+    "campaignLaunched": "Campaign launched"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "title": "Suppliers",
+  "description": "Manage your supplier connections",
+  "search": "Search suppliers...",
+  "tabs": {
+    "all": "All",
+    "connected": "Connected",
+    "available": "Available",
+    "premium": "Premium"
+  },
+  "filters": {
+    "category": "Category",
+    "region": "Region",
+    "status": "Status"
+  },
+  "status": {
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "pending": "Pending",
+    "error": "Error",
+    "syncing": "Syncing"
+  },
+  "actions": {
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "sync": "Sync",
+    "configure": "Configure",
+    "viewProducts": "View products",
+    "viewAnalytics": "View analytics"
+  },
+  "details": {
+    "productsCount": "Products",
+    "ordersCount": "Orders",
+    "successRate": "Success rate",
+    "avgShipping": "Avg. shipping",
+    "lastSync": "Last sync",
+    "apiStatus": "API status"
+  },
+  "connection": {
+    "title": "Supplier connection",
+    "apiKey": "API Key",
+    "apiSecret": "API Secret",
+    "username": "Username",
+    "password": "Password",
+    "testConnection": "Test connection",
+    "saveCredentials": "Save credentials"
+  },
+  "sync": {
+    "title": "Synchronization",
+    "products": "Products",
+    "inventory": "Inventory",
+    "prices": "Prices",
+    "orders": "Orders",
+    "auto": "Auto-sync",
+    "manual": "Manual sync",
+    "lastSync": "Last synchronization",
+    "nextSync": "Next synchronization"
+  },
+  "messages": {
+    "connected": "Supplier connected successfully",
+    "disconnected": "Supplier disconnected",
+    "syncStarted": "Synchronization started",
+    "syncCompleted": "Synchronization completed",
+    "syncFailed": "Synchronization failed",
+    "credentialsSaved": "Credentials saved"
+  },
+  "categories": {
+    "dropshipping": "Dropshipping",
+    "wholesale": "Wholesale",
+    "marketplace": "Marketplace",
+    "pod": "Print on Demand",
+    "fulfillment": "Fulfillment"
+  }
+}

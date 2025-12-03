@@ -1,0 +1,46 @@
+{
+  "title": "Auto-Fulfillment",
+  "description": "Automatiza tus pedidos y rastrea envíos",
+  "tabs": {
+    "dashboard": "Dashboard",
+    "suppliers": "Proveedores",
+    "routing": "Enrutamiento",
+    "orders": "Pedidos"
+  },
+  "dashboard": {
+    "todayOrders": "Pedidos hoy",
+    "successRate": "Tasa de éxito",
+    "avgProcessingTime": "Tiempo promedio",
+    "pendingOrders": "Pendientes"
+  },
+  "suppliers": {
+    "title": "Conexiones de proveedores",
+    "description": "Configura proveedores para auto-fulfillment",
+    "connected": "Conectados",
+    "available": "Disponibles",
+    "addSupplier": "Añadir proveedor"
+  },
+  "routing": {
+    "title": "Reglas de enrutamiento",
+    "description": "Define cómo se enrutan los pedidos",
+    "addRule": "Nueva regla",
+    "noRules": "Sin reglas configuradas",
+    "createFirst": "Crea tu primera regla"
+  },
+  "orders": {
+    "title": "Pedidos Auto-Fulfillment",
+    "description": "Rastrea todos tus pedidos automatizados",
+    "status": {
+      "pending": "Pendiente",
+      "processing": "Procesando",
+      "confirmed": "Confirmado",
+      "shipped": "Enviado",
+      "delivered": "Entregado",
+      "failed": "Fallido"
+    }
+  },
+  "messages": {
+    "orderProcessed": "Pedido procesado con éxito",
+    "orderFailed": "Error en el procesamiento"
+  }
+}

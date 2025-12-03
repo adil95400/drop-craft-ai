@@ -1,0 +1,59 @@
+{
+  "title": "Auto-Fulfillment",
+  "description": "Automatisez vos commandes et suivez vos livraisons",
+  "tabs": {
+    "dashboard": "Dashboard",
+    "suppliers": "Fournisseurs",
+    "routing": "Routing",
+    "orders": "Commandes"
+  },
+  "dashboard": {
+    "todayOrders": "Commandes aujourd'hui",
+    "successRate": "Taux de réussite",
+    "avgProcessingTime": "Temps moyen",
+    "pendingOrders": "En attente"
+  },
+  "suppliers": {
+    "title": "Connexions fournisseurs",
+    "description": "Configurez vos fournisseurs pour l'auto-fulfillment",
+    "connected": "Connectés",
+    "available": "Disponibles",
+    "addSupplier": "Ajouter un fournisseur"
+  },
+  "routing": {
+    "title": "Règles de routing",
+    "description": "Définissez comment les commandes sont routées vers les fournisseurs",
+    "addRule": "Nouvelle règle",
+    "noRules": "Aucune règle configurée",
+    "createFirst": "Créez votre première règle de routing",
+    "howItWorks": "Comment ça marche ?",
+    "step1": "Définissez vos conditions",
+    "step2": "Choisissez le fournisseur",
+    "step3": "Automatisation complète"
+  },
+  "orders": {
+    "title": "Commandes Auto-Fulfillment",
+    "description": "Suivez toutes vos commandes automatisées",
+    "status": {
+      "pending": "En attente",
+      "processing": "En traitement",
+      "confirmed": "Confirmée",
+      "shipped": "Expédiée",
+      "delivered": "Livrée",
+      "failed": "Échec"
+    },
+    "noOrders": "Aucune commande pour le moment"
+  },
+  "actions": {
+    "process": "Traiter",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "viewDetails": "Voir détails"
+  },
+  "messages": {
+    "orderProcessed": "Commande traitée avec succès",
+    "orderFailed": "Échec du traitement",
+    "ruleCreated": "Règle créée",
+    "supplierConnected": "Fournisseur connecté"
+  }
+}

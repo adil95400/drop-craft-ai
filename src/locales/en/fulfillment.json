@@ -1,0 +1,59 @@
+{
+  "title": "Auto-Fulfillment",
+  "description": "Automate your orders and track deliveries",
+  "tabs": {
+    "dashboard": "Dashboard",
+    "suppliers": "Suppliers",
+    "routing": "Routing",
+    "orders": "Orders"
+  },
+  "dashboard": {
+    "todayOrders": "Today's orders",
+    "successRate": "Success rate",
+    "avgProcessingTime": "Avg. time",
+    "pendingOrders": "Pending"
+  },
+  "suppliers": {
+    "title": "Supplier connections",
+    "description": "Configure suppliers for auto-fulfillment",
+    "connected": "Connected",
+    "available": "Available",
+    "addSupplier": "Add supplier"
+  },
+  "routing": {
+    "title": "Routing rules",
+    "description": "Define how orders are routed to suppliers",
+    "addRule": "New rule",
+    "noRules": "No rules configured",
+    "createFirst": "Create your first routing rule",
+    "howItWorks": "How it works?",
+    "step1": "Define conditions",
+    "step2": "Choose supplier",
+    "step3": "Full automation"
+  },
+  "orders": {
+    "title": "Auto-Fulfillment Orders",
+    "description": "Track all your automated orders",
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "confirmed": "Confirmed",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "failed": "Failed"
+    },
+    "noOrders": "No orders yet"
+  },
+  "actions": {
+    "process": "Process",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "viewDetails": "View details"
+  },
+  "messages": {
+    "orderProcessed": "Order processed successfully",
+    "orderFailed": "Processing failed",
+    "ruleCreated": "Rule created",
+    "supplierConnected": "Supplier connected"
+  }
+}
