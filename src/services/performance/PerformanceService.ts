@@ -159,6 +159,43 @@ export class PerformanceService {
     } catch (e) {
       // FID not supported
     }
+
+    // Cumulative Layout Shift
+    try {
+      let clsValue = 0;
+      const clsObserver = new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry: any) => {
+          if (!entry.hadRecentInput) {
+            clsValue += entry.value;
+          }
+        });
+        
+        console.log(`[CLS] ${clsValue.toFixed(4)}`);
+        
+        if (clsValue > 0.25) {
+          console.warn('[CLS] Poor layout stability (>0.25)');
+        }
+      });
+      
+      clsObserver.observe({ entryTypes: ['layout-shift'] });
+    } catch (e) {
+      // CLS not supported
+    }
+
+    // Time to First Byte
+    try {
+      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      if (navigation) {
+        const ttfb = navigation.responseStart - navigation.requestStart;
+        console.log(`[TTFB] ${ttfb.toFixed(2)}ms`);
+        
+        if (ttfb > 800) {
+          console.warn('[TTFB] Slow server response (>800ms)');
+        }
+      }
+    } catch (e) {
+      // Navigation timing not supported
+    }
   }
 
   /**
