@@ -5,8 +5,8 @@ import { useToast } from '@/hooks/use-toast'
 export interface SecurityEvent {
   id: string
   user_id: string
-  event_type: 'login' | 'failed_login' | 'password_change' | 'suspicious_activity' | 'api_access'
-  severity: 'low' | 'medium' | 'high' | 'critical'
+  event_type: 'login' | 'failed_login' | 'password_change' | 'suspicious_activity' | 'api_access' | string
+  severity: 'low' | 'medium' | 'high' | 'critical' | 'info' | 'warning' | 'error'
   description: string
   ip_address?: string
   user_agent?: string
@@ -55,33 +55,31 @@ export const useRealSecurity = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return []
 
-      // Mock security events since we don't have a security_events table yet
-      const mockEvents: SecurityEvent[] = [
-        {
-          id: '1',
-          user_id: user.id,
-          event_type: 'failed_login',
-          severity: 'medium',
-          description: 'Plusieurs tentatives de connexion échouées',
-          ip_address: '192.168.1.100',
-          status: 'blocked',
-          metadata: { attempts: 5 },
-          created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: '2',
-          user_id: user.id,
-          event_type: 'login',
-          severity: 'low',
-          description: 'Connexion réussie depuis un nouvel appareil',
-          ip_address: '10.0.0.25',
-          status: 'resolved',
-          metadata: { device: 'Chrome - Windows' },
-          created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
-        }
-      ]
+      // Fetch real security events from Supabase
+      const { data, error } = await supabase
+        .from('security_events')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50)
 
-      return mockEvents
+      if (error) {
+        console.error('Error fetching security events:', error)
+        return []
+      }
+
+      // Map database fields to interface
+      return (data || []).map((event: any) => ({
+        id: event.id,
+        user_id: event.user_id || user.id,
+        event_type: event.event_type || 'unknown',
+        severity: event.severity || 'info',
+        description: event.description || '',
+        ip_address: event.metadata?.ip_address,
+        user_agent: event.metadata?.user_agent,
+        status: event.metadata?.status || 'open',
+        metadata: event.metadata || {},
+        created_at: event.created_at
+      }))
     }
   })
 
@@ -91,83 +89,160 @@ export const useRealSecurity = () => {
   } = useQuery({
     queryKey: ['real-vulnerabilities'],
     queryFn: async (): Promise<Vulnerability[]> => {
-      // Mock vulnerabilities
-      const mockVulnerabilities: Vulnerability[] = [
-        {
-          id: '1',
-          title: 'Mot de passe faible détecté',
-          description: 'Un utilisateur utilise un mot de passe ne respectant pas les critères de sécurité',
-          severity: 'medium',
-          category: 'Authentication',
-          status: 'open',
-          discovered_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: '2',
-          title: 'Bibliothèque obsolète',
-          description: 'Une dépendance npm présente des vulnérabilités connues',
-          severity: 'low',
-          category: 'Dependencies',
-          status: 'patched',
-          discovered_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-          fixed_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()
-        }
-      ]
+      // Fetch from security_events where event_type indicates vulnerabilities
+      const { data, error } = await supabase
+        .from('security_events')
+        .select('*')
+        .in('event_type', ['vulnerability_detected', 'security_warning', 'potential_scraping_detected'])
+        .order('created_at', { ascending: false })
+        .limit(20)
 
-      return mockVulnerabilities
+      if (error) {
+        console.error('Error fetching vulnerabilities:', error)
+        return []
+      }
+
+      return (data || []).map((v: any) => ({
+        id: v.id,
+        title: v.event_type || 'Security Issue',
+        description: v.description || '',
+        severity: v.severity === 'critical' ? 'critical' : 
+                  v.severity === 'error' ? 'high' : 
+                  v.severity === 'warning' ? 'medium' : 'low',
+        category: v.metadata?.category || 'Security',
+        status: v.metadata?.resolved ? 'resolved' : 'open',
+        discovered_at: v.created_at,
+        fixed_at: v.metadata?.fixed_at
+      }))
     }
   })
 
-  // Run security scan
+  // Run security scan - creates real audit entry
   const runSecurityScan = useMutation({
     mutationFn: async () => {
-      // Simulate security scan
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      // Log the security scan
+      await supabase.from('security_events').insert({
+        user_id: user.id,
+        event_type: 'security_scan_initiated',
+        severity: 'info',
+        description: 'Manual security scan initiated by admin',
+        metadata: { scan_type: 'full', timestamp: new Date().toISOString() }
+      })
+
+      // Fetch current security stats
+      const { data: events } = await supabase
+        .from('security_events')
+        .select('*')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+
+      const criticalCount = (events || []).filter((e: any) => e.severity === 'critical').length
+      const warningCount = (events || []).filter((e: any) => e.severity === 'warning').length
+
+      // Log scan completion
+      await supabase.from('security_events').insert({
+        user_id: user.id,
+        event_type: 'security_scan_completed',
+        severity: 'info',
+        description: `Security scan completed. Found ${criticalCount} critical, ${warningCount} warnings.`,
+        metadata: { 
+          critical_count: criticalCount,
+          warning_count: warningCount,
+          scanned_at: new Date().toISOString()
+        }
+      })
       
       return {
         scannedAt: new Date().toISOString(),
-        newVulnerabilities: Math.floor(Math.random() * 3),
-        fixedIssues: Math.floor(Math.random() * 5)
+        newVulnerabilities: criticalCount,
+        fixedIssues: 0
       }
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['real-vulnerabilities'] })
+      queryClient.invalidateQueries({ queryKey: ['real-security-events'] })
       toast({
         title: "Scan de sécurité terminé",
-        description: `${data.newVulnerabilities} nouvelles vulnérabilités détectées, ${data.fixedIssues} problèmes résolus`
+        description: `${data.newVulnerabilities} problèmes critiques détectés`
+      })
+    },
+    onError: (error) => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de lancer le scan de sécurité",
+        variant: "destructive"
       })
     }
   })
 
-  // Fix vulnerability
+  // Fix vulnerability - updates the security event
   const fixVulnerability = useMutation({
     mutationFn: async (vulnerabilityId: string) => {
-      // Simulate fixing vulnerability
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      // Update the security event as resolved
+      const { error } = await supabase
+        .from('security_events')
+        .update({ 
+          metadata: { resolved: true, fixed_at: new Date().toISOString(), fixed_by: user.id }
+        })
+        .eq('id', vulnerabilityId)
+
+      if (error) throw error
+
+      // Log the fix action
+      await supabase.from('security_events').insert({
+        user_id: user.id,
+        event_type: 'vulnerability_fixed',
+        severity: 'info',
+        description: `Security vulnerability ${vulnerabilityId} has been resolved`,
+        metadata: { vulnerability_id: vulnerabilityId }
+      })
+
       return vulnerabilityId
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['real-vulnerabilities'] })
+      queryClient.invalidateQueries({ queryKey: ['real-security-events'] })
       toast({
         title: "Vulnérabilité corrigée",
         description: "La vulnérabilité a été résolue avec succès"
       })
+    },
+    onError: () => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de résoudre la vulnérabilité",
+        variant: "destructive"
+      })
     }
   })
 
-  // Calculate security metrics
+  // Calculate real security metrics from database
+  const openVulnerabilities = vulnerabilities.filter(v => v.status === 'open').length
+  const criticalEvents = securityEvents.filter(e => e.severity === 'critical' || e.severity === 'error').length
+  const blockedEvents = securityEvents.filter(e => e.status === 'blocked').length
+
+  // Calculate score (higher is better)
+  const baseScore = 100
+  const scoreDeductions = (openVulnerabilities * 10) + (criticalEvents * 5)
+  const calculatedScore = Math.max(0, Math.min(100, baseScore - scoreDeductions))
+
   const metrics: SecurityMetrics = {
-    securityScore: 85,
-    vulnerabilities: vulnerabilities.filter(v => v.status === 'open').length,
-    activeThreats: securityEvents.filter(e => e.status === 'investigating').length,
-    blockedAttacks: securityEvents.filter(e => e.status === 'blocked').length,
-    lastScan: new Date().toISOString(),
+    securityScore: calculatedScore,
+    vulnerabilities: openVulnerabilities,
+    activeThreats: criticalEvents,
+    blockedAttacks: blockedEvents,
+    lastScan: securityEvents.length > 0 ? securityEvents[0].created_at : new Date().toISOString(),
     features: {
-      ssl: true,
-      firewall: true,
-      backup: true,
-      monitoring: true,
-      twoFactor: false
+      ssl: true, // Assuming SSL is always on for Supabase
+      firewall: true, // Supabase has built-in firewall
+      backup: true, // Supabase has automatic backups
+      monitoring: true, // We're monitoring via security_events
+      twoFactor: false // Would need to check auth settings
     }
   }
 

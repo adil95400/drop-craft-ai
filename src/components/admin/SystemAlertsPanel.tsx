@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,9 +11,11 @@ import {
   CheckCircle, 
   XCircle,
   Bell,
-  X
+  X,
+  RefreshCw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface SystemAlert {
   id: string;
@@ -29,66 +31,113 @@ interface SystemAlert {
 export const SystemAlertsPanel: React.FC = () => {
   const [alerts, setAlerts] = useState<SystemAlert[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  const generateMockAlerts = (): SystemAlert[] => {
-    const mockAlerts: SystemAlert[] = [
-      {
-        id: '1',
-        type: 'security',
-        severity: 'high',
-        title: 'Tentatives de connexion suspectes détectées',
-        description: '15 tentatives de connexion échouées depuis la même IP dans les 10 dernières minutes',
-        timestamp: new Date(Date.now() - 5 * 60 * 1000),
-        resolved: false,
-        actionRequired: true
-      },
-      {
-        id: '2',
-        type: 'performance',
-        severity: 'medium',
-        title: 'Latence élevée détectée',
-        description: 'Le temps de réponse moyen dépasse 2 secondes sur les requêtes API',
-        timestamp: new Date(Date.now() - 15 * 60 * 1000),
-        resolved: false,
-        actionRequired: true
-      },
-      {
-        id: '3',
-        type: 'maintenance',
-        severity: 'low',
-        title: 'Sauvegarde automatique programmée',
-        description: 'Sauvegarde complète de la base de données prévue dans 2 heures',
-        timestamp: new Date(Date.now() - 30 * 60 * 1000),
-        resolved: false,
-        actionRequired: false
-      },
-      {
-        id: '4',
-        type: 'error',
-        severity: 'critical',
-        title: 'Erreur de synchronisation fournisseur',
-        description: 'La synchronisation avec le fournisseur BigBuy a échoué - 500 produits non synchronisés',
-        timestamp: new Date(Date.now() - 45 * 60 * 1000),
-        resolved: false,
-        actionRequired: true
+  const fetchRealAlerts = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Fetch real data from multiple sources
+      const [securityEvents, activeAlerts, importJobs] = await Promise.all([
+        supabase
+          .from('security_events')
+          .select('*')
+          .in('severity', ['critical', 'warning', 'error'])
+          .order('created_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('active_alerts')
+          .select('*, alert_rules(*)')
+          .eq('status', 'triggered')
+          .order('triggered_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('import_jobs')
+          .select('*')
+          .eq('status', 'failed')
+          .order('created_at', { ascending: false })
+          .limit(5)
+      ]);
+
+      const realAlerts: SystemAlert[] = [];
+
+      // Convert security events
+      if (securityEvents.data) {
+        securityEvents.data.forEach((event: any) => {
+          realAlerts.push({
+            id: `sec_${event.id}`,
+            type: 'security',
+            severity: event.severity === 'critical' ? 'critical' : event.severity === 'error' ? 'high' : 'medium',
+            title: event.event_type || 'Événement de sécurité',
+            description: event.description || 'Événement de sécurité détecté',
+            timestamp: new Date(event.created_at),
+            resolved: false,
+            actionRequired: event.severity === 'critical'
+          });
+        });
       }
-    ];
 
-    return mockAlerts;
-  };
+      // Convert active alerts
+      if (activeAlerts.data) {
+        activeAlerts.data.forEach((alert: any) => {
+          realAlerts.push({
+            id: `alert_${alert.id}`,
+            type: 'performance',
+            severity: 'high',
+            title: alert.alert_rules?.name || 'Alerte de monitoring',
+            description: `Valeur actuelle: ${alert.current_value} - Seuil dépassé`,
+            timestamp: new Date(alert.triggered_at),
+            resolved: false,
+            actionRequired: true
+          });
+        });
+      }
+
+      // Convert failed import jobs
+      if (importJobs.data) {
+        importJobs.data.forEach((job: any) => {
+          realAlerts.push({
+            id: `import_${job.id}`,
+            type: 'error',
+            severity: 'medium',
+            title: 'Échec d\'importation',
+            description: `Import ${job.source_type || 'inconnu'} échoué: ${job.errors?.[0] || 'Erreur inconnue'}`,
+            timestamp: new Date(job.created_at),
+            resolved: false,
+            actionRequired: true
+          });
+        });
+      }
+
+      // Sort by timestamp
+      realAlerts.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+      setAlerts(realAlerts);
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+      setAlerts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const loadAlerts = async () => {
-      setLoading(true);
-      // Simuler un délai de chargement
-      setTimeout(() => {
-        setAlerts(generateMockAlerts());
-        setLoading(false);
-      }, 1000);
-    };
+    fetchRealAlerts();
 
-    loadAlerts();
-  }, []);
+    // Real-time subscription
+    const channel = supabase
+      .channel('system-alerts-panel')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'security_events' }, () => {
+        fetchRealAlerts();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'active_alerts' }, () => {
+        fetchRealAlerts();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchRealAlerts]);
 
   const getSeverityColor = (severity: SystemAlert['severity']) => {
     switch (severity) {
@@ -109,20 +158,46 @@ export const SystemAlertsPanel: React.FC = () => {
   };
 
   const resolveAlert = async (alertId: string) => {
-    setAlerts(prev => 
-      prev.map(alert => 
-        alert.id === alertId ? { ...alert, resolved: true } : alert
-      )
-    );
+    try {
+      // If it's an active_alerts item, update in database
+      if (alertId.startsWith('alert_')) {
+        const realId = alertId.replace('alert_', '');
+        await supabase
+          .from('active_alerts')
+          .update({ status: 'resolved', resolved_at: new Date().toISOString() })
+          .eq('id', realId);
+      }
 
-    // Logger l'action
-    await supabase.from('security_events').insert({
-      user_id: (await supabase.auth.getUser()).data.user?.id,
-      event_type: 'alert_resolved',
-      severity: 'info',
-      description: `Admin resolved system alert ${alertId}`,
-      metadata: { alert_id: alertId }
-    });
+      // Log the action
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('security_events').insert({
+          user_id: user.id,
+          event_type: 'alert_resolved',
+          severity: 'info',
+          description: `Admin resolved system alert ${alertId}`,
+          metadata: { alert_id: alertId }
+        });
+      }
+
+      setAlerts(prev => 
+        prev.map(alert => 
+          alert.id === alertId ? { ...alert, resolved: true } : alert
+        )
+      );
+
+      toast({
+        title: "Alerte résolue",
+        description: "L'alerte a été marquée comme résolue"
+      });
+    } catch (error) {
+      console.error('Error resolving alert:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de résoudre l'alerte",
+        variant: "destructive"
+      });
+    }
   };
 
   const dismissAlert = (alertId: string) => {
@@ -135,26 +210,35 @@ export const SystemAlertsPanel: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Bell className="h-5 w-5" />
-          Alertes Système
-          {unresolvedAlerts.length > 0 && (
-            <Badge variant="destructive" className="ml-auto">
-              {unresolvedAlerts.length}
-            </Badge>
-          )}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            Alertes Système
+            {unresolvedAlerts.length > 0 && (
+              <Badge variant="destructive">
+                {unresolvedAlerts.length}
+              </Badge>
+            )}
+          </CardTitle>
+          <Button variant="outline" size="sm" onClick={fetchRealAlerts} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Actualiser
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {loading ? (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <RefreshCw className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
             <p className="text-muted-foreground mt-2">Chargement des alertes...</p>
           </div>
         ) : unresolvedAlerts.length === 0 ? (
           <div className="text-center py-8">
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
             <p className="text-muted-foreground">Aucune alerte système active</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Tous les systèmes fonctionnent normalement
+            </p>
           </div>
         ) : (
           <div className="space-y-3">

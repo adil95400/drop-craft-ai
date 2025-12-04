@@ -11,9 +11,11 @@ import {
   ShoppingCart, 
   AlertTriangle, 
   TrendingUp,
-  MessageSquare,
-  Settings
+  Settings,
+  RefreshCw
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface AdminNotification {
   id: string;
@@ -29,60 +31,118 @@ interface AdminNotification {
 export const AdminNotificationsCenter: React.FC = () => {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [filter, setFilter] = useState<'all' | 'unread' | 'high'>('all');
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  const fetchRealNotifications = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch real data from multiple sources
+      const [securityEvents, activityLogs, orders] = await Promise.all([
+        supabase
+          .from('security_events')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('activity_logs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('orders')
+          .select('*')
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(5)
+      ]);
+
+      const realNotifications: AdminNotification[] = [];
+
+      // Convert security events to notifications
+      if (securityEvents.data) {
+        securityEvents.data.forEach((event: any) => {
+          realNotifications.push({
+            id: `security_${event.id}`,
+            type: 'security',
+            title: event.event_type || 'Événement de sécurité',
+            message: event.description || 'Événement de sécurité détecté',
+            timestamp: new Date(event.created_at),
+            read: false,
+            priority: event.severity === 'critical' ? 'high' : event.severity === 'warning' ? 'medium' : 'low',
+            actionUrl: '/admin/security'
+          });
+        });
+      }
+
+      // Convert activity logs to notifications
+      if (activityLogs.data) {
+        activityLogs.data.forEach((log: any) => {
+          realNotifications.push({
+            id: `activity_${log.id}`,
+            type: log.action?.includes('user') ? 'user' : 'system',
+            title: log.action || 'Activité système',
+            message: log.description || 'Action effectuée',
+            timestamp: new Date(log.created_at),
+            read: false,
+            priority: log.severity === 'critical' ? 'high' : 'medium'
+          });
+        });
+      }
+
+      // Convert pending orders to notifications
+      if (orders.data) {
+        orders.data.forEach((order: any) => {
+          realNotifications.push({
+            id: `order_${order.id}`,
+            type: 'order',
+            title: 'Nouvelle commande',
+            message: `Commande ${order.order_number || order.id.slice(0, 8)} - ${order.total_amount || 0}€`,
+            timestamp: new Date(order.created_at),
+            read: false,
+            priority: (order.total_amount || 0) > 500 ? 'high' : 'medium',
+            actionUrl: `/dashboard/orders/${order.id}`
+          });
+        });
+      }
+
+      // Sort by timestamp
+      realNotifications.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+      // If no real data, show empty state
+      setNotifications(realNotifications);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les notifications",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const mockNotifications: AdminNotification[] = [
-      {
-        id: '1',
-        type: 'user',
-        title: 'Nouvel utilisateur Premium',
-        message: 'John Doe vient de s\'abonner au plan Ultra Pro',
-        timestamp: new Date(Date.now() - 5 * 60 * 1000),
-        read: false,
-        priority: 'medium',
-        actionUrl: '/admin/users'
-      },
-      {
-        id: '2',
-        type: 'security',
-        title: 'Tentative d\'accès non autorisé',
-        message: 'Plusieurs tentatives de connexion échouées détectées depuis l\'IP 192.168.1.100',
-        timestamp: new Date(Date.now() - 15 * 60 * 1000),
-        read: false,
-        priority: 'high',
-        actionUrl: '/admin/security'
-      },
-      {
-        id: '3',
-        type: 'order',
-        title: 'Commande importante',
-        message: 'Nouvelle commande de €2,500 nécessitant validation',
-        timestamp: new Date(Date.now() - 30 * 60 * 1000),
-        read: false,
-        priority: 'high',
-        actionUrl: '/admin/orders'
-      },
-      {
-        id: '4',
-        type: 'system',
-        title: 'Sauvegarde terminée',
-        message: 'La sauvegarde quotidienne s\'est terminée avec succès (2.3GB)',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        read: true,
-        priority: 'low'
-      },
-      {
-        id: '5',
-        type: 'performance',
-        title: 'Performance système',
-        message: 'Le temps de réponse API a diminué de 15% cette semaine',
-        timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000),
-        read: true,
-        priority: 'medium'
-      }
-    ];
+    fetchRealNotifications();
 
-    setNotifications(mockNotifications);
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('admin-notifications')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'security_events' }, () => {
+        fetchRealNotifications();
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, () => {
+        fetchRealNotifications();
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, () => {
+        fetchRealNotifications();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const getTypeIcon = (type: AdminNotification['type']) => {
@@ -147,6 +207,15 @@ export const AdminNotificationsCenter: React.FC = () => {
             <Button 
               variant="outline" 
               size="sm"
+              onClick={fetchRealNotifications}
+              disabled={isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+              Actualiser
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
               onClick={markAllAsRead}
               disabled={unreadCount === 0}
             >
@@ -183,10 +252,16 @@ export const AdminNotificationsCenter: React.FC = () => {
       <CardContent>
         <ScrollArea className="h-96">
           <div className="space-y-3">
-            {filteredNotifications.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <RefreshCw className="h-8 w-8 mx-auto mb-2 animate-spin" />
+                <p>Chargement des notifications...</p>
+              </div>
+            ) : filteredNotifications.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p>Aucune notification à afficher</p>
+                <p className="text-sm mt-2">Les notifications apparaîtront ici en temps réel</p>
               </div>
             ) : (
               filteredNotifications.map((notification) => (
@@ -194,8 +269,8 @@ export const AdminNotificationsCenter: React.FC = () => {
                   key={notification.id}
                   className={`p-4 border rounded-lg transition-colors ${
                     notification.read 
-                      ? 'bg-gray-50 border-gray-200' 
-                      : 'bg-white border-blue-200 shadow-sm'
+                      ? 'bg-muted/50 border-border' 
+                      : 'bg-card border-primary/20 shadow-sm'
                   }`}
                 >
                   <div className="flex items-start justify-between">
@@ -210,7 +285,7 @@ export const AdminNotificationsCenter: React.FC = () => {
                             {notification.priority.toUpperCase()}
                           </Badge>
                           {!notification.read && (
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <div className="w-2 h-2 bg-primary rounded-full"></div>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
@@ -221,8 +296,8 @@ export const AdminNotificationsCenter: React.FC = () => {
                             {notification.timestamp.toLocaleString()}
                           </span>
                           {notification.actionUrl && (
-                            <Button variant="ghost" size="sm">
-                              Voir détails
+                            <Button variant="ghost" size="sm" asChild>
+                              <a href={notification.actionUrl}>Voir détails</a>
                             </Button>
                           )}
                         </div>
