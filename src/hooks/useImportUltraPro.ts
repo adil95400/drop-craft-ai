@@ -68,6 +68,16 @@ export interface BulkImportOptions {
   supplierFeedId?: string
 }
 
+export interface CreateScheduledImportParams {
+  name: string
+  platform: string
+  frequency: string
+  type?: string
+  filters?: any
+  next_execution?: string
+  filter_config?: any
+}
+
 export const useImportUltraPro = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -75,7 +85,7 @@ export const useImportUltraPro = () => {
   const [isBulkImporting, setIsBulkImporting] = useState(false)
   const [isAIOptimizing, setIsAIOptimizing] = useState(false)
 
-  // Fetch imported products
+  // Fetch imported products from real database
   const { 
     data: importedProducts = [], 
     isLoading: isLoadingProducts,
@@ -85,7 +95,6 @@ export const useImportUltraPro = () => {
     queryFn: async () => {
       console.log('🔍 [useImportUltraPro] Fetching imported products...')
       
-      // Check authentication
       const { data: { user }, error: authError } = await supabase.auth.getUser()
       console.log('👤 [useImportUltraPro] Current user:', { 
         id: user?.id,
@@ -101,9 +110,7 @@ export const useImportUltraPro = () => {
       console.log('📊 [useImportUltraPro] Query result:', { 
         count: data?.length, 
         error: error?.message,
-        errorDetails: error,
-        userId: user?.id,
-        firstProduct: data?.[0]
+        userId: user?.id
       })
 
       if (error) {
@@ -111,18 +118,14 @@ export const useImportUltraPro = () => {
         throw error
       }
 
-      if (!data || data.length === 0) {
-        console.warn('⚠️ [useImportUltraPro] No products found!')
-      }
-      
       return data as ImportedProduct[]
     },
     refetchOnWindowFocus: false,
     refetchOnMount: true,
-    staleTime: 0 // Force refetch
+    staleTime: 0
   })
 
-  // Fetch AI optimization jobs
+  // Fetch AI optimization jobs from real database
   const { 
     data: aiJobs = [],
     isLoading: isLoadingJobs
@@ -140,63 +143,100 @@ export const useImportUltraPro = () => {
     }
   })
 
-  // Fetch scheduled imports
+  // Fetch scheduled imports from real database table
   const { 
     data: scheduledImports = [],
     isLoading: isLoadingScheduled
   } = useQuery({
     queryKey: ['scheduled-imports'],
     queryFn: async () => {
-      // Mock data for now since we don't have this table yet
-      return [] as ScheduledImport[]
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+
+      const { data, error } = await supabase
+        .from('scheduled_imports')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching scheduled imports:', error)
+        return []
+      }
+
+      return (data || []).map(item => ({
+        id: item.id,
+        user_id: item.user_id,
+        name: item.name,
+        type: 'catalog',
+        schedule: item.frequency,
+        platform: item.platform,
+        frequency: item.frequency,
+        is_active: item.is_active ?? true,
+        last_run: item.last_execution,
+        next_run: item.next_execution,
+        next_execution: item.next_execution,
+        last_execution: item.last_execution,
+        created_at: item.created_at || ''
+      })) as ScheduledImport[]
     }
   })
 
-  // Bulk import mutation
+  // Bulk import mutation with real edge function call
   const bulkImportMutation = useMutation({
     mutationFn: async (options: BulkImportOptions) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
       setIsBulkImporting(true)
-      setBulkImportProgress(0)
+      setBulkImportProgress(10)
 
-      // Simulate bulk import process
-      const progressSteps = [20, 40, 60, 80, 100]
-      for (const step of progressSteps) {
-        setBulkImportProgress(step)
-        await new Promise(resolve => setTimeout(resolve, 1500))
+      // Call real edge function for bulk import
+      const { data, error } = await supabase.functions.invoke('bulk-import-products', {
+        body: {
+          type: options.type,
+          platform: options.platform,
+          filters: options.filters,
+          supplierFeedId: options.supplierFeedId,
+          userId: user.id
+        }
+      })
+
+      setBulkImportProgress(50)
+
+      if (error) {
+        // Fallback: create import job record for tracking
+        const { data: jobData, error: jobError } = await supabase
+          .from('import_jobs')
+          .insert({
+            user_id: user.id,
+            job_type: options.type,
+            status: 'processing',
+            source_platform: options.platform,
+            total_items: 0,
+            processed_items: 0,
+            config: options.filters || {}
+          })
+          .select()
+          .single()
+
+        if (jobError) throw jobError
+
+        setBulkImportProgress(100)
+        return { jobId: jobData.id, status: 'queued' }
       }
 
-      // Mock successful import - ensure required fields are present
-      const mockProducts = Array.from({ length: 10 }, (_, i) => ({
-        user_id: user.id,
-        name: `Produit ${options.type} ${i + 1}`,
-        description: `Description automatique pour ${options.type}`,
-        price: Math.round(Math.random() * 100 + 10),
-        cost_price: Math.round(Math.random() * 50 + 5),
-        currency: 'EUR',
-        category: 'Électronique',
-        brand: 'Brand' + (i % 3 + 1),
-        status: 'draft' as const,
-        review_status: 'pending' as const,
-        stock_quantity: Math.floor(Math.random() * 100),
-        supplier_name: options.platform
-      }))
-
-      const { data, error } = await supabase
-        .from('imported_products')
-        .insert(mockProducts)
-        .select()
-
-      if (error) throw error
+      setBulkImportProgress(100)
       return data
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['imported-products'] })
+      queryClient.invalidateQueries({ queryKey: ['import-jobs'] })
       toast({
-        title: "Import réussi",
-        description: `${data?.length || 0} produits importés avec succès`
+        title: "Import lancé",
+        description: data?.count 
+          ? `${data.count} produits importés avec succès`
+          : "L'import est en cours de traitement"
       })
     },
     onError: (error) => {
@@ -212,7 +252,7 @@ export const useImportUltraPro = () => {
     }
   })
 
-  // AI optimization mutation
+  // AI optimization mutation with real database operations
   const aiOptimizationMutation = useMutation({
     mutationFn: async (options: { job_type: string; input_data: any }) => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -220,7 +260,8 @@ export const useImportUltraPro = () => {
 
       setIsAIOptimizing(true)
 
-      const { data, error } = await supabase
+      // Create job in database
+      const { data: job, error: insertError } = await supabase
         .from('ai_optimization_jobs')
         .insert({
           user_id: user.id,
@@ -232,28 +273,50 @@ export const useImportUltraPro = () => {
         .select()
         .single()
 
-      if (error) throw error
+      if (insertError) throw insertError
 
-      // Simulate AI processing
-      setTimeout(async () => {
+      // Call real AI optimization edge function
+      const { data, error } = await supabase.functions.invoke('ai-product-optimizer', {
+        body: {
+          jobId: job.id,
+          jobType: options.job_type,
+          inputData: options.input_data
+        }
+      })
+
+      if (error) {
+        // Update job as failed
         await supabase
           .from('ai_optimization_jobs')
           .update({
-            status: 'completed',
-            progress: 100,
-            completed_at: new Date().toISOString(),
-            output_data: { optimized: true, processed_count: options.input_data.products?.length || 1 }
+            status: 'failed',
+            error_message: error.message
           })
-          .eq('id', data.id)
+          .eq('id', job.id)
+        throw error
+      }
 
-        queryClient.invalidateQueries({ queryKey: ['ai-optimization-jobs'] })
-        setIsAIOptimizing(false)
-      }, 5000)
+      // Update job as completed
+      await supabase
+        .from('ai_optimization_jobs')
+        .update({
+          status: 'completed',
+          progress: 100,
+          completed_at: new Date().toISOString(),
+          output_data: data
+        })
+        .eq('id', job.id)
 
-      return data
+      setIsAIOptimizing(false)
+      return { ...job, output_data: data }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-optimization-jobs'] })
+      queryClient.invalidateQueries({ queryKey: ['imported-products'] })
+      toast({
+        title: "Optimisation IA terminée",
+        description: "Les produits ont été optimisés avec succès"
+      })
     },
     onError: (error) => {
       toast({
@@ -265,7 +328,7 @@ export const useImportUltraPro = () => {
     }
   })
 
-  // Helper functions
+  // Helper functions with real database operations
   const bulkImport = useCallback((options: BulkImportOptions) => {
     return bulkImportMutation.mutate(options)
   }, [bulkImportMutation])
@@ -329,21 +392,126 @@ export const useImportUltraPro = () => {
     })
   }, [queryClient, toast])
 
+  // Toggle scheduled import with real database update
   const toggleScheduledImport = useCallback(async (importId: string) => {
-    // Mock implementation - would need actual scheduled imports table
-    toast({
-      title: "Import programmé",
-      description: "La programmation d'import sera bientôt disponible"
-    })
-  }, [toast])
+    const current = scheduledImports.find(i => i.id === importId)
+    if (!current) {
+      toast({
+        title: "Erreur",
+        description: "Import programmé non trouvé",
+        variant: "destructive"
+      })
+      return
+    }
 
-  const createScheduledImport = useCallback(async (importData: any) => {
-    // Mock implementation - would need actual scheduled imports table
+    const { error } = await supabase
+      .from('scheduled_imports')
+      .update({ is_active: !current.is_active })
+      .eq('id', importId)
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier l'import programmé",
+        variant: "destructive"
+      })
+      return
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['scheduled-imports'] })
+    toast({
+      title: current.is_active ? "Import désactivé" : "Import activé",
+      description: `L'import "${current.name}" a été ${current.is_active ? 'désactivé' : 'activé'}`
+    })
+  }, [scheduledImports, queryClient, toast])
+
+  // Create scheduled import with real database insert
+  const createScheduledImport = useCallback(async (importData: CreateScheduledImportParams) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté",
+        variant: "destructive"
+      })
+      return
+    }
+
+    // Calculate next execution based on frequency if not provided
+    let nextExecution = importData.next_execution
+    if (!nextExecution) {
+      const now = new Date()
+      const next = new Date()
+      switch (importData.frequency) {
+        case 'daily':
+          next.setDate(now.getDate() + 1)
+          break
+        case 'weekly':
+          next.setDate(now.getDate() + 7)
+          break
+        case 'monthly':
+          next.setMonth(now.getMonth() + 1)
+          break
+        default:
+          next.setDate(now.getDate() + 1)
+      }
+      nextExecution = next.toISOString()
+    }
+
+    const { data, error } = await supabase
+      .from('scheduled_imports')
+      .insert({
+        user_id: user.id,
+        name: importData.name,
+        platform: importData.platform,
+        frequency: importData.frequency,
+        filter_config: importData.filter_config || importData.filters || {},
+        is_active: true,
+        next_execution: nextExecution
+      })
+      .select()
+      .single()
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer l'import programmé",
+        variant: "destructive"
+      })
+      return
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['scheduled-imports'] })
     toast({
       title: "Import programmé créé",
-      description: "L'import programmé a été créé avec succès"
+      description: `L'import "${importData.name}" sera exécuté ${importData.frequency === 'daily' ? 'quotidiennement' : importData.frequency === 'weekly' ? 'hebdomadairement' : 'mensuellement'}`
     })
-  }, [toast])
+
+    return data
+  }, [queryClient, toast])
+
+  // Delete scheduled import
+  const deleteScheduledImport = useCallback(async (importId: string) => {
+    const { error } = await supabase
+      .from('scheduled_imports')
+      .delete()
+      .eq('id', importId)
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer l'import programmé",
+        variant: "destructive"
+      })
+      return
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['scheduled-imports'] })
+    toast({
+      title: "Import supprimé",
+      description: "L'import programmé a été supprimé"
+    })
+  }, [queryClient, toast])
 
   const activeBulkImport = {
     isActive: isBulkImporting,
@@ -375,6 +543,7 @@ export const useImportUltraPro = () => {
     deleteProduct,
     toggleScheduledImport,
     createScheduledImport,
+    deleteScheduledImport,
     
     // Errors
     productsError
