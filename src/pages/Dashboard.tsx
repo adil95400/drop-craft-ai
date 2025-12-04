@@ -1,10 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { FeatureStatusDashboard } from '@/components/dashboard/FeatureStatusDashboard';
+import { RealTimeAnalytics } from '@/components/dashboard/RealTimeAnalytics';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { TrendingUp, TrendingDown, Package, ShoppingCart, Users, DollarSign } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-
 export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
 
@@ -112,18 +112,8 @@ export default function Dashboard() {
       {/* Feature Status Dashboard */}
       <FeatureStatusDashboard />
 
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Activité récente</CardTitle>
-          <CardDescription>Les dernières actions sur votre compte</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-muted-foreground py-8">
-            Aucune activité récente
-          </p>
-        </CardContent>
-      </Card>
+      {/* Real-time Analytics */}
+      <RealTimeAnalytics />
     </div>
   );
 }
