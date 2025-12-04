@@ -29,49 +29,14 @@ serve(async (req) => {
       throw new Error('Unauthorized')
     }
 
-    const { accessToken, apiKey, email } = await req.json()
+    const { accessToken } = await req.json()
 
-    // Support both formats: direct access token OR api key + email
-    let finalAccessToken = accessToken
-
-    // If the provided token looks like an API key (format: CJ123456@api@xxxxx), we need to get the real access token
-    if (accessToken && accessToken.includes('@api@')) {
-      console.log('Detected API key format, obtaining real access token...')
-      
-      // Extract email from user metadata or use provided email
-      const userEmail = email || user.email
-      
-      if (!userEmail) {
-        throw new Error('Email is required to obtain access token from API key')
-      }
-
-      // Call CJ Auth API to get real access token
-      const authResponse = await fetch('https://developers.cjdropshipping.com/api2.0/v1/authentication/getAccessToken', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: userEmail,
-          password: accessToken // The API key is used as password
-        })
-      })
-
-      const authData = await authResponse.json()
-      console.log('CJ Auth response:', JSON.stringify(authData))
-
-      if (authData.code === 200 && authData.data?.accessToken) {
-        finalAccessToken = authData.data.accessToken
-        console.log('Successfully obtained access token from API key')
-      } else {
-        // Try alternative: Use the API key directly as access token (older accounts)
-        console.log('Auth endpoint failed, trying direct token validation...')
-        finalAccessToken = accessToken
-      }
-    }
+    // The CJ API Key IS the Access Token - use it directly in CJ-Access-Token header
+    // Doc: https://developers.cjdropshipping.com/en/summary/course.html
+    const finalAccessToken = accessToken?.trim()
 
     if (!finalAccessToken) {
-      throw new Error('Access Token or API Key is required')
+      throw new Error('Access Token CJ requis. Trouvez-le dans My CJ > Authorization > API')
     }
 
     console.log('Adding CJ Dropshipping credentials for user:', user.id)
