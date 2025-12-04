@@ -214,28 +214,51 @@ Deno.serve(async (req) => {
       }
       
       case 'cjdropshipping': {
-        // CJ API Key IS the Access Token - use directly in CJ-Access-Token header
-        // Doc: https://developers.cjdropshipping.com/en/summary/course.html
-        const accessToken = testCredentials.accessToken || testCredentials.apiKey
+        // CJ API Key must be exchanged for Access Token
+        // Doc: https://developers.cjdropshipping.com/en/api/api2/api/auth.html
+        const apiKey = testCredentials.accessToken || testCredentials.apiKey
         
-        if (!accessToken) {
-          throw new Error('CJ Access Token requis. Trouvez-le dans My CJ > Authorization > API')
+        if (!apiKey) {
+          throw new Error('API Key CJ requis. Trouvez-la dans My CJ > Authorization > API')
         }
         
         try {
-          console.log('Testing CJ connection with token...')
+          console.log('Exchanging CJ API Key for Access Token...')
           
-          // Test with product list endpoint
+          // Step 1: Exchange API Key for Access Token
+          const authResponse = await fetch('https://developers.cjdropshipping.com/api2.0/v1/authentication/getAccessToken', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ apiKey })
+          })
+          
+          const authData = await authResponse.json()
+          console.log('CJ Auth response:', JSON.stringify(authData))
+          
+          if (authData.code !== 200 || !authData.data?.accessToken) {
+            testResult = {
+              success: false,
+              message: `Erreur CJ: ${authData.message || 'API Key invalide'}`,
+              details: {
+                errorCode: authData.code,
+                hint: 'Vérifiez votre API Key dans My CJ > Authorization > API > Générer'
+              },
+              timestamp: new Date().toISOString()
+            }
+            break
+          }
+          
+          const accessToken = authData.data.accessToken
+          console.log('Got Access Token, validating...')
+          
+          // Step 2: Validate the token
           const response = await fetch('https://developers.cjdropshipping.com/api2.0/v1/product/list', {
             method: 'POST',
             headers: {
               'CJ-Access-Token': accessToken,
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-              pageNum: 1,
-              pageSize: 1
-            })
+            body: JSON.stringify({ pageNum: 1, pageSize: 1 })
           })
           
           const apiData = await response.json()
@@ -256,11 +279,8 @@ Deno.serve(async (req) => {
           } else {
             testResult = {
               success: false,
-              message: `Erreur CJ: ${apiData?.message || 'Token invalide'}`,
-              details: {
-                errorCode: apiData?.code,
-                hint: 'Vérifiez votre API Key dans My CJ > Authorization > API'
-              },
+              message: `Erreur CJ: ${apiData?.message || 'Validation échouée'}`,
+              details: { errorCode: apiData?.code },
               timestamp: new Date().toISOString()
             }
           }
