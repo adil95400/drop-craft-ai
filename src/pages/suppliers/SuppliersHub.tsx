@@ -330,30 +330,30 @@ export default function SuppliersHub() {
 
           <Card 
             className="cursor-pointer hover:shadow-xl transition-all hover:scale-105 bg-gradient-to-br from-yellow-500/5 to-yellow-500/10 border-yellow-500/20"
-            onClick={() => navigate('/suppliers/premium')}
+            onClick={() => navigate('/feeds')}
           >
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="p-3 rounded-lg bg-yellow-500/10">
                   <Star className="h-8 w-8 text-yellow-600" />
                 </div>
-                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Premium</Badge>
+                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">Feeds</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <h3 className="text-xl font-bold mb-2">Fournisseurs Premium</h3>
+                <h3 className="text-xl font-bold mb-2">Feeds & Marketplaces</h3>
                 <p className="text-sm text-muted-foreground">
-                  Accédez aux fournisseurs premium
+                  Gérez vos flux produits multi-canal
                 </p>
               </div>
               <div className="space-y-2 pt-4 border-t">
                 <div className="flex items-center gap-2 text-sm">
                   <Star className="h-4 w-4 text-muted-foreground" />
-                  <span>Qualité supérieure</span>
+                  <span>Style Channable</span>
                 </div>
               </div>
-              <Button className="w-full mt-4" variant="outline">Explorer Premium</Button>
+              <Button className="w-full mt-4" variant="outline">Gérer les feeds</Button>
             </CardContent>
           </Card>
 
