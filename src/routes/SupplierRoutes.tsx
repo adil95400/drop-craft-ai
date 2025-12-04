@@ -11,7 +11,7 @@ const SupplierCatalogPage = lazy(() => import('@/pages/suppliers/catalog/Supplie
 const SupplierAdvancedPage = lazy(() => import('@/pages/suppliers/SupplierAdvancedPage'))
 const SupplierImportPage = lazy(() => import('@/pages/suppliers/import/SupplierImportPage'))
 const SupplierFeedsPage = lazy(() => import('@/pages/suppliers/feeds/SupplierFeedsPage'))
-const SupplierAnalyticsPage = lazy(() => import('@/pages/suppliers/analytics/SupplierAnalyticsPage'))
+const SupplierAnalyticsPage = lazy(() => import('@/pages/suppliers/analytics/SupplierAnalyticsDashboard'))
 const ManageSuppliersConnectors = lazy(() => import('@/pages/suppliers/manage/ManageSuppliersConnectors'))
 const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'))
 
