@@ -446,11 +446,31 @@
       min-height: 44px;
       min-width: 44px;
     }
+    
+    /* Prevent horizontal overflow on mobile */
+    .mobile-no-overflow {
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+    
+    /* Mobile card adjustments */
+    .mobile-card {
+      @apply p-3;
+    }
+    
+    /* Mobile text adjustments */
+    .mobile-text-sm {
+      @apply text-sm;
+    }
+    
+    .mobile-text-xs {
+      @apply text-xs;
+    }
   }
 
   /* Safe area padding for mobile devices */
   .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
   }
 
   .pt-safe {
@@ -465,5 +485,60 @@
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+  
+  /* Horizontal scroll container for tabs */
+  .scroll-x-container {
+    @apply overflow-x-auto scrollbar-hide -mx-4 px-4;
+    scroll-snap-type: x mandatory;
+  }
+  
+  .scroll-x-container > * {
+    scroll-snap-align: start;
+  }
+  
+  /* Mobile bottom nav spacing */
+  .has-mobile-nav {
+    @apply pb-20 md:pb-0;
+  }
+  
+  /* Responsive text utilities */
+  .text-responsive-sm {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .text-responsive-base {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-responsive-lg {
+    @apply text-base sm:text-lg md:text-xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-lg sm:text-xl md:text-2xl;
+  }
+  
+  .text-responsive-2xl {
+    @apply text-xl sm:text-2xl md:text-3xl;
+  }
+  
+  /* Responsive spacing */
+  .p-responsive {
+    @apply p-3 sm:p-4 lg:p-6;
+  }
+  
+  .gap-responsive {
+    @apply gap-3 sm:gap-4 lg:gap-6;
+  }
+  
+  /* Card grid for mobile - 2 columns */
+  .grid-mobile-2 {
+    @apply grid grid-cols-2 gap-3;
+  }
+  
+  /* Ensure cards don't overlap */
+  .card-mobile {
+    @apply min-w-0 overflow-hidden;
   }
 }

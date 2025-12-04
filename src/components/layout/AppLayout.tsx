@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { 
   Menu, 
-  Bell, 
   Search, 
   Settings, 
   LogOut, 
@@ -23,12 +22,15 @@ import {
   Zap
 } from 'lucide-react';
 import { AppNavigation, QuickActions } from '@/components/navigation/AppNavigation';
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
+import { MobileNavDrawer } from '@/components/layout/MobileNavDrawer';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { user, signOut } = useUnifiedAuth();
   const { currentPlan, isUltraPro, isPro } = useUnifiedPlan();
 
@@ -39,138 +41,174 @@ export function AppLayout() {
   };
 
   const getPlanBadge = () => {
-    if (isUltraPro) return <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white">Ultra Pro</Badge>;
-    if (isPro) return <Badge className="bg-blue-500 text-white">Pro</Badge>;
-    return <Badge variant="outline">Standard</Badge>;
+    if (isUltraPro) return <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs">Ultra Pro</Badge>;
+    if (isPro) return <Badge className="bg-blue-500 text-white text-xs">Pro</Badge>;
+    return <Badge variant="outline" className="text-xs">Standard</Badge>;
   };
 
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      {/* Sidebar */}
-      <div className="hidden border-r bg-muted/40 md:block">
-        <div className="flex h-full max-h-screen flex-col gap-2">
-          {/* Logo */}
-          <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-            <Link to="/" className="flex items-center gap-2 font-semibold">
-              <img src="/images/logo.svg" alt="Logo" className="h-6 w-6" />
-              <span>E-Commerce Pro</span>
-            </Link>
-            {getPlanIcon()}
-          </div>
+    <div className="min-h-screen w-full">
+      {/* Desktop Layout */}
+      <div className="hidden md:grid md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] min-h-screen">
+        {/* Desktop Sidebar */}
+        <div className="border-r bg-muted/40">
+          <div className="flex h-full max-h-screen flex-col gap-2">
+            {/* Logo */}
+            <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+              <Link to="/" className="flex items-center gap-2 font-semibold">
+                <img src="/images/logo.svg" alt="Logo" className="h-6 w-6" />
+                <span>ShopOpti</span>
+              </Link>
+              {getPlanIcon()}
+            </div>
 
-          {/* Navigation */}
-          <div className="flex-1 px-3 py-2">
-            <AppNavigation />
-          </div>
+            {/* Navigation */}
+            <div className="flex-1 px-3 py-2 overflow-y-auto">
+              <AppNavigation />
+            </div>
 
-          {/* Quick Actions */}
-          <div className="mt-auto p-3 border-t">
-            <QuickActions />
+            {/* Quick Actions */}
+            <div className="mt-auto p-3 border-t">
+              <QuickActions />
+            </div>
           </div>
+        </div>
+
+        {/* Desktop Main Content */}
+        <div className="flex flex-col">
+          <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+            <div className="w-full flex-1">
+              <div className="relative max-w-md">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="search"
+                  placeholder="Rechercher..."
+                  className="w-full rounded-lg border border-input bg-background pl-8 pr-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              {getPlanBadge()}
+              <NotificationCenter />
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src="" alt={user?.email || ''} />
+                      <AvatarFallback>
+                        {user?.email?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">{user?.email || 'Utilisateur'}</p>
+                      <p className="text-xs text-muted-foreground">Plan {currentPlan}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Profil
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Paramètres
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => signOut()}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Déconnexion
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </header>
+
+          <main className="flex-1 p-4 lg:p-6 overflow-auto">
+            <Outlet />
+          </main>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex flex-col">
-        {/* Header */}
-        <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-          {/* Mobile Menu */}
-          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="shrink-0 md:hidden"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col">
-              <div className="flex items-center gap-2 font-semibold mb-4">
-                <img src="/images/logo.svg" alt="Logo" className="h-6 w-6" />
-                <span>E-Commerce Pro</span>
-                {getPlanIcon()}
-              </div>
-              <AppNavigation />
-              <div className="mt-auto">
-                <QuickActions />
-              </div>
-            </SheetContent>
-          </Sheet>
+      {/* Mobile Layout */}
+      <div className="md:hidden flex flex-col min-h-screen">
+        {/* Mobile Header */}
+        <header className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b bg-background/95 backdrop-blur-lg px-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            onClick={() => setMobileDrawerOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
 
-          {/* Search */}
-          <div className="w-full flex-1">
-            <div className="relative max-w-md">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <input
-                type="search"
-                placeholder="Rechercher..."
-                className="w-full rounded-lg border border-input bg-background pl-8 pr-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              />
-            </div>
-          </div>
+          <Link to="/" className="flex items-center gap-2 font-semibold">
+            <img src="/images/logo.svg" alt="Logo" className="h-5 w-5" />
+            <span className="text-sm">ShopOpti</span>
+          </Link>
 
-          {/* Right Side */}
-          <div className="flex items-center gap-4">
-            {/* Plan Badge */}
+          <div className="flex-1" />
+
+          <div className="flex items-center gap-2">
             {getPlanBadge()}
-
-            {/* Notifications */}
             <NotificationCenter />
-
-            {/* User Menu */}
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src="" alt={user?.email || ''} />
-                    <AvatarFallback>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                  <Avatar className="h-7 w-7">
+                    <AvatarFallback className="text-xs">
                       {user?.email?.[0]?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      {user?.email || 'Utilisateur'}
-                    </p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      Plan {currentPlan}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
+              <DropdownMenuContent className="w-48" align="end">
                 <DropdownMenuItem asChild>
-                  <Link to="/profile" className="cursor-pointer">
+                  <Link to="/profile">
                     <User className="mr-2 h-4 w-4" />
-                    <span>Profil</span>
+                    Profil
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/settings" className="cursor-pointer">
+                  <Link to="/settings">
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>Paramètres</span>
+                    Paramètres
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  className="cursor-pointer text-red-600"
-                  onClick={() => signOut()}
-                >
+                <DropdownMenuItem className="text-destructive" onClick={() => signOut()}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Déconnexion</span>
+                  Déconnexion
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+        {/* Mobile Content */}
+        <main className="flex-1 p-4 pb-20 overflow-auto">
           <Outlet />
         </main>
+
+        {/* Mobile Bottom Navigation */}
+        <MobileBottomNav onOpenDrawer={() => setMobileDrawerOpen(true)} />
+        
+        {/* Mobile Navigation Drawer */}
+        <MobileNavDrawer 
+          open={mobileDrawerOpen} 
+          onOpenChange={setMobileDrawerOpen} 
+        />
       </div>
     </div>
   );
