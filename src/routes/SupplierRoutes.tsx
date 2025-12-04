@@ -5,19 +5,18 @@ import { lazy } from 'react'
 const SuppliersHub = lazy(() => import('@/pages/suppliers/SuppliersHub'))
 const SupplierMarketplacePage = lazy(() => import('@/pages/suppliers/marketplace/SupplierMarketplacePage'))
 const MySuppliersPage = lazy(() => import('@/pages/suppliers/my/MySuppliersPage'))
-const PremiumSuppliersPage = lazy(() => import('@/pages/suppliers/premium/PremiumSuppliersPage'))
 const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'))
 const SupplierCatalogPage = lazy(() => import('@/pages/suppliers/catalog/SupplierCatalogPage'))
 const SupplierAdvancedPage = lazy(() => import('@/pages/suppliers/SupplierAdvancedPage'))
 const SupplierImportPage = lazy(() => import('@/pages/suppliers/import/SupplierImportPage'))
-const SupplierFeedsPage = lazy(() => import('@/pages/suppliers/feeds/SupplierFeedsPage'))
-const SupplierAnalyticsPage = lazy(() => import('@/pages/suppliers/analytics/SupplierAnalyticsDashboard'))
-const ManageSuppliersConnectors = lazy(() => import('@/pages/suppliers/manage/ManageSuppliersConnectors'))
+const SupplierAnalyticsDashboard = lazy(() => import('@/pages/suppliers/analytics/SupplierAnalyticsDashboard'))
+const SupplierSettingsPage = lazy(() => import('@/pages/suppliers/settings/SupplierSettingsPage'))
 const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'))
+const ChannableFeedManager = lazy(() => import('@/pages/feeds/ChannableFeedManager'))
 
 /**
  * ROUTES DU MODULE FOURNISSEURS
- * Architecture unifiée avec Import et Feeds
+ * Architecture unifiée simplifiée
  */
 export default function SupplierRoutes() {
   return (
@@ -31,14 +30,14 @@ export default function SupplierRoutes() {
       {/* Mes fournisseurs */}
       <Route path="my" element={<MySuppliersPage />} />
       
-      {/* Premium */}
-      <Route path="premium" element={<PremiumSuppliersPage />} />
-      
       {/* Analytics */}
-      <Route path="analytics" element={<SupplierAnalyticsPage />} />
+      <Route path="analytics" element={<SupplierAnalyticsDashboard />} />
       
-      {/* Settings / Connecteurs */}
-      <Route path="settings" element={<ManageSuppliersConnectors />} />
+      {/* Settings */}
+      <Route path="settings" element={<SupplierSettingsPage />} />
+      
+      {/* Feeds - redirige vers Channable-style */}
+      <Route path="feeds" element={<ChannableFeedManager />} />
       
       {/* Création */}
       <Route path="create" element={<CreateSupplier />} />
@@ -48,7 +47,6 @@ export default function SupplierRoutes() {
       <Route path=":supplierId/catalog" element={<SupplierCatalogPage />} />
       <Route path=":supplierId/advanced" element={<SupplierAdvancedPage />} />
       <Route path=":supplierId/import" element={<SupplierImportPage />} />
-      <Route path=":supplierId/feeds" element={<SupplierFeedsPage />} />
     </Routes>
   )
 }

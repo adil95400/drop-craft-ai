@@ -31,8 +31,7 @@ const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'));
 const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'));
 const SupplierMarketplace = lazy(() => import('@/pages/suppliers/marketplace'));
 const MySuppliersPage = lazy(() => import('@/pages/suppliers/my/MySuppliersPage'));
-const PremiumSuppliersPage = lazy(() => import('@/pages/suppliers/premium/PremiumSuppliersPage'));
-const SupplierAnalyticsPage = lazy(() => import('@/pages/suppliers/analytics/SupplierAnalyticsPage'));
+const SupplierAnalyticsDashboard = lazy(() => import('@/pages/suppliers/analytics/SupplierAnalyticsDashboard'));
 const SupplierCatalogPage = lazy(() => import('@/pages/suppliers/catalog/SupplierCatalogPage'));
 const SupplierSettingsPage = lazy(() => import('@/pages/suppliers/settings/SupplierSettingsPage'));
 const UnifiedCatalog = lazy(() => import('@/pages/suppliers/catalog'));
@@ -104,8 +103,7 @@ export function ProductRoutes() {
       <Route path="suppliers" element={<SuppliersHub />} />
       <Route path="suppliers/marketplace" element={<SupplierMarketplace />} />
       <Route path="suppliers/my" element={<MySuppliersPage />} />
-      <Route path="suppliers/premium" element={<PremiumSuppliersPage />} />
-      <Route path="suppliers/analytics" element={<SupplierAnalyticsPage />} />
+      <Route path="suppliers/analytics" element={<SupplierAnalyticsDashboard />} />
       <Route path="suppliers/settings" element={<SupplierSettingsPage />} />
       <Route path="suppliers/catalog" element={<UnifiedCatalog />} />
       <Route path="suppliers/create" element={<CreateSupplier />} />
