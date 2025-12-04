@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { FeatureStatusDashboard } from '@/components/dashboard/FeatureStatusDashboard';
 import { RealTimeAnalytics } from '@/components/dashboard/RealTimeAnalytics';
+import { PerformanceTestRunner } from '@/components/monitoring/PerformanceTestRunner';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { TrendingUp, TrendingDown, Package, ShoppingCart, Users, DollarSign } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -114,6 +115,9 @@ export default function Dashboard() {
 
       {/* Real-time Analytics */}
       <RealTimeAnalytics />
+
+      {/* Performance Tests */}
+      <PerformanceTestRunner />
     </div>
   );
 }
