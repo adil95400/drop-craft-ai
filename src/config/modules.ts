@@ -227,24 +227,67 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
     enabled: true,
     minPlan: 'standard',
     route: '/suppliers',
-    features: ['supplier-management', 'basic-import'],
-    description: 'Gestion des fournisseurs',
+    features: ['supplier-management', 'marketplace', 'supplier-sync', 'analytics'],
+    description: 'Hub central de gestion des fournisseurs',
     category: 'product',
     order: 9,
-    groupId: 'suppliers'
-  },
-  premiumSuppliers: {
-    id: 'premiumSuppliers',
-    name: 'Fournisseurs Premium',
-    icon: 'Crown',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/suppliers/premium',
-    features: ['premium-suppliers', 'supplier-sync', 'bts-wholesaler'],
-    description: 'Synchronisez BTS Wholesaler',
-    category: 'product',
-    order: 9.5,
-    groupId: 'suppliers'
+    groupId: 'suppliers',
+    subModules: [
+      {
+        id: 'suppliers-hub',
+        name: 'Hub Fournisseurs',
+        route: '/suppliers',
+        icon: 'Truck',
+        description: 'Vue d\'ensemble des fournisseurs',
+        features: ['overview', 'quick-actions'],
+        order: 1
+      },
+      {
+        id: 'suppliers-marketplace',
+        name: 'Marketplace',
+        route: '/suppliers/marketplace',
+        icon: 'Store',
+        description: 'Découvrir et connecter des fournisseurs',
+        features: ['discovery', 'connect', 'filters'],
+        order: 2
+      },
+      {
+        id: 'suppliers-my',
+        name: 'Mes Fournisseurs',
+        route: '/suppliers/my',
+        icon: 'Users',
+        description: 'Fournisseurs connectés',
+        features: ['sync', 'manage', 'import'],
+        order: 3
+      },
+      {
+        id: 'suppliers-analytics',
+        name: 'Analytics',
+        route: '/suppliers/analytics',
+        icon: 'BarChart3',
+        description: 'Performances des fournisseurs',
+        features: ['kpis', 'charts', 'reports'],
+        order: 4
+      },
+      {
+        id: 'suppliers-feeds',
+        name: 'Feeds & Marketplaces',
+        route: '/feeds',
+        icon: 'Rss',
+        description: 'Gestion des flux marketplace',
+        features: ['feed-management', 'multi-channel'],
+        order: 5
+      },
+      {
+        id: 'suppliers-settings',
+        name: 'Paramètres',
+        route: '/suppliers/settings',
+        icon: 'Settings',
+        description: 'Configuration et API',
+        features: ['api-keys', 'credentials'],
+        order: 6
+      }
+    ]
   },
   
   // ============= MODULES IMPORT & FEEDS =============
