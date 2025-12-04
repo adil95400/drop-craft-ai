@@ -52,21 +52,13 @@ serve(async (req) => {
             })
             .eq('id', order.id);
 
-          // Simulate placing order with supplier
+          // Place real order with supplier
           console.log(`🛒 Placing order with supplier for ${order.catalog_product?.name}`);
           
-          // In real implementation, call supplier API here
-          // For now, simulate with delay
-          await new Promise(resolve => setTimeout(resolve, 1000));
-
-          const success = Math.random() > 0.1; // 90% success rate
-
-          if (success) {
-            // Generate tracking number
-            const trackingNumber = `TRK${Date.now()}${Math.floor(Math.random() * 1000)}`;
-            const supplierOrderId = `SUP${Date.now()}`;
-            const expectedDelivery = new Date();
-            expectedDelivery.setDate(expectedDelivery.getDate() + 7);
+          const supplierResult = await placeSupplierOrder(supabaseClient, order);
+          
+          if (supplierResult.success) {
+            const { trackingNumber, supplierOrderId, expectedDelivery } = supplierResult;
 
             // Update order as completed
             await supabaseClient
