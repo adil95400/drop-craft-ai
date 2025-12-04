@@ -3,7 +3,7 @@
 
 import { memo, Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
-import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar'
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/AppSidebar'
 import { LoadingSpinner, useAuthOptimized } from '@/shared'
 import { NavigationProvider } from '@/contexts/NavigationContext'
@@ -28,15 +28,15 @@ const OptimizedLayoutComponent = ({ className }: OptimizedLayoutProps) => {
     return <Outlet />
   }
 
-  // Version mobile avec navigation en bas
+  // Version mobile avec navigation en bas - optimisée
   if (isMobile) {
     return (
       <NavigationProvider>
-        <div className="min-h-screen bg-background flex flex-col">
+        <div className="min-h-screen bg-background flex flex-col mobile-no-overflow">
           <MobileHeader />
-          <main className="flex-1 pb-20">
-            <div className="container max-w-screen-sm mx-auto px-4 py-4">
-              <Suspense fallback={<LoadingSpinner text="Chargement de la page..." />}>
+          <main className="flex-1 pb-20 overflow-x-hidden">
+            <div className="w-full max-w-screen-sm mx-auto px-3 py-3">
+              <Suspense fallback={<LoadingSpinner text="Chargement..." />}>
                 <Outlet />
               </Suspense>
             </div>
@@ -53,7 +53,7 @@ const OptimizedLayoutComponent = ({ className }: OptimizedLayoutProps) => {
         <div className={cn("min-h-screen flex w-full bg-background", className)}>
           <AppSidebar />
           
-          <SidebarInset className="md:ml-[--sidebar-width] md:peer-data-[state=collapsed]:ml-[--sidebar-width-icon] transition-[margin] duration-200 ease-linear">
+          <SidebarInset className="md:ml-[--sidebar-width] md:peer-data-[state=collapsed]:ml-[--sidebar-width-icon] transition-[margin] duration-200 ease-linear flex-1 min-w-0">
             {/* Enhanced navigation bar */}
             <EnhancedNavigationBar />
 
