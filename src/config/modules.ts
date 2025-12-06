@@ -428,16 +428,63 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   },
   stores: {
     id: 'stores',
-    name: 'Mes Boutiques',
+    name: 'Boutiques & Canaux',
     icon: 'Store',
     enabled: true,
     minPlan: 'standard',
-    route: '/dashboard/stores',
-    features: ['store-management', 'multi-store', 'store-sync'],
-    description: 'Gestion de vos boutiques e-commerce',
+    route: '/stores-channels',
+    features: ['store-management', 'multi-store', 'store-sync', 'marketplace-publishing'],
+    description: 'Hub unifié boutiques et marketplaces',
     category: 'core',
     order: 2,
-    groupId: 'stores_channels'
+    groupId: 'stores_channels',
+    subModules: [
+      {
+        id: 'stores-hub',
+        name: 'Hub Central',
+        route: '/stores-channels',
+        icon: 'Store',
+        description: 'Vue d\'ensemble de vos canaux',
+        features: ['overview', 'stats', 'quick-actions'],
+        order: 1
+      },
+      {
+        id: 'stores-connect',
+        name: 'Connecter',
+        route: '/stores-channels/connect',
+        icon: 'Plug',
+        description: 'Ajouter une boutique ou marketplace',
+        features: ['oauth', 'api-connect', 'wizard'],
+        order: 2
+      },
+      {
+        id: 'stores-integrations',
+        name: 'Intégrations',
+        route: '/stores-channels/integrations',
+        icon: 'Plug',
+        description: 'Gérer vos connexions',
+        features: ['manage', 'sync', 'settings'],
+        order: 3
+      },
+      {
+        id: 'stores-sync',
+        name: 'Synchronisation',
+        route: '/stores-channels/sync',
+        icon: 'RefreshCw',
+        description: 'État des synchronisations',
+        features: ['sync-status', 'logs', 'schedule'],
+        order: 4
+      },
+      {
+        id: 'stores-analytics',
+        name: 'Analytics',
+        route: '/stores-channels/analytics',
+        icon: 'BarChart3',
+        description: 'Performances multi-boutiques',
+        features: ['multi-store-analytics', 'comparison'],
+        order: 5
+      }
+    ]
   },
   orders: {
     id: 'orders',
