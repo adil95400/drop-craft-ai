@@ -5,9 +5,8 @@ import { Routes, Route } from 'react-router-dom';
 import { lazy } from 'react';
 
 // Integrations
-const ModernIntegrationsHub = lazy(() => import('@/pages/ModernIntegrationsHub'));
-const Integrations = lazy(() => import('@/pages/Integrations'));
 const IntegrationsPage = lazy(() => import('@/pages/IntegrationsPage'));
+const Integrations = lazy(() => import('@/pages/Integrations'));
 
 // Marketplace
 const Marketplace = lazy(() => import('@/pages/Marketplace'));
@@ -44,9 +43,8 @@ export function IntegrationRoutes() {
   return (
     <Routes>
       {/* Integrations Hub */}
-      <Route index element={<ModernIntegrationsHub />} />
+      <Route index element={<IntegrationsPage />} />
       <Route path="hub" element={<Integrations />} />
-      <Route path="settings" element={<IntegrationsPage />} />
       <Route path="sync-config" element={<SyncConfigPage />} />
       
       {/* Marketplace */}

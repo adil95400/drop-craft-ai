@@ -24,7 +24,7 @@ export const LazyModernCustomersPage = lazyWithRetry(() => import('@/pages/Custo
 
 // Pages d'analytics - Lazy load car moins critiques
 export const LazyAIPredictiveAnalyticsPage = lazyWithRetry(() => import('@/pages/AIPredictiveAnalyticsPage'));
-export const LazyModernAnalyticsPage = lazyWithRetry(() => import('@/pages/ModernAnalyticsPage'));
+export const LazyAdvancedAnalyticsPage = lazyWithRetry(() => import('@/pages/AdvancedAnalyticsPage'));
 export const LazyBusinessIntelligencePage = lazyWithRetry(() => import('@/pages/BusinessIntelligencePage'));
 export const LazyAnalyticsStudio = lazyWithRetry(() => import('@/pages/AnalyticsStudio'));
 
@@ -52,7 +52,7 @@ export const LazySettings = lazyWithRetry(() => import('@/pages/Settings'));
 export const LazyProfile = lazyWithRetry(() => import('@/pages/Profile'));
 
 // Pages d'intégrations - Lazy load
-export const LazyModernIntegrationsHub = lazyWithRetry(() => import('@/pages/ModernIntegrationsHub'));
+export const LazyIntegrationsPage = lazyWithRetry(() => import('@/pages/IntegrationsPage'));
 
 // AI Studio - Lazy load (composant lourd)
 export const LazyAIStudio = lazyWithRetry(() => import('@/pages/AIStudio'));

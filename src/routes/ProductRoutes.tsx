@@ -26,7 +26,7 @@ const ImportPublishingPage = lazy(() => import('@/pages/import/manage/ImportPubl
 const ImportMarketplacePage = lazy(() => import('@/pages/import/manage/ImportMarketplacePage'));
 
 // Suppliers - Nouvelle structure unifiée
-const SuppliersHub = lazy(() => import('@/pages/suppliers/SuppliersHub'));
+const SuppliersHub = lazy(() => import('@/pages/suppliers/SuppliersHubUnified'));
 const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'));
 const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'));
 const SupplierMarketplace = lazy(() => import('@/pages/suppliers/marketplace'));

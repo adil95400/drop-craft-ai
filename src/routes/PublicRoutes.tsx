@@ -13,7 +13,6 @@ const Pricing = lazy(() => import('@/pages/Pricing'));
 const PricingPlans = lazy(() => import('@/pages/PricingPlansPage'));
 const Features = lazy(() => import('@/pages/Features'));
 const Documentation = lazy(() => import('@/pages/Documentation'));
-const ModernBlog = lazy(() => import('@/pages/ModernBlog'));
 const Contact = lazy(() => import('@/pages/Contact'));
 const FAQ = lazy(() => import('@/pages/FAQ'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
@@ -47,8 +46,7 @@ export function PublicRoutes() {
       
       {/* Content */}
       <Route path="documentation" element={<Documentation />} />
-      <Route path="blog" element={<ModernBlog />} />
-      <Route path="blog/:id" element={<ModernBlog />} />
+      <Route path="blog" element={<Documentation />} />
       
       {/* Support */}
       <Route path="contact" element={<Contact />} />
