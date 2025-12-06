@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { AppNavigation, QuickActions } from '@/components/navigation/AppNavigation';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
-import { MobileNavDrawer } from '@/components/layout/MobileNavDrawer';
+import { MobileDrawerNav } from '@/components/mobile/MobileDrawerNav';
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext';
 import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
@@ -205,9 +205,9 @@ export function AppLayout() {
         <MobileBottomNav onOpenDrawer={() => setMobileDrawerOpen(true)} />
         
         {/* Mobile Navigation Drawer */}
-        <MobileNavDrawer 
-          open={mobileDrawerOpen} 
-          onOpenChange={setMobileDrawerOpen} 
+        <MobileDrawerNav 
+          isOpen={mobileDrawerOpen} 
+          onClose={() => setMobileDrawerOpen(false)} 
         />
       </div>
     </div>
