@@ -47,6 +47,15 @@ export class SupplierNetworkService {
     return data;
   }
 
+  async syncBTSWholesaler(supplierId: string, userId: string, limit?: number) {
+    const { data, error } = await supabase.functions.invoke('bts-feed-sync', {
+      body: { supplierId, userId, action: 'sync', limit: limit || 0 }
+    });
+
+    if (error) throw error;
+    return data;
+  }
+
   async getCatalogProducts(filters?: {
     networkId?: string;
     category?: string;
