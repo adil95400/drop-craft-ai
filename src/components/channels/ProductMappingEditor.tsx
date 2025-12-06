@@ -238,14 +238,14 @@ export function ProductMappingEditor({
                 >
                   {/* Source field */}
                   <Select
-                    value={mapping.source}
-                    onValueChange={(value) => updateMapping(mapping.id, { source: value })}
+                    value={mapping.source || '__none__'}
+                    onValueChange={(value) => updateMapping(mapping.id, { source: value === '__none__' ? '' : value })}
                   >
                     <SelectTrigger className="h-9">
                       <SelectValue placeholder="Sélectionner..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">-- Non mappé --</SelectItem>
+                      <SelectItem value="__none__">-- Non mappé --</SelectItem>
                       {SOURCE_FIELDS.map(field => (
                         <SelectItem key={field.id} value={field.id}>
                           {field.label}
