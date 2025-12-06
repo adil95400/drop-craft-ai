@@ -6,9 +6,9 @@ export function useAddCJCredentials() {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: async (accessToken: string) => {
+    mutationFn: async ({ accessToken, email }: { accessToken: string; email: string }) => {
       const { data, error } = await supabase.functions.invoke('add-cj-credentials', {
-        body: { accessToken }
+        body: { accessToken, email }
       })
 
       if (error) throw error
