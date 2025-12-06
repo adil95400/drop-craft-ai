@@ -13,6 +13,7 @@ const SupplierAnalyticsDashboard = lazy(() => import('@/pages/suppliers/analytic
 const SupplierSettingsPage = lazy(() => import('@/pages/suppliers/settings/SupplierSettingsPage'))
 const CreateSupplier = lazy(() => import('@/pages/suppliers/CreateSupplier'))
 const ChannableFeedManager = lazy(() => import('@/pages/feeds/ChannableFeedManager'))
+const BTSImportPage = lazy(() => import('@/pages/suppliers/BTSImportPage'))
 
 /**
  * ROUTES DU MODULE FOURNISSEURS
@@ -41,6 +42,9 @@ export default function SupplierRoutes() {
       
       {/* Création */}
       <Route path="create" element={<CreateSupplier />} />
+      
+      {/* Import BTS CSV */}
+      <Route path="bts/import" element={<BTSImportPage />} />
       
       {/* Routes par fournisseur */}
       <Route path=":supplierId" element={<SupplierDetails />} />
