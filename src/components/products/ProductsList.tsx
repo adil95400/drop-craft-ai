@@ -237,6 +237,22 @@ export function ProductsList() {
                 ))}
               </SelectContent>
             </Select>
+            
+            {/* Indicateur de filtres actifs */}
+            {(search || (statusFilter && statusFilter !== 'all') || (categoryFilter && categoryFilter !== 'all')) && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setSearch('')
+                  setStatusFilter('')
+                  setCategoryFilter('')
+                }}
+                className="text-destructive hover:text-destructive"
+              >
+                Réinitialiser filtres
+              </Button>
+            )}
           </div>
 
           {/* Actions en lot */}
