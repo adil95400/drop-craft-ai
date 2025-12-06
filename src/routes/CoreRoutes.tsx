@@ -19,16 +19,14 @@ const ShopifyDiagnostic = lazy(() => import('@/pages/ShopifyDiagnostic'));
 const ShopifyManagementPage = lazy(() => import('@/pages/ShopifyManagementPage'));
 
 // Orders
-const ModernOrdersPage = lazy(() => import('@/pages/ModernOrdersPage'));
+const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
 const OrderDetail = lazy(() => import('@/pages/orders/OrderDetail'));
 const OrdersCenterPage = lazy(() => import('@/pages/OrdersCenterPage'));
-const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
 const ReturnsManagementPage = lazy(() => import('@/pages/orders/ReturnsManagementPage'));
 const TrackingDashboardPage = lazy(() => import('@/pages/orders/TrackingDashboardPage'));
 const CustomerNotificationsPage = lazy(() => import('@/pages/orders/CustomerNotificationsPage'));
 
 // Customers
-const ModernCustomersPage = lazy(() => import('@/pages/ModernCustomersPage'));
 const CustomersPage = lazy(() => import('@/pages/CustomersPage'));
 
 // Quick actions
@@ -96,14 +94,13 @@ export function CoreRoutes() {
       <Route path="stores/shopify-management" element={<ShopifyManagementPage />} />
       
       {/* Orders Management */}
-      <Route path="orders" element={<ModernOrdersPage />} />
+      <Route path="orders" element={<OrdersPage />} />
       <Route path="orders/:id" element={<OrderDetail />} />
       <Route path="orders-center" element={<OrdersCenterPage />} />
       <Route path="orders/returns" element={<ReturnsManagementPage />} />
       <Route path="orders/tracking" element={<TrackingDashboardPage />} />
       <Route path="orders/notifications" element={<CustomerNotificationsPage />} />
       <Route path="orders/shipping" element={<ShippingManagementPage />} />
-      <Route path="orders/list" element={<OrdersPage />} />
       
       {/* Module E: AI Store Builder */}
       <Route path="store/builder" element={<AIStoreBuilderHub />} />
@@ -121,8 +118,7 @@ export function CoreRoutes() {
       {/* Import routes are now in ImportRoutes module */}
       
       {/* Customers */}
-      <Route path="customers" element={<ModernCustomersPage />} />
-      <Route path="customers/list" element={<CustomersPage />} />
+      <Route path="customers" element={<CustomersPage />} />
       
       {/* Quick Actions */}
       <Route path="sync-manager" element={<SyncManagerPage />} />

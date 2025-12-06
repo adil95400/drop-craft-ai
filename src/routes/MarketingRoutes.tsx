@@ -5,7 +5,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
 // Marketing
-const ModernMarketingPage = lazy(() => import('@/pages/ModernMarketingPage'));
+const MarketingPage = lazy(() => import('@/pages/MarketingAutomation'));
 const PromotionsAutomationPage = lazy(() => import('@/pages/PromotionsAutomationPage'));
 
 // CRM
@@ -45,7 +45,7 @@ export function MarketingRoutes() {
   return (
     <Routes>
       {/* Marketing Overview */}
-      <Route index element={<ModernMarketingPage />} />
+      <Route index element={<MarketingPage />} />
       <Route path="promotions" element={<PromotionsAutomationPage />} />
       
       {/* CRM */}
