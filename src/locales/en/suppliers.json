@@ -2,6 +2,14 @@
   "title": "Suppliers",
   "description": "Manage your supplier connections",
   "search": "Search suppliers...",
+  "hub": {
+    "title": "Supplier Hub",
+    "subtitle": "Manage all your suppliers from a unified interface",
+    "overview": "Overview",
+    "marketplace": "Marketplace",
+    "mySuppliers": "My Suppliers",
+    "feeds": "Feeds & Sync"
+  },
   "tabs": {
     "all": "All",
     "connected": "Connected",
@@ -24,9 +32,12 @@
     "connect": "Connect",
     "disconnect": "Disconnect",
     "sync": "Sync",
+    "syncNow": "Sync Now",
     "configure": "Configure",
     "viewProducts": "View products",
-    "viewAnalytics": "View analytics"
+    "viewAnalytics": "View analytics",
+    "importProducts": "Import products",
+    "viewCatalog": "View catalog"
   },
   "details": {
     "productsCount": "Products",
@@ -70,5 +81,11 @@
     "marketplace": "Marketplace",
     "pod": "Print on Demand",
     "fulfillment": "Fulfillment"
+  },
+  "kpis": {
+    "totalProducts": "Total Products",
+    "activeSuppliers": "Active Suppliers",
+    "pendingOrders": "Pending Orders",
+    "syncStatus": "Sync Status"
   }
 }
