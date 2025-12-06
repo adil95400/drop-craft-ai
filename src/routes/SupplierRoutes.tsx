@@ -1,8 +1,8 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { lazy } from 'react'
 
-// Lazy loading des pages
-const SuppliersHub = lazy(() => import('@/pages/suppliers/SuppliersHub'))
+// Lazy loading des pages - Hub Unifié comme point d'entrée principal
+const SuppliersHubUnified = lazy(() => import('@/pages/suppliers/SuppliersHubUnified'))
 const SupplierMarketplacePage = lazy(() => import('@/pages/suppliers/marketplace/SupplierMarketplacePage'))
 const MySuppliersPage = lazy(() => import('@/pages/suppliers/my/MySuppliersPage'))
 const SupplierDetails = lazy(() => import('@/pages/suppliers/SupplierDetails'))
@@ -21,8 +21,8 @@ const ChannableFeedManager = lazy(() => import('@/pages/feeds/ChannableFeedManag
 export default function SupplierRoutes() {
   return (
     <Routes>
-      {/* Hub principal */}
-      <Route index element={<SuppliersHub />} />
+      {/* Hub Unifié - Point d'entrée principal */}
+      <Route index element={<SuppliersHubUnified />} />
       
       {/* Marketplace */}
       <Route path="marketplace" element={<SupplierMarketplacePage />} />
