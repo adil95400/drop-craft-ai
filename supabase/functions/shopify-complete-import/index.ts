@@ -32,14 +32,19 @@ serve(async (req) => {
 
     console.log('📦 Import config:', { historyId, includeVariants, filters })
 
-    // Get Shopify integration
-    const { data: integration, error: intError } = await supabase
+    // Get Shopify integration (check both 'shopify' and 'ecommerce' platform types with Shopify domain)
+    const { data: integrations, error: intError } = await supabase
       .from('integrations')
       .select('*')
       .eq('user_id', user.id)
-      .eq('platform_type', 'shopify')
       .eq('is_active', true)
-      .single()
+
+    // Find a Shopify integration (by platform_type or by shop_domain containing 'myshopify')
+    const integration = integrations?.find(i => 
+      i.platform_type === 'shopify' || 
+      (i.shop_domain && i.shop_domain.includes('myshopify.com')) ||
+      (i.platform_url && i.platform_url.includes('myshopify.com'))
+    )
 
     if (intError || !integration) {
       throw new Error('No active Shopify integration found')
