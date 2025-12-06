@@ -9,14 +9,7 @@ const DashboardHome = lazy(() => import('@/pages/Dashboard'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const Settings = lazy(() => import('@/pages/Settings'));
 
-// Stores
-const StoreDashboard = lazy(() => import('@/pages/stores/StoreDashboard'));
-const ConnectStorePage = lazy(() => import('@/pages/stores/ConnectStorePage'));
-const IntegrationsPage = lazy(() => import('@/pages/stores/IntegrationsPage'));
-const ManageIntegrationPage = lazy(() => import('@/pages/stores/ManageIntegrationPage'));
-const ImportedProductsPage = lazy(() => import('@/pages/stores/ImportedProductsPage'));
-const ShopifyDiagnostic = lazy(() => import('@/pages/ShopifyDiagnostic'));
-const ShopifyManagementPage = lazy(() => import('@/pages/ShopifyManagementPage'));
+// Stores - Now handled by ChannelRoutes, keeping redirects for compatibility
 
 // Orders
 const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
@@ -84,14 +77,8 @@ export function CoreRoutes() {
       <Route path="super" element={<Navigate to="/dashboard" replace />} />
       <Route path="classic" element={<Navigate to="/dashboard" replace />} />
       
-      {/* Stores Management */}
-      <Route path="stores" element={<StoreDashboard />} />
-      <Route path="stores/connect" element={<ConnectStorePage />} />
-      <Route path="stores/integrations" element={<IntegrationsPage />} />
-      <Route path="stores/integrations/:id" element={<ManageIntegrationPage />} />
-      <Route path="stores/imported-products" element={<ImportedProductsPage />} />
-      <Route path="stores/shopify-diagnostic" element={<ShopifyDiagnostic />} />
-      <Route path="stores/shopify-management" element={<ShopifyManagementPage />} />
+      {/* Stores Management - Redirect to new unified channel hub */}
+      <Route path="stores/*" element={<Navigate to="/stores-channels" replace />} />
       
       {/* Orders Management */}
       <Route path="orders" element={<OrdersPage />} />
@@ -124,9 +111,6 @@ export function CoreRoutes() {
       <Route path="sync-manager" element={<SyncManagerPage />} />
       <Route path="marketplace-sync" element={<MarketplaceSyncDashboard />} />
       <Route path="multi-store" element={<MultiStoreCentralDashboard />} />
-      <Route path="stores/sync" element={<StoreSyncDashboard />} />
-      <Route path="stores/stock-intelligence" element={<StockManagementDashboard />} />
-      <Route path="stores/analytics" element={<MultiStoreAnalyticsDashboard />} />
       <Route path="notifications" element={<AdvancedNotificationCenter />} />
       
       {/* Stock & Reports */}

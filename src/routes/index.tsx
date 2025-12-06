@@ -30,6 +30,7 @@ import { ImportRoutes } from './ImportRoutes';
 import { FeedRoutes } from './FeedRoutes';
 import { AdminRoutes } from './AdminRoutes';
 import SupplierRoutes from './SupplierRoutes';
+import { ChannelRoutes } from './ChannelRoutes';
 
 // Import pages
 import ShopifyImportHub from '@/pages/import/ShopifyImportHub';
@@ -120,6 +121,7 @@ export function AppRoutes() {
         <Route path="/import/*" element={<ProtectedRoute><AppLayout><ImportRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/feeds/*" element={<ProtectedRoute><AppLayout><FeedRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/suppliers/*" element={<ProtectedRoute><AppLayout><SupplierRoutes /></AppLayout></ProtectedRoute>} />
+        <Route path="/stores-channels/*" element={<ProtectedRoute><AppLayout><ChannelRoutes /></AppLayout></ProtectedRoute>} />
         
         {/* Pages manquantes ajoutées - Phase 1 */}
         <Route path="/import/advanced" element={<ProtectedRoute><AppLayout><AdvancedImportPage /></AppLayout></ProtectedRoute>} />

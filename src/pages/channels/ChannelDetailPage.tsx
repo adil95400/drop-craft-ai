@@ -83,7 +83,7 @@ export default function ChannelDetailPage() {
     },
     onSuccess: () => {
       toast({ title: 'Canal déconnecté' })
-      navigate('/dashboard/stores')
+      navigate('/stores-channels')
     }
   })
 
@@ -103,7 +103,7 @@ export default function ChannelDetailPage() {
             <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h2 className="text-xl font-semibold mb-2">Canal introuvable</h2>
             <p className="text-muted-foreground mb-4">Ce canal n'existe pas ou a été supprimé</p>
-            <Button onClick={() => navigate('/dashboard/stores')}>Retour aux canaux</Button>
+            <Button onClick={() => navigate('/stores-channels')}>Retour aux canaux</Button>
           </CardContent>
         </Card>
       </div>
@@ -133,7 +133,7 @@ export default function ChannelDetailPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard/stores')}>
+            <Button variant="ghost" size="icon" onClick={() => navigate('/stores-channels')}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-xl">

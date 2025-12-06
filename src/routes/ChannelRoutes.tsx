@@ -1,0 +1,45 @@
+/**
+ * Routes Boutiques et Canaux - Module unifié
+ */
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { lazy } from 'react';
+
+// Channel pages
+const StoresAndChannelsHub = lazy(() => import('@/pages/channels/StoresAndChannelsHub'));
+const ChannelConnectPage = lazy(() => import('@/pages/channels/ChannelConnectPage'));
+const ChannelDetailPage = lazy(() => import('@/pages/channels/ChannelDetailPage'));
+
+// Legacy store pages (kept for compatibility)
+const IntegrationsPage = lazy(() => import('@/pages/stores/IntegrationsPage'));
+const ManageIntegrationPage = lazy(() => import('@/pages/stores/ManageIntegrationPage'));
+const ImportedProductsPage = lazy(() => import('@/pages/stores/ImportedProductsPage'));
+const ShopifyDiagnostic = lazy(() => import('@/pages/ShopifyDiagnostic'));
+const ShopifyManagementPage = lazy(() => import('@/pages/ShopifyManagementPage'));
+
+// Sync & Analytics
+const StoreSyncDashboard = lazy(() => import('@/pages/StoreSyncDashboard'));
+const StockManagementDashboard = lazy(() => import('@/pages/StockManagementDashboard'));
+const MultiStoreAnalyticsDashboard = lazy(() => import('@/pages/MultiStoreAnalyticsDashboard'));
+
+export function ChannelRoutes() {
+  return (
+    <Routes>
+      {/* New unified hub */}
+      <Route index element={<StoresAndChannelsHub />} />
+      <Route path="connect" element={<ChannelConnectPage />} />
+      <Route path=":channelId" element={<ChannelDetailPage />} />
+      
+      {/* Legacy compatibility routes */}
+      <Route path="integrations" element={<IntegrationsPage />} />
+      <Route path="integrations/:id" element={<ManageIntegrationPage />} />
+      <Route path="imported-products" element={<ImportedProductsPage />} />
+      <Route path="shopify-diagnostic" element={<ShopifyDiagnostic />} />
+      <Route path="shopify-management" element={<ShopifyManagementPage />} />
+      
+      {/* Sync & Analytics */}
+      <Route path="sync" element={<StoreSyncDashboard />} />
+      <Route path="stock-intelligence" element={<StockManagementDashboard />} />
+      <Route path="analytics" element={<MultiStoreAnalyticsDashboard />} />
+    </Routes>
+  );
+}

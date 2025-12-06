@@ -11,9 +11,9 @@ export function Layout() {
   const location = useLocation()
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard/stores', icon: Home },
-    { name: 'Intégrations', href: '/dashboard/stores/integrations', icon: BarChart3 },
-    { name: 'Connecter', href: '/dashboard/stores/connect', icon: ShoppingCart },
+    { name: 'Dashboard', href: '/stores-channels', icon: Home },
+    { name: 'Intégrations', href: '/stores-channels/integrations', icon: BarChart3 },
+    { name: 'Connecter', href: '/stores-channels/connect', icon: ShoppingCart },
   ]
 
   return (
@@ -23,7 +23,7 @@ export function Layout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link to="/dashboard/stores" className="flex items-center space-x-2">
+              <Link to="/stores-channels" className="flex items-center space-x-2">
                 <ShoppingCart className="h-8 w-8 text-blue-600" />
                 <span className="text-xl font-bold text-gray-900">StoreSync</span>
               </Link>
