@@ -610,4 +610,252 @@
       border-radius: 16px 16px 0 0 !important;
     }
   }
+
+  /* =========================
+     ACCESSIBILITY ENHANCEMENTS
+     ========================= */
+  
+  /* High contrast mode */
+  .high-contrast {
+    --primary: 221 100% 45%;
+    --foreground: 0 0% 0%;
+    --background: 0 0% 100%;
+    --muted-foreground: 0 0% 30%;
+  }
+  
+  .dark.high-contrast {
+    --foreground: 0 0% 100%;
+    --background: 0 0% 0%;
+    --muted-foreground: 0 0% 70%;
+  }
+  
+  /* Reduce motion */
+  .reduce-motion,
+  .reduce-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Large text mode */
+  .large-text {
+    font-size: calc(1rem * var(--text-scale, 1));
+  }
+  
+  .large-text p,
+  .large-text span,
+  .large-text label,
+  .large-text button {
+    font-size: calc(1em * var(--text-scale, 1.25));
+  }
+  
+  /* Enhanced keyboard navigation */
+  .keyboard-nav *:focus-visible {
+    outline: 3px solid hsl(var(--primary)) !important;
+    outline-offset: 2px !important;
+  }
+  
+  /* Screen reader optimizations */
+  .screen-reader .sr-only {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0.5rem !important;
+    margin: 0.25rem !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+    background: hsl(var(--muted));
+    border-radius: 0.25rem;
+  }
+  
+  /* Skip link for keyboard navigation */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    padding: 8px 16px;
+    z-index: 100;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .skip-link:focus {
+    top: 0;
+  }
+  
+  /* =========================
+     MICRO-INTERACTIONS
+     ========================= */
+  
+  /* Button press effect */
+  .btn-press {
+    @apply transition-transform duration-100;
+  }
+  
+  .btn-press:active {
+    transform: scale(0.97);
+  }
+  
+  /* Hover lift effect */
+  .hover-lift-sm {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-lift-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.15);
+  }
+  
+  /* Glow on focus */
+  .focus-glow:focus {
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.25);
+  }
+  
+  /* Card entrance animation */
+  .card-enter {
+    animation: card-enter 0.4s ease-out;
+  }
+  
+  @keyframes card-enter {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  /* Success pulse */
+  .success-pulse {
+    animation: success-pulse 0.6s ease-out;
+  }
+  
+  @keyframes success-pulse {
+    0% {
+      box-shadow: 0 0 0 0 hsl(var(--success) / 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px hsl(var(--success) / 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 hsl(var(--success) / 0);
+    }
+  }
+  
+  /* Loading skeleton with improved animation */
+  .skeleton-loading {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes skeleton-loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  
+  /* Number counter animation */
+  .counter-animate {
+    display: inline-block;
+    transition: transform 0.3s ease-out;
+  }
+  
+  .counter-animate.changing {
+    animation: counter-pop 0.3s ease-out;
+  }
+  
+  @keyframes counter-pop {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+  
+  /* Notification badge bounce */
+  .badge-bounce {
+    animation: badge-bounce 0.5s ease-out;
+  }
+  
+  @keyframes badge-bounce {
+    0%, 100% {
+      transform: scale(1);
+    }
+    30% {
+      transform: scale(1.3);
+    }
+    60% {
+      transform: scale(0.9);
+    }
+  }
+  
+  /* Floating action button hover */
+  .fab-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .fab-hover:hover {
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 8px 24px hsl(var(--primary) / 0.4);
+  }
+  
+  /* Menu item slide */
+  .menu-item-slide {
+    animation: menu-item-slide 0.2s ease-out forwards;
+    opacity: 0;
+  }
+  
+  @keyframes menu-item-slide {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+  }
+  
+  /* Progress bar animation */
+  .progress-animate {
+    animation: progress-fill 1s ease-out forwards;
+  }
+  
+  @keyframes progress-fill {
+    from {
+      width: 0%;
+    }
+  }
+  
+  /* Toast slide in */
+  .toast-slide-in {
+    animation: toast-slide-in 0.3s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+  }
+  
+  @keyframes toast-slide-in {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
 }
