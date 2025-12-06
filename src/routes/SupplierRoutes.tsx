@@ -47,6 +47,8 @@ export default function SupplierRoutes() {
       <Route path=":supplierId/catalog" element={<SupplierCatalogPage />} />
       <Route path=":supplierId/advanced" element={<SupplierAdvancedPage />} />
       <Route path=":supplierId/import" element={<SupplierImportPage />} />
+      <Route path=":supplierId/feeds" element={<ChannableFeedManager />} />
+      <Route path=":supplierId/edit" element={<CreateSupplier />} />
     </Routes>
   )
 }
