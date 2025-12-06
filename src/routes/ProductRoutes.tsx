@@ -40,7 +40,7 @@ const UnifiedCatalog = lazy(() => import('@/pages/suppliers/catalog'));
 const WinnersPage = lazy(() => import('@/pages/WinnersPage'));
 const ProductResearchPage = lazy(() => import('@/pages/ProductResearchPage'));
 const AIMarketplacePage = lazy(() => import('@/pages/AIMarketplacePage'));
-const PremiumCatalog = lazy(() => import('@/pages/PremiumCatalog'));
+
 const PremiumNetworkPage = lazy(() => import('@/pages/PremiumNetworkPage'));
 const GlobalProductMarketplace = lazy(() => import('@/pages/GlobalProductMarketplace'));
 
@@ -115,7 +115,7 @@ export function ProductRoutes() {
       <Route path="winners" element={<WinnersPage />} />
       <Route path="research" element={<ProductResearchPage />} />
       <Route path="ai-marketplace" element={<AIMarketplacePage />} />
-      <Route path="premium-catalog" element={<PremiumCatalog />} />
+      
       <Route path="premium-network" element={<PremiumNetworkPage />} />
       <Route path="global-marketplace" element={<GlobalProductMarketplace />} />
       
