@@ -2,7 +2,7 @@
  * Application principale - Architecture simplifiée et modulaire
  * Routing délégué aux modules spécialisés pour une meilleure maintenance
  */
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { UnifiedAuthProvider } from '@/contexts/UnifiedAuthContext';
@@ -16,9 +16,9 @@ import { ModalManager } from '@/components/modals/ModalManager';
 import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
 import '@/lib/i18n';
-import { QueryClientProvider } from '@tanstack/react-query';
 import { PWAInstallBanner } from '@/components/mobile/PWAInstallBanner';
-import { useEffect } from 'react';
+import { FeedbackWidget } from '@/components/feedback/FeedbackWidget';
+import { OfflineIndicator } from '@/components/offline/OfflineIndicator';
 
 const AppContent = memo(() => {
   useAutoTheme();
@@ -38,12 +38,26 @@ const AppContent = memo(() => {
   
   return (
     <>
-      <AppRoutes />
+      {/* Skip link for keyboard navigation */}
+      <a href="#main-content" className="skip-link">
+        Aller au contenu principal
+      </a>
+      
+      {/* Offline status indicator */}
+      <OfflineIndicator variant="banner" />
+      
+      <main id="main-content">
+        <AppRoutes />
+      </main>
+      
       <GlobalModals />
       <ModalManager />
       <Toaster />
       <SonnerToaster position="top-right" />
       <PWAInstallBanner />
+      
+      {/* Feedback widget for continuous user feedback */}
+      <FeedbackWidget />
     </>
   );
 });
