@@ -9869,6 +9869,53 @@ export type Database = {
         }
         Relationships: []
       }
+      product_images: {
+        Row: {
+          alt: string | null
+          created_at: string | null
+          height: number | null
+          id: string
+          position: number | null
+          product_id: string
+          src: string
+          user_id: string
+          variant_ids: string[] | null
+          width: number | null
+        }
+        Insert: {
+          alt?: string | null
+          created_at?: string | null
+          height?: number | null
+          id?: string
+          position?: number | null
+          product_id: string
+          src: string
+          user_id: string
+          variant_ids?: string[] | null
+          width?: number | null
+        }
+        Update: {
+          alt?: string | null
+          created_at?: string | null
+          height?: number | null
+          id?: string
+          position?: number | null
+          product_id?: string
+          src?: string
+          user_id?: string
+          variant_ids?: string[] | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_imports: {
         Row: {
           ai_optimization_results: Json | null
@@ -10352,57 +10399,111 @@ export type Database = {
       }
       product_variants: {
         Row: {
+          barcode: string | null
+          compare_at_price: number | null
           cost_price: number | null
           created_at: string | null
+          fulfillment_service: string | null
           id: string
           image_url: string | null
+          inventory_policy: string | null
+          inventory_quantity: number | null
           is_active: boolean | null
           name: string
+          option1_name: string | null
+          option1_value: string | null
+          option2_name: string | null
+          option2_value: string | null
+          option3_name: string | null
+          option3_value: string | null
           options: Json | null
           parent_sku: string | null
+          position: number | null
           price: number
           product_id: string | null
+          requires_shipping: boolean | null
           shopify_variant_id: string | null
+          sku: string | null
           stock_quantity: number | null
+          taxable: boolean | null
+          title: string | null
           updated_at: string | null
           user_id: string
           variant_sku: string | null
+          weight: number | null
+          weight_unit: string | null
           woocommerce_variant_id: string | null
         }
         Insert: {
+          barcode?: string | null
+          compare_at_price?: number | null
           cost_price?: number | null
           created_at?: string | null
+          fulfillment_service?: string | null
           id?: string
           image_url?: string | null
+          inventory_policy?: string | null
+          inventory_quantity?: number | null
           is_active?: boolean | null
           name: string
+          option1_name?: string | null
+          option1_value?: string | null
+          option2_name?: string | null
+          option2_value?: string | null
+          option3_name?: string | null
+          option3_value?: string | null
           options?: Json | null
           parent_sku?: string | null
+          position?: number | null
           price?: number
           product_id?: string | null
+          requires_shipping?: boolean | null
           shopify_variant_id?: string | null
+          sku?: string | null
           stock_quantity?: number | null
+          taxable?: boolean | null
+          title?: string | null
           updated_at?: string | null
           user_id: string
           variant_sku?: string | null
+          weight?: number | null
+          weight_unit?: string | null
           woocommerce_variant_id?: string | null
         }
         Update: {
+          barcode?: string | null
+          compare_at_price?: number | null
           cost_price?: number | null
           created_at?: string | null
+          fulfillment_service?: string | null
           id?: string
           image_url?: string | null
+          inventory_policy?: string | null
+          inventory_quantity?: number | null
           is_active?: boolean | null
           name?: string
+          option1_name?: string | null
+          option1_value?: string | null
+          option2_name?: string | null
+          option2_value?: string | null
+          option3_name?: string | null
+          option3_value?: string | null
           options?: Json | null
           parent_sku?: string | null
+          position?: number | null
           price?: number
           product_id?: string | null
+          requires_shipping?: boolean | null
           shopify_variant_id?: string | null
+          sku?: string | null
           stock_quantity?: number | null
+          taxable?: boolean | null
+          title?: string | null
           updated_at?: string | null
           user_id?: string
           variant_sku?: string | null
+          weight?: number | null
+          weight_unit?: string | null
           woocommerce_variant_id?: string | null
         }
         Relationships: [
@@ -10418,24 +10519,37 @@ export type Database = {
       products: {
         Row: {
           ai_score: number | null
+          barcode: string | null
           best_supplier_id: string | null
           category: string | null
+          compare_at_price: number | null
           competition_score: number | null
           conversion_rate: number | null
           cost_price: number | null
           created_at: string
           description: string | null
           dimensions: Json | null
+          fulfillment_service: string | null
+          google_age_group: string | null
+          google_custom_labels: Json | null
+          google_gender: string | null
+          google_product_category: string | null
+          handle: string | null
           id: string
           image_url: string | null
+          inventory_policy: string | null
           is_bestseller: boolean | null
           is_trending: boolean | null
           is_winner: boolean | null
           last_optimized_at: string | null
+          mpn: string | null
           name: string
           price: number
+          product_condition: string | null
+          product_type: string | null
           profit_margin: number | null
           profit_potential: number | null
+          requires_shipping: boolean | null
           seo_description: string | null
           seo_keywords: string[] | null
           seo_title: string | null
@@ -10447,32 +10561,49 @@ export type Database = {
           supplier_id: string | null
           supplier_ids: string[] | null
           tags: string[] | null
+          tax_code: string | null
+          taxable: boolean | null
           trend_score: number | null
           updated_at: string
           user_id: string
+          vendor: string | null
           view_count: number | null
           weight: number | null
+          weight_unit: string | null
         }
         Insert: {
           ai_score?: number | null
+          barcode?: string | null
           best_supplier_id?: string | null
           category?: string | null
+          compare_at_price?: number | null
           competition_score?: number | null
           conversion_rate?: number | null
           cost_price?: number | null
           created_at?: string
           description?: string | null
           dimensions?: Json | null
+          fulfillment_service?: string | null
+          google_age_group?: string | null
+          google_custom_labels?: Json | null
+          google_gender?: string | null
+          google_product_category?: string | null
+          handle?: string | null
           id?: string
           image_url?: string | null
+          inventory_policy?: string | null
           is_bestseller?: boolean | null
           is_trending?: boolean | null
           is_winner?: boolean | null
           last_optimized_at?: string | null
+          mpn?: string | null
           name: string
           price?: number
+          product_condition?: string | null
+          product_type?: string | null
           profit_margin?: number | null
           profit_potential?: number | null
+          requires_shipping?: boolean | null
           seo_description?: string | null
           seo_keywords?: string[] | null
           seo_title?: string | null
@@ -10484,32 +10615,49 @@ export type Database = {
           supplier_id?: string | null
           supplier_ids?: string[] | null
           tags?: string[] | null
+          tax_code?: string | null
+          taxable?: boolean | null
           trend_score?: number | null
           updated_at?: string
           user_id: string
+          vendor?: string | null
           view_count?: number | null
           weight?: number | null
+          weight_unit?: string | null
         }
         Update: {
           ai_score?: number | null
+          barcode?: string | null
           best_supplier_id?: string | null
           category?: string | null
+          compare_at_price?: number | null
           competition_score?: number | null
           conversion_rate?: number | null
           cost_price?: number | null
           created_at?: string
           description?: string | null
           dimensions?: Json | null
+          fulfillment_service?: string | null
+          google_age_group?: string | null
+          google_custom_labels?: Json | null
+          google_gender?: string | null
+          google_product_category?: string | null
+          handle?: string | null
           id?: string
           image_url?: string | null
+          inventory_policy?: string | null
           is_bestseller?: boolean | null
           is_trending?: boolean | null
           is_winner?: boolean | null
           last_optimized_at?: string | null
+          mpn?: string | null
           name?: string
           price?: number
+          product_condition?: string | null
+          product_type?: string | null
           profit_margin?: number | null
           profit_potential?: number | null
+          requires_shipping?: boolean | null
           seo_description?: string | null
           seo_keywords?: string[] | null
           seo_title?: string | null
@@ -10521,11 +10669,15 @@ export type Database = {
           supplier_id?: string | null
           supplier_ids?: string[] | null
           tags?: string[] | null
+          tax_code?: string | null
+          taxable?: boolean | null
           trend_score?: number | null
           updated_at?: string
           user_id?: string
+          vendor?: string | null
           view_count?: number | null
           weight?: number | null
+          weight_unit?: string | null
         }
         Relationships: [
           {
