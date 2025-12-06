@@ -69,6 +69,20 @@ serve(async (req) => {
 
     console.log('BTS Feed Sync:', { supplierId, userId, action, limit })
 
+    // Validate required parameters
+    if (!supplierId) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'supplierId is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'userId is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Get BTS credentials
     const { data: credentials } = await supabase
       .from('supplier_credentials_vault')
