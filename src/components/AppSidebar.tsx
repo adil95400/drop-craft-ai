@@ -8,7 +8,8 @@ import {
   Zap, Users, Brain, Shield, Plug, Settings, ChevronDown, Package, Sparkles, 
   Crown, Calculator, Megaphone, FileText, Globe, Store, Puzzle, GitCompare, 
   Database, ShoppingBag, GraduationCap, HelpCircle, Activity, Building2, 
-  Home, Boxes, CreditCard, LifeBuoy, Video, Tag 
+  Home, Boxes, CreditCard, LifeBuoy, Video, Tag, Rss, RefreshCw, Target,
+  CheckCircle, Clock, Calendar, Star
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { 
@@ -24,7 +25,7 @@ import { MODULE_REGISTRY, NAV_GROUPS, type NavGroupId } from "@/config/modules";
 import { useModules } from "@/hooks/useModules";
 import { getAccessibleSubModules } from "@/config/sub-modules";
 import { FavoriteButton } from "@/components/navigation/FavoriteButton";
-import { Star } from "lucide-react";
+import { SidebarFooterSection } from "@/components/sidebar/SidebarFooterSection";
 
 // Logo mémoïsé
 const ShopoptiLogo = memo(() => (
@@ -134,7 +135,7 @@ const FavoritesSection = memo<FavoritesSectionProps>(({
 ));
 FavoritesSection.displayName = "FavoritesSection";
 
-// Map des icônes
+// Map des icônes - Étendu avec toutes les icônes nécessaires
 const iconMap: Record<string, React.ComponentType<any>> = {
   'Home': Home,
   'BarChart3': BarChart3,
@@ -173,6 +174,13 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'LifeBuoy': LifeBuoy,
   'Video': Video,
   'Tag': Tag,
+  'Rss': Rss,
+  'RefreshCw': RefreshCw,
+  'Target': Target,
+  'CheckCircle': CheckCircle,
+  'Clock': Clock,
+  'Calendar': Calendar,
+  'Star': Star,
 };
 
 export function AppSidebar() {
@@ -518,6 +526,9 @@ export function AppSidebar() {
           );
         })}
       </SidebarContent>
+
+      {/* Footer Section */}
+      <SidebarFooterSection collapsed={state === "collapsed"} />
 
       <SidebarRail />
     </Sidebar>

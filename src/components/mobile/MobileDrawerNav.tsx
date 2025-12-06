@@ -52,8 +52,9 @@ const navGroups = [
   },
   {
     id: 'channels',
-    label: 'Canaux & Feeds',
+    label: 'Canaux & Intégrations',
     items: [
+      { id: 'stores-channels', label: 'Boutiques & Canaux', icon: Store, path: '/stores-channels', badge: 'Nouveau' },
       { id: 'feeds', label: 'Feeds', icon: Rss, path: '/feeds', badge: 'Channable' },
       { id: 'integrations', label: 'Intégrations', icon: Plug, path: '/integrations', badge: null },
     ]
