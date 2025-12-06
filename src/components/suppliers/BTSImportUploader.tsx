@@ -17,7 +17,11 @@ interface ImportResult {
   error?: string;
 }
 
-export function BTSImportUploader() {
+interface BTSImportUploaderProps {
+  supplierId?: string;
+}
+
+export function BTSImportUploader({ supplierId }: BTSImportUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<ImportResult | null>(null);
@@ -38,6 +42,10 @@ export function BTSImportUploader() {
     try {
       const formData = new FormData();
       formData.append('file', file);
+      // Pass supplier_id to link products correctly
+      if (supplierId) {
+        formData.append('supplier_id', supplierId);
+      }
 
       setProgress(30);
 
@@ -75,7 +83,7 @@ export function BTSImportUploader() {
     } finally {
       setIsUploading(false);
     }
-  }, []);
+  }, [supplierId]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

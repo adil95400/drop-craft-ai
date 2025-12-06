@@ -19,14 +19,34 @@ interface ImportJob {
 }
 
 export default function BTSImportPage() {
+  // Get BTS Wholesaler supplier ID
+  const { data: btsSupplier } = useQuery({
+    queryKey: ['bts-supplier'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('suppliers')
+        .select('id, name')
+        .ilike('name', '%bts%wholesaler%')
+        .single();
+      
+      if (error) {
+        console.error('Error fetching BTS supplier:', error);
+        return null;
+      }
+      return data;
+    }
+  });
+
+  const btsSupplierUUID = btsSupplier?.id || '34997271-66ee-492a-ac16-f5bf8eb0c37a';
+
   // Fetch recent import jobs for BTS
   const { data: recentJobs } = useQuery<ImportJob[]>({
-    queryKey: ['bts-import-jobs'],
+    queryKey: ['bts-import-jobs', btsSupplierUUID],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('import_jobs')
         .select('id, created_at, status, processed_products, total_products, supplier_id')
-        .eq('supplier_id', 'btswholesaler')
+        .or(`supplier_id.eq.${btsSupplierUUID},supplier_id.eq.btswholesaler`)
         .order('created_at', { ascending: false })
         .limit(5);
       
@@ -37,12 +57,12 @@ export default function BTSImportPage() {
 
   // Count BTS products
   const { data: productCount } = useQuery({
-    queryKey: ['bts-products-count'],
+    queryKey: ['bts-products-count', btsSupplierUUID],
     queryFn: async (): Promise<number> => {
       const { count, error } = await supabase
         .from('products')
         .select('id', { count: 'exact', head: true })
-        .eq('supplier_id', 'btswholesaler');
+        .or(`supplier_id.eq.${btsSupplierUUID},vendor.ilike.%bts%`);
       
       if (error) throw error;
       return count || 0;
@@ -115,7 +135,7 @@ export default function BTSImportPage() {
         </div>
 
         {/* Uploader */}
-        <BTSImportUploader />
+        <BTSImportUploader supplierId={btsSupplierUUID} />
 
         {/* Recent imports */}
         {recentJobs && recentJobs.length > 0 && (
