@@ -60,12 +60,35 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    
+    // Create client for auth verification
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    const { supplierId, userId, action = 'sync', limit = 0 } = await req.json()
+    // Verify JWT and get authenticated user
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    
+    if (authError || !user) {
+      console.error('Authentication failed:', authError)
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Use authenticated user's ID - not from request body
+    const userId = user.id
+    const { supplierId, action = 'sync', limit = 0 } = await req.json()
 
     console.log('BTS Feed Sync:', { supplierId, userId, action, limit })
 
@@ -76,25 +99,55 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-    if (!userId) {
+
+    // Verify user owns this supplier connection
+    const { data: supplierCheck } = await supabase
+      .from('suppliers')
+      .select('id, user_id')
+      .eq('id', supplierId)
+      .eq('user_id', userId)
+      .single()
+
+    if (!supplierCheck) {
       return new Response(
-        JSON.stringify({ success: false, error: 'userId is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: 'Supplier not found or access denied' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Get BTS credentials
-    const { data: credentials } = await supabase
+    // Get BTS credentials from vault - NO hardcoded fallbacks
+    const { data: credentials, error: credError } = await supabase
       .from('supplier_credentials_vault')
       .select('*')
       .eq('supplier_id', supplierId)
       .single()
 
-    // BTS Wholesaler credentials
-    const btsUserId = credentials?.oauth_data?.user_id_bts || '908383'
-    const btsPassword = credentials?.oauth_data?.password || 'Adil1979@@'
-    const language = credentials?.oauth_data?.language || 'fr-FR'
-    const format = 'csv' // CSV is more reliable for large datasets
+    if (credError || !credentials?.oauth_data) {
+      console.error('Failed to retrieve BTS credentials:', credError)
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'BTS credentials not configured. Please connect your BTS Wholesaler account first.' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Extract credentials from vault - fail if not present
+    const btsUserId = credentials.oauth_data.user_id_bts
+    const btsPassword = credentials.oauth_data.password
+    const language = credentials.oauth_data.language || 'fr-FR'
+    const format = 'csv'
+
+    if (!btsUserId || !btsPassword) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'BTS credentials incomplete. Please re-connect your BTS Wholesaler account.' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     console.log('Using BTS credentials:', { btsUserId, language, format })
 
