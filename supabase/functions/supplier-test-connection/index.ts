@@ -36,16 +36,83 @@ Deno.serve(async (req) => {
     let testCredentials = credentials
     let connectorId = supplierId
     
-    // If credentials not provided and supplierId is a UUID, fetch from database
-    if ((!testCredentials || Object.keys(testCredentials).length === 0) && isUUID) {
-      const { data: storedCreds, error: credError } = await supabase
-        .from('supplier_credentials_vault')
-        .select('oauth_data, supplier:suppliers!inner(name)')
-        .eq('user_id', user.id)
-        .eq('supplier_id', supplierId)
-        .single()
+    // If credentials not provided, fetch from database
+    if (!testCredentials || Object.keys(testCredentials).length === 0) {
+      console.log('No credentials provided, fetching from database...')
       
-      if (credError || !storedCreds?.oauth_data) {
+      let storedCreds = null
+      let credError = null
+      
+      if (isUUID) {
+        // Try by supplier_id first
+        const result = await supabase
+          .from('supplier_credentials_vault')
+          .select('oauth_data, supplier_id')
+          .eq('user_id', user.id)
+          .eq('supplier_id', supplierId)
+          .single()
+        storedCreds = result.data
+        credError = result.error
+      }
+      
+      // If not found by UUID, try by supplier name match
+      if (!storedCreds?.oauth_data) {
+        console.log('Trying to find credentials by supplier name:', supplierId)
+        
+        // Get supplier by name pattern
+        const { data: supplierData } = await supabase
+          .from('suppliers')
+          .select('id, name')
+          .or(`name.ilike.%${supplierId}%,slug.ilike.%${supplierId}%`)
+          .limit(1)
+          .single()
+        
+        if (supplierData) {
+          console.log('Found supplier:', supplierData.name, supplierData.id)
+          const result = await supabase
+            .from('supplier_credentials_vault')
+            .select('oauth_data, supplier_id')
+            .eq('user_id', user.id)
+            .eq('supplier_id', supplierData.id)
+            .single()
+          storedCreds = result.data
+          credError = result.error
+        }
+      }
+      
+      // Also try fetching any credentials for this user that might match the connector
+      if (!storedCreds?.oauth_data) {
+        console.log('Fetching all user credentials to find matching connector...')
+        const { data: allCreds } = await supabase
+          .from('supplier_credentials_vault')
+          .select('oauth_data, supplier_id, suppliers!inner(name, slug)')
+          .eq('user_id', user.id)
+          .eq('connection_status', 'active')
+        
+        if (allCreds && allCreds.length > 0) {
+          // Find one that matches our connector pattern
+          const matchingCred = allCreds.find(c => {
+            const supplierName = (c.suppliers as any)?.name?.toLowerCase() || ''
+            const supplierSlug = (c.suppliers as any)?.slug?.toLowerCase() || ''
+            const searchId = supplierId.toLowerCase()
+            return supplierName.includes(searchId) || 
+                   supplierSlug.includes(searchId) || 
+                   searchId.includes(supplierName) ||
+                   searchId.includes(supplierSlug)
+          })
+          
+          if (matchingCred) {
+            storedCreds = matchingCred
+            console.log('Found matching credentials for:', (matchingCred.suppliers as any)?.name)
+          } else if (allCreds[0]) {
+            // Just use the first active credential
+            storedCreds = allCreds[0]
+            console.log('Using first available credentials')
+          }
+        }
+      }
+      
+      if (!storedCreds?.oauth_data) {
         return new Response(
           JSON.stringify({ 
             success: false, 
@@ -60,9 +127,9 @@ Deno.serve(async (req) => {
       }
       
       testCredentials = storedCreds.oauth_data
-      // Extract connector ID from supplier name if available
-      connectorId = (storedCreds as any).supplier?.name?.toLowerCase().replace(/\s+/g, '-') || supplierId
-      console.log('Using stored credentials from database, connector:', connectorId)
+      // Extract connector ID from oauth_data if available
+      connectorId = testCredentials.connectorId || supplierId
+      console.log('Using stored credentials from database, connector:', connectorId, 'keys:', Object.keys(testCredentials))
     }
     
     // When testing, credentials must be provided
