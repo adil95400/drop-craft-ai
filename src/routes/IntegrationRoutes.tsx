@@ -8,6 +8,7 @@ import { lazy } from 'react';
 const IntegrationsPage = lazy(() => import('@/pages/IntegrationsPage'));
 const Integrations = lazy(() => import('@/pages/Integrations'));
 const UnifiedIntegrationsHub = lazy(() => import('@/pages/integrations/UnifiedIntegrationsHub'));
+const TikTokShopPage = lazy(() => import('@/pages/integrations/TikTokShopPage'));
 
 // Marketplace
 const Marketplace = lazy(() => import('@/pages/Marketplace'));
@@ -48,6 +49,7 @@ export function IntegrationRoutes() {
       <Route path="hub" element={<Integrations />} />
       <Route path="unified" element={<UnifiedIntegrationsHub />} />
       <Route path="sync-config" element={<SyncConfigPage />} />
+      <Route path="tiktok-shop" element={<TikTokShopPage />} />
       
       {/* Marketplace */}
       <Route path="marketplace" element={<Marketplace />} />
