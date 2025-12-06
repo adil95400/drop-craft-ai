@@ -143,15 +143,30 @@ serve(async (req) => {
 
     const formData = await req.formData();
     const file = formData.get('file') as File;
+    const supplierIdFromForm = formData.get('supplier_id') as string;
     
     if (!file) {
       throw new Error('Fichier CSV requis');
     }
 
+    // Find or get BTS Wholesaler supplier ID
+    let btsSupplierUUID = supplierIdFromForm;
+    
+    if (!btsSupplierUUID) {
+      // Try to find existing BTS Wholesaler supplier
+      const { data: existingSupplier } = await supabaseClient
+        .from('suppliers')
+        .select('id')
+        .ilike('name', '%bts%wholesaler%')
+        .single();
+      
+      btsSupplierUUID = existingSupplier?.id || null;
+    }
+
     const csvContent = await file.text();
     const btsProducts = parseCSV(csvContent);
     
-    console.log(`Parsed ${btsProducts.length} products from CSV`);
+    console.log(`Parsed ${btsProducts.length} products from CSV, supplier_id: ${btsSupplierUUID}`);
 
     if (btsProducts.length === 0) {
       throw new Error('Aucun produit valide trouvé dans le CSV');
@@ -189,7 +204,7 @@ serve(async (req) => {
         name: p.title,
         description: p.body_html,
         handle: p.handle,
-        vendor: p.vendor,
+        vendor: p.vendor || 'BTSWholesaler',
         product_type: p.type || p.product_category,
         tags: p.tags ? p.tags.split(',').map(t => t.trim()) : [],
         sku: p.variant_sku,
@@ -207,7 +222,7 @@ serve(async (req) => {
         image_url: p.image_src,
         status: p.published ? 'active' : 'draft',
         source: 'btswholesaler',
-        supplier_id: 'btswholesaler',
+        supplier_id: btsSupplierUUID, // Use real UUID from suppliers table
         external_id: p.variant_sku,
       }));
 

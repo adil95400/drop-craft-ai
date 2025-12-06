@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { useRealSuppliers } from '@/hooks/useRealSuppliers'
+import { useSupplierProducts, useSupplierProductCount } from '@/hooks/useSupplierProducts'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   ArrowLeft,
   Edit,
@@ -35,6 +37,8 @@ export default function SupplierDetails() {
   const { supplierId } = useParams()
   const navigate = useNavigate()
   const { suppliers, isLoading } = useRealSuppliers()
+  const { data: supplierProductsData, isLoading: productsLoading } = useSupplierProducts(supplierId, 100)
+  const { data: productCount } = useSupplierProductCount(supplierId)
   
   const supplier = suppliers.find(s => s.id === supplierId)
 
@@ -69,7 +73,9 @@ export default function SupplierDetails() {
     )
   }
 
-  // Mock data pour la démo
+  // Real products from database + fallback mock for orders
+  const realProducts = supplierProductsData?.products || []
+  
   const mockData = {
     performance: {
       reliability: 95.8,
@@ -89,11 +95,6 @@ export default function SupplierDetails() {
       lastPayment: '2024-01-15',
       outstandingBalance: 12500
     },
-    products: [
-      { id: '1', name: 'Produit A', sku: 'SKU-001', price: 45.99, stock: 120 },
-      { id: '2', name: 'Produit B', sku: 'SKU-002', price: 78.50, stock: 85 },
-      { id: '3', name: 'Produit C', sku: 'SKU-003', price: 23.99, stock: 200 }
-    ],
     recentOrders: [
       { id: 'CMD-001', date: '2024-01-15', amount: 1250, status: 'delivered' },
       { id: 'CMD-002', date: '2024-01-10', amount: 890, status: 'in_transit' },
@@ -479,44 +480,85 @@ export default function SupplierDetails() {
                   <div>
                     <CardTitle>Produits fournis</CardTitle>
                     <CardDescription>
-                      {mockData.products.length} produits disponibles
+                      {productCount || realProducts.length} produits disponibles
                     </CardDescription>
                   </div>
-                  <Button>
-                    <Package className="h-4 w-4 mr-2" />
-                    Ajouter un produit
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => navigate(`/suppliers/${supplierId}/catalog`)}>
+                      Voir tout
+                    </Button>
+                    <Button onClick={() => navigate(`/suppliers/${supplierId}/import`)}>
+                      <Package className="h-4 w-4 mr-2" />
+                      Importer
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {mockData.products.map((product) => (
-                    <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
-                          <Package className="h-6 w-6 text-muted-foreground" />
+                {productsLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(5)].map((_, i) => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : realProducts.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="font-medium">Aucun produit importé</p>
+                    <p className="text-sm mt-1">Importez des produits depuis ce fournisseur pour les voir ici</p>
+                    <Button className="mt-4" onClick={() => navigate(`/suppliers/${supplierId}/import`)}>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Importer des produits
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {realProducts.slice(0, 20).map((product) => (
+                      <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-4">
+                          {product.image_url ? (
+                            <img 
+                              src={product.image_url} 
+                              alt={product.name} 
+                              className="w-12 h-12 rounded object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = '/placeholder.svg'
+                              }}
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
+                              <Package className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-medium line-clamp-1">{product.name || 'Produit sans nom'}</p>
+                            <p className="text-sm text-muted-foreground">SKU: {product.sku || 'N/A'}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
+                        <div className="flex items-center gap-6">
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground">Prix</p>
+                            <p className="font-bold">€{product.price?.toFixed(2) || '0.00'}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-muted-foreground">Stock</p>
+                            <p className="font-bold">{product.stock_quantity || 0}</p>
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => navigate(`/products/${product.id}`)}>
+                            Détails
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-6">
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">Prix</p>
-                          <p className="font-bold">€{product.price}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">Stock</p>
-                          <p className="font-bold">{product.stock}</p>
-                        </div>
-                        <Button variant="ghost" size="sm">
-                          Détails
+                    ))}
+                    {realProducts.length > 20 && (
+                      <div className="text-center pt-4">
+                        <Button variant="outline" onClick={() => navigate(`/suppliers/${supplierId}/catalog`)}>
+                          Voir les {productCount || realProducts.length} produits
                         </Button>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
