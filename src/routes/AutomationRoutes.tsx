@@ -28,6 +28,7 @@ const ProductSourcingAssistant = lazy(() => import('@/pages/ProductSourcingAssis
 
 // Advanced Automation
 const WorkflowBuilderPage = lazy(() => import('@/pages/WorkflowBuilderPage'));
+const WorkflowEditorPage = lazy(() => import('@/pages/WorkflowEditorPage'));
 const PriceOptimizationPage = lazy(() => import('@/pages/PriceOptimizationPage'));
 const PricingAutomationPage = lazy(() => import('@/pages/PricingAutomationPage'));
 const ProductRecommendationsPage = lazy(() => import('@/pages/ProductRecommendationsPage'));
@@ -61,6 +62,7 @@ export function AutomationRoutes() {
       
       {/* Advanced Automation */}
       <Route path="workflow-builder" element={<WorkflowBuilderPage />} />
+      <Route path="workflow-editor" element={<WorkflowEditorPage />} />
       <Route path="price-optimization" element={<PriceOptimizationPage />} />
       <Route path="pricing-automation" element={<PricingAutomationPage />} />
       <Route path="recommendations" element={<ProductRecommendationsPage />} />
