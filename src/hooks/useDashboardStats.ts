@@ -47,7 +47,8 @@ export function useDashboardStats() {
           supabase.from('imported_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
           (supabase as any).from('premium_products').select(`*, supplier:premium_suppliers!inner(connections:premium_supplier_connections!inner(user_id))`, { count: 'exact', head: true }).eq('supplier.connections.user_id', user.id).eq('is_active', true),
           supabase.from('catalog_products').select('*', { count: 'exact', head: true }),
-          (supabase as any).from('shopify_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+          // Use the view with user_id for shopify_products
+          (supabase as any).from('shopify_products_with_user').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
           (supabase as any).from('published_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
           (supabase as any).from('feed_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
           (supabase as any).from('supplier_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
@@ -105,7 +106,8 @@ export function useDashboardStats() {
           supabase.from('imported_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id).lte('created_at', endOfPrevMonth.toISOString()),
           (supabase as any).from('premium_products').select(`*, supplier:premium_suppliers!inner(connections:premium_supplier_connections!inner(user_id))`, { count: 'exact', head: true }).eq('supplier.connections.user_id', user.id).eq('is_active', true).lte('created_at', endOfPrevMonth.toISOString()),
           supabase.from('catalog_products').select('*', { count: 'exact', head: true }).lte('created_at', endOfPrevMonth.toISOString()),
-          (supabase as any).from('shopify_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id).lte('created_at', endOfPrevMonth.toISOString()),
+          // Use the view with user_id for shopify_products
+          (supabase as any).from('shopify_products_with_user').select('*', { count: 'exact', head: true }).eq('user_id', user.id).lte('created_at', endOfPrevMonth.toISOString()),
           (supabase as any).from('published_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id).lte('created_at', endOfPrevMonth.toISOString()),
           (supabase as any).from('feed_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id).lte('created_at', endOfPrevMonth.toISOString()),
           (supabase as any).from('supplier_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id).lte('created_at', endOfPrevMonth.toISOString())

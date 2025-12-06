@@ -5547,6 +5547,9 @@ export type Database = {
           processed_products: number | null
           product_ids: string[] | null
           progress_percentage: number | null
+          scheduled_at: string | null
+          source_type: string | null
+          source_url: string | null
           started_at: string | null
           status: string | null
           successful_imports: number | null
@@ -5566,6 +5569,9 @@ export type Database = {
           processed_products?: number | null
           product_ids?: string[] | null
           progress_percentage?: number | null
+          scheduled_at?: string | null
+          source_type?: string | null
+          source_url?: string | null
           started_at?: string | null
           status?: string | null
           successful_imports?: number | null
@@ -5585,6 +5591,9 @@ export type Database = {
           processed_products?: number | null
           product_ids?: string[] | null
           progress_percentage?: number | null
+          scheduled_at?: string | null
+          source_type?: string | null
+          source_url?: string | null
           started_at?: string | null
           status?: string | null
           successful_imports?: number | null
@@ -17337,6 +17346,36 @@ export type Database = {
           imported_today: number | null
           last_import: string | null
           total_products: number | null
+        }
+        Relationships: []
+      }
+      shopify_products_with_user: {
+        Row: {
+          compare_at_price: number | null
+          created_at: string | null
+          created_at_shopify: string | null
+          description: string | null
+          handle: string | null
+          id: string | null
+          image_url: string | null
+          images: Json | null
+          inventory_quantity: number | null
+          options: Json | null
+          price: number | null
+          product_type: string | null
+          seo_description: string | null
+          seo_title: string | null
+          shopify_product_id: number | null
+          sku: string | null
+          status: string | null
+          store_integration_id: string | null
+          tags: string[] | null
+          title: string | null
+          updated_at: string | null
+          updated_at_shopify: string | null
+          user_id: string | null
+          variants: Json | null
+          vendor: string | null
         }
         Relationships: []
       }
