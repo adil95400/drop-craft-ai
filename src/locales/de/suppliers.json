@@ -2,6 +2,14 @@
   "title": "Lieferanten",
   "description": "Verwalten Sie Ihre Lieferantenverbindungen",
   "search": "Lieferant suchen...",
+  "hub": {
+    "title": "Lieferanten-Hub",
+    "subtitle": "Verwalten Sie alle Lieferanten über eine einheitliche Oberfläche",
+    "overview": "Übersicht",
+    "marketplace": "Marktplatz",
+    "mySuppliers": "Meine Lieferanten",
+    "feeds": "Feeds & Sync"
+  },
   "tabs": {
     "all": "Alle",
     "connected": "Verbunden",
@@ -19,8 +27,10 @@
     "connect": "Verbinden",
     "disconnect": "Trennen",
     "sync": "Synchronisieren",
+    "syncNow": "Jetzt synchronisieren",
     "configure": "Konfigurieren",
-    "viewProducts": "Produkte anzeigen"
+    "viewProducts": "Produkte anzeigen",
+    "importProducts": "Produkte importieren"
   },
   "messages": {
     "connected": "Lieferant erfolgreich verbunden",
@@ -28,5 +38,11 @@
     "syncStarted": "Synchronisierung gestartet",
     "syncCompleted": "Synchronisierung abgeschlossen",
     "syncFailed": "Synchronisierung fehlgeschlagen"
+  },
+  "kpis": {
+    "totalProducts": "Gesamtprodukte",
+    "activeSuppliers": "Aktive Lieferanten",
+    "pendingOrders": "Ausstehende Bestellungen",
+    "syncStatus": "Sync-Status"
   }
 }
