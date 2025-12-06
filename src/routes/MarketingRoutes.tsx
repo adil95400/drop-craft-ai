@@ -17,7 +17,7 @@ const CRMCalls = lazy(() => import('@/pages/CRMCalls'));
 const CRMCalendar = lazy(() => import('@/pages/CRMCalendar'));
 
 // SEO
-const SEOManagerPage = lazy(() => import('@/pages/SEOManagerPage'));
+const SEOManagerPage = lazy(() => import('@/pages/SEOManager'));
 const SEO = lazy(() => import('@/pages/SEO'));
 
 // Ads
