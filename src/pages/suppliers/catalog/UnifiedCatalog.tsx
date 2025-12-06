@@ -41,14 +41,13 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Charger les produits du catalogue unifié
+  // Charger les produits depuis supplier_products
   const { data: products = [], isLoading, refetch } = useQuery({
     queryKey: ['unified-catalog', searchQuery, selectedCategory, stockFilter, sortBy, supplierId],
     queryFn: async () => {
       let query = supabase
-        .from('supplier_products_unified')
-        .select('*')
-        .eq('is_active', true);
+        .from('supplier_products')
+        .select('*, suppliers(name)');
 
       // Filtre par fournisseur si spécifié
       if (supplierId) {
@@ -56,15 +55,19 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
       }
 
       if (searchQuery) {
-        query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
+        query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
       }
 
       if (selectedCategory !== 'all') {
         query = query.eq('category', selectedCategory);
       }
 
-      if (stockFilter !== 'all') {
-        query = query.eq('stock_status', stockFilter);
+      if (stockFilter === 'in_stock') {
+        query = query.gt('stock_quantity', 10);
+      } else if (stockFilter === 'low_stock') {
+        query = query.lte('stock_quantity', 10).gt('stock_quantity', 0);
+      } else if (stockFilter === 'out_of_stock') {
+        query = query.eq('stock_quantity', 0);
       }
 
       // Tri
@@ -73,9 +76,9 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
       } else if (sortBy === 'profit_margin') {
         query = query.order('profit_margin', { ascending: false, nullsFirst: false });
       } else if (sortBy === 'price_asc') {
-        query = query.order('retail_price', { ascending: true });
+        query = query.order('price', { ascending: true });
       } else if (sortBy === 'price_desc') {
-        query = query.order('retail_price', { ascending: false });
+        query = query.order('price', { ascending: false });
       } else if (sortBy === 'stock') {
         query = query.order('stock_quantity', { ascending: false });
       }
@@ -83,27 +86,50 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
       const { data, error } = await query;
 
       if (error) throw error;
-      return (data || []) as UnifiedProduct[];
+      
+      // Mapper les données vers le format UnifiedProduct
+      return (data || []).map((p: any) => ({
+        id: p.id,
+        title: p.name,
+        description: p.description || '',
+        supplier_name: p.suppliers?.name || 'Fournisseur',
+        cost_price: p.cost_price || p.price,
+        retail_price: p.price * 1.5, // Marge suggérée 50%
+        suggested_price: p.price * 1.6,
+        stock_quantity: p.stock_quantity || 0,
+        stock_status: p.stock_quantity > 10 ? 'in_stock' : p.stock_quantity > 0 ? 'low_stock' : 'out_of_stock',
+        profit_margin: ((p.price * 1.5 - p.price) / (p.price * 1.5)) * 100,
+        ai_score: p.ai_score || 0.75,
+        main_image_url: p.image_urls?.[0] || '',
+        category: p.category || 'Non classé',
+        sync_status: 'synced',
+        last_synced_at: p.updated_at || p.created_at,
+      })) as UnifiedProduct[];
     },
   });
 
   // Statistiques
   const { data: stats } = useQuery({
-    queryKey: ['unified-catalog-stats'],
+    queryKey: ['unified-catalog-stats', supplierId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('supplier_products_unified')
-        .select('stock_status, profit_margin, cost_price')
-        .eq('is_active', true);
+      let query = supabase
+        .from('supplier_products')
+        .select('stock_quantity, price');
+
+      if (supplierId) {
+        query = query.eq('supplier_id', supplierId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
-      const totalProducts = data.length;
-      const inStock = data.filter(p => p.stock_status === 'in_stock').length;
-      const lowStock = data.filter(p => p.stock_status === 'low_stock').length;
-      const outOfStock = data.filter(p => p.stock_status === 'out_of_stock').length;
-      const avgMargin = data.reduce((sum, p) => sum + (p.profit_margin || 0), 0) / totalProducts;
-      const totalValue = data.reduce((sum, p) => sum + (p.cost_price || 0), 0);
+      const totalProducts = data?.length || 0;
+      const inStock = data?.filter(p => (p.stock_quantity || 0) > 10).length || 0;
+      const lowStock = data?.filter(p => (p.stock_quantity || 0) > 0 && (p.stock_quantity || 0) <= 10).length || 0;
+      const outOfStock = data?.filter(p => (p.stock_quantity || 0) === 0).length || 0;
+      const avgMargin = 33.3; // Marge moyenne sur prix x1.5
+      const totalValue = data?.reduce((sum, p) => sum + (p.price || 0) * (p.stock_quantity || 0), 0) || 0;
 
       return {
         totalProducts,
