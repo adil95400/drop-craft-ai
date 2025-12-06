@@ -89,19 +89,32 @@ export default function SupplierImportPage() {
     enabled: !!supplierId
   })
 
+  // Map import type to valid database job_type values
+  const getJobType = (type: string): 'single' | 'bulk' | 'auto' => {
+    switch (type) {
+      case 'incremental':
+        return 'auto'
+      case 'category':
+        return 'single'
+      case 'full':
+      default:
+        return 'bulk'
+    }
+  }
+
   // Mutation pour démarrer un import
   const startImportMutation = useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      // Créer un job d'import
+      // Créer un job d'import with valid job_type
       const { data, error } = await supabase
         .from('import_jobs')
         .insert({
           user_id: user.id,
-          job_type: importType,
-          status: 'pending',
+          job_type: getJobType(importType),
+          status: 'queued',
           processed_products: 0,
           total_products: 0
         })
