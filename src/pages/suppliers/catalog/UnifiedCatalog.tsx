@@ -235,10 +235,23 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
+      // Vérifier si on a un supplierId sinon récupérer le BTS par défaut
+      let targetSupplierId = supplierId;
+      if (!targetSupplierId) {
+        // Récupérer le supplier BTS Wholesaler
+        const { data: btsSupplier } = await supabase
+          .from('suppliers')
+          .select('id')
+          .ilike('name', '%BTS%')
+          .single();
+        
+        targetSupplierId = btsSupplier?.id || '34997271-66ee-492a-ac16-f5bf8eb0c37a';
+      }
+
       // Appeler l'edge function BTS Feed Sync
       const { data, error } = await supabase.functions.invoke('bts-feed-sync', {
         body: { 
-          supplierId: supplierId,
+          supplierId: targetSupplierId,
           userId: user.id,
           action: 'sync',
           limit: 0 // 0 = tous les produits
