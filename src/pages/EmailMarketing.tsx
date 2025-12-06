@@ -88,6 +88,29 @@ export default function EmailMarketing() {
     }
   })
 
+  const sendCampaignMutation = useMutation({
+    mutationFn: async (campaignData: { subject: string; body: string; segment: string }) => {
+      const { data, error } = await supabase.functions.invoke('send-email-campaign', {
+        body: {
+          subject: campaignData.subject,
+          body: campaignData.body,
+          segment: campaignData.segment,
+          sendNow: true
+        }
+      })
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: (data) => {
+      toast.success(`Campagne envoyée: ${data.sent} emails envoyés`)
+      queryClient.invalidateQueries({ queryKey: ['email-campaigns'] })
+    },
+    onError: (error: any) => {
+      toast.error(`Erreur: ${error.message}`)
+    }
+  })
+
   const handleCreateCampaign = () => {
     if (!campaignName || !subject || !emailContent) {
       toast.error('Veuillez remplir tous les champs')
@@ -249,6 +272,24 @@ export default function EmailMarketing() {
                 <Button onClick={handleCreateCampaign} className="flex-1">
                   <Send className="w-4 h-4 mr-2" />
                   Créer et Programmer
+                </Button>
+                <Button 
+                  variant="default"
+                  onClick={() => {
+                    if (!subject || !emailContent) {
+                      toast.error('Veuillez remplir le sujet et le contenu')
+                      return
+                    }
+                    sendCampaignMutation.mutate({
+                      subject,
+                      body: emailContent,
+                      segment: segmentType
+                    })
+                  }}
+                  disabled={sendCampaignMutation.isPending}
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  {sendCampaignMutation.isPending ? 'Envoi...' : 'Envoyer Maintenant'}
                 </Button>
                 <Button variant="outline">
                   Enregistrer comme brouillon

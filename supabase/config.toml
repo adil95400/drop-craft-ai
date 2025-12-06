@@ -651,3 +651,6 @@ verify_jwt = true
 
 [functions.quick-import-url]
 verify_jwt = true
+
+[functions.send-email-campaign]
+verify_jwt = true
