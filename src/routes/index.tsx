@@ -170,8 +170,8 @@ export function AppRoutes() {
         <Route path="/modern/customers" element={<Navigate to="/dashboard/customers" replace />} />
         <Route path="/modern/orders" element={<Navigate to="/dashboard/orders" replace />} />
         <Route path="/modern/marketing" element={<Navigate to="/marketing" replace />} />
-        <Route path="/modern/suppliers" element={<Navigate to="/products/suppliers" replace />} />
-        <Route path="/modern/import" element={<Navigate to="/products/import" replace />} />
+        <Route path="/modern/suppliers" element={<Navigate to="/suppliers" replace />} />
+        <Route path="/modern/import" element={<Navigate to="/import" replace />} />
         <Route path="/modern/billing" element={<Navigate to="/dashboard/billing" replace />} />
         
         
