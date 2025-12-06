@@ -27,6 +27,7 @@ export function ChannelRoutes() {
       {/* New unified hub */}
       <Route index element={<StoresAndChannelsHub />} />
       <Route path="connect" element={<ChannelConnectPage />} />
+      <Route path="connect/:platform" element={<ChannelConnectPage />} />
       <Route path=":channelId" element={<ChannelDetailPage />} />
       
       {/* Legacy compatibility routes */}

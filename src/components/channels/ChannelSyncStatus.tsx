@@ -1,0 +1,204 @@
+/**
+ * Indicateur de statut de synchronisation pour les canaux
+ */
+
+import { useState, useEffect } from 'react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  RefreshCw, CheckCircle2, AlertCircle, Clock, Loader2,
+  WifiOff, Wifi, ArrowUpDown
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { formatDistanceToNow } from 'date-fns'
+import { fr } from 'date-fns/locale'
+
+type SyncStatus = 'idle' | 'syncing' | 'success' | 'error' | 'pending'
+
+interface ChannelSyncStatusProps {
+  status: SyncStatus
+  lastSyncAt?: string | null
+  nextSyncAt?: string | null
+  progress?: number
+  productsCount?: number
+  ordersCount?: number
+  errorMessage?: string
+  onSync?: () => void
+  isLoading?: boolean
+  compact?: boolean
+}
+
+export function ChannelSyncStatus({
+  status,
+  lastSyncAt,
+  nextSyncAt,
+  progress = 0,
+  productsCount = 0,
+  ordersCount = 0,
+  errorMessage,
+  onSync,
+  isLoading,
+  compact = false
+}: ChannelSyncStatusProps) {
+  const [animatedProgress, setAnimatedProgress] = useState(0)
+
+  useEffect(() => {
+    if (status === 'syncing') {
+      const timer = setInterval(() => {
+        setAnimatedProgress(prev => {
+          if (prev >= 95) return prev
+          return prev + Math.random() * 10
+        })
+      }, 500)
+      return () => clearInterval(timer)
+    } else if (status === 'success') {
+      setAnimatedProgress(100)
+    } else {
+      setAnimatedProgress(0)
+    }
+  }, [status])
+
+  const getStatusConfig = () => {
+    switch (status) {
+      case 'syncing':
+        return {
+          icon: <Loader2 className="h-4 w-4 animate-spin" />,
+          label: 'Synchronisation...',
+          color: 'bg-blue-500/20 text-blue-700 border-blue-500/30',
+          bgColor: 'bg-blue-500'
+        }
+      case 'success':
+        return {
+          icon: <CheckCircle2 className="h-4 w-4" />,
+          label: 'Synchronisé',
+          color: 'bg-green-500/20 text-green-700 border-green-500/30',
+          bgColor: 'bg-green-500'
+        }
+      case 'error':
+        return {
+          icon: <AlertCircle className="h-4 w-4" />,
+          label: 'Erreur',
+          color: 'bg-red-500/20 text-red-700 border-red-500/30',
+          bgColor: 'bg-red-500'
+        }
+      case 'pending':
+        return {
+          icon: <Clock className="h-4 w-4" />,
+          label: 'En attente',
+          color: 'bg-yellow-500/20 text-yellow-700 border-yellow-500/30',
+          bgColor: 'bg-yellow-500'
+        }
+      default:
+        return {
+          icon: <Wifi className="h-4 w-4" />,
+          label: 'Prêt',
+          color: 'bg-gray-500/20 text-gray-700 border-gray-500/30',
+          bgColor: 'bg-gray-500'
+        }
+    }
+  }
+
+  const config = getStatusConfig()
+
+  if (compact) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge className={cn("gap-1 cursor-help", config.color)}>
+              {config.icon}
+              {config.label}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="max-w-xs">
+            <div className="space-y-1 text-xs">
+              {lastSyncAt && (
+                <p>Dernière sync: {formatDistanceToNow(new Date(lastSyncAt), { addSuffix: true, locale: fr })}</p>
+              )}
+              <p>{productsCount} produits · {ordersCount} commandes</p>
+              {errorMessage && <p className="text-destructive">{errorMessage}</p>}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    )
+  }
+
+  return (
+    <div className="space-y-3 p-4 rounded-lg border bg-card">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Badge className={cn("gap-1", config.color)}>
+            {config.icon}
+            {config.label}
+          </Badge>
+          {status === 'syncing' && (
+            <span className="text-sm text-muted-foreground">
+              {Math.round(animatedProgress)}%
+            </span>
+          )}
+        </div>
+        
+        {onSync && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onSync}
+            disabled={isLoading || status === 'syncing'}
+            className="gap-2"
+          >
+            <RefreshCw className={cn("h-4 w-4", (isLoading || status === 'syncing') && "animate-spin")} />
+            Synchroniser
+          </Button>
+        )}
+      </div>
+
+      {/* Progress bar */}
+      {status === 'syncing' && (
+        <Progress value={animatedProgress} className="h-2" />
+      )}
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="flex items-center gap-2">
+          <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">Produits:</span>
+          <span className="font-medium">{productsCount.toLocaleString()}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+          <span className="text-muted-foreground">Commandes:</span>
+          <span className="font-medium">{ordersCount.toLocaleString()}</span>
+        </div>
+      </div>
+
+      {/* Timestamps */}
+      <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+        {lastSyncAt && (
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Dernière sync: {formatDistanceToNow(new Date(lastSyncAt), { addSuffix: true, locale: fr })}
+          </div>
+        )}
+        {nextSyncAt && (
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Prochaine sync: {formatDistanceToNow(new Date(nextSyncAt), { addSuffix: true, locale: fr })}
+          </div>
+        )}
+      </div>
+
+      {/* Error message */}
+      {status === 'error' && errorMessage && (
+        <div className="p-2 rounded bg-destructive/10 border border-destructive/20 text-sm text-destructive">
+          {errorMessage}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default ChannelSyncStatus

@@ -22,6 +22,8 @@ import {
   FileText, Database, Zap, BarChart3, Edit2, Save, Trash2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ProductMappingEditor } from '@/components/channels/ProductMappingEditor'
+import { ChannelSyncStatus } from '@/components/channels/ChannelSyncStatus'
 
 export default function ChannelDetailPage() {
   const { channelId } = useParams<{ channelId: string }>()
@@ -341,38 +343,14 @@ export default function ChannelDetailPage() {
           </TabsContent>
 
           <TabsContent value="mapping">
-            <Card>
-              <CardHeader>
-                <CardTitle>Mapping des champs</CardTitle>
-                <CardDescription>
-                  Configurez la correspondance entre vos champs produits et ceux de {channel.platform_name}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { source: 'Titre', target: 'title', mapped: true },
-                    { source: 'Description', target: 'body_html', mapped: true },
-                    { source: 'Prix', target: 'price', mapped: true },
-                    { source: 'SKU', target: 'sku', mapped: true },
-                    { source: 'Stock', target: 'inventory_quantity', mapped: true },
-                    { source: 'Catégorie', target: 'product_type', mapped: false },
-                    { source: 'Tags', target: 'tags', mapped: false },
-                  ].map((field, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <span className="font-medium w-24">{field.source}</span>
-                        <span className="text-muted-foreground">→</span>
-                        <code className="text-sm bg-muted px-2 py-1 rounded">{field.target}</code>
-                      </div>
-                      <Badge variant={field.mapped ? 'default' : 'secondary'}>
-                        {field.mapped ? 'Mappé' : 'Non mappé'}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <ProductMappingEditor
+              platform={channel.platform_type?.toLowerCase() || 'default'}
+              platformName={channel.platform_name || 'Canal'}
+              onSave={(mappings) => {
+                console.log('Saving mappings:', mappings)
+                toast({ title: 'Mapping enregistré', description: `${mappings.filter(m => m.enabled).length} champs mappés` })
+              }}
+            />
           </TabsContent>
 
           <TabsContent value="settings">
