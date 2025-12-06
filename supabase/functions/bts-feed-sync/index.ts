@@ -139,7 +139,11 @@ serve(async (req) => {
 
     console.log('Column indices:', colIndex)
 
-    // Parse products
+    // Log first few headers for debugging
+    console.log('First 15 headers:', headers.slice(0, 15))
+
+    // Parse products - use direct column mapping based on BTS CSV structure
+    // Expected columns: id;name;description;price;ean;manufacturer;stock;image;category;subcategory;subsubcategory;gender;flammable;leadtime_to_ship;recommended_price
     const products: any[] = []
     const maxProducts = limit > 0 ? Math.min(limit, lines.length - 1) : lines.length - 1
 
@@ -149,28 +153,47 @@ serve(async (req) => {
         
         if (values.length < 5) continue
 
+        // Map by column name if available, otherwise by index
+        const getId = () => values[colIndex['id'] ?? 0] || values[0] || `BTS-${i}`
+        const getName = () => values[colIndex['name'] ?? 1] || values[1] || ''
+        const getDesc = () => values[colIndex['description'] ?? 2] || values[2] || ''
+        const getPrice = () => values[colIndex['price'] ?? 3] || values[3] || '0'
+        const getEan = () => values[colIndex['ean'] ?? 4] || values[4] || null
+        const getBrand = () => values[colIndex['manufacturer'] ?? 5] || values[5] || 'BTS Wholesaler'
+        const getStock = () => values[colIndex['stock'] ?? 6] || values[6] || '0'
+        const getImage = () => values[colIndex['image'] ?? 7] || values[7] || ''
+        const getCategory = () => values[colIndex['category'] ?? 8] || values[8] || 'Non classé'
+        const getSubcat = () => values[colIndex['subcategory'] ?? 9] || values[9] || null
+        const getSubsubcat = () => values[colIndex['subsubcategory'] ?? 10] || values[10] || null
+        const getGender = () => values[colIndex['gender'] ?? 11] || values[11] || null
+        const getFlammable = () => values[colIndex['flammable'] ?? 12] || values[12] || null
+        const getLeadtime = () => values[colIndex['leadtime_to_ship'] ?? 13] || values[13] || null
+        const getRecPrice = () => values[colIndex['recommended_price'] ?? 14] || values[14] || null
+
+        const imageUrl = getImage()
+        
         const product = {
           supplier_id: supplierId,
           user_id: userId,
-          external_sku: values[colIndex['id']] || values[0] || `BTS-${i}`,
-          name: values[colIndex['name']] || values[1] || '',
-          description: values[colIndex['description']] || values[2] || '',
-          price: parsePrice(values[colIndex['price']] || values[3] || '0'),
-          ean: values[colIndex['ean']] || values[4] || null,
-          brand: values[colIndex['manufacturer']] || values[5] || 'BTS Wholesaler',
-          stock_quantity: parseInt(values[colIndex['stock']] || values[6] || '0', 10) || 0,
-          image_urls: values[colIndex['image']] ? [values[colIndex['image']] || values[7]] : [],
-          category: values[colIndex['category']] || values[8] || 'Non classé',
+          external_sku: getId(),
+          name: getName(),
+          description: getDesc(),
+          price: parsePrice(getPrice()),
+          ean: getEan(),
+          brand: getBrand(),
+          stock_quantity: parseInt(getStock(), 10) || 0,
+          image_urls: imageUrl ? [imageUrl] : [],
+          category: getCategory(),
+          subcategory: getSubcat(),
           currency: 'EUR',
           last_updated: new Date().toISOString(),
           attributes: {
-            cost_price: parsePrice(values[colIndex['price']] || values[3] || '0'),
-            subcategory: values[colIndex['subcategory']] || values[9] || null,
-            subsubcategory: values[colIndex['subsubcategory']] || values[10] || null,
-            gender: values[colIndex['gender']] || values[11] || null,
-            flammable: values[colIndex['flammable']] || values[12] || null,
-            leadtime_to_ship: values[colIndex['leadtime_to_ship']] || values[13] || null,
-            recommended_price: values[colIndex['recommended_price']] || values[14] || null,
+            cost_price: parsePrice(getPrice()),
+            subsubcategory: getSubsubcat(),
+            gender: getGender(),
+            flammable: getFlammable(),
+            leadtime_to_ship: getLeadtime(),
+            recommended_price: getRecPrice(),
             source: 'bts_wholesaler_api'
           }
         }
@@ -180,8 +203,8 @@ serve(async (req) => {
 
         products.push(product)
 
-        // Log progress every 1000 products
-        if (products.length % 1000 === 0) {
+        // Log progress every 5000 products
+        if (products.length % 5000 === 0) {
           console.log(`Parsed ${products.length} products...`)
         }
       } catch (parseError) {
