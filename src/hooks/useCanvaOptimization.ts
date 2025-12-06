@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface OptimizationRequest {
@@ -25,140 +24,62 @@ interface CanvaOptimizationResult {
   [key: string]: any;
 }
 
+/**
+ * Hook pour l'optimisation Canva
+ * Note: La fonction canva-design-optimizer a été supprimée car elle était un mock complet.
+ * Utilisez l'intégration Canva native via canva-oauth et canva-webhook à la place.
+ */
 export const useCanvaOptimization = () => {
-  const [isOptimizing, setIsOptimizing] = useState(false);
-  const [results, setResults] = useState<CanvaOptimizationResult | null>(null);
+  const [isOptimizing] = useState(false);
+  const [results] = useState<CanvaOptimizationResult | null>(null);
   const { toast } = useToast();
 
-  const optimizeWithCanva = async (request: OptimizationRequest): Promise<CanvaOptimizationResult | null> => {
-    setIsOptimizing(true);
-    
-    try {
-      console.log('🎨 Starting Canva optimization...', request);
-      
-      const { data, error } = await supabase.functions.invoke('canva-design-optimizer', {
-        body: request
-      });
-
-      if (error) {
-        console.error('❌ Canva optimization error:', error);
-        toast({
-          title: "Erreur d'optimisation",
-          description: "Impossible d'optimiser avec Canva. Veuillez réessayer.",
-          variant: "destructive"
-        });
-        return null;
-      }
-
-      if (data.success) {
-        console.log('✅ Canva optimization successful:', data);
-        setResults(data);
-        
-        toast({
-          title: "Optimisation réussie !",
-          description: `Design optimisé avec un score de ${data.performanceScore || 'N/A'}%`,
-        });
-        
-        return data;
-      } else {
-        throw new Error(data.error || 'Optimisation échouée');
-      }
-      
-    } catch (error) {
-      console.error('❌ Canva optimization failed:', error);
-      toast({
-        title: "Erreur d'optimisation",
-        description: error instanceof Error ? error.message : "Une erreur inattendue s'est produite",
-        variant: "destructive"
-      });
-      return null;
-    } finally {
-      setIsOptimizing(false);
-    }
-  };
-
-  // Optimisation spécialisée pour les bannières hero
-  const optimizeHeroBanner = async (content: any, brandColors?: any) => {
-    return optimizeWithCanva({
-      action: 'create_hero_banner',
-      content,
-      brandColors
+  const showDeprecationWarning = () => {
+    toast({
+      title: "Fonctionnalité non disponible",
+      description: "L'optimisation Canva nécessite une configuration API Canva. Utilisez l'intégration Canva native.",
+      variant: "destructive"
     });
   };
 
-  // Optimisation de sections de page
-  const optimizeSection = async (content: any, pageType: string, brandColors?: any) => {
-    return optimizeWithCanva({
-      action: 'optimize_section',
-      content,
-      pageType,
-      brandColors
-    });
+  const optimizeWithCanva = async (_request: OptimizationRequest): Promise<CanvaOptimizationResult | null> => {
+    showDeprecationWarning();
+    return null;
   };
 
-  // Génération d'icônes cohérentes
-  const generateIcons = async (features: any[]) => {
-    return optimizeWithCanva({
-      action: 'generate_icons',
-      content: { features }
-    });
+  const optimizeHeroBanner = async (_content: any, _brandColors?: any) => {
+    showDeprecationWarning();
+    return null;
   };
 
-  // Création de cartes témoignages
-  const createTestimonialCards = async (testimonials: any[]) => {
-    return optimizeWithCanva({
-      action: 'create_testimonial_cards',
-      content: { testimonials }
-    });
+  const optimizeSection = async (_content: any, _pageType: string, _brandColors?: any) => {
+    showDeprecationWarning();
+    return null;
   };
 
-  // Design de cartes de pricing
-  const designPricingCards = async (plans: any[], brandColors?: any) => {
-    return optimizeWithCanva({
-      action: 'design_pricing_cards',
-      content: { plans },
-      brandColors
-    });
+  const generateIcons = async (_features: any[]) => {
+    showDeprecationWarning();
+    return null;
   };
 
-  // Création de graphiques pour les fonctionnalités
-  const createFeatureGraphics = async (features: any[], brandColors?: any) => {
-    return optimizeWithCanva({
-      action: 'create_feature_graphics',
-      content: { features },
-      brandColors
-    });
+  const createTestimonialCards = async (_testimonials: any[]) => {
+    showDeprecationWarning();
+    return null;
   };
 
-  // Optimisation complète d'une page
-  const optimizeFullPage = async (pageData: any, brandColors?: any) => {
-    const results = [];
-    
-    // Optimiser la bannière hero
-    if (pageData.hero) {
-      const heroResult = await optimizeHeroBanner(pageData.hero, brandColors);
-      if (heroResult) results.push({ type: 'hero', ...heroResult });
-    }
+  const designPricingCards = async (_plans: any[], _brandColors?: any) => {
+    showDeprecationWarning();
+    return null;
+  };
 
-    // Optimiser les sections de fonctionnalités
-    if (pageData.features) {
-      const featuresResult = await createFeatureGraphics(pageData.features, brandColors);
-      if (featuresResult) results.push({ type: 'features', ...featuresResult });
-    }
+  const createFeatureGraphics = async (_features: any[], _brandColors?: any) => {
+    showDeprecationWarning();
+    return null;
+  };
 
-    // Optimiser les témoignages
-    if (pageData.testimonials) {
-      const testimonialsResult = await createTestimonialCards(pageData.testimonials);
-      if (testimonialsResult) results.push({ type: 'testimonials', ...testimonialsResult });
-    }
-
-    // Optimiser les prix
-    if (pageData.pricing) {
-      const pricingResult = await designPricingCards(pageData.pricing, brandColors);
-      if (pricingResult) results.push({ type: 'pricing', ...pricingResult });
-    }
-
-    return results;
+  const optimizeFullPage = async (_pageData: any, _brandColors?: any) => {
+    showDeprecationWarning();
+    return [];
   };
 
   return {

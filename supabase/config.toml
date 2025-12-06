@@ -259,9 +259,6 @@ verify_jwt = true
 [functions.ai-sentiment-analysis]
 verify_jwt = true
 
-[functions.canva-design-optimizer]
-verify_jwt = true
-
 [functions.shipping-rate-calculator]
 verify_jwt = true
 

@@ -1,77 +1,57 @@
-# ⚠️ Fonctions Dépréciées
+# ✅ Fonctions Nettoyées
 
-## Fonctions à supprimer dès que possible
+Ce document documente les fonctions obsolètes qui ont été supprimées.
 
-Ces edge functions sont complètement mockées et n'apportent aucune valeur:
+## Fonctions Supprimées
 
-### 1. unified-payments/ ❌
-**Date dépréciation**: 2025-01-21
+### 1. unified-payments/ ✅ SUPPRIMÉ
+**Date suppression**: 2025-01-21
 **Raison**: Complètement mocké, pas d'intégration réelle
-**Migration**: Utiliser Stripe directement ou créer fonction dédiée
-**Impact**: AUCUN - Fonction non utilisée en production
+**Migration**: Utiliser Stripe directement via `stripe-checkout` et `stripe-webhook`
 
-### 2. unified-management/ ❌
-**Date dépréciation**: 2025-01-21
+### 2. unified-management/ ✅ SUPPRIMÉ
+**Date suppression**: 2025-01-21
 **Raison**: Endpoints non pertinents, tout mocké
 **Migration**: 
 - SSO → Configurer dans Supabase Auth Dashboard
-- Force-disconnect → Créer fonction admin dédiée
-- Autres → Non nécessaires
-**Impact**: AUCUN - Fonction non utilisée
+- Force-disconnect → Fonction `force-disconnect-user`
 
-### 3. unified-integrations/ ❌
-**Date dépréciation**: 2025-01-21
+### 3. unified-integrations/ ✅ SUPPRIMÉ
+**Date suppression**: 2025-01-21
 **Raison**: Duplications avec autres fonctions + mocks
 **Migration**: Utiliser fonctions dédiées:
 - `aliexpress-integration/` pour AliExpress
 - `bigbuy-integration/` pour BigBuy
-- Créer `shopify-webhook/` pour Shopify
-**Impact**: FAIBLE - Vérifier usages dans le code
+- `shopify-webhook/` pour Shopify
 
-## Fonctions candidates à dépréciation
+### 4. canva-design-optimizer/ ✅ SUPPRIMÉ
+**Date suppression**: 2025-12-06
+**Raison**: Mock complet sans intégration Canva API réelle
+**Migration**: Utiliser l'intégration Canva native via `canva-oauth` et `canva-webhook`
 
-### global-blog-optimizer/
-**Raison**: Mock si pas de LOVABLE_API_KEY
-**Action**: Implémenter ou supprimer
+## Fonctions Conservées avec Notes
 
-### canva-design-optimizer/
-**Raison**: Mock complet
-**Action**: Intégrer Canva API ou supprimer
+### global-blog-optimizer/ ✅ CONSERVÉ
+**Statut**: Production-ready avec LOVABLE_API_KEY
+**Notes**: Génère des articles de blog via Lovable AI. Fonctionne correctement quand la clé API est configurée.
 
-### extension-processor/
-**Raison**: Mocks Amazon/Shopify/Reviews
-**Action**: Implémenter vraies extensions ou supprimer
+### extension-processor/ ✅ CONSERVÉ
+**Statut**: En développement
+**Notes**: Intégration des extensions Chrome. À compléter avec vraies APIs Amazon/Shopify.
 
-## Processus de suppression
+## Historique de Nettoyage
 
-1. **Analyser les usages**
-   ```bash
-   grep -r "unified-payments\|unified-management\|unified-integrations" src/
-   ```
+| Date | Action | Fonction | Impact |
+|------|--------|----------|--------|
+| 2025-01-21 | Marqué déprécié | unified-payments, unified-management, unified-integrations | Aucun |
+| 2025-01-21 | Supprimé | unified-payments, unified-management, unified-integrations | Aucun |
+| 2025-12-06 | Supprimé | canva-design-optimizer | Aucun - fonction mock |
 
-2. **Créer alternatives** si nécessaire
+## Process de Dépréciation Future
 
-3. **Supprimer la fonction**
-   ```bash
-   rm -rf supabase/functions/[function-name]/
-   ```
-
-4. **Nettoyer config.toml**
-   Supprimer les entrées de configuration
-
-5. **Tester** que rien n'est cassé
-
-## Timeline
-
-- **Immédiat**: Marquer comme dépréciées (✅ fait)
-- **Semaine 1**: Vérifier usages + créer alternatives
-- **Semaine 2**: Supprimer les fonctions
-- **Semaine 3**: Cleanup final
-
-## Impact Analysis
-
-Avant de supprimer une fonction:
-1. Chercher tous les appels dans le code
-2. Vérifier les logs d'utilisation (Dashboard Supabase)
-3. Créer des alternatives si nécessaire
-4. Communiquer aux utilisateurs si fonction publique
+1. **Identifier** la fonction candidate via audit
+2. **Vérifier** les usages dans le code (`grep -r "function-name" src/`)
+3. **Créer** alternatives si nécessaire
+4. **Supprimer** la fonction du dossier `supabase/functions/`
+5. **Nettoyer** l'entrée dans `config.toml`
+6. **Documenter** dans ce fichier
