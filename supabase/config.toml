@@ -425,7 +425,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.bts-feed-sync]
-verify_jwt = true
+verify_jwt = false
 
 [functions.analyze-supplier]
 verify_jwt = false
