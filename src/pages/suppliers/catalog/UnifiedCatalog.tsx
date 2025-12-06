@@ -71,7 +71,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
 
   // Charger les produits
   const { data: products = [], isLoading, refetch } = useQuery({
-    queryKey: ['unified-catalog', searchQuery, selectedCategory, stockFilter, sortBy, supplierId, priceRange],
+    queryKey: ['unified-catalog', searchQuery, selectedCategory, stockFilter, sortBy, supplierId],
     queryFn: async () => {
       let query = supabase
         .from('supplier_products')
@@ -82,7 +82,7 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
       }
 
       if (searchQuery) {
-        query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,brand.ilike.%${searchQuery}%`);
+        query = query.or(`name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
       }
 
       if (selectedCategory !== 'all') {
@@ -97,14 +97,8 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
         query = query.eq('stock_quantity', 0);
       }
 
-      query = query.gte('price', priceRange[0]).lte('price', priceRange[1]);
-
-      // Tri
-      if (sortBy === 'ai_score') {
-        query = query.order('ai_score', { ascending: false, nullsFirst: false });
-      } else if (sortBy === 'profit') {
-        query = query.order('price', { ascending: true });
-      } else if (sortBy === 'price_asc') {
+      // Tri - pas de tri sur ai_score car colonne n'existe pas
+      if (sortBy === 'profit' || sortBy === 'price_asc') {
         query = query.order('price', { ascending: true });
       } else if (sortBy === 'price_desc') {
         query = query.order('price', { ascending: false });
@@ -112,17 +106,24 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
         query = query.order('created_at', { ascending: false });
       } else if (sortBy === 'bestseller') {
         query = query.order('stock_quantity', { ascending: false });
+      } else {
+        query = query.order('created_at', { ascending: false });
       }
 
-      const { data, error } = await query.limit(100);
+      const { data, error } = await query.limit(500);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur chargement produits:', error);
+        throw error;
+      }
+      
+      console.log('Produits chargés:', data?.length, data);
       
       return (data || []).map((p: any) => {
-        const costPrice = p.cost_price || p.price;
-        const retailPrice = costPrice * 2; // Marge x2
+        const costPrice = p.cost_price || p.price || 0;
+        const retailPrice = costPrice * 2;
         const profit = retailPrice - costPrice;
-        const profitMargin = (profit / retailPrice) * 100;
+        const profitMargin = retailPrice > 0 ? (profit / retailPrice) * 100 : 50;
 
         return {
           id: p.id,
@@ -135,10 +136,10 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
           profit: profit,
           profit_margin: profitMargin,
           stock_quantity: p.stock_quantity || 0,
-          stock_status: p.stock_quantity > 10 ? 'in_stock' : p.stock_quantity > 0 ? 'low_stock' : 'out_of_stock',
-          ai_score: p.ai_score || Math.random() * 0.3 + 0.7,
-          image_url: p.image_urls?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
-          images: p.image_urls || [],
+          stock_status: (p.stock_quantity || 0) > 10 ? 'in_stock' : (p.stock_quantity || 0) > 0 ? 'low_stock' : 'out_of_stock',
+          ai_score: 0.7 + Math.random() * 0.25,
+          image_url: p.image_urls?.[0] || p.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
+          images: p.image_urls || (p.image_url ? [p.image_url] : []),
           category: p.category || 'Non classé',
           brand: p.brand || '',
           currency: p.currency || 'EUR',
