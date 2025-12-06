@@ -29,23 +29,33 @@ serve(async (req) => {
       throw new Error('Unauthorized')
     }
 
-    const { accessToken } = await req.json()
+    const { accessToken, email } = await req.json()
 
     const apiKey = accessToken?.trim()
+    const cjEmail = email?.trim()
+    
     if (!apiKey) {
       throw new Error('API Key CJ requis. Trouvez-la dans My CJ > Authorization > API')
     }
+    
+    if (!cjEmail) {
+      throw new Error('Email du compte CJ requis pour l\'authentification')
+    }
 
-    console.log('Exchanging CJ API Key for Access Token...')
+    console.log('Exchanging CJ API Key for Access Token with email:', cjEmail)
 
     // Step 1: Exchange API Key for Access Token
     // Doc: https://developers.cjdropshipping.com/en/api/api2/api/auth.html
+    // The API requires both email and apiKey
     const authResponse = await fetch('https://developers.cjdropshipping.com/api2.0/v1/authentication/getAccessToken', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ apiKey })
+      body: JSON.stringify({ 
+        email: cjEmail,
+        password: apiKey  // CJ uses the API key as the password parameter
+      })
     })
 
     const authData = await authResponse.json()
