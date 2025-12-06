@@ -28,7 +28,7 @@ const navGroups = [
     label: 'Principal',
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard', badge: null },
-      { id: 'stores', label: 'Mes Boutiques', icon: Store, path: '/dashboard/stores', badge: null },
+      { id: 'stores', label: 'Boutiques & Canaux', icon: Store, path: '/stores-channels', badge: 'Nouveau' },
     ]
   },
   {

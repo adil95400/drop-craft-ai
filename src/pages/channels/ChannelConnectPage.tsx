@@ -241,7 +241,7 @@ export default function ChannelConnectPage() {
         title: 'Connexion réussie !',
         description: `${selectedPlatform?.name} a été connecté avec succès`,
       })
-      navigate('/dashboard/stores')
+      navigate('/stores-channels')
     },
     onError: (error: any) => {
       toast({
@@ -327,7 +327,7 @@ export default function ChannelConnectPage() {
       <div className="container mx-auto p-4 md:p-6 max-w-4xl">
         {/* Header */}
         <div className="mb-8">
-          <Button variant="ghost" onClick={() => navigate('/dashboard/stores')} className="mb-4">
+          <Button variant="ghost" onClick={() => navigate('/stores-channels')} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour
           </Button>
