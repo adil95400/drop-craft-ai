@@ -50,11 +50,12 @@ serve(async (req) => {
       throw new Error('No active Shopify integration found')
     }
 
-    const shopifyUrl = integration.platform_url || integration.shop_domain
+    const shopifyUrl = integration.shop_domain || integration.platform_url
     if (!shopifyUrl) throw new Error('Shopify URL not configured')
 
-    const accessToken = integration.access_token
-    if (!accessToken) throw new Error('Shopify access token not found')
+    // Try access_token from integration, fallback to environment secret
+    const accessToken = integration.access_token || Deno.env.get('SHOPIFY_ACCESS_TOKEN')
+    if (!accessToken) throw new Error('Shopify access token not found - please configure in secrets')
 
     // Fetch products from Shopify Admin API
     console.log('🛍️ Fetching products from Shopify...')
