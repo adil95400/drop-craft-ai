@@ -229,17 +229,39 @@ export function UnifiedCatalog({ supplierId }: UnifiedCatalogProps) {
     },
   });
 
-  // Synchronisation
+  // Synchronisation BTS Wholesaler
   const syncMutation = useMutation({
     mutationFn: async () => {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Non authentifié');
+
+      // Appeler l'edge function BTS Feed Sync
+      const { data, error } = await supabase.functions.invoke('bts-feed-sync', {
+        body: { 
+          supplierId: supplierId,
+          userId: user.id,
+          action: 'sync',
+          limit: 0 // 0 = tous les produits
+        }
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Erreur de synchronisation');
+      
       await refetch();
-      return { synced: products.length };
+      return data;
     },
     onSuccess: (data) => {
       toast({
-        title: "Synchronisation terminée",
-        description: `${data.synced} produits synchronisés`,
+        title: "Synchronisation terminée !",
+        description: `${data.stats?.inserted || 0} produits synchronisés depuis BTS Wholesaler`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erreur de synchronisation",
+        description: error.message,
+        variant: "destructive",
       });
     },
   });

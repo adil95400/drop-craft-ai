@@ -424,6 +424,9 @@ verify_jwt = true
 [functions.btswholesaler-sync]
 verify_jwt = true
 
+[functions.bts-feed-sync]
+verify_jwt = true
+
 [functions.analyze-supplier]
 verify_jwt = false
 
