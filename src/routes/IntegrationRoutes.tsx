@@ -7,6 +7,7 @@ import { lazy } from 'react';
 // Integrations
 const IntegrationsPage = lazy(() => import('@/pages/IntegrationsPage'));
 const Integrations = lazy(() => import('@/pages/Integrations'));
+const UnifiedIntegrationsHub = lazy(() => import('@/pages/integrations/UnifiedIntegrationsHub'));
 
 // Marketplace
 const Marketplace = lazy(() => import('@/pages/Marketplace'));
@@ -45,6 +46,7 @@ export function IntegrationRoutes() {
       {/* Integrations Hub */}
       <Route index element={<IntegrationsPage />} />
       <Route path="hub" element={<Integrations />} />
+      <Route path="unified" element={<UnifiedIntegrationsHub />} />
       <Route path="sync-config" element={<SyncConfigPage />} />
       
       {/* Marketplace */}
