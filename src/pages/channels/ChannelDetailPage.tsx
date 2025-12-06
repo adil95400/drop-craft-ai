@@ -47,9 +47,40 @@ export default function ChannelDetailPage() {
     enabled: !!channelId
   })
 
-  // Sync mutation
+  // Fetch synced products from shopify_products table
+  const { data: syncedProducts, isLoading: productsLoading, refetch: refetchProducts } = useQuery({
+    queryKey: ['channel-products', channelId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('shopify_products')
+        .select('id, title, image_url, price, inventory_quantity, status, sku, vendor')
+        .eq('store_integration_id', channelId)
+        .order('created_at', { ascending: false })
+        .limit(50)
+      if (error) throw error
+      return data || []
+    },
+    enabled: !!channelId
+  })
+
+  // Count total products
+  const { data: productCount } = useQuery({
+    queryKey: ['channel-product-count', channelId],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('shopify_products')
+        .select('*', { count: 'exact', head: true })
+        .eq('store_integration_id', channelId)
+      if (error) throw error
+      return count || 0
+    },
+    enabled: !!channelId
+  })
+
+  // Sync mutation - calls real Shopify sync edge function
   const syncMutation = useMutation({
     mutationFn: async () => {
+      // Update status to syncing
       await supabase
         .from('integrations')
         .update({ 
@@ -58,20 +89,53 @@ export default function ChannelDetailPage() {
         })
         .eq('id', channelId)
       
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      // Call the real sync edge function
+      const { data, error } = await supabase.functions.invoke('shopify-complete-import', {
+        body: { 
+          historyId: `sync-${Date.now()}`,
+          includeVariants: true
+        }
+      })
+      
+      if (error) {
+        // Revert status on error
+        await supabase
+          .from('integrations')
+          .update({ connection_status: 'error' })
+          .eq('id', channelId)
+        throw error
+      }
+      
+      // Update with real product count
+      const { count } = await supabase
+        .from('shopify_products')
+        .select('*', { count: 'exact', head: true })
+        .eq('store_integration_id', channelId)
       
       await supabase
         .from('integrations')
         .update({ 
-          connection_status: 'connected',
-          products_synced: Math.floor(Math.random() * 500) + 100,
-          orders_synced: Math.floor(Math.random() * 50) + 10
+          connection_status: 'connected'
         })
         .eq('id', channelId)
+      
+      return { productCount: count || 0 }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['channel', channelId] })
-      toast({ title: 'Synchronisation terminée' })
+      queryClient.invalidateQueries({ queryKey: ['channel-products', channelId] })
+      queryClient.invalidateQueries({ queryKey: ['channel-product-count', channelId] })
+      toast({ 
+        title: 'Synchronisation terminée', 
+        description: `${data.productCount} produits synchronisés`
+      })
+    },
+    onError: (error) => {
+      toast({ 
+        title: 'Erreur de synchronisation', 
+        description: error.message,
+        variant: 'destructive'
+      })
     }
   })
 
@@ -182,7 +246,7 @@ export default function ChannelDetailPage() {
                   <Package className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{((channel as any).products_synced || 0).toLocaleString()}</p>
+                  <p className="text-2xl font-bold">{(productCount || 0).toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground">Produits</p>
                 </div>
               </div>
@@ -323,21 +387,70 @@ export default function ChannelDetailPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Produits synchronisés</CardTitle>
-                  <Button variant="outline" size="sm">
-                    <RefreshCw className="h-4 w-4 mr-2" />
+                  <CardTitle>Produits synchronisés ({productCount || 0})</CardTitle>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => refetchProducts()}
+                    disabled={productsLoading}
+                  >
+                    <RefreshCw className={cn("h-4 w-4 mr-2", productsLoading && "animate-spin")} />
                     Actualiser
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Aucun produit synchronisé pour le moment</p>
-                  <Button className="mt-4" onClick={() => syncMutation.mutate()}>
-                    Lancer une synchronisation
-                  </Button>
-                </div>
+                {productsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : syncedProducts && syncedProducts.length > 0 ? (
+                  <div className="space-y-3">
+                    {syncedProducts.map((product) => (
+                      <div key={product.id} className="flex items-center gap-4 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="w-12 h-12 rounded-md bg-muted overflow-hidden flex-shrink-0">
+                          {product.image_url ? (
+                            <img 
+                              src={product.image_url} 
+                              alt={product.title || ''} 
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{product.title || 'Sans titre'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {product.sku && `SKU: ${product.sku} • `}
+                            {product.vendor && `${product.vendor} • `}
+                            Stock: {product.inventory_quantity ?? 0}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">€{product.price?.toFixed(2) || '0.00'}</p>
+                          <Badge variant={product.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                            {product.status || 'draft'}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucun produit synchronisé pour le moment</p>
+                    <Button className="mt-4" onClick={() => syncMutation.mutate()} disabled={syncMutation.isPending}>
+                      {syncMutation.isPending ? (
+                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Synchronisation...</>
+                      ) : (
+                        'Lancer une synchronisation'
+                      )}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
