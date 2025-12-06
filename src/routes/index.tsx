@@ -122,6 +122,7 @@ export function AppRoutes() {
         <Route path="/feeds/*" element={<ProtectedRoute><AppLayout><FeedRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/suppliers/*" element={<ProtectedRoute><AppLayout><SupplierRoutes /></AppLayout></ProtectedRoute>} />
         <Route path="/stores-channels/*" element={<ProtectedRoute><AppLayout><ChannelRoutes /></AppLayout></ProtectedRoute>} />
+        <Route path="/channels/*" element={<ProtectedRoute><AppLayout><ChannelRoutes /></AppLayout></ProtectedRoute>} />
         
         {/* Pages manquantes ajoutées - Phase 1 */}
         <Route path="/import/advanced" element={<ProtectedRoute><AppLayout><AdvancedImportPage /></AppLayout></ProtectedRoute>} />
