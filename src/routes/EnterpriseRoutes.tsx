@@ -6,7 +6,6 @@ import { lazy } from 'react';
 
 // Admin
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
-const SupplierAdminPage = lazy(() => import('@/pages/SupplierAdminPage'));
 
 // Multi-tenant
 const MultiTenantPage = lazy(() => import('@/pages/MultiTenantPage'));

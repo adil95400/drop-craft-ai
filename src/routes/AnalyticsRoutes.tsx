@@ -5,7 +5,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
 
 // Analytics
-const ModernAnalyticsPage = lazy(() => import('@/pages/ModernAnalyticsPage'));
 const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
 const AnalyticsStudio = lazy(() => import('@/pages/AnalyticsStudio'));
 const PredictiveAnalyticsPage = lazy(() => import('@/pages/PredictiveAnalyticsPage'));
@@ -33,8 +32,7 @@ export function AnalyticsRoutes() {
   return (
     <Routes>
       {/* Analytics Overview */}
-      <Route index element={<ModernAnalyticsPage />} />
-      <Route path="advanced" element={<AdvancedAnalyticsPage />} />
+      <Route index element={<AdvancedAnalyticsPage />} />
       <Route path="studio" element={<AnalyticsStudio />} />
       <Route path="predictive" element={<PredictiveAnalyticsPage />} />
       
