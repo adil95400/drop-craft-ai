@@ -186,7 +186,7 @@ interface PlatformConfig {
 type Step = 'select' | 'credentials' | 'configure' | 'confirm'
 
 export default function ChannelConnectPage() {
-  const { platformId } = useParams<{ platformId?: string }>()
+  const { platform: platformId } = useParams<{ platform?: string }>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { toast } = useToast()
