@@ -27,6 +27,71 @@ export interface Product {
   seo_keywords?: string[]
   created_at: string
   updated_at: string
+  // Shopify-compatible fields (Phase 1)
+  handle?: string
+  vendor?: string
+  barcode?: string
+  compare_at_price?: number
+  product_type?: string
+  // Google Shopping fields (Phase 3)
+  google_product_category?: string
+  google_gender?: string
+  google_age_group?: string
+  mpn?: string
+  product_condition?: string
+  google_custom_labels?: Record<string, string>
+  // Inventory/Shipping fields (Phase 4)
+  inventory_policy?: 'deny' | 'continue'
+  fulfillment_service?: string
+  requires_shipping?: boolean
+  taxable?: boolean
+  tax_code?: string
+  weight_unit?: 'g' | 'kg' | 'lb' | 'oz'
+}
+
+export interface ProductVariant {
+  id: string
+  product_id: string
+  user_id: string
+  sku?: string
+  title?: string
+  price: number
+  compare_at_price?: number
+  cost_price?: number
+  barcode?: string
+  weight?: number
+  weight_unit?: 'g' | 'kg' | 'lb' | 'oz'
+  inventory_quantity?: number
+  inventory_policy?: 'deny' | 'continue'
+  fulfillment_service?: string
+  requires_shipping?: boolean
+  taxable?: boolean
+  option1_name?: string
+  option1_value?: string
+  option2_name?: string
+  option2_value?: string
+  option3_name?: string
+  option3_value?: string
+  image_url?: string
+  position?: number
+  shopify_variant_id?: string
+  woocommerce_variant_id?: string
+  is_active?: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface ProductImage {
+  id: string
+  product_id: string
+  user_id: string
+  src: string
+  alt?: string
+  position?: number
+  width?: number
+  height?: number
+  variant_ids?: string[]
+  created_at: string
 }
 
 export interface Order {
