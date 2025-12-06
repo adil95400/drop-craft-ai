@@ -78,49 +78,129 @@ export function useUnifiedProducts(filters?: any) {
     queryFn: async () => {
       if (!user) return []
       
-      let query = supabase
+      // Consolidate from all product sources
+      const results: UnifiedProduct[] = []
+      
+      // 1. Products table
+      const { data: productsData } = await supabase
+        .from('products')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(100000)
+      
+      if (productsData) {
+        results.push(...productsData.map((item: any): UnifiedProduct => ({
+          id: item.id,
+          name: item.name || 'Produit sans nom',
+          description: item.description,
+          price: item.price || 0,
+          cost_price: item.cost_price,
+          stock_quantity: item.stock_quantity,
+          status: item.status || 'draft',
+          category: item.category,
+          sku: item.sku,
+          image_url: item.image_url,
+          image_urls: item.images || [],
+          supplier: item.supplier,
+          supplier_name: item.supplier,
+          profit_margin: item.profit_margin,
+          tags: item.tags || [],
+          seo_title: item.seo_title,
+          seo_description: item.seo_description,
+          seo_keywords: item.seo_keywords || [],
+          user_id: item.user_id,
+          created_at: item.created_at,
+          updated_at: item.updated_at
+        })))
+      }
+      
+      // 2. Imported products table
+      const { data: importedData } = await supabase
         .from('imported_products')
         .select('*')
         .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(100000)
+      
+      if (importedData) {
+        results.push(...importedData.map((item: any): UnifiedProduct => ({
+          id: item.id,
+          name: item.name || 'Produit sans nom',
+          description: item.description,
+          price: item.price || 0,
+          cost_price: item.cost_price,
+          stock_quantity: item.stock_quantity,
+          status: item.status || 'draft',
+          category: item.category,
+          sku: item.sku,
+          image_url: item.image_url || (item.image_urls?.[0]),
+          image_urls: item.image_urls || [],
+          supplier: item.supplier,
+          supplier_name: item.supplier_name,
+          profit_margin: item.profit_margin,
+          tags: item.tags || [],
+          seo_title: item.seo_title,
+          seo_description: item.seo_description,
+          seo_keywords: item.seo_keywords || [],
+          user_id: item.user_id,
+          created_at: item.created_at,
+          updated_at: item.updated_at
+        })))
+      }
+      
+      // 3. Supplier products table
+      const { data: supplierData } = await supabase
+        .from('supplier_products')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(100000)
+      
+      if (supplierData) {
+        results.push(...supplierData.map((item: any): UnifiedProduct => ({
+          id: item.id,
+          name: item.name || 'Produit sans nom',
+          description: item.description,
+          price: item.price || 0,
+          cost_price: item.cost_price,
+          stock_quantity: item.stock_quantity,
+          status: item.status || 'active',
+          category: item.category,
+          sku: item.sku,
+          image_url: item.image_url,
+          image_urls: item.images || [],
+          supplier: item.supplier_name,
+          supplier_name: item.supplier_name,
+          profit_margin: item.profit_margin,
+          tags: item.tags || [],
+          seo_title: null,
+          seo_description: null,
+          seo_keywords: [],
+          user_id: item.user_id,
+          created_at: item.created_at,
+          updated_at: item.updated_at
+        })))
+      }
+      
+      // Apply filters
+      let filtered = results
       
       if (filters?.status) {
-        query = query.eq('status', filters.status)
+        filtered = filtered.filter(p => p.status === filters.status)
       }
       if (filters?.category) {
-        query = query.eq('category', filters.category)
+        filtered = filtered.filter(p => p.category === filters.category)
       }
       if (filters?.search) {
-        query = query.or(`name.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`)
+        const searchLower = filters.search.toLowerCase()
+        filtered = filtered.filter(p => 
+          p.name.toLowerCase().includes(searchLower) ||
+          p.sku?.toLowerCase().includes(searchLower)
+        )
       }
       
-      query = query.order('created_at', { ascending: false })
-      
-      const { data, error } = await query
-      if (error) throw error
-      
-      return data?.map((item: any): UnifiedProduct => ({
-        id: item.id,
-        name: item.name || 'Produit sans nom',
-        description: item.description,
-        price: item.price || 0,
-        cost_price: item.cost_price,
-        stock_quantity: item.stock_quantity,
-        status: item.status || 'draft',
-        category: item.category,
-        sku: item.sku,
-        image_url: item.image_url || (item.image_urls?.[0]),
-        image_urls: item.image_urls || [],
-        supplier: item.supplier,
-        supplier_name: item.supplier_name,
-        profit_margin: item.profit_margin,
-        tags: item.tags || [],
-        seo_title: item.seo_title,
-        seo_description: item.seo_description,
-        seo_keywords: item.seo_keywords || [],
-        user_id: item.user_id,
-        created_at: item.created_at,
-        updated_at: item.updated_at
-      })) || []
+      return filtered
     },
     enabled: !!user
   })
