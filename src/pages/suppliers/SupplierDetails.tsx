@@ -32,11 +32,11 @@ import {
 } from 'lucide-react'
 
 export default function SupplierDetails() {
-  const { id } = useParams()
+  const { supplierId } = useParams()
   const navigate = useNavigate()
   const { suppliers, isLoading } = useRealSuppliers()
   
-  const supplier = suppliers.find(s => s.id === id)
+  const supplier = suppliers.find(s => s.id === supplierId)
 
   if (isLoading) {
     return (
@@ -145,19 +145,19 @@ export default function SupplierDetails() {
               </div>
 
               <div className="flex gap-2">
-                <Button onClick={() => navigate(`/suppliers/${id}/catalog`)}>
+                <Button onClick={() => navigate(`/suppliers/${supplierId}/catalog`)}>
                   <Package className="h-4 w-4 mr-2" />
                   Catalogue
                 </Button>
-                <Button variant="outline" onClick={() => navigate(`/suppliers/${id}/import`)}>
+                <Button variant="outline" onClick={() => navigate(`/suppliers/${supplierId}/import`)}>
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Importer
                 </Button>
-                <Button variant="outline" onClick={() => navigate(`/suppliers/${id}/feeds`)}>
+                <Button variant="outline" onClick={() => navigate(`/suppliers/${supplierId}/feeds`)}>
                   <Globe className="h-4 w-4 mr-2" />
                   Feeds
                 </Button>
-                <Button variant="outline" onClick={() => navigate(`/suppliers/${id}/edit`)}>
+                <Button variant="outline" onClick={() => navigate(`/suppliers/${supplierId}/edit`)}>
                   <Edit className="h-4 w-4 mr-2" />
                   Modifier
                 </Button>
@@ -250,7 +250,7 @@ export default function SupplierDetails() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card 
                 className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20"
-                onClick={() => navigate(`/suppliers/${id}/catalog`)}
+                onClick={() => navigate(`/suppliers/${supplierId}/catalog`)}
               >
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3">
@@ -269,7 +269,7 @@ export default function SupplierDetails() {
 
               <Card 
                 className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 bg-gradient-to-br from-green-500/5 to-green-500/10 border-green-500/20"
-                onClick={() => navigate(`/suppliers/${id}/import`)}
+                onClick={() => navigate(`/suppliers/${supplierId}/import`)}
               >
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3">
@@ -288,7 +288,7 @@ export default function SupplierDetails() {
 
               <Card 
                 className="cursor-pointer hover:shadow-lg transition-all hover:scale-105 bg-gradient-to-br from-blue-500/5 to-blue-500/10 border-blue-500/20"
-                onClick={() => navigate(`/suppliers/${id}/feeds`)}
+                onClick={() => navigate(`/suppliers/${supplierId}/feeds`)}
               >
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3">
