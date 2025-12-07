@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
+import { PlatformLogo } from '@/components/ui/platform-logo'
 
 // All platforms configuration
 const PLATFORMS_CONFIG: Record<string, PlatformConfig> = {
@@ -449,10 +450,9 @@ export default function ChannelConnectPage() {
                     >
                       <CardContent className="p-6 text-center">
                         <div 
-                          className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg mb-4"
-                          style={{ backgroundColor: platform.color }}
+                          className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center shadow-lg mb-4 bg-white p-3"
                         >
-                          {platform.name.charAt(0)}
+                          <PlatformLogo platform={platform.id} size="xl" />
                         </div>
                         <h3 className="font-semibold mb-1">{platform.name}</h3>
                         <Badge variant="secondary" className="text-xs">
