@@ -149,11 +149,10 @@ export function useUnifiedProducts(filters?: any) {
         })))
       }
       
-      // 3. Supplier products table
+      // 3. Supplier products table (global catalog - no user filter)
       const { data: supplierData } = await supabase
         .from('supplier_products')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(100000)
       
