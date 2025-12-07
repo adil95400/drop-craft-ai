@@ -212,34 +212,33 @@ export default function ChannelConnectPage() {
     !typeFilter || p.category === typeFilter
   )
 
-  // Connection mutation
+  // Connection mutation - calls real edge function
   const connectMutation = useMutation({
     mutationFn: async () => {
       if (!selectedPlatform) throw new Error('Aucune plateforme sélectionnée')
       
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-
-      const { error } = await supabase
-        .from('integrations')
-        .insert({
-          user_id: user.id,
-          platform_type: selectedPlatform.id,
-          platform_name: selectedPlatform.name,
-          connection_status: 'connected',
-          is_active: true,
-          shop_domain: credentials.shop_domain || credentials.shop_url || null,
-          sync_settings: settings,
+      // Call real marketplace-connect edge function
+      const { data, error } = await supabase.functions.invoke('marketplace-connect', {
+        body: {
+          platform: selectedPlatform.id,
           credentials: credentials,
-        })
+          config: {},
+          sync_settings: settings
+        }
+      })
       
       if (error) throw error
+      if (!data?.success) throw new Error(data?.error || 'Échec de la connexion')
+      
+      return data
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['channel-connections'] })
       toast({
         title: 'Connexion réussie !',
-        description: `${selectedPlatform?.name} a été connecté avec succès`,
+        description: data?.shop_info?.name 
+          ? `${selectedPlatform?.name} (${data.shop_info.name}) a été connecté`
+          : `${selectedPlatform?.name} a été connecté avec succès`,
       })
       navigate('/stores-channels')
     },
@@ -252,31 +251,68 @@ export default function ChannelConnectPage() {
     }
   })
 
-  // Test connection
+  const [testDetails, setTestDetails] = useState<{ shopInfo?: any; error?: string } | null>(null)
+
+  // Test connection - calls real edge function
   const testConnection = async () => {
     setIsTestingConnection(true)
     setConnectionTestResult(null)
+    setTestDetails(null)
     
-    // Simulate API test
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Basic validation
+    // Basic validation first
     const missingFields = selectedPlatform?.fields.filter(
       f => f.required && !credentials[f.key]
     )
     
     if (missingFields && missingFields.length > 0) {
       setConnectionTestResult('error')
+      setTestDetails({ error: `Champs manquants: ${missingFields.map(f => f.label).join(', ')}` })
       toast({
         title: 'Champs manquants',
         description: `Veuillez remplir: ${missingFields.map(f => f.label).join(', ')}`,
         variant: 'destructive'
       })
-    } else {
-      setConnectionTestResult('success')
+      setIsTestingConnection(false)
+      return
+    }
+
+    try {
+      // Call real edge function to test connection
+      const { data, error } = await supabase.functions.invoke('test-marketplace-connection', {
+        body: {
+          platform: selectedPlatform?.id,
+          credentials: credentials
+        }
+      })
+
+      if (error) throw error
+
+      if (data?.success) {
+        setConnectionTestResult('success')
+        setTestDetails({ shopInfo: data.shopInfo })
+        toast({
+          title: 'Connexion réussie !',
+          description: data.shopInfo?.name 
+            ? `Connecté à ${data.shopInfo.name}` 
+            : 'Les identifiants sont valides',
+        })
+      } else {
+        setConnectionTestResult('error')
+        setTestDetails({ error: data?.error || 'Échec de la connexion' })
+        toast({
+          title: 'Échec de la connexion',
+          description: data?.error || 'Vérifiez vos identifiants',
+          variant: 'destructive'
+        })
+      }
+    } catch (err: any) {
+      console.error('[TEST-CONNECTION] Error:', err)
+      setConnectionTestResult('error')
+      setTestDetails({ error: err.message || 'Erreur de connexion' })
       toast({
-        title: 'Connexion réussie !',
-        description: 'Les identifiants sont valides',
+        title: 'Erreur',
+        description: err.message || 'Impossible de tester la connexion',
+        variant: 'destructive'
       })
     }
     
@@ -487,31 +523,64 @@ export default function ChannelConnectPage() {
                   </div>
 
                   {/* Test Connection */}
-                  <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/50">
-                    <Button 
-                      variant="outline" 
-                      onClick={testConnection}
-                      disabled={isTestingConnection}
-                      className="gap-2"
-                    >
-                      {isTestingConnection ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Zap className="h-4 w-4" />
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/50">
+                      <Button 
+                        variant="outline" 
+                        onClick={testConnection}
+                        disabled={isTestingConnection}
+                        className="gap-2"
+                      >
+                        {isTestingConnection ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Zap className="h-4 w-4" />
+                        )}
+                        Tester la connexion
+                      </Button>
+                      {connectionTestResult === 'success' && (
+                        <Badge className="bg-green-500/20 text-green-700 gap-1">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Connexion réussie
+                        </Badge>
                       )}
-                      Tester la connexion
-                    </Button>
-                    {connectionTestResult === 'success' && (
-                      <Badge className="bg-green-500/20 text-green-700 gap-1">
-                        <CheckCircle2 className="h-3 w-3" />
-                        Connexion réussie
-                      </Badge>
-                    )}
-                    {connectionTestResult === 'error' && (
-                      <Badge variant="destructive" className="gap-1">
-                        <AlertCircle className="h-3 w-3" />
-                        Échec
-                      </Badge>
+                      {connectionTestResult === 'error' && (
+                        <Badge variant="destructive" className="gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          Échec
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Test Results Details */}
+                    {testDetails && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className={cn(
+                          "p-4 rounded-lg border text-sm",
+                          connectionTestResult === 'success' 
+                            ? "bg-green-500/10 border-green-500/30 text-green-800 dark:text-green-300"
+                            : "bg-destructive/10 border-destructive/30 text-destructive"
+                        )}
+                      >
+                        {connectionTestResult === 'success' && testDetails.shopInfo && (
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                            <span>
+                              Connecté à <strong>{testDetails.shopInfo.name || testDetails.shopInfo.shop_name || selectedPlatform?.name}</strong>
+                              {testDetails.shopInfo.domain && ` (${testDetails.shopInfo.domain})`}
+                              {testDetails.shopInfo.version && ` - v${testDetails.shopInfo.version}`}
+                            </span>
+                          </div>
+                        )}
+                        {connectionTestResult === 'error' && testDetails.error && (
+                          <div className="flex items-start gap-2">
+                            <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                            <span>{testDetails.error}</span>
+                          </div>
+                        )}
+                      </motion.div>
                     )}
                   </div>
 
