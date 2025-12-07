@@ -21,6 +21,7 @@ import { FeedbackWidget } from '@/components/feedback/FeedbackWidget';
 import { OfflineIndicator } from '@/components/offline/OfflineIndicator';
 import { MobileGlobalOptimizer } from '@/components/mobile/MobileGlobalOptimizer';
 import { AdaptiveBottomNav } from '@/components/mobile/AdaptiveBottomNav';
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour';
 
 const AppContent = memo(() => {
   useAutoTheme();
@@ -57,6 +58,9 @@ const AppContent = memo(() => {
       <Toaster />
       <SonnerToaster position="top-right" />
       <PWAInstallBanner />
+      
+      {/* Onboarding tour for new users */}
+      <OnboardingTour />
       
       {/* Feedback widget for continuous user feedback */}
       <FeedbackWidget />
