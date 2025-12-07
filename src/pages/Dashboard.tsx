@@ -2,10 +2,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { FeatureStatusDashboard } from '@/components/dashboard/FeatureStatusDashboard';
 import { RealTimeAnalytics } from '@/components/dashboard/RealTimeAnalytics';
+import { RealTimeKPIs } from '@/components/dashboard/RealTimeKPIs';
+import { SmartAlerts } from '@/components/dashboard/SmartAlerts';
 import { PerformanceTestRunner } from '@/components/monitoring/PerformanceTestRunner';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { TrendingUp, TrendingDown, Package, ShoppingCart, Users, DollarSign } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
 
@@ -60,7 +64,13 @@ export default function Dashboard() {
         <p className="text-xs sm:text-sm text-muted-foreground">Vue d'ensemble de votre activité</p>
       </div>
 
-      {/* Metrics */}
+      {/* Smart Alerts - Prominent at top */}
+      <SmartAlerts />
+
+      {/* Real-Time KPIs */}
+      <RealTimeKPIs />
+
+      {/* Static Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {metrics.map((metric) => {
           const Icon = metric.icon;
@@ -71,7 +81,7 @@ export default function Dashboard() {
               case 'Revenus totaux': return '/analytics';
               case 'Commandes': return '/dashboard/orders';
               case 'Produits': return '/products';
-              case 'Clients': return '/dashboard/customers'; // ✅ Corrigé: était /customers
+              case 'Clients': return '/dashboard/customers';
               default: return '#';
             }
           };
@@ -110,14 +120,26 @@ export default function Dashboard() {
       {/* Quick Actions */}
       <QuickActions />
 
-      {/* Feature Status Dashboard */}
-      <FeatureStatusDashboard />
-
-      {/* Real-time Analytics */}
-      <RealTimeAnalytics />
-
-      {/* Performance Tests */}
-      <PerformanceTestRunner />
+      {/* Tabbed Analytics Section */}
+      <Tabs defaultValue="realtime" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="realtime">Temps réel</TabsTrigger>
+          <TabsTrigger value="features">Fonctionnalités</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="realtime">
+          <RealTimeAnalytics />
+        </TabsContent>
+        
+        <TabsContent value="features">
+          <FeatureStatusDashboard />
+        </TabsContent>
+        
+        <TabsContent value="performance">
+          <PerformanceTestRunner />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
