@@ -472,15 +472,20 @@ function IntegrationCard({
 // Helper functions
 function getStoreLogo(platform: string): string {
   const logos: Record<string, string> = {
-    shopify: 'https://cdn.shopify.com/shopifycloud/brochure/assets/brand-assets/shopify-logo-primary-logo-456baa801ee66a0a435671082365958316831c9960c480451dd0330bcdae304f.svg',
-    woocommerce: 'https://upload.wikimedia.org/wikipedia/commons/2/2a/WooCommerce_logo.svg',
-    prestashop: 'https://upload.wikimedia.org/wikipedia/commons/0/07/PrestaShop_logo.png',
-    magento: 'https://upload.wikimedia.org/wikipedia/commons/5/55/Magento_Logo.svg',
-    amazon: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg',
-    ebay: 'https://upload.wikimedia.org/wikipedia/commons/1/1b/EBay_logo.svg',
-    etsy: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Etsy_logo.svg',
+    shopify: '/logos/shopify.svg',
+    woocommerce: '/logos/woocommerce.svg',
+    prestashop: '/logos/prestashop.svg',
+    magento: '/logos/magento.svg',
+    amazon: '/logos/amazon.svg',
+    ebay: '/logos/ebay.svg',
+    etsy: '/logos/etsy.svg',
+    cdiscount: '/logos/cdiscount.svg',
+    google: '/logos/google.svg',
+    tiktok: '/logos/tiktok.svg',
+    facebook: '/logos/facebook.svg',
+    meta: '/logos/meta-color.svg',
   }
-  return logos[platform?.toLowerCase()] || ''
+  return logos[platform?.toLowerCase()] || `/logos/${platform?.toLowerCase()}.svg`
 }
 
 function getAvailableMarketplaces(): IntegrationItem[] {
