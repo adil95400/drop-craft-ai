@@ -57,6 +57,7 @@ const FulfillmentRulesPage = lazy(() => import('@/pages/FulfillmentRulesPage'));
 const CarriersManagementPage = lazy(() => import('@/pages/CarriersManagementPage'));
 const PWAInstallPage = lazy(() => import('@/pages/PWAInstallPage'));
 const SimplifiedImportPage = lazy(() => import('@/pages/import/SimplifiedImportPage'));
+const SwaggerPage = lazy(() => import('@/pages/SwaggerPage'));
 
 // Additional pages
 const AdvancedModulesPage = lazy(() => import('@/pages/AdvancedModulesPage'));
@@ -180,6 +181,8 @@ export function AppRoutes() {
         
         {/* Guides & Documentation */}
         <Route path="/integrations/api/documentation" element={<ProtectedRoute><AppLayout><APIDocumentationDetailPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/api-docs" element={<ProtectedRoute><AppLayout><SwaggerPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/swagger" element={<ProtectedRoute><AppLayout><SwaggerPage /></AppLayout></ProtectedRoute>} />
         <Route path="/guides/getting-started" element={<GettingStartedPage />} />
         <Route path="/academy" element={<AcademyHomePage />} />
         <Route path="/academy/course/:id" element={<AcademyHomePage />} />
