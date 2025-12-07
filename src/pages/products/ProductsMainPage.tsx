@@ -15,6 +15,7 @@ import { PriorityManager } from '@/components/products/PriorityManager';
 import { AdvancedFiltersPanel } from '@/components/products/AdvancedFiltersPanel';
 import { BulkEditPanel } from '@/components/products/BulkEditPanel';
 import { BulkEnrichmentDialog } from '@/components/enrichment';
+import { ProductsDebugPanel } from '@/components/debug/ProductsDebugPanel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -633,6 +634,9 @@ export default function ProductsMainPage() {
           </Card>
         )}
       </div>
+      
+      {/* Panneau de diagnostic - affiche en mode développement */}
+      <ProductsDebugPanel />
     </div>
   );
 }

@@ -26,8 +26,8 @@ export class CatalogService {
       const { data, error } = await supabase.rpc('get_catalog_products_with_ratelimit', {
         category_filter: filters?.category || null,
         search_term: filters?.search || null,
-        limit_count: 50,
-        user_ip: null, // Will be set by Supabase edge function if needed
+        limit_count: 100000, // Support pour catalogues jusqu'à 100k produits
+        user_ip: null,
         user_agent_param: typeof navigator !== 'undefined' ? navigator.userAgent : null
       })
 
@@ -129,7 +129,7 @@ export class CatalogService {
       const { data, error } = await supabase.rpc('get_marketplace_products', {
         category_filter: filters?.category,
         search_term: filters?.search,
-        limit_count: 50
+        limit_count: 100000
       })
 
       if (error) throw error
