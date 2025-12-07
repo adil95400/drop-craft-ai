@@ -12,7 +12,7 @@ import AuthPage from '@/pages/AuthPage';
 const Pricing = lazy(() => import('@/pages/Pricing'));
 const PricingPlans = lazy(() => import('@/pages/PricingPlansPage'));
 const Features = lazy(() => import('@/pages/Features'));
-const Documentation = lazy(() => import('@/pages/Documentation'));
+// Documentation is now in public folder
 const Contact = lazy(() => import('@/pages/Contact'));
 const FAQ = lazy(() => import('@/pages/FAQ'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
@@ -20,6 +20,8 @@ const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
 const About = lazy(() => import('@/pages/About'));
 const EnterpriseObservability = lazy(() => import('@/pages/EnterpriseObservability'));
 const BlogPage = lazy(() => import('@/pages/public/BlogPage'));
+const DocumentationPage = lazy(() => import('@/pages/public/DocumentationPage'));
+const TestimonialsPage = lazy(() => import('@/pages/public/TestimonialsPage'));
 const Integrations = lazy(() => import('@/pages/Integrations'));
 
 // Feature pages
@@ -47,8 +49,10 @@ export function PublicRoutes() {
       <Route path="features/analytics" element={<AnalyticsPage />} />
       
       {/* Content */}
-      <Route path="documentation" element={<Documentation />} />
+      <Route path="documentation" element={<DocumentationPage />} />
+      <Route path="docs" element={<DocumentationPage />} />
       <Route path="blog" element={<BlogPage />} />
+      <Route path="testimonials" element={<TestimonialsPage />} />
       <Route path="integrations" element={<Integrations />} />
       
       {/* Support */}

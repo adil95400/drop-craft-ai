@@ -13,11 +13,14 @@ import {
   Heart,
   TrendingUp,
   CheckCircle,
-  ArrowRight
+  ArrowRight,
+  Linkedin,
+  Twitter
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { PublicLayout } from "@/layouts/PublicLayout";
+import { OrganizationSchema } from "@/components/seo/StructuredData";
 
 const About = () => {
   const navigate = useNavigate();
@@ -52,14 +55,42 @@ const About = () => {
     { icon: Award, value: "98%", label: "Satisfaction" }
   ];
 
+  const team = [
+    {
+      name: "Alexandre Martin",
+      role: "CEO & Co-fondateur",
+      bio: "10 ans d'expérience en e-commerce et IA",
+      avatar: "AM"
+    },
+    {
+      name: "Sophie Dubois",
+      role: "CTO",
+      bio: "Ex-Google, experte en machine learning",
+      avatar: "SD"
+    },
+    {
+      name: "Lucas Bernard",
+      role: "Head of Product",
+      bio: "15 ans dans le SaaS B2B",
+      avatar: "LB"
+    },
+    {
+      name: "Emma Laurent",
+      role: "VP Engineering",
+      bio: "Architecte cloud et systèmes distribués",
+      avatar: "EL"
+    }
+  ];
+
   return (
     <PublicLayout>
       <SEO
-        title="À Propos | Shopopti Pro - L'équipe derrière la révolution e-commerce"
-        description="Découvrez l'histoire de Shopopti Pro, notre mission de révolutionner le dropshipping avec l'IA, et l'équipe d'experts qui développent les solutions de demain."
+        title="À Propos de ShopOpti+ | Plateforme E-commerce IA Leader en France"
+        description="Découvrez l'histoire de ShopOpti+, notre mission de révolutionner le dropshipping avec l'IA, et l'équipe d'experts qui développent les solutions e-commerce de demain. +10K clients actifs."
         path="/about"
-        keywords="équipe Shopopti, histoire entreprise, mission dropshipping IA"
+        keywords="équipe ShopOpti, histoire entreprise, mission dropshipping IA, fondateurs e-commerce, startup française"
       />
+      <OrganizationSchema />
 
       <div className="bg-background">
         {/* Hero Section */}
@@ -170,6 +201,79 @@ const About = () => {
           </div>
         </section>
 
+        {/* Team Section */}
+        <section className="py-16 px-6 bg-muted/20">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <Badge variant="secondary" className="mb-4">
+                <Users className="w-4 h-4 mr-2" />
+                Notre Équipe
+              </Badge>
+              <h2 className="text-4xl font-bold mb-4">
+                Les <span className="text-primary">experts</span> derrière ShopOpti+
+              </h2>
+              <p className="text-xl text-muted-foreground">
+                Une équipe passionnée par l'innovation et le succès de nos clients
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {team.map((member, index) => (
+                <Card key={index} className="border-border bg-card text-center hover:shadow-lg transition-all duration-300">
+                  <CardHeader>
+                    <div className="mx-auto w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center mb-4 text-white text-xl font-bold">
+                      {member.avatar}
+                    </div>
+                    <CardTitle className="text-lg">{member.name}</CardTitle>
+                    <Badge variant="outline" className="w-fit mx-auto">{member.role}</Badge>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">{member.bio}</p>
+                    <div className="flex justify-center gap-3">
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Linkedin className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Twitter className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Timeline Section */}
+        <section className="py-16 px-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4">
+                Notre <span className="text-primary">Histoire</span>
+              </h2>
+            </div>
+            
+            <div className="space-y-8">
+              {[
+                { year: "2022", title: "Création", desc: "Lancement de ShopOpti+ avec l'idée de démocratiser l'IA pour l'e-commerce" },
+                { year: "2023", title: "Croissance", desc: "Atteinte des 5 000 utilisateurs et levée de fonds Seed de 2M€" },
+                { year: "2024", title: "Expansion", desc: "10K+ clients actifs, intégration de 99+ fournisseurs internationaux" },
+                { year: "2025", title: "Innovation", desc: "Lancement de l'IA générative pour l'optimisation automatique des catalogues" }
+              ].map((milestone, index) => (
+                <div key={index} className="flex gap-6 items-start">
+                  <div className="flex-shrink-0 w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center text-white font-bold">
+                    {milestone.year}
+                  </div>
+                  <div className="pt-4">
+                    <h3 className="text-xl font-bold mb-2">{milestone.title}</h3>
+                    <p className="text-muted-foreground">{milestone.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* CTA Section */}
         <section className="py-20 px-6 bg-gradient-to-r from-primary/10 via-background to-accent/10">
           <div className="max-w-4xl mx-auto text-center">
@@ -178,18 +282,26 @@ const About = () => {
             </h2>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Rejoignez les milliers d'entrepreneurs qui transforment leur business 
-              avec Shopopti Pro. L'avenir de l'e-commerce commence maintenant.
+              avec ShopOpti+. L'avenir de l'e-commerce commence maintenant.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/auth")}
                 className="bg-gradient-primary text-lg px-8 py-6 h-auto shadow-intense hover:shadow-floating"
               >
                 <Zap className="mr-2 h-5 w-5" />
                 Commencer Gratuitement
                 <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={() => navigate("/contact")}
+                className="text-lg px-8 py-6 h-auto"
+              >
+                Nous Contacter
               </Button>
             </div>
           </div>
