@@ -25,26 +25,26 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 // Platform definitions
 const STORE_PLATFORMS = [
-  { id: 'shopify', name: 'Shopify', color: '#95BF47', logo: '/logos/shopify.svg', category: 'store' },
+  { id: 'shopify', name: 'Shopify', color: '#95BF47', logo: '/logos/shopify-text.svg', category: 'store' },
   { id: 'woocommerce', name: 'WooCommerce', color: '#96588A', logo: '/logos/woocommerce.svg', category: 'store' },
   { id: 'prestashop', name: 'PrestaShop', color: '#DF0067', logo: '/logos/prestashop.svg', category: 'store' },
   { id: 'magento', name: 'Magento', color: '#EE672F', logo: '/logos/magento.svg', category: 'store' },
-  { id: 'wix', name: 'Wix', color: '#000000', logo: '/logos/wix.svg', category: 'store' },
-  { id: 'squarespace', name: 'Squarespace', color: '#000000', logo: '/logos/squarespace.svg', category: 'store' },
-  { id: 'bigcommerce', name: 'BigCommerce', color: '#34313F', logo: '/logos/bigcommerce.svg', category: 'store' },
+  { id: 'wix', name: 'Wix', color: '#000000', logo: '/logos/wix-text.svg', category: 'store' },
+  { id: 'squarespace', name: 'Squarespace', color: '#000000', logo: '/logos/squarespace-text.svg', category: 'store' },
+  { id: 'bigcommerce', name: 'BigCommerce', color: '#34313F', logo: '/logos/bigcommerce-icon.svg', category: 'store' },
 ]
 
 const MARKETPLACE_PLATFORMS = [
-  { id: 'amazon', name: 'Amazon Seller', color: '#FF9900', logo: '/logos/amazon.svg', category: 'marketplace' },
-  { id: 'ebay', name: 'eBay', color: '#E53238', logo: '/logos/ebay.svg', category: 'marketplace' },
+  { id: 'amazon', name: 'Amazon Seller', color: '#FF9900', logo: '/logos/amazon-text.svg', category: 'marketplace' },
+  { id: 'ebay', name: 'eBay', color: '#E53238', logo: '/logos/ebay-icon.svg', category: 'marketplace' },
   { id: 'etsy', name: 'Etsy', color: '#F56400', logo: '/logos/etsy.svg', category: 'marketplace' },
   { id: 'google', name: 'Google Merchant', color: '#4285F4', logo: '/logos/google.svg', category: 'marketplace' },
-  { id: 'facebook', name: 'Meta Commerce', color: '#1877F2', logo: '/logos/meta.svg', category: 'marketplace' },
+  { id: 'facebook', name: 'Meta Commerce', color: '#1877F2', logo: '/logos/meta-color.svg', category: 'marketplace' },
   { id: 'tiktok', name: 'TikTok Shop', color: '#000000', logo: '/logos/tiktok.svg', category: 'marketplace' },
-  { id: 'cdiscount', name: 'Cdiscount', color: '#C4161C', logo: '/logos/cdiscount.svg', category: 'marketplace' },
-  { id: 'fnac', name: 'Fnac', color: '#E4A400', logo: '/logos/fnac.svg', category: 'marketplace' },
-  { id: 'rakuten', name: 'Rakuten', color: '#BF0000', logo: '/logos/rakuten.svg', category: 'marketplace' },
-  { id: 'zalando', name: 'Zalando', color: '#FF6900', logo: '/logos/zalando.svg', category: 'marketplace' },
+  { id: 'cdiscount', name: 'Cdiscount', color: '#C4161C', logo: '/logos/cdiscount-text.svg', category: 'marketplace' },
+  { id: 'fnac', name: 'Fnac', color: '#E4A400', logo: '/logos/fnac-text.svg', category: 'marketplace' },
+  { id: 'rakuten', name: 'Rakuten', color: '#BF0000', logo: '/logos/rakuten-text.svg', category: 'marketplace' },
+  { id: 'zalando', name: 'Zalando', color: '#FF6900', logo: '/logos/zalando-text.svg', category: 'marketplace' },
 ]
 
 interface ChannelConnection {
@@ -539,6 +539,8 @@ function PlatformCard({ platform, onConnect }: {
   platform: { id: string; name: string; color: string; logo: string }
   onConnect: () => void
 }) {
+  const [imgError, setImgError] = useState(false)
+  
   return (
     <Card 
       className="hover:shadow-lg hover:scale-105 transition-all cursor-pointer group"
@@ -546,10 +548,23 @@ function PlatformCard({ platform, onConnect }: {
     >
       <CardContent className="p-4 text-center">
         <div 
-          className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md mb-3"
-          style={{ backgroundColor: platform.color }}
+          className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center shadow-md mb-3 overflow-hidden bg-white"
         >
-          {platform.name.charAt(0)}
+          {!imgError ? (
+            <img 
+              src={platform.logo} 
+              alt={platform.name}
+              className="w-8 h-8 object-contain"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <span 
+              className="w-full h-full flex items-center justify-center text-white font-bold text-lg"
+              style={{ backgroundColor: platform.color }}
+            >
+              {platform.name.charAt(0)}
+            </span>
+          )}
         </div>
         <p className="font-medium text-sm truncate">{platform.name}</p>
         <Button 
