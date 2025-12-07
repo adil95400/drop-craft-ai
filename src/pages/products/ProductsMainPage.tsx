@@ -14,10 +14,11 @@ import { OptimizationSimulator } from '@/components/products/OptimizationSimulat
 import { PriorityManager } from '@/components/products/PriorityManager';
 import { AdvancedFiltersPanel } from '@/components/products/AdvancedFiltersPanel';
 import { BulkEditPanel } from '@/components/products/BulkEditPanel';
+import { BulkEnrichmentDialog } from '@/components/enrichment';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Package, Loader2, TrendingUp, AlertCircle, Archive, DollarSign, Target, Sparkles, CheckCircle, Filter, Edit3 } from 'lucide-react';
+import { Package, Loader2, TrendingUp, AlertCircle, Archive, DollarSign, Target, Sparkles, CheckCircle, Filter, Edit3, Wand2 } from 'lucide-react';
 import { useModals } from '@/hooks/useModals';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
@@ -51,6 +52,7 @@ export default function ProductsMainPage() {
   const [viewMode, setViewMode] = useState<'standard' | 'audit'>('standard');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showBulkEdit, setShowBulkEdit] = useState(false);
+  const [showBulkEnrichment, setShowBulkEnrichment] = useState(false);
   const [expertMode, setExpertMode] = useState<boolean>(false);
 
   const handleEdit = (product: any) => {
@@ -247,6 +249,27 @@ export default function ProductsMainPage() {
                 </SheetContent>
               </Sheet>
             )}
+
+            {/* Enrichissement en masse */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowBulkEnrichment(true)}
+              className="gap-1 sm:gap-2 text-xs sm:text-sm"
+            >
+              <Wand2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Enrichir</span>
+            </Button>
+
+            <BulkEnrichmentDialog
+              open={showBulkEnrichment}
+              onOpenChange={setShowBulkEnrichment}
+              productIds={selectedProducts.length > 0 ? selectedProducts : products.slice(0, 50).map(p => p.id)}
+              onComplete={() => {
+                setShowBulkEnrichment(false);
+                handleRefresh();
+              }}
+            />
           </div>
         </div>
 

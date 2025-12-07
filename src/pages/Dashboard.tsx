@@ -5,6 +5,7 @@ import { RealTimeAnalytics } from '@/components/dashboard/RealTimeAnalytics';
 import { RealTimeKPIs } from '@/components/dashboard/RealTimeKPIs';
 import { SmartAlerts } from '@/components/dashboard/SmartAlerts';
 import { PerformanceTestRunner } from '@/components/monitoring/PerformanceTestRunner';
+import { EnrichmentDashboardWidget } from '@/components/enrichment';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { TrendingUp, TrendingDown, Package, ShoppingCart, Users, DollarSign } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -119,6 +120,9 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <QuickActions />
+
+      {/* Widget d'enrichissement produits */}
+      <EnrichmentDashboardWidget />
 
       {/* Tabbed Analytics Section */}
       <Tabs defaultValue="realtime" className="space-y-4">
