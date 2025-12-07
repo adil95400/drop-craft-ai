@@ -27,6 +27,9 @@ import { ChannelSyncStatus } from '@/components/channels/ChannelSyncStatus'
 import { TransformationRulesEditor } from '@/components/channels/TransformationRulesEditor'
 import { ResponsiveProductTable } from '@/components/channels/ResponsiveProductTable'
 import { useChannelWebhooks } from '@/hooks/useChannelWebhooks'
+import { VisualMappingEditor } from '@/components/channels/VisualMappingEditor'
+import { AutoSyncSettings } from '@/components/channels/AutoSyncSettings'
+import { WebhookEventsLog } from '@/components/channels/WebhookEventsLog'
 
 export default function ChannelDetailPage() {
   const { channelId } = useParams<{ channelId: string }>()
