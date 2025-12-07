@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -13,13 +13,16 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Sparkles, 
   Loader2, 
   CheckCircle, 
   XCircle,
   Globe,
-  Wand2
+  Wand2,
+  Package,
+  FolderOpen
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -27,7 +30,9 @@ import { useToast } from '@/hooks/use-toast';
 interface BulkEnrichmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  productIds: string[];
+  productIds?: string[];
+  categoryIds?: string[];
+  categories?: { id: string; name: string; productCount?: number }[];
   onComplete?: () => void;
 }
 
@@ -41,7 +46,9 @@ const marketplaceSources = [
 export function BulkEnrichmentDialog({
   open,
   onOpenChange,
-  productIds,
+  productIds = [],
+  categoryIds = [],
+  categories = [],
   onComplete,
 }: BulkEnrichmentDialogProps) {
   const [selectedSources, setSelectedSources] = useState<string[]>(['amazon', 'aliexpress']);
@@ -49,7 +56,54 @@ export function BulkEnrichmentDialog({
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<{ id: string; status: 'success' | 'error'; message?: string }[]>([]);
+  const [selectionMode, setSelectionMode] = useState<'products' | 'categories'>(
+    productIds.length > 0 ? 'products' : 'categories'
+  );
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(categoryIds);
+  const [availableCategories, setAvailableCategories] = useState<{ id: string; name: string; productCount: number }[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   const { toast } = useToast();
+
+  // Charger les catégories disponibles
+  useEffect(() => {
+    if (open && categories.length === 0) {
+      loadCategories();
+    } else if (categories.length > 0) {
+      setAvailableCategories(categories.map(c => ({ ...c, productCount: c.productCount || 0 })));
+    }
+  }, [open, categories]);
+
+  const loadCategories = async () => {
+    setLoadingCategories(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Récupérer les catégories avec le nombre de produits
+      const { data: products } = await supabase
+        .from('products')
+        .select('category')
+        .eq('user_id', user.id);
+
+      const categoryCount: Record<string, number> = {};
+      products?.forEach(p => {
+        const cat = p.category || 'Non catégorisé';
+        categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+      });
+
+      const cats = Object.entries(categoryCount).map(([name, count]) => ({
+        id: name,
+        name,
+        productCount: count
+      })).sort((a, b) => b.productCount - a.productCount);
+
+      setAvailableCategories(cats);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   const toggleSource = (sourceId: string) => {
     setSelectedSources(prev =>
@@ -59,11 +113,53 @@ export function BulkEnrichmentDialog({
     );
   };
 
+  const toggleCategory = (categoryId: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(categoryId)
+        ? prev.filter(c => c !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  const getProductIdsToEnrich = async (): Promise<string[]> => {
+    if (selectionMode === 'products' && productIds.length > 0) {
+      return productIds;
+    }
+
+    if (selectionMode === 'categories' && selectedCategories.length > 0) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data: products } = await supabase
+        .from('products')
+        .select('id, category')
+        .eq('user_id', user.id)
+        .in('category', selectedCategories);
+
+      return products?.map(p => p.id) || [];
+    }
+
+    return [];
+  };
+
   const handleEnrich = async () => {
     if (selectedSources.length === 0) {
       toast({
         title: 'Sélection requise',
         description: 'Sélectionnez au moins une marketplace',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const idsToEnrich = await getProductIdsToEnrich();
+    
+    if (idsToEnrich.length === 0) {
+      toast({
+        title: 'Aucun produit',
+        description: selectionMode === 'products' 
+          ? 'Sélectionnez des produits à enrichir'
+          : 'Sélectionnez des catégories contenant des produits',
         variant: 'destructive',
       });
       return;
@@ -81,8 +177,8 @@ export function BulkEnrichmentDialog({
 
       const batchSize = 5;
       const batches = [];
-      for (let i = 0; i < productIds.length; i += batchSize) {
-        batches.push(productIds.slice(i, i + batchSize));
+      for (let i = 0; i < idsToEnrich.length; i += batchSize) {
+        batches.push(idsToEnrich.slice(i, i + batchSize));
       }
 
       let processedCount = 0;
@@ -142,13 +238,13 @@ export function BulkEnrichmentDialog({
         }
 
         processedCount += batch.length;
-        setProgress((processedCount / productIds.length) * 100);
+        setProgress((processedCount / idsToEnrich.length) * 100);
         setResults([...allResults]);
       }
 
       toast({
         title: 'Enrichissement terminé',
-        description: `${allResults.filter(r => r.status === 'success').length}/${productIds.length} produits enrichis`,
+        description: `${allResults.filter(r => r.status === 'success').length}/${idsToEnrich.length} produits enrichis`,
       });
 
       onComplete?.();
@@ -166,29 +262,113 @@ export function BulkEnrichmentDialog({
 
   const successCount = results.filter(r => r.status === 'success').length;
   const errorCount = results.filter(r => r.status === 'error').length;
+  
+  const totalSelectedProducts = selectionMode === 'products' 
+    ? productIds.length 
+    : availableCategories
+        .filter(c => selectedCategories.includes(c.id))
+        .reduce((sum, c) => sum + c.productCount, 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
             Enrichissement en masse
           </DialogTitle>
           <DialogDescription>
-            Enrichir automatiquement {productIds.length} produits depuis les marketplaces
+            Enrichir automatiquement vos produits depuis les marketplaces
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* Mode de sélection */}
+          <Tabs value={selectionMode} onValueChange={(v) => setSelectionMode(v as 'products' | 'categories')}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="products" className="gap-2">
+                <Package className="h-4 w-4" />
+                Produits ({productIds.length})
+              </TabsTrigger>
+              <TabsTrigger value="categories" className="gap-2">
+                <FolderOpen className="h-4 w-4" />
+                Catégories
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="products" className="mt-4">
+              {productIds.length > 0 ? (
+                <div className="p-3 rounded-lg border bg-muted/50">
+                  <p className="text-sm font-medium">{productIds.length} produits sélectionnés</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Ces produits seront enrichis avec les données marketplaces
+                  </p>
+                </div>
+              ) : (
+                <div className="p-3 rounded-lg border border-dashed text-center">
+                  <Package className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Aucun produit sélectionné. Sélectionnez des produits dans le tableau ou utilisez les catégories.
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="categories" className="mt-4">
+              {loadingCategories ? (
+                <div className="flex items-center justify-center p-4">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                </div>
+              ) : availableCategories.length > 0 ? (
+                <ScrollArea className="h-48">
+                  <div className="space-y-2">
+                    {availableCategories.map((category) => (
+                      <div
+                        key={category.id}
+                        className="flex items-center space-x-3 p-2 rounded-lg border hover:bg-accent/50 cursor-pointer"
+                        onClick={() => toggleCategory(category.id)}
+                      >
+                        <Checkbox
+                          checked={selectedCategories.includes(category.id)}
+                          onCheckedChange={() => toggleCategory(category.id)}
+                        />
+                        <div className="flex-1 flex items-center justify-between">
+                          <span className="text-sm font-medium">{category.name}</span>
+                          <Badge variant="secondary" className="text-xs">
+                            {category.productCount} produits
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              ) : (
+                <div className="p-3 rounded-lg border border-dashed text-center">
+                  <FolderOpen className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Aucune catégorie trouvée
+                  </p>
+                </div>
+              )}
+              
+              {selectedCategories.length > 0 && (
+                <div className="mt-3 p-2 rounded-lg bg-primary/10 border border-primary/20">
+                  <p className="text-sm font-medium text-primary">
+                    {selectedCategories.length} catégorie(s) → {totalSelectedProducts} produits
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+
           {/* Sources Selection */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">Sources de données</Label>
-            <div className="grid gap-3">
+            <div className="grid gap-2">
               {marketplaceSources.map((source) => (
                 <div
                   key={source.id}
-                  className="flex items-center space-x-3 p-3 rounded-lg border bg-card hover:bg-accent/50 cursor-pointer"
+                  className="flex items-center space-x-3 p-2.5 rounded-lg border bg-card hover:bg-accent/50 cursor-pointer"
                   onClick={() => toggleSource(source.id)}
                 >
                   <Checkbox
@@ -198,7 +378,7 @@ export function BulkEnrichmentDialog({
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{source.name}</span>
+                      <span className="font-medium text-sm">{source.name}</span>
                     </div>
                     <p className="text-xs text-muted-foreground">{source.description}</p>
                   </div>
@@ -275,7 +455,7 @@ export function BulkEnrichmentDialog({
           </Button>
           <Button 
             onClick={handleEnrich} 
-            disabled={isProcessing || selectedSources.length === 0}
+            disabled={isProcessing || selectedSources.length === 0 || totalSelectedProducts === 0}
           >
             {isProcessing ? (
               <>
@@ -285,7 +465,7 @@ export function BulkEnrichmentDialog({
             ) : (
               <>
                 <Sparkles className="mr-2 h-4 w-4" />
-                Lancer l'enrichissement
+                Enrichir {totalSelectedProducts} produits
               </>
             )}
           </Button>
