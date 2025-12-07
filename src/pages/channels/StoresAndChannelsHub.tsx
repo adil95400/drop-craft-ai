@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react'
+import { PlatformLogo } from '@/components/ui/platform-logo'
 import { Helmet } from 'react-helmet-async'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -494,11 +495,8 @@ function ChannelCard({ connection, viewMode, onSync, onDisconnect, onManage, isS
         <Card className="hover:shadow-md transition-all cursor-pointer group" onClick={onManage}>
           <CardContent className="p-4">
             <div className="flex items-center gap-4">
-              <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md"
-                style={{ backgroundColor: platform?.color || '#6366f1' }}
-              >
-                {connection.platform_name?.charAt(0) || 'S'}
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md bg-white">
+                <PlatformLogo platform={connection.platform_type || ''} size="lg" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
@@ -540,11 +538,8 @@ function ChannelCard({ connection, viewMode, onSync, onDisconnect, onManage, isS
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md"
-                style={{ backgroundColor: platform?.color || '#6366f1' }}
-              >
-                {connection.platform_name?.charAt(0) || 'S'}
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md bg-white">
+                <PlatformLogo platform={connection.platform_type || ''} size="lg" />
               </div>
               <div>
                 <CardTitle className="text-base">{connection.platform_name}</CardTitle>
@@ -601,32 +596,14 @@ function PlatformCard({ platform, onConnect }: {
   platform: { id: string; name: string; color: string; logo: string }
   onConnect: () => void
 }) {
-  const [imgError, setImgError] = useState(false)
-  
   return (
     <Card 
       className="hover:shadow-lg hover:scale-105 transition-all cursor-pointer group"
       onClick={onConnect}
     >
       <CardContent className="p-4 text-center">
-        <div 
-          className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center shadow-md mb-3 overflow-hidden bg-white"
-        >
-          {!imgError ? (
-            <img 
-              src={platform.logo} 
-              alt={platform.name}
-              className="w-8 h-8 object-contain"
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <span 
-              className="w-full h-full flex items-center justify-center text-white font-bold text-lg"
-              style={{ backgroundColor: platform.color }}
-            >
-              {platform.name.charAt(0)}
-            </span>
-          )}
+        <div className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center shadow-md mb-3 bg-white">
+          <PlatformLogo platform={platform.id} size="lg" />
         </div>
         <p className="font-medium text-sm truncate">{platform.name}</p>
         <Button 
