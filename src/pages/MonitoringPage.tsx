@@ -1,12 +1,15 @@
 import { Helmet } from 'react-helmet-async'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { Activity, Server, AlertTriangle, CheckCircle, TrendingUp, Users, ShoppingCart, DollarSign } from 'lucide-react'
+import { Activity, Server, AlertTriangle, CheckCircle, TrendingUp, Users, ShoppingCart, DollarSign, Bug, RefreshCw, ExternalLink, Smartphone, Wifi } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, BarChart, Bar } from 'recharts'
+import * as Sentry from '@sentry/react'
+import { toast } from 'sonner'
+import { Link } from 'react-router-dom'
 
 export default function MonitoringPage() {
   const { data: systemHealth } = useQuery({
@@ -134,12 +137,30 @@ export default function MonitoringPage() {
           </Card>
         </div>
 
+        {/* Quick Actions */}
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/pwa-install">
+              <Smartphone className="h-4 w-4 mr-2" />
+              Installer PWA
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => {
+            Sentry.captureMessage('Test event from monitoring page', 'info');
+            toast.success('Événement de test envoyé à Sentry');
+          }}>
+            <Bug className="h-4 w-4 mr-2" />
+            Tester Sentry
+          </Button>
+        </div>
+
         <Tabs defaultValue="performance" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="business">Business</TabsTrigger>
             <TabsTrigger value="integrations">Intégrations</TabsTrigger>
             <TabsTrigger value="alerts">Alertes</TabsTrigger>
+            <TabsTrigger value="pwa">PWA</TabsTrigger>
           </TabsList>
 
           <TabsContent value="performance" className="space-y-4">
@@ -349,6 +370,86 @@ export default function MonitoringPage() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="pwa" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Smartphone className="h-5 w-5" />
+                    Progressive Web App
+                  </CardTitle>
+                  <CardDescription>
+                    Installez ShopOpti sur votre appareil pour une expérience optimale
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Service Worker</span>
+                    <Badge variant="default">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Actif
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Mode hors-ligne</span>
+                    <Badge variant="default">Activé</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Notifications Push</span>
+                    <Badge variant="secondary">
+                      {Notification.permission === 'granted' ? 'Activées' : 'Désactivées'}
+                    </Badge>
+                  </div>
+                  <Button asChild className="w-full">
+                    <Link to="/pwa-install">
+                      <Smartphone className="h-4 w-4 mr-2" />
+                      Page d'installation PWA
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bug className="h-5 w-5" />
+                    Sentry Monitoring
+                  </CardTitle>
+                  <CardDescription>
+                    Surveillance des erreurs et performances en temps réel
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Statut</span>
+                    <Badge variant={import.meta.env.VITE_SENTRY_DSN ? 'default' : 'secondary'}>
+                      {import.meta.env.VITE_SENTRY_DSN ? 'Configuré' : 'Non configuré'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Environnement</span>
+                    <Badge variant="outline">{import.meta.env.MODE}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Session Replay</span>
+                    <Badge variant="default">Activé</Badge>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => {
+                      Sentry.captureMessage('Manual test from monitoring dashboard', 'info');
+                      toast.success('Événement envoyé à Sentry');
+                    }}
+                  >
+                    <Bug className="h-4 w-4 mr-2" />
+                    Envoyer un événement test
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>
