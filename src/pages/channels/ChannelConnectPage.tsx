@@ -435,7 +435,7 @@ export default function ChannelConnectPage() {
                     <Badge variant="outline" className="text-sm">
                       {typeFilter === 'store' ? 'Boutiques' : 'Marketplaces'}
                     </Badge>
-                    <Button variant="link" size="sm" onClick={() => navigate('/channels/connect')}>
+                    <Button variant="link" size="sm" onClick={() => navigate('/stores-channels/connect')}>
                       Voir tout
                     </Button>
                   </div>
