@@ -499,6 +499,12 @@ verify_jwt = true
 [functions.system-health-check]
 verify_jwt = true
 
+[functions.enrich-product]
+verify_jwt = true
+
+[functions.enrich-product-ai]
+verify_jwt = true
+
 [functions.metrics-collector]
 verify_jwt = true
 
