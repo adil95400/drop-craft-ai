@@ -29,6 +29,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { PlatformLogo } from '@/components/ui/platform-logo'
+import { getPlatformColor, getPlatformName } from '@/utils/platformLogos'
 
 interface ProductPreview {
   title: string
@@ -44,15 +46,9 @@ interface ProductPreview {
   source_url: string
 }
 
-const platformLogos: Record<string, { icon: string; color: string }> = {
-  aliexpress: { icon: '🛒', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30' },
-  amazon: { icon: '📦', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30' },
-  ebay: { icon: '🏷️', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30' },
-  temu: { icon: '🎁', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30' },
-  wish: { icon: '⭐', color: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30' },
-  cjdropshipping: { icon: '🚚', color: 'bg-green-100 text-green-700 dark:bg-green-900/30' },
-  bigbuy: { icon: '🏪', color: 'bg-red-100 text-red-700 dark:bg-red-900/30' },
-}
+const supportedPlatforms = [
+  'aliexpress', 'amazon', 'ebay', 'temu', 'wish', 'cjdropshipping', 'bigbuy'
+]
 
 export default function QuickImportByUrl() {
   const { user } = useAuth()
@@ -168,9 +164,10 @@ export default function QuickImportByUrl() {
 
         {/* Supported platforms */}
         <div className="flex flex-wrap justify-center gap-2">
-          {Object.entries(platformLogos).map(([platform, { icon, color }]) => (
-            <Badge key={platform} variant="secondary" className={cn("text-xs", color)}>
-              {icon} {platform.charAt(0).toUpperCase() + platform.slice(1)}
+          {supportedPlatforms.map((platform) => (
+            <Badge key={platform} variant="secondary" className={cn("text-xs flex items-center gap-1", getPlatformColor(platform))}>
+              <PlatformLogo platform={platform} size="sm" />
+              {getPlatformName(platform)}
             </Badge>
           ))}
         </div>
@@ -247,8 +244,9 @@ export default function QuickImportByUrl() {
                   <CheckCircle2 className="h-5 w-5 text-green-600" />
                   <CardTitle className="text-lg">Produit trouvé</CardTitle>
                 </div>
-                <Badge className={platformLogos[preview.platform_detected]?.color}>
-                  {platformLogos[preview.platform_detected]?.icon} {preview.platform_detected}
+                <Badge className={cn("flex items-center gap-1", getPlatformColor(preview.platform_detected))}>
+                  <PlatformLogo platform={preview.platform_detected} size="sm" />
+                  {getPlatformName(preview.platform_detected)}
                 </Badge>
               </div>
             </CardHeader>

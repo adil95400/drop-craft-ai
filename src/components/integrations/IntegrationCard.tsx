@@ -39,6 +39,7 @@ import { Integration, useIntegrations } from '@/hooks/useIntegrations';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { logError } from '@/utils/consoleCleanup';
+import { PlatformLogo } from '@/components/ui/platform-logo';
 
 interface IntegrationConfigState extends Integration {
   credentials?: Record<string, string>;
@@ -63,21 +64,6 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
     connected: { color: 'bg-green-500', text: 'Connecté', icon: PlugZap },
     disconnected: { color: 'bg-gray-500', text: 'Non connecté', icon: Plug },
     error: { color: 'bg-red-500', text: 'Erreur', icon: AlertCircle },
-  };
-
-  const platformLogos = {
-    shopify: '🛍️',
-    woocommerce: '🛒',
-    bigcommerce: '🏪',
-    amazon: '📦',
-    aliexpress: '🛒',
-    ebay: '🔨',
-    etsy: '🎨',
-    facebook: '📘',
-    instagram: '📷',
-    google: '🔍',
-    stripe: '💳',
-    paypal: '💰',
   };
 
   const handleSave = async () => {
@@ -161,9 +147,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="text-2xl">
-              {platformLogos[integration.platform_name as keyof typeof platformLogos] || '🔗'}
-            </div>
+            <PlatformLogo platform={integration.platform_name} size="lg" />
             <div>
               <CardTitle className="text-lg capitalize">{integration.platform_name}</CardTitle>
               <CardDescription className="text-sm">
