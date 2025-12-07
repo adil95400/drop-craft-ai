@@ -29,11 +29,36 @@ const Pricing = () => {
     await createCheckoutSession(planType);
   };
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "ShopOpti+",
+    "description": "Plateforme SaaS d'automatisation e-commerce et dropshipping",
+    "brand": {
+      "@type": "Brand",
+      "name": "ShopOpti+"
+    },
+    "offers": Object.entries(STRIPE_CONFIG.plans).map(([key, plan]) => ({
+      "@type": "Offer",
+      "name": plan.name,
+      "price": plan.price,
+      "priceCurrency": "EUR",
+      "availability": "https://schema.org/InStock"
+    }))
+  };
+
   return (
     <PublicLayout>
       <Helmet>
-        <title>Tarifs - ShopOpti | Plans et Pricing</title>
-        <meta name="description" content="Plans tarifaires ShopOpti : Starter 29€, Pro 79€, Ultra Pro 199€. 14 jours d'essai gratuit." />
+        <title>Tarifs ShopOpti+ | Plans Starter, Pro, Ultra Pro - Essai Gratuit 14 Jours</title>
+        <meta name="description" content="Découvrez nos plans tarifaires ShopOpti+ : Starter 29€/mois, Pro 79€/mois, Ultra Pro 199€/mois. 14 jours d'essai gratuit, sans engagement. Automatisez votre e-commerce." />
+        <meta name="keywords" content="tarifs dropshipping, prix e-commerce, abonnement ShopOpti, plan automatisation, essai gratuit" />
+        <link rel="canonical" href="https://www.shopopti.io/pricing" />
+        <meta property="og:title" content="Tarifs ShopOpti+ | Plans E-commerce" />
+        <meta property="og:description" content="Plans tarifaires ShopOpti+ à partir de 29€/mois. Essai gratuit 14 jours." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.shopopti.io/pricing" />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
       <div className="bg-background py-16">
