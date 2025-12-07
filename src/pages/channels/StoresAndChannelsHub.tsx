@@ -59,6 +59,65 @@ interface ChannelConnection {
   created_at: string
 }
 
+// Demo data for international showcase
+const DEMO_CONNECTIONS: ChannelConnection[] = [
+  {
+    id: 'demo-shopify-1',
+    platform_type: 'shopify',
+    platform_name: 'Shopify',
+    shop_domain: 'mode-parisienne.myshopify.com',
+    connection_status: 'connected',
+    last_sync_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+    products_synced: 1247,
+    orders_synced: 892,
+    created_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 'demo-amazon-1',
+    platform_type: 'amazon',
+    platform_name: 'Amazon Seller',
+    shop_domain: 'Amazon FR - TechStore',
+    connection_status: 'connected',
+    last_sync_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    products_synced: 834,
+    orders_synced: 2156,
+    created_at: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 'demo-woocommerce-1',
+    platform_type: 'woocommerce',
+    platform_name: 'WooCommerce',
+    shop_domain: 'boutique-bio.fr',
+    connection_status: 'connected',
+    last_sync_at: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    products_synced: 456,
+    orders_synced: 321,
+    created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 'demo-ebay-1',
+    platform_type: 'ebay',
+    platform_name: 'eBay',
+    shop_domain: 'eBay DE - ElektroShop',
+    connection_status: 'connected',
+    last_sync_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    products_synced: 678,
+    orders_synced: 1543,
+    created_at: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 'demo-etsy-1',
+    platform_type: 'etsy',
+    platform_name: 'Etsy',
+    shop_domain: 'ArtisanCreations',
+    connection_status: 'error',
+    last_sync_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    products_synced: 234,
+    orders_synced: 567,
+    created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
+  },
+]
+
 export default function StoresAndChannelsHub() {
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -70,7 +129,7 @@ export default function StoresAndChannelsHub() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   // Fetch all channel connections
-  const { data: connections = [], isLoading } = useQuery({
+  const { data: dbConnections = [], isLoading } = useQuery({
     queryKey: ['channel-connections'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -81,6 +140,9 @@ export default function StoresAndChannelsHub() {
       return (data || []) as ChannelConnection[]
     }
   })
+
+  // Merge demo data with real connections (demo shown if no real connections)
+  const connections = dbConnections.length > 0 ? dbConnections : DEMO_CONNECTIONS
 
   // Sync mutation
   const syncMutation = useMutation({
@@ -185,7 +247,7 @@ export default function StoresAndChannelsHub() {
             <div className="flex flex-wrap gap-2">
               <Button 
                 size="sm" 
-                onClick={() => navigate('/channels/connect?type=store')}
+                onClick={() => navigate('/stores-channels/connect?type=store')}
                 className="gap-2"
               >
                 <Store className="h-4 w-4" />
@@ -194,7 +256,7 @@ export default function StoresAndChannelsHub() {
               <Button 
                 size="sm" 
                 variant="outline"
-                onClick={() => navigate('/channels/connect?type=marketplace')}
+                onClick={() => navigate('/stores-channels/connect?type=marketplace')}
                 className="gap-2"
               >
                 <ShoppingCart className="h-4 w-4" />
@@ -303,7 +365,7 @@ export default function StoresAndChannelsHub() {
                             viewMode={viewMode}
                             onSync={() => syncMutation.mutate(connection.id)}
                             onDisconnect={() => disconnectMutation.mutate(connection.id)}
-                            onManage={() => navigate(`/channels/${connection.id}`)}
+                            onManage={() => navigate(`/stores-channels/${connection.id}`)}
                             isSyncing={syncMutation.isPending}
                             index={index}
                           />
@@ -325,7 +387,7 @@ export default function StoresAndChannelsHub() {
                         <PlatformCard 
                           key={platform.id}
                           platform={platform}
-                          onConnect={() => navigate(`/channels/connect/${platform.id}`)}
+                          onConnect={() => navigate(`/stores-channels/connect/${platform.id}`)}
                         />
                       ))}
                     </div>
@@ -343,7 +405,7 @@ export default function StoresAndChannelsHub() {
                         <PlatformCard 
                           key={platform.id}
                           platform={platform}
-                          onConnect={() => navigate(`/channels/connect/${platform.id}`)}
+                          onConnect={() => navigate(`/stores-channels/connect/${platform.id}`)}
                         />
                       ))}
                     </div>
@@ -352,7 +414,7 @@ export default function StoresAndChannelsHub() {
 
                 {/* Empty State */}
                 {connections.length === 0 && (
-                  <EmptyState onConnect={() => navigate('/channels/connect')} />
+                  <EmptyState onConnect={() => navigate('/stores-channels/connect')} />
                 )}
               </>
             )}
