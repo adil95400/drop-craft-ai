@@ -12,9 +12,12 @@ import { BulkAIActions } from '@/components/products/BulkAIActions';
 import { DuplicateDetector } from '@/components/products/DuplicateDetector';
 import { OptimizationSimulator } from '@/components/products/OptimizationSimulator';
 import { PriorityManager } from '@/components/products/PriorityManager';
+import { AdvancedFiltersPanel } from '@/components/products/AdvancedFiltersPanel';
+import { BulkEditPanel } from '@/components/products/BulkEditPanel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Package, Loader2, TrendingUp, AlertCircle, Archive, DollarSign, Target, Sparkles, CheckCircle } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Package, Loader2, TrendingUp, AlertCircle, Archive, DollarSign, Target, Sparkles, CheckCircle, Filter, Edit3 } from 'lucide-react';
 import { useModals } from '@/hooks/useModals';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
@@ -46,6 +49,8 @@ export default function ProductsMainPage() {
   const queryClient = useQueryClient();
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'standard' | 'audit'>('standard');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [showBulkEdit, setShowBulkEdit] = useState(false);
   const [expertMode, setExpertMode] = useState<boolean>(false);
 
   const handleEdit = (product: any) => {
@@ -163,6 +168,85 @@ export default function ProductsMainPage() {
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               {expertMode ? 'Expert' : 'Simple'}
             </Button>
+
+            {/* Filtres avancés */}
+            <Sheet open={showAdvancedFilters} onOpenChange={setShowAdvancedFilters}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">Filtres</span> Avancés
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+                <AdvancedFiltersPanel
+                  filters={{
+                    search: filters.search,
+                    categories: filters.category !== 'all' ? [filters.category] : [],
+                    suppliers: [],
+                    sources: filters.source !== 'all' ? [filters.source] : [],
+                    status: filters.status !== 'all' ? [filters.status] : [],
+                    priceMin: filters.priceRange[0],
+                    priceMax: filters.priceRange[1],
+                    marginMin: 0,
+                    marginMax: 100,
+                    stockMin: 0,
+                    stockMax: 10000,
+                    ratingMin: 0,
+                    scoreMin: 0,
+                    scoreMax: auditFilters.seoScoreMax ?? 100,
+                    hasImages: null,
+                    hasSEO: null,
+                    isBestseller: null,
+                    isTrending: null,
+                    isWinner: null,
+                    hasLowStock: filters.lowStock ? true : null,
+                    needsOptimization: null,
+                    sortBy: filters.sortBy,
+                    sortOrder: filters.sortOrder
+                  }}
+                  onFiltersChange={(newFilters) => {
+                    updateFilter('search', newFilters.search);
+                    updateFilter('category', newFilters.categories.length > 0 ? newFilters.categories[0] : 'all');
+                    updateFilter('source', newFilters.sources.length > 0 ? newFilters.sources[0] as any : 'all');
+                    updateFilter('status', newFilters.status.length > 0 ? newFilters.status[0] as any : 'all');
+                    updateFilter('priceRange', [newFilters.priceMin, newFilters.priceMax]);
+                    updateFilter('lowStock', newFilters.hasLowStock === true);
+                    updateFilter('sortBy', newFilters.sortBy as any);
+                    updateFilter('sortOrder', newFilters.sortOrder);
+                    toast({ title: 'Filtres appliqués' });
+                  }}
+                  categories={categories}
+                  suppliers={[]}
+                  sources={['products', 'imported', 'premium', 'catalog', 'shopify', 'published', 'feed', 'supplier']}
+                  productCount={products.length}
+                  filteredCount={finalFilteredProducts.length}
+                />
+              </SheetContent>
+            </Sheet>
+
+            {/* Édition en masse */}
+            {selectedProducts.length > 0 && (
+              <Sheet open={showBulkEdit} onOpenChange={setShowBulkEdit}>
+                <SheetTrigger asChild>
+                  <Button variant="default" size="sm" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+                    <Edit3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    Éditer ({selectedProducts.length})
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+                  <BulkEditPanel
+                    selectedProducts={products.filter(p => selectedProducts.includes(p.id))}
+                    onComplete={() => {
+                      setShowBulkEdit(false);
+                      setSelectedProducts([]);
+                      handleRefresh();
+                      toast({ title: 'Modifications appliquées', description: `${selectedProducts.length} produits mis à jour` });
+                    }}
+                    onCancel={() => setShowBulkEdit(false)}
+                  />
+                </SheetContent>
+              </Sheet>
+            )}
           </div>
         </div>
 
