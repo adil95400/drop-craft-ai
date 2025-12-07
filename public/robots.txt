@@ -1,3 +1,26 @@
+# Robots.txt for ShopOpti+
+# https://www.shopopti.io
+
 User-agent: *
 Allow: /
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /settings/
+
+# Allow search engines to index public pages
+Allow: /pricing
+Allow: /features
+Allow: /about
+Allow: /contact
+Allow: /blog
+Allow: /documentation
+Allow: /faq
+Allow: /integrations
+
+# Sitemaps
 Sitemap: https://www.shopopti.io/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1

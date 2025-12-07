@@ -20,11 +20,36 @@ const Contact = () => {
     setFormData({ name: '', email: '', message: '' })
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contactez ShopOpti+",
+    "url": "https://www.shopopti.io/contact",
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "ShopOpti+",
+      "email": "contact@shopopti.fr",
+      "telephone": "+33 1 23 45 67 89",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Paris",
+        "addressCountry": "FR"
+      }
+    }
+  };
+
   return (
     <PublicLayout>
       <Helmet>
-        <title>Contact - ShopOpti | Support et Assistance</title>
-        <meta name="description" content="Contactez l'équipe ShopOpti pour toute question. Support réactif, conseils personnalisés." />
+        <title>Contact ShopOpti+ | Support Client et Assistance</title>
+        <meta name="description" content="Contactez l'équipe ShopOpti+ pour toute question. Support réactif (réponse sous 2h), conseils personnalisés, assistance technique dédiée." />
+        <meta name="keywords" content="contact ShopOpti, support e-commerce, assistance dropshipping, aide technique" />
+        <link rel="canonical" href="https://www.shopopti.io/contact" />
+        <meta property="og:title" content="Contact ShopOpti+ | Support" />
+        <meta property="og:description" content="Notre équipe vous répond en moins de 2h." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.shopopti.io/contact" />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
       <div className="bg-background py-16">

@@ -145,8 +145,36 @@ export default function FAQ() {
     ).map(q => ({ ...q, category: category.title }))
   })
 
+  // FAQ Schema for SEO
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqCategories.flatMap(cat => 
+      cat.questions.map(q => ({
+        "@type": "Question",
+        "name": q.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": q.answer
+        }
+      }))
+    )
+  };
+
   return (
     <PublicLayout>
+      <Helmet>
+        <title>FAQ & Centre d'Aide | ShopOpti+ - Questions Fréquentes</title>
+        <meta name="description" content="Trouvez rapidement les réponses à vos questions sur ShopOpti+. Guide de démarrage, gestion produits, intégrations, commandes et plus." />
+        <meta name="keywords" content="FAQ ShopOpti, aide dropshipping, support e-commerce, tutoriels, documentation" />
+        <link rel="canonical" href="https://www.shopopti.io/faq" />
+        <meta property="og:title" content="FAQ & Centre d'Aide | ShopOpti+" />
+        <meta property="og:description" content="Trouvez rapidement les réponses à vos questions sur ShopOpti+." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.shopopti.io/faq" />
+        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+      </Helmet>
+      
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="text-center space-y-4">
