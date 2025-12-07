@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Crown, Zap, Users, Star, ArrowRight, TrendingUp, Shield, Globe, CheckCircle2, Package, ShoppingCart, BarChart3, Sparkles, Clock, MessageSquare, DollarSign, Settings, Rocket, Target } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
+import { SEO } from "@/components/SEO";
+import { SoftwareAppSchema, OrganizationSchema } from "@/components/seo/StructuredData";
 import heroImage from "@/assets/hero-automation.jpg";
 import featureAI from "@/assets/feature-ai.jpg";
 import featureIntegration from "@/assets/feature-integration.jpg";
@@ -639,11 +641,14 @@ const Index = () => {
 
   return (
     <PublicLayout>
-      <Helmet>
-        <title>ShopOpti+ | Plateforme SaaS de Dropshipping Intelligent avec IA</title>
-        <meta name="description" content="Automatisez votre e-commerce avec ShopOpti+. 99+ fournisseurs, IA avancée, gestion multi-plateformes. Essai gratuit 14 jours sans engagement." />
-        <meta name="keywords" content="dropshipping, e-commerce, automatisation, IA, SaaS, Shopify, AliExpress, BigBuy, gestion produits, analytics" />
-      </Helmet>
+      <SEO
+        title="ShopOpti+ | Plateforme E-commerce IA - Dropshipping Automatisé"
+        description="Automatisez votre e-commerce avec ShopOpti+. 99+ fournisseurs, IA avancée, gestion multi-plateformes Shopify, Amazon, eBay. Essai gratuit 14 jours."
+        path="/"
+        keywords="dropshipping, e-commerce IA, automatisation, SaaS, Shopify, AliExpress, BigBuy, gestion produits, analytics, multichannel"
+      />
+      <OrganizationSchema />
+      <SoftwareAppSchema />
 
       <main>
         <HeroSection />
