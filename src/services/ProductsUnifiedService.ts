@@ -161,40 +161,52 @@ export class ProductsUnifiedService {
   private static async getImportedProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
     const limit = options?.limit || PRODUCT_FETCH_LIMIT;
     
-    let query = supabase.from('imported_products').select('*')
-    
-    if (!options?.includeGlobalProducts) {
-      query = query.eq('user_id', userId)
-    } else {
-      query = query.or(`user_id.eq.${userId},user_id.is.null`)
+    try {
+      // D'abord essayer avec le user_id de l'utilisateur
+      let query = supabase.from('imported_products').select('*')
+      
+      if (!options?.includeGlobalProducts) {
+        query = query.eq('user_id', userId)
+      } else {
+        query = query.or(`user_id.eq.${userId},user_id.is.null`)
+      }
+
+      if (filters?.category) query = query.eq('category', filters.category)
+      if (filters?.search) {
+        query = query.or(`name.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`)
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false }).limit(limit)
+      
+      if (error) {
+        console.error('Error fetching imported_products:', error)
+        throw error
+      }
+
+      console.log(`✓ imported_products loaded: ${data?.length || 0} products for user ${userId}`)
+      
+      return (data || []).map(p => ({
+        id: p.id,
+        name: p.name || 'Produit sans nom',
+        description: p.description,
+        price: p.price || 0,
+        cost_price: p.cost_price,
+        status: (p.status === 'published' ? 'active' : 'inactive') as 'active' | 'inactive',
+        stock_quantity: p.stock_quantity,
+        sku: p.sku,
+        category: p.category,
+        image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : undefined,
+        images: Array.isArray(p.image_urls) ? p.image_urls : [],
+        profit_margin: p.cost_price ? ((p.price - p.cost_price) / p.price * 100) : undefined,
+        user_id: p.user_id,
+        source: 'imported' as const,
+        created_at: p.created_at,
+        updated_at: p.updated_at
+      }))
+    } catch (error) {
+      console.error('getImportedProducts failed:', error)
+      return []
     }
-
-    if (filters?.category) query = query.eq('category', filters.category)
-    if (filters?.search) {
-      query = query.or(`name.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`)
-    }
-
-    const { data, error } = await query.order('created_at', { ascending: false }).limit(limit)
-    if (error) throw error
-
-    return (data || []).map(p => ({
-      id: p.id,
-      name: p.name || 'Produit sans nom',
-      description: p.description,
-      price: p.price || 0,
-      cost_price: p.cost_price,
-      status: (p.status === 'published' ? 'active' : 'inactive') as 'active' | 'inactive',
-      stock_quantity: p.stock_quantity,
-      sku: p.sku,
-      category: p.category,
-      image_url: Array.isArray(p.image_urls) && p.image_urls.length > 0 ? p.image_urls[0] : undefined,
-      images: Array.isArray(p.image_urls) ? p.image_urls : [],
-      profit_margin: p.cost_price ? ((p.price - p.cost_price) / p.price * 100) : undefined,
-      user_id: p.user_id,
-      source: 'imported' as const,
-      created_at: p.created_at,
-      updated_at: p.updated_at
-    }))
   }
 
   /**
