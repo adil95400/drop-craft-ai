@@ -51,7 +51,7 @@ export function useDashboardStats() {
           (supabase as any).from('shopify_products_with_user').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
           (supabase as any).from('published_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
           (supabase as any).from('feed_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-          (supabase as any).from('supplier_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
+          (supabase as any).from('supplier_products').select('*', { count: 'exact', head: true }) // Global catalog - no user filter
         ])
 
         const productsCount = (products.count || 0) + (imported.count || 0) + (premium.count || 0) + 
@@ -110,7 +110,7 @@ export function useDashboardStats() {
           (supabase as any).from('shopify_products_with_user').select('*', { count: 'exact', head: true }).eq('user_id', user.id).lte('created_at', endOfPrevMonth.toISOString()),
           (supabase as any).from('published_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id).lte('created_at', endOfPrevMonth.toISOString()),
           (supabase as any).from('feed_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id).lte('created_at', endOfPrevMonth.toISOString()),
-          (supabase as any).from('supplier_products').select('*', { count: 'exact', head: true }).eq('user_id', user.id).lte('created_at', endOfPrevMonth.toISOString())
+          (supabase as any).from('supplier_products').select('*', { count: 'exact', head: true }).lte('created_at', endOfPrevMonth.toISOString()) // Global catalog
         ])
 
         const prevMonthProductsCount = (prevProducts.count || 0) + (prevImported.count || 0) + (prevPremium.count || 0) + 
