@@ -11,9 +11,11 @@ import { ProductsUnifiedService } from '@/services/ProductsUnifiedService'
 import { ProductAnalyticsService } from '@/services/ProductAnalyticsService'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { ArrowLeft, Loader2, Package, TrendingUp, History, Globe, Images, Languages, MessageSquare, Target, Settings } from 'lucide-react'
+import { ArrowLeft, Loader2, Package, TrendingUp, History, Globe, Images, Languages, MessageSquare, Target, Settings, Sparkles } from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
 import { ProductVariantsAdvancedManager } from '@/components/products/ProductVariantsAdvancedManager'
+import { EnrichmentStatusBadge, EnrichmentButton, EnrichmentPreviewPanel } from '@/components/enrichment'
+import { useProductEnrichment } from '@/hooks/useProductEnrichment'
 
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -38,6 +40,17 @@ export function ProductDetailPage() {
     queryFn: () => ProductAnalyticsService.getProductMetrics(id!, userData!.id),
     enabled: !!id && !!userData?.id
   })
+
+  // Hook d'enrichissement
+  const { 
+    enrichments, 
+    isLoading: isLoadingEnrichment,
+    enrich, 
+    enrichAI, 
+    applyEnrichment,
+    isEnriching,
+    isApplying
+  } = useProductEnrichment(id || '')
 
   if (isLoading) {
     return (
@@ -83,16 +96,28 @@ export function ProductDetailPage() {
               <p className="text-muted-foreground">{product.category} • SKU: {product.sku || 'N/A'}</p>
             </div>
           </div>
-          <Badge variant="outline">{product.source}</Badge>
+          <div className="flex items-center gap-2">
+            <EnrichmentStatusBadge status={(product as any).enrichment_status || 'none'} />
+            <EnrichmentButton
+              productId={product.id}
+              currentStatus={(product as any).enrichment_status}
+              onEnrichmentComplete={() => {}}
+            />
+            <Badge variant="outline">{product.source}</Badge>
+          </div>
         </div>
         
         <Card>
           <CardContent className="pt-6">
             <Tabs defaultValue="overview" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="overview" className="gap-2">
                   <Package className="h-4 w-4" />
                   Vue d'ensemble
+                </TabsTrigger>
+                <TabsTrigger value="enrichment" className="gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Enrichissement
                 </TabsTrigger>
                 <TabsTrigger value="analytics" className="gap-2">
                   <TrendingUp className="h-4 w-4" />
@@ -158,6 +183,19 @@ export function ProductDetailPage() {
                     </div>
                   </div>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="enrichment">
+                <EnrichmentPreviewPanel
+                  productId={product.id}
+                  currentProduct={{
+                    name: product.name,
+                    description: product.description,
+                    price: product.price,
+                    image_url: product.image_url
+                  }}
+                  onApply={() => {}}
+                />
               </TabsContent>
 
               <TabsContent value="analytics">
