@@ -45,8 +45,9 @@ import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
 
 interface BulkEditPanelProps {
   selectedProducts: UnifiedProduct[]
-  onClose: () => void
+  onClose?: () => void
   onComplete: () => void
+  onCancel?: () => void
 }
 
 type EditOperation = 
@@ -71,7 +72,7 @@ interface EditAction {
   preview?: string
 }
 
-export function BulkEditPanel({ selectedProducts, onClose, onComplete }: BulkEditPanelProps) {
+export function BulkEditPanel({ selectedProducts, onClose, onComplete, onCancel }: BulkEditPanelProps) {
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState<'quick' | 'advanced' | 'ai'>('quick')
   const [isProcessing, setIsProcessing] = useState(false)
