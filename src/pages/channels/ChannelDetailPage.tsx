@@ -19,11 +19,14 @@ import { useToast } from '@/hooks/use-toast'
 import {
   ArrowLeft, Settings, Package, ShoppingCart, RefreshCw, TrendingUp,
   CheckCircle2, AlertCircle, Clock, ExternalLink, Unplug, Loader2,
-  FileText, Database, Zap, BarChart3, Edit2, Save, Trash2
+  FileText, Database, Zap, BarChart3, Edit2, Save, Trash2, Code2, Wifi
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ProductMappingEditor } from '@/components/channels/ProductMappingEditor'
 import { ChannelSyncStatus } from '@/components/channels/ChannelSyncStatus'
+import { TransformationRulesEditor } from '@/components/channels/TransformationRulesEditor'
+import { ResponsiveProductTable } from '@/components/channels/ResponsiveProductTable'
+import { useChannelWebhooks } from '@/hooks/useChannelWebhooks'
 
 export default function ChannelDetailPage() {
   const { channelId } = useParams<{ channelId: string }>()
@@ -31,6 +34,12 @@ export default function ChannelDetailPage() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [isEditing, setIsEditing] = useState(false)
+
+  // Real-time webhooks
+  const { isConnected: webhooksConnected, lastEvent, eventCount } = useChannelWebhooks({
+    channelId,
+    enableNotifications: true,
+  })
 
   // Fetch channel details
   const { data: channel, isLoading } = useQuery({
@@ -298,24 +307,36 @@ export default function ChannelDetailPage() {
           </Card>
         </div>
 
+        {/* Webhook Status */}
+        {webhooksConnected && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Wifi className="h-3 w-3 text-green-500" />
+            <span>Webhooks temps réel actifs • {eventCount} événement{eventCount !== 1 ? 's' : ''}</span>
+          </div>
+        )}
+
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="overview" className="gap-2">
               <BarChart3 className="h-4 w-4" />
-              Vue d'ensemble
+              <span className="hidden sm:inline">Vue d'ensemble</span>
             </TabsTrigger>
             <TabsTrigger value="products" className="gap-2">
               <Package className="h-4 w-4" />
-              Produits
+              <span className="hidden sm:inline">Produits</span>
+            </TabsTrigger>
+            <TabsTrigger value="rules" className="gap-2">
+              <Code2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Règles</span>
             </TabsTrigger>
             <TabsTrigger value="mapping" className="gap-2">
               <FileText className="h-4 w-4" />
-              Mapping
+              <span className="hidden sm:inline">Mapping</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Settings className="h-4 w-4" />
-              Paramètres
+              <span className="hidden sm:inline">Paramètres</span>
             </TabsTrigger>
           </TabsList>
 
@@ -451,6 +472,20 @@ export default function ChannelDetailPage() {
                     </Button>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="rules">
+            <Card>
+              <CardContent className="p-6">
+                <TransformationRulesEditor
+                  channelId={channelId || ''}
+                  onSave={(rules) => {
+                    console.log('Saving rules:', rules)
+                    toast({ title: 'Règles enregistrées', description: `${rules.length} règle(s) configurée(s)` })
+                  }}
+                />
               </CardContent>
             </Card>
           </TabsContent>
