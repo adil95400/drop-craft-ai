@@ -1,2 +1,5 @@
 export { ProductMappingEditor } from './ProductMappingEditor'
 export { ChannelSyncStatus } from './ChannelSyncStatus'
+export { VisualMappingEditor } from './VisualMappingEditor'
+export { AutoSyncSettings } from './AutoSyncSettings'
+export { WebhookEventsLog } from './WebhookEventsLog'
