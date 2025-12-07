@@ -345,12 +345,34 @@ export default function ChannelDetailPage() {
 
           <TabsContent value="overview">
             <div className="grid gap-6 md:grid-cols-2">
+              {/* Auto-Sync Settings */}
+              <AutoSyncSettings 
+                channelId={channelId || ''}
+                platform={channel.platform_type?.toLowerCase() || 'default'}
+                onConfigChange={(config) => {
+                  console.log('Auto-sync config:', config)
+                  toast({ title: 'Paramètres de sync enregistrés' })
+                }}
+              />
+
+              {/* Webhook Events Log */}
+              <WebhookEventsLog channelId={channelId || ''} />
+
               <Card>
                 <CardHeader>
                   <CardTitle>Activité récente</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
+                    {lastEvent && (
+                      <div className="flex items-center justify-between py-2 border-b">
+                        <div className="flex items-center gap-3">
+                          <Zap className="h-4 w-4 text-yellow-500" />
+                          <span className="text-sm">{lastEvent.type}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">Temps réel</span>
+                      </div>
+                    )}
                     {[
                       { action: 'Synchronisation produits', time: 'Il y a 2h', status: 'success' },
                       { action: 'Import commandes', time: 'Il y a 4h', status: 'success' },
@@ -494,14 +516,28 @@ export default function ChannelDetailPage() {
           </TabsContent>
 
           <TabsContent value="mapping">
-            <ProductMappingEditor
-              platform={channel.platform_type?.toLowerCase() || 'default'}
-              platformName={channel.platform_name || 'Canal'}
-              onSave={(mappings) => {
-                console.log('Saving mappings:', mappings)
-                toast({ title: 'Mapping enregistré', description: `${mappings.filter(m => m.enabled).length} champs mappés` })
-              }}
-            />
+            <div className="space-y-6">
+              {/* Visual Mapping Editor */}
+              <VisualMappingEditor 
+                channelId={channelId || ''}
+                platform={channel.platform_type?.toLowerCase() || 'default'}
+                mappings={[]}
+                onSave={async (mappings) => {
+                  console.log('Visual mappings:', mappings)
+                  toast({ title: 'Mapping visuel mis à jour' })
+                }}
+              />
+              
+              {/* Standard Mapping Editor */}
+              <ProductMappingEditor
+                platform={channel.platform_type?.toLowerCase() || 'default'}
+                platformName={channel.platform_name || 'Canal'}
+                onSave={(mappings) => {
+                  console.log('Saving mappings:', mappings)
+                  toast({ title: 'Mapping enregistré', description: `${mappings.filter(m => m.enabled).length} champs mappés` })
+                }}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="settings">
