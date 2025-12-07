@@ -4054,6 +4054,53 @@ export type Database = {
         }
         Relationships: []
       }
+      enrichment_queue: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          priority: number | null
+          product_id: string
+          sources: string[] | null
+          started_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          priority?: number | null
+          product_id: string
+          sources?: string[] | null
+          started_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          priority?: number | null
+          product_id?: string
+          sources?: string[] | null
+          started_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrichment_queue_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enterprise_integrations: {
         Row: {
           authentication_data: Json
@@ -9821,6 +9868,98 @@ export type Database = {
         }
         Relationships: []
       }
+      product_enrichment: {
+        Row: {
+          ai_output: Json | null
+          applied_at: string | null
+          created_at: string
+          enrichment_status: string | null
+          error_message: string | null
+          fetch_attempts: number | null
+          id: string
+          last_fetch_at: string | null
+          matched_via: string | null
+          product_id: string
+          raw_attributes: Json | null
+          raw_currency: string | null
+          raw_description: string | null
+          raw_images: Json | null
+          raw_price: number | null
+          raw_rating: number | null
+          raw_reviews_count: number | null
+          raw_shipping_info: Json | null
+          raw_title: string | null
+          raw_variants: Json | null
+          source: string
+          source_product_id: string | null
+          source_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_output?: Json | null
+          applied_at?: string | null
+          created_at?: string
+          enrichment_status?: string | null
+          error_message?: string | null
+          fetch_attempts?: number | null
+          id?: string
+          last_fetch_at?: string | null
+          matched_via?: string | null
+          product_id: string
+          raw_attributes?: Json | null
+          raw_currency?: string | null
+          raw_description?: string | null
+          raw_images?: Json | null
+          raw_price?: number | null
+          raw_rating?: number | null
+          raw_reviews_count?: number | null
+          raw_shipping_info?: Json | null
+          raw_title?: string | null
+          raw_variants?: Json | null
+          source: string
+          source_product_id?: string | null
+          source_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_output?: Json | null
+          applied_at?: string | null
+          created_at?: string
+          enrichment_status?: string | null
+          error_message?: string | null
+          fetch_attempts?: number | null
+          id?: string
+          last_fetch_at?: string | null
+          matched_via?: string | null
+          product_id?: string
+          raw_attributes?: Json | null
+          raw_currency?: string | null
+          raw_description?: string | null
+          raw_images?: Json | null
+          raw_price?: number | null
+          raw_rating?: number | null
+          raw_reviews_count?: number | null
+          raw_shipping_info?: Json | null
+          raw_title?: string | null
+          raw_variants?: Json | null
+          source?: string
+          source_product_id?: string | null
+          source_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_enrichment_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_history: {
         Row: {
           change_type: string
@@ -10529,11 +10668,15 @@ export type Database = {
           created_at: string
           description: string | null
           dimensions: Json | null
+          ean: string | null
+          enrichment_enabled: boolean | null
+          enrichment_status: string | null
           fulfillment_service: string | null
           google_age_group: string | null
           google_custom_labels: Json | null
           google_gender: string | null
           google_product_category: string | null
+          gtin: string | null
           handle: string | null
           id: string
           image_url: string | null
@@ -10541,6 +10684,7 @@ export type Database = {
           is_bestseller: boolean | null
           is_trending: boolean | null
           is_winner: boolean | null
+          last_enriched_at: string | null
           last_optimized_at: string | null
           mpn: string | null
           name: string
@@ -10564,6 +10708,7 @@ export type Database = {
           tax_code: string | null
           taxable: boolean | null
           trend_score: number | null
+          upc: string | null
           updated_at: string
           user_id: string
           vendor: string | null
@@ -10583,11 +10728,15 @@ export type Database = {
           created_at?: string
           description?: string | null
           dimensions?: Json | null
+          ean?: string | null
+          enrichment_enabled?: boolean | null
+          enrichment_status?: string | null
           fulfillment_service?: string | null
           google_age_group?: string | null
           google_custom_labels?: Json | null
           google_gender?: string | null
           google_product_category?: string | null
+          gtin?: string | null
           handle?: string | null
           id?: string
           image_url?: string | null
@@ -10595,6 +10744,7 @@ export type Database = {
           is_bestseller?: boolean | null
           is_trending?: boolean | null
           is_winner?: boolean | null
+          last_enriched_at?: string | null
           last_optimized_at?: string | null
           mpn?: string | null
           name: string
@@ -10618,6 +10768,7 @@ export type Database = {
           tax_code?: string | null
           taxable?: boolean | null
           trend_score?: number | null
+          upc?: string | null
           updated_at?: string
           user_id: string
           vendor?: string | null
@@ -10637,11 +10788,15 @@ export type Database = {
           created_at?: string
           description?: string | null
           dimensions?: Json | null
+          ean?: string | null
+          enrichment_enabled?: boolean | null
+          enrichment_status?: string | null
           fulfillment_service?: string | null
           google_age_group?: string | null
           google_custom_labels?: Json | null
           google_gender?: string | null
           google_product_category?: string | null
+          gtin?: string | null
           handle?: string | null
           id?: string
           image_url?: string | null
@@ -10649,6 +10804,7 @@ export type Database = {
           is_bestseller?: boolean | null
           is_trending?: boolean | null
           is_winner?: boolean | null
+          last_enriched_at?: string | null
           last_optimized_at?: string | null
           mpn?: string | null
           name?: string
@@ -10672,6 +10828,7 @@ export type Database = {
           tax_code?: string | null
           taxable?: boolean | null
           trend_score?: number | null
+          upc?: string | null
           updated_at?: string
           user_id?: string
           vendor?: string | null
