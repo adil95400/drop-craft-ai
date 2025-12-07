@@ -1,10 +1,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { BarChart3, Package, Upload, FileText, TrendingUp } from 'lucide-react'
+import { BarChart3, Package, Upload, FileText, TrendingUp, Shield, Zap } from 'lucide-react'
 import { ImportDashboard } from '@/components/import/ImportDashboard'
 import { AdvancedImportResults } from '@/components/import/AdvancedImportResults'
 import { ImportCSVWithValidation } from '@/components/import/ImportCSVWithValidation'
+import { PrePublicationValidator } from '@/components/import/PrePublicationValidator'
+import { AutoValidationQueue } from '@/components/import/AutoValidationQueue'
 import { useNavigate } from 'react-router-dom'
 
 export default function ImportManagement() {
@@ -104,6 +106,16 @@ export default function ImportManagement() {
             <span className="hidden sm:inline">Produits Importés</span>
             <span className="sm:hidden">Produits</span>
           </TabsTrigger>
+          <TabsTrigger value="validation" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Validation</span>
+            <span className="sm:hidden">Valid.</span>
+          </TabsTrigger>
+          <TabsTrigger value="auto-validation" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Zap className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Auto-Validation</span>
+            <span className="sm:hidden">Auto</span>
+          </TabsTrigger>
           <TabsTrigger value="import" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
             <Upload className="w-3 h-3 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">Nouvel Import</span>
@@ -121,6 +133,14 @@ export default function ImportManagement() {
 
         <TabsContent value="products">
           <AdvancedImportResults />
+        </TabsContent>
+
+        <TabsContent value="validation">
+          <PrePublicationValidator />
+        </TabsContent>
+
+        <TabsContent value="auto-validation">
+          <AutoValidationQueue />
         </TabsContent>
 
         <TabsContent value="import">

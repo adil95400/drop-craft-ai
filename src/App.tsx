@@ -19,6 +19,8 @@ import '@/lib/i18n';
 import { PWAInstallBanner } from '@/components/mobile/PWAInstallBanner';
 import { FeedbackWidget } from '@/components/feedback/FeedbackWidget';
 import { OfflineIndicator } from '@/components/offline/OfflineIndicator';
+import { MobileGlobalOptimizer } from '@/components/mobile/MobileGlobalOptimizer';
+import { AdaptiveBottomNav } from '@/components/mobile/AdaptiveBottomNav';
 
 const AppContent = memo(() => {
   useAutoTheme();
@@ -37,7 +39,7 @@ const AppContent = memo(() => {
   }, []);
   
   return (
-    <>
+    <MobileGlobalOptimizer>
       {/* Skip link for keyboard navigation */}
       <a href="#main-content" className="skip-link">
         Aller au contenu principal
@@ -46,7 +48,7 @@ const AppContent = memo(() => {
       {/* Offline status indicator */}
       <OfflineIndicator variant="banner" />
       
-      <main id="main-content">
+      <main id="main-content" className="pb-20 md:pb-0">
         <AppRoutes />
       </main>
       
@@ -58,7 +60,10 @@ const AppContent = memo(() => {
       
       {/* Feedback widget for continuous user feedback */}
       <FeedbackWidget />
-    </>
+      
+      {/* Adaptive bottom navigation for mobile */}
+      <AdaptiveBottomNav />
+    </MobileGlobalOptimizer>
   );
 });
 

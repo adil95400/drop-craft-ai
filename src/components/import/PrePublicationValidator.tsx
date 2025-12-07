@@ -42,7 +42,7 @@ interface ProductValidation {
 }
 
 interface PrePublicationValidatorProps {
-  products: Array<{
+  products?: Array<{
     id: string
     title: string
     description?: string
@@ -56,7 +56,7 @@ interface PrePublicationValidatorProps {
 }
 
 export function PrePublicationValidator({ 
-  products, 
+  products = [], 
   onValidate,
   onPublish 
 }: PrePublicationValidatorProps) {
@@ -65,7 +65,14 @@ export function PrePublicationValidator({
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [progress, setProgress] = useState(0)
 
-  const validateProduct = (product: typeof products[0]): ProductValidation => {
+  // Demo products if none provided
+  const productList = products.length > 0 ? products : [
+    { id: '1', title: 'Produit Demo 1', description: 'Description courte', price: 29.99, image_url: '', sku: 'DEMO-001', category: 'Electronics' },
+    { id: '2', title: 'Produit avec titre correct et optimisé SEO', description: 'Cette description est assez longue pour passer la validation et contient des informations utiles pour les clients.', price: 49.99, image_url: 'https://example.com/img.jpg', sku: 'DEMO-002', category: 'Fashion' },
+    { id: '3', title: 'Test', description: '', price: 0, image_url: '', sku: '', category: '' },
+  ]
+
+  const validateProduct = (product: typeof productList[0]): ProductValidation => {
     const issues: ValidationIssue[] = []
     let score = 100
 
@@ -167,11 +174,11 @@ export function PrePublicationValidator({
     setProgress(0)
     const results: ProductValidation[] = []
 
-    for (let i = 0; i < products.length; i++) {
+    for (let i = 0; i < productList.length; i++) {
       await new Promise(r => setTimeout(r, 50)) // Simulate processing
-      const validation = validateProduct(products[i])
+      const validation = validateProduct(productList[i])
       results.push(validation)
-      setProgress(Math.round(((i + 1) / products.length) * 100))
+      setProgress(Math.round(((i + 1) / productList.length) * 100))
     }
 
     setValidations(results)
