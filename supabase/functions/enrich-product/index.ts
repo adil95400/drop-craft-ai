@@ -28,7 +28,7 @@ interface MarketplaceData {
   raw_shipping_info?: Record<string, any>;
 }
 
-// Product matching via EAN/GTIN using data providers
+// Product matching via EAN/GTIN using REAL data providers only
 async function matchProductOnMarketplace(
   product: any,
   source: string
@@ -50,7 +50,6 @@ async function matchProductOnMarketplace(
   }
 
   try {
-    // Use appropriate data provider based on source
     switch (source) {
       case 'amazon':
         return await fetchAmazonData(identifier, matchedVia, product);
@@ -58,10 +57,9 @@ async function matchProductOnMarketplace(
         return await fetchAliExpressData(identifier, matchedVia, product);
       case 'ebay':
         return await fetchEbayData(identifier, matchedVia, product);
-      case 'cdiscount':
-        return await fetchCdiscountData(identifier, matchedVia, product);
       default:
-        return await fetchGenericData(identifier, matchedVia, source, product);
+        console.log(`Source ${source} not supported for real API integration`);
+        return null;
     }
   } catch (error) {
     console.error(`Error matching product on ${source}:`, error);
@@ -69,7 +67,7 @@ async function matchProductOnMarketplace(
   }
 }
 
-// Amazon PA-API / Rainforest API integration
+// Amazon via Rainforest API - REAL API ONLY
 async function fetchAmazonData(
   identifier: string,
   matchedVia: string,
@@ -77,44 +75,57 @@ async function fetchAmazonData(
 ): Promise<MarketplaceData | null> {
   const rainforestApiKey = Deno.env.get('RAINFOREST_API_KEY');
   
-  if (rainforestApiKey) {
-    try {
-      const searchType = matchedVia === 'ean' ? 'gtin' : 'search_term';
-      const url = `https://api.rainforestapi.com/request?api_key=${rainforestApiKey}&type=search&amazon_domain=amazon.fr&${searchType}=${encodeURIComponent(identifier)}`;
-      
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        const result = data.search_results?.[0];
-        
-        if (result) {
-          return {
-            source: 'amazon',
-            source_url: result.link,
-            source_product_id: result.asin,
-            matched_via: matchedVia,
-            raw_title: result.title,
-            raw_description: result.description,
-            raw_images: result.images || [result.image],
-            raw_attributes: result.attributes || {},
-            raw_price: parseFloat(result.price?.value || '0'),
-            raw_currency: result.price?.currency || 'EUR',
-            raw_reviews_count: result.reviews?.total_reviews,
-            raw_rating: result.rating,
-            raw_shipping_info: result.delivery || {},
-          };
-        }
-      }
-    } catch (error) {
-      console.error('Rainforest API error:', error);
-    }
+  if (!rainforestApiKey) {
+    console.error('RAINFOREST_API_KEY not configured - cannot enrich from Amazon');
+    return null;
   }
-  
-  // Fallback: Generate realistic mock data for demo purposes
-  return generateMockMarketplaceData('amazon', identifier, matchedVia, product);
+
+  try {
+    console.log(`Fetching Amazon data for identifier: ${identifier}`);
+    
+    const searchType = matchedVia === 'ean' ? 'gtin' : 'search_term';
+    const url = `https://api.rainforestapi.com/request?api_key=${rainforestApiKey}&type=search&amazon_domain=amazon.fr&${searchType}=${encodeURIComponent(identifier)}`;
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Rainforest API error ${response.status}: ${errorText}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    const result = data.search_results?.[0];
+    
+    if (!result) {
+      console.log(`No Amazon results found for: ${identifier}`);
+      return null;
+    }
+
+    console.log(`Amazon product found: ${result.title}`);
+    
+    return {
+      source: 'amazon',
+      source_url: result.link,
+      source_product_id: result.asin,
+      matched_via: matchedVia,
+      raw_title: result.title,
+      raw_description: result.description || result.title,
+      raw_images: result.images || (result.image ? [result.image] : []),
+      raw_attributes: result.attributes || {},
+      raw_price: parseFloat(result.price?.value || '0'),
+      raw_currency: result.price?.currency || 'EUR',
+      raw_reviews_count: result.reviews?.total_reviews,
+      raw_rating: result.rating,
+      raw_shipping_info: result.delivery || {},
+    };
+  } catch (error) {
+    console.error('Rainforest API error:', error);
+    return null;
+  }
 }
 
-// AliExpress Affiliate API integration
+// AliExpress Affiliate API - REAL API ONLY
 async function fetchAliExpressData(
   identifier: string,
   matchedVia: string,
@@ -123,163 +134,175 @@ async function fetchAliExpressData(
   const aliexpressApiKey = Deno.env.get('ALIEXPRESS_API_KEY');
   const aliexpressAppSecret = Deno.env.get('ALIEXPRESS_APP_SECRET');
   
-  if (aliexpressApiKey && aliexpressAppSecret) {
-    try {
-      // AliExpress Affiliate API call
-      const url = `https://api-sg.aliexpress.com/sync`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          method: 'aliexpress.affiliate.product.query',
-          app_key: aliexpressApiKey,
-          keywords: identifier,
-          target_currency: 'EUR',
-          target_language: 'FR',
-        }),
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const result = data.aliexpress_affiliate_product_query_response?.resp_result?.result?.products?.[0];
-        
-        if (result) {
-          return {
-            source: 'aliexpress',
-            source_url: result.product_detail_url,
-            source_product_id: result.product_id,
-            matched_via: matchedVia,
-            raw_title: result.product_title,
-            raw_description: result.product_title,
-            raw_images: [result.product_main_image_url, ...(result.product_small_image_urls || [])],
-            raw_attributes: {},
-            raw_price: parseFloat(result.target_sale_price || '0'),
-            raw_currency: 'EUR',
-            raw_reviews_count: result.evaluate_rate ? parseInt(result.evaluate_rate) : undefined,
-            raw_rating: undefined,
-            raw_shipping_info: { delivery_time: result.logistics_info_dto?.delivery_time },
-          };
-        }
-      }
-    } catch (error) {
-      console.error('AliExpress API error:', error);
-    }
+  if (!aliexpressApiKey || !aliexpressAppSecret) {
+    console.error('ALIEXPRESS_API_KEY or ALIEXPRESS_APP_SECRET not configured - cannot enrich from AliExpress');
+    return null;
   }
-  
-  return generateMockMarketplaceData('aliexpress', identifier, matchedVia, product);
+
+  try {
+    console.log(`Fetching AliExpress data for identifier: ${identifier}`);
+    
+    // Generate signature for AliExpress TOP API
+    const timestamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0];
+    const signData = `aliexpress.affiliate.product.queryapp_key${aliexpressApiKey}keywords${identifier}sign_methodmd5target_currencyEURtarget_languageFRtimestamp${timestamp}`;
+    
+    // Simple MD5-like signature (in production, use proper crypto)
+    const encoder = new TextEncoder();
+    const data = encoder.encode(aliexpressAppSecret + signData + aliexpressAppSecret);
+    const hashBuffer = await crypto.subtle.digest('MD5', data).catch(() => null);
+    
+    let sign = '';
+    if (hashBuffer) {
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      sign = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+    }
+
+    const url = 'https://api-sg.aliexpress.com/sync';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        method: 'aliexpress.affiliate.product.query',
+        app_key: aliexpressApiKey,
+        sign_method: 'md5',
+        sign: sign,
+        timestamp: timestamp,
+        keywords: identifier,
+        target_currency: 'EUR',
+        target_language: 'FR',
+        page_no: '1',
+        page_size: '1',
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`AliExpress API error ${response.status}: ${errorText}`);
+      return null;
+    }
+    
+    const responseData = await response.json();
+    const result = responseData.aliexpress_affiliate_product_query_response?.resp_result?.result?.products?.[0];
+    
+    if (!result) {
+      console.log(`No AliExpress results found for: ${identifier}`);
+      return null;
+    }
+
+    console.log(`AliExpress product found: ${result.product_title}`);
+    
+    return {
+      source: 'aliexpress',
+      source_url: result.product_detail_url,
+      source_product_id: String(result.product_id),
+      matched_via: matchedVia,
+      raw_title: result.product_title,
+      raw_description: result.product_title,
+      raw_images: [result.product_main_image_url, ...(result.product_small_image_urls?.string || [])],
+      raw_attributes: {},
+      raw_price: parseFloat(result.target_sale_price || result.target_original_price || '0'),
+      raw_currency: 'EUR',
+      raw_reviews_count: result.evaluate_rate ? parseInt(result.evaluate_rate) : undefined,
+      raw_rating: undefined,
+      raw_shipping_info: { 
+        delivery_time: result.logistics_info_dto?.delivery_time,
+        ship_to_country: result.ship_to_country,
+      },
+    };
+  } catch (error) {
+    console.error('AliExpress API error:', error);
+    return null;
+  }
 }
 
-// eBay Browse API integration
+// eBay Browse API - REAL API ONLY
 async function fetchEbayData(
   identifier: string,
   matchedVia: string,
   product: any
 ): Promise<MarketplaceData | null> {
-  const ebayToken = Deno.env.get('EBAY_ACCESS_TOKEN');
+  const ebayClientId = Deno.env.get('EBAY_CLIENT_ID');
+  const ebayClientSecret = Deno.env.get('EBAY_CLIENT_SECRET');
   
-  if (ebayToken) {
-    try {
-      const searchParam = matchedVia === 'ean' ? `gtin:${identifier}` : identifier;
-      const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(searchParam)}&limit=1`;
-      
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${ebayToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const result = data.itemSummaries?.[0];
-        
-        if (result) {
-          return {
-            source: 'ebay',
-            source_url: result.itemWebUrl,
-            source_product_id: result.itemId,
-            matched_via: matchedVia,
-            raw_title: result.title,
-            raw_description: result.shortDescription,
-            raw_images: [result.image?.imageUrl, ...(result.additionalImages?.map((i: any) => i.imageUrl) || [])],
-            raw_attributes: result.itemSpecifics || {},
-            raw_price: parseFloat(result.price?.value || '0'),
-            raw_currency: result.price?.currency || 'EUR',
-            raw_shipping_info: result.shippingOptions?.[0] || {},
-          };
-        }
-      }
-    } catch (error) {
-      console.error('eBay API error:', error);
-    }
+  if (!ebayClientId || !ebayClientSecret) {
+    console.error('EBAY_CLIENT_ID or EBAY_CLIENT_SECRET not configured - cannot enrich from eBay');
+    return null;
   }
-  
-  return generateMockMarketplaceData('ebay', identifier, matchedVia, product);
-}
 
-// Cdiscount Marketplace API integration
-async function fetchCdiscountData(
-  identifier: string,
-  matchedVia: string,
-  product: any
-): Promise<MarketplaceData | null> {
-  // Cdiscount requires specific marketplace seller credentials
-  return generateMockMarketplaceData('cdiscount', identifier, matchedVia, product);
-}
+  try {
+    console.log(`Fetching eBay data for identifier: ${identifier}`);
+    
+    // Get OAuth token first
+    const tokenResponse = await fetch('https://api.ebay.com/identity/v1/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${btoa(`${ebayClientId}:${ebayClientSecret}`)}`,
+      },
+      body: 'grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope',
+    });
 
-// Generic data provider fallback
-async function fetchGenericData(
-  identifier: string,
-  matchedVia: string,
-  source: string,
-  product: any
-): Promise<MarketplaceData | null> {
-  return generateMockMarketplaceData(source, identifier, matchedVia, product);
-}
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error(`eBay OAuth error ${tokenResponse.status}: ${errorText}`);
+      return null;
+    }
 
-// Generate realistic mock data for demonstration
-function generateMockMarketplaceData(
-  source: string,
-  identifier: string,
-  matchedVia: string,
-  product: any
-): MarketplaceData {
-  const basePrice = product.price || 29.99;
-  const marketPrice = basePrice * (0.8 + Math.random() * 0.4); // ±20% variation
-  
-  const sourceUrls: Record<string, string> = {
-    amazon: `https://www.amazon.fr/dp/B${Math.random().toString(36).substring(2, 12).toUpperCase()}`,
-    aliexpress: `https://www.aliexpress.com/item/${Math.floor(Math.random() * 10000000000)}.html`,
-    ebay: `https://www.ebay.fr/itm/${Math.floor(Math.random() * 1000000000000)}`,
-    cdiscount: `https://www.cdiscount.com/dp/${Math.random().toString(36).substring(2, 10)}`,
-  };
-  
-  return {
-    source,
-    source_url: sourceUrls[source] || `https://${source}.com/product/${identifier}`,
-    source_product_id: `${source.toUpperCase()}-${Math.random().toString(36).substring(2, 10)}`,
-    matched_via: matchedVia,
-    raw_title: `${product.name || 'Produit'} - Version ${source.charAt(0).toUpperCase() + source.slice(1)}`,
-    raw_description: `Description enrichie du produit depuis ${source}. ${product.description || ''} Caractéristiques premium et qualité garantie. Livraison rapide disponible.`,
-    raw_images: product.image_url ? [product.image_url] : [],
-    raw_attributes: {
-      brand: product.vendor || 'Marque Premium',
-      category: product.category || 'Général',
-      condition: 'Neuf',
-      weight: product.weight || '0.5kg',
-    },
-    raw_variants: [],
-    raw_price: Math.round(marketPrice * 100) / 100,
-    raw_currency: 'EUR',
-    raw_reviews_count: Math.floor(Math.random() * 500) + 10,
-    raw_rating: Math.round((3.5 + Math.random() * 1.5) * 10) / 10,
-    raw_shipping_info: {
-      free_shipping: Math.random() > 0.5,
-      delivery_days: Math.floor(Math.random() * 7) + 2,
-    },
-  };
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+
+    if (!accessToken) {
+      console.error('Failed to obtain eBay access token');
+      return null;
+    }
+
+    // Search for product
+    const searchParam = matchedVia === 'ean' ? `gtin:${identifier}` : identifier;
+    const searchUrl = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(searchParam)}&limit=1`;
+    
+    const response = await fetch(searchUrl, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        'X-EBAY-C-MARKETPLACE-ID': 'EBAY_FR',
+      },
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`eBay Browse API error ${response.status}: ${errorText}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    const result = data.itemSummaries?.[0];
+    
+    if (!result) {
+      console.log(`No eBay results found for: ${identifier}`);
+      return null;
+    }
+
+    console.log(`eBay product found: ${result.title}`);
+    
+    return {
+      source: 'ebay',
+      source_url: result.itemWebUrl,
+      source_product_id: result.itemId,
+      matched_via: matchedVia,
+      raw_title: result.title,
+      raw_description: result.shortDescription || result.title,
+      raw_images: [result.image?.imageUrl, ...(result.additionalImages?.map((i: any) => i.imageUrl) || [])].filter(Boolean),
+      raw_attributes: result.itemSpecifics || {},
+      raw_price: parseFloat(result.price?.value || '0'),
+      raw_currency: result.price?.currency || 'EUR',
+      raw_shipping_info: result.shippingOptions?.[0] || {},
+    };
+  } catch (error) {
+    console.error('eBay API error:', error);
+    return null;
+  }
 }
 
 serve(async (req) => {
@@ -311,7 +334,7 @@ serve(async (req) => {
       });
     }
 
-    const { product_ids, sources = ['amazon', 'aliexpress'] }: EnrichmentRequest = await req.json();
+    const { product_ids, sources = ['amazon', 'aliexpress', 'ebay'] }: EnrichmentRequest = await req.json();
 
     if (!product_ids || product_ids.length === 0) {
       return new Response(JSON.stringify({ error: 'product_ids required' }), {
@@ -320,7 +343,39 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Starting enrichment for ${product_ids.length} products from sources: ${sources.join(', ')}`);
+    // Check which APIs are configured
+    const configuredSources: string[] = [];
+    if (Deno.env.get('RAINFOREST_API_KEY')) configuredSources.push('amazon');
+    if (Deno.env.get('ALIEXPRESS_API_KEY') && Deno.env.get('ALIEXPRESS_APP_SECRET')) configuredSources.push('aliexpress');
+    if (Deno.env.get('EBAY_CLIENT_ID') && Deno.env.get('EBAY_CLIENT_SECRET')) configuredSources.push('ebay');
+
+    if (configuredSources.length === 0) {
+      return new Response(JSON.stringify({ 
+        error: 'No enrichment APIs configured',
+        message: 'Please configure at least one API: RAINFOREST_API_KEY, ALIEXPRESS_API_KEY, or EBAY_CLIENT_ID',
+        required_secrets: ['RAINFOREST_API_KEY', 'ALIEXPRESS_API_KEY', 'ALIEXPRESS_APP_SECRET', 'EBAY_CLIENT_ID', 'EBAY_CLIENT_SECRET'],
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Filter to only configured sources
+    const activeSources = sources.filter(s => configuredSources.includes(s));
+    
+    if (activeSources.length === 0) {
+      return new Response(JSON.stringify({ 
+        error: 'None of the requested sources are configured',
+        requested: sources,
+        configured: configuredSources,
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log(`Starting REAL API enrichment for ${product_ids.length} products from sources: ${activeSources.join(', ')}`);
+    console.log(`Configured sources: ${configuredSources.join(', ')}`);
 
     const results: any[] = [];
 
@@ -345,8 +400,9 @@ serve(async (req) => {
         .eq('id', productId);
 
       let enrichmentSuccess = false;
+      const enrichedSources: string[] = [];
 
-      for (const source of sources) {
+      for (const source of activeSources) {
         try {
           // Check if enrichment already exists
           const { data: existing } = await supabase
@@ -356,7 +412,7 @@ serve(async (req) => {
             .eq('source', source)
             .single();
 
-          // Fetch marketplace data
+          // Fetch marketplace data via REAL API
           const marketplaceData = await matchProductOnMarketplace(product, source);
 
           if (marketplaceData) {
@@ -381,6 +437,8 @@ serve(async (req) => {
             }
 
             enrichmentSuccess = true;
+            enrichedSources.push(source);
+            console.log(`Successfully enriched product ${productId} from ${source}`);
           }
         } catch (error) {
           console.error(`Error enriching from ${source}:`, error);
@@ -398,14 +456,16 @@ serve(async (req) => {
 
       results.push({
         product_id: productId,
-        status: enrichmentSuccess ? 'success' : 'failed',
-        sources_enriched: sources,
+        status: enrichmentSuccess ? 'success' : 'no_results',
+        sources_checked: activeSources,
+        sources_enriched: enrichedSources,
       });
     }
 
     return new Response(JSON.stringify({
       success: true,
-      message: `Enrichment completed for ${product_ids.length} products`,
+      message: `Enrichment completed for ${product_ids.length} products using REAL APIs`,
+      configured_sources: configuredSources,
       results,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
