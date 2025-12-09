@@ -72,15 +72,16 @@ class DropCraftPopup {
 
   bindEvents() {
     // Main action buttons
-    document.getElementById('scrapCurrentPage').addEventListener('click', () => this.scrapCurrentPage());
-    document.getElementById('scrapAllProducts').addEventListener('click', () => this.scrapAllProducts());
-    document.getElementById('importReviews').addEventListener('click', () => this.importReviews());
-    document.getElementById('sendToApp').addEventListener('click', () => this.sendToApp());
-    document.getElementById('authenticate').addEventListener('click', () => this.openAuth());
-    document.getElementById('openDashboard').addEventListener('click', () => this.openDashboard());
-    document.getElementById('reviewSettings').addEventListener('click', () => this.openReviewSettings());
-    document.getElementById('openSettings').addEventListener('click', () => this.openSettings());
-    document.getElementById('clearData').addEventListener('click', () => this.clearData());
+    document.getElementById('scrapCurrentPage')?.addEventListener('click', () => this.scrapCurrentPage());
+    document.getElementById('scrapAllProducts')?.addEventListener('click', () => this.scrapAllProducts());
+    document.getElementById('importReviews')?.addEventListener('click', () => this.importReviews());
+    document.getElementById('sendToApp')?.addEventListener('click', () => this.sendToApp());
+    document.getElementById('authenticate')?.addEventListener('click', () => this.openAuth());
+    document.getElementById('openDashboard')?.addEventListener('click', () => this.openDashboard());
+    document.getElementById('reviewSettings')?.addEventListener('click', () => this.openReviewSettings());
+    document.getElementById('openSettings')?.addEventListener('click', () => this.openSettings());
+    document.getElementById('clearData')?.addEventListener('click', () => this.clearData());
+    document.getElementById('priceMonitor')?.addEventListener('click', () => this.enablePriceMonitor());
   }
 
   updateUI() {
@@ -831,41 +832,53 @@ class DropCraftPopup {
   }
 
   async checkConnection() {
+    const statusEl = document.getElementById('connectionStatus');
+    const statusText = statusEl?.querySelector('.status-text');
+    const authBtn = statusEl?.querySelector('.btn-link');
+    
     try {
-      const token = await chrome.storage.local.get(['extensionToken']);
-      if (!token.extensionToken) {
-        document.getElementById('connectionStatus').textContent = '🔒 Non authentifié';
+      const result = await chrome.storage.local.get(['extensionToken']);
+      if (!result.extensionToken) {
+        statusEl?.classList.remove('connected');
+        statusEl?.classList.add('disconnected');
+        if (statusText) statusText.textContent = 'Non connecté';
+        if (authBtn) authBtn.style.display = 'inline';
         return;
       }
       
-      // Check connection to Supabase
       const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-sync-realtime', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-extension-token': token.extensionToken
+          'x-extension-token': result.extensionToken
         },
-        body: JSON.stringify({
-          action: 'sync_status'
-        })
+        body: JSON.stringify({ action: 'sync_status' })
       });
       
       if (response.ok) {
-        document.getElementById('connectionStatus').textContent = '✓ Connecté';
+        statusEl?.classList.remove('disconnected');
+        statusEl?.classList.add('connected');
+        if (statusText) statusText.textContent = 'Connecté à ShopOpti+';
+        if (authBtn) authBtn.style.display = 'none';
       } else {
-        document.getElementById('connectionStatus').textContent = '⚠️ Token invalide';
+        statusEl?.classList.remove('connected');
+        statusEl?.classList.add('disconnected');
+        if (statusText) statusText.textContent = 'Token invalide';
       }
     } catch (error) {
-      document.getElementById('connectionStatus').textContent = '✗ Hors ligne';
+      if (statusText) statusText.textContent = 'Hors ligne';
     }
   }
 
+  enablePriceMonitor() {
+    this.showNotification('Surveillance des prix activée pour cette page!');
+    chrome.runtime.sendMessage({ type: 'ENABLE_PRICE_MONITOR', url: window.location.href });
+  }
+
   showLoading(show) {
-    const loading = document.getElementById('loading');
-    if (show) {
-      loading.classList.add('show');
-    } else {
-      loading.classList.remove('show');
+    const loading = document.getElementById('loadingOverlay') || document.getElementById('loading');
+    if (loading) {
+      loading.style.display = show ? 'flex' : 'none';
     }
   }
 
