@@ -10,46 +10,33 @@
     "scripting",
     "notifications",
     "alarms",
-    "contextMenus",
-    "unlimitedStorage",
-    "webNavigation"
+    "contextMenus"
   ],
   "host_permissions": [
     "https://*/*",
     "http://*/*"
   ],
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": [
         "*://*.aliexpress.com/*",
         "*://*.aliexpress.fr/*",
-        "*://*.aliexpress.us/*",
         "*://*.amazon.com/*",
         "*://*.amazon.fr/*",
-        "*://*.amazon.de/*",
-        "*://*.amazon.co.uk/*",
-        "*://*.amazon.es/*",
-        "*://*.amazon.it/*",
         "*://*.ebay.com/*",
         "*://*.ebay.fr/*",
-        "*://*.ebay.de/*",
-        "*://*.ebay.co.uk/*",
         "*://*.walmart.com/*",
         "*://*.etsy.com/*",
         "*://*.temu.com/*",
         "*://*.wish.com/*",
         "*://*.banggood.com/*",
         "*://*.dhgate.com/*",
-        "*://*.made-in-china.com/*",
         "*://*.1688.com/*",
         "*://*.taobao.com/*",
         "*://*.shein.com/*",
-        "*://*.gearbest.com/*",
-        "*://*.lightinthebox.com/*",
         "*://*.cjdropshipping.com/*"
       ],
       "js": ["content.js"],
