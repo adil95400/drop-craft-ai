@@ -61,7 +61,7 @@ class DropCraftBackground {
     });
 
     chrome.tabs.create({
-      url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/extensions-hub?installed=chrome'
+      url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/integrations/extensions?installed=chrome'
     });
   }
 
