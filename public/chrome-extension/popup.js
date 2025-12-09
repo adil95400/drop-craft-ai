@@ -1,913 +1,557 @@
-// Drop Craft AI Chrome Extension Popup Script
+// ShopOpti+ Chrome Extension - Popup Script v3.0
+// Inspired by AutoDS Professional
 
-let scrapedProducts = [];
-let importedReviews = [];
-let sessionData = {
-  startTime: new Date(),
-  scrapedCount: 0,
-  reviewsImported: 0
-};
-let reviewConfig = {};
-
-// Initialize popup
-document.addEventListener('DOMContentLoaded', async () => {
-  const popup = new DropCraftPopup();
-  await popup.init();
-  // Make popup globally available for modal functions
-  window.reviewPopup = popup;
-});
-
-class DropCraftPopup {
+class ShopOptiPopup {
   constructor() {
-    this.scrapedProducts = [];
-    this.importedReviews = [];
-    this.sessionData = {
-      startTime: new Date(),
-      scrapedCount: 0,
-      reviewsImported: 0
-    };
-    this.reviewConfig = {};
+    this.isConnected = false;
+    this.extensionToken = null;
+    this.stats = { products: 0, reviews: 0, monitored: 0 };
+    this.activities = [];
+    this.pendingItems = [];
+    this.currentPlatform = null;
+    this.API_URL = 'https://dtozyrmmekdnvekissuh.supabase.co/functions/v1';
   }
 
   async init() {
     await this.loadStoredData();
+    await this.checkConnection();
+    await this.detectCurrentPage();
     this.bindEvents();
     this.updateUI();
-    this.checkConnection();
   }
 
   async loadStoredData() {
     try {
       const result = await chrome.storage.local.get([
-        'scrapedProducts', 
-        'importedReviews', 
-        'sessionData', 
-        'reviewConfig'
+        'extensionToken',
+        'stats',
+        'activities',
+        'pendingItems',
+        'userPlan'
       ]);
-      this.scrapedProducts = result.scrapedProducts || [];
-      this.importedReviews = result.importedReviews || [];
-      this.sessionData = result.sessionData || {
-        startTime: new Date(),
-        scrapedCount: 0,
-        reviewsImported: 0
-      };
-      this.reviewConfig = result.reviewConfig || {};
+      
+      this.extensionToken = result.extensionToken || null;
+      this.stats = result.stats || { products: 0, reviews: 0, monitored: 0 };
+      this.activities = result.activities || [];
+      this.pendingItems = result.pendingItems || [];
+      this.userPlan = result.userPlan || 'free';
     } catch (error) {
-      console.error('Error loading stored data:', error);
+      console.error('Error loading data:', error);
     }
   }
 
   async saveData() {
     try {
       await chrome.storage.local.set({
-        scrapedProducts: this.scrapedProducts,
-        importedReviews: this.importedReviews,
-        sessionData: this.sessionData,
-        reviewConfig: this.reviewConfig
+        stats: this.stats,
+        activities: this.activities,
+        pendingItems: this.pendingItems
       });
     } catch (error) {
       console.error('Error saving data:', error);
     }
   }
 
+  async checkConnection() {
+    if (!this.extensionToken) {
+      this.isConnected = false;
+      return;
+    }
+
+    try {
+      const response = await fetch(`${this.API_URL}/extension-sync-realtime`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': this.extensionToken
+        },
+        body: JSON.stringify({ action: 'sync_status' })
+      });
+
+      this.isConnected = response.ok;
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.todayStats) {
+          this.stats = {
+            products: data.todayStats.imports || 0,
+            reviews: data.todayStats.reviews || 0,
+            monitored: data.todayStats.monitored || 0
+          };
+        }
+        if (data.userPlan) {
+          this.userPlan = data.userPlan;
+          await chrome.storage.local.set({ userPlan: data.userPlan });
+        }
+      }
+    } catch (error) {
+      console.error('Connection check failed:', error);
+      this.isConnected = false;
+    }
+  }
+
+  async detectCurrentPage() {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.url) return;
+
+      const url = new URL(tab.url);
+      const hostname = url.hostname.toLowerCase();
+
+      const platforms = {
+        'aliexpress': { name: 'AliExpress', icon: '🛒', color: '#ff6a00' },
+        'amazon': { name: 'Amazon', icon: '📦', color: '#ff9900' },
+        'ebay': { name: 'eBay', icon: '🏷️', color: '#e53238' },
+        'temu': { name: 'Temu', icon: '🎁', color: '#f97316' },
+        'walmart': { name: 'Walmart', icon: '🏪', color: '#0071ce' },
+        'etsy': { name: 'Etsy', icon: '🎨', color: '#f56400' },
+        'wish': { name: 'Wish', icon: '⭐', color: '#2fb7ec' },
+        'banggood': { name: 'Banggood', icon: '📱', color: '#ff6600' },
+        'dhgate': { name: 'DHgate', icon: '🏭', color: '#e54d00' },
+        'cjdropshipping': { name: 'CJ Dropshipping', icon: '📦', color: '#1a73e8' },
+        'shein': { name: 'Shein', icon: '👗', color: '#000' }
+      };
+
+      for (const [key, platform] of Object.entries(platforms)) {
+        if (hostname.includes(key)) {
+          this.currentPlatform = { ...platform, url: tab.url, hostname };
+          break;
+        }
+      }
+    } catch (error) {
+      console.error('Error detecting page:', error);
+    }
+  }
+
   bindEvents() {
-    // Main action buttons
-    document.getElementById('scrapCurrentPage')?.addEventListener('click', () => this.scrapCurrentPage());
-    document.getElementById('scrapAllProducts')?.addEventListener('click', () => this.scrapAllProducts());
-    document.getElementById('importReviews')?.addEventListener('click', () => this.importReviews());
-    document.getElementById('sendToApp')?.addEventListener('click', () => this.sendToApp());
-    document.getElementById('authenticate')?.addEventListener('click', () => this.openAuth());
-    document.getElementById('openDashboard')?.addEventListener('click', () => this.openDashboard());
-    document.getElementById('reviewSettings')?.addEventListener('click', () => this.openReviewSettings());
-    document.getElementById('openSettings')?.addEventListener('click', () => this.openSettings());
-    document.getElementById('clearData')?.addEventListener('click', () => this.clearData());
-    document.getElementById('priceMonitor')?.addEventListener('click', () => this.enablePriceMonitor());
+    // Header buttons
+    document.getElementById('syncBtn')?.addEventListener('click', () => this.syncData());
+    document.getElementById('settingsBtn')?.addEventListener('click', () => this.openSettings());
+    document.getElementById('dashboardBtn')?.addEventListener('click', () => this.openDashboard());
+
+    // Connection
+    document.getElementById('connectBtn')?.addEventListener('click', () => this.openAuth());
+
+    // Main actions
+    document.getElementById('importPageBtn')?.addEventListener('click', () => this.importCurrentPage());
+    document.getElementById('importAllBtn')?.addEventListener('click', () => this.importAllProducts());
+    document.getElementById('importReviewsBtn')?.addEventListener('click', () => this.importReviews());
+    document.getElementById('priceMonitorBtn')?.addEventListener('click', () => this.startPriceMonitor());
+
+    // Advanced features
+    document.getElementById('autoOrderBtn')?.addEventListener('click', () => this.showFeature('Auto-Order'));
+    document.getElementById('competitorBtn')?.addEventListener('click', () => this.showFeature('Spy Competitor'));
+    document.getElementById('bulkImportBtn')?.addEventListener('click', () => this.showFeature('Bulk Import'));
+    document.getElementById('aiOptimizeBtn')?.addEventListener('click', () => this.showPremiumFeature());
+
+    // Activity
+    document.getElementById('clearActivityBtn')?.addEventListener('click', () => this.clearActivity());
+
+    // Footer
+    document.getElementById('sendToAppBtn')?.addEventListener('click', () => this.sendToApp());
+
+    // Stats cards
+    document.querySelectorAll('.stat-card').forEach(card => {
+      card.addEventListener('click', () => this.handleStatClick(card.dataset.action));
+    });
   }
 
   updateUI() {
-    // Update scraped count
-    const countElement = document.getElementById('scrapedCount');
-    if (countElement) {
-      countElement.textContent = this.scrapedProducts.length;
-    }
-
-    // Update reviews count
-    const reviewsCountElement = document.getElementById('reviewsCount');
-    if (reviewsCountElement) {
-      reviewsCountElement.textContent = this.importedReviews.length;
-    }
-
-    // Update session count (today's activities)
-    const sessionCountElement = document.getElementById('sessionsCount');
-    if (sessionCountElement) {
-      const today = new Date().toDateString();
-      const todayActivities = this.scrapedProducts.filter(p => 
-        new Date(p.scrapedAt).toDateString() === today
-      ).length + this.importedReviews.filter(r => 
-        new Date(r.scrapedAt).toDateString() === today
-      ).length;
-      sessionCountElement.textContent = todayActivities;
-    }
-
-    // Update recent products and reviews lists
-    this.updateRecentProducts();
-    this.updateRecentReviews();
-    
     // Update connection status
-    this.checkConnection();
+    const statusBar = document.getElementById('connectionStatus');
+    const statusText = statusBar?.querySelector('.status-text');
+    const connectBtn = document.getElementById('connectBtn');
+
+    if (statusBar) {
+      statusBar.className = `status-bar ${this.isConnected ? 'connected' : 'disconnected'}`;
+    }
+    if (statusText) {
+      statusText.textContent = this.isConnected ? 'Connecté à ShopOpti+' : 'Non connecté';
+    }
+    if (connectBtn) {
+      connectBtn.textContent = this.isConnected ? 'Déconnecter' : 'Connecter';
+    }
+
+    // Update plan badge
+    const planBadge = document.getElementById('planBadge');
+    if (planBadge) {
+      planBadge.textContent = this.userPlan === 'pro' ? 'PRO' : 'Free';
+      planBadge.className = `plan-badge ${this.userPlan === 'pro' ? 'pro' : ''}`;
+    }
+
+    // Update stats
+    document.getElementById('todayProducts').textContent = this.stats.products;
+    document.getElementById('todayReviews').textContent = this.stats.reviews;
+    document.getElementById('monitoredCount').textContent = this.stats.monitored;
+
+    // Update page info
+    const pageInfo = document.getElementById('pageInfo');
+    if (this.currentPlatform && pageInfo) {
+      pageInfo.classList.remove('hidden');
+      pageInfo.querySelector('.page-icon').textContent = this.currentPlatform.icon;
+      pageInfo.querySelector('.page-platform').textContent = this.currentPlatform.name;
+      pageInfo.querySelector('.page-url').textContent = this.currentPlatform.hostname;
+    }
+
+    // Update activities
+    this.renderActivities();
+
+    // Update pending badge
+    const pendingBadge = document.getElementById('pendingCount');
+    if (pendingBadge) {
+      if (this.pendingItems.length > 0) {
+        pendingBadge.textContent = this.pendingItems.length;
+        pendingBadge.classList.remove('hidden');
+      } else {
+        pendingBadge.classList.add('hidden');
+      }
+    }
   }
 
-  updateRecentProducts() {
-    const recentList = document.getElementById('recentProducts');
-    if (!recentList) return;
+  renderActivities() {
+    const list = document.getElementById('activityList');
+    if (!list) return;
 
-    recentList.innerHTML = '';
-    
-    const recentProducts = this.scrapedProducts.slice(-3).reverse();
-    
-    if (recentProducts.length === 0) {
-      recentList.innerHTML = '<div class="no-data">Aucun produit scrapé</div>';
+    if (this.activities.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <span class="empty-icon">📭</span>
+          <span class="empty-text">Aucune activité récente</span>
+        </div>
+      `;
       return;
     }
 
-    recentProducts.forEach(product => {
-      const item = document.createElement('div');
-      item.className = 'recent-item';
-      
-      item.innerHTML = `
-        <div class="item-info">
-          <div class="item-name">${product.name || 'Produit sans nom'}</div>
-          <div class="item-meta">${product.domain || 'Site inconnu'} • ${product.price || 'Prix non défini'}</div>
+    list.innerHTML = this.activities.slice(0, 5).map((activity, index) => `
+      <div class="activity-item">
+        <span class="activity-icon">${activity.icon || '📦'}</span>
+        <div class="activity-content">
+          <div class="activity-title">${activity.title}</div>
+          <div class="activity-meta">${activity.meta || this.formatTime(activity.timestamp)}</div>
         </div>
-        <div class="item-actions">
-          <button class="btn-icon" onclick="removeProduct('${product.id}')" title="Supprimer">×</button>
-        </div>
-      `;
-      
-      recentList.appendChild(item);
+        <button class="activity-action" data-index="${index}" title="Supprimer">×</button>
+      </div>
+    `).join('');
+
+    // Bind delete buttons
+    list.querySelectorAll('.activity-action').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const index = parseInt(e.target.dataset.index);
+        this.removeActivity(index);
+      });
     });
   }
 
-  updateRecentReviews() {
-    const recentList = document.getElementById('recentReviews');
-    if (!recentList) return;
+  formatTime(timestamp) {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    
+    if (diff < 60) return 'À l\'instant';
+    if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)} h`;
+    return date.toLocaleDateString('fr-FR');
+  }
 
-    recentList.innerHTML = '';
-    
-    const recentReviews = this.importedReviews.slice(-3).reverse();
-    
-    if (recentReviews.length === 0) {
-      recentList.innerHTML = '<div class="no-data">Aucun avis importé</div>';
+  addActivity(title, icon = '📦', meta = null) {
+    this.activities.unshift({
+      title,
+      icon,
+      meta,
+      timestamp: new Date().toISOString()
+    });
+    this.activities = this.activities.slice(0, 20);
+    this.saveData();
+    this.renderActivities();
+  }
+
+  removeActivity(index) {
+    this.activities.splice(index, 1);
+    this.saveData();
+    this.renderActivities();
+  }
+
+  clearActivity() {
+    this.activities = [];
+    this.saveData();
+    this.renderActivities();
+    this.showToast('Historique effacé', 'success');
+  }
+
+  async importCurrentPage() {
+    if (!this.isConnected) {
+      this.showToast('Veuillez vous connecter d\'abord', 'warning');
+      this.openAuth();
       return;
     }
 
-    recentReviews.forEach(review => {
-      const item = document.createElement('div');
-      item.className = 'recent-item';
-      
-      const stars = '★'.repeat(review.rating || 0) + '☆'.repeat(5 - (review.rating || 0));
-      
-      item.innerHTML = `
-        <div class="item-info">
-          <div class="item-name">${stars} ${review.title || review.content?.substring(0, 30) + '...' || 'Avis sans titre'}</div>
-          <div class="item-meta">${review.platform || 'Plateforme inconnue'} • ${review.author || 'Auteur inconnu'}</div>
-        </div>
-        <div class="item-actions">
-          <button class="btn-icon" onclick="removeReview('${review.id}')" title="Supprimer">×</button>
-        </div>
-      `;
-      
-      recentList.appendChild(item);
-    });
-  }
+    this.showLoading('Import en cours...');
 
-  async scrapCurrentPage() {
-    this.showLoading(true);
-    
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       
-      const results = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        function: this.extractProductData
-      });
+      // Send message to content script
+      const response = await chrome.tabs.sendMessage(tab.id, { type: 'SCRAPE_PAGE' });
 
-      if (results && results[0] && results[0].result) {
-        const products = results[0].result;
-        this.scrapedProducts.push(...products);
+      if (response?.success) {
+        this.stats.products += response.count || 1;
+        this.addActivity(`${response.count || 1} produit(s) importé(s)`, '📦', this.currentPlatform?.name);
+        this.showToast(`${response.count || 1} produit(s) importé(s)!`, 'success');
         await this.saveData();
         this.updateUI();
-        this.showNotification(`${products.length} produits scrapés avec succès!`);
+      } else {
+        throw new Error(response?.error || 'Erreur lors de l\'import');
       }
     } catch (error) {
-      console.error('Error scraping page:', error);
-      this.showNotification('Erreur lors du scraping', 'error');
+      console.error('Import error:', error);
+      
+      // Fallback: try URL scraping
+      try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const result = await this.scrapeByUrl(tab.url);
+        
+        if (result.success) {
+          this.stats.products += 1;
+          this.addActivity('Produit importé par URL', '📦', this.currentPlatform?.name);
+          this.showToast('Produit importé!', 'success');
+          await this.saveData();
+          this.updateUI();
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (fallbackError) {
+        this.showToast('Erreur: ' + (fallbackError.message || 'Import échoué'), 'error');
+      }
     } finally {
-      this.showLoading(false);
+      this.hideLoading();
     }
   }
 
-  async scrapAllProducts() {
-    this.showLoading(true);
-    
+  async importAllProducts() {
+    if (!this.isConnected) {
+      this.showToast('Veuillez vous connecter d\'abord', 'warning');
+      return;
+    }
+
+    this.showLoading('Scan des produits...');
+
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       
-      // Inject advanced scraping script
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        function: this.advancedProductScraping
-      });
+      await chrome.tabs.sendMessage(tab.id, { type: 'INJECT_ONE_CLICK_BUTTONS' });
+      
+      const response = await chrome.tabs.sendMessage(tab.id, { type: 'AUTO_SCRAPE' });
 
-      // Listen for scraped data
-      chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message.type === 'PRODUCTS_SCRAPED') {
-          this.scrapedProducts.push(...message.products);
-          this.saveData();
-          this.updateUI();
-          this.sendToApp(message.products);
-          this.showNotification(`${message.products.length} produits scrapés automatiquement!`);
-        }
-      });
+      this.showToast('Scan en cours... Vérifiez la page', 'info');
+      this.addActivity('Scan multiple lancé', '📥', this.currentPlatform?.name);
     } catch (error) {
-      console.error('Error in advanced scraping:', error);
-      this.showNotification('Erreur lors du scraping avancé', 'error');
+      this.showToast('Erreur lors du scan', 'error');
     } finally {
-      this.showLoading(false);
+      this.hideLoading();
     }
   }
 
   async importReviews() {
-    try {
-      this.showLoading(true);
-      
-      // Get current review configuration
-      const config = await this.getReviewConfig();
-      
-      // Send message to background script to import reviews
-      const response = await chrome.runtime.sendMessage({
-        type: 'IMPORT_REVIEWS',
-        config: config
-      });
+    if (!this.isConnected) {
+      this.showToast('Veuillez vous connecter d\'abord', 'warning');
+      return;
+    }
 
-      if (response && response.success) {
-        this.showNotification('Import des avis lancé avec succès!');
-        // Reload data and update UI
-        await this.loadStoredData();
+    this.showLoading('Import des avis...');
+
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'IMPORT_REVIEWS' });
+      
+      if (response?.success) {
+        this.stats.reviews += response.count || 0;
+        this.addActivity(`${response.count || 0} avis importés`, '⭐');
+        this.showToast(`${response.count || 0} avis importés!`, 'success');
+        await this.saveData();
         this.updateUI();
-      } else {
-        throw new Error('Erreur lors de l\'import des avis');
       }
     } catch (error) {
-      console.error('Error importing reviews:', error);
-      this.showNotification('Erreur lors de l\'import des avis', 'error');
+      this.showToast('Erreur lors de l\'import des avis', 'error');
     } finally {
-      this.showLoading(false);
+      this.hideLoading();
     }
   }
 
-  async getReviewConfig() {
-    try {
-      const response = await chrome.runtime.sendMessage({
-        type: 'GET_REVIEW_CONFIG'
-      });
-      return response || {};
-    } catch (error) {
-      console.error('Error getting review config:', error);
-      return {};
-    }
-  }
-
-  extractProductData() {
-    const products = [];
-    
-    // Common e-commerce selectors
-    const selectors = {
-      // Generic product containers
-      products: [
-        '[data-testid*="product"]',
-        '.product-item',
-        '.product-card',
-        '.product',
-        '[class*="product"]',
-        '.item',
-        '[data-product]'
-      ],
-      
-      // Title selectors
-      title: [
-        'h1', 'h2', 'h3',
-        '.product-title',
-        '.title',
-        '[data-testid*="title"]',
-        '.name',
-        '.product-name'
-      ],
-      
-      // Price selectors
-      price: [
-        '.price',
-        '[class*="price"]',
-        '[data-testid*="price"]',
-        '.cost',
-        '.amount'
-      ],
-      
-      // Image selectors
-      image: [
-        'img[src*="product"]',
-        'img[alt*="product"]',
-        '.product-image img',
-        '.image img',
-        'img'
-      ]
-    };
-
-    // Try to find products
-    let productElements = [];
-    for (const selector of selectors.products) {
-      productElements = document.querySelectorAll(selector);
-      if (productElements.length > 0) break;
-    }
-
-    // If no product containers found, try to extract from current page
-    if (productElements.length === 0) {
-      const singleProduct = this.extractSingleProduct();
-      if (singleProduct) return [singleProduct];
-    }
-
-    // Extract data from each product
-    productElements.forEach((element, index) => {
-      const product = {
-        id: `scraped_${Date.now()}_${index}`,
-        name: this.getTextContent(element, selectors.title),
-        price: this.getPriceContent(element, selectors.price),
-        image: this.getImageSrc(element, selectors.image),
-        url: window.location.href,
-        domain: window.location.hostname,
-        scrapedAt: new Date().toISOString(),
-        source: 'chrome_extension'
-      };
-
-      if (product.name || product.price) {
-        products.push(product);
-      }
-    });
-
-    return products;
-  }
-
-  extractSingleProduct() {
-    const product = {
-      id: `scraped_single_${Date.now()}`,
-      name: this.getTextContent(document, ['h1', 'title', '.title']),
-      price: this.getPriceContent(document, ['.price', '[class*="price"]']),
-      image: this.getImageSrc(document, ['img']),
-      url: window.location.href,
-      domain: window.location.hostname,
-      scrapedAt: new Date().toISOString(),
-      source: 'chrome_extension'
-    };
-
-    return product.name ? product : null;
-  }
-
-  getTextContent(element, selectors) {
-    for (const selector of selectors) {
-      const found = element.querySelector(selector);
-      if (found && found.textContent.trim()) {
-        return found.textContent.trim();
-      }
-    }
-    return '';
-  }
-
-  getPriceContent(element, selectors) {
-    for (const selector of selectors) {
-      const found = element.querySelector(selector);
-      if (found) {
-        const text = found.textContent.trim();
-        const priceMatch = text.match(/[\d,.]+(€|$|£|₹|¥|kr|zł)/);
-        if (priceMatch) return priceMatch[0];
-      }
-    }
-    return '';
-  }
-
-  getImageSrc(element, selectors) {
-    for (const selector of selectors) {
-      const found = element.querySelector(selector);
-      if (found && found.src) {
-        return found.src;
-      }
-    }
-    return '';
-  }
-
-  advancedProductScraping() {
-    // Advanced scraping with pagination and infinite scroll
-    let allProducts = [];
-    let currentPage = 1;
-    
-    const scrapePage = () => {
-      const products = this.extractProductData();
-      allProducts.push(...products);
-      
-      // Try to find next page or load more button
-      const nextButton = document.querySelector([
-        '[data-testid*="next"]',
-        '.next-page',
-        '.load-more',
-        '[class*="next"]',
-        'button:contains("Next")',
-        'a:contains("Next")'
-      ].join(','));
-      
-      if (nextButton && currentPage < 5) { // Limit to 5 pages
-        currentPage++;
-        nextButton.click();
-        setTimeout(scrapePage, 2000); // Wait for page load
-      } else {
-        // Send results back
-        chrome.runtime.sendMessage({
-          type: 'PRODUCTS_SCRAPED',
-          products: allProducts
-        });
-      }
-    };
-    
-    // Handle infinite scroll
-    const handleInfiniteScroll = () => {
-      return new Promise((resolve) => {
-        let scrollCount = 0;
-        const maxScrolls = 10;
-        
-        const scrollInterval = setInterval(() => {
-          window.scrollTo(0, document.body.scrollHeight);
-          scrollCount++;
-          
-          if (scrollCount >= maxScrolls) {
-            clearInterval(scrollInterval);
-            resolve();
-          }
-        }, 1000);
-      });
-    };
-    
-    // Start scraping
-    handleInfiniteScroll().then(() => {
-      scrapePage();
-    });
-  }
-
-  async sendToApp(products) {
-    if (!products) {
-      products = this.scrapedProducts;
-    }
-    
-    if (products.length === 0) {
-      this.showNotification('Aucun produit à envoyer', 'error');
+  async startPriceMonitor() {
+    if (!this.isConnected) {
+      this.showToast('Veuillez vous connecter d\'abord', 'warning');
       return;
     }
 
     try {
-      this.showLoading(true);
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       
-      // Get or create extension token
-      const token = await this.getExtensionToken();
+      // Store URL for monitoring
+      const result = await chrome.storage.local.get(['monitoredUrls']);
+      const urls = result.monitoredUrls || [];
       
-      const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-sync-realtime', {
+      if (!urls.includes(tab.url)) {
+        urls.push(tab.url);
+        await chrome.storage.local.set({ monitoredUrls: urls });
+        
+        this.stats.monitored = urls.length;
+        this.addActivity('Prix surveillé', '📊', this.currentPlatform?.name);
+        this.showToast('Surveillance activée!', 'success');
+        await this.saveData();
+        this.updateUI();
+      } else {
+        this.showToast('Déjà surveillé', 'info');
+      }
+    } catch (error) {
+      this.showToast('Erreur', 'error');
+    }
+  }
+
+  async scrapeByUrl(url) {
+    try {
+      const response = await fetch(`${this.API_URL}/product-url-scraper`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-extension-token': token
+          'x-extension-token': this.extensionToken
+        },
+        body: JSON.stringify({ url })
+      });
+
+      return await response.json();
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  async sendToApp() {
+    if (!this.isConnected) {
+      this.showToast('Veuillez vous connecter d\'abord', 'warning');
+      return;
+    }
+
+    if (this.pendingItems.length === 0) {
+      this.showToast('Aucun élément en attente', 'info');
+      return;
+    }
+
+    this.showLoading('Envoi en cours...');
+
+    try {
+      const response = await fetch(`${this.API_URL}/extension-sync-realtime`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-extension-token': this.extensionToken
         },
         body: JSON.stringify({
-          action: 'import_products',
-          products: products.map(p => ({
-            title: p.name,
-            name: p.name,
-            price: p.price,
-            description: p.description || '',
-            image: p.image,
-            url: p.url,
-            source: 'chrome_extension'
-          }))
+          action: 'bulk_import',
+          items: this.pendingItems
         })
       });
 
       if (response.ok) {
-        const result = await response.json();
-        this.showNotification(`${result.imported || products.length} produit(s) envoyé(s) avec succès!`);
-        
-        // Clear sent products
-        this.scrapedProducts = [];
+        const count = this.pendingItems.length;
+        this.pendingItems = [];
+        this.addActivity(`${count} élément(s) envoyé(s)`, '📤');
+        this.showToast(`${count} élément(s) envoyé(s)!`, 'success');
         await this.saveData();
         this.updateUI();
-      } else {
-        const error = await response.json();
-        throw new Error(error.error || 'Erreur du serveur');
       }
     } catch (error) {
-      console.error('Error sending to app:', error);
-      this.showNotification('Erreur: ' + error.message, 'error');
+      this.showToast('Erreur lors de l\'envoi', 'error');
     } finally {
-      this.showLoading(false);
+      this.hideLoading();
     }
   }
 
-  async getExtensionToken() {
-    // Try to get existing token
-    const result = await chrome.storage.local.get(['extensionToken']);
-    if (result.extensionToken) {
-      return result.extensionToken;
-    }
-    
-    // No token found, show authentication page
-    this.showNotification('⚠️ Veuillez vous authentifier', 'warning');
-    this.openAuth();
-    throw new Error('Non authentifié');
+  async syncData() {
+    this.showLoading('Synchronisation...');
+    await this.checkConnection();
+    this.updateUI();
+    this.hideLoading();
+    this.showToast('Données synchronisées', 'success');
   }
 
   openAuth() {
-    chrome.tabs.create({
-      url: chrome.runtime.getURL('auth.html')
-    });
-  }
-
-  async sendReviewsToApp() {
-    if (this.importedReviews.length === 0) {
-      this.showNotification('Aucun avis à envoyer', 'error');
-      return;
-    }
-
-    try {
-      this.showLoading(true);
-      
-      const token = await this.getExtensionToken();
-      
-      const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-review-importer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-extension-token': token
-        },
-        body: JSON.stringify({
-          reviews: this.importedReviews,
-          source: 'chrome_extension'
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        this.showNotification(`${this.importedReviews.length} avis envoyé(s) avec succès!`);
-        
-        // Clear sent reviews
-        this.importedReviews = [];
-        await this.saveData();
-        this.updateUI();
-      } else {
-        const error = await response.json();
-        throw new Error(error.error || 'Erreur du serveur');
-      }
-    } catch (error) {
-      console.error('Error sending reviews to app:', error);
-      this.showNotification('Erreur: ' + error.message, 'error');
-    } finally {
-      this.showLoading(false);
-    }
-  }
-
-  openDashboard() {
-    chrome.tabs.create({
-      url: 'https://dtozyrmmekdnvekissuh.supabase.co'
-    });
-  }
-
-  openReviewSettings() {
-    // Open review settings modal
-    this.showReviewSettingsModal();
-  }
-
-  showReviewSettingsModal() {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.innerHTML = `
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Configuration des Avis</h3>
-          <button class="modal-close" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="config-section">
-            <h4>Plateformes d'avis</h4>
-            <label><input type="checkbox" id="trustpilot-enabled" checked> Trustpilot</label>
-            <label><input type="checkbox" id="google-enabled" checked> Google Reviews</label>
-            <label><input type="checkbox" id="facebook-enabled"> Facebook</label>
-            <label><input type="checkbox" id="yelp-enabled"> Yelp</label>
-            <label><input type="checkbox" id="amazon-enabled" checked> Amazon</label>
-            <label><input type="checkbox" id="aliexpress-enabled" checked> AliExpress</label>
-          </div>
-          <div class="config-section">
-            <h4>Filtres</h4>
-            <label>Note minimum: <input type="range" id="min-rating" min="1" max="5" value="1"> <span id="min-rating-display">1</span></label>
-            <label>Note maximum: <input type="range" id="max-rating" min="1" max="5" value="5"> <span id="max-rating-display">5</span></label>
-            <label>Nombre max d'avis: <input type="number" id="max-reviews" min="1" max="200" value="50"></label>
-            <label>Période (jours): <input type="number" id="date-range" min="1" max="365" value="30"></label>
-          </div>
-          <div class="config-section">
-            <h4>Import automatique</h4>
-            <label><input type="checkbox" id="auto-import"> Activer l'import automatique</label>
-            <label>Intervalle (minutes): <input type="number" id="import-interval" min="5" max="1440" value="60"></label>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn-secondary" onclick="this.parentElement.parentElement.parentElement.remove()">Annuler</button>
-          <button class="btn-primary" onclick="reviewPopup.saveReviewConfig(this)">Sauvegarder</button>
-        </div>
-      </div>
-    `;
-
-    // Add styles
-    const style = document.createElement('style');
-    style.textContent = `
-      .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-      }
-      .modal-content {
-        background: white;
-        border-radius: 8px;
-        padding: 0;
-        max-width: 500px;
-        width: 90%;
-        max-height: 80vh;
-        overflow-y: auto;
-      }
-      .modal-header {
-        padding: 20px;
-        border-bottom: 1px solid #eee;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .modal-close {
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-      }
-      .modal-body {
-        padding: 20px;
-      }
-      .config-section {
-        margin-bottom: 20px;
-      }
-      .config-section h4 {
-        margin-bottom: 10px;
-        color: #333;
-      }
-      .config-section label {
-        display: block;
-        margin-bottom: 8px;
-        font-size: 14px;
-      }
-      .config-section input[type="checkbox"] {
-        margin-right: 8px;
-      }
-      .config-section input[type="range"] {
-        margin: 0 8px;
-        width: 100px;
-      }
-      .config-section input[type="number"] {
-        margin-left: 8px;
-        padding: 4px 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        width: 80px;
-      }
-      .modal-footer {
-        padding: 20px;
-        border-top: 1px solid #eee;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-      }
-      .btn-primary, .btn-secondary {
-        padding: 8px 16px;
-        border-radius: 4px;
-        border: none;
-        cursor: pointer;
-      }
-      .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-      }
-      .btn-secondary {
-        background: #f5f5f5;
-        color: #333;
-      }
-    `;
-    
-    document.head.appendChild(style);
-    document.body.appendChild(modal);
-
-    // Setup range input listeners
-    const minRating = document.getElementById('min-rating');
-    const maxRating = document.getElementById('max-rating');
-    const minDisplay = document.getElementById('min-rating-display');
-    const maxDisplay = document.getElementById('max-rating-display');
-
-    minRating.addEventListener('input', () => {
-      minDisplay.textContent = minRating.value;
-    });
-
-    maxRating.addEventListener('input', () => {
-      maxDisplay.textContent = maxRating.value;
-    });
-
-    // Load current config
-    this.loadReviewConfigInModal();
-  }
-
-  async loadReviewConfigInModal() {
-    const config = await this.getReviewConfig();
-    
-    // Set platform checkboxes
-    if (config.platforms) {
-      Object.keys(config.platforms).forEach(platform => {
-        const checkbox = document.getElementById(`${platform}-enabled`);
-        if (checkbox) {
-          checkbox.checked = config.platforms[platform].enabled;
-        }
-      });
-    }
-
-    // Set filters
-    if (config.filters) {
-      const minRating = document.getElementById('min-rating');
-      const maxRating = document.getElementById('max-rating');
-      const maxReviews = document.getElementById('max-reviews');
-      const dateRange = document.getElementById('date-range');
-
-      if (minRating) {
-        minRating.value = config.filters.minRating || 1;
-        document.getElementById('min-rating-display').textContent = minRating.value;
-      }
-      if (maxRating) {
-        maxRating.value = config.filters.maxRating || 5;
-        document.getElementById('max-rating-display').textContent = maxRating.value;
-      }
-      if (maxReviews) maxReviews.value = config.filters.maxReviews || 50;
-      if (dateRange) dateRange.value = config.filters.dateRange || 30;
-    }
-
-    // Set auto import
-    const autoImport = document.getElementById('auto-import');
-    const importInterval = document.getElementById('import-interval');
-    if (autoImport) autoImport.checked = config.autoImport || false;
-    if (importInterval) importInterval.value = config.importInterval || 60;
-  }
-
-  async saveReviewConfig(button) {
-    try {
-      const config = {
-        platforms: {
-          trustpilot: { enabled: document.getElementById('trustpilot-enabled').checked, maxReviews: parseInt(document.getElementById('max-reviews').value) },
-          google: { enabled: document.getElementById('google-enabled').checked, maxReviews: parseInt(document.getElementById('max-reviews').value) },
-          facebook: { enabled: document.getElementById('facebook-enabled').checked, maxReviews: parseInt(document.getElementById('max-reviews').value) },
-          yelp: { enabled: document.getElementById('yelp-enabled').checked, maxReviews: parseInt(document.getElementById('max-reviews').value) },
-          amazon: { enabled: document.getElementById('amazon-enabled').checked, maxReviews: parseInt(document.getElementById('max-reviews').value) },
-          aliexpress: { enabled: document.getElementById('aliexpress-enabled').checked, maxReviews: parseInt(document.getElementById('max-reviews').value) }
-        },
-        filters: {
-          minRating: parseInt(document.getElementById('min-rating').value),
-          maxRating: parseInt(document.getElementById('max-rating').value),
-          dateRange: parseInt(document.getElementById('date-range').value),
-          language: 'auto'
-        },
-        autoImport: document.getElementById('auto-import').checked,
-        importInterval: parseInt(document.getElementById('import-interval').value)
-      };
-
-      // Save to background script
-      await chrome.runtime.sendMessage({
-        type: 'UPDATE_REVIEW_CONFIG',
-        config: config
-      });
-
-      this.showNotification('Configuration sauvegardée avec succès!');
-      button.parentElement.parentElement.parentElement.remove();
-    } catch (error) {
-      console.error('Error saving review config:', error);
-      this.showNotification('Erreur lors de la sauvegarde', 'error');
-    }
+    chrome.tabs.create({ url: chrome.runtime.getURL('auth.html') });
   }
 
   openSettings() {
     chrome.runtime.openOptionsPage();
   }
 
-  clearData() {
-    if (confirm('Êtes-vous sûr de vouloir effacer toutes les données scrapées et avis importés ?')) {
-      this.scrapedProducts = [];
-      this.importedReviews = [];
-      this.sessionData = {
-        startTime: new Date(),
-        scrapedCount: 0,
-        reviewsImported: 0
-      };
-      this.saveData();
-      this.updateUI();
-      this.showNotification('Données effacées avec succès');
+  openDashboard() {
+    chrome.tabs.create({ url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/dashboard' });
+  }
+
+  showFeature(name) {
+    this.showToast(`${name} - Bientôt disponible`, 'info');
+  }
+
+  showPremiumFeature() {
+    if (this.userPlan !== 'pro') {
+      this.showToast('Fonctionnalité PRO - Mettez à niveau', 'warning');
+      chrome.tabs.create({ url: 'https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com/pricing' });
+    } else {
+      this.showFeature('AI Optimize');
     }
   }
 
-  async checkConnection() {
-    const statusEl = document.getElementById('connectionStatus');
-    const statusText = statusEl?.querySelector('.status-text');
-    const authBtn = statusEl?.querySelector('.btn-link');
+  handleStatClick(action) {
+    const urls = {
+      products: '/products',
+      reviews: '/reviews',
+      monitoring: '/price-monitoring'
+    };
     
-    try {
-      const result = await chrome.storage.local.get(['extensionToken']);
-      if (!result.extensionToken) {
-        statusEl?.classList.remove('connected');
-        statusEl?.classList.add('disconnected');
-        if (statusText) statusText.textContent = 'Non connecté';
-        if (authBtn) authBtn.style.display = 'inline';
-        return;
-      }
-      
-      const response = await fetch('https://dtozyrmmekdnvekissuh.supabase.co/functions/v1/extension-sync-realtime', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-extension-token': result.extensionToken
-        },
-        body: JSON.stringify({ action: 'sync_status' })
+    if (urls[action]) {
+      chrome.tabs.create({ 
+        url: `https://7af4654f-dfc7-42c6-900f-b9ac682ca5ec.lovableproject.com${urls[action]}` 
       });
-      
-      if (response.ok) {
-        statusEl?.classList.remove('disconnected');
-        statusEl?.classList.add('connected');
-        if (statusText) statusText.textContent = 'Connecté à ShopOpti+';
-        if (authBtn) authBtn.style.display = 'none';
-      } else {
-        statusEl?.classList.remove('connected');
-        statusEl?.classList.add('disconnected');
-        if (statusText) statusText.textContent = 'Token invalide';
-      }
-    } catch (error) {
-      if (statusText) statusText.textContent = 'Hors ligne';
     }
   }
 
-  enablePriceMonitor() {
-    this.showNotification('Surveillance des prix activée pour cette page!');
-    chrome.runtime.sendMessage({ type: 'ENABLE_PRICE_MONITOR', url: window.location.href });
+  showLoading(text = 'Chargement...') {
+    const overlay = document.getElementById('loadingOverlay');
+    const loadingText = document.getElementById('loadingText');
+    
+    if (overlay) overlay.classList.remove('hidden');
+    if (loadingText) loadingText.textContent = text;
   }
 
-  showLoading(show) {
-    const loading = document.getElementById('loadingOverlay') || document.getElementById('loading');
-    if (loading) {
-      loading.style.display = show ? 'flex' : 'none';
-    }
+  hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.add('hidden');
   }
 
-  showNotification(message, type = 'success') {
-    // Create notification
-    chrome.notifications.create({
-      type: 'basic',
-      iconUrl: 'icons/icon48.png',
-      title: 'Drop Craft AI',
-      message: message
-    });
+  showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const icons = {
+      success: '✓',
+      error: '✕',
+      warning: '⚠',
+      info: 'ℹ'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${icons[type]}</span> ${message}`;
+    
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.animation = 'toastIn 0.3s ease reverse';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
   }
 }
 
-// Global functions for item removal
-function removeProduct(productId) {
-  if (window.reviewPopup) {
-    window.reviewPopup.scrapedProducts = window.reviewPopup.scrapedProducts.filter(p => p.id !== productId);
-    window.reviewPopup.saveData();
-    window.reviewPopup.updateUI();
-    window.reviewPopup.showNotification('Produit supprimé');
-  }
-}
-
-function removeReview(reviewId) {
-  if (window.reviewPopup) {
-    window.reviewPopup.importedReviews = window.reviewPopup.importedReviews.filter(r => r.id !== reviewId);
-    window.reviewPopup.saveData();
-    window.reviewPopup.updateUI();
-    window.reviewPopup.showNotification('Avis supprimé');
-  }
-}
+// Initialize popup
+document.addEventListener('DOMContentLoaded', async () => {
+  const popup = new ShopOptiPopup();
+  await popup.init();
+  window.shopOptiPopup = popup;
+});

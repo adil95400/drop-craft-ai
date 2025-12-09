@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configuration - Drop Craft AI</title>
+  <title>Configuration - ShopOpti+</title>
   <style>
     * {
       margin: 0;
@@ -13,10 +13,10 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(180deg, #0a0f1a 0%, #111827 100%);
       min-height: 100vh;
       padding: 40px 20px;
-      color: #fff;
+      color: #f1f5f9;
     }
 
     .container {
@@ -29,69 +29,126 @@
       margin-bottom: 40px;
     }
 
+    .header-logo {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
     .header h1 {
-      font-size: 32px;
-      margin-bottom: 10px;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .header h1 .plus {
+      background: linear-gradient(135deg, #00d4ff, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(10px);
-      border-radius: 15px;
-      padding: 30px;
-      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .card-icon {
+      font-size: 24px;
     }
 
     .card h2 {
-      font-size: 20px;
-      margin-bottom: 20px;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-      padding-bottom: 10px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
     }
 
     .form-group {
       margin-bottom: 20px;
     }
 
-    .form-group label {
+    .form-label {
       display: block;
-      margin-bottom: 8px;
+      font-size: 13px;
       font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 8px;
     }
 
-    .form-group input,
-    .form-group select {
+    .form-input {
       width: 100%;
-      padding: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.1);
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
       color: #fff;
       font-size: 14px;
+      transition: all 0.2s;
     }
 
-    .form-group input::placeholder {
-      color: rgba(255, 255, 255, 0.6);
+    .form-input:focus {
+      outline: none;
+      border-color: #00d4ff;
+      background: rgba(255, 255, 255, 0.08);
     }
 
-    .toggle-group {
+    .form-input::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .form-input:read-only {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .toggle-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      margin-bottom: 15px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
     }
 
-    .toggle-group label {
-      margin: 0;
+    .toggle-info {
+      flex: 1;
+    }
+
+    .toggle-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .toggle-desc {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
     }
 
     .switch {
       position: relative;
-      width: 52px;
-      height: 28px;
+      width: 48px;
+      height: 26px;
+      flex-shrink: 0;
     }
 
     .switch input {
@@ -105,132 +162,213 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: rgba(255, 255, 255, 0.3);
-      transition: 0.4s;
-      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.15);
+      transition: 0.3s;
+      border-radius: 26px;
     }
 
     .slider:before {
       position: absolute;
       content: "";
-      height: 22px;
-      width: 22px;
+      height: 20px;
+      width: 20px;
       left: 3px;
       bottom: 3px;
-      background-color: white;
-      transition: 0.4s;
+      background: white;
+      transition: 0.3s;
       border-radius: 50%;
     }
 
     input:checked + .slider {
-      background-color: #4CAF50;
+      background: linear-gradient(135deg, #00d4ff, #7c3aed);
     }
 
     input:checked + .slider:before {
-      transform: translateX(24px);
+      transform: translateX(22px);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 32px;
     }
 
     .btn {
-      padding: 15px 30px;
+      padding: 14px 28px;
       border: none;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.3);
-      color: #fff;
-      font-size: 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s;
-      margin-right: 10px;
-    }
-
-    .btn:hover {
-      background: rgba(255, 255, 255, 0.4);
-      transform: translateY(-2px);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+      color: white;
     }
 
     .btn-primary:hover {
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
     }
 
-    .info-box {
-      background: rgba(76, 175, 80, 0.2);
-      border-left: 4px solid #4CAF50;
-      padding: 15px;
-      border-radius: 4px;
-      margin-top: 20px;
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
     }
 
-    .actions {
-      text-align: center;
-      margin-top: 30px;
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 12px;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.3s ease;
+      z-index: 1000;
+    }
+
+    .notification.success {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .notification.error {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .notification.info {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .tip-box {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-top: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .tip-icon {
+      font-size: 20px;
+    }
+
+    .tip-content {
+      flex: 1;
+    }
+
+    .tip-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #00d4ff;
+      margin-bottom: 4px;
+    }
+
+    .tip-text {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>⚙️ Configuration Avancée</h1>
-      <p>Drop Craft AI - AutoDS Pro</p>
+      <div class="header-logo">🛍️</div>
+      <h1>ShopOpti<span class="plus">+</span> Configuration</h1>
+      <p>Personnalisez votre expérience d'extension</p>
     </div>
 
     <div class="card">
-      <h2>🔐 Connexion API</h2>
-      <div class="form-group">
-        <label>URL Supabase</label>
-        <input type="url" id="apiUrl" placeholder="https://your-project.supabase.co" value="https://dtozyrmmekdnvekissuh.supabase.co" readonly>
+      <div class="card-header">
+        <span class="card-icon">🔐</span>
+        <h2>Connexion API</h2>
       </div>
       <div class="form-group">
-        <label>Clé API</label>
-        <input type="password" id="apiKey" placeholder="Votre clé API Supabase">
+        <label class="form-label">URL Supabase</label>
+        <input type="url" id="apiUrl" class="form-input" value="https://dtozyrmmekdnvekissuh.supabase.co" readonly>
       </div>
-      <button class="btn btn-primary" id="testConnection">Tester la connexion</button>
+      <div class="form-group">
+        <label class="form-label">Token d'Extension</label>
+        <input type="password" id="extensionToken" class="form-input" placeholder="Votre token d'extension">
+      </div>
+      <button class="btn btn-secondary" id="testConnection" style="width: 100%;">
+        <span>🔌</span> Tester la Connexion
+      </button>
     </div>
 
     <div class="card">
-      <h2>⚡ Automatisation</h2>
+      <div class="card-header">
+        <span class="card-icon">⚡</span>
+        <h2>Automatisation</h2>
+      </div>
       
-      <div class="toggle-group">
-        <label>
-          <strong>Surveillance Prix Automatique</strong><br>
-          <small>Vérifie les changements de prix toutes les 30 minutes</small>
-        </label>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Surveillance Prix Automatique</div>
+          <div class="toggle-desc">Vérifie les changements de prix toutes les 30 minutes</div>
+        </div>
         <label class="switch">
           <input type="checkbox" id="autoPriceMonitoring">
           <span class="slider"></span>
         </label>
       </div>
 
-      <div class="toggle-group">
-        <label>
-          <strong>Alertes Stock Automatiques</strong><br>
-          <small>Vérifie le stock toutes les 15 minutes</small>
-        </label>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Alertes Stock</div>
+          <div class="toggle-desc">Notifications quand un produit revient en stock</div>
+        </div>
         <label class="switch">
           <input type="checkbox" id="autoStockAlerts">
           <span class="slider"></span>
         </label>
       </div>
 
-      <div class="toggle-group">
-        <label>
-          <strong>Auto-Order (Commande Automatique)</strong><br>
-          <small>⚠️ Passe des commandes automatiquement selon vos règles</small>
-        </label>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Import 1-Click Automatique</div>
+          <div class="toggle-desc">Ajouter le bouton d'import sur les pages produits</div>
+        </div>
         <label class="switch">
-          <input type="checkbox" id="autoOrderEnabled">
+          <input type="checkbox" id="autoInjectButtons" checked>
           <span class="slider"></span>
         </label>
       </div>
 
-      <div class="toggle-group">
-        <label>
-          <strong>Notifications Push</strong><br>
-          <small>Recevoir des notifications pour les événements importants</small>
-        </label>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Notifications Push</div>
+          <div class="toggle-desc">Recevoir des notifications pour les événements importants</div>
+        </div>
         <label class="switch">
           <input type="checkbox" id="pushNotifications" checked>
           <span class="slider"></span>
@@ -239,47 +377,48 @@
     </div>
 
     <div class="card">
-      <h2>🎯 Règles d'Import</h2>
+      <div class="card-header">
+        <span class="card-icon">🎯</span>
+        <h2>Règles d'Import</h2>
+      </div>
       
       <div class="form-group">
-        <label>Marge Bénéficiaire Minimale (%)</label>
-        <input type="number" id="minMargin" placeholder="30" min="0" max="100">
+        <label class="form-label">Marge Bénéficiaire Minimale (%)</label>
+        <input type="number" id="minMargin" class="form-input" placeholder="30" min="0" max="100">
       </div>
 
       <div class="form-group">
-        <label>Prix Maximum (€)</label>
-        <input type="number" id="maxPrice" placeholder="100" min="0">
+        <label class="form-label">Prix Maximum (€)</label>
+        <input type="number" id="maxPrice" class="form-input" placeholder="100" min="0">
       </div>
 
       <div class="form-group">
-        <label>Note Minimale (étoiles)</label>
-        <input type="number" id="minRating" placeholder="4" min="1" max="5" step="0.1">
+        <label class="form-label">Note Minimale (étoiles)</label>
+        <input type="number" id="minRating" class="form-input" placeholder="4" min="1" max="5" step="0.1">
       </div>
 
       <div class="form-group">
-        <label>Mots-clés à Exclure (séparés par virgule)</label>
-        <input type="text" id="excludeKeywords" placeholder="contrefaçon, réplique, copie">
+        <label class="form-label">Mots-clés à Exclure</label>
+        <input type="text" id="excludeKeywords" class="form-input" placeholder="contrefaçon, réplique, copie">
       </div>
     </div>
 
     <div class="card">
-      <h2>🚀 Performance</h2>
+      <div class="card-header">
+        <span class="card-icon">🚀</span>
+        <h2>Performance</h2>
+      </div>
       
       <div class="form-group">
-        <label>Délai entre imports (secondes)</label>
-        <input type="number" id="importDelay" placeholder="2" min="1" value="2">
+        <label class="form-label">Délai entre imports (secondes)</label>
+        <input type="number" id="importDelay" class="form-input" placeholder="2" min="1" value="2">
       </div>
 
-      <div class="form-group">
-        <label>Nombre maximum d'imports simultanés</label>
-        <input type="number" id="maxConcurrent" placeholder="5" min="1" max="20" value="5">
-      </div>
-
-      <div class="toggle-group">
-        <label>
-          <strong>Mode Debug</strong><br>
-          <small>Afficher les logs détaillés dans la console</small>
-        </label>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Mode Debug</div>
+          <div class="toggle-desc">Afficher les logs détaillés dans la console</div>
+        </div>
         <label class="switch">
           <input type="checkbox" id="debugMode">
           <span class="slider"></span>
@@ -287,14 +426,26 @@
       </div>
     </div>
 
-    <div class="info-box">
-      💡 <strong>Astuce:</strong> Configurez vos règles d'automatisation pour optimiser votre workflow dropshipping. Les modifications sont sauvegardées automatiquement.
+    <div class="tip-box">
+      <span class="tip-icon">💡</span>
+      <div class="tip-content">
+        <div class="tip-title">Conseil Pro</div>
+        <div class="tip-text">
+          Configurez vos règles d'import pour filtrer automatiquement les produits selon vos critères de marge et de qualité. Les modifications sont sauvegardées automatiquement.
+        </div>
+      </div>
     </div>
 
-    <div class="actions">
-      <button class="btn btn-primary" id="saveSettings">💾 Enregistrer la Configuration</button>
-      <button class="btn" id="resetSettings">🔄 Réinitialiser</button>
-      <button class="btn" id="exportSettings">📥 Exporter</button>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="saveSettings">
+        <span>💾</span> Enregistrer
+      </button>
+      <button class="btn btn-secondary" id="resetSettings">
+        <span>🔄</span> Réinitialiser
+      </button>
+      <button class="btn btn-secondary" id="exportSettings">
+        <span>📥</span> Exporter
+      </button>
     </div>
   </div>
 

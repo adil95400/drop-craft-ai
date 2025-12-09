@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Drop Craft AI - AutoDS Pro",
-  "version": "2.0.0",
-  "description": "Extension Dropshipping Professionnelle - Import Produits, Avis, Monitoring Prix, Auto-Order",
+  "name": "ShopOpti+ | Dropshipping Pro",
+  "version": "3.0.0",
+  "description": "Extension Dropshipping Professionnelle - Import 1-Click, Avis, Monitoring Prix, Auto-Order, Multi-Plateforme",
   "permissions": [
     "activeTab",
     "storage",
@@ -11,7 +11,8 @@
     "notifications",
     "alarms",
     "contextMenus",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "webNavigation"
   ],
   "host_permissions": [
     "https://*/*",
@@ -25,22 +26,40 @@
     {
       "matches": [
         "*://*.aliexpress.com/*",
+        "*://*.aliexpress.fr/*",
+        "*://*.aliexpress.us/*",
         "*://*.amazon.com/*",
         "*://*.amazon.fr/*",
+        "*://*.amazon.de/*",
         "*://*.amazon.co.uk/*",
+        "*://*.amazon.es/*",
+        "*://*.amazon.it/*",
         "*://*.ebay.com/*",
         "*://*.ebay.fr/*",
+        "*://*.ebay.de/*",
+        "*://*.ebay.co.uk/*",
         "*://*.walmart.com/*",
-        "*://*.shopify.com/*",
-        "*://*.etsy.com/*"
+        "*://*.etsy.com/*",
+        "*://*.temu.com/*",
+        "*://*.wish.com/*",
+        "*://*.banggood.com/*",
+        "*://*.dhgate.com/*",
+        "*://*.made-in-china.com/*",
+        "*://*.1688.com/*",
+        "*://*.taobao.com/*",
+        "*://*.shein.com/*",
+        "*://*.gearbest.com/*",
+        "*://*.lightinthebox.com/*",
+        "*://*.cjdropshipping.com/*"
       ],
       "js": ["content.js"],
+      "css": ["content.css"],
       "run_at": "document_idle"
     }
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Drop Craft AI - AutoDS Pro",
+    "default_title": "ShopOpti+ - Dropshipping Pro",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
@@ -57,7 +76,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["injected.js"],
+      "resources": ["injected.js", "content.css", "icons/*"],
       "matches": ["<all_urls>"]
     }
   ]
