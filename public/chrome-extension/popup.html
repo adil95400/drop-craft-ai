@@ -1,593 +1,195 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>ShopOpti+ - AutoDS Pro</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      width: 380px;
-      min-height: 520px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-      color: #f8fafc;
-      overflow-x: hidden;
-    }
-
-    .popup-container {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    /* Header */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px;
-      background: rgba(0, 0, 0, 0.2);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logo {
-      font-size: 28px;
-    }
-
-    .header-title h1 {
-      font-size: 18px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #00d4ff, #7c3aed);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .version {
-      font-size: 10px;
-      background: rgba(0, 212, 255, 0.15);
-      color: #00d4ff;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 500;
-    }
-
-    .header-right {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-icon {
-      width: 36px;
-      height: 36px;
-      border: none;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.08);
-      cursor: pointer;
-      font-size: 16px;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-icon:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: translateY(-1px);
-    }
-
-    /* Connection Status */
-    .connection-status {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 16px;
-      margin: 12px 16px;
-      border-radius: 12px;
-      font-size: 13px;
-      transition: all 0.3s;
-    }
-
-    .connection-status.connected {
-      background: rgba(34, 197, 94, 0.1);
-      border: 1px solid rgba(34, 197, 94, 0.3);
-    }
-
-    .connection-status.disconnected {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-
-    .connected .status-dot {
-      background: #22c55e;
-      box-shadow: 0 0 8px #22c55e;
-    }
-
-    .disconnected .status-dot {
-      background: #ef4444;
-      box-shadow: 0 0 8px #ef4444;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    .status-text {
-      flex: 1;
-      color: rgba(255, 255, 255, 0.8);
-    }
-
-    .btn-link {
-      background: none;
-      border: none;
-      color: #00d4ff;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
-    .btn-link:hover {
-      color: #7c3aed;
-    }
-
-    /* Stats Grid */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      padding: 0 16px;
-      margin-bottom: 16px;
-    }
-
-    .stat-card {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 12px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      transition: all 0.2s;
-    }
-
-    .stat-card:hover {
-      background: rgba(255, 255, 255, 0.08);
-      transform: translateY(-2px);
-    }
-
-    .stat-icon {
-      font-size: 20px;
-    }
-
-    .stat-info {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .stat-value {
-      font-size: 18px;
-      font-weight: 700;
-      color: #00d4ff;
-    }
-
-    .stat-label {
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.5);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    /* Actions Section */
-    .actions-section {
-      padding: 0 16px;
-      margin-bottom: 16px;
-    }
-
-    .section-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.5);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-    }
-
-    .action-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-
-    .action-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-align: left;
-      color: white;
-    }
-
-    .action-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .action-btn.primary {
-      background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
-      border-color: rgba(0, 212, 255, 0.3);
-    }
-
-    .action-btn.primary:hover {
-      background: linear-gradient(135deg, rgba(0, 212, 255, 0.3) 0%, rgba(124, 58, 237, 0.3) 100%);
-    }
-
-    .action-icon {
-      font-size: 22px;
-    }
-
-    .action-text {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .action-text strong {
-      font-size: 13px;
-      font-weight: 600;
-      color: #f8fafc;
-    }
-
-    .action-text small {
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    /* Recent Section */
-    .recent-section {
-      padding: 0 16px;
-      margin-bottom: 12px;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-
-    .btn-text {
-      background: none;
-      border: none;
-      color: rgba(255, 255, 255, 0.5);
-      cursor: pointer;
-      font-size: 11px;
-      transition: color 0.2s;
-    }
-
-    .btn-text:hover {
-      color: #00d4ff;
-    }
-
-    .recent-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 120px;
-      overflow-y: auto;
-    }
-
-    .recent-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 12px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .item-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .item-name {
-      font-size: 12px;
-      font-weight: 500;
-      color: #f8fafc;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .item-meta {
-      font-size: 10px;
-      color: rgba(255, 255, 255, 0.4);
-      margin-top: 2px;
-    }
-
-    .item-actions .btn-icon {
-      width: 28px;
-      height: 28px;
-      font-size: 14px;
-    }
-
-    .no-data {
-      text-align: center;
-      padding: 16px;
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.3);
-      font-style: italic;
-    }
-
-    /* Footer Action */
-    .footer-action {
-      margin-top: auto;
-      padding: 16px;
-      background: rgba(0, 0, 0, 0.2);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .btn-full {
-      width: 100%;
-      padding: 14px 20px;
-      border: none;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.2s;
-      color: white;
-    }
-
-    .btn-full.primary {
-      background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
-    }
-
-    .btn-full.primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
-    }
-
-    .btn-full:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* Loading Overlay */
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(15, 23, 42, 0.9);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      z-index: 100;
-    }
-
-    .loader {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(0, 212, 255, 0.2);
-      border-top-color: #00d4ff;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Notification */
-    .notification {
-      position: fixed;
-      bottom: 20px;
-      left: 16px;
-      right: 16px;
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 500;
-      text-align: center;
-      z-index: 200;
-      animation: slideUp 0.3s ease;
-    }
-
-    .notification.success {
-      background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(22, 163, 74, 0.9));
-    }
-
-    .notification.error {
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
-    }
-
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 3px;
-    }
-  </style>
+  <title>ShopOpti+ | Dropshipping Pro</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="popup-container">
     <!-- Header -->
     <header class="header">
       <div class="header-left">
-        <span class="logo">🛍️</span>
-        <div class="header-title">
-          <h1>ShopOpti+</h1>
-          <span class="version">v2.0</span>
+        <div class="logo-container">
+          <span class="logo">🛍️</span>
+          <div class="logo-pulse"></div>
+        </div>
+        <div class="header-info">
+          <h1>ShopOpti<span class="plus">+</span></h1>
+          <div class="header-meta">
+            <span class="version-badge">PRO v3.0</span>
+            <span id="planBadge" class="plan-badge">Free</span>
+          </div>
         </div>
       </div>
-      <div class="header-right">
-        <button id="openSettings" class="btn-icon" title="Paramètres">⚙️</button>
-        <button id="openDashboard" class="btn-icon" title="Ouvrir Dashboard">📊</button>
+      <div class="header-actions">
+        <button id="syncBtn" class="icon-btn" title="Synchroniser">
+          <span class="icon">🔄</span>
+        </button>
+        <button id="settingsBtn" class="icon-btn" title="Paramètres">
+          <span class="icon">⚙️</span>
+        </button>
+        <button id="dashboardBtn" class="icon-btn primary" title="Dashboard">
+          <span class="icon">📊</span>
+        </button>
       </div>
     </header>
 
     <!-- Connection Status -->
-    <div id="connectionStatus" class="connection-status disconnected">
-      <span class="status-dot"></span>
-      <span class="status-text">Non connecté</span>
-      <button id="authenticate" class="btn-link">Connecter →</button>
+    <div id="connectionStatus" class="status-bar disconnected">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span class="status-text">Non connecté</span>
+      </div>
+      <button id="connectBtn" class="status-action">Connecter</button>
+    </div>
+
+    <!-- Current Page Info -->
+    <div id="pageInfo" class="page-info hidden">
+      <div class="page-icon">🌐</div>
+      <div class="page-details">
+        <span class="page-platform">-</span>
+        <span class="page-url">-</span>
+      </div>
+      <div class="page-badge detected">
+        <span>✓ Détecté</span>
+      </div>
     </div>
 
     <!-- Quick Stats -->
     <div class="stats-grid">
-      <div class="stat-card">
-        <span class="stat-icon">📦</span>
-        <div class="stat-info">
-          <span id="scrapedCount" class="stat-value">0</span>
+      <div class="stat-card" data-action="products">
+        <div class="stat-icon-wrapper blue">
+          <span>📦</span>
+        </div>
+        <div class="stat-content">
+          <span id="todayProducts" class="stat-value">0</span>
           <span class="stat-label">Produits</span>
+          <span class="stat-sub">aujourd'hui</span>
         </div>
       </div>
-      <div class="stat-card">
-        <span class="stat-icon">⭐</span>
-        <div class="stat-info">
-          <span id="reviewsCount" class="stat-value">0</span>
+      <div class="stat-card" data-action="reviews">
+        <div class="stat-icon-wrapper purple">
+          <span>⭐</span>
+        </div>
+        <div class="stat-content">
+          <span id="todayReviews" class="stat-value">0</span>
           <span class="stat-label">Avis</span>
+          <span class="stat-sub">importés</span>
         </div>
       </div>
-      <div class="stat-card">
-        <span class="stat-icon">📈</span>
-        <div class="stat-info">
-          <span id="sessionsCount" class="stat-value">0</span>
-          <span class="stat-label">Aujourd'hui</span>
+      <div class="stat-card" data-action="monitoring">
+        <div class="stat-icon-wrapper green">
+          <span>📈</span>
+        </div>
+        <div class="stat-content">
+          <span id="monitoredCount" class="stat-value">0</span>
+          <span class="stat-label">Surveillés</span>
+          <span class="stat-sub">prix actif</span>
         </div>
       </div>
     </div>
 
     <!-- Main Actions -->
-    <div class="actions-section">
-      <h2 class="section-title">Actions Rapides</h2>
-      
-      <div class="action-grid">
-        <button id="scrapCurrentPage" class="action-btn primary">
-          <span class="action-icon">📥</span>
-          <span class="action-text">
-            <strong>Import 1-Click</strong>
-            <small>Importer ce produit</small>
-          </span>
+    <section class="actions-section">
+      <h3 class="section-title">Actions Rapides</h3>
+      <div class="actions-grid">
+        <button id="importPageBtn" class="action-card primary">
+          <div class="action-icon">🚀</div>
+          <div class="action-content">
+            <span class="action-title">Import 1-Click</span>
+            <span class="action-desc">Importer cette page</span>
+          </div>
+          <div class="action-arrow">→</div>
         </button>
         
-        <button id="scrapAllProducts" class="action-btn">
-          <span class="action-icon">📋</span>
-          <span class="action-text">
-            <strong>Scraper Page</strong>
-            <small>Tous les produits</small>
-          </span>
+        <button id="importAllBtn" class="action-card">
+          <div class="action-icon">📥</div>
+          <div class="action-content">
+            <span class="action-title">Import Multiple</span>
+            <span class="action-desc">Tous les produits</span>
+          </div>
+          <div class="action-arrow">→</div>
         </button>
         
-        <button id="importReviews" class="action-btn">
-          <span class="action-icon">⭐</span>
-          <span class="action-text">
-            <strong>Importer Avis</strong>
-            <small>Avec photos</small>
-          </span>
+        <button id="importReviewsBtn" class="action-card">
+          <div class="action-icon">⭐</div>
+          <div class="action-content">
+            <span class="action-title">Importer Avis</span>
+            <span class="action-desc">Copier les reviews</span>
+          </div>
+          <div class="action-arrow">→</div>
         </button>
         
-        <button id="priceMonitor" class="action-btn">
-          <span class="action-icon">💰</span>
-          <span class="action-text">
-            <strong>Surveiller Prix</strong>
-            <small>Alertes auto</small>
-          </span>
+        <button id="priceMonitorBtn" class="action-card">
+          <div class="action-icon">📊</div>
+          <div class="action-content">
+            <span class="action-title">Surveiller Prix</span>
+            <span class="action-desc">Alertes en temps réel</span>
+          </div>
+          <div class="action-arrow">→</div>
         </button>
       </div>
-    </div>
+    </section>
 
-    <!-- Recent Products -->
-    <div class="recent-section">
+    <!-- Advanced Features -->
+    <section class="features-section">
+      <h3 class="section-title">Outils Avancés</h3>
+      <div class="features-grid">
+        <button id="autoOrderBtn" class="feature-btn">
+          <span class="feature-icon">🤖</span>
+          <span>Auto-Order</span>
+        </button>
+        <button id="competitorBtn" class="feature-btn">
+          <span class="feature-icon">🔍</span>
+          <span>Spy Compét.</span>
+        </button>
+        <button id="bulkImportBtn" class="feature-btn">
+          <span class="feature-icon">📋</span>
+          <span>Import CSV</span>
+        </button>
+        <button id="aiOptimizeBtn" class="feature-btn premium">
+          <span class="feature-icon">✨</span>
+          <span>IA Optimize</span>
+          <span class="premium-badge">PRO</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Recent Activity -->
+    <section class="activity-section">
       <div class="section-header">
-        <h2 class="section-title">Produits Récents</h2>
-        <button id="clearData" class="btn-text">Effacer</button>
+        <h3 class="section-title">Activité Récente</h3>
+        <button id="clearActivityBtn" class="text-btn">Effacer</button>
       </div>
-      <div id="recentProducts" class="recent-list">
-        <div class="no-data">Aucun produit scrapé</div>
+      <div id="activityList" class="activity-list">
+        <div class="empty-state">
+          <span class="empty-icon">📭</span>
+          <span class="empty-text">Aucune activité récente</span>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Recent Reviews -->
-    <div class="recent-section">
-      <div class="section-header">
-        <h2 class="section-title">Avis Récents</h2>
-        <button id="reviewSettings" class="btn-text">Config</button>
-      </div>
-      <div id="recentReviews" class="recent-list">
-        <div class="no-data">Aucun avis importé</div>
-      </div>
-    </div>
-
-    <!-- Send to App -->
-    <div class="footer-action">
-      <button id="sendToApp" class="btn-full primary">
-        <span>🚀</span>
-        Envoyer à ShopOpti+
+    <!-- Footer -->
+    <footer class="footer">
+      <button id="sendToAppBtn" class="primary-btn">
+        <span class="btn-icon">📤</span>
+        <span>Envoyer à ShopOpti+</span>
+        <span id="pendingCount" class="pending-badge hidden">0</span>
       </button>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
-      <div class="loader"></div>
-      <span>Chargement...</span>
-    </div>
-
-    <!-- Notification -->
-    <div id="notification" class="notification" style="display: none;"></div>
+    </footer>
   </div>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loader-content">
+      <div class="loader-spinner"></div>
+      <span id="loadingText" class="loader-text">Chargement...</span>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
 
   <script src="popup.js"></script>
 </body>
