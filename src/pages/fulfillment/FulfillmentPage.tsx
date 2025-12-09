@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -9,11 +9,9 @@ import {
   RotateCcw, 
   Settings,
   Plus,
-  CheckCircle,
-  Clock,
-  AlertTriangle
+  CheckCircle
 } from 'lucide-react';
-import { useFulfillmentStats } from '@/hooks/useFulfillment';
+import { useFulfillmentStats, useCarriers, useCreateCarrier } from '@/hooks/useFulfillment';
 import { CarriersManager } from '@/components/fulfillment/CarriersManager';
 import { ShipmentsTable } from '@/components/fulfillment/ShipmentsTable';
 import { ReturnsManager } from '@/components/fulfillment/ReturnsManager';
@@ -22,6 +20,8 @@ import { FulfillmentAutomation } from '@/components/fulfillment/FulfillmentAutom
 export default function FulfillmentPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const { data: stats, isLoading } = useFulfillmentStats();
+  const { data: carriers = [], isLoading: carriersLoading } = useCarriers();
+  const createCarrier = useCreateCarrier();
   
   const statCards = [
     {
@@ -53,6 +53,10 @@ export default function FulfillmentPage() {
       bg: 'bg-purple-500/10'
     }
   ];
+  
+  const handleCreateCarrier = (carrier: any) => {
+    createCarrier.mutate(carrier);
+  };
   
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
@@ -115,7 +119,7 @@ export default function FulfillmentPage() {
                 <p className="text-sm text-muted-foreground">Taux de livraison</p>
                 <p className="text-2xl font-bold">{stats?.delivery_rate || 0}%</p>
               </div>
-              <Badge variant={stats?.delivery_rate && stats.delivery_rate >= 95 ? 'default' : 'warning'}>
+              <Badge variant={stats?.delivery_rate && stats.delivery_rate >= 95 ? 'default' : 'secondary'}>
                 {stats?.delivery_rate && stats.delivery_rate >= 95 ? 'Excellent' : 'À améliorer'}
               </Badge>
             </div>
@@ -149,7 +153,11 @@ export default function FulfillmentPage() {
         </TabsContent>
         
         <TabsContent value="carriers">
-          <CarriersManager />
+          <CarriersManager 
+            carriers={carriers} 
+            isLoading={carriersLoading} 
+            onCreate={handleCreateCarrier}
+          />
         </TabsContent>
         
         <TabsContent value="returns">

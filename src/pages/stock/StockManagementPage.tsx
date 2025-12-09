@@ -25,9 +25,9 @@ export default function StockManagementPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
   
-  const { data: stats, isLoading: statsLoading } = useStockStats();
-  const { data: alerts } = useStockAlerts(false);
-  const { data: warehouses } = useWarehouses();
+  const stats = useStockStats();
+  const { data: alerts = [] } = useStockAlerts();
+  const { data: warehouses = [] } = useWarehouses();
   
   const unresolvedAlerts = alerts?.length || 0;
   
