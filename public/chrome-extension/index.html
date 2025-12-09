@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopOpti+ Extension Chrome - Guide d'installation</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      min-height: 100vh;
+      color: #e2e8f0;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .logo-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      box-shadow: 0 20px 40px rgba(0, 212, 255, 0.3);
+    }
+
+    .logo h1 {
+      font-size: 42px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 20px;
+      color: #94a3b8;
+      margin-top: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      padding: 8px 16px;
+      border-radius: 50px;
+      font-size: 14px;
+      color: #00d4ff;
+      margin-top: 20px;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .step {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 30px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      transition: all 0.3s ease;
+    }
+
+    .step:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(0, 212, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .step-number {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step-content h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #f1f5f9;
+    }
+
+    .step-content p {
+      color: #94a3b8;
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    .step-content code {
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 14px;
+      color: #00d4ff;
+    }
+
+    .features {
+      margin-top: 60px;
+    }
+
+    .features h2 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 30px;
+      background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(0, 212, 255, 0.2);
+    }
+
+    .feature-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    .feature-card h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #f1f5f9;
+    }
+
+    .feature-card p {
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    .platforms {
+      margin-top: 50px;
+      text-align: center;
+    }
+
+    .platforms h3 {
+      font-size: 18px;
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }
+
+    .platform-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .platform-tag {
+      background: rgba(124, 58, 237, 0.1);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #a78bfa;
+    }
+
+    .cta {
+      margin-top: 60px;
+      text-align: center;
+      padding: 40px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+      border-radius: 20px;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+    }
+
+    .cta h3 {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .cta p {
+      color: #94a3b8;
+      margin-bottom: 24px;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(0, 212, 255, 0.4);
+    }
+
+    .warning {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 30px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .warning-icon {
+      font-size: 24px;
+    }
+
+    .warning-content h4 {
+      color: #f59e0b;
+      margin-bottom: 8px;
+    }
+
+    .warning-content p {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    @media (max-width: 600px) {
+      .logo h1 {
+        font-size: 28px;
+      }
+
+      .step {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .step-number {
+        margin: 0 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">🚀</div>
+        <h1>ShopOpti+</h1>
+      </div>
+      <p class="subtitle">Extension Chrome Dropshipping Professionnelle</p>
+      <div class="badge">
+        <span>⚡</span>
+        <span>Version 3.0.0 - Inspirée de AutoDS</span>
+      </div>
+    </header>
+
+    <section class="steps">
+      <h2 style="text-align: center; font-size: 28px; margin-bottom: 30px; color: #f1f5f9;">
+        📦 Guide d'Installation
+      </h2>
+
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>Ouvrir Chrome Extensions</h3>
+          <p>
+            Ouvrez Chrome et naviguez vers <code>chrome://extensions/</code> 
+            ou allez dans Menu → Plus d'outils → Extensions
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>Activer le Mode Développeur</h3>
+          <p>
+            En haut à droite de la page, activez le toggle <strong>"Mode développeur"</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>Charger l'Extension</h3>
+          <p>
+            Cliquez sur <strong>"Charger l'extension non empaquetée"</strong> et sélectionnez 
+            le dossier <code>public/chrome-extension</code> de votre projet local
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h3>Se Connecter</h3>
+          <p>
+            Cliquez sur l'icône ShopOpti+ dans la barre d'outils Chrome, 
+            puis connectez-vous avec votre token d'authentification
+          </p>
+        </div>
+      </div>
+
+      <div class="warning">
+        <div class="warning-icon">⚠️</div>
+        <div class="warning-content">
+          <h4>Important</h4>
+          <p>
+            Cette page s'affiche car vous accédez directement aux fichiers de l'extension. 
+            L'extension doit être chargée dans Chrome via le processus ci-dessus, 
+            pas via le navigateur web normal.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="features">
+      <h2>✨ Fonctionnalités</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔄</div>
+          <h4>Import 1-Click</h4>
+          <p>Importez des produits en un clic depuis n'importe quelle plateforme</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⭐</div>
+          <h4>Import Avis</h4>
+          <p>Récupérez automatiquement les avis clients</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h4>Monitoring Prix</h4>
+          <p>Surveillez les variations de prix en temps réel</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h4>Auto-Order</h4>
+          <p>Automatisez vos commandes fournisseurs</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h4>Spy Concurrents</h4>
+          <p>Analysez les stratégies de vos concurrents</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">✨</div>
+          <h4>Optimisation IA</h4>
+          <p>Optimisez vos fiches avec l'intelligence artificielle</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="platforms">
+      <h3>🌐 Plateformes Supportées</h3>
+      <div class="platform-list">
+        <span class="platform-tag">AliExpress</span>
+        <span class="platform-tag">Amazon</span>
+        <span class="platform-tag">eBay</span>
+        <span class="platform-tag">Walmart</span>
+        <span class="platform-tag">Etsy</span>
+        <span class="platform-tag">Temu</span>
+        <span class="platform-tag">Wish</span>
+        <span class="platform-tag">Banggood</span>
+        <span class="platform-tag">DHgate</span>
+        <span class="platform-tag">1688</span>
+        <span class="platform-tag">Taobao</span>
+        <span class="platform-tag">SHEIN</span>
+        <span class="platform-tag">CJ Dropshipping</span>
+        <span class="platform-tag">+ Plus</span>
+      </div>
+    </section>
+
+    <section class="cta">
+      <h3>🎯 Prêt à commencer ?</h3>
+      <p>Accédez à votre dashboard ShopOpti+ pour générer votre token d'authentification</p>
+      <a href="/" class="cta-btn">
+        <span>Aller au Dashboard</span>
+        <span>→</span>
+      </a>
+    </section>
+  </div>
+</body>
+</html>
