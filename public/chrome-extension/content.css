@@ -1,6 +1,9 @@
-/* ShopOpti+ Chrome Extension - Content Styles */
+/* ShopOpti+ Chrome Extension v3.0 - Content Styles */
 
-/* Import Button Styles */
+/* ============================================
+   IMPORT BUTTONS
+   ============================================ */
+
 .shopopti-import-btn {
   background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%) !important;
   color: white !important;
@@ -55,7 +58,10 @@
   box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4) !important;
 }
 
-/* Product Card Overlay Button */
+/* ============================================
+   PRODUCT CARD OVERLAY
+   ============================================ */
+
 .shopopti-card-btn {
   position: absolute !important;
   top: 8px !important;
@@ -87,7 +93,10 @@
   background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%) !important;
 }
 
-/* Toast Notifications */
+/* ============================================
+   TOAST NOTIFICATIONS
+   ============================================ */
+
 .shopopti-toast {
   position: fixed !important;
   top: 20px !important;
@@ -123,24 +132,6 @@
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
 }
 
-.shopopti-toast-icon {
-  font-size: 18px !important;
-}
-
-.shopopti-toast-close {
-  margin-left: auto !important;
-  background: none !important;
-  border: none !important;
-  color: white !important;
-  cursor: pointer !important;
-  font-size: 18px !important;
-  opacity: 0.7 !important;
-}
-
-.shopopti-toast-close:hover {
-  opacity: 1 !important;
-}
-
 @keyframes shopoptiSlideIn {
   from {
     transform: translateX(120%);
@@ -152,39 +143,10 @@
   }
 }
 
-@keyframes shopoptiSlideOut {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(120%);
-    opacity: 0;
-  }
-}
+/* ============================================
+   FLOATING ACTION BUTTON
+   ============================================ */
 
-/* Product Highlight */
-.shopopti-highlight {
-  outline: 3px solid #00d4ff !important;
-  outline-offset: 2px !important;
-  position: relative !important;
-}
-
-.shopopti-highlight::after {
-  content: '✓ ShopOpti+' !important;
-  position: absolute !important;
-  top: -12px !important;
-  right: 10px !important;
-  background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%) !important;
-  color: white !important;
-  font-size: 10px !important;
-  padding: 2px 8px !important;
-  border-radius: 4px !important;
-  font-weight: 600 !important;
-  z-index: 99999 !important;
-}
-
-/* Floating Action Button */
 .shopopti-fab {
   position: fixed !important;
   bottom: 24px !important;
@@ -249,11 +211,10 @@
   background: rgba(255, 255, 255, 0.1) !important;
 }
 
-.shopopti-fab-item-icon {
-  font-size: 16px !important;
-}
+/* ============================================
+   PRICE MONITOR BADGES
+   ============================================ */
 
-/* Price Monitor Badge */
 .shopopti-price-badge {
   display: inline-flex !important;
   align-items: center !important;
@@ -280,7 +241,10 @@
   color: #ef4444 !important;
 }
 
-/* Spinner */
+/* ============================================
+   SPINNER & PROGRESS
+   ============================================ */
+
 .shopopti-spinner {
   width: 16px !important;
   height: 16px !important;
@@ -296,7 +260,6 @@
   }
 }
 
-/* Progress Bar */
 .shopopti-progress {
   height: 4px !important;
   background: rgba(255, 255, 255, 0.2) !important;
@@ -312,7 +275,20 @@
   transition: width 0.3s ease !important;
 }
 
-/* Quick Actions Panel */
+/* ============================================
+   PRODUCT HIGHLIGHT
+   ============================================ */
+
+.shopopti-highlight {
+  outline: 3px solid #00d4ff !important;
+  outline-offset: 2px !important;
+  position: relative !important;
+}
+
+/* ============================================
+   QUICK PANEL
+   ============================================ */
+
 .shopopti-quick-panel {
   position: fixed !important;
   top: 50% !important;
