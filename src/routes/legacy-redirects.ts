@@ -90,7 +90,7 @@ export const LEGACY_ROUTE_REDIRECTS: Record<string, string> = {
   
   // Extensions
   '/extension-ultra-pro': '/integrations/extensions',
-  '/extensions-hub': '/integrations/extensions/hub',
+  '/extensions-hub': '/integrations/extensions',
   '/extension-api': '/integrations/extensions/api',
   
   // Observability
