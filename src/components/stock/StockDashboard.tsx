@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useStockManagement } from '@/hooks/useStockManagement'
+import { useWarehouses, useStockLevels, useStockAlerts } from '@/hooks/useStockManagement'
 import { StockPredictions } from './StockPredictions'
 import { StockAlerts } from './StockAlerts'
 import { AutoReorderManager } from './AutoReorderManager'
@@ -24,16 +24,22 @@ import {
 import { formatCurrency } from '@/lib/utils'
 
 export const StockDashboard = () => {
-  const { 
-    stockStats, 
-    activeAlerts, 
-    stockLevels, 
-    warehouses,
-    isLoading 
-  } = useStockManagement()
+  const { data: warehouses = [], isLoading: loadingWarehouses } = useWarehouses();
+  const { data: stockLevels = [], isLoading: loadingLevels } = useStockLevels();
+  const { data: activeAlerts = [], isLoading: loadingAlerts } = useStockAlerts();
+  
+  const isLoading = loadingWarehouses || loadingLevels || loadingAlerts;
 
-  const criticalAlerts = activeAlerts.filter(a => a.severity === 'critical')
-  const highAlerts = activeAlerts.filter(a => a.severity === 'high')
+  const stockStats = {
+    total_products: stockLevels.length,
+    total_warehouses: warehouses.length,
+    total_stock_value: stockLevels.reduce((sum, l) => sum + (l.available_quantity || 0) * 10, 0),
+    low_stock_items: stockLevels.filter(l => (l.available_quantity || 0) <= (l.reorder_point || 0)).length,
+    active_alerts: activeAlerts.length
+  };
+
+  const criticalAlerts = activeAlerts.filter((a: any) => a.severity === 'critical');
+  const highAlerts = activeAlerts.filter((a: any) => a.severity === 'high');
 
   return (
     <div className="space-y-6">
@@ -130,10 +136,10 @@ export const StockDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {criticalAlerts.slice(0, 3).map(alert => (
+            {criticalAlerts.slice(0, 3).map((alert: any) => (
               <div key={alert.id} className="flex items-center justify-between p-3 bg-background rounded-lg">
                 <div className="flex-1">
-                  <p className="font-medium">{alert.product?.name || 'Produit'}</p>
+                  <p className="font-medium">{alert.product_name || 'Produit'}</p>
                   <p className="text-sm text-muted-foreground">{alert.message}</p>
                 </div>
                 <Badge variant="destructive">{alert.alert_type}</Badge>
@@ -181,7 +187,7 @@ export const StockDashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {warehouses.slice(0, 5).map(warehouse => (
+                {warehouses.slice(0, 5).map((warehouse: any) => (
                   <div key={warehouse.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
                       <Warehouse className="h-5 w-5 text-muted-foreground" />
@@ -192,10 +198,10 @@ export const StockDashboard = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium">
-                        {warehouse.current_utilization}/{warehouse.capacity}
+                        {warehouse.current_utilization || 0}/{warehouse.capacity || 100}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {Math.round((warehouse.current_utilization / warehouse.capacity) * 100)}% utilisé
+                        {Math.round(((warehouse.current_utilization || 0) / (warehouse.capacity || 100)) * 100)}% utilisé
                       </p>
                     </div>
                   </div>
@@ -212,9 +218,9 @@ export const StockDashboard = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 {stockLevels
-                  .filter(level => level.available_quantity <= level.reorder_point && level.available_quantity > 0)
+                  .filter((level: any) => (level.available_quantity || 0) <= (level.reorder_point || 0) && (level.available_quantity || 0) > 0)
                   .slice(0, 5)
-                  .map(level => (
+                  .map((level: any) => (
                     <div key={level.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
                         <p className="font-medium">{level.product?.name || 'Produit'}</p>
@@ -224,7 +230,7 @@ export const StockDashboard = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium text-orange-500">
-                          {level.available_quantity} restant{level.available_quantity > 1 ? 's' : ''}
+                          {level.available_quantity} restant{(level.available_quantity || 0) > 1 ? 's' : ''}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Seuil: {level.reorder_point}
@@ -232,7 +238,7 @@ export const StockDashboard = () => {
                       </div>
                     </div>
                   ))}
-                {stockLevels.filter(level => level.available_quantity <= level.reorder_point).length === 0 && (
+                {stockLevels.filter((level: any) => (level.available_quantity || 0) <= (level.reorder_point || 0)).length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
                     Aucun produit à réapprovisionner
                   </p>
@@ -264,7 +270,7 @@ export const StockDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {stockLevels.map(level => (
+                {stockLevels.map((level: any) => (
                   <div key={level.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
                     <div className="flex items-center gap-3">
                       {level.product?.image_url && (
@@ -284,28 +290,28 @@ export const StockDashboard = () => {
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <p className="text-sm font-medium">
-                          {level.available_quantity} disponible{level.available_quantity > 1 ? 's' : ''}
+                          {level.available_quantity} disponible{(level.available_quantity || 0) > 1 ? 's' : ''}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {level.reserved_quantity} réservé{level.reserved_quantity > 1 ? 's' : ''}
+                          {level.reserved_quantity} réservé{(level.reserved_quantity || 0) > 1 ? 's' : ''}
                         </p>
                       </div>
                       <div className="w-32">
                         <div className="h-2 bg-secondary rounded-full overflow-hidden">
                           <div 
                             className={`h-full transition-all ${
-                              level.available_quantity === 0 ? 'bg-red-500' :
-                              level.available_quantity <= level.reorder_point ? 'bg-orange-500' :
-                              level.available_quantity >= level.max_stock_level ? 'bg-blue-500' :
+                              (level.available_quantity || 0) === 0 ? 'bg-red-500' :
+                              (level.available_quantity || 0) <= (level.reorder_point || 0) ? 'bg-orange-500' :
+                              (level.available_quantity || 0) >= (level.max_stock_level || 100) ? 'bg-blue-500' :
                               'bg-green-500'
                             }`}
                             style={{ 
-                              width: `${Math.min((level.available_quantity / level.max_stock_level) * 100, 100)}%` 
+                              width: `${Math.min(((level.available_quantity || 0) / (level.max_stock_level || 100)) * 100, 100)}%` 
                             }}
                           />
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {Math.round((level.available_quantity / level.max_stock_level) * 100)}% de capacité
+                          {Math.round(((level.available_quantity || 0) / (level.max_stock_level || 100)) * 100)}% de capacité
                         </p>
                       </div>
                     </div>

@@ -17,12 +17,18 @@ export function ShipmentsTable() {
   
   const { data: shipments, isLoading } = useShipments(statusFilter || undefined);
   
+  const getAddressField = (address: any, field: string): string => {
+    if (!address || typeof address !== 'object') return '';
+    return String(address[field] || '');
+  };
+  
   const filteredShipments = shipments?.filter((s) => {
     const searchLower = search.toLowerCase();
+    const address = s.shipping_address as any;
     return (
       s.tracking_number?.toLowerCase().includes(searchLower) ||
-      s.shipping_address?.name?.toLowerCase().includes(searchLower) ||
-      s.shipping_address?.city?.toLowerCase().includes(searchLower)
+      getAddressField(address, 'name').toLowerCase().includes(searchLower) ||
+      getAddressField(address, 'city').toLowerCase().includes(searchLower)
     );
   });
   
@@ -33,8 +39,8 @@ export function ShipmentsTable() {
       printed: { label: 'Imprimée', variant: 'outline', icon: Package },
       picked_up: { label: 'Collectée', variant: 'default', icon: Truck },
       in_transit: { label: 'En transit', variant: 'default', icon: Truck },
-      out_for_delivery: { label: 'En livraison', variant: 'warning', icon: Truck },
-      delivered: { label: 'Livrée', variant: 'success', icon: CheckCircle },
+      out_for_delivery: { label: 'En livraison', variant: 'default', icon: Truck },
+      delivered: { label: 'Livrée', variant: 'default', icon: CheckCircle },
       failed: { label: 'Échec', variant: 'destructive', icon: AlertTriangle },
       returned: { label: 'Retournée', variant: 'secondary', icon: AlertTriangle }
     };
@@ -109,6 +115,8 @@ export function ShipmentsTable() {
               ) : (
                 filteredShipments.map((shipment) => {
                   const status = getStatusInfo(shipment.status);
+                  const address = shipment.shipping_address as any;
+                  const shippingCost = shipment.shipping_cost || 0;
                   return (
                     <TableRow key={shipment.id}>
                       <TableCell>
@@ -117,13 +125,13 @@ export function ShipmentsTable() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {shipment.carrier?.carrier_name || '-'}
+                        {shipment.carrier_name || '-'}
                       </TableCell>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{shipment.shipping_address?.name || '-'}</p>
+                          <p className="font-medium">{getAddressField(address, 'name') || '-'}</p>
                           <p className="text-xs text-muted-foreground">
-                            {shipment.shipping_address?.city}, {shipment.shipping_address?.country}
+                            {getAddressField(address, 'city')}, {getAddressField(address, 'country')}
                           </p>
                         </div>
                       </TableCell>
@@ -134,7 +142,7 @@ export function ShipmentsTable() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        {shipment.total_cost?.toFixed(2) || '-'} €
+                        {shippingCost.toFixed(2)} €
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {format(new Date(shipment.created_at), 'dd/MM/yyyy', { locale: fr })}

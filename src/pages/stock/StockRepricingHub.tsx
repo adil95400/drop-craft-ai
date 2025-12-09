@@ -138,7 +138,7 @@ export default function StockRepricingHub() {
           </TabsList>
 
           <TabsContent value="alerts">
-            <StockAlertsPanel alerts={stockSync.alerts} resolveAlert={stockSync.resolveAlert} />
+            <StockAlertsPanel />
           </TabsContent>
 
           <TabsContent value="sync">
