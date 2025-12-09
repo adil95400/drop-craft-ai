@@ -3,15 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Chrome, Download, Settings, Zap, Play, BookOpen, BarChart3, History, Database } from "lucide-react";
+import { Chrome, Download, Settings, Zap, Play, BookOpen, BarChart3, History, Database, Loader2 } from "lucide-react";
 import { ExtensionAuthManager } from "@/components/browser-extension/ExtensionAuthManager";
 import { ExtensionUpdateNotification } from "@/components/extensions/ExtensionUpdateNotification";
 import { ExtensionHealthMonitor } from "@/components/extensions/ExtensionHealthMonitor";
 import { ExtensionInstallGuide } from "@/components/extensions/ExtensionInstallGuide";
 import { toast } from "@/hooks/use-toast";
+import { generateExtensionZip } from "@/utils/extensionZipGenerator";
 
 export default function Extension() {
   const [activeTab, setActiveTab] = useState("install");
+  const [isDownloading, setIsDownloading] = useState(false);
+  
   const handleAddToChrome = () => {
     setActiveTab("guide");
     toast({
@@ -19,18 +22,25 @@ export default function Extension() {
       description: "Consultez le guide complet pour installer l'extension Chrome en mode développeur"
     });
   };
-  const handleDownloadExtension = () => {
-    const extensionPath = '/chrome-extension';
-    const link = document.createElement('a');
-    link.href = extensionPath;
-    link.download = 'shopopti-extension';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast({
-      title: "Téléchargement de l'extension",
-      description: "L'extension est disponible dans le dossier public/chrome-extension du projet"
-    });
+  
+  const handleDownloadExtension = async () => {
+    setIsDownloading(true);
+    try {
+      await generateExtensionZip();
+      toast({
+        title: "✅ Téléchargement réussi",
+        description: "Le fichier ZIP de l'extension a été téléchargé. Décompressez-le et chargez-le dans Chrome."
+      });
+    } catch (error) {
+      console.error('Error generating ZIP:', error);
+      toast({
+        title: "Erreur de téléchargement",
+        description: "Une erreur est survenue. Veuillez réessayer.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
   const handleViewDemo = () => {
     window.open('https://www.youtube.com/watch?v=demo', '_blank');
@@ -111,9 +121,17 @@ export default function Extension() {
               <BookOpen className="w-4 h-4 mr-2" />
               Installer
             </Button>
-            <Button className="bg-primary hover:bg-primary/90" onClick={handleDownloadExtension}>
-              <Download className="w-4 h-4 mr-2" />
-              Télécharger Extension
+            <Button 
+              className="bg-primary hover:bg-primary/90" 
+              onClick={handleDownloadExtension}
+              disabled={isDownloading}
+            >
+              {isDownloading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 mr-2" />
+              )}
+              {isDownloading ? "Génération..." : "Télécharger ZIP"}
             </Button>
           </div>
         </div>
