@@ -17781,7 +17781,6 @@ export type Database = {
         }[]
       }
       admin_set_role:
-        | { Args: { new_role: string; target_user_id: string }; Returns: Json }
         | {
             Args: {
               new_role: Database["public"]["Enums"]["app_role"]
@@ -17789,6 +17788,7 @@ export type Database = {
             }
             Returns: Json
           }
+        | { Args: { new_role: string; target_user_id: string }; Returns: Json }
       admin_set_user_role: {
         Args: {
           new_role: Database["public"]["Enums"]["user_role"]
@@ -17808,8 +17808,8 @@ export type Database = {
       auto_sync_product_stock: { Args: never; Returns: undefined }
       auto_unlock_stuck_imports: { Args: never; Returns: undefined }
       calculate_next_sync:
-        | { Args: { integration_id: string }; Returns: string }
         | { Args: { base_time: string; frequency: string }; Returns: string }
+        | { Args: { integration_id: string }; Returns: string }
       calculate_product_ai_score: {
         Args: { p_product_id: string }
         Returns: number
@@ -18329,8 +18329,8 @@ export type Database = {
       }
       is_token_revoked: { Args: { check_user_id: string }; Returns: boolean }
       is_user_admin:
-        | { Args: { check_user_id?: string }; Returns: boolean }
         | { Args: never; Returns: boolean }
+        | { Args: { check_user_id?: string }; Returns: boolean }
       is_user_admin_secure: {
         Args: { check_user_id: string }
         Returns: boolean
@@ -18445,11 +18445,11 @@ export type Database = {
       simple_mask_phone: { Args: { phone: string }; Returns: string }
       unlock_stuck_import_jobs: { Args: never; Returns: number }
       user_has_role:
-        | { Args: { required_role: string; user_id: string }; Returns: boolean }
         | {
             Args: { _role: Database["public"]["Enums"]["app_role"] }
             Returns: boolean
           }
+        | { Args: { required_role: string; user_id: string }; Returns: boolean }
       validate_customer_access: {
         Args: { customer_id: string }
         Returns: boolean

@@ -67,60 +67,88 @@ async function matchProductOnMarketplace(
   }
 }
 
-// Amazon via Rainforest API - REAL API ONLY
+// Amazon via RapidAPI Product Data API - REAL API ONLY
 async function fetchAmazonData(
   identifier: string,
   matchedVia: string,
   product: any
 ): Promise<MarketplaceData | null> {
-  const rainforestApiKey = Deno.env.get('RAINFOREST_API_KEY');
+  const rapidApiKey = Deno.env.get('RAPIDAPI_KEY');
   
-  if (!rainforestApiKey) {
-    console.error('RAINFOREST_API_KEY not configured - cannot enrich from Amazon');
+  if (!rapidApiKey) {
+    console.error('RAPIDAPI_KEY not configured - cannot enrich from Amazon');
     return null;
   }
 
   try {
-    console.log(`Fetching Amazon data for identifier: ${identifier}`);
+    console.log(`Fetching Amazon data via RapidAPI for identifier: ${identifier}`);
     
-    const searchType = matchedVia === 'ean' ? 'gtin' : 'search_term';
-    const url = `https://api.rainforestapi.com/request?api_key=${rainforestApiKey}&type=search&amazon_domain=amazon.fr&${searchType}=${encodeURIComponent(identifier)}`;
+    // Use search endpoint for text queries, or ASIN lookup if we have one
+    let url: string;
+    let options: RequestInit;
     
-    const response = await fetch(url);
+    if (matchedVia === 'ean') {
+      // Search by EAN/barcode
+      url = `https://amazon-product-data6.p.rapidapi.com/product-by-barcode?barcode=${encodeURIComponent(identifier)}&country=FR`;
+    } else {
+      // Text search
+      url = `https://amazon-product-data6.p.rapidapi.com/search?keyword=${encodeURIComponent(identifier)}&country=FR&page=1`;
+    }
+    
+    options = {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': rapidApiKey,
+        'X-RapidAPI-Host': 'amazon-product-data6.p.rapidapi.com'
+      }
+    };
+
+    const response = await fetch(url, options);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Rainforest API error ${response.status}: ${errorText}`);
+      console.error(`RapidAPI Amazon error ${response.status}: ${errorText}`);
       return null;
     }
     
     const data = await response.json();
-    const result = data.search_results?.[0];
+    
+    // Handle different response formats
+    let result: any = null;
+    
+    if (matchedVia === 'ean' && data.product) {
+      result = data.product;
+    } else if (data.products && data.products.length > 0) {
+      result = data.products[0];
+    } else if (data.data && data.data.products) {
+      result = data.data.products[0];
+    }
     
     if (!result) {
       console.log(`No Amazon results found for: ${identifier}`);
       return null;
     }
 
-    console.log(`Amazon product found: ${result.title}`);
+    console.log(`Amazon product found: ${result.title || result.name}`);
     
     return {
       source: 'amazon',
-      source_url: result.link,
+      source_url: result.url || result.product_url || `https://www.amazon.fr/dp/${result.asin}`,
       source_product_id: result.asin,
       matched_via: matchedVia,
-      raw_title: result.title,
-      raw_description: result.description || result.title,
-      raw_images: result.images || (result.image ? [result.image] : []),
-      raw_attributes: result.attributes || {},
-      raw_price: parseFloat(result.price?.value || '0'),
+      raw_title: result.title || result.name,
+      raw_description: result.description || result.feature_bullets?.join(' ') || result.title,
+      raw_images: result.images || (result.image ? [result.image] : result.main_image ? [result.main_image] : []),
+      raw_attributes: result.specifications || result.attributes || {},
+      raw_variants: result.variants || [],
+      raw_price: parseFloat(result.price?.current_price || result.price?.value || result.current_price || '0'),
       raw_currency: result.price?.currency || 'EUR',
-      raw_reviews_count: result.reviews?.total_reviews,
-      raw_rating: result.rating,
-      raw_shipping_info: result.delivery || {},
+      raw_reviews_count: result.reviews_count || result.total_reviews,
+      raw_rating: result.rating || result.stars,
+      raw_shipping_info: result.delivery_info || result.shipping || {},
     };
   } catch (error) {
-    console.error('Rainforest API error:', error);
+    console.error('RapidAPI Amazon error:', error);
     return null;
   }
 }
@@ -345,15 +373,15 @@ serve(async (req) => {
 
     // Check which APIs are configured
     const configuredSources: string[] = [];
-    if (Deno.env.get('RAINFOREST_API_KEY')) configuredSources.push('amazon');
+    if (Deno.env.get('RAPIDAPI_KEY')) configuredSources.push('amazon');
     if (Deno.env.get('ALIEXPRESS_API_KEY') && Deno.env.get('ALIEXPRESS_APP_SECRET')) configuredSources.push('aliexpress');
     if (Deno.env.get('EBAY_CLIENT_ID') && Deno.env.get('EBAY_CLIENT_SECRET')) configuredSources.push('ebay');
 
     if (configuredSources.length === 0) {
       return new Response(JSON.stringify({ 
         error: 'No enrichment APIs configured',
-        message: 'Please configure at least one API: RAINFOREST_API_KEY, ALIEXPRESS_API_KEY, or EBAY_CLIENT_ID',
-        required_secrets: ['RAINFOREST_API_KEY', 'ALIEXPRESS_API_KEY', 'ALIEXPRESS_APP_SECRET', 'EBAY_CLIENT_ID', 'EBAY_CLIENT_SECRET'],
+        message: 'Please configure at least one API: RAPIDAPI_KEY (for Amazon), ALIEXPRESS_API_KEY, or EBAY_CLIENT_ID',
+        required_secrets: ['RAPIDAPI_KEY', 'ALIEXPRESS_API_KEY', 'ALIEXPRESS_APP_SECRET', 'EBAY_CLIENT_ID', 'EBAY_CLIENT_SECRET'],
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
