@@ -28,16 +28,22 @@ interface MarketplaceData {
   raw_shipping_info?: Record<string, any>;
 }
 
-// Product matching via EAN/GTIN using REAL data providers only
+// Product matching via EAN/GTIN/Image using REAL data providers only
 async function matchProductOnMarketplace(
   product: any,
   source: string
 ): Promise<MarketplaceData | null> {
-  const { ean, gtin, upc, name, vendor } = product;
+  const { ean, gtin, upc, name, vendor, image_url } = product;
   
-  // Priority: EAN > GTIN > UPC > Title+Brand
+  // Priority: EAN > GTIN > UPC > Image > Title+Brand
   let matchedVia = 'ean';
   let identifier = ean || gtin || upc;
+  
+  // Try image-based matching if no barcode
+  if (!identifier && image_url) {
+    matchedVia = 'image';
+    identifier = image_url;
+  }
   
   if (!identifier && name) {
     matchedVia = 'title_brand';
@@ -57,6 +63,10 @@ async function matchProductOnMarketplace(
         return await fetchAliExpressData(identifier, matchedVia, product);
       case 'ebay':
         return await fetchEbayData(identifier, matchedVia, product);
+      case 'cdiscount':
+        return await fetchCdiscountData(identifier, matchedVia, product);
+      case 'temu':
+        return await fetchTemuData(identifier, matchedVia, product);
       default:
         console.log(`Source ${source} not supported for real API integration`);
         return null;
@@ -333,6 +343,131 @@ async function fetchEbayData(
   }
 }
 
+// Cdiscount API - REAL API ONLY
+async function fetchCdiscountData(
+  identifier: string,
+  matchedVia: string,
+  product: any
+): Promise<MarketplaceData | null> {
+  const cdiscountApiKey = Deno.env.get('CDISCOUNT_API_KEY');
+  
+  if (!cdiscountApiKey) {
+    console.error('CDISCOUNT_API_KEY not configured - cannot enrich from Cdiscount');
+    return null;
+  }
+
+  try {
+    console.log(`Fetching Cdiscount data for identifier: ${identifier}`);
+    
+    // Cdiscount API endpoint
+    const url = `https://api.cdiscount.com/OpenApi/Marketplace/Products?apikey=${cdiscountApiKey}&ean=${encodeURIComponent(identifier)}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Cdiscount API error ${response.status}: ${errorText}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    const result = data.Products?.[0];
+    
+    if (!result) {
+      console.log(`No Cdiscount results found for: ${identifier}`);
+      return null;
+    }
+
+    console.log(`Cdiscount product found: ${result.Name}`);
+    
+    return {
+      source: 'cdiscount',
+      source_url: result.ProductUrl,
+      source_product_id: result.ProductId,
+      matched_via: matchedVia,
+      raw_title: result.Name,
+      raw_description: result.Description,
+      raw_images: result.Images || [],
+      raw_attributes: result.Attributes || {},
+      raw_price: parseFloat(result.Price || '0'),
+      raw_currency: 'EUR',
+      raw_reviews_count: result.ReviewCount,
+      raw_rating: result.Rating,
+      raw_shipping_info: result.ShippingInfo || {},
+    };
+  } catch (error) {
+    console.error('Cdiscount API error:', error);
+    return null;
+  }
+}
+
+// Temu API - Via RapidAPI scraper (no official API)
+async function fetchTemuData(
+  identifier: string,
+  matchedVia: string,
+  product: any
+): Promise<MarketplaceData | null> {
+  const temuApiKey = Deno.env.get('TEMU_API_KEY') || Deno.env.get('RAPIDAPI_KEY');
+  
+  if (!temuApiKey) {
+    console.error('TEMU_API_KEY not configured - cannot enrich from Temu');
+    return null;
+  }
+
+  try {
+    console.log(`Fetching Temu data for identifier: ${identifier}`);
+    
+    // Use RapidAPI Temu scraper
+    const url = `https://temu-com-shopping.p.rapidapi.com/search?keyword=${encodeURIComponent(identifier)}&page=1`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-RapidAPI-Key': temuApiKey,
+        'X-RapidAPI-Host': 'temu-com-shopping.p.rapidapi.com'
+      },
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Temu API error ${response.status}: ${errorText}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    const result = data.data?.items?.[0];
+    
+    if (!result) {
+      console.log(`No Temu results found for: ${identifier}`);
+      return null;
+    }
+
+    console.log(`Temu product found: ${result.title}`);
+    
+    return {
+      source: 'temu',
+      source_url: result.url || `https://www.temu.com/search_result.html?search_key=${encodeURIComponent(identifier)}`,
+      source_product_id: result.id,
+      matched_via: matchedVia,
+      raw_title: result.title,
+      raw_description: result.description || result.title,
+      raw_images: result.images || (result.image ? [result.image] : []),
+      raw_attributes: {},
+      raw_price: parseFloat(result.price || result.salePrice || '0'),
+      raw_currency: result.currency || 'EUR',
+      raw_reviews_count: result.reviewCount,
+      raw_rating: result.rating,
+      raw_shipping_info: { free_shipping: result.freeShipping },
+    };
+  } catch (error) {
+    console.error('Temu API error:', error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -376,6 +511,8 @@ serve(async (req) => {
     if (Deno.env.get('RAPIDAPI_KEY')) configuredSources.push('amazon');
     if (Deno.env.get('ALIEXPRESS_API_KEY') && Deno.env.get('ALIEXPRESS_APP_SECRET')) configuredSources.push('aliexpress');
     if (Deno.env.get('EBAY_CLIENT_ID') && Deno.env.get('EBAY_CLIENT_SECRET')) configuredSources.push('ebay');
+    if (Deno.env.get('CDISCOUNT_API_KEY')) configuredSources.push('cdiscount');
+    if (Deno.env.get('TEMU_API_KEY')) configuredSources.push('temu');
 
     if (configuredSources.length === 0) {
       return new Response(JSON.stringify({ 
