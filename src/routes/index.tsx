@@ -31,6 +31,7 @@ import { FeedRoutes } from './FeedRoutes';
 import { AdminRoutes } from './AdminRoutes';
 import SupplierRoutes from './SupplierRoutes';
 import { ChannelRoutes } from './ChannelRoutes';
+import { FulfillmentRoutes } from './FulfillmentRoutes';
 
 // Import pages
 import ShopifyImportHub from '@/pages/import/ShopifyImportHub';
@@ -157,10 +158,10 @@ export function AppRoutes() {
         <Route path="/rules" element={<ProtectedRoute><AppLayout><ProductRulesPage /></AppLayout></ProtectedRoute>} />
         <Route path="/catalog-intelligence" element={<ProtectedRoute><AppLayout><CatalogIntelligencePage /></AppLayout></ProtectedRoute>} />
         
-        {/* Fulfillment & Promotions */}
-        <Route path="/fulfillment" element={<ProtectedRoute><AppLayout><FulfillmentDashboardPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/fulfillment/rules" element={<ProtectedRoute><AppLayout><FulfillmentRulesPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/fulfillment/carriers" element={<ProtectedRoute><AppLayout><CarriersManagementPage /></AppLayout></ProtectedRoute>} />
+        {/* Fulfillment Module Routes */}
+        <Route path="/fulfillment/*" element={<ProtectedRoute><AppLayout><FulfillmentRoutes /></AppLayout></ProtectedRoute>} />
+        
+        {/* Coupons & Trial */}
         <Route path="/coupons" element={<ProtectedRoute><AppLayout><CouponsManagementPage /></AppLayout></ProtectedRoute>} />
         <Route path="/trial" element={<ProtectedRoute><AppLayout><FreeTrialActivationPage /></AppLayout></ProtectedRoute>} />
         <Route path="/pwa-install" element={<PWAInstallPage />} />
