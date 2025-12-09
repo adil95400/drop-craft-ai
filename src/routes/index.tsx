@@ -58,6 +58,7 @@ const CarriersManagementPage = lazy(() => import('@/pages/CarriersManagementPage
 const PWAInstallPage = lazy(() => import('@/pages/PWAInstallPage'));
 const SimplifiedImportPage = lazy(() => import('@/pages/import/SimplifiedImportPage'));
 const SwaggerPage = lazy(() => import('@/pages/SwaggerPage'));
+const EnrichmentSettingsPage = lazy(() => import('@/pages/enrichment/EnrichmentSettingsPage'));
 
 // Additional pages
 const AdvancedModulesPage = lazy(() => import('@/pages/AdvancedModulesPage'));
@@ -168,6 +169,10 @@ export function AppRoutes() {
         <Route path="/production-readiness" element={<ProtectedRoute><AppLayout><ProductionReadinessPage /></AppLayout></ProtectedRoute>} />
         <Route path="/unified-dashboard" element={<ProtectedRoute><AppLayout><UnifiedDashboardPage /></AppLayout></ProtectedRoute>} />
         <Route path="/home-optimized" element={<ProtectedRoute><AppLayout><OptimizedHomePage /></AppLayout></ProtectedRoute>} />
+        
+        {/* Enrichment Settings */}
+        <Route path="/enrichment" element={<ProtectedRoute><AppLayout><EnrichmentSettingsPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/enrichment/settings" element={<ProtectedRoute><AppLayout><EnrichmentSettingsPage /></AppLayout></ProtectedRoute>} />
         
         {/* Modern Routes - Redirections vers interfaces principales */}
         <Route path="/modern/products" element={<Navigate to="/products" replace />} />
