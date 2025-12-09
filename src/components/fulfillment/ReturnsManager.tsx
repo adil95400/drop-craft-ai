@@ -11,10 +11,22 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
+interface RMAItem {
+  id: string;
+  rma_number: string;
+  status: string;
+  reason_category?: string;
+  reason?: string;
+  customer_notes?: string;
+  refund_amount?: number;
+  requested_at?: string;
+  created_at?: string;
+}
+
 export function ReturnsManager() {
   const { data: returns, isLoading } = useReturns();
   const updateReturn = useUpdateReturn();
-  const [selectedReturn, setSelectedReturn] = useState<any>(null);
+  const [selectedReturn, setSelectedReturn] = useState<RMAItem | null>(null);
   
   const getStatusInfo = (status: string) => {
     const statusMap: Record<string, { label: string; variant: any; icon: any; color: string }> = {
@@ -24,8 +36,8 @@ export function ReturnsManager() {
       shipped_back: { label: 'Expédié', variant: 'default', icon: Package, color: 'text-blue-500' },
       received: { label: 'Reçu', variant: 'default', icon: Package, color: 'text-purple-500' },
       inspected: { label: 'Inspecté', variant: 'outline', icon: Eye, color: 'text-orange-500' },
-      refunded: { label: 'Remboursé', variant: 'success', icon: CheckCircle, color: 'text-green-500' },
-      exchanged: { label: 'Échangé', variant: 'success', icon: RotateCcw, color: 'text-green-500' },
+      refunded: { label: 'Remboursé', variant: 'default', icon: CheckCircle, color: 'text-green-500' },
+      exchanged: { label: 'Échangé', variant: 'default', icon: RotateCcw, color: 'text-green-500' },
       closed: { label: 'Fermé', variant: 'secondary', icon: CheckCircle, color: 'text-muted-foreground' }
     };
     return statusMap[status] || { label: status, variant: 'secondary', icon: Clock, color: 'text-muted-foreground' };
@@ -45,14 +57,14 @@ export function ReturnsManager() {
   };
   
   const handleStatusUpdate = async (id: string, newStatus: string) => {
-    const updates: any = { status: newStatus };
+    const updates: any = { id, status: newStatus };
     if (newStatus === 'approved') updates.approved_at = new Date().toISOString();
     if (newStatus === 'received') updates.received_at = new Date().toISOString();
     if (newStatus === 'refunded' || newStatus === 'exchanged' || newStatus === 'closed') {
       updates.completed_at = new Date().toISOString();
     }
     
-    await updateReturn.mutateAsync({ id, ...updates });
+    await updateReturn.mutateAsync(updates);
   };
   
   if (isLoading) {
@@ -67,6 +79,8 @@ export function ReturnsManager() {
       </Card>
     );
   }
+
+  const rmaList = (returns || []) as RMAItem[];
   
   return (
     <div className="space-y-4">
@@ -91,14 +105,14 @@ export function ReturnsManager() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(!returns || returns.length === 0) ? (
+                {rmaList.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                       Aucune demande de retour
                     </TableCell>
                   </TableRow>
                 ) : (
-                  returns.map((rma) => {
+                  rmaList.map((rma) => {
                     const status = getStatusInfo(rma.status);
                     return (
                       <TableRow key={rma.id}>
@@ -123,7 +137,7 @@ export function ReturnsManager() {
                           {rma.refund_amount ? `${rma.refund_amount.toFixed(2)} €` : '-'}
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {format(new Date(rma.requested_at), 'dd/MM/yyyy', { locale: fr })}
+                          {rma.requested_at ? format(new Date(rma.requested_at), 'dd/MM/yyyy', { locale: fr }) : '-'}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
