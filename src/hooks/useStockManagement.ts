@@ -3,12 +3,9 @@ import { supabase } from '@/integrations/supabase/client'
 import { StockLevel, StockAlert, Warehouse, StockMovement, StockStats } from '@/types/stock'
 import { useToast } from '@/hooks/use-toast'
 
-export const useStockManagement = () => {
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
-
-  // Fetch warehouses
-  const { data: warehouses = [], isLoading: warehousesLoading } = useQuery({
+// Individual hooks for modular usage
+export const useWarehouses = () => {
+  return useQuery({
     queryKey: ['warehouses'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -21,9 +18,61 @@ export const useStockManagement = () => {
       return data as Warehouse[]
     }
   })
+}
 
-  // Fetch stock levels with product and warehouse info
-  const { data: stockLevels = [], isLoading: stockLevelsLoading } = useQuery({
+export const useCreateWarehouse = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async (warehouse: Partial<Warehouse>) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      const { data, error } = await supabase
+        .from('warehouses')
+        .insert([{ ...warehouse, user_id: user.id }])
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['warehouses'] })
+      toast({ title: 'Entrepôt créé', description: 'L\'entrepôt a été créé avec succès' })
+    },
+    onError: (error) => {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' })
+    }
+  })
+}
+
+export const useUpdateWarehouse = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<Warehouse> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('warehouses')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['warehouses'] })
+      toast({ title: 'Entrepôt mis à jour' })
+    }
+  })
+}
+
+export const useStockLevels = () => {
+  return useQuery({
     queryKey: ['stock_levels'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -39,9 +88,49 @@ export const useStockManagement = () => {
       return data as StockLevel[]
     }
   })
+}
 
-  // Fetch active alerts
-  const { data: activeAlerts = [], isLoading: alertsLoading } = useQuery({
+export const useUpdateStockLevel = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
+      const { data, error } = await supabase
+        .from('stock_levels')
+        .update({ quantity })
+        .eq('id', id)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stock_levels'] })
+      toast({ title: 'Stock mis à jour', description: 'Le niveau de stock a été mis à jour' })
+    }
+  })
+}
+
+export const useStockMovements = () => {
+  return useQuery({
+    queryKey: ['stock_movements'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('stock_movements')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100)
+      
+      if (error) throw error
+      return data as StockMovement[]
+    }
+  })
+}
+
+export const useStockAlerts = () => {
+  return useQuery({
     queryKey: ['stock_alerts', 'active'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -55,24 +144,129 @@ export const useStockManagement = () => {
       return data as any[]
     }
   })
+}
 
-  // Fetch stock movements
-  const { data: stockMovements = [], isLoading: movementsLoading } = useQuery({
-    queryKey: ['stock_movements'],
-    queryFn: async () => {
+export const useResolveAlert = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async (alertId: string) => {
       const { data, error } = await supabase
-        .from('stock_movements')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100)
+        .from('stock_alerts')
+        .update({
+          alert_status: 'resolved',
+          resolved_at: new Date().toISOString()
+        })
+        .eq('id', alertId)
+        .select()
+        .single()
       
       if (error) throw error
-      return data as StockMovement[]
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stock_alerts'] })
+      toast({ title: 'Alerte résolue' })
     }
   })
+}
 
-  // Calculate stock stats
-  const stockStats: StockStats = {
+export const useProductVariants = (productId?: string) => {
+  return useQuery({
+    queryKey: ['product_variants', productId],
+    queryFn: async () => {
+      let query = supabase
+        .from('product_variants')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (productId) {
+        query = query.eq('product_id', productId)
+      }
+      
+      const { data, error } = await query
+      if (error) throw error
+      return data
+    },
+    enabled: !!productId || productId === undefined
+  })
+}
+
+export const useCreateVariant = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async (variant: any) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      const { data, error } = await supabase
+        .from('product_variants')
+        .insert([{ ...variant, user_id: user.id }])
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product_variants'] })
+      toast({ title: 'Variante créée' })
+    }
+  })
+}
+
+export const useUpdateVariant = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: any) => {
+      const { data, error } = await supabase
+        .from('product_variants')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product_variants'] })
+      toast({ title: 'Variante mise à jour' })
+    }
+  })
+}
+
+export const useDeleteVariant = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('product_variants')
+        .delete()
+        .eq('id', id)
+      
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product_variants'] })
+      toast({ title: 'Variante supprimée' })
+    }
+  })
+}
+
+export const useStockStats = () => {
+  const { data: stockLevels = [] } = useStockLevels()
+  const { data: warehouses = [] } = useWarehouses()
+  const { data: activeAlerts = [] } = useStockAlerts()
+
+  const stats: StockStats = {
     total_products: stockLevels.length,
     total_warehouses: warehouses.length,
     total_stock_value: stockLevels.reduce((sum, level) => 
@@ -85,11 +279,24 @@ export const useStockManagement = () => {
       level.available_quantity === 0
     ).length,
     active_alerts: activeAlerts.length,
-    predicted_stockouts_7d: 0, // Will be calculated from predictions
-    average_stock_turnover: 0 // Will be calculated from movements
+    predicted_stockouts_7d: 0,
+    average_stock_turnover: 0
   }
 
-  // Update stock level mutation
+  return stats
+}
+
+// Legacy combined hook for backwards compatibility
+export const useStockManagement = () => {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  const { data: warehouses = [], isLoading: warehousesLoading } = useWarehouses()
+  const { data: stockLevels = [], isLoading: stockLevelsLoading } = useStockLevels()
+  const { data: activeAlerts = [], isLoading: alertsLoading } = useStockAlerts()
+  const { data: stockMovements = [], isLoading: movementsLoading } = useStockMovements()
+  const stockStats = useStockStats()
+
   const updateStockLevel = useMutation({
     mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
       const { data, error } = await supabase
@@ -104,21 +311,13 @@ export const useStockManagement = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock_levels'] })
-      toast({
-        title: 'Stock mis à jour',
-        description: 'Le niveau de stock a été mis à jour avec succès'
-      })
+      toast({ title: 'Stock mis à jour', description: 'Le niveau de stock a été mis à jour avec succès' })
     },
     onError: (error) => {
-      toast({
-        title: 'Erreur',
-        description: error.message,
-        variant: 'destructive'
-      })
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' })
     }
   })
 
-  // Record stock movement mutation
   const recordStockMovement = useMutation({
     mutationFn: async (movement: {
       product_id: string
@@ -142,51 +341,15 @@ export const useStockManagement = () => {
         .single()
       
       if (error) throw error
-      
-      // Update stock level manually
-      const quantityChange = movement.movement_type === 'inbound' ? movement.quantity : -movement.quantity
-      
-      // Get current stock level
-      const { data: currentLevel, error: fetchError } = await supabase
-        .from('stock_levels')
-        .select('quantity')
-        .eq('product_id', movement.product_id)
-        .eq('warehouse_id', movement.warehouse_id)
-        .single()
-      
-      if (fetchError) throw fetchError
-      
-      // Update with new quantity
-      const { error: updateError } = await supabase
-        .from('stock_levels')
-        .update({ 
-          quantity: (currentLevel.quantity || 0) + quantityChange
-        })
-        .eq('product_id', movement.product_id)
-        .eq('warehouse_id', movement.warehouse_id)
-      
-      if (updateError) throw updateError
-      
       return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock_levels'] })
       queryClient.invalidateQueries({ queryKey: ['stock_movements'] })
-      toast({
-        title: 'Mouvement enregistré',
-        description: 'Le mouvement de stock a été enregistré'
-      })
-    },
-    onError: (error) => {
-      toast({
-        title: 'Erreur',
-        description: error.message,
-        variant: 'destructive'
-      })
+      toast({ title: 'Mouvement enregistré' })
     }
   })
 
-  // Resolve alert mutation
   const resolveAlert = useMutation({
     mutationFn: async (alertId: string) => {
       const { data, error } = await supabase
@@ -204,10 +367,7 @@ export const useStockManagement = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock_alerts'] })
-      toast({
-        title: 'Alerte résolue',
-        description: 'L\'alerte a été marquée comme résolue'
-      })
+      toast({ title: 'Alerte résolue' })
     }
   })
 
