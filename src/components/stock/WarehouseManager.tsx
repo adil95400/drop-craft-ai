@@ -7,7 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useWarehouses, useCreateWarehouse, useUpdateWarehouse } from '@/hooks/useStockManagement';
-import { Plus, Warehouse, MapPin, Phone, Mail, Edit, Trash2 } from 'lucide-react';
+import { Plus, Warehouse, MapPin, Phone, Mail, Edit } from 'lucide-react';
+
+type WarehouseType = 'standard' | 'cold_storage' | 'hazmat' | 'dropship';
 
 export function WarehouseManager() {
   const { data: warehouses, isLoading } = useWarehouses();
@@ -19,7 +21,7 @@ export function WarehouseManager() {
   const [formData, setFormData] = useState({
     name: '',
     location: '',
-    warehouse_type: 'standard',
+    warehouse_type: 'standard' as WarehouseType,
     capacity: 1000,
     manager_name: '',
     contact_email: '',
@@ -43,9 +45,26 @@ export function WarehouseManager() {
     e.preventDefault();
     
     if (editingWarehouse) {
-      await updateWarehouse.mutateAsync({ id: editingWarehouse.id, ...formData });
+      await updateWarehouse.mutateAsync({ 
+        id: editingWarehouse.id, 
+        name: formData.name,
+        location: formData.location,
+        warehouse_type: formData.warehouse_type,
+        capacity: formData.capacity,
+        manager_name: formData.manager_name,
+        contact_email: formData.contact_email,
+        contact_phone: formData.contact_phone
+      });
     } else {
-      await createWarehouse.mutateAsync(formData);
+      await createWarehouse.mutateAsync({
+        name: formData.name,
+        location: formData.location,
+        warehouse_type: formData.warehouse_type,
+        capacity: formData.capacity,
+        manager_name: formData.manager_name,
+        contact_email: formData.contact_email,
+        contact_phone: formData.contact_phone
+      });
     }
     
     setIsDialogOpen(false);
@@ -57,7 +76,7 @@ export function WarehouseManager() {
     setFormData({
       name: warehouse.name,
       location: warehouse.location || '',
-      warehouse_type: warehouse.warehouse_type,
+      warehouse_type: warehouse.warehouse_type as WarehouseType,
       capacity: warehouse.capacity,
       manager_name: warehouse.manager_name || '',
       contact_email: warehouse.contact_email || '',
@@ -136,7 +155,7 @@ export function WarehouseManager() {
                     <Label htmlFor="type">Type</Label>
                     <Select
                       value={formData.warehouse_type}
-                      onValueChange={(value) => setFormData({ ...formData, warehouse_type: value })}
+                      onValueChange={(value: WarehouseType) => setFormData({ ...formData, warehouse_type: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />

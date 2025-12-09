@@ -13,7 +13,9 @@ interface StockMovementsLogProps {
 }
 
 export function StockMovementsLog({ limit = 50, compact = false }: StockMovementsLogProps) {
-  const { data: movements, isLoading } = useStockMovements(limit);
+  const { data: movements, isLoading } = useStockMovements();
+  
+  const displayedMovements = movements?.slice(0, limit) || [];
   
   const getMovementIcon = (type: string) => {
     switch (type) {
@@ -76,7 +78,7 @@ export function StockMovementsLog({ limit = 50, compact = false }: StockMovement
     );
   }
   
-  if (!movements || movements.length === 0) {
+  if (!displayedMovements || displayedMovements.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -88,7 +90,7 @@ export function StockMovementsLog({ limit = 50, compact = false }: StockMovement
   if (compact) {
     return (
       <div className="space-y-3">
-        {movements.slice(0, 5).map((movement) => (
+        {displayedMovements.slice(0, 5).map((movement) => (
           <div key={movement.id} className="flex items-center gap-3">
             <div className="p-2 rounded-full bg-muted">
               {getMovementIcon(movement.movement_type)}
@@ -124,7 +126,7 @@ export function StockMovementsLog({ limit = 50, compact = false }: StockMovement
       <CardContent className="p-0">
         <ScrollArea className="h-[400px]">
           <div className="divide-y">
-            {movements.map((movement) => (
+            {displayedMovements.map((movement) => (
               <div key={movement.id} className="p-4 hover:bg-muted/50 transition-colors">
                 <div className="flex items-start gap-3">
                   <div className="p-2 rounded-full bg-muted flex-shrink-0">

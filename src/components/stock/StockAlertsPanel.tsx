@@ -4,13 +4,23 @@ import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle, Package } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useStockAlerts, useResolveAlert } from '@/hooks/useStockManagement';
 
 interface StockAlertsPanelProps {
-  alerts: any[];
-  resolveAlert: (alertId: string) => void;
+  limit?: number;
+  compact?: boolean;
 }
 
-export function StockAlertsPanel({ alerts, resolveAlert }: StockAlertsPanelProps) {
+export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
+  const { data: alerts = [], isLoading } = useStockAlerts();
+  const resolveAlertMutation = useResolveAlert();
+  
+  const displayedAlerts = limit ? alerts.slice(0, limit) : alerts;
+  
+  const handleResolve = (alertId: string) => {
+    resolveAlertMutation.mutate(alertId);
+  };
+  
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical': return 'border-destructive bg-destructive/10';
@@ -28,6 +38,51 @@ export function StockAlertsPanel({ alerts, resolveAlert }: StockAlertsPanelProps
     };
     return labels[type] || type;
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="animate-pulse">
+            <div className="h-20 bg-muted rounded" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (compact) {
+    if (displayedAlerts.length === 0) {
+      return (
+        <div className="text-center py-6">
+          <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Aucune alerte active</p>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="space-y-3">
+        {displayedAlerts.map((alert) => (
+          <div key={alert.id} className={`p-3 rounded-lg border ${getSeverityColor(alert.severity)}`}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-destructive" />
+                <Badge variant="outline" className="text-xs">
+                  {getAlertTypeLabel(alert.alert_type)}
+                </Badge>
+              </div>
+              <Button size="sm" variant="ghost" onClick={() => handleResolve(alert.id)}>
+                <CheckCircle className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-sm font-medium mt-1">{alert.product_name}</p>
+            <p className="text-xs text-muted-foreground">{alert.message}</p>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   const criticalAlerts = alerts.filter(a => a.severity === 'critical');
   const otherAlerts = alerts.filter(a => a.severity !== 'critical');
@@ -110,7 +165,7 @@ export function StockAlertsPanel({ alerts, resolveAlert }: StockAlertsPanelProps
                         <span>{formatDistanceToNow(new Date(alert.created_at), { addSuffix: true, locale: fr })}</span>
                       </div>
                     </div>
-                    <Button size="sm" onClick={() => resolveAlert(alert.id)}>
+                    <Button size="sm" onClick={() => handleResolve(alert.id)}>
                       <CheckCircle className="h-4 w-4 mr-2" />
                       Résoudre
                     </Button>
@@ -149,7 +204,7 @@ export function StockAlertsPanel({ alerts, resolveAlert }: StockAlertsPanelProps
                         <span>{formatDistanceToNow(new Date(alert.created_at), { addSuffix: true, locale: fr })}</span>
                       </div>
                     </div>
-                    <Button size="sm" variant="outline" onClick={() => resolveAlert(alert.id)}>
+                    <Button size="sm" variant="outline" onClick={() => handleResolve(alert.id)}>
                       <CheckCircle className="h-4 w-4 mr-2" />
                       Résoudre
                     </Button>

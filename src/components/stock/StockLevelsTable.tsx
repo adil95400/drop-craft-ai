@@ -23,8 +23,8 @@ export function StockLevelsTable() {
   const filteredLevels = stockLevels?.filter((level) => {
     const searchLower = search.toLowerCase();
     return (
-      level.variant?.sku?.toLowerCase().includes(searchLower) ||
-      level.variant?.title?.toLowerCase().includes(searchLower) ||
+      level.product?.sku?.toLowerCase().includes(searchLower) ||
+      level.product?.name?.toLowerCase().includes(searchLower) ||
       level.warehouse?.name?.toLowerCase().includes(searchLower) ||
       level.location_in_warehouse?.toLowerCase().includes(searchLower)
     );
@@ -41,8 +41,7 @@ export function StockLevelsTable() {
     
     await updateStock.mutateAsync({
       id: editingLevel.id,
-      quantity: newQuantity,
-      reason: adjustmentReason || 'Ajustement manuel'
+      quantity: newQuantity
     });
     
     setEditingLevel(null);
@@ -127,8 +126,8 @@ export function StockLevelsTable() {
                     <TableRow key={level.id}>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{level.variant?.title || 'Produit inconnu'}</p>
-                          <p className="text-xs text-muted-foreground">{level.variant?.sku || '-'}</p>
+                          <p className="font-medium">{level.product?.name || 'Produit inconnu'}</p>
+                          <p className="text-xs text-muted-foreground">{level.product?.sku || '-'}</p>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -183,8 +182,8 @@ export function StockLevelsTable() {
           {editingLevel && (
             <div className="space-y-4">
               <div className="p-4 bg-muted rounded-lg">
-                <p className="font-medium">{editingLevel.variant?.title}</p>
-                <p className="text-sm text-muted-foreground">SKU: {editingLevel.variant?.sku}</p>
+                <p className="font-medium">{editingLevel.product?.name}</p>
+                <p className="text-sm text-muted-foreground">SKU: {editingLevel.product?.sku}</p>
                 <p className="text-sm text-muted-foreground">Entrepôt: {editingLevel.warehouse?.name}</p>
               </div>
               
