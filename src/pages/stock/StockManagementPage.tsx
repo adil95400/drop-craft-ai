@@ -12,7 +12,10 @@ import {
   ArrowUpDown,
   Plus,
   Bell,
-  BarChart3
+  BarChart3,
+  Truck,
+  Upload,
+  MapPin
 } from 'lucide-react';
 import { useStockStats, useStockAlerts, useWarehouses } from '@/hooks/useStockManagement';
 import { WarehouseManager } from '@/components/stock/WarehouseManager';
@@ -20,6 +23,9 @@ import { StockLevelsTable } from '@/components/stock/StockLevelsTable';
 import { StockMovementsLog } from '@/components/stock/StockMovementsLog';
 import { StockAlertsPanel } from '@/components/stock/StockAlertsPanel';
 import { VariantManager } from '@/components/stock/VariantManager';
+import { ThirdPartyLogisticsManager } from '@/components/stock/ThirdPartyLogisticsManager';
+import { MultiWarehouseInventory } from '@/components/stock/MultiWarehouseInventory';
+import { StockImportAPI } from '@/components/stock/StockImportAPI';
 
 export default function StockManagementPage() {
   const { t } = useTranslation();
@@ -125,20 +131,24 @@ export default function StockManagementPage() {
       
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto">
+        <TabsList className="flex flex-wrap h-auto gap-1">
           <TabsTrigger value="overview" className="text-xs md:text-sm py-2">
             <BarChart3 className="h-4 w-4 mr-1 md:mr-2" />
             <span className="hidden sm:inline">Vue d'ensemble</span>
             <span className="sm:hidden">Aperçu</span>
           </TabsTrigger>
-          <TabsTrigger value="levels" className="text-xs md:text-sm py-2">
-            <Package className="h-4 w-4 mr-1 md:mr-2" />
-            <span className="hidden sm:inline">Niveaux</span>
-            <span className="sm:hidden">Stock</span>
+          <TabsTrigger value="multi-warehouse" className="text-xs md:text-sm py-2">
+            <MapPin className="h-4 w-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Multi-entrepôts</span>
+            <span className="sm:hidden">Multi</span>
           </TabsTrigger>
-          <TabsTrigger value="variants" className="text-xs md:text-sm py-2">
-            <ArrowUpDown className="h-4 w-4 mr-1 md:mr-2" />
-            Variantes
+          <TabsTrigger value="3pl" className="text-xs md:text-sm py-2">
+            <Truck className="h-4 w-4 mr-1 md:mr-2" />
+            3PL
+          </TabsTrigger>
+          <TabsTrigger value="import" className="text-xs md:text-sm py-2">
+            <Upload className="h-4 w-4 mr-1 md:mr-2" />
+            Import API
           </TabsTrigger>
           <TabsTrigger value="warehouses" className="text-xs md:text-sm py-2">
             <Warehouse className="h-4 w-4 mr-1 md:mr-2" />
@@ -215,12 +225,16 @@ export default function StockManagementPage() {
           </Card>
         </TabsContent>
         
-        <TabsContent value="levels">
-          <StockLevelsTable />
+        <TabsContent value="multi-warehouse">
+          <MultiWarehouseInventory />
         </TabsContent>
         
-        <TabsContent value="variants">
-          <VariantManager />
+        <TabsContent value="3pl">
+          <ThirdPartyLogisticsManager />
+        </TabsContent>
+        
+        <TabsContent value="import">
+          <StockImportAPI />
         </TabsContent>
         
         <TabsContent value="warehouses">
