@@ -35,6 +35,7 @@ const MarketingCalendarPage = lazy(() => import('@/pages/MarketingCalendarPage')
 const SocialCommercePage = lazy(() => import('@/pages/SocialCommercePage'));
 const CreativeStudioPage = lazy(() => import('@/pages/CreativeStudioPage'));
 const ContentGenerationPage = lazy(() => import('@/pages/ContentGenerationPage'));
+const MarketingIntelligencePage = lazy(() => import('@/pages/MarketingIntelligencePage'));
 
 // SEO Tools
 const KeywordResearch = lazy(() => import('@/pages/KeywordResearch'));
@@ -75,6 +76,7 @@ export function MarketingRoutes() {
       <Route path="social-commerce" element={<SocialCommercePage />} />
       <Route path="creative-studio" element={<CreativeStudioPage />} />
       <Route path="content-generation" element={<ContentGenerationPage />} />
+      <Route path="intelligence" element={<MarketingIntelligencePage />} />
       
       {/* SEO Tools */}
       <Route path="seo/keywords" element={<KeywordResearch />} />
