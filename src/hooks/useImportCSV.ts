@@ -238,17 +238,11 @@ export function useImportCSV(options: UseImportCSVOptions = {}) {
         // Log des avertissements
         warnings.forEach(w => {
           addLog('warning', w, undefined, nameValue, rowIndex);
-          updateStats(prev => ({ ...prev, warnings: prev.warnings + 1 }));
         });
 
         if (!valid) {
           errors.forEach(e => addLog('error', e, undefined, nameValue, rowIndex));
           failedRows.push({ row: rowIndex, errors });
-          updateStats(prev => ({ 
-            ...prev, 
-            processed: prev.processed + 1,
-            errors: prev.errors + 1 
-          }));
           continue;
         }
 
@@ -273,7 +267,14 @@ export function useImportCSV(options: UseImportCSVOptions = {}) {
           if (!userData.user) throw new Error('Utilisateur non connecté');
 
           const productsToInsert = batch.map(p => ({
-            ...p.data,
+            name: p.data.name || 'Produit sans nom',
+            price: p.data.price || 0,
+            description: p.data.description || null,
+            sku: p.data.sku || null,
+            category: p.data.category || null,
+            brand: p.data.brand || null,
+            image_url: p.data.image_url || p.data.images?.[0] || null,
+            stock_quantity: p.data.stock || 0,
             user_id: userData.user!.id
           }));
 
@@ -288,22 +289,20 @@ export function useImportCSV(options: UseImportCSVOptions = {}) {
             successCount++;
           });
 
-          updateStats(prev => ({
-            ...prev,
-            processed: prev.processed + batch.length,
-            success: prev.success + batch.length
-          }));
+          updateStats({
+            processed: stats.processed + batch.length,
+            success: stats.success + batch.length
+          });
 
         } catch (batchError) {
           console.error('Batch error:', batchError);
           batch.forEach(p => {
             addLog('error', 'Erreur d\'import', (batchError as Error).message, p.data.name, p.row);
           });
-          updateStats(prev => ({
-            ...prev,
-            processed: prev.processed + batch.length,
-            errors: prev.errors + batch.length
-          }));
+          updateStats({
+            processed: stats.processed + batch.length,
+            errors: stats.errors + batch.length
+          });
         }
 
         // Petit délai entre les batches
