@@ -11,7 +11,10 @@ import {
   Sparkles,
   TrendingUp,
   Target,
-  Zap
+  Zap,
+  Mail,
+  GitBranch,
+  Tag
 } from 'lucide-react'
 
 // AI Components
@@ -26,8 +29,15 @@ import { BehavioralSegmentation } from '@/components/marketing/BehavioralSegment
 import { AdvancedRulesEngine } from '@/components/marketing/AdvancedRulesEngine'
 import { FlexibleAnalytics } from '@/components/marketing/FlexibleAnalytics'
 
+// New Marketing Components
+import { TemplateManager } from '@/components/marketing/TemplateManager'
+import { CampaignPerformanceDashboard } from '@/components/marketing/CampaignPerformanceDashboard'
+import { MultiChannelSequences } from '@/components/marketing/MultiChannelSequences'
+import { DynamicTagsSystem } from '@/components/marketing/DynamicTagsSystem'
+import { ZapierWebhooks } from '@/components/marketing/ZapierWebhooks'
+
 export default function MarketingIntelligencePage() {
-  const [activeTab, setActiveTab] = useState('analytics')
+  const [activeTab, setActiveTab] = useState('performance')
 
   return (
     <>
@@ -37,7 +47,6 @@ export default function MarketingIntelligencePage() {
       </Helmet>
 
       <div className="container mx-auto p-6 space-y-6">
-        {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
@@ -62,81 +71,72 @@ export default function MarketingIntelligencePage() {
           </div>
         </div>
 
-        {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-2 lg:grid-cols-8 h-auto gap-1 bg-muted/50 p-1">
-            <TabsTrigger value="analytics" className="flex items-center gap-2 data-[state=active]:bg-background">
+          <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
+            <TabsTrigger value="performance" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Analytics</span>
+              <span className="hidden sm:inline">Performance</span>
             </TabsTrigger>
-            <TabsTrigger value="ab-testing" className="flex items-center gap-2 data-[state=active]:bg-background">
+            <TabsTrigger value="templates" className="flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              <span className="hidden sm:inline">Templates</span>
+            </TabsTrigger>
+            <TabsTrigger value="sequences" className="flex items-center gap-2">
+              <GitBranch className="h-4 w-4" />
+              <span className="hidden sm:inline">Séquences</span>
+            </TabsTrigger>
+            <TabsTrigger value="tags" className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              <span className="hidden sm:inline">Tags</span>
+            </TabsTrigger>
+            <TabsTrigger value="webhooks" className="flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              <span className="hidden sm:inline">Webhooks</span>
+            </TabsTrigger>
+            <TabsTrigger value="ab-testing" className="flex items-center gap-2">
               <FlaskConical className="h-4 w-4" />
               <span className="hidden sm:inline">A/B Testing</span>
             </TabsTrigger>
-            <TabsTrigger value="segmentation" className="flex items-center gap-2 data-[state=active]:bg-background">
+            <TabsTrigger value="segmentation" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Segments</span>
             </TabsTrigger>
-            <TabsTrigger value="automation" className="flex items-center gap-2 data-[state=active]:bg-background">
+            <TabsTrigger value="automation" className="flex items-center gap-2">
               <Workflow className="h-4 w-4" />
               <span className="hidden sm:inline">Automation</span>
             </TabsTrigger>
-            <TabsTrigger value="seo" className="flex items-center gap-2 data-[state=active]:bg-background">
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">SEO IA</span>
-            </TabsTrigger>
-            <TabsTrigger value="cross-sell" className="flex items-center gap-2 data-[state=active]:bg-background">
-              <Target className="h-4 w-4" />
-              <span className="hidden sm:inline">Cross-sell</span>
-            </TabsTrigger>
-            <TabsTrigger value="pricing" className="flex items-center gap-2 data-[state=active]:bg-background">
-              <Sparkles className="h-4 w-4" />
-              <span className="hidden sm:inline">Prix IA</span>
-            </TabsTrigger>
-            <TabsTrigger value="alerts" className="flex items-center gap-2 data-[state=active]:bg-background">
-              <Zap className="h-4 w-4" />
-              <span className="hidden sm:inline">Alertes</span>
+              <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
           </TabsList>
 
-          {/* Analytics Tab */}
-          <TabsContent value="analytics">
-            <FlexibleAnalytics />
+          <TabsContent value="performance">
+            <CampaignPerformanceDashboard />
           </TabsContent>
-
-          {/* A/B Testing Tab */}
+          <TabsContent value="templates">
+            <TemplateManager />
+          </TabsContent>
+          <TabsContent value="sequences">
+            <MultiChannelSequences />
+          </TabsContent>
+          <TabsContent value="tags">
+            <DynamicTagsSystem />
+          </TabsContent>
+          <TabsContent value="webhooks">
+            <ZapierWebhooks />
+          </TabsContent>
           <TabsContent value="ab-testing">
             <AdvancedABTesting />
           </TabsContent>
-
-          {/* Segmentation Tab */}
           <TabsContent value="segmentation">
             <BehavioralSegmentation />
           </TabsContent>
-
-          {/* Automation Tab */}
           <TabsContent value="automation">
             <AdvancedRulesEngine />
           </TabsContent>
-
-          {/* SEO IA Tab */}
-          <TabsContent value="seo">
-            <AdvancedSEOGenerator />
-          </TabsContent>
-
-          {/* Cross-sell Tab */}
-          <TabsContent value="cross-sell">
-            <CrossSellingEngine />
-          </TabsContent>
-
-          {/* Pricing IA Tab */}
-          <TabsContent value="pricing">
-            <PricePredictionsEngine />
-          </TabsContent>
-
-          {/* Alerts Tab */}
-          <TabsContent value="alerts">
-            <SmartAlertsEngine />
+          <TabsContent value="analytics">
+            <FlexibleAnalytics />
           </TabsContent>
         </Tabs>
       </div>
