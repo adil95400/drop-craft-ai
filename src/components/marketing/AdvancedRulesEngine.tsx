@@ -63,7 +63,7 @@ interface RuleCondition {
   id: string
   field: string
   operator: string
-  value: string | number
+  value: string | number | boolean
   connector?: 'AND' | 'OR'
 }
 
@@ -88,7 +88,11 @@ const triggerTypes = [
   { id: 'customer_signup', label: 'Inscription client', icon: Users },
   { id: 'price_change', label: 'Changement de prix', icon: DollarSign },
   { id: 'stock_low', label: 'Stock faible', icon: AlertTriangle },
-  { id: 'schedule', label: 'Planification', icon: Clock }
+  { id: 'schedule', label: 'Planification', icon: Clock },
+  { id: 'cross_sell_opportunity', label: 'Opportunité cross-sell', icon: Sparkles },
+  { id: 'upsell_opportunity', label: 'Opportunité upsell', icon: Target },
+  { id: 'product_category_match', label: 'Catégorie similaire', icon: Tag },
+  { id: 'purchase_history', label: 'Historique achat', icon: ShoppingCart }
 ]
 
 const actionTypes = [
@@ -98,7 +102,10 @@ const actionTypes = [
   { id: 'update_price', label: 'Modifier prix', icon: DollarSign },
   { id: 'add_tag', label: 'Ajouter tag', icon: Tag },
   { id: 'notify_team', label: 'Notifier équipe', icon: Users },
-  { id: 'create_task', label: 'Créer tâche', icon: CheckCircle2 }
+  { id: 'create_task', label: 'Créer tâche', icon: CheckCircle2 },
+  { id: 'recommend_products', label: 'Recommander produits', icon: Sparkles },
+  { id: 'show_popup', label: 'Afficher popup', icon: Eye },
+  { id: 'add_to_bundle', label: 'Ajouter au bundle', icon: Package }
 ]
 
 const mockRules: AutomationRule[] = [
@@ -169,6 +176,100 @@ const mockRules: AutomationRule[] = [
   },
   {
     id: '4',
+    name: 'Cross-sell accessoires tech',
+    description: 'Recommande automatiquement des accessoires compatibles après achat d\'un produit tech',
+    status: 'active',
+    trigger: {
+      type: 'event',
+      event: 'cross_sell_opportunity',
+      description: 'Achat produit catégorie Électronique'
+    },
+    conditions: [
+      { id: '1', field: 'product_category', operator: '=', value: 'electronics' },
+      { id: '2', field: 'order_value', operator: '>=', value: 100, connector: 'AND' },
+      { id: '3', field: 'has_accessories', operator: '=', value: true, connector: 'AND' }
+    ],
+    actions: [
+      { id: '1', type: 'recommend_products', config: { strategy: 'compatible_accessories', limit: 4, useAI: true }, delay: 0 },
+      { id: '2', type: 'send_email', config: { template: 'cross_sell_accessories', personalized: true }, delay: 86400 },
+      { id: '3', type: 'show_popup', config: { type: 'recommendation', position: 'bottom-right', delay: 5 }, delay: 0 }
+    ],
+    stats: { totalExecutions: 567, successRate: 28.4, lastWeekExecutions: 78, revenue: 3420 },
+    createdAt: '2024-01-05',
+    lastTriggered: '2024-01-21T11:30:00'
+  },
+  {
+    id: '5',
+    name: 'Upsell version premium',
+    description: 'Propose une version premium ou un bundle amélioré pour les produits consultés',
+    status: 'active',
+    trigger: {
+      type: 'event',
+      event: 'upsell_opportunity',
+      description: 'Client consulte un produit avec version premium disponible'
+    },
+    conditions: [
+      { id: '1', field: 'has_premium_variant', operator: '=', value: true },
+      { id: '2', field: 'customer_lifetime_value', operator: '>=', value: 200, connector: 'AND' },
+      { id: '3', field: 'price_difference', operator: '<=', value: 50, connector: 'AND' }
+    ],
+    actions: [
+      { id: '1', type: 'show_popup', config: { type: 'upsell_comparison', showSavings: true }, delay: 10 },
+      { id: '2', type: 'apply_discount', config: { type: 'percentage', value: 5, target: 'premium_variant' }, delay: 0 },
+      { id: '3', type: 'add_tag', config: { tag: 'upsell_candidate' }, delay: 0 }
+    ],
+    stats: { totalExecutions: 892, successRate: 18.7, lastWeekExecutions: 134, revenue: 5680 },
+    createdAt: '2024-01-08',
+    lastTriggered: '2024-01-21T15:22:00'
+  },
+  {
+    id: '6',
+    name: 'Cross-sell post-achat intelligent',
+    description: 'Recommande des produits complémentaires 3 jours après achat basé sur l\'IA',
+    status: 'active',
+    trigger: {
+      type: 'schedule',
+      schedule: '3 days after order',
+      description: '3 jours après commande livrée'
+    },
+    conditions: [
+      { id: '1', field: 'order_status', operator: '=', value: 'delivered' },
+      { id: '2', field: 'customer_satisfaction', operator: '>=', value: 4, connector: 'AND' }
+    ],
+    actions: [
+      { id: '1', type: 'recommend_products', config: { strategy: 'ai_complementary', model: 'collaborative_filtering', limit: 6 }, delay: 0 },
+      { id: '2', type: 'send_email', config: { template: 'post_purchase_recommendations', useAI: true, personalization: 'high' }, delay: 0 },
+      { id: '3', type: 'apply_discount', config: { type: 'percentage', value: 10, code: 'THANKS10', expiry: 7 }, delay: 0 }
+    ],
+    stats: { totalExecutions: 1456, successRate: 24.3, lastWeekExecutions: 189, revenue: 8920 },
+    createdAt: '2024-01-12',
+    lastTriggered: '2024-01-21T08:00:00'
+  },
+  {
+    id: '7',
+    name: 'Bundle dynamique par catégorie',
+    description: 'Crée et propose des bundles automatiques basés sur les achats fréquents',
+    status: 'active',
+    trigger: {
+      type: 'event',
+      event: 'product_category_match',
+      description: 'Client ajoute un produit d\'une catégorie avec bundles disponibles'
+    },
+    conditions: [
+      { id: '1', field: 'category_has_bundles', operator: '=', value: true },
+      { id: '2', field: 'cart_items', operator: '>=', value: 2, connector: 'AND' }
+    ],
+    actions: [
+      { id: '1', type: 'add_to_bundle', config: { strategy: 'frequently_bought_together', maxItems: 4 }, delay: 0 },
+      { id: '2', type: 'apply_discount', config: { type: 'bundle_percentage', value: 15 }, delay: 0 },
+      { id: '3', type: 'show_popup', config: { type: 'bundle_offer', savings: true, countdown: true }, delay: 3 }
+    ],
+    stats: { totalExecutions: 678, successRate: 35.2, lastWeekExecutions: 92, revenue: 6750 },
+    createdAt: '2024-01-15',
+    lastTriggered: '2024-01-21T14:45:00'
+  },
+  {
+    id: '8',
     name: 'Repricing concurrentiel',
     description: 'Ajuste automatiquement les prix si un concurrent est moins cher',
     status: 'paused',
@@ -189,20 +290,22 @@ const mockRules: AutomationRule[] = [
     createdAt: '2024-01-05'
   },
   {
-    id: '5',
-    name: 'Cross-sell post-achat',
-    description: 'Recommande des produits complémentaires 3 jours après achat',
+    id: '9',
+    name: 'Cross-sell basé sur historique',
+    description: 'Recommandations personnalisées basées sur l\'historique d\'achat du client',
     status: 'draft',
     trigger: {
-      type: 'schedule',
-      schedule: '3 days after order',
-      description: '3 jours après commande livrée'
+      type: 'event',
+      event: 'purchase_history',
+      description: 'Client avec historique d\'achat > 3 commandes'
     },
     conditions: [
-      { id: '1', field: 'order_status', operator: '=', value: 'delivered' }
+      { id: '1', field: 'order_count', operator: '>=', value: 3 },
+      { id: '2', field: 'days_since_last_order', operator: '>=', value: 30, connector: 'AND' }
     ],
     actions: [
-      { id: '1', type: 'send_email', config: { template: 'cross_sell', useAI: true }, delay: 0 }
+      { id: '1', type: 'recommend_products', config: { strategy: 'purchase_history_analysis', useAI: true }, delay: 0 },
+      { id: '2', type: 'send_email', config: { template: 'personalized_recommendations' }, delay: 0 }
     ],
     stats: { totalExecutions: 0, successRate: 0, lastWeekExecutions: 0, revenue: 0 },
     createdAt: '2024-01-20'
