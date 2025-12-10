@@ -4,4 +4,4 @@ export { default as EnhancedFeedManager } from './EnhancedFeedManager';
 export * from './MarketplaceLogos';
 export { SupplierCard } from './SupplierCard';
 export { ImportSuppliersDialog } from './ImportSuppliersDialog';
-export { SupplierConnectionModal } from './SupplierConnectionModal';
+export { default as SupplierConnectionModal } from './SupplierConnectionModal';
