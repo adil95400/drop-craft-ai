@@ -15,7 +15,9 @@ import {
   BarChart3,
   Truck,
   Upload,
-  MapPin
+  MapPin,
+  Webhook,
+  Brain
 } from 'lucide-react';
 import { useStockStats, useStockAlerts, useWarehouses } from '@/hooks/useStockManagement';
 import { WarehouseManager } from '@/components/stock/WarehouseManager';
@@ -26,6 +28,8 @@ import { VariantManager } from '@/components/stock/VariantManager';
 import { ThirdPartyLogisticsManager } from '@/components/stock/ThirdPartyLogisticsManager';
 import { MultiWarehouseInventory } from '@/components/stock/MultiWarehouseInventory';
 import { StockImportAPI } from '@/components/stock/StockImportAPI';
+import { StockWebhookSync } from '@/components/stock/StockWebhookSync';
+import { StockPredictions } from '@/components/stock/StockPredictions';
 
 export default function StockManagementPage() {
   const { t } = useTranslation();
@@ -163,6 +167,14 @@ export default function StockManagementPage() {
               </Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="webhooks" className="text-xs md:text-sm py-2">
+            <Webhook className="h-4 w-4 mr-1 md:mr-2" />
+            Webhooks
+          </TabsTrigger>
+          <TabsTrigger value="predictions" className="text-xs md:text-sm py-2">
+            <Brain className="h-4 w-4 mr-1 md:mr-2" />
+            Prédictions IA
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
@@ -243,6 +255,14 @@ export default function StockManagementPage() {
         
         <TabsContent value="alerts">
           <StockAlertsPanel />
+        </TabsContent>
+        
+        <TabsContent value="webhooks">
+          <StockWebhookSync />
+        </TabsContent>
+        
+        <TabsContent value="predictions">
+          <StockPredictions />
         </TabsContent>
       </Tabs>
     </div>
