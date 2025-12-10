@@ -328,13 +328,7 @@ export const StockDashboard = () => {
         </TabsContent>
 
         <TabsContent value="predictions">
-          {stockLevels.length > 0 && warehouses.length > 0 ? (
-            <StockPredictions 
-              productId={stockLevels[0]?.product_id || ''}
-              warehouseId={warehouses[0]?.id || ''}
-              currentStock={stockLevels[0]?.available_quantity || 0}
-            />
-          ) : (
+          <StockPredictions />
             <Card>
               <CardHeader>
                 <CardTitle>Prédictions ML</CardTitle>
