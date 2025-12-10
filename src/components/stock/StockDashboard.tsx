@@ -329,20 +329,6 @@ export const StockDashboard = () => {
 
         <TabsContent value="predictions">
           <StockPredictions />
-            <Card>
-              <CardHeader>
-                <CardTitle>Prédictions ML</CardTitle>
-                <CardDescription>
-                  Prévisions de rupture de stock basées sur l'IA
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-center text-muted-foreground py-8">
-                  Aucun produit disponible pour les prédictions. Ajoutez des produits et des entrepôts pour commencer.
-                </p>
-              </CardContent>
-            </Card>
-          )}
         </TabsContent>
 
         <TabsContent value="movements">
