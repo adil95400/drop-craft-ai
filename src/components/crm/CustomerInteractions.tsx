@@ -69,13 +69,13 @@ interface Activity {
 }
 
 interface CustomerInteractionsProps {
-  customerId: string;
-  customerName: string;
+  customerId?: string;
+  customerName?: string;
 }
 
 export const CustomerInteractions: React.FC<CustomerInteractionsProps> = ({
-  customerId,
-  customerName
+  customerId = 'demo',
+  customerName = 'Tous les clients'
 }) => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('notes');
