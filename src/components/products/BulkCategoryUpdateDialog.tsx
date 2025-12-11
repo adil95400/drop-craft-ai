@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
-import { FolderTree, Plus } from 'lucide-react'
+import { FolderTree, Plus, Loader2, ArrowLeft } from 'lucide-react'
 
 interface BulkCategoryUpdateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   count: number
   existingCategories: string[]
-  onConfirm: (category: string) => void
+  onConfirm: (category: string) => Promise<void> | void
 }
 
 export function BulkCategoryUpdateDialog({ 
@@ -24,21 +24,27 @@ export function BulkCategoryUpdateDialog({
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [showCustomInput, setShowCustomInput] = useState(false)
   const [customCategory, setCustomCategory] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const category = showCustomInput ? customCategory.trim() : selectedCategory
     if (!category) return
     
-    onConfirm(category)
-    onOpenChange(false)
-    setSelectedCategory('')
-    setCustomCategory('')
-    setShowCustomInput(false)
+    setIsLoading(true)
+    try {
+      await onConfirm(category)
+      onOpenChange(false)
+      setSelectedCategory('')
+      setCustomCategory('')
+      setShowCustomInput(false)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FolderTree className="h-5 w-5" />
@@ -93,7 +99,7 @@ export function BulkCategoryUpdateDialog({
               </Button>
             </>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label htmlFor="custom-category">Nouvelle catégorie</Label>
               <Input
                 id="custom-category"
@@ -109,22 +115,37 @@ export function BulkCategoryUpdateDialog({
                   setShowCustomInput(false)
                   setCustomCategory('')
                 }}
+                className="gap-2"
               >
+                <ArrowLeft className="h-4 w-4" />
                 Retour aux catégories existantes
               </Button>
             </div>
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+            className="sm:w-auto w-full"
+          >
             Annuler
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={showCustomInput ? !customCategory.trim() : !selectedCategory}
+            disabled={(showCustomInput ? !customCategory.trim() : !selectedCategory) || isLoading}
+            className="sm:w-auto w-full"
           >
-            Mettre à jour {count} produit{count > 1 ? 's' : ''}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Mise à jour...
+              </>
+            ) : (
+              `Mettre à jour ${count} produit${count > 1 ? 's' : ''}`
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
