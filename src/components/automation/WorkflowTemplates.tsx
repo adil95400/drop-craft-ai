@@ -1,5 +1,5 @@
 /**
- * Templates de workflows prédéfinis
+ * Templates de workflows prédéfinis avec création réelle
  */
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,9 +8,12 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   ShoppingCart, Package, DollarSign, AlertTriangle, Users, Mail,
-  Sparkles, TrendingUp, Clock, Bell, RefreshCw, Zap, Globe
+  Sparkles, TrendingUp, Clock, Bell, RefreshCw, Zap, Globe, Loader2
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { supabase } from '@/integrations/supabase/client'
+import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface WorkflowTemplate {
   id: string
@@ -22,6 +25,9 @@ interface WorkflowTemplate {
   steps: number
   popularity: number
   tags: string[]
+  triggerType: string
+  triggerConditions: Record<string, any>
+  actions: Array<{ type: string; config: Record<string, any> }>
 }
 
 const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
@@ -34,7 +40,10 @@ const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     color: 'emerald',
     steps: 4,
     popularity: 95,
-    tags: ['email', 'marketing', 'conversion']
+    tags: ['email', 'marketing', 'conversion'],
+    triggerType: 'customer_behavior',
+    triggerConditions: { event: 'cart_abandoned', delay_hours: 1 },
+    actions: [{ type: 'send_email', config: { template: 'cart_recovery', discount: '10%' } }]
   },
   {
     id: 'low_stock_alert',
@@ -45,7 +54,10 @@ const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     color: 'red',
     steps: 3,
     popularity: 88,
-    tags: ['stock', 'alerte', 'notification']
+    tags: ['stock', 'alerte', 'notification'],
+    triggerType: 'inventory_level',
+    triggerConditions: { threshold: 10, comparison: 'below' },
+    actions: [{ type: 'notification', config: { urgency: 'high', channels: ['email', 'slack'] } }]
   },
   {
     id: 'auto_repricing',
@@ -56,7 +68,10 @@ const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     color: 'orange',
     steps: 5,
     popularity: 82,
-    tags: ['prix', 'concurrence', 'automatisation']
+    tags: ['prix', 'concurrence', 'automatisation'],
+    triggerType: 'price_change',
+    triggerConditions: { margin_min: 15, competitor_check: true },
+    actions: [{ type: 'price_adjustment', config: { strategy: 'competitive', min_margin: 15 } }]
   },
   {
     id: 'product_import_enrichment',
@@ -67,7 +82,13 @@ const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     color: 'violet',
     steps: 6,
     popularity: 90,
-    tags: ['import', 'IA', 'publication']
+    tags: ['import', 'IA', 'publication'],
+    triggerType: 'scheduled',
+    triggerConditions: { schedule: 'daily', time: '09:00' },
+    actions: [
+      { type: 'update_inventory', config: { action: 'import_new' } },
+      { type: 'notification', config: { type: 'import_complete' } }
+    ]
   },
   {
     id: 'new_customer_welcome',
@@ -78,7 +99,13 @@ const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     color: 'purple',
     steps: 4,
     popularity: 78,
-    tags: ['client', 'onboarding', 'CRM']
+    tags: ['client', 'onboarding', 'CRM'],
+    triggerType: 'customer_behavior',
+    triggerConditions: { event: 'new_customer' },
+    actions: [
+      { type: 'send_email', config: { template: 'welcome' } },
+      { type: 'notification', config: { type: 'new_customer_alert' } }
+    ]
   },
   {
     id: 'order_fulfillment',
@@ -89,7 +116,13 @@ const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     color: 'blue',
     steps: 5,
     popularity: 85,
-    tags: ['commande', 'fulfillment', 'automatisation']
+    tags: ['commande', 'fulfillment', 'automatisation'],
+    triggerType: 'order_status',
+    triggerConditions: { status: 'paid' },
+    actions: [
+      { type: 'create_order', config: { auto_fulfill: true } },
+      { type: 'send_email', config: { template: 'order_confirmation' } }
+    ]
   },
   {
     id: 'daily_report',
@@ -100,7 +133,10 @@ const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     color: 'cyan',
     steps: 3,
     popularity: 72,
-    tags: ['rapport', 'analytics', 'planification']
+    tags: ['rapport', 'analytics', 'planification'],
+    triggerType: 'scheduled',
+    triggerConditions: { schedule: 'daily', time: '09:00' },
+    actions: [{ type: 'send_email', config: { template: 'daily_report' } }]
   },
   {
     id: 'sync_marketplace',
@@ -111,29 +147,10 @@ const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     color: 'indigo',
     steps: 4,
     popularity: 88,
-    tags: ['sync', 'marketplace', 'multi-canal']
-  },
-  {
-    id: 'zapier_integration',
-    name: 'Intégration Zapier avancée',
-    description: 'Déclenchement Zaps selon événements produits avec données enrichies',
-    category: 'Intégrations',
-    icon: Zap,
-    color: 'orange',
-    steps: 3,
-    popularity: 65,
-    tags: ['zapier', 'intégration', 'webhook']
-  },
-  {
-    id: 'competitor_monitoring',
-    name: 'Veille concurrentielle',
-    description: 'Surveillance prix concurrents + alertes + ajustement automatique optionnel',
-    category: 'Veille',
-    icon: Globe,
-    color: 'slate',
-    steps: 5,
-    popularity: 75,
-    tags: ['concurrence', 'veille', 'prix']
+    tags: ['sync', 'marketplace', 'multi-canal'],
+    triggerType: 'scheduled',
+    triggerConditions: { schedule: 'hourly' },
+    actions: [{ type: 'update_inventory', config: { sync_all_channels: true } }]
   }
 ]
 
@@ -143,13 +160,68 @@ interface WorkflowTemplatesProps {
 
 export function WorkflowTemplates({ onSelectTemplate }: WorkflowTemplatesProps) {
   const categories = [...new Set(WORKFLOW_TEMPLATES.map(t => t.category))]
+  const [creatingId, setCreatingId] = useState<string | null>(null)
+  const queryClient = useQueryClient()
+
+  const applyTemplate = async (template: WorkflowTemplate) => {
+    setCreatingId(template.id)
+    try {
+      const { data: userData } = await supabase.auth.getUser()
+      if (!userData.user) {
+        toast.error('Veuillez vous connecter')
+        return
+      }
+
+      // Create trigger
+      const { data: triggerData, error: triggerError } = await supabase
+        .from('automation_triggers')
+        .insert({
+          user_id: userData.user.id,
+          name: template.name,
+          description: template.description,
+          trigger_type: template.triggerType,
+          conditions: template.triggerConditions,
+          is_active: true
+        })
+        .select()
+        .single()
+
+      if (triggerError) throw triggerError
+
+      // Create actions
+      const actionsToInsert = template.actions.map((action, index) => ({
+        user_id: userData.user.id,
+        trigger_id: triggerData.id,
+        action_type: action.type,
+        action_config: action.config,
+        execution_order: index + 1,
+        is_active: true
+      }))
+
+      const { error: actionsError } = await supabase
+        .from('automation_actions')
+        .insert(actionsToInsert)
+
+      if (actionsError) throw actionsError
+
+      queryClient.invalidateQueries({ queryKey: ['automation-triggers'] })
+      queryClient.invalidateQueries({ queryKey: ['automation-actions'] })
+
+      toast.success(`Workflow "${template.name}" créé avec succès!`)
+      onSelectTemplate(template.id)
+    } catch (error: any) {
+      toast.error(`Erreur: ${error.message}`)
+    } finally {
+      setCreatingId(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-2">Templates prêts à l'emploi</h3>
         <p className="text-muted-foreground text-sm">
-          Démarrez rapidement avec nos workflows optimisés et personnalisables
+          Créez instantanément des workflows optimisés - cliquez pour les ajouter
         </p>
       </div>
 
@@ -161,20 +233,22 @@ export function WorkflowTemplates({ onSelectTemplate }: WorkflowTemplatesProps) 
               <div className="grid gap-4 md:grid-cols-2">
                 {WORKFLOW_TEMPLATES.filter(t => t.category === category).map(template => {
                   const Icon = template.icon
+                  const isCreating = creatingId === template.id
                   
                   return (
                     <Card
                       key={template.id}
-                      className="cursor-pointer hover:border-primary/50 transition-all group"
-                      onClick={() => {
-                        onSelectTemplate(template.id)
-                        toast.success(`Template "${template.name}" sélectionné`)
-                      }}
+                      className={`cursor-pointer hover:border-primary/50 transition-all group ${isCreating ? 'opacity-70' : ''}`}
+                      onClick={() => !isCreating && applyTemplate(template)}
                     >
                       <CardHeader className="pb-2">
                         <div className="flex items-start justify-between">
                           <div className={`p-2 rounded-lg bg-${template.color}-500/10 mb-2`}>
-                            <Icon className={`h-5 w-5 text-${template.color}-500`} />
+                            {isCreating ? (
+                              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                            ) : (
+                              <Icon className={`h-5 w-5 text-${template.color}-500`} />
+                            )}
                           </div>
                           <div className="flex items-center gap-2">
                             <Badge variant="secondary" className="text-xs">
