@@ -1,5 +1,5 @@
 /**
- * Logs d'exécution des workflows
+ * Logs d'exécution des workflows - Real Supabase data
  */
 
 import { useState } from 'react'
@@ -12,18 +12,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   CheckCircle2, XCircle, Clock, AlertTriangle, ChevronDown, ChevronRight,
-  Search, RefreshCw, Filter, Calendar, Zap, Eye
+  Search, RefreshCw, Zap, Eye, Loader2
 } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { format, formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { useToast } from '@/hooks/use-toast'
 
 interface ExecutionLog {
   id: string
   workflow_id: string
   workflow_name: string
-  status: 'success' | 'error' | 'running' | 'warning'
+  status: 'success' | 'error' | 'running' | 'pending' | 'completed' | 'failed'
   started_at: string
   completed_at?: string
   duration_ms?: number
@@ -48,86 +49,64 @@ interface StepLog {
   error?: string
 }
 
-// Données de démonstration
-const mockExecutionLogs: ExecutionLog[] = [
-  {
-    id: '1',
-    workflow_id: 'wf1',
-    workflow_name: 'Récupération panier abandonné',
-    status: 'success',
-    started_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    completed_at: new Date(Date.now() - 1000 * 60 * 29).toISOString(),
-    duration_ms: 1250,
-    trigger_type: 'order',
-    steps_executed: 4,
-    steps_total: 4,
-    step_logs: [
-      { step_id: 's1', step_name: 'Trigger: Panier abandonné', status: 'success', started_at: '', duration_ms: 50 },
-      { step_id: 's2', step_name: 'Condition: Valeur > 50€', status: 'success', started_at: '', duration_ms: 30 },
-      { step_id: 's3', step_name: 'Délai: 1 heure', status: 'success', started_at: '', duration_ms: 3600000 },
-      { step_id: 's4', step_name: 'Action: Envoyer email', status: 'success', started_at: '', duration_ms: 850 }
-    ]
-  },
-  {
-    id: '2',
-    workflow_id: 'wf2',
-    workflow_name: 'Alerte stock critique',
-    status: 'success',
-    started_at: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-    completed_at: new Date(Date.now() - 1000 * 60 * 59).toISOString(),
-    duration_ms: 450,
-    trigger_type: 'stock',
-    steps_executed: 2,
-    steps_total: 2,
-    step_logs: [
-      { step_id: 's1', step_name: 'Trigger: Stock < 10', status: 'success', started_at: '', duration_ms: 40 },
-      { step_id: 's2', step_name: 'Action: Notification Slack', status: 'success', started_at: '', duration_ms: 380 }
-    ]
-  },
-  {
-    id: '3',
-    workflow_id: 'wf3',
-    workflow_name: 'Auto-repricing concurrentiel',
-    status: 'error',
-    started_at: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-    completed_at: new Date(Date.now() - 1000 * 60 * 89).toISOString(),
-    duration_ms: 2100,
-    trigger_type: 'price',
-    steps_executed: 2,
-    steps_total: 4,
-    error_message: 'Impossible de récupérer le prix concurrent: timeout API',
-    step_logs: [
-      { step_id: 's1', step_name: 'Trigger: Prix concurrent détecté', status: 'success', started_at: '', duration_ms: 80 },
-      { step_id: 's2', step_name: 'Action: Récupérer prix concurrent', status: 'error', started_at: '', duration_ms: 2000, error: 'Timeout API' },
-      { step_id: 's3', step_name: 'Condition: Écart > 5%', status: 'skipped', started_at: '' },
-      { step_id: 's4', step_name: 'Action: Ajuster prix', status: 'skipped', started_at: '' }
-    ]
-  },
-  {
-    id: '4',
-    workflow_id: 'wf1',
-    workflow_name: 'Récupération panier abandonné',
-    status: 'running',
-    started_at: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-    trigger_type: 'order',
-    steps_executed: 2,
-    steps_total: 4,
-    step_logs: [
-      { step_id: 's1', step_name: 'Trigger: Panier abandonné', status: 'success', started_at: '', duration_ms: 45 },
-      { step_id: 's2', step_name: 'Condition: Valeur > 50€', status: 'success', started_at: '', duration_ms: 28 },
-      { step_id: 's3', step_name: 'Délai: 1 heure', status: 'running', started_at: '' },
-      { step_id: 's4', step_name: 'Action: Envoyer email', status: 'skipped', started_at: '' }
-    ]
-  }
-]
-
 export function WorkflowExecutionLogs() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [expandedLogs, setExpandedLogs] = useState<string[]>([])
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
 
-  // Dans un vrai cas, on chargerait depuis Supabase
-  const logs = mockExecutionLogs
+  // Fetch real execution logs from Supabase
+  const { data: executionLogs = [], isLoading, refetch } = useQuery({
+    queryKey: ['workflow-execution-logs'],
+    queryFn: async () => {
+      const { data: userData } = await supabase.auth.getUser()
+      if (!userData.user) return []
+
+      const { data, error } = await supabase
+        .from('automation_execution_logs')
+        .select(`
+          id,
+          trigger_id,
+          action_id,
+          status,
+          input_data,
+          output_data,
+          error_message,
+          execution_time_ms,
+          started_at,
+          completed_at,
+          automation_triggers!inner (
+            name,
+            trigger_type
+          )
+        `)
+        .eq('user_id', userData.user.id)
+        .order('started_at', { ascending: false })
+        .limit(100)
+
+      if (error) throw error
+
+      return (data || []).map((log: any) => ({
+        id: log.id,
+        workflow_id: log.trigger_id,
+        workflow_name: log.automation_triggers?.name || 'Workflow inconnu',
+        status: log.status === 'completed' ? 'success' : log.status === 'failed' ? 'error' : log.status,
+        started_at: log.started_at,
+        completed_at: log.completed_at,
+        duration_ms: log.execution_time_ms,
+        trigger_type: log.automation_triggers?.trigger_type || 'unknown',
+        steps_executed: log.status === 'completed' ? 1 : 0,
+        steps_total: 1,
+        error_message: log.error_message,
+        input_data: log.input_data,
+        output_data: log.output_data,
+        step_logs: []
+      })) as ExecutionLog[]
+    },
+  })
+
+  const logs = executionLogs
 
   const filteredLogs = logs.filter(log => {
     const matchesSearch = log.workflow_name.toLowerCase().includes(search.toLowerCase())
@@ -208,13 +187,28 @@ export function WorkflowExecutionLogs() {
               <SelectItem value="running">En cours</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon">
-            <RefreshCw className="h-4 w-4" />
+          <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isLoading}>
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
 
       {/* Liste des exécutions */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : filteredLogs.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Zap className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <CardTitle className="mb-2">Aucune exécution</CardTitle>
+            <CardDescription>
+              Les logs d'exécution de vos workflows apparaîtront ici
+            </CardDescription>
+          </CardContent>
+        </Card>
+      ) : (
       <ScrollArea className="h-[500px]">
         <div className="space-y-3">
           {filteredLogs.map(log => (
@@ -304,6 +298,7 @@ export function WorkflowExecutionLogs() {
           ))}
         </div>
       </ScrollArea>
+      )}
     </div>
   )
 }
