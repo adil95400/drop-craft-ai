@@ -217,25 +217,28 @@ export function SmartAlerts() {
     <Card className="relative overflow-hidden">
       {/* Critical Alert Indicator */}
       {criticalCount > 0 && (
-        <div className="absolute top-0 left-0 right-0 h-1 bg-red-500 animate-pulse" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-destructive animate-pulse" />
       )}
 
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Bell className="h-5 w-5" />
-            Alertes Intelligentes
+      <CardHeader className="pb-2 px-3 sm:px-6">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">Alertes Intelligentes</span>
+            <span className="sm:hidden">Alertes</span>
             {unreadCount > 0 && (
-              <Badge className="bg-primary text-primary-foreground">
+              <Badge className="bg-primary text-primary-foreground h-5 min-w-5 flex items-center justify-center">
                 {unreadCount}
               </Badge>
             )}
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="ghost"
               size="icon"
+              className="h-8 w-8"
               onClick={() => setSoundEnabled(!soundEnabled)}
+              aria-label={soundEnabled ? 'Désactiver le son' : 'Activer le son'}
             >
               {soundEnabled ? (
                 <Volume2 className="h-4 w-4" />
@@ -246,24 +249,26 @@ export function SmartAlerts() {
             <Button
               variant="ghost"
               size="sm"
+              className="h-8 text-xs sm:text-sm"
               onClick={dismissAll}
               disabled={unreadCount === 0}
             >
-              Tout lire
+              <span className="hidden sm:inline">Tout lire</span>
+              <span className="sm:hidden">Lire</span>
             </Button>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="px-3 sm:px-6">
         {alerts.length === 0 ? (
-          <div className="py-8 text-center text-muted-foreground">
-            <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
-            <p className="text-sm">Aucune alerte active</p>
-            <p className="text-xs">Tout fonctionne normalement</p>
+          <div className="py-6 sm:py-8 text-center text-muted-foreground">
+            <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 text-green-500" />
+            <p className="text-xs sm:text-sm">Aucune alerte active</p>
+            <p className="text-xs opacity-70">Tout fonctionne normalement</p>
           </div>
         ) : (
-          <ScrollArea className="h-[300px]">
+          <ScrollArea className="h-[250px] sm:h-[300px]">
             <div className="space-y-2">
               {alerts.map((alert) => {
                 const Icon = getAlertIcon(alert.type)
@@ -271,23 +276,26 @@ export function SmartAlerts() {
                   <div
                     key={alert.id}
                     className={cn(
-                      "p-3 rounded-lg border transition-all",
+                      "p-2 sm:p-3 rounded-lg border transition-all cursor-pointer active:scale-[0.99]",
                       getSeverityColor(alert.severity),
                       alert.read && "opacity-60"
                     )}
                     onClick={() => markAsRead(alert.id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && markAsRead(alert.id)}
                   >
-                    <div className="flex items-start gap-3">
-                      <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <Icon className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-sm">{alert.title}</span>
+                          <span className="font-medium text-xs sm:text-sm truncate">{alert.title}</span>
                           {!alert.read && (
-                            <span className="w-2 h-2 rounded-full bg-primary" />
+                            <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
                           )}
                         </div>
-                        <p className="text-xs opacity-80 mb-2">{alert.message}</p>
-                        <div className="flex items-center justify-between">
+                        <p className="text-xs opacity-80 mb-2 line-clamp-2">{alert.message}</p>
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
                           <span className="text-xs opacity-60">
                             {alert.timestamp.toLocaleTimeString('fr-FR', { 
                               hour: '2-digit', 
@@ -296,12 +304,16 @@ export function SmartAlerts() {
                           </span>
                           {alert.actionable && alert.action && (
                             <Button
-                              variant="ghost"
+                              variant="secondary"
                               size="sm"
-                              className="h-6 text-xs"
+                              className="h-6 text-xs px-2"
                               onClick={(e) => {
                                 e.stopPropagation()
-                                alert.action?.onClick()
+                                toast.loading('Action en cours...', { id: 'alert-action' })
+                                setTimeout(() => {
+                                  alert.action?.onClick()
+                                  toast.success('Action terminée', { id: 'alert-action' })
+                                }, 500)
                               }}
                             >
                               {alert.action.label}
