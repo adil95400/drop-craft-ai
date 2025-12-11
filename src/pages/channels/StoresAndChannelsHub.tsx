@@ -60,65 +60,6 @@ interface ChannelConnection {
   created_at: string
 }
 
-// Demo data for international showcase
-const DEMO_CONNECTIONS: ChannelConnection[] = [
-  {
-    id: 'demo-shopify-1',
-    platform_type: 'shopify',
-    platform_name: 'Shopify',
-    shop_domain: 'mode-parisienne.myshopify.com',
-    connection_status: 'connected',
-    last_sync_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    products_synced: 1247,
-    orders_synced: 892,
-    created_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'demo-amazon-1',
-    platform_type: 'amazon',
-    platform_name: 'Amazon Seller',
-    shop_domain: 'Amazon FR - TechStore',
-    connection_status: 'connected',
-    last_sync_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    products_synced: 834,
-    orders_synced: 2156,
-    created_at: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'demo-woocommerce-1',
-    platform_type: 'woocommerce',
-    platform_name: 'WooCommerce',
-    shop_domain: 'boutique-bio.fr',
-    connection_status: 'connected',
-    last_sync_at: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-    products_synced: 456,
-    orders_synced: 321,
-    created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'demo-ebay-1',
-    platform_type: 'ebay',
-    platform_name: 'eBay',
-    shop_domain: 'eBay DE - ElektroShop',
-    connection_status: 'connected',
-    last_sync_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    products_synced: 678,
-    orders_synced: 1543,
-    created_at: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: 'demo-etsy-1',
-    platform_type: 'etsy',
-    platform_name: 'Etsy',
-    shop_domain: 'ArtisanCreations',
-    connection_status: 'error',
-    last_sync_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    products_synced: 234,
-    orders_synced: 567,
-    created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
-  },
-]
-
 export default function StoresAndChannelsHub() {
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -129,21 +70,22 @@ export default function StoresAndChannelsHub() {
   const [searchTerm, setSearchTerm] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
-  // Fetch all channel connections
-  const { data: dbConnections = [], isLoading } = useQuery({
+  // Fetch all channel connections - 100% real data only
+  const { data: connections = [], isLoading } = useQuery({
     queryKey: ['channel-connections'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+      
       const { data, error } = await supabase
         .from('integrations')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       if (error) throw error
       return (data || []) as ChannelConnection[]
     }
   })
-
-  // Merge demo data with real connections (demo shown if no real connections)
-  const connections = dbConnections.length > 0 ? dbConnections : DEMO_CONNECTIONS
 
   // Sync mutation
   const syncMutation = useMutation({
