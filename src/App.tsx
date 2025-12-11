@@ -16,6 +16,7 @@ import { ModalManager } from '@/components/modals/ModalManager';
 import { AppRoutes } from '@/routes';
 import { useAutoTheme } from '@/hooks/useAutoTheme';
 import '@/lib/i18n';
+import '@/styles/design-tokens.css';
 import { PWAInstallBanner } from '@/components/mobile/PWAInstallBanner';
 import { FeedbackWidget } from '@/components/feedback/FeedbackWidget';
 import { OfflineIndicator } from '@/components/offline/OfflineIndicator';
