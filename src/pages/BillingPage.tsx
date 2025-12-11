@@ -1,7 +1,11 @@
+import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Skeleton } from '@/components/ui/skeleton'
+import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
 import {
   CreditCard,
   Download,
@@ -9,9 +13,17 @@ import {
   DollarSign,
   TrendingUp,
   Calendar,
+  Loader2,
+  RefreshCw,
+  AlertCircle,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export default function BillingPage() {
+  const navigate = useNavigate()
+  const [isLoading, setIsLoading] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
   const currentPlan = {
     name: 'Pro',
     price: 99,
@@ -20,36 +32,56 @@ export default function BillingPage() {
   }
 
   const invoices = [
-    {
-      id: '1',
-      number: 'INV-2025-001',
-      date: '2025-01-15',
-      amount: 99.0,
-      status: 'paid',
-    },
-    {
-      id: '2',
-      number: 'INV-2024-012',
-      date: '2024-12-15',
-      amount: 99.0,
-      status: 'paid',
-    },
+    { id: '1', number: 'INV-2025-001', date: '2025-01-15', amount: 99.0, status: 'paid' },
+    { id: '2', number: 'INV-2024-012', date: '2024-12-15', amount: 99.0, status: 'paid' },
   ]
 
   const paymentMethods = [
-    {
-      id: '1',
-      type: 'card',
-      last4: '4242',
-      brand: 'Visa',
-      expiryMonth: 12,
-      expiryYear: 2025,
-      isDefault: true,
-    },
+    { id: '1', type: 'card', last4: '4242', brand: 'Visa', expiryMonth: 12, expiryYear: 2025, isDefault: true },
   ]
 
+  const statsCards = [
+    { label: 'Current Plan', value: currentPlan.name, icon: CreditCard, color: 'text-primary', bgColor: 'bg-primary/10', tab: 'plan' },
+    { label: 'Monthly Cost', value: `€${currentPlan.price}`, icon: DollarSign, color: 'text-green-600', bgColor: 'bg-green-500/10', tab: 'plan' },
+    { label: 'Next Billing', value: new Date(currentPlan.nextBillingDate).toLocaleDateString(), icon: Calendar, color: 'text-blue-600', bgColor: 'bg-blue-500/10', tab: 'invoices' },
+  ]
+
+  const [activeTab, setActiveTab] = useState('plan')
+
+  const handleChangePlan = () => {
+    toast.promise(
+      new Promise(resolve => setTimeout(resolve, 1500)),
+      { loading: 'Chargement des plans...', success: 'Plans disponibles affichés', error: 'Erreur' }
+    )
+  }
+
+  const handleCancelSubscription = () => {
+    toast.error('Action annulée - Veuillez contacter le support pour annuler votre abonnement')
+  }
+
+  const handleAddPaymentMethod = () => {
+    toast.promise(
+      new Promise(resolve => setTimeout(resolve, 1000)),
+      { loading: 'Ouverture du formulaire...', success: 'Formulaire de paiement ouvert', error: 'Erreur' }
+    )
+  }
+
+  const handleDownloadInvoice = (invoiceNumber: string) => {
+    toast.promise(
+      new Promise(resolve => setTimeout(resolve, 800)),
+      { loading: `Téléchargement de ${invoiceNumber}...`, success: `${invoiceNumber} téléchargée`, error: 'Erreur' }
+    )
+  }
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    setIsRefreshing(false)
+    toast.success('Données de facturation actualisées')
+  }
+
   return (
-    <div className="container mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
+    <div className="container mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Billing & Payments</h1>
@@ -57,49 +89,44 @@ export default function BillingPage() {
             Manage your subscription and payment methods
           </p>
         </div>
+        <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
+          <RefreshCw className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")} />
+          Actualiser
+        </Button>
       </div>
 
+      {/* Stats Cards - Clickable */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <Card className="p-4 sm:p-6">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 rounded-lg bg-primary/10">
-              <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Current Plan</p>
-              <p className="text-lg sm:text-2xl font-bold">{currentPlan.name}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-4 sm:p-6">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 rounded-lg bg-green-500/10">
-              <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
-            </div>
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Monthly Cost</p>
-              <p className="text-lg sm:text-2xl font-bold">€{currentPlan.price}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-4 sm:p-6">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 rounded-lg bg-blue-500/10">
-              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Next Billing</p>
-              <p className="text-base sm:text-lg font-bold">
-                {new Date(currentPlan.nextBillingDate).toLocaleDateString()}
-              </p>
-            </div>
-          </div>
-        </Card>
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} className="p-4 sm:p-6">
+              <Skeleton className="h-6 w-6 mb-2" />
+              <Skeleton className="h-4 w-20 mb-1" />
+              <Skeleton className="h-8 w-16" />
+            </Card>
+          ))
+        ) : (
+          statsCards.map((stat, idx) => (
+            <Card 
+              key={idx} 
+              className="p-4 sm:p-6 hover:shadow-lg transition-all cursor-pointer hover:scale-[1.02]"
+              onClick={() => setActiveTab(stat.tab)}
+            >
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className={cn("p-2 sm:p-3 rounded-lg", stat.bgColor)}>
+                  <stat.icon className={cn("w-5 h-5 sm:w-6 sm:h-6", stat.color)} />
+                </div>
+                <div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="text-lg sm:text-2xl font-bold">{stat.value}</p>
+                </div>
+              </div>
+            </Card>
+          ))
+        )}
       </div>
 
-      <Tabs defaultValue="plan" className="space-y-4 sm:space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
         <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
           <TabsList className="inline-flex w-auto min-w-full sm:w-auto">
             <TabsTrigger value="plan" className="text-xs sm:text-sm px-3 py-2">
@@ -130,29 +157,19 @@ export default function BillingPage() {
             </div>
 
             <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                <span className="text-sm sm:text-base">Unlimited products</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                <span className="text-sm sm:text-base">Advanced analytics</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                <span className="text-sm sm:text-base">Priority support</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                <span className="text-sm sm:text-base">API access</span>
-              </div>
+              {['Unlimited products', 'Advanced analytics', 'Priority support', 'API access'].map((feature, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-sm sm:text-base">{feature}</span>
+                </div>
+              ))}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <Button variant="outline" className="flex-1 text-sm">
+              <Button variant="outline" className="flex-1 text-sm" onClick={handleChangePlan}>
                 Change Plan
               </Button>
-              <Button variant="destructive" className="flex-1 text-sm">
+              <Button variant="destructive" className="flex-1 text-sm" onClick={handleCancelSubscription}>
                 Cancel Subscription
               </Button>
             </div>
@@ -163,7 +180,7 @@ export default function BillingPage() {
           <Card className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
               <h2 className="text-lg sm:text-xl font-semibold">Payment Methods</h2>
-              <Button size="sm" className="w-full sm:w-auto">
+              <Button size="sm" className="w-full sm:w-auto" onClick={handleAddPaymentMethod}>
                 <CreditCard className="w-4 h-4 mr-2" />
                 Add Payment Method
               </Button>
@@ -192,10 +209,10 @@ export default function BillingPage() {
                       </div>
                     </div>
                     <div className="flex gap-2 ml-auto sm:ml-0">
-                      <Button variant="outline" size="sm" className="text-xs">
+                      <Button variant="outline" size="sm" className="text-xs" onClick={() => toast.info('Édition de la carte...')}>
                         Edit
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-xs">
+                      <Button variant="ghost" size="sm" className="text-xs" onClick={() => toast.error('Impossible de supprimer la carte par défaut')}>
                         Remove
                       </Button>
                     </div>
@@ -213,7 +230,7 @@ export default function BillingPage() {
               {invoices.map((invoice) => (
                 <div
                   key={invoice.id}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/50"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                 >
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className="p-2 sm:p-3 rounded-lg bg-primary/10">
@@ -229,16 +246,16 @@ export default function BillingPage() {
                   <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 ml-auto">
                     <div className="text-left sm:text-right">
                       <p className="text-sm sm:text-base font-semibold">€{invoice.amount.toFixed(2)}</p>
-                      <Badge
-                        variant={
-                          invoice.status === 'paid' ? 'default' : 'secondary'
-                        }
-                        className="text-xs"
-                      >
+                      <Badge variant={invoice.status === 'paid' ? 'default' : 'secondary'} className="text-xs">
                         {invoice.status}
                       </Badge>
                     </div>
-                    <Button variant="outline" size="sm" className="text-xs">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-xs"
+                      onClick={() => handleDownloadInvoice(invoice.number)}
+                    >
                       <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                       <span className="hidden xs:inline">Download</span>
                     </Button>
