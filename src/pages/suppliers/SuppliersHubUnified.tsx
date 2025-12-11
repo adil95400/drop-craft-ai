@@ -11,11 +11,13 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useRealSuppliers } from '@/hooks/useRealSuppliers'
 import { useSupplierConnection } from '@/hooks/useSupplierConnection'
 import { useSupplierSync } from '@/hooks/useSupplierSync'
 import { ImportSuppliersDialog } from '@/components/suppliers/ImportSuppliersDialog'
+import { toast } from 'sonner'
 import {
   Store, ShoppingCart, Settings, TrendingUp, Package, Globe, Zap,
   CheckCircle, AlertCircle, Search, Plus, Upload, Download, RefreshCw,
@@ -58,20 +60,35 @@ export default function SuppliersHubUnified() {
     setSearchParams({ tab })
   }
 
+  const handleSyncAll = async () => {
+    toast.loading('Synchronisation en cours...', { id: 'sync-all' })
+    try {
+      await syncAllSuppliers()
+      toast.success('Tous les fournisseurs synchronisés', { id: 'sync-all' })
+    } catch {
+      toast.error('Erreur lors de la synchronisation', { id: 'sync-all' })
+    }
+  }
+
+  const handleStatsClick = (label: string) => {
+    toast.info(`Affichage: ${label}`)
+    setActiveTab('suppliers')
+  }
+
   // Quick Actions - Style AutoDS
   const quickActions: QuickAction[] = [
-    { id: 'import-url', label: 'Import URL', icon: Zap, action: () => navigate('/import/url'), badge: 'Rapide' },
-    { id: 'marketplace', label: 'Marketplace', icon: ShoppingCart, action: () => setActiveTab('marketplace') },
-    { id: 'sync-all', label: 'Sync Tous', icon: RefreshCw, action: () => syncAllSuppliers(), variant: 'outline' },
-    { id: 'add-supplier', label: 'Ajouter', icon: Plus, action: () => navigate('/suppliers/create'), variant: 'secondary' },
+    { id: 'import-url', label: 'Import URL', icon: Zap, action: () => { toast.info('Import URL rapide'); navigate('/import/url') }, badge: 'Rapide' },
+    { id: 'marketplace', label: 'Marketplace', icon: ShoppingCart, action: () => { toast.info('Accès Marketplace'); setActiveTab('marketplace') } },
+    { id: 'sync-all', label: 'Sync Tous', icon: RefreshCw, action: handleSyncAll, variant: 'outline' },
+    { id: 'add-supplier', label: 'Ajouter', icon: Plus, action: () => { toast.info('Nouveau fournisseur'); navigate('/suppliers/create') }, variant: 'secondary' },
   ]
 
   // Stats cards data
   const statsCards = [
-    { label: 'Total Fournisseurs', value: stats.total, icon: Store, color: 'text-primary', bgColor: 'bg-primary/10' },
-    { label: 'Actifs', value: stats.active, icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-500/10' },
-    { label: 'Produits Importés', value: suppliers.length * 100, icon: Package, color: 'text-blue-600', bgColor: 'bg-blue-500/10' },
-    { label: 'Pays', value: Object.keys(stats.topCountries || {}).length, icon: Globe, color: 'text-purple-600', bgColor: 'bg-purple-500/10' },
+    { label: 'Total Fournisseurs', value: stats.total, icon: Store, color: 'text-primary', bgColor: 'bg-primary/10', href: '/suppliers' },
+    { label: 'Actifs', value: stats.active, icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-500/10', href: '/suppliers?status=active' },
+    { label: 'Produits Importés', value: suppliers.length * 100, icon: Package, color: 'text-blue-600', bgColor: 'bg-blue-500/10', href: '/products' },
+    { label: 'Pays', value: Object.keys(stats.topCountries || {}).length, icon: Globe, color: 'text-purple-600', bgColor: 'bg-purple-500/10', href: '/suppliers/analytics' },
   ]
 
   return (
@@ -122,21 +139,41 @@ export default function SuppliersHubUnified() {
 
           {/* Stats Cards - Style Channable */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            {statsCards.map((stat, idx) => (
-              <Card key={idx} className="hover:shadow-lg transition-all cursor-pointer" onClick={() => setActiveTab('suppliers')}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
-                      <p className="text-2xl md:text-3xl font-bold mt-1">{stat.value}</p>
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <Card key={idx}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-2">
+                        <Skeleton className="h-3 w-20" />
+                        <Skeleton className="h-8 w-16" />
+                      </div>
+                      <Skeleton className="h-10 w-10 rounded-lg" />
                     </div>
-                    <div className={cn("p-2 rounded-lg", stat.bgColor)}>
-                      <stat.icon className={cn("h-5 w-5", stat.color)} />
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              statsCards.map((stat, idx) => (
+                <Card 
+                  key={idx} 
+                  className="hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer active:scale-[0.98]" 
+                  onClick={() => handleStatsClick(stat.label)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
+                        <p className="text-2xl md:text-3xl font-bold mt-1">{stat.value}</p>
+                      </div>
+                      <div className={cn("p-2 rounded-lg", stat.bgColor)}>
+                        <stat.icon className={cn("h-5 w-5", stat.color)} />
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </div>
 

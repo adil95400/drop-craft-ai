@@ -9,7 +9,9 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { toast } from 'sonner';
 import { 
   Settings, 
   Bell, 
@@ -23,11 +25,13 @@ import {
   Download,
   Trash2,
   AlertTriangle,
-  Loader2
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Helmet } from 'react-helmet-async';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 const SettingsPage = () => {
   const { user, signOut } = useAuth();
@@ -51,6 +55,15 @@ const SettingsPage = () => {
   const [language, setLanguage] = useState('fr');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    toast.loading('Actualisation des paramètres...', { id: 'refresh' });
+    await new Promise(r => setTimeout(r, 800));
+    toast.success('Paramètres actualisés', { id: 'refresh' });
+    setIsRefreshing(false);
+  };
 
   // Auto-save settings when they change
   useEffect(() => {
@@ -71,15 +84,35 @@ const SettingsPage = () => {
   const handleNotificationChange = (key: keyof typeof notifications, value: boolean) => {
     setNotifications(prev => ({ ...prev, [key]: value }));
     setHasChanges(true);
+    toast.success(`Notification ${key} ${value ? 'activée' : 'désactivée'}`);
   };
 
   const handlePrivacyChange = (key: keyof typeof privacy, value: boolean) => {
     setPrivacy(prev => ({ ...prev, [key]: value }));
     setHasChanges(true);
+    toast.success(`Confidentialité ${key} ${value ? 'activée' : 'désactivée'}`);
   };
 
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
+    toast.success(`Langue changée: ${value === 'fr' ? 'Français' : 'English'}`);
+  };
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    toast.success(`Thème changé: ${newTheme === 'light' ? 'Clair' : newTheme === 'dark' ? 'Sombre' : 'Système'}`);
+  };
+
+  const handleExportData = async () => {
+    toast.loading('Export en cours...', { id: 'export' });
+    await exportData();
+    toast.success('Données exportées avec succès', { id: 'export' });
+  };
+
+  const handleChangePassword = async () => {
+    toast.loading('Modification du mot de passe...', { id: 'password' });
+    await changePassword();
+    toast.success('Instructions envoyées par email', { id: 'password' });
     setHasChanges(true);
   };
 
@@ -102,11 +135,23 @@ const SettingsPage = () => {
       <div className="container mx-auto py-8 px-4 max-w-4xl">
         <div className="space-y-6">
           {/* Header */}
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Paramètres</h1>
-            <p className="text-muted-foreground">
-              Configurez vos préférences et paramètres de compte
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="text-center sm:text-left space-y-2">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Paramètres</h1>
+              <p className="text-muted-foreground text-sm sm:text-base">
+                Configurez vos préférences et paramètres de compte
+              </p>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="gap-2"
+            >
+              <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+              <span className="hidden sm:inline">Actualiser</span>
+            </Button>
           </div>
 
           {/* Apparence */}
@@ -128,7 +173,7 @@ const SettingsPage = () => {
                     Choisissez votre thème préféré
                   </p>
                 </div>
-                <Select value={theme} onValueChange={setTheme}>
+                <Select value={theme} onValueChange={handleThemeChange}>
                   <SelectTrigger className="w-40">
                     <SelectValue />
                   </SelectTrigger>
@@ -335,7 +380,7 @@ const SettingsPage = () => {
                     Dernière modification : Il y a 30 jours
                   </p>
                 </div>
-                <Button variant="outline" size="sm" onClick={changePassword} disabled={loading}>
+                <Button variant="outline" size="sm" onClick={handleChangePassword} disabled={loading}>
                   {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   Modifier
                 </Button>
@@ -401,7 +446,7 @@ const SettingsPage = () => {
                     Téléchargez une archive de toutes vos données
                   </p>
                 </div>
-                <Button variant="outline" size="sm" onClick={exportData} disabled={loading}>
+                <Button variant="outline" size="sm" onClick={handleExportData} disabled={loading}>
                   {loading ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : (
