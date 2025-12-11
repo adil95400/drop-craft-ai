@@ -458,36 +458,77 @@ class SupplierHubService {
   }
 
   async connectSupplier(connectorId: string, credentials: Record<string, string>): Promise<boolean> {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log(`Connecting to ${connectorId} with credentials:`, credentials);
-        resolve(Math.random() > 0.1); // 90% success rate
-      }, 1000);
-    });
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) throw new Error('Non authentifié');
+    
+    // Sauvegarder la connexion dans Supabase
+    const { error } = await supabase.from('suppliers').upsert({
+      user_id: user.id,
+      name: connectorId,
+      status: 'active',
+      website: credentials.api_url || credentials.store_url || '',
+      contact_email: credentials.email || '',
+      api_key: credentials.api_key || null
+    }, { onConflict: 'user_id,name' });
+    
+    if (error) {
+      console.error('Erreur connexion fournisseur:', error);
+      return false;
+    }
+    
+    return true;
   }
 
   async disconnectSupplier(connectorId: string): Promise<boolean> {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log(`Disconnecting from ${connectorId}`);
-        resolve(true);
-      }, 500);
-    });
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return false;
+    
+    const { error } = await supabase
+      .from('suppliers')
+      .update({ status: 'inactive' })
+      .eq('user_id', user.id)
+      .eq('name', connectorId);
+    
+    return !error;
   }
 
   async syncProducts(connectorId: string, options?: any): Promise<any> {
-    // Simulate sync process
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          imported: Math.floor(Math.random() * 50) + 10,
-          duplicates: Math.floor(Math.random() * 5),
-          errors: Math.floor(Math.random() * 2)
-        });
-      }, 2000);
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) throw new Error('Non authentifié');
+    
+    // Récupérer le fournisseur
+    const { data: supplier } = await supabase
+      .from('suppliers')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('name', connectorId)
+      .single();
+    
+    if (!supplier) throw new Error('Fournisseur non trouvé');
+    
+    // Compter les produits existants
+    const { count: existingCount } = await supabase
+      .from('supplier_products')
+      .select('*', { count: 'exact', head: true })
+      .eq('supplier_id', supplier.id);
+    
+    // Appeler l'edge function de sync
+    const { data, error } = await supabase.functions.invoke('supplier-sync-products', {
+      body: { supplierId: supplier.id, connectorId, options }
     });
+    
+    if (error) {
+      console.error('Erreur sync:', error);
+      return { imported: 0, duplicates: 0, errors: 1 };
+    }
+    
+    return data || { imported: 0, duplicates: existingCount || 0, errors: 0 };
   }
 
   async syncSupplierProducts(connectorId: string, options?: any): Promise<any> {
@@ -495,8 +536,20 @@ class SupplierHubService {
   }
 
   async scheduleSync(connectorId: string, schedule: any): Promise<boolean> {
-    console.log(`Scheduling sync for ${connectorId}`, schedule);
-    return true;
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return false;
+    
+    const { error } = await supabase.from('automation_workflows').insert({
+      user_id: user.id,
+      name: `Sync ${connectorId}`,
+      trigger_type: 'scheduled',
+      trigger_config: schedule,
+      steps: [{ action: 'sync_supplier', params: { connectorId } }]
+    });
+    
+    return !error;
   }
 
   async triggerManualSync(connectorId: string): Promise<any> {
