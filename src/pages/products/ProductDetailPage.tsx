@@ -9,13 +9,14 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProductsUnifiedService } from '@/services/ProductsUnifiedService'
 import { ProductAnalyticsService } from '@/services/ProductAnalyticsService'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { ArrowLeft, Loader2, Package, TrendingUp, History, Globe, Images, Languages, MessageSquare, Target, Settings, Sparkles } from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
 import { ProductVariantsAdvancedManager } from '@/components/products/ProductVariantsAdvancedManager'
 import { EnrichmentStatusBadge, EnrichmentButton, EnrichmentPreviewPanel } from '@/components/enrichment'
 import { useProductEnrichment } from '@/hooks/useProductEnrichment'
+import { ProductAuditBlock } from '@/components/products/ProductAuditBlock'
 
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -240,16 +241,29 @@ export function ProductDetailPage() {
               </TabsContent>
 
               <TabsContent value="audit">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Audit Qualité Produit</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      Fonctionnalité d'audit en cours d'intégration avec le moteur d'audit unifié
-                    </p>
-                  </CardContent>
-                </Card>
+                <ProductAuditBlock 
+                  product={{
+                    id: product.id,
+                    user_id: userData?.id || '',
+                    name: product.name,
+                    description: product.description,
+                    sku: product.sku,
+                    price: product.price,
+                    cost_price: product.cost_price,
+                    stock_quantity: product.stock_quantity,
+                    category: product.category,
+                    image_url: product.image_url,
+                    images: product.images || [],
+                    source: product.source,
+                    status: product.status,
+                    created_at: product.created_at,
+                    updated_at: product.updated_at
+                  }}
+                  onOptimize={() => {
+                    // Recharger les données du produit après optimisation
+                    window.location.reload()
+                  }}
+                />
               </TabsContent>
 
               <TabsContent value="variants">
