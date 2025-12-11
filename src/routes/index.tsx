@@ -75,6 +75,9 @@ const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
 const ProductionReadinessPage = lazy(() => import('@/pages/ProductionReadinessPage'));
 const UnifiedDashboardPage = lazy(() => import('@/pages/UnifiedDashboardPage'));
 const OptimizedHomePage = lazy(() => import('@/pages/OptimizedHomePage'));
+const AdSpyPage = lazy(() => import('@/pages/AdSpyPage'));
+const WarehousePage = lazy(() => import('@/pages/WarehousePage'));
+const BIAnalyticsPage = lazy(() => import('@/pages/BIAnalyticsPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -170,6 +173,12 @@ export function AppRoutes() {
         <Route path="/production-readiness" element={<ProtectedRoute><AppLayout><ProductionReadinessPage /></AppLayout></ProtectedRoute>} />
         <Route path="/unified-dashboard" element={<ProtectedRoute><AppLayout><UnifiedDashboardPage /></AppLayout></ProtectedRoute>} />
         <Route path="/home-optimized" element={<ProtectedRoute><AppLayout><OptimizedHomePage /></AppLayout></ProtectedRoute>} />
+        
+        {/* Research & Intelligence */}
+        <Route path="/adspy" element={<ProtectedRoute><AppLayout><AdSpyPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/research/adspy" element={<ProtectedRoute><AppLayout><AdSpyPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/warehouse" element={<ProtectedRoute><AppLayout><WarehousePage /></AppLayout></ProtectedRoute>} />
+        <Route path="/bi-analytics" element={<ProtectedRoute><AppLayout><BIAnalyticsPage /></AppLayout></ProtectedRoute>} />
         
         {/* Enrichment Settings */}
         <Route path="/enrichment" element={<ProtectedRoute><AppLayout><EnrichmentSettingsPage /></AppLayout></ProtectedRoute>} />
