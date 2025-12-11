@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Helmet } from 'react-helmet-async';
 import { PublicLayout } from '@/layouts/PublicLayout';
@@ -621,8 +622,15 @@ const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Show loading while auth is being determined
-  if (loading) {
+  // Redirect to dashboard if user is logged in (using useEffect to avoid setState during render)
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  // Show loading while auth is being determined or redirecting
+  if (loading || user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -631,12 +639,6 @@ const Index = () => {
         </div>
       </div>
     );
-  }
-
-  // If user is logged in, redirect to dashboard
-  if (user) {
-    navigate('/dashboard');
-    return null;
   }
 
   return (
