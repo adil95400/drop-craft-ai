@@ -6,6 +6,7 @@ import { RealTimeKPIs } from '@/components/dashboard/RealTimeKPIs';
 import { SmartAlerts } from '@/components/dashboard/SmartAlerts';
 import { PerformanceTestRunner } from '@/components/monitoring/PerformanceTestRunner';
 import { EnrichmentDashboardWidget } from '@/components/enrichment';
+import { RevenueChart } from '@/components/dashboard/RevenueChart';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { TrendingUp, TrendingDown, Package, ShoppingCart, Users, DollarSign } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -117,6 +118,9 @@ export default function Dashboard() {
           );
         })}
       </div>
+
+      {/* Revenue Chart */}
+      <RevenueChart />
 
       {/* Quick Actions */}
       <QuickActions />
