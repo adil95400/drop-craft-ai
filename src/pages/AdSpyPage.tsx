@@ -1,18 +1,16 @@
-import { AdSpyModule } from '@/components/research/AdSpyModule'
-import { useTranslation } from 'react-i18next'
+import { AdSpyDashboard } from '@/components/adspy'
+import { Helmet } from 'react-helmet-async'
 
 export default function AdSpyPage() {
-  const { t } = useTranslation()
-
   return (
-    <div className="container mx-auto py-6 px-4 md:px-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">{t('adspy.title', 'AdSpy - Découverte Produits')}</h1>
-        <p className="text-muted-foreground">
-          {t('adspy.description', 'Découvrez les produits tendance et les publicités performantes')}
-        </p>
+    <>
+      <Helmet>
+        <title>Ad Intelligence Hub - ShopOpti</title>
+        <meta name="description" content="Analysez les publicités, trouvez les produits gagnants et surveillez vos concurrents avec notre intelligence publicitaire style Minea." />
+      </Helmet>
+      <div className="container mx-auto py-6 px-4 md:px-6">
+        <AdSpyDashboard />
       </div>
-      <AdSpyModule />
-    </div>
+    </>
   )
 }
