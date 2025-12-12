@@ -13,6 +13,7 @@ const AIPage = lazy(() => import('@/pages/AIPage'));
 const SecurityDashboard = lazy(() => import('@/pages/SecurityDashboard'));
 const IntegrationsPage = lazy(() => import('@/pages/IntegrationsPage'));
 const AdminPanel = lazy(() => import('@/pages/AdminPanel'));
+const IntelligentSourcingPage = lazy(() => import('@/pages/IntelligentSourcingPage'));
 
 // Composant de chargement
 const ModuleLoadingSkeleton = () => (
@@ -86,6 +87,16 @@ export function ModuleRoutes() {
           element={
             <ModuleGuard moduleId="integrations">
               <IntegrationsPage />
+            </ModuleGuard>
+          } 
+        />
+
+        {/* Sourcing Intelligent - Style Minea */}
+        <Route 
+          path="/sourcing" 
+          element={
+            <ModuleGuard moduleId="sourcing">
+              <IntelligentSourcingPage />
             </ModuleGuard>
           } 
         />
