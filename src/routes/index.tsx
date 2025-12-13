@@ -77,6 +77,7 @@ const UnifiedDashboardPage = lazy(() => import('@/pages/UnifiedDashboardPage'));
 const OptimizedHomePage = lazy(() => import('@/pages/OptimizedHomePage'));
 const AdSpyPage = lazy(() => import('@/pages/AdSpyPage'));
 const WarehousePage = lazy(() => import('@/pages/WarehousePage'));
+const IntelligentSourcingPage = lazy(() => import('@/pages/IntelligentSourcingPage'));
 const BIAnalyticsPage = lazy(() => import('@/pages/BIAnalyticsPage'));
 const WorkflowBuilderPage = lazy(() => import('@/pages/WorkflowBuilderPage'));
 const EmailBuilderPage = lazy(() => import('@/pages/EmailBuilderPage'));
@@ -180,6 +181,7 @@ export function AppRoutes() {
         {/* Research & Intelligence */}
         <Route path="/adspy" element={<ProtectedRoute><AppLayout><AdSpyPage /></AppLayout></ProtectedRoute>} />
         <Route path="/research/adspy" element={<ProtectedRoute><AppLayout><AdSpyPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/sourcing" element={<ProtectedRoute><AppLayout><IntelligentSourcingPage /></AppLayout></ProtectedRoute>} />
         <Route path="/warehouse" element={<ProtectedRoute><AppLayout><WarehousePage /></AppLayout></ProtectedRoute>} />
         <Route path="/bi-analytics" element={<ProtectedRoute><AppLayout><BIAnalyticsPage /></AppLayout></ProtectedRoute>} />
         
