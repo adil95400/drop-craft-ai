@@ -7,10 +7,13 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useIntelligentSourcing, DiscoveredProduct, NicheAnalysis, TrendData } from '@/hooks/useIntelligentSourcing'
+import { AdLibrary } from './AdLibrary'
+import { InfluencerDiscovery } from './InfluencerDiscovery'
+import { WinningProductsGrid } from './WinningProductsGrid'
 import {
   Search, TrendingUp, Target, Zap, Star, ShoppingCart, Plus,
   BarChart3, Globe, Activity, DollarSign, Users, Flame, ArrowUpRight,
-  Lightbulb, Package, AlertCircle, CheckCircle, Eye
+  Lightbulb, Package, AlertCircle, CheckCircle, Eye, Radio, UserCheck
 } from 'lucide-react'
 
 export function IntelligentSourcingHub() {
@@ -33,7 +36,7 @@ export function IntelligentSourcingHub() {
   const [trendCategory, setTrendCategory] = useState('')
   const [productUrl, setProductUrl] = useState('')
   const [priceRange, setPriceRange] = useState({ min: '', max: '' })
-  const [activeTab, setActiveTab] = useState('discover')
+  const [activeTab, setActiveTab] = useState('winners')
 
   const handleDiscoverProducts = async () => {
     if (!searchQuery.trim()) return
@@ -154,10 +157,18 @@ export function IntelligentSourcingHub() {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5 h-auto p-1">
-          <TabsTrigger value="discover" className="flex items-center gap-2 py-2">
-            <Search className="h-4 w-4" />
-            <span className="hidden sm:inline">Découvrir</span>
+        <TabsList className="grid w-full grid-cols-7 h-auto p-1">
+          <TabsTrigger value="winners" className="flex items-center gap-2 py-2">
+            <Flame className="h-4 w-4" />
+            <span className="hidden sm:inline">Winners</span>
+          </TabsTrigger>
+          <TabsTrigger value="adspy" className="flex items-center gap-2 py-2">
+            <Radio className="h-4 w-4" />
+            <span className="hidden sm:inline">Ad Spy</span>
+          </TabsTrigger>
+          <TabsTrigger value="influencers" className="flex items-center gap-2 py-2">
+            <UserCheck className="h-4 w-4" />
+            <span className="hidden sm:inline">Influenceurs</span>
           </TabsTrigger>
           <TabsTrigger value="niches" className="flex items-center gap-2 py-2">
             <Lightbulb className="h-4 w-4" />
@@ -177,56 +188,19 @@ export function IntelligentSourcingHub() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Discover Products Tab */}
-        <TabsContent value="discover" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                Découvrir des Produits Gagnants
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <Input
-                    placeholder="Ex: LED lights, fitness tracker, kitchen gadget..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleDiscoverProducts()}
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    placeholder="Prix min"
-                    value={priceRange.min}
-                    onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
-                    className="w-24"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Prix max"
-                    value={priceRange.max}
-                    onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
-                    className="w-24"
-                  />
-                </div>
-                <Button onClick={handleDiscoverProducts} disabled={isLoading}>
-                  {isLoading ? 'Recherche...' : 'Rechercher'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Winners Tab - Minea Style */}
+        <TabsContent value="winners" className="space-y-4">
+          <WinningProductsGrid />
+        </TabsContent>
 
-          {/* Products Grid */}
-          {products.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {products.map((product, index) => (
-                <ProductCard key={`${product.url}-${index}`} product={product} />
-              ))}
-            </div>
-          )}
+        {/* Ad Spy Tab - Minea Style */}
+        <TabsContent value="adspy" className="space-y-4">
+          <AdLibrary />
+        </TabsContent>
+
+        {/* Influencers Tab */}
+        <TabsContent value="influencers" className="space-y-4">
+          <InfluencerDiscovery />
         </TabsContent>
 
         {/* Niche Analysis Tab */}
