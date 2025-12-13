@@ -666,3 +666,6 @@ verify_jwt = true
 
 [functions.channel-sync-bidirectional]
 verify_jwt = true
+
+[functions.rules-engine-executor]
+verify_jwt = true
