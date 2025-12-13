@@ -1391,6 +1391,111 @@ export type Database = {
         }
         Relationships: []
       }
+      auto_fulfillment_orders: {
+        Row: {
+          carrier: string | null
+          cost_price: number | null
+          created_at: string
+          currency: string | null
+          customer_email: string | null
+          customer_name: string | null
+          delivered_at: string | null
+          error_message: string | null
+          fulfillment_status: string | null
+          id: string
+          last_retry_at: string | null
+          metadata: Json | null
+          order_items: Json
+          processing_completed_at: string | null
+          processing_started_at: string | null
+          profit_margin: number | null
+          retry_count: number | null
+          rule_id: string | null
+          shipped_at: string | null
+          shipping_address: Json | null
+          status: string
+          store_integration_id: string | null
+          store_order_id: string
+          store_platform: string
+          supplier_id: string | null
+          supplier_name: string | null
+          supplier_order_id: string | null
+          total_amount: number | null
+          tracking_number: string | null
+          tracking_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          carrier?: string | null
+          cost_price?: number | null
+          created_at?: string
+          currency?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          fulfillment_status?: string | null
+          id?: string
+          last_retry_at?: string | null
+          metadata?: Json | null
+          order_items?: Json
+          processing_completed_at?: string | null
+          processing_started_at?: string | null
+          profit_margin?: number | null
+          retry_count?: number | null
+          rule_id?: string | null
+          shipped_at?: string | null
+          shipping_address?: Json | null
+          status?: string
+          store_integration_id?: string | null
+          store_order_id: string
+          store_platform: string
+          supplier_id?: string | null
+          supplier_name?: string | null
+          supplier_order_id?: string | null
+          total_amount?: number | null
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          carrier?: string | null
+          cost_price?: number | null
+          created_at?: string
+          currency?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          fulfillment_status?: string | null
+          id?: string
+          last_retry_at?: string | null
+          metadata?: Json | null
+          order_items?: Json
+          processing_completed_at?: string | null
+          processing_started_at?: string | null
+          profit_margin?: number | null
+          retry_count?: number | null
+          rule_id?: string | null
+          shipped_at?: string | null
+          shipping_address?: Json | null
+          status?: string
+          store_integration_id?: string | null
+          store_order_id?: string
+          store_platform?: string
+          supplier_id?: string | null
+          supplier_name?: string | null
+          supplier_order_id?: string | null
+          total_amount?: number | null
+          tracking_number?: string | null
+          tracking_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       automated_campaigns: {
         Row: {
           ai_optimization_data: Json
@@ -5049,6 +5154,188 @@ export type Database = {
           supports_insurance?: boolean
           supports_tracking?: boolean
           total_shipments?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      fulfillment_events: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          error_details: string | null
+          event_data: Json | null
+          event_status: string
+          event_type: string
+          fulfillment_order_id: string | null
+          id: string
+          ip_address: string | null
+          source: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          error_details?: string | null
+          event_data?: Json | null
+          event_status: string
+          event_type: string
+          fulfillment_order_id?: string | null
+          id?: string
+          ip_address?: string | null
+          source?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          error_details?: string | null
+          event_data?: Json | null
+          event_status?: string
+          event_type?: string
+          fulfillment_order_id?: string | null
+          id?: string
+          ip_address?: string | null
+          source?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fulfillment_events_fulfillment_order_id_fkey"
+            columns: ["fulfillment_order_id"]
+            isOneToOne: false
+            referencedRelation: "auto_fulfillment_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fulfillment_rules: {
+        Row: {
+          actions: Json
+          condition_logic: string | null
+          conditions: Json
+          created_at: string
+          description: string | null
+          execution_count: number | null
+          failure_count: number | null
+          id: string
+          is_active: boolean | null
+          last_executed_at: string | null
+          name: string
+          price_rules: Json | null
+          priority: number | null
+          rule_type: string
+          stock_rules: Json | null
+          success_count: number | null
+          supplier_preferences: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actions?: Json
+          condition_logic?: string | null
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          execution_count?: number | null
+          failure_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          name: string
+          price_rules?: Json | null
+          priority?: number | null
+          rule_type: string
+          stock_rules?: Json | null
+          success_count?: number | null
+          supplier_preferences?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actions?: Json
+          condition_logic?: string | null
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          execution_count?: number | null
+          failure_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          name?: string
+          price_rules?: Json | null
+          priority?: number | null
+          rule_type?: string
+          stock_rules?: Json | null
+          success_count?: number | null
+          supplier_preferences?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      fulfillment_settings: {
+        Row: {
+          auto_deactivate_oos: boolean | null
+          auto_fulfill_enabled: boolean | null
+          auto_price_sync: boolean | null
+          auto_stock_sync: boolean | null
+          auto_tracking_sync: boolean | null
+          created_at: string
+          default_margin_type: string | null
+          default_margin_value: number | null
+          id: string
+          max_retries: number | null
+          minimum_margin: number | null
+          notification_email: boolean | null
+          notification_webhook: string | null
+          preferred_suppliers: Json | null
+          price_rounding: string | null
+          retry_delay_minutes: number | null
+          retry_failed_orders: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_deactivate_oos?: boolean | null
+          auto_fulfill_enabled?: boolean | null
+          auto_price_sync?: boolean | null
+          auto_stock_sync?: boolean | null
+          auto_tracking_sync?: boolean | null
+          created_at?: string
+          default_margin_type?: string | null
+          default_margin_value?: number | null
+          id?: string
+          max_retries?: number | null
+          minimum_margin?: number | null
+          notification_email?: boolean | null
+          notification_webhook?: string | null
+          preferred_suppliers?: Json | null
+          price_rounding?: string | null
+          retry_delay_minutes?: number | null
+          retry_failed_orders?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_deactivate_oos?: boolean | null
+          auto_fulfill_enabled?: boolean | null
+          auto_price_sync?: boolean | null
+          auto_stock_sync?: boolean | null
+          auto_tracking_sync?: boolean | null
+          created_at?: string
+          default_margin_type?: string | null
+          default_margin_value?: number | null
+          id?: string
+          max_retries?: number | null
+          minimum_margin?: number | null
+          notification_email?: boolean | null
+          notification_webhook?: string | null
+          preferred_suppliers?: Json | null
+          price_rounding?: string | null
+          retry_delay_minutes?: number | null
+          retry_failed_orders?: boolean | null
           updated_at?: string
           user_id?: string
         }
