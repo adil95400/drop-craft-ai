@@ -218,7 +218,60 @@ export class DashboardService {
    * Récupère les produits les plus vendus
    */
   static async getTopProducts(userId: string, limit: number = 5) {
-    // Retourner un tableau vide pour l'instant - sera implémenté avec les données réelles
-    return [];
+    try {
+      // Récupérer les items de commandes
+      const { data: orderItems, error: itemsError } = await supabase
+        .from('order_items')
+        .select('product_id, qty, unit_price, total_price, product_name, product_sku');
+
+      if (itemsError) throw itemsError;
+
+      // Agréger les ventes par produit
+      const productSales: Record<string, { 
+        id: string; 
+        name: string; 
+        sku: string | null;
+        totalSales: number; 
+        totalRevenue: number;
+        quantity: number;
+      }> = {};
+
+      (orderItems || []).forEach(item => {
+        const productId = item.product_id;
+        if (!productId) return;
+
+        if (!productSales[productId]) {
+          productSales[productId] = {
+            id: productId,
+            name: item.product_name || 'Produit inconnu',
+            sku: item.product_sku || null,
+            totalSales: 0,
+            totalRevenue: 0,
+            quantity: 0
+          };
+        }
+
+        productSales[productId].quantity += item.qty || 1;
+        productSales[productId].totalRevenue += item.total_price || ((item.unit_price || 0) * (item.qty || 1));
+        productSales[productId].totalSales += 1;
+      });
+
+      // Trier par quantité vendue et limiter
+      const topProducts = Object.values(productSales)
+        .sort((a, b) => b.quantity - a.quantity)
+        .slice(0, limit)
+        .map(p => ({
+          id: p.id,
+          name: p.name,
+          sku: p.sku,
+          salesCount: p.quantity,
+          revenue: p.totalRevenue
+        }));
+
+      return topProducts;
+    } catch (error) {
+      console.error('Error fetching top products:', error);
+      return [];
+    }
   }
 }
