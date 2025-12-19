@@ -2038,6 +2038,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_get_all_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          is_admin: boolean
+          last_login_at: string
+          last_sign_in_at: string
+          login_count: number
+          plan: string
+          role: string
+          role_updated_at: string
+          subscription_status: string
+        }[]
+      }
       admin_set_role: {
         Args: {
           new_role: Database["public"]["Enums"]["app_role"]

@@ -64,7 +64,7 @@ export const EnhancedUserManagement = () => {
   const { t } = useTranslation(['common', 'settings'])
   const { toast } = useToast()
   const [selectedUser, setSelectedUser] = useState<string | null>(null)
-  const [newRole, setNewRole] = useState<'admin' | 'user'>('user')
+  const [newRole, setNewRole] = useState<'admin' | 'moderator' | 'user'>('user')
   const [selectedUserForPlan, setSelectedUserForPlan] = useState<EnhancedUser | null>(null)
   const [newPlan, setNewPlan] = useState<PlanType>('standard')
   const [isPlanDialogOpen, setIsPlanDialogOpen] = useState(false)
@@ -74,7 +74,7 @@ export const EnhancedUserManagement = () => {
     fetchAllUsers()
   }, [])
 
-  const handleRoleChange = async (userId: string, role: 'admin' | 'user') => {
+  const handleRoleChange = async (userId: string, role: 'admin' | 'moderator' | 'user') => {
     await changeUserRole(userId, role)
     setSelectedUser(null)
   }
@@ -127,6 +127,14 @@ export const EnhancedUserManagement = () => {
         <Badge variant="destructive" className="flex items-center gap-1">
           <Crown className="h-3 w-3" />
           Administrateur
+        </Badge>
+      )
+    }
+    if (role === 'moderator') {
+      return (
+        <Badge variant="default" className="flex items-center gap-1">
+          <Shield className="h-3 w-3" />
+          Modérateur
         </Badge>
       )
     }
@@ -285,38 +293,55 @@ export const EnhancedUserManagement = () => {
                     <TableCell>
                       <div className="flex gap-2">
                         {/* Changement de rôle */}
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
+                        <Dialog>
+                          <DialogTrigger asChild>
                             <Button 
                               variant="outline" 
                               size="sm"
                               onClick={() => {
                                 setSelectedUser(user.id)
-                                setNewRole(user.role === 'admin' || user.is_admin ? 'user' : 'admin')
+                                setNewRole(user.role as 'admin' | 'moderator' | 'user' || 'user')
                               }}
                             >
                               <Settings className="h-4 w-4 mr-1" />
                               Rôle
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Changer le rôle</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Voulez-vous changer le rôle de {user.full_name || user.id} vers{' '}
-                                <strong>{newRole === 'admin' ? 'Administrateur' : 'Utilisateur'}</strong> ?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Annuler</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => handleRoleChange(user.id, newRole)}
-                              >
-                                Confirmer
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Changer le rôle</DialogTitle>
+                              <DialogDescription>
+                                Modifier le rôle de {user.full_name || 'Utilisateur'}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <label className="text-sm font-medium">Nouveau rôle</label>
+                                <Select 
+                                  value={selectedUser === user.id ? newRole : (user.role || 'user')} 
+                                  onValueChange={(value: 'admin' | 'moderator' | 'user') => setNewRole(value)}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="user">Utilisateur</SelectItem>
+                                    <SelectItem value="moderator">Modérateur</SelectItem>
+                                    <SelectItem value="admin">Administrateur</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="flex justify-end gap-2">
+                                <Button 
+                                  onClick={() => handleRoleChange(user.id, newRole)}
+                                  disabled={newRole === user.role}
+                                >
+                                  Confirmer
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
 
                         {/* Changement de plan */}
                         <Dialog open={isPlanDialogOpen && selectedUserForPlan?.id === user.id} onOpenChange={setIsPlanDialogOpen}>
