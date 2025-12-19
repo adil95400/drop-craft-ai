@@ -7,12 +7,30 @@ import { useAdvancedAnalyticsService } from "@/hooks/useAdvancedAnalyticsService
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
 import { TrendingUp, Activity, BarChart3, Zap, PlayCircle, PlusCircle } from "lucide-react"
 
+interface PerformanceMetric {
+  metric_name: string;
+  metric_value: number;
+}
+
+interface PredictiveAnalysis {
+  prediction_type: string;
+  confidence_score: number;
+  predictions: Record<string, unknown>;
+}
+
+interface ABTest {
+  experiment_name: string;
+  status: string;
+  hypothesis: string;
+  statistical_significance: number | null;
+}
+
 export function AdvancedAnalyticsDashboard() {
   const {
-    performanceMetrics,
+    performanceMetrics: rawMetrics,
     reports,
-    predictiveAnalytics,
-    abTests,
+    predictiveAnalytics: rawPredictive,
+    abTests: rawAbTests,
     isLoading,
     generateReport,
     createABTest,
@@ -21,6 +39,11 @@ export function AdvancedAnalyticsDashboard() {
     isCreatingABTest,
     isRunningPredictive
   } = useAdvancedAnalyticsService()
+
+  // Cast to proper types with fallbacks - use unknown first
+  const performanceMetrics = (rawMetrics as unknown as PerformanceMetric[] | undefined) || []
+  const predictiveAnalytics = (rawPredictive as unknown as PredictiveAnalysis[] | undefined) || []
+  const abTests = (rawAbTests as unknown as ABTest[] | undefined) || []
 
   if (isLoading) {
     return (
@@ -78,7 +101,7 @@ export function AdvancedAnalyticsDashboard() {
 
         <TabsContent value="metrics" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {performanceMetrics?.map((metric, index) => (
+            {performanceMetrics.map((metric, index) => (
               <Card key={index}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -103,7 +126,7 @@ export function AdvancedAnalyticsDashboard() {
             ))}
           </div>
 
-          {performanceMetrics && performanceMetrics.length > 0 && (
+          {performanceMetrics.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Évolution des Métriques</CardTitle>
@@ -130,7 +153,7 @@ export function AdvancedAnalyticsDashboard() {
 
         <TabsContent value="predictive" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {predictiveAnalytics?.map((analysis, index) => (
+            {predictiveAnalytics.map((analysis, index) => (
               <Card key={index}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -183,7 +206,7 @@ export function AdvancedAnalyticsDashboard() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {abTests?.map((test, index) => (
+            {abTests.map((test, index) => (
               <Card key={index}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -213,27 +236,20 @@ export function AdvancedAnalyticsDashboard() {
 
         <TabsContent value="reports" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {reports?.map((report, index) => (
+            {(reports || []).map((report: any, index: number) => (
               <Card key={index}>
                 <CardHeader>
-                  <CardTitle>{report.report_name}</CardTitle>
+                  <CardTitle className="text-lg">{report.report_name || 'Rapport'}</CardTitle>
                   <CardDescription>
-                    Type: {report.report_type} • 
-                    <Badge variant={report.status === 'completed' ? 'default' : 'secondary'} className="ml-1">
-                      {report.status}
-                    </Badge>
+                    Type: {report.report_type || 'Standard'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div>Généré: {new Date(report.generated_at).toLocaleDateString()}</div>
-                    {report.file_url && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={report.file_url} target="_blank" rel="noopener noreferrer">
-                          Télécharger
-                        </a>
-                      </Button>
-                    )}
+                  <div className="flex justify-between items-center">
+                    <Badge variant="outline">{report.status || 'ready'}</Badge>
+                    <Button variant="ghost" size="sm">
+                      Voir
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

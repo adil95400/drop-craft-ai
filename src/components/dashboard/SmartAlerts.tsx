@@ -58,8 +58,8 @@ export function SmartAlerts() {
     queryKey: ['low-stock-alerts'],
     queryFn: async () => {
       const { data, count } = await supabase
-        .from('supplier_products')
-        .select('id, name, stock_quantity', { count: 'exact' })
+        .from('products')
+        .select('id, title, stock_quantity', { count: 'exact' })
         .lt('stock_quantity', 10)
         .limit(5)
       return { items: data || [], count: count || 0 }

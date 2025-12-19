@@ -69,7 +69,7 @@ export function RealTimeAnalytics() {
         .eq('status', 'pending')
       
       const { count: lowStockCount } = await supabase
-        .from('supplier_products')
+        .from('products')
         .select('id', { count: 'exact', head: true })
         .lt('stock_quantity', 10)
 
@@ -91,16 +91,16 @@ export function RealTimeAnalytics() {
     try {
       const { data } = await supabase
         .from('activity_logs')
-        .select('id, action, source, created_at')
+        .select('id, action, entity_type, created_at')
         .order('created_at', { ascending: false })
         .limit(10)
 
       if (data) {
         setRecentEvents(data.map(d => ({
           id: d.id,
-          source: d.source || 'system',
+          source: d.entity_type || 'system',
           event_type: d.action,
-          created_at: d.created_at
+          created_at: d.created_at || ''
         })))
       }
     } catch (e) {
