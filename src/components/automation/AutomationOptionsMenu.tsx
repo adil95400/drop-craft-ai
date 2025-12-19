@@ -64,8 +64,9 @@ export const AutomationOptionsMenu = ({ automation, onToggle, onConfigure }: Aut
         const actionsToInsert = original.automation_actions.map((action: any) => ({
           user_id: userData.user.id,
           trigger_id: newTrigger.id,
+          name: action.name || `${action.action_type} action`,
           action_type: action.action_type,
-          action_config: action.action_config,
+          config: action.config || action.action_config,
           execution_order: action.execution_order,
           is_active: action.is_active
         }));

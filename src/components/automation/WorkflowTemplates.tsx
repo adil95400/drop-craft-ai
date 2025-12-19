@@ -192,8 +192,9 @@ export function WorkflowTemplates({ onSelectTemplate }: WorkflowTemplatesProps) 
       const actionsToInsert = template.actions.map((action, index) => ({
         user_id: userData.user.id,
         trigger_id: triggerData.id,
+        name: `${action.type} - ${template.name}`,
         action_type: action.type,
-        action_config: action.config,
+        config: action.config,
         execution_order: index + 1,
         is_active: true
       }))
