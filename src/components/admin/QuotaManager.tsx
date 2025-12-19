@@ -30,11 +30,14 @@ import {
 } from 'lucide-react';
 
 interface PlanLimit {
-  plan_type: string;
+  id: string;
+  plan_name: string;
   limit_key: string;
   limit_value: number;
   display_name: string;
   description: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface UserQuotaUsage {

@@ -52,7 +52,7 @@ export const ImportMonitoring = () => {
       const avgDuration = completedJobs.length > 0
         ? completedJobs.reduce((sum, j) => {
             const start = new Date(j.started_at || j.created_at).getTime()
-            const end = new Date(j.completed_at || j.updated_at).getTime()
+            const end = new Date(j.completed_at || j.created_at).getTime()
             return sum + (end - start)
           }, 0) / completedJobs.length
         : 0
