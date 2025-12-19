@@ -352,9 +352,9 @@ export function CatalogUltraProInterface() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">Toutes les catégories</SelectItem>
-                    {categories.map((category, index) => (
-                      <SelectItem key={String(category) || `cat-${index}`} value={String(category) || ''}>
-                        {String(category)}
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
                       </SelectItem>
                     ))}
                   </SelectContent>

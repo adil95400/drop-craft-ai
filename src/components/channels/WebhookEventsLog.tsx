@@ -103,10 +103,10 @@ export function WebhookEventsLog({
         return []
       }
 
-      // Map payload for compatibility
+      // Map webhook_data to payload for compatibility
       return (data || []).map(item => ({
         ...item,
-        payload: (item.payload as Record<string, unknown>) || {}
+        payload: item.webhook_data || {}
       })) as unknown as WebhookEvent[]
     },
     refetchInterval: 30000 // Refresh every 30s

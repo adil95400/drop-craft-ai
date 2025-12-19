@@ -1,30 +1,19 @@
-import { useState, useMemo } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   Package, Upload, Settings, FileText, TrendingUp, Zap,
   FileSpreadsheet, Link as LinkIcon, Database, BarChart3,
-  Clock, CheckCircle, XCircle, AlertCircle, RefreshCw, Eye
+  Clock, CheckCircle, XCircle, AlertCircle
 } from 'lucide-react'
 import { useRealImportMethods } from '@/hooks/useRealImportMethods'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 
 export default function ImportHub() {
   const { importMethods, stats, isLoading } = useRealImportMethods()
-  const navigate = useNavigate()
-  const [isRefreshing, setIsRefreshing] = useState(false)
-
-  const handleRefresh = () => {
-    setIsRefreshing(true)
-    toast.success('Données actualisées')
-    setTimeout(() => setIsRefreshing(false), 500)
-  }
 
   // Derniers imports récents
   const recentImports = importMethods.slice(0, 5)
@@ -48,107 +37,68 @@ export default function ImportHub() {
   }
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       {/* En-tête */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-1">Hub d'Import</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Centre de contrôle pour tous vos imports de produits
-          </p>
-        </div>
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="w-full sm:w-auto"
-        >
-          <RefreshCw className={cn("w-4 h-4 mr-2", isRefreshing && "animate-spin")} />
-          Actualiser
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold mb-2">Hub d'Import</h1>
+        <p className="text-muted-foreground">
+          Centre de contrôle pour tous vos imports de produits
+        </p>
       </div>
 
       {/* Statistiques globales */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {isLoading ? (
-          <>
-            {[1, 2, 3, 4].map((i) => (
-              <Card key={i}>
-                <CardContent className="p-4 sm:p-6">
-                  <Skeleton className="h-4 w-20 mb-2" />
-                  <Skeleton className="h-8 w-16" />
-                </CardContent>
-              </Card>
-            ))}
-          </>
-        ) : (
-          <>
-            <Card 
-              className="cursor-pointer hover:shadow-md transition-shadow active:scale-[0.98]"
-              onClick={() => navigate('/import/history')}
-            >
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">Total Imports</p>
-                    <p className="text-xl sm:text-2xl font-bold">{stats.totalMethods}</p>
-                  </div>
-                  <Database className="w-6 h-6 sm:w-8 sm:h-8 text-primary/20" />
-                </div>
-              </CardContent>
-            </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Imports</p>
+                <p className="text-2xl font-bold">{stats.totalMethods}</p>
+              </div>
+              <Database className="w-8 h-8 text-primary/20" />
+            </div>
+          </CardContent>
+        </Card>
 
-            <Card 
-              className="cursor-pointer hover:shadow-md transition-shadow active:scale-[0.98]"
-              onClick={() => navigate('/import/history')}
-            >
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">Actifs</p>
-                    <p className="text-xl sm:text-2xl font-bold text-green-600">{stats.activeMethods}</p>
-                  </div>
-                  <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-green-600/20" />
-                </div>
-              </CardContent>
-            </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Imports Actifs</p>
+                <p className="text-2xl font-bold text-green-600">{stats.activeMethods}</p>
+              </div>
+              <TrendingUp className="w-8 h-8 text-green-600/20" />
+            </div>
+          </CardContent>
+        </Card>
 
-            <Card 
-              className="cursor-pointer hover:shadow-md transition-shadow active:scale-[0.98]"
-              onClick={() => navigate('/import/scheduled')}
-            >
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">En Attente</p>
-                    <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats.pendingJobs}</p>
-                  </div>
-                  <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600/20" />
-                </div>
-              </CardContent>
-            </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">En Attente</p>
+                <p className="text-2xl font-bold text-blue-600">{stats.pendingJobs}</p>
+              </div>
+              <Clock className="w-8 h-8 text-blue-600/20" />
+            </div>
+          </CardContent>
+        </Card>
 
-            <Card 
-              className="cursor-pointer hover:shadow-md transition-shadow active:scale-[0.98]"
-              onClick={() => navigate('/import/history')}
-            >
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">Succès</p>
-                    <p className="text-xl sm:text-2xl font-bold text-green-600">{stats.successfulJobs}</p>
-                  </div>
-                  <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-green-600/20" />
-                </div>
-              </CardContent>
-            </Card>
-          </>
-        )}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Succès</p>
+                <p className="text-2xl font-bold text-green-600">{stats.successfulJobs}</p>
+              </div>
+              <CheckCircle className="w-8 h-8 text-green-600/20" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Cartes de navigation - responsive grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {/* 3 grandes cartes de navigation */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Carte Import par URL - NOUVEAU */}
         <Link to="/import/config">
           <Card className="h-full transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer border-2 hover:border-primary bg-gradient-to-br from-primary/5 to-primary/10">
@@ -344,30 +294,20 @@ export default function ImportHub() {
 
       {/* Derniers imports */}
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Derniers Imports</CardTitle>
+            <CardTitle>Derniers Imports</CardTitle>
             <Link to="/import/history">
-              <Button variant="ghost" size="sm" className="h-8">
-                <Eye className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Voir tout</span>
+              <Button variant="ghost" size="sm">
+                Voir tout
               </Button>
             </Link>
           </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-3 p-4 border rounded-lg">
-                  <Skeleton className="w-10 h-10 rounded-full" />
-                  <div className="flex-1">
-                    <Skeleton className="h-4 w-32 mb-2" />
-                    <Skeleton className="h-3 w-24" />
-                  </div>
-                  <Skeleton className="h-6 w-16" />
-                </div>
-              ))}
+            <div className="text-center py-8 text-muted-foreground">
+              Chargement...
             </div>
           ) : recentImports.length === 0 ? (
             <div className="text-center py-8">
@@ -376,50 +316,32 @@ export default function ImportHub() {
               <p className="text-sm text-muted-foreground mt-1">
                 Commencez par créer votre premier import
               </p>
-              <Button 
-                className="mt-4" 
-                onClick={() => navigate('/import/quick')}
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Créer un import
-              </Button>
             </div>
           ) : (
-            <div className="space-y-2 sm:space-y-3">
+            <div className="space-y-3">
               {recentImports.map((imp) => (
                 <div
                   key={imp.id}
-                  onClick={() => navigate(`/import/history`)}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg hover:bg-accent/5 transition-colors cursor-pointer active:scale-[0.99] gap-2 sm:gap-4"
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/5 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0">
-                      {getStatusIcon(imp.status)}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-medium truncate text-sm sm:text-base">
+                    {getStatusIcon(imp.status)}
+                    <div>
+                      <p className="font-medium">
                         {imp.source_type || 'Import sans nom'}
                       </p>
-                      <p className="text-xs sm:text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">
                         {format(new Date(imp.created_at), 'dd MMM yyyy à HH:mm', { locale: fr })}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 ml-7 sm:ml-0">
-                    <div className="text-left sm:text-right">
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
                       <p className="text-sm font-medium">{imp.success_rows || 0} produits</p>
                       <p className="text-xs text-muted-foreground">{getStatusText(imp.status)}</p>
                     </div>
-                    <Badge 
-                      variant={imp.status === 'completed' ? 'default' : 'secondary'}
-                      className={cn(
-                        "text-xs",
-                        imp.status === 'completed' && "bg-green-600",
-                        imp.status === 'processing' && "bg-blue-600",
-                        imp.status === 'failed' && "bg-destructive"
-                      )}
-                    >
-                      {getStatusText(imp.status)}
+                    <Badge variant={imp.status === 'completed' ? 'default' : 'secondary'}>
+                      {imp.status}
                     </Badge>
                   </div>
                 </div>

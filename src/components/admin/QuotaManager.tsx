@@ -30,14 +30,11 @@ import {
 } from 'lucide-react';
 
 interface PlanLimit {
-  id: string;
-  plan_name: string;
+  plan_type: string;
   limit_key: string;
   limit_value: number;
   display_name: string;
   description: string;
-  created_at?: string;
-  updated_at?: string;
 }
 
 interface UserQuotaUsage {
@@ -117,7 +114,7 @@ export const QuotaManager = () => {
       const { data: limits, error: limitsError } = await supabase
         .from('plan_limits')
         .select('*')
-        .order('plan_name', { ascending: true })
+        .order('plan_type', { ascending: true })
         .order('limit_key', { ascending: true });
       
       if (limitsError) throw limitsError;
@@ -196,13 +193,14 @@ export const QuotaManager = () => {
     ];
   };
 
-  const updatePlanLimit = async (planName: string, limitKey: string, newValue: number) => {
+  const updatePlanLimit = async (planType: string, limitKey: string, newValue: number) => {
     try {
       const { error } = await supabase
         .from('plan_limits')
         .update({ limit_value: newValue })
-        .eq('plan_name', planName)
+        .eq('plan_type', planType)
         .eq('limit_key', limitKey);
+      
       if (error) throw error;
       
       toast({
@@ -340,11 +338,11 @@ export const QuotaManager = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {planLimits
-                    .filter(limit => limit.plan_name === plan)
+                    .filter(limit => limit.plan_type === plan)
                     .map(limit => {
                       const QuotaIcon = QUOTA_DISPLAY_NAMES[limit.limit_key]?.icon || Package;
                       return (
-                        <Card key={`${limit.plan_name}-${limit.limit_key}`} className="border-dashed">
+                        <Card key={`${limit.plan_type}-${limit.limit_key}`} className="border-dashed">
                           <CardContent className="pt-4">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
@@ -524,7 +522,7 @@ export const QuotaManager = () => {
           <DialogHeader>
             <DialogTitle>Modifier la Limite</DialogTitle>
             <DialogDescription>
-              Ajuster la limite pour {editingLimit?.display_name} dans le plan {editingLimit?.plan_name}
+              Ajuster la limite pour {editingLimit?.display_name} dans le plan {editingLimit?.plan_type}
             </DialogDescription>
           </DialogHeader>
           
@@ -553,7 +551,7 @@ export const QuotaManager = () => {
               const input = document.getElementById('limit-value') as HTMLInputElement;
               const newValue = input.value === '' ? -1 : parseInt(input.value);
               if (editingLimit) {
-                updatePlanLimit(editingLimit.plan_name, editingLimit.limit_key, newValue);
+                updatePlanLimit(editingLimit.plan_type, editingLimit.limit_key, newValue);
               }
             }}>
               Sauvegarder

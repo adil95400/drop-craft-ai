@@ -181,69 +181,6 @@ export const MODULE_REGISTRY: Record<string, ModuleConfig> = {
       }
     ]
   },
-  
-  // Module de Sourcing Intelligent (style Minea)
-  sourcing: {
-    id: 'sourcing',
-    name: 'Sourcing Intelligent',
-    icon: 'Radar',
-    enabled: true,
-    minPlan: 'pro',
-    route: '/sourcing',
-    features: ['winning-products', 'niche-analysis', 'ad-spy', 'trend-detection', 'competitor-analysis'],
-    description: 'Découvrez des produits gagnants et espionnez la concurrence style Minea',
-    category: 'product',
-    order: 5.5,
-    groupId: 'products',
-    subModules: [
-      {
-        id: 'sourcing-discover',
-        name: 'Découverte',
-        route: '/sourcing',
-        icon: 'Radar',
-        description: 'Produits gagnants détectés par IA',
-        features: ['winning-products', 'ai-scoring'],
-        order: 1
-      },
-      {
-        id: 'sourcing-niches',
-        name: 'Niches',
-        route: '/sourcing?tab=niches',
-        icon: 'Target',
-        description: 'Analyse et recommandations de niches',
-        features: ['niche-analysis', 'profitability-score'],
-        order: 2
-      },
-      {
-        id: 'sourcing-trends',
-        name: 'Tendances',
-        route: '/sourcing?tab=trends',
-        icon: 'TrendingUp',
-        description: 'Tendances et produits viraux',
-        features: ['trend-detection', 'viral-finder'],
-        order: 3
-      },
-      {
-        id: 'sourcing-spy',
-        name: 'Ad Spy',
-        route: '/sourcing?tab=spy',
-        icon: 'Eye',
-        description: 'Espionnage publicitaire multi-plateformes',
-        features: ['ad-spy', 'competitor-tracking'],
-        order: 4
-      },
-      {
-        id: 'sourcing-score',
-        name: 'Scoring IA',
-        route: '/sourcing?tab=score',
-        icon: 'Star',
-        description: 'Analyse et score de produits',
-        features: ['product-scoring', 'risk-assessment'],
-        order: 5
-      }
-    ]
-  },
-  
   winners: {
     id: 'winners',
     name: 'Winning Products',

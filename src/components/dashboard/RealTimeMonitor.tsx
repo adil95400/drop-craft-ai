@@ -136,7 +136,7 @@ export function RealTimeMonitor() {
                 'success',
         message: log.description,
         timestamp: log.created_at,
-        metadata: log.details
+        metadata: log.metadata
       }))
 
       setActivities(formattedActivities)

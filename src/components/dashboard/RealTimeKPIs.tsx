@@ -60,16 +60,18 @@ export function RealTimeKPIs() {
         productsRes,
         importedRes,
         catalogRes,
+        supplierRes,
         customersRes
       ] = await Promise.all([
         supabase.from('products').select('id', { count: 'exact', head: true }),
         supabase.from('imported_products').select('id', { count: 'exact', head: true }),
         supabase.from('catalog_products').select('id', { count: 'exact', head: true }),
+        supabase.from('supplier_products').select('id', { count: 'exact', head: true }),
         supabase.from('customers').select('id', { count: 'exact', head: true })
       ])
 
       const productsCount = (productsRes.count || 0) + (importedRes.count || 0) + 
-                            (catalogRes.count || 0)
+                            (catalogRes.count || 0) + (supplierRes.count || 0)
       const customersCount = customersRes.count || 0
 
       const todayRevenue = (todayOrders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0)
@@ -185,7 +187,7 @@ export function RealTimeKPIs() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Activity className="h-4 w-4" />
-          <span className="text-xs sm:text-sm font-medium">KPIs Temps Réel</span>
+          <span className="text-sm font-medium">KPIs Temps Réel</span>
         </div>
         <Badge 
           variant="outline" 
@@ -199,7 +201,7 @@ export function RealTimeKPIs() {
         </Badge>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {kpiConfig.map((config) => {
           const data = kpis[config.key as keyof KPIData]
           const Icon = config.icon
@@ -208,38 +210,29 @@ export function RealTimeKPIs() {
           return (
             <Card 
               key={config.key}
-              className="relative overflow-hidden hover:shadow-md transition-all cursor-pointer active:scale-[0.98]"
-              onClick={() => {
-                const routes: Record<string, string> = {
-                  revenue: '/analytics',
-                  orders: '/dashboard/orders',
-                  products: '/products',
-                  customers: '/customers'
-                }
-                window.location.href = routes[config.key] || '/dashboard'
-              }}
+              className="relative overflow-hidden hover:shadow-md transition-shadow"
             >
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-start justify-between mb-1 sm:mb-2">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-2">
                   <div className={cn(
-                    "p-1.5 sm:p-2 rounded-lg",
+                    "p-2 rounded-lg",
                     config.color.replace('text-', 'bg-') + '/10'
                   )}>
-                    <Icon className={cn("h-3 w-3 sm:h-4 sm:w-4", config.color)} />
+                    <Icon className={cn("h-4 w-4", config.color)} />
                   </div>
                   {TrendIcon && (
                     <TrendIcon className={cn(
-                      "h-3 w-3 sm:h-4 sm:w-4",
+                      "h-4 w-4",
                       data.trend === 'up' ? 'text-green-500' : 'text-red-500'
                     )} />
                   )}
                 </div>
-                <p className="text-lg sm:text-2xl font-bold truncate">{config.format(data.value)}</p>
-                <div className="flex items-center justify-between mt-1 gap-1">
-                  <p className="text-xs text-muted-foreground truncate">{config.label}</p>
+                <p className="text-2xl font-bold">{config.format(data.value)}</p>
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-xs text-muted-foreground">{config.label}</p>
                   {data.change !== 0 && (
                     <span className={cn(
-                      "text-xs font-medium flex-shrink-0",
+                      "text-xs font-medium",
                       data.change > 0 ? 'text-green-600' : 'text-red-600'
                     )}>
                       {data.change > 0 ? '+' : ''}{data.change.toFixed(1)}%

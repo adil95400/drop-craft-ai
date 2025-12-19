@@ -75,13 +75,6 @@ const ABTestingPage = lazy(() => import('@/pages/ABTestingPage'));
 const ProductionReadinessPage = lazy(() => import('@/pages/ProductionReadinessPage'));
 const UnifiedDashboardPage = lazy(() => import('@/pages/UnifiedDashboardPage'));
 const OptimizedHomePage = lazy(() => import('@/pages/OptimizedHomePage'));
-const AdSpyPage = lazy(() => import('@/pages/AdSpyPage'));
-const WarehousePage = lazy(() => import('@/pages/WarehousePage'));
-const IntelligentSourcingPage = lazy(() => import('@/pages/IntelligentSourcingPage'));
-const BIAnalyticsPage = lazy(() => import('@/pages/BIAnalyticsPage'));
-const WorkflowBuilderPage = lazy(() => import('@/pages/WorkflowBuilderPage'));
-const EmailBuilderPage = lazy(() => import('@/pages/EmailBuilderPage'));
-const RBACPage = lazy(() => import('@/pages/RBACPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -177,18 +170,6 @@ export function AppRoutes() {
         <Route path="/production-readiness" element={<ProtectedRoute><AppLayout><ProductionReadinessPage /></AppLayout></ProtectedRoute>} />
         <Route path="/unified-dashboard" element={<ProtectedRoute><AppLayout><UnifiedDashboardPage /></AppLayout></ProtectedRoute>} />
         <Route path="/home-optimized" element={<ProtectedRoute><AppLayout><OptimizedHomePage /></AppLayout></ProtectedRoute>} />
-        
-        {/* Research & Intelligence */}
-        <Route path="/adspy" element={<ProtectedRoute><AppLayout><AdSpyPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/research/adspy" element={<ProtectedRoute><AppLayout><AdSpyPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/sourcing" element={<ProtectedRoute><AppLayout><IntelligentSourcingPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/warehouse" element={<ProtectedRoute><AppLayout><WarehousePage /></AppLayout></ProtectedRoute>} />
-        <Route path="/bi-analytics" element={<ProtectedRoute><AppLayout><BIAnalyticsPage /></AppLayout></ProtectedRoute>} />
-        
-        {/* Workflow & Email Builder */}
-        <Route path="/workflow-builder" element={<ProtectedRoute><AppLayout><WorkflowBuilderPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/email-builder" element={<ProtectedRoute><AppLayout><EmailBuilderPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/security/rbac" element={<ProtectedRoute><AppLayout><RBACPage /></AppLayout></ProtectedRoute>} />
         
         {/* Enrichment Settings */}
         <Route path="/enrichment" element={<ProtectedRoute><AppLayout><EnrichmentSettingsPage /></AppLayout></ProtectedRoute>} />

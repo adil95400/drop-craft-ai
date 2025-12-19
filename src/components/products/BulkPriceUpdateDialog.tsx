@@ -5,38 +5,32 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { TrendingUp, TrendingDown, Percent, DollarSign, Loader2 } from 'lucide-react'
+import { TrendingUp, TrendingDown, Percent, DollarSign } from 'lucide-react'
 
 interface BulkPriceUpdateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   count: number
-  onConfirm: (type: 'increase' | 'decrease' | 'set', value: number) => Promise<void> | void
+  onConfirm: (type: 'increase' | 'decrease' | 'set', value: number) => void
 }
 
 export function BulkPriceUpdateDialog({ open, onOpenChange, count, onConfirm }: BulkPriceUpdateDialogProps) {
   const [updateType, setUpdateType] = useState<'percentage' | 'fixed'>('percentage')
   const [operation, setOperation] = useState<'increase' | 'decrease' | 'set'>('increase')
   const [value, setValue] = useState<string>('')
-  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     const numValue = parseFloat(value)
     if (isNaN(numValue) || numValue <= 0) return
     
-    setIsLoading(true)
-    try {
-      await onConfirm(operation, numValue)
-      onOpenChange(false)
-      setValue('')
-    } finally {
-      setIsLoading(false)
-    }
+    onConfirm(operation, numValue)
+    onOpenChange(false)
+    setValue('')
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Mise à jour des prix en masse</DialogTitle>
           <DialogDescription>
@@ -48,32 +42,23 @@ export function BulkPriceUpdateDialog({ open, onOpenChange, count, onConfirm }: 
           <div className="space-y-3">
             <Label>Type d'opération</Label>
             <RadioGroup value={operation} onValueChange={(v) => setOperation(v as any)}>
-              <div 
-                className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                onClick={() => setOperation('increase')}
-              >
+              <div className="flex items-center space-x-2">
                 <RadioGroupItem value="increase" id="increase" />
-                <Label htmlFor="increase" className="flex items-center gap-2 cursor-pointer flex-1">
+                <Label htmlFor="increase" className="flex items-center gap-2 cursor-pointer">
                   <TrendingUp className="h-4 w-4 text-green-600" />
                   Augmenter les prix
                 </Label>
               </div>
-              <div 
-                className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                onClick={() => setOperation('decrease')}
-              >
+              <div className="flex items-center space-x-2">
                 <RadioGroupItem value="decrease" id="decrease" />
-                <Label htmlFor="decrease" className="flex items-center gap-2 cursor-pointer flex-1">
+                <Label htmlFor="decrease" className="flex items-center gap-2 cursor-pointer">
                   <TrendingDown className="h-4 w-4 text-red-600" />
                   Diminuer les prix
                 </Label>
               </div>
-              <div 
-                className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                onClick={() => setOperation('set')}
-              >
+              <div className="flex items-center space-x-2">
                 <RadioGroupItem value="set" id="set" />
-                <Label htmlFor="set" className="flex items-center gap-2 cursor-pointer flex-1">
+                <Label htmlFor="set" className="flex items-center gap-2 cursor-pointer">
                   <DollarSign className="h-4 w-4 text-blue-600" />
                   Définir un prix fixe
                 </Label>
@@ -142,28 +127,15 @@ export function BulkPriceUpdateDialog({ open, onOpenChange, count, onConfirm }: 
           )}
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            disabled={isLoading}
-            className="sm:w-auto w-full"
-          >
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={!value || parseFloat(value) <= 0 || isLoading}
-            className="sm:w-auto w-full"
+            disabled={!value || parseFloat(value) <= 0}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Mise à jour...
-              </>
-            ) : (
-              `Mettre à jour ${count} produit${count > 1 ? 's' : ''}`
-            )}
+            Mettre à jour {count} produit{count > 1 ? 's' : ''}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -145,16 +145,16 @@ export function DeduplicationDashboard() {
       mockResult.unique_products = mockResult.total_products - mockResult.duplicates_found
       mockResult.deduplication_rate = (mockResult.duplicates_found / mockResult.total_products) * 100
 
-      // Insert mock result into automation_execution_logs as job tracking
+      // Insert mock result into AI optimization jobs
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
       
-      await supabase.from('automation_execution_logs').insert([{
-        trigger_id: null,
-        action_id: null,
-        input_data: { job_type: 'deduplication', total_products: mockResult.total_products },
+      await supabase.from('ai_optimization_jobs').insert([{
+        job_type: 'deduplication',
+        input_data: { total_products: mockResult.total_products },
         output_data: mockResult,
         status: 'completed',
+        progress: 100,
         user_id: user.id
       }])
       

@@ -42,16 +42,26 @@ export function EnrichmentDashboardWidget() {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
 
-      // For now, use mock enrichment stats since product_enrichment table doesn't exist
-      // In a real implementation, you would track enrichment status on products table
-      const enrichedCount = 0;
-      const pending = 0;
-      const applied = 0;
-      const failed = 0;
+      // Get enriched products
+      const { count: enrichedProducts } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('enrichment_status', 'success');
+
+      // Get enrichment stats
+      const { data: enrichments } = await supabase
+        .from('product_enrichment')
+        .select('enrichment_status')
+        .eq('user_id', user.id);
+
+      const pending = enrichments?.filter(e => e.enrichment_status === 'pending').length || 0;
+      const applied = enrichments?.filter(e => e.enrichment_status === 'applied').length || 0;
+      const failed = enrichments?.filter(e => e.enrichment_status === 'failed').length || 0;
 
       setStats({
         total_products: totalProducts || 0,
-        enriched_products: enrichedCount,
+        enriched_products: enrichedProducts || 0,
         pending_enrichments: pending,
         applied_enrichments: applied,
         failed_enrichments: failed,

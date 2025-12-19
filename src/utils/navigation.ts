@@ -69,8 +69,7 @@ export class NavigationService {
       '/automation', '/automation/ai-hub', '/automation/stock-sync',
       '/marketing', '/marketing/crm', '/marketing/seo',
       '/integrations', '/integrations/support', '/integrations/academy', '/integrations/extensions',
-      '/admin', '/settings',
-      '/sourcing'
+      '/admin', '/settings'
     ];
 
     return validPaths.includes(path) || 

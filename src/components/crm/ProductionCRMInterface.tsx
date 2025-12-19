@@ -11,27 +11,13 @@ import { formatCurrency, cn } from '@/lib/utils'
 
 interface Customer {
   id: string
-  first_name: string | null
-  last_name: string | null
+  name: string
   email: string
   total_spent: number
   total_orders: number
-  address: string | null
+  address: any
+  status: string
   created_at: string
-}
-
-// Helper to get display name
-const getCustomerName = (customer: Customer) => {
-  if (customer.first_name || customer.last_name) {
-    return `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
-  }
-  return customer.email
-}
-
-// Helper to get status (derived from orders/spent)
-const getCustomerStatus = (customer: Customer) => {
-  if (customer.total_orders > 0) return 'active'
-  return 'inactive'
 }
 
 interface CustomerOrder {
@@ -51,14 +37,8 @@ export const ProductionCRMInterface = () => {
 
   useEffect(() => {
     if (customersData) {
-      const mappedCustomers = customersData.map(c => ({
-        ...c,
-        total_spent: c.total_spent || 0,
-        total_orders: c.total_orders || 0
-      })) as Customer[]
-      
-      const filtered = mappedCustomers.filter(customer =>
-        getCustomerName(customer).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      const filtered = customersData.filter(customer =>
+        customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         customer.email?.toLowerCase().includes(searchTerm.toLowerCase())
       )
       setFilteredCustomers(filtered)
@@ -73,11 +53,11 @@ export const ProductionCRMInterface = () => {
   }
 
   const stats = {
-    total: filteredCustomers?.length || 0,
-    active: filteredCustomers?.filter(c => getCustomerStatus(c) === 'active').length || 0,
-    totalSpent: filteredCustomers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0,
-    avgOrderValue: filteredCustomers?.length > 0 
-      ? (filteredCustomers.reduce((sum, c) => sum + (c.total_spent || 0), 0) / filteredCustomers.length)
+    total: customersData?.length || 0,
+    active: customersData?.filter(c => c.status === 'active').length || 0,
+    totalSpent: customersData?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0,
+    avgOrderValue: customersData?.length > 0 
+      ? (customersData.reduce((sum, c) => sum + (c.total_spent || 0), 0) / customersData.length)
       : 0
   }
 
@@ -214,7 +194,7 @@ export const ProductionCRMInterface = () => {
                 {filteredCustomers.map((customer) => (
                   <TableRow key={customer.id}>
                     <TableCell>
-                      <div className="font-medium">{getCustomerName(customer)}</div>
+                      <div className="font-medium">{customer.name}</div>
                     </TableCell>
                     <TableCell>{customer.email}</TableCell>
                     <TableCell>
@@ -229,7 +209,7 @@ export const ProductionCRMInterface = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {getStatusBadge(getCustomerStatus(customer))}
+                      {getStatusBadge(customer.status)}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -266,9 +246,9 @@ export const ProductionCRMInterface = () => {
                                   <CardContent className="p-4">
                                     <h4 className="font-medium mb-2">Informations</h4>
                                     <div className="space-y-2 text-sm">
-                                      <p><strong>Nom:</strong> {getCustomerName(selectedCustomer)}</p>
+                                      <p><strong>Nom:</strong> {selectedCustomer.name}</p>
                                       <p><strong>Email:</strong> {selectedCustomer.email}</p>
-                                      <p><strong>Statut:</strong> {getStatusBadge(getCustomerStatus(selectedCustomer))}</p>
+                                      <p><strong>Statut:</strong> {getStatusBadge(selectedCustomer.status)}</p>
                                     </div>
                                   </CardContent>
                                 </Card>

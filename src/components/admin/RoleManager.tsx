@@ -88,7 +88,7 @@ export const RoleManager = () => {
     try {
       const { data, error } = await supabase.rpc('admin_set_role', {
         target_user_id: userId,
-        new_role: newRole as 'admin' | 'moderator' | 'user'
+        new_role: newRole
       })
 
       if (error) {

@@ -108,9 +108,8 @@ export function AutomationBuilder() {
       const actionsToInsert = actions.map((action, index) => ({
         user_id: userData.user.id,
         trigger_id: triggerData.id,
-        name: `Action ${index + 1}`,
         action_type: action.action_type,
-        config: action.action_config,
+        action_config: action.action_config,
         execution_order: index + 1,
         is_active: action.is_active
       }));

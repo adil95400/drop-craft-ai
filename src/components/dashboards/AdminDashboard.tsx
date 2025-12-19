@@ -113,20 +113,15 @@ export const AdminDashboard: React.FC = () => {
     try {
       setLoading(true);
 
-      // Fetch user profiles for admin stats
-      const { data: profilesData, count: usersCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact' })
-        .limit(100);
+      // Fetch all users (admin function)
+      const { data: usersData } = await supabase.rpc('admin_get_all_users');
       
-      const profiles = profilesData || [];
-      
-      // Calculate admin metrics from profiles
+      // Mock admin metrics (would be real in production)
       const adminMetrics: AdminMetrics = {
-        totalUsers: usersCount || 0,
-        activeUsers: profiles.filter((u) => u.last_login_at && 
-          new Date(u.last_login_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length,
-        adminUsers: profiles.filter((u) => u.admin_mode === 'admin').length,
+        totalUsers: usersData?.length || 0,
+        activeUsers: usersData?.filter((u: any) => u.last_login_at && 
+          new Date(u.last_login_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length || 0,
+        adminUsers: usersData?.filter((u: any) => u.role === 'admin').length || 0,
         totalRevenue: 45680.50,
         totalOrders: 1248,
         systemUptime: 99.94,

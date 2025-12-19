@@ -5,29 +5,19 @@ import { ShoppingCart, CheckCircle, Package } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-interface MonitorData {
-  id: string;
-  product_id: string | null;
-  current_price: number | null;
-  current_stock: number | null;
-  alert_threshold: number | null;
-  is_active: boolean | null;
-  created_at: string | null;
-}
-
 export function AutoOrders() {
-  const { data: monitors, isLoading } = useQuery<MonitorData[]>({
+  const { data: monitors, isLoading } = useQuery({
     queryKey: ['auto-orders-monitors'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('price_stock_monitoring')
-        .select('*')
-        .eq('is_active', true)
+        .select('*, catalog_product:catalog_product_id(*)')
+        .eq('auto_adjust_price', true)
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (error) throw error;
-      return (data || []) as MonitorData[];
+      return data;
     }
   });
 
@@ -45,14 +35,14 @@ export function AutoOrders() {
       </div>
 
       <div className="grid gap-4">
-        {monitors?.map((monitor) => (
+        {monitors?.map((monitor: any) => (
           <Card key={monitor.id}>
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <ShoppingCart className="w-5 h-5" />
-                    Produit #{monitor.product_id?.slice(0, 8) || 'N/A'}
+                    {monitor.catalog_product?.name || 'Produit'}
                   </CardTitle>
                   <CardDescription>
                     Réapprovisionnement automatique configuré
@@ -68,21 +58,21 @@ export function AutoOrders() {
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <div className="text-sm text-muted-foreground">Seuil d'alerte</div>
+                    <div className="text-sm text-muted-foreground">Seuil de stock</div>
                     <div className="text-2xl font-bold">
-                      {monitor.alert_threshold || 10} unités
+                      {monitor.stock_alert_threshold || 10} unités
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Prix actuel</div>
+                    <div className="text-sm text-muted-foreground">Prix max</div>
                     <div className="text-2xl font-bold">
-                      {monitor.current_price?.toFixed(2) || 'N/A'}€
+                      {monitor.price_adjustment_rules?.max_price || 'N/A'}€
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Stock actuel</div>
+                    <div className="text-sm text-muted-foreground">Fréquence</div>
                     <div className="text-2xl font-bold">
-                      {monitor.current_stock || 0}
+                      {monitor.check_frequency_minutes || 60} min
                     </div>
                   </div>
                 </div>

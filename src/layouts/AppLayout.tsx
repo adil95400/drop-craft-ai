@@ -13,7 +13,7 @@ import { ExtensionMenu } from '@/components/navigation/ExtensionMenu';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SupportWidget } from '@/components/layout/SupportWidget';
-import { HelpCenter } from '@/components/help/HelpCenter';
+
 interface AppLayoutProps {
   children: React.ReactNode;
 }
@@ -121,7 +121,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         </SidebarInset>
         
         <SupportWidget />
-        <HelpCenter />
       </div>
     </SidebarProvider>
   );

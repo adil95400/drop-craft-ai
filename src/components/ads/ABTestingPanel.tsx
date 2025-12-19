@@ -5,34 +5,21 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Trophy, TrendingUp } from 'lucide-react';
 
-interface ABTestVariant {
-  id: string;
-  variant_name: string;
-  test_name: string;
-  traffic_allocation: number | null;
-  is_winner: boolean | null;
-  performance_data: Record<string, unknown> | null;
-  ad_creative: Record<string, unknown> | null;
-  user_id: string;
-  created_at: string | null;
-  updated_at: string | null;
-}
-
 interface ABTestingPanelProps {
   campaignId: string;
 }
 
 export function ABTestingPanel({ campaignId }: ABTestingPanelProps) {
-  const { data: variants = [] } = useQuery<ABTestVariant[]>({
+  const { data: variants = [] } = useQuery({
     queryKey: ['ab-test-variants', campaignId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('ab_test_variants')
         .select('*')
-        .eq('test_name', campaignId);
+        .eq('campaign_id', campaignId);
 
       if (error) throw error;
-      return (data || []) as ABTestVariant[];
+      return data;
     },
   });
 

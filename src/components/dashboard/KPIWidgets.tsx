@@ -96,7 +96,7 @@ export function KPIWidgets() {
       }
 
       // Fetch real data from Supabase
-      const [ordersResult, customersResult, productsResult] = await Promise.all([
+      const [ordersResult, customersResult, productsResult, analyticsResult] = await Promise.all([
         supabase
           .from('orders')
           .select('id, total_amount, status, created_at')
@@ -110,7 +110,12 @@ export function KPIWidgets() {
         supabase
           .from('products')
           .select('id, price, status')
+          .eq('user_id', user?.id),
+        supabase
+          .from('analytics_insights')
+          .select('*')
           .eq('user_id', user?.id)
+          .limit(10)
       ])
 
       // Fetch previous period orders for comparison
