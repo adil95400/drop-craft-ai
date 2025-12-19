@@ -65,6 +65,7 @@ export type Database = {
           message: string | null
           metadata: Json | null
           severity: string | null
+          status: string | null
           title: string
           user_id: string | null
         }
@@ -79,6 +80,7 @@ export type Database = {
           message?: string | null
           metadata?: Json | null
           severity?: string | null
+          status?: string | null
           title: string
           user_id?: string | null
         }
@@ -93,6 +95,7 @@ export type Database = {
           message?: string | null
           metadata?: Json | null
           severity?: string | null
+          status?: string | null
           title?: string
           user_id?: string | null
         }
@@ -102,35 +105,86 @@ export type Database = {
         Row: {
           action: string
           created_at: string | null
+          description: string | null
           details: Json | null
           entity_id: string | null
           entity_type: string | null
           id: string
           ip_address: string | null
+          severity: string | null
           user_agent: string | null
           user_id: string | null
         }
         Insert: {
           action: string
           created_at?: string | null
+          description?: string | null
           details?: Json | null
           entity_id?: string | null
           entity_type?: string | null
           id?: string
           ip_address?: string | null
+          severity?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
         Update: {
           action?: string
           created_at?: string | null
+          description?: string | null
           details?: Json | null
           entity_id?: string | null
           entity_type?: string | null
           id?: string
           ip_address?: string | null
+          severity?: string | null
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      advanced_reports: {
+        Row: {
+          created_at: string | null
+          filters: Json | null
+          id: string
+          is_favorite: boolean | null
+          last_generated_at: string | null
+          report_data: Json | null
+          report_name: string
+          report_type: string
+          schedule: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          is_favorite?: boolean | null
+          last_generated_at?: string | null
+          report_data?: Json | null
+          report_name: string
+          report_type: string
+          schedule?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          is_favorite?: boolean | null
+          last_generated_at?: string | null
+          report_data?: Json | null
+          report_name?: string
+          report_type?: string
+          schedule?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -179,6 +233,81 @@ export type Database = {
         }
         Relationships: []
       }
+      api_analytics: {
+        Row: {
+          avg_response_time_ms: number | null
+          created_at: string | null
+          date: string
+          endpoint: string | null
+          failed_requests: number | null
+          id: string
+          total_requests: number | null
+          user_id: string | null
+        }
+        Insert: {
+          avg_response_time_ms?: number | null
+          created_at?: string | null
+          date?: string
+          endpoint?: string | null
+          failed_requests?: number | null
+          id?: string
+          total_requests?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          avg_response_time_ms?: number | null
+          created_at?: string | null
+          date?: string
+          endpoint?: string | null
+          failed_requests?: number | null
+          id?: string
+          total_requests?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      api_keys: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          key: string
+          key_prefix: string | null
+          last_used_at: string | null
+          name: string
+          rate_limit: number | null
+          scopes: string[] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key: string
+          key_prefix?: string | null
+          last_used_at?: string | null
+          name: string
+          rate_limit?: number | null
+          scopes?: string[] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key?: string
+          key_prefix?: string | null
+          last_used_at?: string | null
+          name?: string
+          rate_limit?: number | null
+          scopes?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       api_logs: {
         Row: {
           created_at: string | null
@@ -186,9 +315,11 @@ export type Database = {
           endpoint: string
           error_message: string | null
           id: string
+          ip_address: string | null
           method: string | null
           request_body: Json | null
           response_body: Json | null
+          response_time_ms: number | null
           status_code: number | null
           user_id: string | null
         }
@@ -198,9 +329,11 @@ export type Database = {
           endpoint: string
           error_message?: string | null
           id?: string
+          ip_address?: string | null
           method?: string | null
           request_body?: Json | null
           response_body?: Json | null
+          response_time_ms?: number | null
           status_code?: number | null
           user_id?: string | null
         }
@@ -210,16 +343,118 @@ export type Database = {
           endpoint?: string
           error_message?: string | null
           id?: string
+          ip_address?: string | null
           method?: string | null
           request_body?: Json | null
           response_body?: Json | null
+          response_time_ms?: number | null
           status_code?: number | null
           user_id?: string | null
         }
         Relationships: []
       }
+      automation_rules: {
+        Row: {
+          action_config: Json | null
+          action_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          name: string
+          trigger_config: Json | null
+          trigger_count: number | null
+          trigger_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          action_config?: Json | null
+          action_type: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name: string
+          trigger_config?: Json | null
+          trigger_count?: number | null
+          trigger_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          action_config?: Json | null
+          action_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name?: string
+          trigger_config?: Json | null
+          trigger_count?: number | null
+          trigger_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      business_intelligence_insights: {
+        Row: {
+          actionable_recommendations: Json | null
+          confidence_score: number | null
+          created_at: string | null
+          description: string | null
+          expires_at: string | null
+          id: string
+          impact_score: number | null
+          insight_type: string
+          is_read: boolean | null
+          priority: number | null
+          status: string | null
+          supporting_data: Json | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          actionable_recommendations?: Json | null
+          confidence_score?: number | null
+          created_at?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          impact_score?: number | null
+          insight_type: string
+          is_read?: boolean | null
+          priority?: number | null
+          status?: string | null
+          supporting_data?: Json | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          actionable_recommendations?: Json | null
+          confidence_score?: number | null
+          created_at?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          impact_score?: number | null
+          insight_type?: string
+          is_read?: boolean | null
+          priority?: number | null
+          status?: string | null
+          supporting_data?: Json | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
+          address: string | null
           address_line1: string | null
           address_line2: string | null
           city: string | null
@@ -240,6 +475,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          address?: string | null
           address_line1?: string | null
           address_line2?: string | null
           city?: string | null
@@ -260,6 +496,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          address?: string | null
           address_line1?: string | null
           address_line2?: string | null
           city?: string | null
@@ -451,6 +688,45 @@ export type Database = {
         }
         Relationships: []
       }
+      fulfilment_rules: {
+        Row: {
+          actions: Json | null
+          conditions: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          priority: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          actions?: Json | null
+          conditions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          priority?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          actions?: Json | null
+          conditions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          priority?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       import_jobs: {
         Row: {
           completed_at: string | null
@@ -465,6 +741,7 @@ export type Database = {
           status: string | null
           successful_imports: number | null
           total_products: number | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -480,6 +757,7 @@ export type Database = {
           status?: string | null
           successful_imports?: number | null
           total_products?: number | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -495,9 +773,64 @@ export type Database = {
           status?: string | null
           successful_imports?: number | null
           total_products?: number | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
+      }
+      imported_products: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          import_job_id: string | null
+          price: number | null
+          product_id: string | null
+          source_platform: string | null
+          source_url: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          import_job_id?: string | null
+          price?: number | null
+          product_id?: string | null
+          source_platform?: string | null
+          source_url?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          import_job_id?: string | null
+          price?: number | null
+          product_id?: string | null
+          source_platform?: string | null
+          source_url?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imported_products_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imported_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       integrations: {
         Row: {
@@ -559,6 +892,42 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           webhook_url?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string | null
+          metadata: Json | null
+          title: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          title: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          title?: string
+          type?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -743,8 +1112,10 @@ export type Database = {
           description: string | null
           google_product_id: string | null
           id: string
+          image_url: string | null
           images: Json | null
           is_published: boolean | null
+          name: string | null
           price: number | null
           seo_description: string | null
           seo_title: string | null
@@ -773,8 +1144,10 @@ export type Database = {
           description?: string | null
           google_product_id?: string | null
           id?: string
+          image_url?: string | null
           images?: Json | null
           is_published?: boolean | null
+          name?: string | null
           price?: number | null
           seo_description?: string | null
           seo_title?: string | null
@@ -803,8 +1176,10 @@ export type Database = {
           description?: string | null
           google_product_id?: string | null
           id?: string
+          image_url?: string | null
           images?: Json | null
           is_published?: boolean | null
+          name?: string | null
           price?: number | null
           seo_description?: string | null
           seo_title?: string | null
@@ -882,6 +1257,54 @@ export type Database = {
           subscription_plan?: string | null
           timezone?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      scheduled_tasks: {
+        Row: {
+          config: Json | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_run_at: string | null
+          last_status: string | null
+          name: string
+          next_run_at: string | null
+          run_count: number | null
+          schedule: string
+          task_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          last_status?: string | null
+          name: string
+          next_run_at?: string | null
+          run_count?: number | null
+          schedule: string
+          task_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          last_status?: string | null
+          name?: string
+          next_run_at?: string | null
+          run_count?: number | null
+          schedule?: string
+          task_type?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -970,6 +1393,78 @@ export type Database = {
           name?: string
           shipping_methods?: Json | null
           status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      system_stats: {
+        Row: {
+          active_users: number | null
+          api_calls: number | null
+          created_at: string | null
+          error_count: number | null
+          id: string
+          stat_date: string
+          total_orders: number | null
+          total_products: number | null
+          total_revenue: number | null
+          total_users: number | null
+        }
+        Insert: {
+          active_users?: number | null
+          api_calls?: number | null
+          created_at?: string | null
+          error_count?: number | null
+          id?: string
+          stat_date?: string
+          total_orders?: number | null
+          total_products?: number | null
+          total_revenue?: number | null
+          total_users?: number | null
+        }
+        Update: {
+          active_users?: number | null
+          api_calls?: number | null
+          created_at?: string | null
+          error_count?: number | null
+          id?: string
+          stat_date?: string
+          total_orders?: number | null
+          total_products?: number | null
+          total_revenue?: number | null
+          total_users?: number | null
+        }
+        Relationships: []
+      }
+      user_quotas: {
+        Row: {
+          created_at: string | null
+          current_usage: number | null
+          id: string
+          period_end: string | null
+          period_start: string | null
+          quota_key: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_usage?: number | null
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          quota_key: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_usage?: number | null
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          quota_key?: string
           updated_at?: string | null
           user_id?: string
         }
@@ -1112,6 +1607,10 @@ export type Database = {
       admin_update_user_plan: {
         Args: { new_plan: string; target_user_id: string }
         Returns: boolean
+      }
+      generate_api_key: {
+        Args: { key_name: string; key_scopes?: string[] }
+        Returns: string
       }
       has_role: {
         Args: {
