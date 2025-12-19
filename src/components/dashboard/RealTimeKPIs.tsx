@@ -60,18 +60,16 @@ export function RealTimeKPIs() {
         productsRes,
         importedRes,
         catalogRes,
-        supplierRes,
         customersRes
       ] = await Promise.all([
         supabase.from('products').select('id', { count: 'exact', head: true }),
         supabase.from('imported_products').select('id', { count: 'exact', head: true }),
         supabase.from('catalog_products').select('id', { count: 'exact', head: true }),
-        supabase.from('supplier_products').select('id', { count: 'exact', head: true }),
         supabase.from('customers').select('id', { count: 'exact', head: true })
       ])
 
       const productsCount = (productsRes.count || 0) + (importedRes.count || 0) + 
-                            (catalogRes.count || 0) + (supplierRes.count || 0)
+                            (catalogRes.count || 0)
       const customersCount = customersRes.count || 0
 
       const todayRevenue = (todayOrders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0)

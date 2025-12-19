@@ -112,42 +112,44 @@ export const ClientDashboard: React.FC = () => {
         .from('orders')
         .select(`
           id, order_number, total_amount, status, created_at,
-          customers(name, email),
+          customers(first_name, last_name, email),
           order_items(product_name, qty, unit_price)
         `)
         .order('created_at', { ascending: false })
         .limit(5);
 
       if (ordersData) {
-        const transformedOrders = ordersData.map(order => ({
+        const transformedOrders = ordersData.map((order: any) => ({
           id: order.id,
           order_number: order.order_number,
           customer_email: order.customers?.email || 'Email non disponible',
           total_amount: order.total_amount,
           status: order.status,
           created_at: order.created_at,
-          items: order.order_items?.map(item => ({
+          items: order.order_items?.map((item: any) => ({
             product_name: item.product_name,
             quantity: item.qty,
             unit_price: item.unit_price
-          }))
+          })) || []
         }));
         setRecentOrders(transformedOrders);
       }
 
-      // Fetch top products
-      const { data: productsData } = await supabase.rpc('get_secure_catalog_products', {
-        category_filter: null,
-        search_term: null,
-        limit_count: 10
-      })
-        .order('sales_count', { ascending: false })
+      // Fetch top products from products table
+      const { data: productsData } = await supabase
+        .from('products')
+        .select('id, title, price, stock_quantity, status')
+        .eq('status', 'active')
+        .order('price', { ascending: false })
         .limit(6);
 
       if (productsData) {
         const topProductsWithRevenue = productsData.map(product => ({
-          ...product,
-          revenue: (product.sales_count || 0) * product.price
+          id: product.id,
+          name: product.title,
+          price: product.price || 0,
+          sales_count: 0,
+          revenue: 0
         }));
         setTopProducts(topProductsWithRevenue);
       }

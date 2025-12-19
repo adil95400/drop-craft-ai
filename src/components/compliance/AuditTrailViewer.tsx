@@ -32,15 +32,28 @@ export function AuditTrailViewer() {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) return;
 
+      // Use activity_logs table instead of audit_trail
       const { data, error } = await supabase
-        .from('audit_trail')
+        .from('activity_logs')
         .select('*')
         .eq('user_id', userData.user.id)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
-      setLogs(data || []);
+      
+      // Map activity_logs to AuditLog format
+      const mappedLogs: AuditLog[] = (data || []).map(log => ({
+        id: log.id,
+        action: log.action,
+        entity_type: log.entity_type || 'system',
+        entity_id: log.entity_id || '',
+        severity: log.severity || 'info',
+        created_at: log.created_at || '',
+        metadata: log.details || {}
+      }));
+      
+      setLogs(mappedLogs);
     } catch (error: any) {
       toast({
         title: 'Error',

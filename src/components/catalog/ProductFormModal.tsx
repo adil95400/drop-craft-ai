@@ -86,14 +86,23 @@ export function ProductFormModal({ product, open, onClose }: ProductFormModalPro
     setLoading(true)
 
     try {
+      const { data: userData } = await supabase.auth.getUser()
+      if (!userData.user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté.",
+          variant: "destructive"
+        })
+        return
+      }
+
       const productData = {
-        ...formData,
+        title: formData.name,
+        description: formData.description,
         price: parseFloat(formData.price) || 0,
-        stock_quantity: parseInt(formData.stock_quantity) || 0,
-        rating: parseFloat(formData.rating) || 0,
-        external_id: formData.sku || `PRD-${Date.now()}`,
-        currency: 'EUR',
-        supplier_id: 'default-supplier'
+        category: formData.category,
+        supplier_name: formData.supplier_name,
+        user_id: userData.user.id
       }
 
       if (product) {
