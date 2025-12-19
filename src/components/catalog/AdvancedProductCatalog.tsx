@@ -37,6 +37,35 @@ import { ProductFormModal } from './ProductFormModal'
 import { ImportModal } from './ImportModal'
 import { ExportModal } from './ExportModal'
 
+// Interface unifiée pour les produits du catalogue
+interface NormalizedProduct {
+  id: string
+  name: string
+  title: string
+  description: string | null
+  category: string | null
+  price: number | null
+  compare_at_price: number | null
+  image_url: string | null
+  image_urls: string[]
+  supplier_name: string
+  source_platform: string | null
+  source_url: string | null
+  status: string | null
+  availability_status: string
+  is_imported: boolean
+  rating: number
+  sales_count: number
+  trend_score: number
+  is_bestseller: boolean
+  is_trending: boolean
+  is_winner: boolean
+  stock_quantity: number
+  created_at: string | null
+  updated_at: string | null
+  user_id: string
+}
+
 export function AdvancedProductCatalog() {
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
@@ -45,7 +74,7 @@ export function AdvancedProductCatalog() {
   const [sortBy, setSortBy] = useState('name')
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
-  const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  const [selectedProduct, setSelectedProduct] = useState<NormalizedProduct | null>(null)
   const [showProductDetails, setShowProductDetails] = useState(false)
   const [showProductForm, setShowProductForm] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
@@ -53,7 +82,7 @@ export function AdvancedProductCatalog() {
   const { toast } = useToast()
 
   // Fetch catalog products + imported products
-  const { data: products = [], isLoading } = useQuery({
+  const { data: products = [], isLoading } = useQuery<NormalizedProduct[]>({
     queryKey: ['catalog-products'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -75,22 +104,66 @@ export function AdvancedProductCatalog() {
       
       if (importedError) throw importedError
 
-      // Transformer les produits importés pour correspondre au format catalog_products
-      const transformedImported = (importedData || []).map(p => ({
-        ...p,
-        supplier_name: p.supplier_name || 'Importé',
-        availability_status: p.status === 'published' ? 'in_stock' : 'out_of_stock',
+      // Transformer les produits du catalogue
+      const transformedCatalog: NormalizedProduct[] = (catalogData || []).map(p => ({
+        id: p.id,
+        name: p.title,
+        title: p.title,
+        description: p.description,
+        category: p.category,
+        price: p.price,
+        compare_at_price: p.compare_at_price,
+        image_url: p.image_urls?.[0] || null,
+        image_urls: p.image_urls || [],
+        supplier_name: p.supplier_name || 'Inconnu',
+        source_platform: p.source_platform,
+        source_url: p.source_url,
+        status: p.status,
+        availability_status: p.status === 'available' ? 'in_stock' : 'out_of_stock',
+        is_imported: p.is_imported || false,
         rating: 0,
         sales_count: 0,
         trend_score: 0,
         is_bestseller: false,
         is_trending: false,
         is_winner: false,
-        image_url: Array.isArray(p.image_urls) ? p.image_urls[0] : null
+        stock_quantity: 0,
+        created_at: p.created_at,
+        updated_at: p.updated_at,
+        user_id: p.user_id
+      }))
+
+      // Transformer les produits importés
+      const transformedImported: NormalizedProduct[] = (importedData || []).map(p => ({
+        id: p.id,
+        name: p.category || 'Produit importé',
+        title: p.category || 'Produit importé',
+        description: null,
+        category: p.category,
+        price: p.price,
+        compare_at_price: null,
+        image_url: null,
+        image_urls: [],
+        supplier_name: 'Importé',
+        source_platform: p.source_platform,
+        source_url: p.source_url,
+        status: p.status,
+        availability_status: p.status === 'published' ? 'in_stock' : 'out_of_stock',
+        is_imported: true,
+        rating: 0,
+        sales_count: 0,
+        trend_score: 0,
+        is_bestseller: false,
+        is_trending: false,
+        is_winner: false,
+        stock_quantity: 0,
+        created_at: p.created_at,
+        updated_at: null,
+        user_id: p.user_id
       }))
 
       // Combiner les deux listes
-      return [...(catalogData || []), ...transformedImported]
+      return [...transformedCatalog, ...transformedImported]
     }
   })
 

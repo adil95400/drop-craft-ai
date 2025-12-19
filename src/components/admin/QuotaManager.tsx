@@ -196,14 +196,13 @@ export const QuotaManager = () => {
     ];
   };
 
-  const updatePlanLimit = async (planType: string, limitKey: string, newValue: number) => {
+  const updatePlanLimit = async (planName: string, limitKey: string, newValue: number) => {
     try {
       const { error } = await supabase
         .from('plan_limits')
         .update({ limit_value: newValue })
-        .eq('plan_type', planType)
+        .eq('plan_name', planName)
         .eq('limit_key', limitKey);
-      
       if (error) throw error;
       
       toast({
@@ -525,7 +524,7 @@ export const QuotaManager = () => {
           <DialogHeader>
             <DialogTitle>Modifier la Limite</DialogTitle>
             <DialogDescription>
-              Ajuster la limite pour {editingLimit?.display_name} dans le plan {editingLimit?.plan_type}
+              Ajuster la limite pour {editingLimit?.display_name} dans le plan {editingLimit?.plan_name}
             </DialogDescription>
           </DialogHeader>
           
@@ -554,7 +553,7 @@ export const QuotaManager = () => {
               const input = document.getElementById('limit-value') as HTMLInputElement;
               const newValue = input.value === '' ? -1 : parseInt(input.value);
               if (editingLimit) {
-                updatePlanLimit(editingLimit.plan_type, editingLimit.limit_key, newValue);
+                updatePlanLimit(editingLimit.plan_name, editingLimit.limit_key, newValue);
               }
             }}>
               Sauvegarder
