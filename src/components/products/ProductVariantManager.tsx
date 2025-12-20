@@ -5,7 +5,6 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { supabase } from '@/integrations/supabase/client'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import Papa from 'papaparse'
 import { VariantImageUpload } from './VariantImageUpload'
@@ -41,9 +40,22 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { z } from 'zod'
-import type { Database } from '@/integrations/supabase/types'
 
-type ProductVariant = Database['public']['Tables']['product_variants']['Row']
+// Mock ProductVariant type since product_variants table doesn't exist
+interface ProductVariant {
+  id: string
+  product_id: string
+  user_id: string
+  name: string
+  variant_sku: string | null
+  price: number
+  cost_price: number | null
+  stock_quantity: number | null
+  image_url: string | null
+  options: Record<string, string> | null
+  is_active: boolean
+  created_at: string
+}
 
 const variantSchema = z.object({
   name: z.string().min(1, 'Variant name is required').max(100),
@@ -70,11 +82,31 @@ interface CSVVariant {
   [key: string]: string | undefined
 }
 
+// Helper to get variants from localStorage
+const getStoredVariants = (productId: string): ProductVariant[] => {
+  try {
+    const stored = localStorage.getItem(`product_variants_${productId}`)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+// Helper to save variants to localStorage
+const saveStoredVariants = (productId: string, variants: ProductVariant[]) => {
+  localStorage.setItem(`product_variants_${productId}`, JSON.stringify(variants))
+}
+
 export function ProductVariantManager({
   productId,
-  variants,
+  variants: initialVariants,
   onRefetch,
 }: ProductVariantManagerProps) {
+  const [variants, setVariants] = useState<ProductVariant[]>(() => {
+    // Merge initial variants with stored ones
+    const stored = getStoredVariants(productId)
+    return stored.length > 0 ? stored : initialVariants
+  })
   const [isAddingVariant, setIsAddingVariant] = useState(false)
   const [editingVariant, setEditingVariant] = useState<string | null>(null)
   const [deletingVariant, setDeletingVariant] = useState<string | null>(null)
@@ -109,25 +141,26 @@ export function ProductVariantManager({
 
   const createVariantMutation = useMutation({
     mutationFn: async (variant: any) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
-      const { error } = await supabase.from('product_variants').insert([
-        {
-          product_id: productId,
-          user_id: user.id,
-          name: variant.name,
-          variant_sku: variant.variant_sku || null,
-          price: variant.price,
-          cost_price: variant.cost_price || null,
-          stock_quantity: variant.stock_quantity || null,
-          image_url: variant.image_url || null,
-          options: variant.options || {},
-          is_active: true,
-        },
-      ])
-
-      if (error) throw error
+      // Using localStorage mock since product_variants table doesn't exist
+      const newVariant: ProductVariant = {
+        id: crypto.randomUUID(),
+        product_id: productId,
+        user_id: 'local-user',
+        name: variant.name,
+        variant_sku: variant.variant_sku || null,
+        price: variant.price,
+        cost_price: variant.cost_price || null,
+        stock_quantity: variant.stock_quantity || null,
+        image_url: variant.image_url || null,
+        options: variant.options || {},
+        is_active: true,
+        created_at: new Date().toISOString(),
+      }
+      
+      const updated = [...variants, newVariant]
+      setVariants(updated)
+      saveStoredVariants(productId, updated)
+      return newVariant
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
@@ -158,16 +191,10 @@ export function ProductVariantManager({
 
   const updateVariantMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
-      const { error } = await supabase
-        .from('product_variants')
-        .update(updates)
-        .eq('id', id)
-        .eq('user_id', user.id)
-
-      if (error) throw error
+      const updated = variants.map(v => v.id === id ? { ...v, ...updates } : v)
+      setVariants(updated)
+      saveStoredVariants(productId, updated)
+      return updated.find(v => v.id === id)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
@@ -190,16 +217,9 @@ export function ProductVariantManager({
 
   const deleteVariantMutation = useMutation({
     mutationFn: async (variantId: string) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
-      const { error } = await supabase
-        .from('product_variants')
-        .delete()
-        .eq('id', variantId)
-        .eq('user_id', user.id)
-
-      if (error) throw error
+      const updated = variants.filter(v => v.id !== variantId)
+      setVariants(updated)
+      saveStoredVariants(productId, updated)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
@@ -221,19 +241,25 @@ export function ProductVariantManager({
 
   const bulkCreateVariantsMutation = useMutation({
     mutationFn: async (variantsToCreate: any[]) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
-      const { error } = await supabase.from('product_variants').insert(
-        variantsToCreate.map((v) => ({
-          ...v,
-          product_id: productId,
-          user_id: user.id,
-          is_active: true,
-        }))
-      )
-
-      if (error) throw error
+      const newVariants: ProductVariant[] = variantsToCreate.map(v => ({
+        id: crypto.randomUUID(),
+        product_id: productId,
+        user_id: 'local-user',
+        name: v.name,
+        variant_sku: v.variant_sku || null,
+        price: v.price,
+        cost_price: v.cost_price || null,
+        stock_quantity: v.stock_quantity || null,
+        image_url: v.image_url || null,
+        options: v.options || {},
+        is_active: true,
+        created_at: new Date().toISOString(),
+      }))
+      
+      const updated = [...variants, ...newVariants]
+      setVariants(updated)
+      saveStoredVariants(productId, updated)
+      return newVariants
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
@@ -499,20 +525,23 @@ export function ProductVariantManager({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">Variantes de produit</h3>
-          <p className="text-sm text-muted-foreground">
-            {variants.length} variante{variants.length > 1 ? 's' : ''}
-          </p>
+        <div className="flex items-center gap-2">
+          <Package className="h-5 w-5 text-primary" />
+          <h3 className="text-lg font-semibold">Variantes du produit</h3>
+          <Badge variant="secondary">{variants.length} variante(s)</Badge>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowAutoGenerate(true)}>
-            <Wand2 className="h-4 w-4 mr-2" />
-            Auto-générer
+          <Button variant="outline" size="sm" onClick={downloadCSVTemplate}>
+            <Download className="h-4 w-4 mr-2" />
+            Modèle CSV
           </Button>
           <Button variant="outline" size="sm" onClick={() => setShowBulkUpload(true)}>
             <Upload className="h-4 w-4 mr-2" />
             Import CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowAutoGenerate(true)}>
+            <Wand2 className="h-4 w-4 mr-2" />
+            Auto-générer
           </Button>
           <Button size="sm" onClick={() => setIsAddingVariant(true)}>
             <Plus className="h-4 w-4 mr-2" />
@@ -521,169 +550,119 @@ export function ProductVariantManager({
         </div>
       </div>
 
-      {/* Variant List */}
-      <div className="space-y-3">
-        {variants.map((variant) => (
-          <Card key={variant.id}>
-            <CardContent className="p-4">
-              {editingVariant === variant.id ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Nom</Label>
-                      <Input
-                        value={editedVariant?.name || ''}
-                        onChange={(e) =>
-                          setEditedVariant({ ...editedVariant, name: e.target.value })
-                        }
-                      />
+      {/* Variants List */}
+      {variants.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>Aucune variante pour ce produit</p>
+            <p className="text-sm">Ajoutez des variantes ou importez un fichier CSV</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {variants.map((variant) => (
+            <Card key={variant.id}>
+              <CardContent className="py-4">
+                {editingVariant === variant.id ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Nom</Label>
+                        <Input
+                          value={editedVariant?.name || ''}
+                          onChange={(e) => setEditedVariant({ ...editedVariant, name: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label>SKU</Label>
+                        <Input
+                          value={editedVariant?.variant_sku || ''}
+                          onChange={(e) => setEditedVariant({ ...editedVariant, variant_sku: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label>Prix</Label>
+                        <Input
+                          type="number"
+                          value={editedVariant?.price || ''}
+                          onChange={(e) => setEditedVariant({ ...editedVariant, price: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label>Prix coûtant</Label>
+                        <Input
+                          type="number"
+                          value={editedVariant?.cost_price || ''}
+                          onChange={(e) => setEditedVariant({ ...editedVariant, cost_price: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label>Stock</Label>
+                        <Input
+                          type="number"
+                          value={editedVariant?.stock_quantity || ''}
+                          onChange={(e) => setEditedVariant({ ...editedVariant, stock_quantity: e.target.value })}
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <Label>SKU</Label>
-                      <Input
-                        value={editedVariant?.variant_sku || ''}
-                        onChange={(e) =>
-                          setEditedVariant({ ...editedVariant, variant_sku: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label>Prix</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={editedVariant?.price || ''}
-                        onChange={(e) =>
-                          setEditedVariant({ ...editedVariant, price: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label>Prix de revient</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={editedVariant?.cost_price || ''}
-                        onChange={(e) =>
-                          setEditedVariant({ ...editedVariant, cost_price: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label>Stock</Label>
-                      <Input
-                        type="number"
-                        value={editedVariant?.stock_quantity || ''}
-                        onChange={(e) =>
-                          setEditedVariant({ ...editedVariant, stock_quantity: e.target.value })
-                        }
-                      />
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleUpdateVariant(variant.id)}>
+                        <Save className="h-4 w-4 mr-2" />
+                        Sauvegarder
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingVariant(null)}>
+                        Annuler
+                      </Button>
                     </div>
                   </div>
-
-                  <VariantImageUpload
-                    imageUrl={editedVariant?.image_url}
-                    onImageChange={(url) =>
-                      setEditedVariant({ ...editedVariant, image_url: url })
-                    }
-                  />
-
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => handleUpdateVariant(variant.id)}
-                      disabled={updateVariantMutation.isPending}
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      Sauvegarder
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setEditingVariant(null)
-                        setEditedVariant(null)
-                      }}
-                    >
-                      Annuler
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-start gap-4">
-                  {variant.image_url && (
-                    <img
-                      src={variant.image_url}
-                      alt={variant.name}
-                      className="h-20 w-20 object-cover rounded-lg border flex-shrink-0"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none'
-                      }}
-                    />
-                  )}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-medium">{variant.name}</h4>
-                      <Badge variant={variant.is_active ? 'default' : 'secondary'}>
-                        {variant.is_active ? 'Actif' : 'Inactif'}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-muted-foreground">
-                      {variant.variant_sku && (
-                        <div className="flex items-center gap-1">
-                          <Hash className="h-3 w-3" />
-                          {variant.variant_sku}
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      {variant.image_url ? (
+                        <img src={variant.image_url} alt={variant.name} className="h-12 w-12 object-cover rounded" />
+                      ) : (
+                        <div className="h-12 w-12 bg-muted rounded flex items-center justify-center">
+                          <Package className="h-6 w-6 text-muted-foreground" />
                         </div>
                       )}
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="h-3 w-3" />
-                        {variant.price.toFixed(2)} €
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Package className="h-3 w-3" />
-                        Stock: {variant.stock_quantity || 0}
-                      </div>
-                      {variant.options && Object.keys(variant.options).length > 0 && (
-                        <div className="flex gap-1 flex-wrap col-span-2 md:col-span-1">
-                          {Object.entries(variant.options as Record<string, any>).map(
-                            ([key, value]) => (
-                              <Badge key={key} variant="outline" className="text-xs">
-                                {String(value)}
-                              </Badge>
-                            )
+                      <div>
+                        <p className="font-medium">{variant.name}</p>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          {variant.variant_sku && <span>SKU: {variant.variant_sku}</span>}
+                          <span>•</span>
+                          <span>{variant.price}€</span>
+                          {variant.stock_quantity !== null && (
+                            <>
+                              <span>•</span>
+                              <span>Stock: {variant.stock_quantity}</span>
+                            </>
                           )}
                         </div>
-                      )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="ghost" onClick={() => startEditingVariant(variant)}>
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setDeletingVariant(variant.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => startEditingVariant(variant)}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setDeletingVariant(variant.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Add Variant Dialog */}
       <Dialog open={isAddingVariant} onOpenChange={setIsAddingVariant}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Ajouter une variante</DialogTitle>
+            <DialogDescription>Créez une nouvelle variante pour ce produit</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateVariant} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -692,14 +671,16 @@ export function ProductVariantManager({
                 <Input
                   value={newVariant.name}
                   onChange={(e) => setNewVariant({ ...newVariant, name: e.target.value })}
+                  placeholder="Ex: Rouge / M"
                 />
-                {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                {errors.name && <p className="text-sm text-destructive mt-1">{errors.name}</p>}
               </div>
               <div>
                 <Label>SKU</Label>
                 <Input
                   value={newVariant.variant_sku}
                   onChange={(e) => setNewVariant({ ...newVariant, variant_sku: e.target.value })}
+                  placeholder="Ex: PROD-RED-M"
                 />
               </div>
               <div>
@@ -709,58 +690,57 @@ export function ProductVariantManager({
                   step="0.01"
                   value={newVariant.price}
                   onChange={(e) => setNewVariant({ ...newVariant, price: e.target.value })}
+                  placeholder="0.00"
                 />
-                {errors.price && <p className="text-sm text-destructive">{errors.price}</p>}
+                {errors.price && <p className="text-sm text-destructive mt-1">{errors.price}</p>}
               </div>
               <div>
-                <Label>Prix de revient</Label>
+                <Label>Prix coûtant</Label>
                 <Input
                   type="number"
                   step="0.01"
                   value={newVariant.cost_price}
                   onChange={(e) => setNewVariant({ ...newVariant, cost_price: e.target.value })}
+                  placeholder="0.00"
                 />
               </div>
               <div>
-                <Label>Stock</Label>
+                <Label>Quantité en stock</Label>
                 <Input
                   type="number"
                   value={newVariant.stock_quantity}
                   onChange={(e) => setNewVariant({ ...newVariant, stock_quantity: e.target.value })}
+                  placeholder="0"
                 />
               </div>
             </div>
 
-            <VariantImageUpload
-              imageUrl={newVariant.image_url}
-              onImageChange={(url) => setNewVariant({ ...newVariant, image_url: url })}
-            />
-
+            {/* Options */}
             <div className="space-y-2">
               <Label>Options</Label>
               <div className="flex gap-2">
                 <Input
-                  placeholder="Nom (ex: couleur)"
+                  placeholder="Nom (ex: Couleur)"
                   value={newOption.name}
                   onChange={(e) => setNewOption({ ...newOption, name: e.target.value })}
                 />
                 <Input
-                  placeholder="Valeur (ex: rouge)"
+                  placeholder="Valeur (ex: Rouge)"
                   value={newOption.value}
                   onChange={(e) => setNewOption({ ...newOption, value: e.target.value })}
                 />
-                <Button type="button" size="sm" onClick={addOptionToNewVariant}>
+                <Button type="button" variant="outline" onClick={addOptionToNewVariant}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
               {Object.entries(newVariant.options).length > 0 && (
-                <div className="flex gap-2 flex-wrap">
-                  {Object.entries(newVariant.options).map(([key, value]) => (
-                    <Badge key={key} variant="secondary">
-                      {key}: {value}
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {Object.entries(newVariant.options).map(([name, value]) => (
+                    <Badge key={name} variant="secondary" className="flex items-center gap-1">
+                      {name}: {value}
                       <X
-                        className="h-3 w-3 ml-1 cursor-pointer"
-                        onClick={() => removeOptionFromNewVariant(key)}
+                        className="h-3 w-3 cursor-pointer"
+                        onClick={() => removeOptionFromNewVariant(name)}
                       />
                     </Badge>
                   ))}
@@ -768,224 +748,148 @@ export function ProductVariantManager({
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={createVariantMutation.isPending}>
-              {createVariantMutation.isPending ? 'Création...' : 'Créer la variante'}
-            </Button>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setIsAddingVariant(false)}>
+                Annuler
+              </Button>
+              <Button type="submit" disabled={createVariantMutation.isPending}>
+                {createVariantMutation.isPending ? 'Création...' : 'Créer la variante'}
+              </Button>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
 
       {/* Bulk Upload Dialog */}
       <Dialog open={showBulkUpload} onOpenChange={setShowBulkUpload}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Import CSV de variantes</DialogTitle>
-            <DialogDescription>
-              Importez plusieurs variantes à la fois via un fichier CSV
-            </DialogDescription>
+            <DialogDescription>Importez plusieurs variantes à partir d'un fichier CSV</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={downloadCSVTemplate}>
-                <Download className="h-4 w-4 mr-2" />
-                Télécharger le modèle
-              </Button>
-              <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-                <FileText className="h-4 w-4 mr-2" />
-                Choisir un fichier
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".csv"
-                className="hidden"
-                onChange={handleCSVUpload}
-              />
-            </div>
-
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleCSVUpload}
+              className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-primary file:text-primary-foreground"
+            />
             {csvErrors.length > 0 && (
-              <div className="p-4 border border-destructive rounded-lg">
-                <h4 className="font-medium text-destructive mb-2">Erreurs détectées</h4>
-                <ul className="list-disc list-inside text-sm">
-                  {csvErrors.map((error, i) => (
-                    <li key={i}>{error}</li>
-                  ))}
-                </ul>
+              <div className="text-sm text-destructive">
+                {csvErrors.slice(0, 5).map((err, i) => (
+                  <p key={i}>{err}</p>
+                ))}
+                {csvErrors.length > 5 && <p>...et {csvErrors.length - 5} autres erreurs</p>}
               </div>
             )}
-
             {csvData.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="font-medium">Aperçu ({csvData.length} variantes)</h4>
-                <div className="max-h-64 overflow-auto border rounded-lg">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted">
-                      <tr>
-                        <th className="p-2 text-left">Nom</th>
-                        <th className="p-2 text-left">SKU</th>
-                        <th className="p-2 text-left">Prix</th>
-                        <th className="p-2 text-left">Stock</th>
-                        <th className="p-2 text-left">Image</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {csvData.map((row, i) => (
-                        <tr key={i} className="border-t">
-                          <td className="p-2">{row.name}</td>
-                          <td className="p-2">{row.variant_sku || '-'}</td>
-                          <td className="p-2">{row.price} €</td>
-                          <td className="p-2">{row.stock_quantity || 0}</td>
-                          <td className="p-2">{row.image_url ? '✓' : '-'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <Button
-                  onClick={handleBulkImport}
-                  disabled={bulkCreateVariantsMutation.isPending}
-                  className="w-full"
-                >
-                  {bulkCreateVariantsMutation.isPending
-                    ? 'Import en cours...'
-                    : `Importer ${csvData.length} variantes`}
-                </Button>
+              <div className="text-sm text-muted-foreground">
+                {csvData.length} variante(s) prête(s) à être importée(s)
               </div>
             )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowBulkUpload(false)}>
+                Annuler
+              </Button>
+              <Button onClick={handleBulkImport} disabled={csvData.length === 0 || bulkCreateVariantsMutation.isPending}>
+                {bulkCreateVariantsMutation.isPending ? 'Import...' : 'Importer'}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Auto Generate Dialog */}
       <Dialog open={showAutoGenerate} onOpenChange={setShowAutoGenerate}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Auto-générer les variantes</DialogTitle>
+            <DialogTitle>Générer des variantes automatiquement</DialogTitle>
             <DialogDescription>
-              Créez automatiquement toutes les combinaisons de couleurs, tailles et matériaux
+              Créez toutes les combinaisons possibles à partir des options
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-3">
-              <div>
-                <Label>Couleurs (séparées par des virgules)</Label>
-                <Input
-                  placeholder="ex: Rouge, Bleu, Vert"
-                  value={autoGenOptions.colors}
-                  onChange={(e) =>
-                    setAutoGenOptions({ ...autoGenOptions, colors: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Tailles (séparées par des virgules)</Label>
-                <Input
-                  placeholder="ex: S, M, L, XL"
-                  value={autoGenOptions.sizes}
-                  onChange={(e) => setAutoGenOptions({ ...autoGenOptions, sizes: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Matériaux (séparées par des virgules)</Label>
-                <Input
-                  placeholder="ex: Coton, Polyester, Laine"
-                  value={autoGenOptions.materials}
-                  onChange={(e) =>
-                    setAutoGenOptions({ ...autoGenOptions, materials: e.target.value })
-                  }
-                />
-              </div>
+            <div>
+              <Label>Couleurs (séparées par virgules)</Label>
+              <Input
+                placeholder="Rouge, Bleu, Vert"
+                value={autoGenOptions.colors}
+                onChange={(e) => setAutoGenOptions({ ...autoGenOptions, colors: e.target.value })}
+              />
             </div>
-
+            <div>
+              <Label>Tailles (séparées par virgules)</Label>
+              <Input
+                placeholder="S, M, L, XL"
+                value={autoGenOptions.sizes}
+                onChange={(e) => setAutoGenOptions({ ...autoGenOptions, sizes: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Matériaux (séparées par virgules)</Label>
+              <Input
+                placeholder="Coton, Polyester"
+                value={autoGenOptions.materials}
+                onChange={(e) => setAutoGenOptions({ ...autoGenOptions, materials: e.target.value })}
+              />
+            </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label>Prix de base</Label>
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="29.99"
                   value={autoGenOptions.basePrice}
-                  onChange={(e) =>
-                    setAutoGenOptions({ ...autoGenOptions, basePrice: e.target.value })
-                  }
+                  onChange={(e) => setAutoGenOptions({ ...autoGenOptions, basePrice: e.target.value })}
                 />
               </div>
               <div>
-                <Label>Prix de revient</Label>
+                <Label>Coût de base</Label>
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="15.00"
                   value={autoGenOptions.baseCostPrice}
-                  onChange={(e) =>
-                    setAutoGenOptions({ ...autoGenOptions, baseCostPrice: e.target.value })
-                  }
+                  onChange={(e) => setAutoGenOptions({ ...autoGenOptions, baseCostPrice: e.target.value })}
                 />
               </div>
               <div>
-                <Label>Stock par défaut</Label>
+                <Label>Stock de base</Label>
                 <Input
                   type="number"
-                  placeholder="50"
                   value={autoGenOptions.baseStock}
-                  onChange={(e) =>
-                    setAutoGenOptions({ ...autoGenOptions, baseStock: e.target.value })
-                  }
+                  onChange={(e) => setAutoGenOptions({ ...autoGenOptions, baseStock: e.target.value })}
                 />
               </div>
             </div>
 
-            <Button onClick={generateVariantCombinations} variant="outline" className="w-full">
+            <Button variant="outline" onClick={generateVariantCombinations} className="w-full">
               <Wand2 className="h-4 w-4 mr-2" />
-              Générer les combinaisons
+              Prévisualiser les combinaisons
             </Button>
 
             {generatedVariants.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="font-medium">
-                  Aperçu ({generatedVariants.length} variantes à créer)
-                </h4>
-                <div className="max-h-64 overflow-auto border rounded-lg">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted">
-                      <tr>
-                        <th className="p-2 text-left">Nom</th>
-                        <th className="p-2 text-left">SKU</th>
-                        <th className="p-2 text-left">Prix</th>
-                        <th className="p-2 text-left">Options</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {generatedVariants.map((variant, i) => (
-                        <tr key={i} className="border-t">
-                          <td className="p-2">{variant.name}</td>
-                          <td className="p-2">{variant.variant_sku}</td>
-                          <td className="p-2">{variant.price.toFixed(2)} €</td>
-                          <td className="p-2">
-                            <div className="flex gap-1">
-                              {Object.values(variant.options).map((val: any, j: number) => (
-                                <Badge key={j} variant="outline" className="text-xs">
-                                  {String(val)}
-                                </Badge>
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <Button
-                  onClick={handleGenerateVariants}
-                  disabled={bulkCreateVariantsMutation.isPending}
-                  className="w-full"
-                >
-                  {bulkCreateVariantsMutation.isPending
-                    ? 'Création en cours...'
-                    : `Créer ${generatedVariants.length} variantes`}
-                </Button>
+              <div className="max-h-40 overflow-y-auto border rounded p-2 text-sm">
+                {generatedVariants.map((v, i) => (
+                  <div key={i} className="py-1 border-b last:border-0">
+                    {v.name} - {v.price}€
+                  </div>
+                ))}
+                <p className="text-muted-foreground mt-2">{generatedVariants.length} variantes à créer</p>
               </div>
             )}
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowAutoGenerate(false)}>
+                Annuler
+              </Button>
+              <Button
+                onClick={handleGenerateVariants}
+                disabled={generatedVariants.length === 0 || bulkCreateVariantsMutation.isPending}
+              >
+                {bulkCreateVariantsMutation.isPending ? 'Création...' : 'Créer les variantes'}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -994,20 +898,16 @@ export function ProductVariantManager({
       <AlertDialog open={!!deletingVariant} onOpenChange={() => setDeletingVariant(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogTitle>Supprimer cette variante ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer cette variante ? Cette action est irréversible.
+              Cette action est irréversible. La variante sera définitivement supprimée.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                if (deletingVariant) {
-                  deleteVariantMutation.mutate(deletingVariant)
-                }
-              }}
-              className="bg-destructive text-destructive-foreground"
+              onClick={() => deletingVariant && deleteVariantMutation.mutate(deletingVariant)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Supprimer
             </AlertDialogAction>

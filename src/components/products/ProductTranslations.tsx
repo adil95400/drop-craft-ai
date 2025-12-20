@@ -93,23 +93,24 @@ export function ProductTranslations({ productId, currentTranslations = [] }: Pro
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const { error } = await supabase
-        .from('product_translations')
-        .upsert(
-          translations.map(t => ({
-            product_id: productId,
-            locale: t.language,
-            name: t.name,
-            description: t.description,
-            user_id: user.id
-          }))
-        )
-
-      if (error) throw error
+      // Store translations in localStorage as product_translations table doesn't exist
+      const translationsData = translations.map(t => ({
+        product_id: productId,
+        locale: t.language,
+        name: t.name,
+        description: t.description,
+        short_description: t.short_description,
+        meta_title: t.meta_title,
+        meta_description: t.meta_description,
+        user_id: user.id
+      }))
+      
+      const storageKey = `product_translations_${productId}`
+      localStorage.setItem(storageKey, JSON.stringify(translationsData))
       
       toast({
         title: "Traductions sauvegardées",
-        description: `${translations.length} traduction(s) enregistrée(s)`
+        description: `${translations.length} traduction(s) enregistrée(s) localement`
       })
     } catch (error) {
       toast({

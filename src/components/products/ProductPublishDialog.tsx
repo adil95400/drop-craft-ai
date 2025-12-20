@@ -42,13 +42,21 @@ export function ProductPublishDialog({ open, onOpenChange, product }: ProductPub
   const fetchStores = async () => {
     setLoadingStores(true)
     try {
+      // Using integrations table instead of store_integrations (table doesn't exist)
       const { data, error } = await supabase
-        .from('store_integrations')
+        .from('integrations')
         .select('*')
         .eq('is_active', true)
 
       if (error) throw error
-      setStores(data || [])
+      // Map integrations data to StoreIntegration interface
+      const mappedStores: StoreIntegration[] = (data || []).map(integration => ({
+        id: integration.id,
+        platform: integration.platform,
+        shop_name: integration.store_url || integration.platform_name || undefined,
+        is_active: integration.is_active ?? false
+      }))
+      setStores(mappedStores)
     } catch (error) {
       console.error('Error fetching stores:', error)
     } finally {
