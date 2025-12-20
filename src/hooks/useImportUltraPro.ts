@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast'
 export interface ImportedProduct {
   id: string
   user_id: string
-  name: string
+  name?: string
   description?: string
   price: number
   cost_price?: number
@@ -15,8 +15,8 @@ export interface ImportedProduct {
   sub_category?: string
   brand?: string
   sku?: string
-  status: 'draft' | 'published' | 'archived'
-  review_status: 'pending' | 'approved' | 'rejected'
+  status?: string
+  review_status?: string
   image_urls?: string[]
   video_urls?: string[]
   tags?: string[]
@@ -24,11 +24,13 @@ export interface ImportedProduct {
   stock_quantity?: number
   supplier_name?: string
   supplier_url?: string
+  source_url?: string
+  source_platform?: string
   ai_optimized?: boolean
   ai_score?: number
   import_quality_score?: number
   created_at: string
-  updated_at: string
+  updated_at?: string
 }
 
 export interface AIOptimizationJob {

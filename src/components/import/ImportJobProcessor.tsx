@@ -41,8 +41,9 @@ export function ImportJobProcessor() {
         .limit(20)
 
       if (error) throw error
-      setJobs((data || []).map(job => ({
+      setJobs((data || []).map((job: any) => ({
         ...job,
+        processed_products: job.successful_imports || 0,
         status: job.status as 'pending' | 'processing' | 'completed' | 'failed'
       })))
     } catch (error) {

@@ -50,7 +50,7 @@ export const BulkActionsPanel = ({
         case 'approve': {
           const { error } = await supabase
             .from('imported_products')
-            .update({ review_status: 'approved', updated_at: new Date().toISOString() })
+            .update({ status: 'approved' })
             .in('id', selectedProducts);
           
           if (error) throw error;
@@ -65,7 +65,7 @@ export const BulkActionsPanel = ({
         case 'publish': {
           const { error } = await supabase
             .from('imported_products')
-            .update({ status: 'published', updated_at: new Date().toISOString() })
+            .update({ status: 'published' })
             .in('id', selectedProducts);
           
           if (error) throw error;
@@ -80,7 +80,7 @@ export const BulkActionsPanel = ({
         case 'reject': {
           const { error } = await supabase
             .from('imported_products')
-            .update({ review_status: 'rejected', updated_at: new Date().toISOString() })
+            .update({ status: 'rejected' })
             .in('id', selectedProducts);
           
           if (error) throw error;

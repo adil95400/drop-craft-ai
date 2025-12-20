@@ -50,20 +50,20 @@ export const RealTimeMonitor = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from('integrations')
-        .select('id, platform_name, platform_type, connection_status, is_active, last_sync_at')
-      return data || []
+        .select('id, platform_name, platform, connection_status, is_active, last_sync_at')
+      return (data || []) as any[]
     },
     refetchInterval: 30000 // Refresh every 30 seconds
   })
 
   // Generate system status from real data
   const systemStatus: SystemStatus = {
-    integrations_online: integrations.filter(i => i.connection_status === 'connected').length,
+    integrations_online: integrations.filter((i: any) => i.connection_status === 'connected').length,
     integrations_total: integrations.length,
     active_syncs: Math.floor(Math.random() * 5), // Simulated active syncs
     webhooks_active: Math.floor(Math.random() * 10) + 5, // Simulated webhooks
     last_activity: new Date().toISOString(),
-    system_health: getSystemHealth(integrations)
+    system_health: getSystemHealth(integrations as any[])
   }
 
   // Simulate real-time activity logs
@@ -119,8 +119,8 @@ export const RealTimeMonitor = () => {
         id: crypto.randomUUID(),
         timestamp: new Date().toISOString(),
         type,
-        integration_name: integration?.platform_name || 'Système',
-        integration_id: integration?.id || 'system',
+        integration_name: (integration as any)?.platform_name || (integration as any)?.platform || 'Système',
+        integration_id: (integration as any)?.id || 'system',
         status: activity.statuses[messageIndex],
         message: activity.messages[messageIndex],
         duration_ms: type === 'sync' ? Math.floor(Math.random() * 5000) + 1000 : undefined,

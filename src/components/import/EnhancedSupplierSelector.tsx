@@ -78,10 +78,10 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
         .from('integrations')
         .upsert({
           user_id: user.id,
+          platform: supplier.name,
           platform_name: supplier.name,
-          platform_type: supplier.category,
-          platform_url: `https://${supplier.name}.com`,
-          encrypted_credentials: credentials,
+          store_url: `https://${supplier.name}.com`,
+          api_key_encrypted: JSON.stringify(credentials),
           connection_status: 'connected',
           is_active: true
         })
@@ -167,14 +167,14 @@ const SupplierConfigDialog = ({ supplier, isOpen, onClose }: SupplierConfigDialo
         await supabase
           .from('integrations')
           .update({
-            sync_settings: {
+            config: {
               import_methods: selectedMethods,
               features: selectedFeatures,
               configured_at: new Date().toISOString()
             }
           })
           .eq('user_id', user.id)
-          .eq('platform_name', supplier.name)
+          .eq('platform', supplier.name)
       }
 
       toast({

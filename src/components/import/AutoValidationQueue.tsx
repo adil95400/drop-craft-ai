@@ -54,16 +54,16 @@ export function AutoValidationQueue({ integrationId }: AutoValidationQueueProps)
     queryFn: async () => {
       const { data, error } = await supabase
         .from('imported_products')
-        .select('id, name, status, review_status, created_at')
-        .eq('review_status', 'pending')
+        .select('id, status, created_at, category')
+        .eq('status', 'imported')
         .order('created_at', { ascending: true })
         .limit(100)
 
       if (error) throw error
-      return (data || []).map(item => ({
+      return (data || []).map((item: any) => ({
         id: item.id,
         product_id: item.id,
-        product_name: item.name || 'Sans nom',
+        product_name: item.category || 'Sans nom',
         status: 'pending' as const,
         created_at: item.created_at
       }))
@@ -85,8 +85,7 @@ export function AutoValidationQueue({ integrationId }: AutoValidationQueueProps)
       await supabase
         .from('imported_products')
         .update({ 
-          review_status: 'reviewed',
-          metadata: { validation: data }
+          status: 'reviewed'
         })
         .eq('id', productId)
 

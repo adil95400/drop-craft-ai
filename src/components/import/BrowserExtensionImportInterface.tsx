@@ -73,14 +73,30 @@ export const BrowserExtensionImportInterface = () => {
 
   const loadSyncLogs = async () => {
     try {
+      // Use extension_jobs as fallback for sync logs
       const { data, error } = await supabase
-        .from('extension_sync_logs')
+        .from('extension_jobs')
         .select('*')
+        .eq('job_type', 'sync')
         .order('created_at', { ascending: false })
         .limit(10)
 
       if (error) throw error
-      setSyncLogs(data || [])
+      
+      // Map extension_jobs to ExtensionSyncLog format
+      const mappedLogs: ExtensionSyncLog[] = (data || []).map((job: any) => ({
+        id: job.id,
+        source: (job.input_data as any)?.source || 'Unknown',
+        extension_version: '1.0.0',
+        products_count: (job.output_data as any)?.products_count || 0,
+        success_count: (job.output_data as any)?.success_count || 0,
+        error_count: (job.output_data as any)?.error_count || 0,
+        errors: (job.output_data as any)?.errors || [],
+        metadata: job.input_data,
+        created_at: job.created_at
+      }));
+      
+      setSyncLogs(mappedLogs)
     } catch (error) {
       logError(error as Error, 'Loading sync logs')
     }

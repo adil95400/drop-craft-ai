@@ -80,11 +80,11 @@ export function BusinessIntelligenceDashboard() {
       if (error) throw error;
       
       // Transform the data to match our interface
-      const transformedData: BusinessInsight[] = (data || []).map(item => ({
+      const transformedData: BusinessInsight[] = (data || []).map((item: any) => ({
         id: item.id,
         insight_type: item.insight_type,
         title: item.title,
-        category: item.category,
+        category: (item.supporting_data as any)?.category || 'general',
         description: item.description,
         confidence_score: item.confidence_score,
         impact_score: item.impact_score,
@@ -96,10 +96,10 @@ export function BusinessIntelligenceDashboard() {
           typeof item.actionable_recommendations === 'string' ? [item.actionable_recommendations] : 
           item.actionable_recommendations ? [String(item.actionable_recommendations)] : [],
         supporting_data: item.supporting_data || {},
-        ai_analysis: typeof item.ai_analysis === 'object' && item.ai_analysis ? 
+        ai_analysis: typeof (item.supporting_data as any)?.ai_analysis === 'object' && (item.supporting_data as any)?.ai_analysis ? 
           {
-            insights: Array.isArray((item.ai_analysis as any).insights) ? (item.ai_analysis as any).insights : [],
-            predictions: Array.isArray((item.ai_analysis as any).predictions) ? (item.ai_analysis as any).predictions : []
+            insights: Array.isArray(((item.supporting_data as any)?.ai_analysis as any)?.insights) ? ((item.supporting_data as any)?.ai_analysis as any).insights : [],
+            predictions: Array.isArray(((item.supporting_data as any)?.ai_analysis as any)?.predictions) ? ((item.supporting_data as any)?.ai_analysis as any).predictions : []
           } : { insights: [], predictions: [] },
         status: (item.status as 'new' | 'acknowledged' | 'acted_upon') || 'new',
         created_at: item.created_at,

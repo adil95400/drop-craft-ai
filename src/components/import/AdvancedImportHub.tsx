@@ -192,7 +192,7 @@ export function AdvancedImportHub() {
 
       const formattedImports = data.map((job, index) => ({
         id: index + 1, // Use index as number ID
-        source: (job.import_settings as any)?.sourceName || job.job_type || 'Source inconnue',
+        source: job.source_platform || job.job_type || 'Source inconnue',
         products: job.successful_imports || 0,
         status: job.status,
         time: job.completed_at && job.started_at 

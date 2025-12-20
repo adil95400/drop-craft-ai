@@ -331,7 +331,7 @@ export function AutoConfigWizard({ open, onOpenChange, platformName, platformTyp
         description: `${platformName} a été configuré avec succès`
       })
 
-      onComplete(integration as Integration)
+      onComplete(integration as unknown as Integration)
       onOpenChange(false)
     } catch (error: any) {
       toast({
