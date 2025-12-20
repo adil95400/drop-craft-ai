@@ -16,10 +16,10 @@ export function ABTestingPanel({ campaignId }: ABTestingPanelProps) {
       const { data, error } = await supabase
         .from('ab_test_variants')
         .select('*')
-        .eq('campaign_id', campaignId);
+        .eq('test_name', campaignId);
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 

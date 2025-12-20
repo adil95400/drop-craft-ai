@@ -53,7 +53,7 @@ export function AdvancedProductCatalog() {
   const { toast } = useToast()
 
   // Fetch catalog products + imported products
-  const { data: products = [], isLoading } = useQuery({
+  const { data: products = [], isLoading } = useQuery<any[]>({
     queryKey: ['catalog-products'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -78,33 +78,54 @@ export function AdvancedProductCatalog() {
       // Transformer les produits importés pour correspondre au format catalog_products
       const transformedImported = (importedData || []).map(p => ({
         ...p,
-        supplier_name: p.supplier_name || 'Importé',
-        availability_status: p.status === 'published' ? 'in_stock' : 'out_of_stock',
+        name: p.category || 'Produit importé',
+        title: p.category || 'Produit importé',
+        description: '',
+        supplier_name: 'Importé',
+        availability_status: p.status === 'imported' ? 'in_stock' : 'out_of_stock',
         rating: 0,
         sales_count: 0,
         trend_score: 0,
+        stock_quantity: 0,
         is_bestseller: false,
         is_trending: false,
         is_winner: false,
-        image_url: Array.isArray(p.image_urls) ? p.image_urls[0] : null
+        image_url: null,
+        image_urls: []
       }))
 
-      // Combiner les deux listes
-      return [...(catalogData || []), ...transformedImported]
+      // Combiner les deux listes avec normalisation
+      const normalizedCatalog = (catalogData || []).map(p => ({
+        ...p,
+        name: p.title || 'Sans nom',
+        availability_status: p.status || 'in_stock',
+        rating: 0,
+        sales_count: 0,
+        trend_score: 0,
+        stock_quantity: 0,
+        is_bestseller: false,
+        is_trending: false,
+        is_winner: false,
+        image_url: p.image_urls?.[0] || null
+      }))
+
+      return [...normalizedCatalog, ...transformedImported]
     }
   })
 
   // Get unique categories and suppliers
   const categories = useMemo(() => 
-    [...new Set(products.map(p => p.category).filter(Boolean))], [products])
+    [...new Set(products.map((p: any) => p.category).filter(Boolean))], [products])
   const suppliers = useMemo(() => 
-    [...new Set(products.map(p => p.supplier_name).filter(Boolean))], [products])
+    [...new Set(products.map((p: any) => p.supplier_name).filter(Boolean))], [products])
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
-    let filtered = products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    let filtered = products.filter((product: any) => {
+      const productName = product.name || product.title || ''
+      const productDesc = product.description || ''
+      const matchesSearch = productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           productDesc.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter
       const matchesSupplier = supplierFilter === 'all' || product.supplier_name === supplierFilter
       const matchesStatus = statusFilter === 'all' || product.availability_status === statusFilter
@@ -113,9 +134,11 @@ export function AdvancedProductCatalog() {
     })
 
     // Sort products
-    filtered.sort((a, b) => {
+    filtered.sort((a: any, b: any) => {
+      const aName = a.name || a.title || ''
+      const bName = b.name || b.title || ''
       switch (sortBy) {
-        case 'name': return a.name.localeCompare(b.name)
+        case 'name': return aName.localeCompare(bName)
         case 'price': return (a.price || 0) - (b.price || 0)
         case 'rating': return (b.rating || 0) - (a.rating || 0)
         case 'sales': return (b.sales_count || 0) - (a.sales_count || 0)
@@ -208,14 +231,14 @@ export function AdvancedProductCatalog() {
     },
     {
       title: 'En stock',
-      value: products.filter(p => p.availability_status === 'in_stock').length.toLocaleString(),
+      value: products.filter((p: any) => p.availability_status === 'in_stock').length.toLocaleString(),
       icon: ShoppingCart,
       color: 'text-green-600',
       bg: 'bg-green-100'
     },
     {
       title: 'Prix moyen',
-      value: formatCurrency(products.reduce((sum, p) => sum + (p.price || 0), 0) / products.length || 0),
+      value: formatCurrency(products.reduce((sum: number, p: any) => sum + (p.price || 0), 0) / products.length || 0),
       icon: DollarSign,
       color: 'text-yellow-600',
       bg: 'bg-yellow-100'
@@ -381,12 +404,12 @@ export function AdvancedProductCatalog() {
                             {product.image_url && (
                               <img 
                                 src={product.image_url} 
-                                alt={product.name} 
+                                alt={product.name || product.title || 'Product'} 
                                 className="w-10 h-10 rounded object-cover"
                               />
                             )}
                             <div>
-                              <p className="font-medium">{product.name}</p>
+                              <p className="font-medium">{product.name || product.title || 'Sans nom'}</p>
                               <div className="flex gap-1 mt-1">
                                 {getProductBadges(product)}
                               </div>
@@ -405,7 +428,7 @@ export function AdvancedProductCatalog() {
                           </div>
                         </TableCell>
                         <TableCell>{product.sales_count || 0}</TableCell>
-                        <TableCell>{product.supplier_name}</TableCell>
+                        <TableCell>{product.supplier_name || 'N/A'}</TableCell>
                         <TableCell>{getStatusBadge(product.availability_status || 'unknown')}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
@@ -437,7 +460,7 @@ export function AdvancedProductCatalog() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Revenus totaux</p>
-                    <p className="text-2xl font-bold text-green-600">€{((products.reduce((sum, p) => sum + (p.price || 0) * (p.sales_count || 1), 0))).toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-green-600">€{((products.reduce((sum: number, p: any) => sum + (p.price || 0) * (p.sales_count || 1), 0))).toLocaleString()}</p>
                     <p className="text-xs text-muted-foreground">+12% ce mois</p>
                   </div>
                   <DollarSign className="h-8 w-8 text-green-600" />
@@ -450,7 +473,7 @@ export function AdvancedProductCatalog() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Produits performants</p>
-                    <p className="text-2xl font-bold text-blue-600">{products.filter(p => (p.sales_count || 0) > 10).length}</p>
+                    <p className="text-2xl font-bold text-blue-600">{products.filter((p: any) => (p.sales_count || 0) > 10).length}</p>
                     <p className="text-xs text-muted-foreground">+5% ce mois</p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-blue-600" />
@@ -482,11 +505,11 @@ export function AdvancedProductCatalog() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {categories.slice(0, 5).map((category) => {
-                  const categoryProducts = products.filter(p => p.category === category)
-                  const categoryRevenue = categoryProducts.reduce((sum, p) => sum + (p.price || 0) * (p.sales_count || 1), 0)
+              {categories.slice(0, 5).map((category) => {
+                  const categoryProducts = products.filter((p: any) => p.category === category)
+                  const categoryRevenue = categoryProducts.reduce((sum: number, p: any) => sum + (p.price || 0) * (p.sales_count || 1), 0)
                   const maxRevenue = Math.max(...categories.map(cat => 
-                    products.filter(p => p.category === cat).reduce((sum, p) => sum + (p.price || 0) * (p.sales_count || 1), 0)
+                    products.filter((p: any) => p.category === cat).reduce((sum: number, p: any) => sum + (p.price || 0) * (p.sales_count || 1), 0)
                   ))
                   const percentage = maxRevenue ? (categoryRevenue / maxRevenue) * 100 : 0
                   
@@ -519,19 +542,19 @@ export function AdvancedProductCatalog() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {products
-                  .sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0))
+              {products
+                  .sort((a: any, b: any) => (b.sales_count || 0) - (a.sales_count || 0))
                   .slice(0, 5)
-                  .map((product, index) => (
+                  .map((product: any, index: number) => (
                     <div key={product.id} className="flex items-center gap-4 p-3 border rounded-lg">
                       <div className="flex items-center justify-center w-8 h-8 bg-primary/10 text-primary rounded-full font-bold">
                         {index + 1}
                       </div>
                       {product.image_url && (
-                        <img src={product.image_url} alt={product.name} className="w-12 h-12 rounded object-cover" />
+                        <img src={product.image_url} alt={product.name || 'Product'} className="w-12 h-12 rounded object-cover" />
                       )}
                       <div className="flex-1">
-                        <p className="font-medium">{product.name}</p>
+                        <p className="font-medium">{product.name || 'Sans nom'}</p>
                         <p className="text-sm text-muted-foreground">{product.category}</p>
                       </div>
                       <div className="text-right">
