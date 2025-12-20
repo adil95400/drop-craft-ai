@@ -4,81 +4,43 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useWinnersActions } from '@/hooks/useWinnersActions';
+import { useWinnersRealData, useRefreshWinners } from '@/hooks/useWinnersRealData';
 import { 
   Trophy, TrendingUp, Sparkles, Search, Filter, 
-  Star, DollarSign, BarChart3, ExternalLink,
-  RefreshCw, Target, Download
+  Star, DollarSign, BarChart3,
+  RefreshCw, Target, Download, Loader2
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function WinnersPage() {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>();
   const { importWinner, isImporting } = useWinnersActions();
+  
+  const { data: winnersData, isLoading } = useWinnersRealData(selectedCategory, 20);
+  const { mutate: refreshWinners, isPending: isRefreshing } = useRefreshWinners();
 
   const handleImport = async (product: any) => {
     await importWinner(product);
   };
 
-  const analyzeWinners = () => {
-    setIsAnalyzing(true);
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      toast.success('Analyse IA terminée - 47 nouveaux produits gagnants trouvés');
-    }, 2000);
+  const handleRefresh = () => {
+    refreshWinners({ category: selectedCategory, limit: 20 });
   };
 
-  // Données simulées de winning products
-  const winningProducts = [
-    {
-      id: 1,
-      name: 'Smartwatch Ultra Pro',
-      category: 'Électronique',
-      score: 98,
-      trend: '+245%',
-      avgPrice: '89.99€',
-      profit: '45.00€',
-      competition: 'Faible',
-      orders: 1234,
-      rating: 4.8
-    },
-    {
-      id: 2,
-      name: 'LED Gaming Setup',
-      category: 'Gaming',
-      score: 95,
-      trend: '+180%',
-      avgPrice: '129.99€',
-      profit: '65.00€',
-      competition: 'Moyenne',
-      orders: 892,
-      rating: 4.7
-    },
-    {
-      id: 3,
-      name: 'Wireless Earbuds Pro',
-      category: 'Audio',
-      score: 93,
-      trend: '+165%',
-      avgPrice: '49.99€',
-      profit: '28.00€',
-      competition: 'Faible',
-      orders: 2156,
-      rating: 4.9
-    },
-    {
-      id: 4,
-      name: 'Portable Blender',
-      category: 'Maison',
-      score: 91,
-      trend: '+142%',
-      avgPrice: '39.99€',
-      profit: '22.00€',
-      competition: 'Moyenne',
-      orders: 1567,
-      rating: 4.6
-    }
+  const winningProducts = winnersData?.products || [];
+  const metrics = winnersData?.metrics;
+
+  const filteredProducts = winningProducts.filter(p => 
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const displayMetrics = [
+    { label: 'Produits Winners', value: metrics?.totalWinners?.toString() || '0', icon: Trophy, color: 'text-yellow-500' },
+    { label: 'Score Moyen', value: metrics?.avgScore?.toString() || '0', icon: Star, color: 'text-blue-500' },
+    { label: 'Tendance Moyenne', value: metrics?.avgTrend || '+0%', icon: TrendingUp, color: 'text-green-500' },
+    { label: 'Profit Potentiel', value: `€${((metrics?.potentialProfit || 0) / 1000).toFixed(1)}K`, icon: DollarSign, color: 'text-purple-500' }
   ];
 
   const metrics = [
@@ -101,11 +63,11 @@ export default function WinnersPage() {
             Découvrez les produits tendance avec fort potentiel de vente
           </p>
         </div>
-        <Button onClick={analyzeWinners} disabled={isAnalyzing} size="lg">
-          {isAnalyzing ? (
+        <Button onClick={handleRefresh} disabled={isRefreshing || isLoading} size="lg">
+          {isRefreshing ? (
             <>
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              Analyse en cours...
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Analyse IA...
             </>
           ) : (
             <>
@@ -118,7 +80,7 @@ export default function WinnersPage() {
 
       {/* Métriques */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {metrics.map((metric, index) => (
+        {displayMetrics.map((metric, index) => (
           <Card key={index}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -128,7 +90,7 @@ export default function WinnersPage() {
             </CardHeader>
             <CardContent>
               <div className={`text-2xl font-bold ${metric.color}`}>
-                {metric.value}
+                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : metric.value}
               </div>
             </CardContent>
           </Card>
@@ -148,9 +110,17 @@ export default function WinnersPage() {
                 className="pl-8"
               />
             </div>
-            <Button variant="outline" size="icon">
-              <Filter className="h-4 w-4" />
-            </Button>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Catégorie" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes</SelectItem>
+                {metrics?.categories?.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
       </Card>
@@ -172,77 +142,91 @@ export default function WinnersPage() {
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-            {winningProducts.map((product) => (
-              <Card key={product.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-lg">{product.name}</CardTitle>
-                      <CardDescription>{product.category}</CardDescription>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+              {filteredProducts.map((product) => (
+                <Card key={product.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex gap-3">
+                        {product.image && (
+                          <img src={product.image} alt={product.name} className="w-16 h-16 rounded-lg object-cover" />
+                        )}
+                        <div className="space-y-1">
+                          <CardTitle className="text-lg">{product.name}</CardTitle>
+                          <CardDescription className="flex items-center gap-2">
+                            {product.category}
+                            <Badge variant="outline" className="text-xs">{product.source}</Badge>
+                          </CardDescription>
+                        </div>
+                      </div>
+                      <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+                        Score: {product.score}
+                      </Badge>
                     </div>
-                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
-                      Score: {product.score}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Tendance</p>
-                      <p className="font-bold text-green-500 flex items-center gap-1">
-                        <TrendingUp className="h-4 w-4" />
-                        {product.trend}
-                      </p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Tendance</p>
+                        <p className="font-bold text-green-500 flex items-center gap-1">
+                          <TrendingUp className="h-4 w-4" />
+                          {product.trend}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Prix Moyen</p>
+                        <p className="font-bold">{product.avgPrice.toFixed(2)}€</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Profit</p>
+                        <p className="font-bold text-purple-500">{product.profit.toFixed(2)}€</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Commandes</p>
+                        <p className="font-bold">{product.orders.toLocaleString()}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-muted-foreground">Prix Moyen</p>
-                      <p className="font-bold">{product.avgPrice}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Profit</p>
-                      <p className="font-bold text-purple-500">{product.profit}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Commandes</p>
-                      <p className="font-bold">{product.orders.toLocaleString()}</p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t">
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{product.rating}</span>
+                    <div className="flex items-center justify-between pt-2 border-t">
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-medium">{product.rating.toFixed(1)}</span>
+                      </div>
+                      <Badge variant={product.competition === 'low' ? 'default' : 'secondary'}>
+                        {product.competition === 'low' ? 'Faible' : product.competition === 'medium' ? 'Moyenne' : 'Élevée'}
+                      </Badge>
                     </div>
-                    <Badge variant={product.competition === 'Faible' ? 'default' : 'secondary'}>
-                      {product.competition}
-                    </Badge>
-                  </div>
 
-                  <div className="flex gap-2">
-                    <Button 
-                      className="flex-1" 
-                      size="sm"
-                      onClick={() => handleImport(product)}
-                      disabled={isImporting}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      {isImporting ? 'Import...' : 'Importer'}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(product.name)}`, '_blank')}
-                    >
-                      <BarChart3 className="mr-2 h-4 w-4" />
-                      Analyser
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        className="flex-1" 
+                        size="sm"
+                        onClick={() => handleImport(product)}
+                        disabled={isImporting}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        {isImporting ? 'Import...' : 'Importer'}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(product.name)}`, '_blank')}
+                      >
+                        <BarChart3 className="mr-2 h-4 w-4" />
+                        Analyser
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="trending">
