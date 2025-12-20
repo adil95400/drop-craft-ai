@@ -4,59 +4,24 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { CheckCircle2, XCircle, AlertTriangle, ExternalLink } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
+import { useState } from 'react'
 
 interface MultiChannelReadinessProps {
   product: UnifiedProduct
 }
 
+interface ChannelData {
+  channel: string
+  readiness_score: number
+  missing_fields: string[]
+}
+
 export function MultiChannelReadiness({ product }: MultiChannelReadinessProps) {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-
-  const { data: channelData, isLoading } = useQuery({
-    queryKey: ['channel-readiness', product.id],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-
-      const { data, error } = await supabase
-        .from('product_channel_data')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('product_id', product.id)
-
-      if (error && error.code !== 'PGRST116') throw error
-      return data || []
-    }
-  })
-
-  const analyzeReadiness = useMutation({
-    mutationFn: async (channel: string) => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-
-      const { data, error } = await supabase.functions.invoke('analyze-channel-readiness', {
-        body: {
-          userId: user.id,
-          productId: product.id,
-          channel
-        }
-      })
-
-      if (error) throw error
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['channel-readiness', product.id] })
-      toast({
-        title: "Analyse terminée",
-        description: "L'analyse de compatibilité a été effectuée"
-      })
-    }
-  })
+  const [channelData, setChannelData] = useState<ChannelData[]>([])
 
   const channels = [
     {
@@ -101,43 +66,64 @@ export function MultiChannelReadiness({ product }: MultiChannelReadinessProps) {
     }
   ]
 
+  const analyzeReadiness = useMutation({
+    mutationFn: async (channelId: string) => {
+      // Simulate analysis
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      const channel = channels.find(c => c.id === channelId)
+      if (!channel) throw new Error('Channel not found')
+      
+      const missingFields = channel.requiredFields.filter(f => !product[f as keyof UnifiedProduct])
+      const score = Math.round(((channel.requiredFields.length - missingFields.length) / channel.requiredFields.length) * 100)
+      
+      return { channel: channelId, readiness_score: score, missing_fields: missingFields }
+    },
+    onSuccess: (data) => {
+      setChannelData(prev => {
+        const existing = prev.findIndex(d => d.channel === data.channel)
+        if (existing >= 0) {
+          const updated = [...prev]
+          updated[existing] = data
+          return updated
+        }
+        return [...prev, data]
+      })
+      toast({
+        title: "Analyse terminée",
+        description: "L'analyse de compatibilité a été effectuée"
+      })
+    }
+  })
+
   const calculateReadiness = (channelId: string) => {
     const channel = channels.find(c => c.id === channelId)
     if (!channel) return 0
 
-    const data = channelData?.find(d => d.channel === channelId)
-    if (!data) {
-      // Calculer basé sur les données produit existantes
-      let score = 0
-      const requiredCount = channel.requiredFields.length
-
-      channel.requiredFields.forEach(field => {
-        if (product[field as keyof UnifiedProduct]) score++
-      })
-
-      return Math.round((score / requiredCount) * 100)
+    const data = channelData.find(d => d.channel === channelId)
+    if (data) {
+      return data.readiness_score
     }
 
-    return (data.readiness_score as any)?.[channelId] || 0
+    // Calculate based on existing product data
+    let score = 0
+    const requiredCount = channel.requiredFields.length
+
+    channel.requiredFields.forEach(field => {
+      if (product[field as keyof UnifiedProduct]) score++
+    })
+
+    return Math.round((score / requiredCount) * 100)
   }
 
   const getMissingFields = (channelId: string) => {
-    const data = channelData?.find(d => d.channel === channelId)
-    if (!data) {
-      const channel = channels.find(c => c.id === channelId)
-      return channel?.requiredFields.filter(f => !product[f as keyof UnifiedProduct]) || []
+    const data = channelData.find(d => d.channel === channelId)
+    if (data) {
+      return data.missing_fields
     }
-    return (data.missing_fields as any)?.[channelId] || []
-  }
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-center text-muted-foreground">Analyse en cours...</div>
-        </CardContent>
-      </Card>
-    )
+    const channel = channels.find(c => c.id === channelId)
+    return channel?.requiredFields.filter(f => !product[f as keyof UnifiedProduct]) || []
   }
 
   return (
