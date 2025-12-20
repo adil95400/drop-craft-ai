@@ -84,7 +84,7 @@ export function AdvancedCSVImport({ existingProducts, onImportComplete }: Advanc
       for (const product of preview.new) {
         try {
           const productData = {
-            title: product.title || product.name || 'Produit sans nom',
+            title: product.name || 'Produit sans nom',
             description: product.description || null,
             price: product.price || 0,
             cost_price: product.cost_price || 0,
@@ -93,10 +93,7 @@ export function AdvancedCSVImport({ existingProducts, onImportComplete }: Advanc
             status: product.status || 'draft',
             image_url: product.image_url || null,
             sku: product.sku || null,
-            barcode: product.barcode || null,
-            brand: product.brand || null,
             weight: product.weight || null,
-            weight_unit: product.weight_unit || 'kg',
             tags: product.tags || null,
             user_id: user.id
           }
@@ -119,7 +116,7 @@ export function AdvancedCSVImport({ existingProducts, onImportComplete }: Advanc
           const { error } = await supabase
             .from('products')
             .update({
-              title: update.product.title || update.product.name,
+              title: update.product.name,
               description: update.product.description,
               price: update.product.price,
               cost_price: update.product.cost_price,
@@ -128,10 +125,7 @@ export function AdvancedCSVImport({ existingProducts, onImportComplete }: Advanc
               status: update.product.status,
               image_url: update.product.image_url,
               sku: update.product.sku,
-              barcode: update.product.barcode,
-              brand: update.product.brand,
               weight: update.product.weight,
-              weight_unit: update.product.weight_unit,
               tags: update.product.tags
             })
             .eq('id', update.existingProduct.id)
@@ -157,7 +151,7 @@ export function AdvancedCSVImport({ existingProducts, onImportComplete }: Advanc
             const { error } = await supabase
               .from('products')
               .update({
-                title: conflict.product.title || conflict.product.name,
+                title: conflict.product.name,
                 description: conflict.product.description,
                 price: conflict.product.price,
                 cost_price: conflict.product.cost_price,
@@ -171,7 +165,7 @@ export function AdvancedCSVImport({ existingProducts, onImportComplete }: Advanc
           } else if (resolution.action === 'create_new') {
             // Créer un nouveau produit (modifier le SKU pour éviter le conflit)
             const newProduct = {
-              title: conflict.product.title || conflict.product.name || 'Produit sans nom',
+              title: conflict.product.name || 'Produit sans nom',
               description: conflict.product.description || null,
               price: conflict.product.price || 0,
               cost_price: conflict.product.cost_price || 0,
