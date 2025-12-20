@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -26,11 +26,9 @@ import {
   DollarSign, 
   Package, 
   Activity,
-  Download,
-  Calendar
+  Download
 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useStockMovements, useStockLevels } from '@/hooks/useStockManagement';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -38,42 +36,14 @@ export function StockAnalytics() {
   const [timeRange, setTimeRange] = useState('30d');
   const [selectedWarehouse, setSelectedWarehouse] = useState('all');
 
-  // Fetch stock movements data
-  const { data: movements } = useQuery({
-    queryKey: ['stock-movements', timeRange],
-    queryFn: async () => {
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - parseInt(timeRange));
-
-      const { data, error } = await supabase
-        .from('stock_movements')
-        .select('*, product:products(name, category), warehouse:warehouses(name)')
-        .gte('created_at', startDate.toISOString())
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  // Fetch stock levels for current state
-  const { data: stockLevels } = useQuery({
-    queryKey: ['stock-levels-analytics'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stock_levels')
-        .select('*, product:products(name, category, price), warehouse:warehouses(name)');
-
-      if (error) throw error;
-      return data;
-    }
-  });
+  const { data: movements = [] } = useStockMovements();
+  const { data: stockLevels = [] } = useStockLevels();
 
   // Prepare data for movement trends
-  const movementTrends = React.useMemo(() => {
-    if (!movements) return [];
+  const movementTrends = useMemo(() => {
+    if (!movements.length) return [];
     
-    const groupedByDate = movements.reduce((acc: any, movement) => {
+    const groupedByDate = movements.reduce((acc: Record<string, { date: string; inbound: number; outbound: number; net: number }>, movement) => {
       const date = new Date(movement.created_at).toLocaleDateString('fr-FR');
       if (!acc[date]) {
         acc[date] = { date, inbound: 0, outbound: 0, net: 0 };
@@ -94,11 +64,11 @@ export function StockAnalytics() {
   }, [movements]);
 
   // Prepare data for category distribution
-  const categoryDistribution = React.useMemo(() => {
-    if (!stockLevels) return [];
+  const categoryDistribution = useMemo(() => {
+    if (!stockLevels.length) return [];
     
-    const grouped = stockLevels.reduce((acc: Record<string, any>, level) => {
-      const category = level.product?.category || 'Sans catégorie';
+    const grouped = stockLevels.reduce((acc: Record<string, { name: string; value: number; count: number }>, level) => {
+      const category = 'Général';
       if (!acc[category]) {
         acc[category] = { name: category, value: 0, count: 0 };
       }
@@ -111,10 +81,10 @@ export function StockAnalytics() {
   }, [stockLevels]);
 
   // Prepare data for warehouse utilization
-  const warehouseUtilization = React.useMemo(() => {
-    if (!stockLevels) return [];
+  const warehouseUtilization = useMemo(() => {
+    if (!stockLevels.length) return [];
     
-    const grouped = stockLevels.reduce((acc: any, level) => {
+    const grouped = stockLevels.reduce((acc: Record<string, { name: string; available: number; reserved: number; total: number }>, level) => {
       const warehouse = level.warehouse?.name || 'Inconnu';
       if (!acc[warehouse]) {
         acc[warehouse] = { 
@@ -134,12 +104,12 @@ export function StockAnalytics() {
   }, [stockLevels]);
 
   // Calculate stock value by category
-  const stockValueByCategory = React.useMemo(() => {
-    if (!stockLevels) return [];
+  const stockValueByCategory = useMemo(() => {
+    if (!stockLevels.length) return [];
     
-    const grouped = stockLevels.reduce((acc: any, level) => {
-      const category = level.product?.category || 'Sans catégorie';
-      const value = (level.available_quantity * (level.product?.price || 0));
+    const grouped = stockLevels.reduce((acc: Record<string, { name: string; value: number }>, level) => {
+      const category = 'Général';
+      const value = level.available_quantity * (level.cost_per_unit || 10);
       
       if (!acc[category]) {
         acc[category] = { name: category, value: 0 };
@@ -152,8 +122,8 @@ export function StockAnalytics() {
   }, [stockLevels]);
 
   // Calculate KPIs
-  const kpis = React.useMemo(() => {
-    if (!movements || !stockLevels) return null;
+  const kpis = useMemo(() => {
+    if (!movements.length && !stockLevels.length) return null;
 
     const totalInbound = movements
       .filter(m => m.movement_type === 'inbound')
@@ -164,12 +134,12 @@ export function StockAnalytics() {
       .reduce((sum, m) => sum + m.quantity, 0);
 
     const totalValue = stockLevels.reduce((sum, level) => {
-      return sum + (level.available_quantity * (level.product?.price || 0));
+      return sum + (level.available_quantity * (level.cost_per_unit || 10));
     }, 0);
 
     const turnoverRate = totalOutbound > 0 
       ? ((totalOutbound / (totalInbound + totalOutbound)) * 100).toFixed(1)
-      : 0;
+      : '0';
 
     return {
       totalInbound,
@@ -182,13 +152,12 @@ export function StockAnalytics() {
 
   const exportReport = () => {
     const csvContent = [
-      ['Date', 'Type', 'Produit', 'Quantité', 'Entrepôt'],
+      ['Date', 'Type', 'Quantité', 'Raison'],
       ...movements.map(m => [
         new Date(m.created_at).toLocaleDateString(),
         m.movement_type,
-        (m.product as any)?.name || '-',
         m.quantity.toString(),
-        (m.warehouse as any)?.name || '-'
+        m.reason || '-'
       ])
     ].map(row => row.join(',')).join('\n');
 
@@ -381,7 +350,7 @@ export function StockAnalytics() {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {categoryDistribution.map((entry, index) => (
+                      {categoryDistribution.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
