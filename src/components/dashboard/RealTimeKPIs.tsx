@@ -55,24 +55,15 @@ export function RealTimeKPIs() {
         .gte('created_at', yesterday)
         .lt('created_at', today)
 
-      // Products count from ALL sources (unified)
-      const [
-        productsRes,
-        importedRes,
-        catalogRes,
-        supplierRes,
-        customersRes
-      ] = await Promise.all([
-        supabase.from('products').select('id', { count: 'exact', head: true }),
-        supabase.from('imported_products').select('id', { count: 'exact', head: true }),
-        supabase.from('catalog_products').select('id', { count: 'exact', head: true }),
-        supabase.from('supplier_products').select('id', { count: 'exact', head: true }),
-        supabase.from('customers').select('id', { count: 'exact', head: true })
-      ])
+      // Products count
+      const { count: productsCount } = await supabase
+        .from('products')
+        .select('id', { count: 'exact', head: true })
 
-      const productsCount = (productsRes.count || 0) + (importedRes.count || 0) + 
-                            (catalogRes.count || 0) + (supplierRes.count || 0)
-      const customersCount = customersRes.count || 0
+      // Customers count
+      const { count: customersCount } = await supabase
+        .from('customers')
+        .select('id', { count: 'exact', head: true })
 
       const todayRevenue = (todayOrders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0)
       const yesterdayRevenue = (yesterdayOrders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0)

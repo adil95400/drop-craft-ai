@@ -7,7 +7,7 @@ export interface AdminUser {
   id: string
   email: string
   full_name: string | null
-  role: 'admin' | 'moderator' | 'user'
+  role: 'admin' | 'user'
   is_admin: boolean
   created_at: string
   last_sign_in_at: string | null
@@ -108,7 +108,7 @@ export const useAdminRole = () => {
     }
   }
 
-  const changeUserRole = async (targetUserId: string, newRole: 'admin' | 'moderator' | 'user') => {
+  const changeUserRole = async (targetUserId: string, newRole: 'admin' | 'user') => {
     try {
       setLoading(true)
       

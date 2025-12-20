@@ -1,33 +1,18 @@
-import { lazy, Suspense, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { QuickActions } from '@/components/dashboard/QuickActions';
+import { FeatureStatusDashboard } from '@/components/dashboard/FeatureStatusDashboard';
+import { RealTimeAnalytics } from '@/components/dashboard/RealTimeAnalytics';
 import { RealTimeKPIs } from '@/components/dashboard/RealTimeKPIs';
 import { SmartAlerts } from '@/components/dashboard/SmartAlerts';
-import { RevenueChart } from '@/components/dashboard/RevenueChart';
+import { PerformanceTestRunner } from '@/components/monitoring/PerformanceTestRunner';
+import { EnrichmentDashboardWidget } from '@/components/enrichment';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
-import { TrendingUp, TrendingDown, Package, ShoppingCart, Users, DollarSign, Loader2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Package, ShoppingCart, Users, DollarSign } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useNavigate } from 'react-router-dom';
-
-// Lazy loading des composants lourds
-const RealTimeAnalytics = lazy(() => import('@/components/dashboard/RealTimeAnalytics').then(m => ({ default: m.RealTimeAnalytics })));
-const FeatureStatusDashboard = lazy(() => import('@/components/dashboard/FeatureStatusDashboard').then(m => ({ default: m.FeatureStatusDashboard })));
-const PerformanceTestRunner = lazy(() => import('@/components/monitoring/PerformanceTestRunner').then(m => ({ default: m.PerformanceTestRunner })));
-const EnrichmentDashboardWidget = lazy(() => import('@/components/enrichment').then(m => ({ default: m.EnrichmentDashboardWidget })));
-
-// Composant de chargement pour les sections lazy
-function SectionLoader() {
-  return (
-    <div className="flex items-center justify-center py-12">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>
-  );
-}
 
 export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats();
-  const navigate = useNavigate();
 
   const metrics = [
     {
@@ -36,38 +21,30 @@ export default function Dashboard() {
       format: (v: number) => `${v.toLocaleString('fr-FR')} €`,
       trend: stats?.revenueChange || 0,
       icon: DollarSign,
-      color: 'text-green-600',
-      link: '/analytics'
+      color: 'text-green-600'
     },
     {
       title: 'Commandes',
       value: stats?.ordersCount || 0,
       trend: stats?.ordersChange || 0,
       icon: ShoppingCart,
-      color: 'text-blue-600',
-      link: '/dashboard/orders'
+      color: 'text-blue-600'
     },
     {
       title: 'Produits',
       value: stats?.productsCount || 0,
       trend: stats?.productsChange || 0,
       icon: Package,
-      color: 'text-purple-600',
-      link: '/products'
+      color: 'text-purple-600'
     },
     {
       title: 'Clients',
       value: stats?.customersCount || 0,
       trend: stats?.customersChange || 0,
       icon: Users,
-      color: 'text-orange-600',
-      link: '/dashboard/customers'
+      color: 'text-orange-600'
     }
   ];
-
-  const handleMetricClick = useCallback((link: string) => {
-    navigate(link);
-  }, [navigate]);
 
   if (isLoading) {
     return (
@@ -77,8 +54,6 @@ export default function Dashboard() {
             <Skeleton key={i} className="h-32" />
           ))}
         </div>
-        <Skeleton className="h-64" />
-        <Skeleton className="h-48" />
       </div>
     );
   }
@@ -102,11 +77,21 @@ export default function Dashboard() {
           const Icon = metric.icon;
           const isPositive = metric.trend >= 0;
           
+          const getMetricLink = (title: string) => {
+            switch(title) {
+              case 'Revenus totaux': return '/analytics';
+              case 'Commandes': return '/dashboard/orders';
+              case 'Produits': return '/products';
+              case 'Clients': return '/dashboard/customers';
+              default: return '#';
+            }
+          };
+          
           return (
             <Card 
               key={metric.title} 
               className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
-              onClick={() => handleMetricClick(metric.link)}
+              onClick={() => window.location.href = getMetricLink(metric.title)}
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
                 <CardTitle className="text-[10px] sm:text-xs lg:text-sm font-medium truncate pr-2">{metric.title}</CardTitle>
@@ -133,18 +118,13 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* Revenue Chart */}
-      <RevenueChart />
-
       {/* Quick Actions */}
       <QuickActions />
 
-      {/* Widget d'enrichissement produits - Lazy loaded */}
-      <Suspense fallback={<SectionLoader />}>
-        <EnrichmentDashboardWidget />
-      </Suspense>
+      {/* Widget d'enrichissement produits */}
+      <EnrichmentDashboardWidget />
 
-      {/* Tabbed Analytics Section - Lazy loaded */}
+      {/* Tabbed Analytics Section */}
       <Tabs defaultValue="realtime" className="space-y-4">
         <TabsList>
           <TabsTrigger value="realtime">Temps réel</TabsTrigger>
@@ -153,21 +133,15 @@ export default function Dashboard() {
         </TabsList>
         
         <TabsContent value="realtime">
-          <Suspense fallback={<SectionLoader />}>
-            <RealTimeAnalytics />
-          </Suspense>
+          <RealTimeAnalytics />
         </TabsContent>
         
         <TabsContent value="features">
-          <Suspense fallback={<SectionLoader />}>
-            <FeatureStatusDashboard />
-          </Suspense>
+          <FeatureStatusDashboard />
         </TabsContent>
         
         <TabsContent value="performance">
-          <Suspense fallback={<SectionLoader />}>
-            <PerformanceTestRunner />
-          </Suspense>
+          <PerformanceTestRunner />
         </TabsContent>
       </Tabs>
     </div>

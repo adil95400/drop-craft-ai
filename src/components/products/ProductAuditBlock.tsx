@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,8 +13,7 @@ import {
   Image,
   Target,
   ShoppingBag,
-  TrendingUp,
-  Loader2
+  TrendingUp
 } from 'lucide-react'
 import { UnifiedProduct } from '@/hooks/useUnifiedProducts'
 import { useProductAudit } from '@/hooks/useProductAudit'
@@ -30,7 +28,6 @@ interface ProductAuditBlockProps {
 export function ProductAuditBlock({ product, onOptimize }: ProductAuditBlockProps) {
   const { auditProduct, isAuditing } = useProductAudit()
   const { toast } = useToast()
-  const [isOptimizing, setIsOptimizing] = useState<string | null>(null)
 
   const calculateScores = () => {
     let seoScore = 0
@@ -104,14 +101,7 @@ export function ProductAuditBlock({ product, onOptimize }: ProductAuditBlockProp
 
   const handleAIOptimize = async (type: 'title' | 'description' | 'seo' | 'full') => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      toast({
-        title: "Erreur",
-        description: "Vous devez être connecté pour optimiser",
-        variant: "destructive"
-      })
-      return
-    }
+    if (!user) return
 
     const labels = {
       title: 'Titre',
@@ -120,10 +110,8 @@ export function ProductAuditBlock({ product, onOptimize }: ProductAuditBlockProp
       full: 'Optimisation complète'
     }
 
-    setIsOptimizing(type)
-
     try {
-      const { data, error } = await supabase.functions.invoke('ai-product-optimizer', {
+      const { error } = await supabase.functions.invoke('ai-product-optimizer', {
         body: {
           productId: product.id,
           userId: user.id,
@@ -135,19 +123,16 @@ export function ProductAuditBlock({ product, onOptimize }: ProductAuditBlockProp
 
       toast({
         title: `${labels[type]} optimisé !`,
-        description: data?.message || "Les modifications ont été appliquées avec succès"
+        description: "Les modifications ont été appliquées avec succès"
       })
 
       onOptimize?.()
     } catch (error) {
-      console.error('AI optimization error:', error)
       toast({
-        title: "Erreur d'optimisation",
-        description: error instanceof Error ? error.message : `Impossible d'optimiser: ${labels[type]}`,
+        title: "Erreur",
+        description: `Impossible d'optimiser: ${labels[type]}`,
         variant: "destructive"
       })
-    } finally {
-      setIsOptimizing(null)
     }
   }
 
@@ -293,13 +278,8 @@ export function ProductAuditBlock({ product, onOptimize }: ProductAuditBlockProp
                 variant="outline"
                 className="h-auto flex-col gap-2 py-4"
                 onClick={() => handleAIOptimize('title')}
-                disabled={isOptimizing !== null}
               >
-                {isOptimizing === 'title' ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <FileText className="h-5 w-5" />
-                )}
+                <FileText className="h-5 w-5" />
                 <span className="text-xs">Réécrire le titre</span>
               </Button>
 
@@ -307,13 +287,8 @@ export function ProductAuditBlock({ product, onOptimize }: ProductAuditBlockProp
                 variant="outline"
                 className="h-auto flex-col gap-2 py-4"
                 onClick={() => handleAIOptimize('description')}
-                disabled={isOptimizing !== null}
               >
-                {isOptimizing === 'description' ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <FileText className="h-5 w-5" />
-                )}
+                <FileText className="h-5 w-5" />
                 <span className="text-xs">Réécrire la description</span>
               </Button>
 
@@ -321,13 +296,8 @@ export function ProductAuditBlock({ product, onOptimize }: ProductAuditBlockProp
                 variant="outline"
                 className="h-auto flex-col gap-2 py-4"
                 onClick={() => handleAIOptimize('seo')}
-                disabled={isOptimizing !== null}
               >
-                {isOptimizing === 'seo' ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Target className="h-5 w-5" />
-                )}
+                <Target className="h-5 w-5" />
                 <span className="text-xs">Générer metas SEO</span>
               </Button>
 
@@ -335,13 +305,8 @@ export function ProductAuditBlock({ product, onOptimize }: ProductAuditBlockProp
                 variant="default"
                 className="h-auto flex-col gap-2 py-4"
                 onClick={() => handleAIOptimize('full')}
-                disabled={isOptimizing !== null}
               >
-                {isOptimizing === 'full' ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Sparkles className="h-5 w-5" />
-                )}
+                <Sparkles className="h-5 w-5" />
                 <span className="text-xs">Optimisation complète</span>
               </Button>
             </div>

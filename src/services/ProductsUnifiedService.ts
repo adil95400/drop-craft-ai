@@ -287,15 +287,14 @@ export class ProductsUnifiedService {
 
   /**
    * Table shopify_products - Produits synchronisés depuis Shopify
-   * Note: Cette table n'a pas de colonne user_id, on récupère tous les produits
    */
   private static async getShopifyProducts(userId: string, filters?: any, options?: ProductFetchOptions): Promise<UnifiedProduct[]> {
     const limit = options?.limit || PRODUCT_FETCH_LIMIT;
     try {
-      // Note: shopify_products n'a pas de user_id, récupérer via store_id ou tous
       const { data, error } = await (supabase as any)
         .from('shopify_products')
         .select('*')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(limit)
 
@@ -305,7 +304,7 @@ export class ProductsUnifiedService {
         id: p.id,
         name: p.title || p.name || 'Produit sans nom',
         description: p.description || p.body_html,
-        price: parseFloat(p.price) || (p.variants?.[0]?.price ? parseFloat(p.variants[0].price) : 0),
+        price: p.price || p.variants?.[0]?.price || 0,
         cost_price: undefined,
         status: (p.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
         stock_quantity: p.inventory_quantity || p.variants?.[0]?.inventory_quantity,
@@ -314,7 +313,7 @@ export class ProductsUnifiedService {
         image_url: p.image_url || p.image?.src,
         images: Array.isArray(p.images) ? (p.images as any[]).map((img: any) => img?.src || img).filter(Boolean) : [],
         profit_margin: undefined,
-        user_id: userId, // Assigné à l'utilisateur actuel
+        user_id: userId,
         source: 'shopify' as const,
         created_at: p.created_at || new Date().toISOString(),
         updated_at: p.updated_at || new Date().toISOString()

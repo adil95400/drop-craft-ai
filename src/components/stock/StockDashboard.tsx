@@ -328,7 +328,27 @@ export const StockDashboard = () => {
         </TabsContent>
 
         <TabsContent value="predictions">
-          <StockPredictions />
+          {stockLevels.length > 0 && warehouses.length > 0 ? (
+            <StockPredictions 
+              productId={stockLevels[0]?.product_id || ''}
+              warehouseId={warehouses[0]?.id || ''}
+              currentStock={stockLevels[0]?.available_quantity || 0}
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Prédictions ML</CardTitle>
+                <CardDescription>
+                  Prévisions de rupture de stock basées sur l'IA
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center text-muted-foreground py-8">
+                  Aucun produit disponible pour les prédictions. Ajoutez des produits et des entrepôts pour commencer.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="movements">

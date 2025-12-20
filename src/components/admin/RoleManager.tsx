@@ -83,7 +83,7 @@ export const RoleManager = () => {
     }
   }
 
-  const handleRoleChange = async (userId: string, newRole: 'admin' | 'moderator' | 'user') => {
+  const handleRoleChange = async (userId: string, newRole: string) => {
     setUpdating(userId)
     try {
       const { data, error } = await supabase.rpc('admin_set_role', {
@@ -253,7 +253,7 @@ export const RoleManager = () => {
                   <div className="flex items-center gap-3">
                     <Select
                       value={user.role}
-                      onValueChange={(value) => handleRoleChange(user.id, value as 'admin' | 'moderator' | 'user')}
+                      onValueChange={(value) => handleRoleChange(user.id, value)}
                       disabled={updating === user.id}
                     >
                       <SelectTrigger className="w-32">

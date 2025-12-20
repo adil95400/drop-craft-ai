@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { Card } from '@/components/ui/card'
@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
 import { useDataExport } from '@/hooks/useDataExport'
 import { useNavigate } from 'react-router-dom'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Select,
   SelectContent,
@@ -24,12 +23,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Package, Search, Filter, Eye, Edit, Download, TruckIcon, Plus, RotateCcw, Loader2, ShoppingCart } from 'lucide-react'
+import { Package, Search, Filter, Eye, Edit, Download, TruckIcon, Plus } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ShipmentCreationDialog } from '@/components/fulfillment/ShipmentCreationDialog'
-
-// Lazy load returns panel
-const ReturnsManagementPanel = lazy(() => import('@/components/orders/ReturnsManagementPanel').then(m => ({ default: m.ReturnsManagementPanel })))
 
 export default function OrdersPage() {
   const { toast } = useToast()
@@ -107,10 +103,7 @@ export default function OrdersPage() {
       <div className="flex flex-col gap-3">
         <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold flex items-center gap-2">
-              <ShoppingCart className="h-6 w-6" />
-              Commandes
-            </h1>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Commandes</h1>
             <p className="text-xs sm:text-sm text-muted-foreground">Gérez et suivez vos commandes</p>
           </div>
           <div className="flex gap-2">
@@ -134,20 +127,6 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Tabs: Orders & Returns */}
-      <Tabs defaultValue="orders" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="orders" className="gap-2">
-            <Package className="h-4 w-4" />
-            Commandes
-          </TabsTrigger>
-          <TabsTrigger value="returns" className="gap-2">
-            <RotateCcw className="h-4 w-4" />
-            Retours
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="orders" className="space-y-4">
       {/* Filters */}
       <Card className="p-3 sm:p-6">
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4 sm:mb-6">
@@ -294,18 +273,6 @@ export default function OrdersPage() {
           </>
         )}
       </Card>
-        </TabsContent>
-
-        <TabsContent value="returns">
-          <Suspense fallback={
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          }>
-            <ReturnsManagementPanel />
-          </Suspense>
-        </TabsContent>
-      </Tabs>
 
       {selectedOrderId && (
         <ShipmentCreationDialog

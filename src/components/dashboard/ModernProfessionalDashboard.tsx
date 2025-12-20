@@ -242,7 +242,7 @@ export default function ModernProfessionalDashboard() {
 
       {/* Graphiques et données */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RevenueChart height={300} />
+        <RevenueChart data={revenueData} height={300} />
         <OrdersChart data={ordersData} />
       </div>
 
