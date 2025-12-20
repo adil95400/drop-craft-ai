@@ -43,7 +43,7 @@ export const DisconnectNotification = () => {
     const checkTokenRevocation = async () => {
       try {
         const { data, error } = await supabase.rpc('is_token_revoked', {
-          check_user_id: user.id
+          token_id: user.id
         });
 
         if (error) {

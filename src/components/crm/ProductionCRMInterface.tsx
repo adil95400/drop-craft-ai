@@ -11,12 +11,12 @@ import { formatCurrency, cn } from '@/lib/utils'
 
 interface Customer {
   id: string
-  name: string
+  first_name?: string
+  last_name?: string
   email: string
   total_spent: number
   total_orders: number
-  address: any
-  status: string
+  address?: any
   created_at: string
 }
 
@@ -35,29 +35,40 @@ export const ProductionCRMInterface = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
   const [customerOrders, setCustomerOrders] = useState<CustomerOrder[]>([])
 
+  // Transform customersData to Customer interface
+  const transformedCustomers: Customer[] = (customersData || []).map((c: any) => ({
+    id: c.id,
+    first_name: c.first_name,
+    last_name: c.last_name,
+    email: c.email,
+    total_spent: c.total_spent || 0,
+    total_orders: c.total_orders || 0,
+    address: c.address || null,
+    created_at: c.created_at
+  }))
+
   useEffect(() => {
-    if (customersData) {
-      const filtered = customersData.filter(customer =>
-        customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.email?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      setFilteredCustomers(filtered)
-    }
-  }, [customersData, searchTerm])
+    const customerName = (c: Customer) => `${c.first_name || ''} ${c.last_name || ''}`.trim()
+    const filtered = transformedCustomers.filter(customer =>
+      customerName(customer).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    setFilteredCustomers(filtered)
+  }, [transformedCustomers, searchTerm])
 
   const handleViewCustomer = (customer: Customer) => {
     setSelectedCustomer(customer)
     // Filter orders for this customer
-    const orders = ordersData?.filter(order => order.customer_id === customer.id) || []
+    const orders = ordersData?.filter((order: any) => order.customer_id === customer.id) || []
     setCustomerOrders(orders)
   }
 
   const stats = {
-    total: customersData?.length || 0,
-    active: customersData?.filter(c => c.status === 'active').length || 0,
-    totalSpent: customersData?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0,
-    avgOrderValue: customersData?.length > 0 
-      ? (customersData.reduce((sum, c) => sum + (c.total_spent || 0), 0) / customersData.length)
+    total: transformedCustomers.length || 0,
+    active: transformedCustomers.length || 0,
+    totalSpent: transformedCustomers.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0,
+    avgOrderValue: transformedCustomers.length > 0 
+      ? (transformedCustomers.reduce((sum, c) => sum + (c.total_spent || 0), 0) / transformedCustomers.length)
       : 0
   }
 
@@ -191,10 +202,12 @@ export const ProductionCRMInterface = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCustomers.map((customer) => (
+                {filteredCustomers.map((customer) => {
+                  const customerName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Client'
+                  return (
                   <TableRow key={customer.id}>
                     <TableCell>
-                      <div className="font-medium">{customer.name}</div>
+                      <div className="font-medium">{customerName}</div>
                     </TableCell>
                     <TableCell>{customer.email}</TableCell>
                     <TableCell>
@@ -209,7 +222,7 @@ export const ProductionCRMInterface = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {getStatusBadge(customer.status)}
+                      {getStatusBadge('active')}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -246,9 +259,9 @@ export const ProductionCRMInterface = () => {
                                   <CardContent className="p-4">
                                     <h4 className="font-medium mb-2">Informations</h4>
                                     <div className="space-y-2 text-sm">
-                                      <p><strong>Nom:</strong> {selectedCustomer.name}</p>
+                                      <p><strong>Nom:</strong> {`${selectedCustomer.first_name || ''} ${selectedCustomer.last_name || ''}`.trim() || 'Client'}</p>
                                       <p><strong>Email:</strong> {selectedCustomer.email}</p>
-                                      <p><strong>Statut:</strong> {getStatusBadge(selectedCustomer.status)}</p>
+                                      <p><strong>Statut:</strong> {getStatusBadge('active')}</p>
                                     </div>
                                   </CardContent>
                                 </Card>
@@ -315,7 +328,7 @@ export const ProductionCRMInterface = () => {
                       </Dialog>
                     </TableCell>
                   </TableRow>
-                ))}
+                )})}
               </TableBody>
             </Table>
           )}

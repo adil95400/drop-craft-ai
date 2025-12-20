@@ -11,13 +11,13 @@ export function AutoOrders() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('price_stock_monitoring')
-        .select('*, catalog_product:catalog_product_id(*)')
-        .eq('auto_adjust_price', true)
+        .select('*, product:product_id(*)')
+        .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
 

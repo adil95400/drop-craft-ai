@@ -30,11 +30,15 @@ import {
 } from 'lucide-react';
 
 interface PlanLimit {
-  plan_type: string;
+  id?: string;
+  plan_name: string;
+  plan_type?: string;
   limit_key: string;
   limit_value: number;
   display_name: string;
   description: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface UserQuotaUsage {
@@ -198,7 +202,7 @@ export const QuotaManager = () => {
       const { error } = await supabase
         .from('plan_limits')
         .update({ limit_value: newValue })
-        .eq('plan_type', planType)
+        .eq('plan_name', planType)
         .eq('limit_key', limitKey);
       
       if (error) throw error;

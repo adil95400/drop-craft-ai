@@ -15,6 +15,7 @@ interface AuditLog {
   severity: string;
   created_at: string;
   metadata: any;
+  description?: string;
 }
 
 export function AuditTrailViewer() {
@@ -33,14 +34,27 @@ export function AuditTrailViewer() {
       if (!userData.user) return;
 
       const { data, error } = await supabase
-        .from('audit_trail')
+        .from('activity_logs')
         .select('*')
         .eq('user_id', userData.user.id)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
-      setLogs(data || []);
+      
+      // Map activity_logs to AuditLog interface
+      const mappedLogs: AuditLog[] = (data || []).map(log => ({
+        id: log.id,
+        action: log.action,
+        entity_type: log.entity_type || 'unknown',
+        entity_id: log.entity_id || '',
+        severity: log.severity || 'info',
+        created_at: log.created_at || '',
+        metadata: log.details,
+        description: log.description
+      }));
+      
+      setLogs(mappedLogs);
     } catch (error: any) {
       toast({
         title: 'Error',
