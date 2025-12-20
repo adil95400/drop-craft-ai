@@ -12,10 +12,21 @@ interface StockMovementsLogProps {
   compact?: boolean;
 }
 
+interface StockMovement {
+  id: string;
+  movement_type: 'inbound' | 'outbound' | 'transfer' | 'adjustment' | 'return';
+  quantity: number;
+  reason?: string;
+  notes?: string;
+  performed_by?: string;
+  reference_id?: string;
+  created_at: string;
+}
+
 export function StockMovementsLog({ limit = 50, compact = false }: StockMovementsLogProps) {
-  const { data: movements, isLoading } = useStockMovements();
+  const { data: movements = [], isLoading } = useStockMovements();
   
-  const displayedMovements = movements?.slice(0, limit) || [];
+  const displayedMovements = movements.slice(0, limit) as StockMovement[];
   
   const getMovementIcon = (type: string) => {
     switch (type) {

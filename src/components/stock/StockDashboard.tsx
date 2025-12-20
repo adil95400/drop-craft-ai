@@ -12,9 +12,7 @@ import {
   Package, 
   Warehouse, 
   AlertTriangle, 
-  TrendingDown, 
-  TrendingUp,
-  Activity,
+  TrendingDown,
   DollarSign,
   RefreshCw,
   Brain,
@@ -38,8 +36,8 @@ export const StockDashboard = () => {
     active_alerts: activeAlerts.length
   };
 
-  const criticalAlerts = activeAlerts.filter((a: any) => a.severity === 'critical');
-  const highAlerts = activeAlerts.filter((a: any) => a.severity === 'high');
+  const criticalAlerts = activeAlerts.filter((a) => a.severity === 'critical');
+  const highAlerts = activeAlerts.filter((a) => a.severity === 'high');
 
   return (
     <div className="space-y-6">
@@ -136,7 +134,7 @@ export const StockDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {criticalAlerts.slice(0, 3).map((alert: any) => (
+            {criticalAlerts.slice(0, 3).map((alert) => (
               <div key={alert.id} className="flex items-center justify-between p-3 bg-background rounded-lg">
                 <div className="flex-1">
                   <p className="font-medium">{alert.product_name || 'Produit'}</p>
@@ -187,7 +185,7 @@ export const StockDashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {warehouses.slice(0, 5).map((warehouse: any) => (
+                {warehouses.slice(0, 5).map((warehouse) => (
                   <div key={warehouse.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
                       <Warehouse className="h-5 w-5 text-muted-foreground" />
@@ -218,9 +216,9 @@ export const StockDashboard = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 {stockLevels
-                  .filter((level: any) => (level.available_quantity || 0) <= (level.reorder_point || 0) && (level.available_quantity || 0) > 0)
+                  .filter((level) => (level.available_quantity || 0) <= (level.reorder_point || 0) && (level.available_quantity || 0) > 0)
                   .slice(0, 5)
-                  .map((level: any) => (
+                  .map((level) => (
                     <div key={level.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
                         <p className="font-medium">{level.product?.name || 'Produit'}</p>
@@ -238,7 +236,7 @@ export const StockDashboard = () => {
                       </div>
                     </div>
                   ))}
-                {stockLevels.filter((level: any) => (level.available_quantity || 0) <= (level.reorder_point || 0)).length === 0 && (
+                {stockLevels.filter((level) => (level.available_quantity || 0) <= (level.reorder_point || 0)).length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
                     Aucun produit à réapprovisionner
                   </p>
@@ -270,7 +268,7 @@ export const StockDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {stockLevels.map((level: any) => (
+                {stockLevels.map((level) => (
                   <div key={level.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
                     <div className="flex items-center gap-3">
                       {level.product?.image_url && (

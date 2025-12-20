@@ -11,16 +11,36 @@ import { useStockLevels, useUpdateStockLevel } from '@/hooks/useStockManagement'
 import { Search, Edit, AlertTriangle, Package, Filter } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+interface StockLevel {
+  id: string;
+  quantity: number;
+  reserved_quantity: number;
+  available_quantity: number;
+  min_stock_level: number;
+  max_stock_level: number;
+  reorder_point: number;
+  location_in_warehouse?: string;
+  product?: {
+    name: string;
+    sku?: string;
+    image_url?: string;
+  };
+  warehouse?: {
+    name: string;
+    location?: string;
+  };
+}
+
 export function StockLevelsTable() {
-  const { data: stockLevels, isLoading } = useStockLevels();
+  const { data: stockLevels = [], isLoading } = useStockLevels();
   const updateStock = useUpdateStockLevel();
   
   const [search, setSearch] = useState('');
-  const [editingLevel, setEditingLevel] = useState<any>(null);
+  const [editingLevel, setEditingLevel] = useState<StockLevel | null>(null);
   const [newQuantity, setNewQuantity] = useState(0);
   const [adjustmentReason, setAdjustmentReason] = useState('');
   
-  const filteredLevels = stockLevels?.filter((level) => {
+  const filteredLevels = stockLevels.filter((level) => {
     const searchLower = search.toLowerCase();
     return (
       level.product?.sku?.toLowerCase().includes(searchLower) ||
@@ -30,7 +50,7 @@ export function StockLevelsTable() {
     );
   });
   
-  const handleEdit = (level: any) => {
+  const handleEdit = (level: StockLevel) => {
     setEditingLevel(level);
     setNewQuantity(level.quantity);
     setAdjustmentReason('');
@@ -47,7 +67,7 @@ export function StockLevelsTable() {
     setEditingLevel(null);
   };
   
-  const getStockStatus = (level: any) => {
+  const getStockStatus = (level: StockLevel) => {
     if (level.quantity === 0) {
       return { label: 'Rupture', variant: 'destructive' as const, icon: AlertTriangle };
     }
@@ -55,7 +75,7 @@ export function StockLevelsTable() {
       return { label: 'Critique', variant: 'destructive' as const, icon: AlertTriangle };
     }
     if (level.quantity <= level.reorder_point) {
-      return { label: 'Bas', variant: 'warning' as const, icon: AlertTriangle };
+      return { label: 'Bas', variant: 'secondary' as const, icon: AlertTriangle };
     }
     if (level.quantity > level.max_stock_level) {
       return { label: 'Surstock', variant: 'secondary' as const, icon: Package };
