@@ -1,169 +1,227 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
+import { useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
-import type { Database } from '@/integrations/supabase/types'
 
-type ProductVariant = Database['public']['Tables']['product_variants']['Row']
-type ProductVariantInsert = Database['public']['Tables']['product_variants']['Insert']
-type ProductOption = Database['public']['Tables']['product_options']['Row']
-type ProductOptionInsert = Database['public']['Tables']['product_options']['Insert']
+// Mock types since product_variants and product_options tables don't exist
+interface ProductVariant {
+  id: string
+  product_id: string
+  user_id: string
+  name: string
+  variant_sku: string | null
+  price: number
+  cost_price: number | null
+  stock_quantity: number | null
+  image_url: string | null
+  options: Record<string, string> | null
+  is_active: boolean
+  created_at: string
+}
+
+interface ProductOption {
+  id: string
+  product_id: string
+  user_id: string
+  name: string
+  values: string[]
+  position: number
+}
+
+type ProductVariantInsert = Omit<ProductVariant, 'id' | 'created_at'>
+type ProductOptionInsert = Omit<ProductOption, 'id'>
+
+// Helper to get variants from localStorage
+const getStoredVariants = (productId: string): ProductVariant[] => {
+  try {
+    const stored = localStorage.getItem(`product_variants_${productId}`)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+// Helper to save variants to localStorage
+const saveStoredVariants = (productId: string, variants: ProductVariant[]) => {
+  localStorage.setItem(`product_variants_${productId}`, JSON.stringify(variants))
+}
+
+// Helper to get options from localStorage
+const getStoredOptions = (productId: string): ProductOption[] => {
+  try {
+    const stored = localStorage.getItem(`product_options_${productId}`)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+// Helper to save options to localStorage
+const saveStoredOptions = (productId: string, options: ProductOption[]) => {
+  localStorage.setItem(`product_options_${productId}`, JSON.stringify(options))
+}
 
 export const useProductVariants = (productId?: string) => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const { user } = useAuth()
+  
+  const [variants, setVariants] = useState<ProductVariant[]>([])
+  const [options, setOptions] = useState<ProductOption[]>([])
+  const [variantsLoading, setVariantsLoading] = useState(false)
+  const [optionsLoading, setOptionsLoading] = useState(false)
+  const [isCreating, setIsCreating] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  // Get variants for a product
-  const { data: variants, isLoading: variantsLoading } = useQuery({
-    queryKey: ['product-variants', productId],
-    queryFn: async () => {
-      if (!productId) return []
+  // Load variants and options from localStorage
+  useEffect(() => {
+    if (productId) {
+      setVariantsLoading(true)
+      setOptionsLoading(true)
       
-      const { data, error } = await supabase
-        .from('product_variants')
-        .select('*')
-        .eq('product_id', productId)
-        .order('created_at', { ascending: true })
-
-      if (error) throw error
-      return data
-    },
-    enabled: !!productId
-  })
-
-  // Get options for a product
-  const { data: options, isLoading: optionsLoading } = useQuery({
-    queryKey: ['product-options', productId],
-    queryFn: async () => {
-      if (!productId) return []
+      const storedVariants = getStoredVariants(productId)
+      const storedOptions = getStoredOptions(productId)
       
-      const { data, error } = await supabase
-        .from('product_options')
-        .select('*')
-        .eq('product_id', productId)
-        .order('position', { ascending: true })
-
-      if (error) throw error
-      return data
-    },
-    enabled: !!productId
-  })
+      setVariants(storedVariants)
+      setOptions(storedOptions)
+      
+      setVariantsLoading(false)
+      setOptionsLoading(false)
+    }
+  }, [productId])
 
   // Create variant
-  const createVariant = useMutation({
-    mutationFn: async (variant: Omit<ProductVariantInsert, 'user_id'>) => {
-      if (!user?.id) throw new Error('User not authenticated')
+  const createVariant = (variantData: Omit<ProductVariantInsert, 'user_id'>) => {
+    if (!user?.id || !productId) {
+      toast({
+        title: "Erreur",
+        description: "Utilisateur non authentifié",
+        variant: "destructive"
+      })
+      return
+    }
 
-      const { data, error } = await supabase
-        .from('product_variants')
-        .insert([{ ...variant, user_id: user.id }])
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
-    },
-    onSuccess: () => {
+    setIsCreating(true)
+    try {
+      const newVariant: ProductVariant = {
+        id: crypto.randomUUID(),
+        ...variantData,
+        user_id: user.id,
+        created_at: new Date().toISOString(),
+      }
+      
+      const updated = [...variants, newVariant]
+      setVariants(updated)
+      saveStoredVariants(productId, updated)
+      
       queryClient.invalidateQueries({ queryKey: ['product-variants'] })
       toast({
         title: "Variante créée",
         description: "La variante a été ajoutée avec succès"
       })
-    },
-    onError: (error: Error) => {
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      })
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
+  // Update variant
+  const updateVariant = ({ id, updates }: { id: string; updates: Partial<ProductVariant> }) => {
+    if (!productId) return
+
+    setIsUpdating(true)
+    try {
+      const updated = variants.map(v => v.id === id ? { ...v, ...updates } : v)
+      setVariants(updated)
+      saveStoredVariants(productId, updated)
+      
+      queryClient.invalidateQueries({ queryKey: ['product-variants'] })
+      toast({
+        title: "Variante mise à jour",
+        description: "Les modifications ont été enregistrées"
+      })
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      })
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  // Delete variant
+  const deleteVariant = (id: string) => {
+    if (!productId) return
+
+    setIsDeleting(true)
+    try {
+      const updated = variants.filter(v => v.id !== id)
+      setVariants(updated)
+      saveStoredVariants(productId, updated)
+      
+      queryClient.invalidateQueries({ queryKey: ['product-variants'] })
+      toast({
+        title: "Variante supprimée",
+        description: "La variante a été supprimée"
+      })
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  // Save options
+  const saveOptions = (optionsData: Array<Omit<ProductOptionInsert, 'user_id'>>) => {
+    if (!user?.id || !productId) {
+      toast({
+        title: "Erreur",
+        description: "Utilisateur non authentifié",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      const newOptions: ProductOption[] = optionsData.map((opt, index) => ({
+        id: crypto.randomUUID(),
+        ...opt,
+        user_id: user.id,
+        position: index,
+      }))
+      
+      setOptions(newOptions)
+      saveStoredOptions(productId, newOptions)
+      
+      queryClient.invalidateQueries({ queryKey: ['product-options'] })
+      toast({
+        title: "Options enregistrées",
+        description: "Les options ont été mises à jour"
+      })
+    } catch (error: any) {
       toast({
         title: "Erreur",
         description: error.message,
         variant: "destructive"
       })
     }
-  })
-
-  // Update variant
-  const updateVariant = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<ProductVariant> }) => {
-      const { data, error } = await supabase
-        .from('product_variants')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['product-variants'] })
-      toast({
-        title: "Variante mise à jour",
-        description: "Les modifications ont été enregistrées"
-      })
-    }
-  })
-
-  // Delete variant
-  const deleteVariant = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('product_variants')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['product-variants'] })
-      toast({
-        title: "Variante supprimée",
-        description: "La variante a été supprimée"
-      })
-    }
-  })
-
-  // Create/Update options
-  const saveOptions = useMutation({
-    mutationFn: async (options: Array<Omit<ProductOptionInsert, 'user_id'>>) => {
-      if (!user?.id) throw new Error('User not authenticated')
-
-      // Delete existing options
-      if (productId) {
-        await supabase
-          .from('product_options')
-          .delete()
-          .eq('product_id', productId)
-      }
-
-      // Insert new options
-      const { data, error } = await supabase
-        .from('product_options')
-        .insert(options.map(opt => ({ ...opt, user_id: user.id })))
-        .select()
-
-      if (error) throw error
-      return data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['product-options'] })
-      toast({
-        title: "Options enregistrées",
-        description: "Les options ont été mises à jour"
-      })
-    }
-  })
+  }
 
   // Generate variants from options
   const generateVariants = async (opts: ProductOption[]) => {
     if (!productId || !user?.id) return
-
-    // Get product data
-    const { data: product } = await supabase
-      .from('catalog_products')
-      .select('*')
-      .eq('id', productId)
-      .single()
-
-    if (!product) return
 
     // Generate all combinations
     const combinations = generateCombinations(opts)
@@ -171,20 +229,21 @@ export const useProductVariants = (productId?: string) => {
     // Create variants
     for (const combo of combinations) {
       const variantName = combo.map(c => c.value).join(' / ')
-      const variantSKU = `${product.sku}-${combo.map(c => c.value.substring(0, 3).toUpperCase()).join('-')}`
+      const variantSKU = `PROD-${combo.map(c => c.value.substring(0, 3).toUpperCase()).join('-')}`
       
       const variantData: Omit<ProductVariantInsert, 'user_id'> = {
         product_id: productId,
         name: variantName,
         variant_sku: variantSKU,
-        price: product.price,
-        cost_price: product.cost_price,
+        price: 0,
+        cost_price: null,
         stock_quantity: 0,
+        image_url: null,
         options: combo.reduce((acc, c) => ({ ...acc, [c.name]: c.value }), {}),
         is_active: true
       }
 
-      await createVariant.mutateAsync(variantData)
+      createVariant(variantData)
     }
   }
 
@@ -193,14 +252,14 @@ export const useProductVariants = (productId?: string) => {
     options,
     variantsLoading,
     optionsLoading,
-    createVariant: createVariant.mutate,
-    updateVariant: updateVariant.mutate,
-    deleteVariant: deleteVariant.mutate,
-    saveOptions: saveOptions.mutate,
+    createVariant,
+    updateVariant,
+    deleteVariant,
+    saveOptions,
     generateVariants,
-    isCreating: createVariant.isPending,
-    isUpdating: updateVariant.isPending,
-    isDeleting: deleteVariant.isPending
+    isCreating,
+    isUpdating,
+    isDeleting
   }
 }
 

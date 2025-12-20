@@ -1,18 +1,46 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useProductVariants } from '@/hooks/useProductVariants'
 import { useToast } from '@/hooks/use-toast'
 import { Trash2, Download, Upload, Package } from 'lucide-react'
 import Papa from 'papaparse'
+
+// Mock ProductVariant type since product_variants table doesn't exist
+interface ProductVariant {
+  id: string
+  product_id: string
+  name: string
+  variant_sku: string | null
+  options: Record<string, string> | null
+  price: number
+  cost_price: number | null
+  stock_quantity: number | null
+  image_url: string | null
+  is_active: boolean
+}
 
 interface ProductVariantsAdvancedManagerProps {
   productId: string
   open: boolean
   onOpenChange: (open: boolean) => void
+}
+
+// Helper to get variants from localStorage
+const getStoredVariants = (productId: string): ProductVariant[] => {
+  try {
+    const stored = localStorage.getItem(`product_variants_${productId}`)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+// Helper to save variants to localStorage
+const saveStoredVariants = (productId: string, variants: ProductVariant[]) => {
+  localStorage.setItem(`product_variants_${productId}`, JSON.stringify(variants))
 }
 
 export const ProductVariantsAdvancedManager = ({ 
@@ -21,15 +49,19 @@ export const ProductVariantsAdvancedManager = ({
   onOpenChange 
 }: ProductVariantsAdvancedManagerProps) => {
   const { toast } = useToast()
-  const { 
-    variants, 
-    variantsLoading,
-    createVariant,
-    updateVariant,
-    deleteVariant
-  } = useProductVariants(productId)
-
+  const [variants, setVariants] = useState<ProductVariant[]>([])
+  const [variantsLoading, setVariantsLoading] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+
+  // Load variants from localStorage on mount
+  useEffect(() => {
+    if (open) {
+      setVariantsLoading(true)
+      const stored = getStoredVariants(productId)
+      setVariants(stored)
+      setVariantsLoading(false)
+    }
+  }, [open, productId])
 
   // Parse options for display
   const formatOptions = (optionsJson: any): string => {
@@ -38,6 +70,9 @@ export const ProductVariantsAdvancedManager = ({
       const opts = typeof optionsJson === 'string' ? JSON.parse(optionsJson) : optionsJson
       if (Array.isArray(opts)) {
         return opts.map((o: any) => `${o.name}: ${o.value}`).join(' / ')
+      }
+      if (typeof opts === 'object') {
+        return Object.entries(opts).map(([k, v]) => `${k}: ${v}`).join(' / ')
       }
       return JSON.stringify(opts)
     } catch {
@@ -88,12 +123,14 @@ export const ProductVariantsAdvancedManager = ({
       header: true,
       complete: async (results) => {
         try {
+          const newVariants: ProductVariant[] = []
           for (const row of results.data as any[]) {
             if (!row.name || !row.price) continue
 
             const options = row.options ? JSON.parse(row.options) : null
             
-            createVariant({
+            newVariants.push({
+              id: crypto.randomUUID(),
               product_id: productId,
               name: row.name,
               variant_sku: row.variant_sku || null,
@@ -102,13 +139,17 @@ export const ProductVariantsAdvancedManager = ({
               cost_price: row.cost_price ? parseFloat(row.cost_price) : null,
               stock_quantity: parseInt(row.stock_quantity) || 0,
               image_url: row.image_url || null,
-              parent_sku: row.parent_sku || null,
+              is_active: true,
             })
           }
 
+          const updated = [...variants, ...newVariants]
+          setVariants(updated)
+          saveStoredVariants(productId, updated)
+
           toast({
             title: "Import réussi",
-            description: `${results.data.length} variante(s) importée(s)`
+            description: `${newVariants.length} variante(s) importée(s)`
           })
         } catch (error) {
           toast({
@@ -125,16 +166,29 @@ export const ProductVariantsAdvancedManager = ({
 
   // Handle inline edit
   const handleFieldUpdate = (variantId: string, field: string, value: any) => {
-    updateVariant({
-      id: variantId,
-      updates: { [field]: value }
+    const updated = variants.map(v => 
+      v.id === variantId ? { ...v, [field]: value } : v
+    )
+    setVariants(updated)
+    saveStoredVariants(productId, updated)
+    
+    toast({
+      title: "Variante mise à jour",
+      description: "Les modifications ont été enregistrées"
     })
   }
 
   // Handle delete
   const handleDelete = (variantId: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cette variante ?')) {
-      deleteVariant(variantId)
+      const updated = variants.filter(v => v.id !== variantId)
+      setVariants(updated)
+      saveStoredVariants(productId, updated)
+      
+      toast({
+        title: "Variante supprimée",
+        description: "La variante a été supprimée avec succès"
+      })
     }
   }
 
