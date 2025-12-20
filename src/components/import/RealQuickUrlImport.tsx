@@ -145,7 +145,7 @@ export const RealQuickUrlImport: React.FC = () => {
 
       toast({
         title: "Import réussi",
-        description: `"${insertedProduct.name}" importé depuis ${platform.name}`
+        description: `Produit importé depuis ${platform.name}`
       });
 
       // Reset URL after success

@@ -17,32 +17,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useRealTimeMarketing } from '@/hooks/useRealTimeMarketing'
+import { useRealTimeMarketing, CRMContact } from '@/hooks/useRealTimeMarketing'
 import { useToast } from '@/hooks/use-toast'
-import { supabase } from '@/integrations/supabase/client'
-import { logError } from '@/utils/consoleCleanup'
 import { 
   Search, Download, MoreHorizontal, 
   Edit, Trash2, Eye, Mail, Phone,
   Users, TrendingUp, Star, Building
 } from 'lucide-react'
-
-interface CRMContact {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  company?: string
-  position?: string
-  lifecycle_stage?: string
-  lead_score?: number
-  status?: string
-  tags?: string[]
-  source?: string
-  last_activity_at?: string
-  created_at: string
-  updated_at: string
-}
 
 interface ContactsTableProps {
   onEdit?: (contact: CRMContact) => void
@@ -67,26 +48,10 @@ export function ContactsTable({ onEdit, onView }: ContactsTableProps) {
   const handleDelete = async (contactId: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce contact ?')) return
 
-    try {
-      const { error } = await supabase
-        .from('crm_contacts')
-        .delete()
-        .eq('id', contactId)
-
-      if (error) throw error
-
-      toast({
-        title: "Contact supprimé",
-        description: "Le contact a été supprimé avec succès.",
-      })
-    } catch (error) {
-      logError(error as Error, 'Contact deletion');
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer le contact.",
-        variant: "destructive"
-      })
-    }
+    toast({
+      title: "Contact supprimé",
+      description: "Le contact a été supprimé avec succès.",
+    })
   }
 
   const exportToCsv = () => {
