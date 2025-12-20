@@ -11,11 +11,25 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
+interface ShipmentData {
+  id: string;
+  tracking_number?: string;
+  carrier_name?: string;
+  shipping_address?: Record<string, any>;
+  status?: string;
+  shipping_cost?: number;
+  label_url?: string;
+  created_at: string;
+}
+
 export function ShipmentsTable() {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [search, setSearch] = useState('');
   
-  const { data: shipments, isLoading } = useShipments(statusFilter || undefined);
+  const { data: rawShipments, isLoading } = useShipments(statusFilter || undefined);
+  
+  // Cast to our expected type
+  const shipments = rawShipments as unknown as ShipmentData[] | undefined;
   
   const getAddressField = (address: any, field: string): string => {
     if (!address || typeof address !== 'object') return '';
@@ -24,7 +38,7 @@ export function ShipmentsTable() {
   
   const filteredShipments = shipments?.filter((s) => {
     const searchLower = search.toLowerCase();
-    const address = s.shipping_address as any;
+    const address = s.shipping_address;
     return (
       s.tracking_number?.toLowerCase().includes(searchLower) ||
       getAddressField(address, 'name').toLowerCase().includes(searchLower) ||
@@ -33,7 +47,7 @@ export function ShipmentsTable() {
   });
   
   const getStatusInfo = (status: string) => {
-    const statusMap: Record<string, { label: string; variant: any; icon: any }> = {
+    const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: any }> = {
       created: { label: 'Créée', variant: 'secondary', icon: Package },
       label_generated: { label: 'Étiquette générée', variant: 'outline', icon: Package },
       printed: { label: 'Imprimée', variant: 'outline', icon: Package },
@@ -44,7 +58,7 @@ export function ShipmentsTable() {
       failed: { label: 'Échec', variant: 'destructive', icon: AlertTriangle },
       returned: { label: 'Retournée', variant: 'secondary', icon: AlertTriangle }
     };
-    return statusMap[status] || { label: status, variant: 'secondary', icon: Clock };
+    return statusMap[status] || { label: status, variant: 'secondary' as const, icon: Clock };
   };
   
   if (isLoading) {
@@ -114,9 +128,10 @@ export function ShipmentsTable() {
                 </TableRow>
               ) : (
                 filteredShipments.map((shipment) => {
-                  const status = getStatusInfo(shipment.status);
-                  const address = shipment.shipping_address as any;
+                  const status = getStatusInfo(shipment.status || 'created');
+                  const address = shipment.shipping_address;
                   const shippingCost = shipment.shipping_cost || 0;
+                  const StatusIcon = status.icon;
                   return (
                     <TableRow key={shipment.id}>
                       <TableCell>
@@ -137,7 +152,7 @@ export function ShipmentsTable() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={status.variant} className="flex items-center gap-1 w-fit">
-                          <status.icon className="h-3 w-3" />
+                          <StatusIcon className="h-3 w-3" />
                           {status.label}
                         </Badge>
                       </TableCell>

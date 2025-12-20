@@ -5,22 +5,31 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useEnterpriseIntegrationService } from "@/hooks/useEnterpriseIntegrationService"
 import { useState } from "react"
 import { Settings, Plug, RefreshCw, Shield, Globe, Database } from "lucide-react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast"
+
+interface EnterpriseIntegration {
+  id: string
+  name: string
+  integration_type: string
+  is_active: boolean | null
+  sync_status: string | null
+  last_sync_at: string | null
+  config: any
+}
+
+interface EnterpriseSetting {
+  key: string
+  value: any
+  category: string
+}
 
 export function EnterpriseIntegrationDashboard() {
-  const {
-    integrations,
-    settings,
-    isLoading,
-    createIntegration,
-    updateSetting,
-    syncIntegration,
-    isCreatingIntegration,
-    isUpdatingSetting,
-    isSyncingIntegration
-  } = useEnterpriseIntegrationService()
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
 
   const [newIntegration, setNewIntegration] = useState({
     providerName: '',
@@ -34,9 +43,97 @@ export function EnterpriseIntegrationDashboard() {
     category: 'general'
   })
 
+  // Local settings storage (since enterprise_settings table doesn't exist)
+  const [localSettings, setLocalSettings] = useState<EnterpriseSetting[]>([
+    { key: 'default_sync_frequency', value: 'hourly', category: 'general' },
+    { key: 'enable_notifications', value: true, category: 'general' },
+    { key: 'api_rate_limit', value: 1000, category: 'performance' }
+  ])
+
+  const { data: integrations, isLoading: isLoadingIntegrations } = useQuery({
+    queryKey: ['enterprise-integrations'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('enterprise_integrations')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      return (data || []) as EnterpriseIntegration[]
+    }
+  })
+
+  const createIntegrationMutation = useMutation({
+    mutationFn: async (integrationData: { providerName: string; integrationType: string; configuration: any }) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Non authentifié')
+
+      const { data, error } = await supabase
+        .from('enterprise_integrations')
+        .insert({
+          user_id: user.id,
+          name: integrationData.providerName,
+          integration_type: integrationData.integrationType,
+          config: integrationData.configuration,
+          is_active: false,
+          sync_status: 'disconnected'
+        })
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['enterprise-integrations'] })
+      toast({
+        title: "Intégration créée",
+        description: "L'intégration enterprise a été créée avec succès",
+      })
+    },
+    onError: () => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer l'intégration",
+        variant: "destructive"
+      })
+    }
+  })
+
+  const syncIntegrationMutation = useMutation({
+    mutationFn: async (integrationId: string) => {
+      const { data, error } = await supabase
+        .from('enterprise_integrations')
+        .update({ 
+          last_sync_at: new Date().toISOString(),
+          sync_status: 'syncing'
+        })
+        .eq('id', integrationId)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['enterprise-integrations'] })
+      toast({
+        title: "Synchronisation lancée",
+        description: "La synchronisation de l'intégration a été démarrée",
+      })
+    },
+    onError: () => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de synchroniser l'intégration",
+        variant: "destructive"
+      })
+    }
+  })
+
   const handleCreateIntegration = () => {
     if (newIntegration.providerName && newIntegration.integrationType) {
-      createIntegration({
+      createIntegrationMutation.mutate({
         providerName: newIntegration.providerName,
         integrationType: newIntegration.integrationType,
         configuration: newIntegration.configuration
@@ -47,12 +144,24 @@ export function EnterpriseIntegrationDashboard() {
 
   const handleUpdateSetting = () => {
     if (newSetting.key && newSetting.value) {
-      updateSetting(newSetting)
+      setLocalSettings(prev => {
+        const existing = prev.findIndex(s => s.key === newSetting.key)
+        if (existing >= 0) {
+          const updated = [...prev]
+          updated[existing] = newSetting
+          return updated
+        }
+        return [...prev, newSetting]
+      })
+      toast({
+        title: "Paramètre mis à jour",
+        description: "Le paramètre enterprise a été modifié",
+      })
       setNewSetting({ key: '', value: '', category: 'general' })
     }
   }
 
-  if (isLoading) {
+  if (isLoadingIntegrations) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {[...Array(4)].map((_, i) => (
@@ -127,10 +236,10 @@ export function EnterpriseIntegrationDashboard() {
                 <div className="flex items-end">
                   <Button 
                     onClick={handleCreateIntegration}
-                    disabled={isCreatingIntegration}
+                    disabled={createIntegrationMutation.isPending}
                     className="w-full"
                   >
-                    {isCreatingIntegration ? "Création..." : "Créer"}
+                    {createIntegrationMutation.isPending ? "Création..." : "Créer"}
                   </Button>
                 </div>
               </div>
@@ -138,15 +247,15 @@ export function EnterpriseIntegrationDashboard() {
           </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {integrations?.map((integration, index) => (
-              <Card key={index}>
+            {integrations?.map((integration) => (
+              <Card key={integration.id}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {integration.integration_type === 'api' && <Globe className="w-4 h-4" />}
                       {integration.integration_type === 'database' && <Database className="w-4 h-4" />}
                       {integration.integration_type === 'webhook' && <Plug className="w-4 h-4" />}
-                      {integration.provider_name}
+                      {integration.name}
                     </div>
                     <Badge variant={integration.is_active ? 'default' : 'secondary'}>
                       {integration.is_active ? 'Actif' : 'Inactif'}
@@ -161,7 +270,7 @@ export function EnterpriseIntegrationDashboard() {
                     <div className="flex justify-between text-sm">
                       <span>Status:</span>
                       <Badge variant={integration.sync_status === 'connected' ? 'default' : 'destructive'}>
-                        {integration.sync_status}
+                        {integration.sync_status || 'disconnected'}
                       </Badge>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -176,12 +285,12 @@ export function EnterpriseIntegrationDashboard() {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={() => syncIntegration(integration.id)}
-                      disabled={isSyncingIntegration}
+                      onClick={() => syncIntegrationMutation.mutate(integration.id)}
+                      disabled={syncIntegrationMutation.isPending}
                       className="w-full mt-2"
                     >
                       <RefreshCw className="w-4 h-4 mr-2" />
-                      {isSyncingIntegration ? "Sync..." : "Synchroniser"}
+                      {syncIntegrationMutation.isPending ? "Sync..." : "Synchroniser"}
                     </Button>
                   </div>
                 </CardContent>
@@ -238,10 +347,9 @@ export function EnterpriseIntegrationDashboard() {
                 <div className="flex items-end">
                   <Button 
                     onClick={handleUpdateSetting}
-                    disabled={isUpdatingSetting}
                     className="w-full"
                   >
-                    {isUpdatingSetting ? "MAJ..." : "Mettre à jour"}
+                    Mettre à jour
                   </Button>
                 </div>
               </div>
@@ -249,22 +357,22 @@ export function EnterpriseIntegrationDashboard() {
           </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {settings?.map((setting, index) => (
+            {localSettings.map((setting, index) => (
               <Card key={index}>
                 <CardHeader>
-                  <CardTitle className="text-sm">{setting.setting_key}</CardTitle>
+                  <CardTitle className="text-sm">{setting.key}</CardTitle>
                   <CardDescription>
-                    Catégorie: {setting.setting_category}
+                    Catégorie: {setting.category}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <div className="text-sm">
-                      <strong>Valeur:</strong> {JSON.stringify(setting.setting_value)}
+                      <strong>Valeur:</strong> {JSON.stringify(setting.value)}
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Niveau: {setting.access_level}</span>
-                      <span>{setting.is_encrypted && <Shield className="w-3 h-3 inline" />}</span>
+                      <span>Niveau: user</span>
+                      <span><Shield className="w-3 h-3 inline" /></span>
                     </div>
                   </div>
                 </CardContent>

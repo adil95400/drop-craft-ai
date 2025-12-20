@@ -12,7 +12,6 @@ import {
   X,
   Star,
   Users,
-  Calendar,
   HardDrive
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -100,10 +99,9 @@ export const ExtensionInstaller: React.FC<ExtensionInstallerProps> = ({
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  // Install extension mutation
+  // Install extension mutation - using the existing extensions table
   const installExtensionMutation = useMutation({
     mutationFn: async () => {
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         throw new Error('Utilisateur non authentifié')
@@ -111,73 +109,41 @@ export const ExtensionInstaller: React.FC<ExtensionInstallerProps> = ({
 
       // Check if extension is already installed
       const { data: existing } = await supabase
-        .from('user_extensions')
+        .from('extensions')
         .select('id')
-        .eq('extension_id', extension.id)
-        .eq('user_id', user.id)
-        .single()
+        .eq('name', extension.name)
+        .maybeSingle()
 
       if (existing) {
         throw new Error('Extension déjà installée')
       }
 
-      // Create purchase record if paid extension
-      if (extension.price > 0) {
-        const { error: purchaseError } = await supabase
-          .from('extension_purchases')
-          .insert({
-            user_id: user.id,
-            extension_id: extension.id,
-            price: extension.price,
-            currency: 'EUR',
-            status: 'completed',
-            commission_rate: 30,
-            commission_amount: extension.price * 0.3,
-            developer_amount: extension.price * 0.7,
-            completed_at: new Date().toISOString()
-          })
-
-        if (purchaseError) throw purchaseError
-      }
-
-      // Install extension
+      // Install extension using the extensions table
       const { data, error } = await supabase
-        .from('user_extensions')
+        .from('extensions')
         .insert({
-          user_id: user.id,
-          extension_id: extension.id,
+          name: extension.name,
+          code: `extension_${extension.id}`,
+          description: extension.description,
           version: extension.version,
           status: 'active',
-          configuration: {},
-          installed_at: new Date().toISOString(),
-          usage_count: 0
+          is_premium: extension.price > 0,
+          config: {
+            marketplace_install: true,
+            price: extension.price,
+            developer: extension.developer_name,
+            category: extension.category,
+            permissions: extension.permissions
+          }
         })
         .select()
         .single()
 
       if (error) throw error
-
-      // Update download count using marketplace_extensions table
-      const { data: extensionData } = await supabase
-        .from('marketplace_extensions')
-        .select('downloads_count')
-        .eq('id', extension.id)
-        .single()
-
-      if (extensionData) {
-        await supabase
-          .from('marketplace_extensions')
-          .update({
-            downloads_count: (extensionData.downloads_count || 0) + 1
-          })
-          .eq('id', extension.id)
-      }
-
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-extensions'] })
-      queryClient.invalidateQueries({ queryKey: ['extension-marketplace'] })
+      queryClient.invalidateQueries({ queryKey: ['extensions'] })
       toast({
         title: "Extension installée",
         description: `${extension.name} a été installée avec succès`

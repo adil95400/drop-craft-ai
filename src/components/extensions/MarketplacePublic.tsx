@@ -411,7 +411,7 @@ export const MarketplacePublic = () => {
                       <div className="p-2 bg-primary/10 rounded-lg">
                         <Settings className="h-4 w-4 text-primary" />
                       </div>
-                      {ext.display_name}
+                      {ext.name}
                     </CardTitle>
                     <CardDescription>{ext.description}</CardDescription>
                   </CardHeader>
