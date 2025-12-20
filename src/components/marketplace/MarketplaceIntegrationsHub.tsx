@@ -40,7 +40,7 @@ interface MarketplaceIntegration {
   failed_sync_count: number
 }
 
-const MARKETPLACE_CONFIGS = {
+const MARKETPLACE_CONFIGS: Record<string, { name: string; icon: any; color: string; description: string }> = {
   // Stores
   shopify: {
     name: 'Shopify',
@@ -165,14 +165,31 @@ export function MarketplaceIntegrationsHub() {
         return
       }
 
+      // Use 'integrations' table instead of 'marketplace_integrations'
       const { data, error } = await supabase
-        .from('marketplace_integrations')
+        .from('integrations')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setIntegrations(data || [])
+      
+      // Map to MarketplaceIntegration format
+      const mapped: MarketplaceIntegration[] = (data || []).map(item => ({
+        id: item.id,
+        platform: item.platform,
+        shop_url: item.store_url || '',
+        status: item.connection_status || 'disconnected',
+        is_active: item.is_active || false,
+        last_sync_at: item.last_sync_at || '',
+        next_sync_at: '',
+        total_products_synced: 0,
+        total_orders_synced: 0,
+        total_sync_count: 0,
+        failed_sync_count: 0
+      }))
+      
+      setIntegrations(mapped)
     } catch (error) {
       console.error('Error fetching integrations:', error)
       toast({
@@ -192,22 +209,12 @@ export function MarketplaceIntegrationsHub() {
       const productsCount = Math.floor(Math.random() * 100) + 50
       const ordersCount = Math.floor(Math.random() * 50) + 10
 
-      // Get current sync count
-      const { data: currentData } = await supabase
-        .from('marketplace_integrations')
-        .select('total_sync_count')
-        .eq('id', integrationId)
-        .single()
-
-      // Update integration stats
+      // Update integration stats using 'integrations' table
       const { error } = await supabase
-        .from('marketplace_integrations')
+        .from('integrations')
         .update({
           last_sync_at: new Date().toISOString(),
-          total_products_synced: productsCount,
-          total_orders_synced: ordersCount,
-          total_sync_count: (currentData?.total_sync_count || 0) + 1,
-          status: 'connected'
+          connection_status: 'connected'
         })
         .eq('id', integrationId)
 
@@ -234,10 +241,10 @@ export function MarketplaceIntegrationsHub() {
   const handleDisconnect = async (integrationId: string) => {
     try {
       const { error } = await supabase
-        .from('marketplace_integrations')
+        .from('integrations')
         .update({ 
           is_active: false,
-          status: 'disconnected'
+          connection_status: 'disconnected'
         })
         .eq('id', integrationId)
 
@@ -270,15 +277,16 @@ export function MarketplaceIntegrationsHub() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      // Create new integration
+      // Create new integration using 'integrations' table
       const { data, error } = await supabase
-        .from('marketplace_integrations')
+        .from('integrations')
         .insert({
           user_id: user.id,
-          platform: platform as any,
-          shop_url: `https://${platform}-shop-${Math.random().toString(36).substr(2, 9)}.com`,
+          platform: platform,
+          platform_name: MARKETPLACE_CONFIGS[platform]?.name || platform,
+          store_url: `https://${platform}-shop-${Math.random().toString(36).substr(2, 9)}.com`,
           is_active: true,
-          status: 'connected'
+          connection_status: 'connected'
         })
         .select()
         .single()
@@ -420,7 +428,12 @@ export function MarketplaceIntegrationsHub() {
                 {integrations
                   .filter((i) => i.is_active)
                   .map((integration) => {
-                    const config = MARKETPLACE_CONFIGS[integration.platform]
+                    const config = MARKETPLACE_CONFIGS[integration.platform] || { 
+                      name: integration.platform, 
+                      icon: Store, 
+                      color: 'from-gray-500 to-gray-400',
+                      description: 'Integration'
+                    }
                     const Icon = config.icon
 
                     return (
@@ -521,27 +534,27 @@ export function MarketplaceIntegrationsHub() {
           </TabsContent>
 
           <TabsContent value="available" className="space-y-4">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid md:grid-cols-3 gap-4">
               {availablePlatforms.map(([key, config]) => {
                 const Icon = config.icon
 
                 return (
                   <motion.div
                     key={key}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+                    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                       <CardHeader>
                         <div className="flex items-center gap-3">
                           <div
-                            className={`p-3 rounded-lg bg-gradient-to-r ${config.color} group-hover:scale-110 transition-transform`}
+                            className={`p-2 rounded-lg bg-gradient-to-r ${config.color}`}
                           >
-                            <Icon className="h-6 w-6 text-white" />
+                            <Icon className="h-5 w-5 text-white" />
                           </div>
                           <div>
-                            <CardTitle>{config.name}</CardTitle>
+                            <CardTitle className="text-base">{config.name}</CardTitle>
                             <CardDescription className="text-xs">
                               {config.description}
                             </CardDescription>
@@ -550,7 +563,7 @@ export function MarketplaceIntegrationsHub() {
                       </CardHeader>
                       <CardContent>
                         <Button
-                          className="w-full bg-gradient-primary"
+                          className="w-full"
                           onClick={() => handleConnect(key)}
                         >
                           <Plus className="h-4 w-4 mr-2" />

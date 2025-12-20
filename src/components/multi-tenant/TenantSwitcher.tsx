@@ -50,14 +50,18 @@ export function TenantSwitcher() {
     );
   }
 
+  // Access tenant properties safely with fallbacks
+  const tenantName = (tenant as any).name || (tenant as any).company_name || 'Organisation';
+  const planType = (tenant as any).plan_type || (tenant as any).subscription_plan || 'free';
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="gap-2">
           <Building2 className="h-4 w-4" />
-          <span className="font-medium">{tenant.name}</span>
+          <span className="font-medium">{tenantName}</span>
           <Badge variant="secondary" className="text-xs">
-            {tenant.plan_type}
+            {planType}
           </Badge>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
@@ -65,21 +69,24 @@ export function TenantSwitcher() {
       <DropdownMenuContent align="start" className="w-64">
         <DropdownMenuLabel>Vos organisations</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {tenants.map((t) => (
-          <DropdownMenuItem
-            key={t.id}
-            onClick={() => handleTenantSwitch(t.id)}
-            className="cursor-pointer"
-          >
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4" />
-                <span>{t.name}</span>
+        {tenants.map((t: any) => {
+          const tName = t.name || t.company_name || 'Organisation';
+          return (
+            <DropdownMenuItem
+              key={t.id}
+              onClick={() => handleTenantSwitch(t.id)}
+              className="cursor-pointer"
+            >
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  <span>{tName}</span>
+                </div>
+                {t.id === (tenant as any).id && <Check className="h-4 w-4" />}
               </div>
-              {t.id === tenant.id && <Check className="h-4 w-4" />}
-            </div>
-          </DropdownMenuItem>
-        ))}
+            </DropdownMenuItem>
+          );
+        })}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleCreateTenant} className="cursor-pointer">
           <Plus className="h-4 w-4 mr-2" />

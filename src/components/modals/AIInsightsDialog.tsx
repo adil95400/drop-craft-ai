@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useApi } from '@/hooks/useApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import {
@@ -17,6 +16,7 @@ import {
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AIInsightsDialogProps {
   open: boolean;
@@ -39,7 +39,6 @@ interface Insight {
 
 export function AIInsightsDialog({ open, onOpenChange }: AIInsightsDialogProps) {
   const { user } = useAuth();
-  const { supabaseQuery } = useApi();
   const [isLoading, setIsLoading] = useState(false);
   const [insights, setInsights] = useState<Insight[]>([]);
 
@@ -54,22 +53,34 @@ export function AIInsightsDialog({ open, onOpenChange }: AIInsightsDialogProps) 
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabaseQuery(
-        async () => {
-          const { data, error } = await (await import('@/integrations/supabase/client')).supabase
-            .from('ai_insights')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(20);
-          return { data, error };
-        },
-        { showToast: false }
-      );
+      // Use business_intelligence_insights table instead of non-existent ai_insights
+      const { data, error } = await supabase
+        .from('business_intelligence_insights')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
 
-      if (error) throw new Error(error);
-      setInsights(data || []);
+      if (error) throw error;
+      
+      // Map to Insight format
+      const mapped: Insight[] = (data || []).map(item => ({
+        id: item.id,
+        title: item.title,
+        description: item.description || '',
+        category: (item.supporting_data as any)?.category || 'general',
+        insight_type: item.insight_type,
+        confidence_score: Number(item.confidence_score) || 0.8,
+        impact_level: Number(item.impact_score) > 0.7 ? 'high' : Number(item.impact_score) > 0.4 ? 'medium' : 'low',
+        status: item.status || 'active',
+        estimated_revenue_impact: (item.supporting_data as any)?.revenue_impact || 0,
+        recommended_actions: item.actionable_recommendations || [],
+        created_at: item.created_at || ''
+      }));
+      
+      setInsights(mapped);
     } catch (error) {
+      console.error('Error loading insights:', error);
       toast.error('Erreur lors du chargement des insights');
     } finally {
       setIsLoading(false);
@@ -92,8 +103,10 @@ export function AIInsightsDialog({ open, onOpenChange }: AIInsightsDialogProps) 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'active':
+      case 'new':
         return <AlertCircle className="h-4 w-4 text-blue-500" />;
       case 'implemented':
+      case 'resolved':
         return <CheckCircle2 className="h-4 w-4 text-green-500" />;
       case 'dismissed':
         return <XCircle className="h-4 w-4 text-gray-500" />;
@@ -104,9 +117,9 @@ export function AIInsightsDialog({ open, onOpenChange }: AIInsightsDialogProps) 
 
   const handleDismiss = async (insightId: string) => {
     try {
-      const { error } = await (await import('@/integrations/supabase/client')).supabase
-        .from('ai_insights')
-        .update({ status: 'dismissed', dismissed_at: new Date().toISOString() })
+      const { error } = await supabase
+        .from('business_intelligence_insights')
+        .update({ status: 'dismissed' })
         .eq('id', insightId);
 
       if (error) throw error;
@@ -120,9 +133,9 @@ export function AIInsightsDialog({ open, onOpenChange }: AIInsightsDialogProps) 
 
   const handleImplement = async (insightId: string) => {
     try {
-      const { error } = await (await import('@/integrations/supabase/client')).supabase
-        .from('ai_insights')
-        .update({ status: 'implemented', acted_upon_at: new Date().toISOString() })
+      const { error } = await supabase
+        .from('business_intelligence_insights')
+        .update({ status: 'resolved' })
         .eq('id', insightId);
 
       if (error) throw error;
@@ -190,7 +203,7 @@ export function AIInsightsDialog({ open, onOpenChange }: AIInsightsDialogProps) 
                           <span>Confiance: {(insight.confidence_score * 100).toFixed(0)}%</span>
                         </div>
 
-                        {insight.estimated_revenue_impact && (
+                        {insight.estimated_revenue_impact > 0 && (
                           <div className="flex items-center gap-2">
                             <DollarSign className="h-4 w-4 text-muted-foreground" />
                             <span>
@@ -213,7 +226,7 @@ export function AIInsightsDialog({ open, onOpenChange }: AIInsightsDialogProps) 
                         </div>
                       )}
 
-                      {insight.status === 'active' && (
+                      {(insight.status === 'active' || insight.status === 'new') && (
                         <div className="flex gap-2 pt-2">
                           <Button
                             size="sm"

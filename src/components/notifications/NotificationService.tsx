@@ -14,7 +14,7 @@ interface Notification {
   type: 'info' | 'warning' | 'success' | 'error';
   category: string;
   data?: any;
-  read: boolean;
+  is_read: boolean;
   priority: number;
   created_at: string;
 }
@@ -39,7 +39,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (user) {
       fetchNotifications();
       
-      // Écouter les nouvelles notifications en temps réel
+      // Listen for new notifications in real-time
       const subscription = supabase
         .channel('user-notifications')
         .on(
@@ -47,15 +47,14 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           {
             event: 'INSERT',
             schema: 'public',
-            table: 'user_notifications',
+            table: 'notifications',
             filter: `user_id=eq.${user.id}`
           },
           (payload) => {
-            const newNotification = payload.new as Notification;
+            const newNotification = mapNotification(payload.new);
             setNotifications(prev => [newNotification, ...prev]);
             
-            // Afficher une toast pour les notifications importantes
-            if (newNotification.priority >= 8) {
+            if ((newNotification as any).priority >= 8) {
               toast({
                 title: newNotification.title,
                 description: newNotification.message,
@@ -72,25 +71,32 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     }
   }, [user]);
 
+  const mapNotification = (item: any): Notification => ({
+    id: item.id,
+    title: item.title || '',
+    message: item.message || '',
+    type: (item.type as 'info' | 'warning' | 'success' | 'error') || 'info',
+    category: (item.metadata as any)?.category || 'general',
+    data: item.metadata,
+    is_read: item.is_read || false,
+    priority: (item.metadata as any)?.priority || 0,
+    created_at: item.created_at || ''
+  });
+
   const fetchNotifications = async () => {
     if (!user) return;
 
     try {
       const { data, error } = await supabase
-        .from('user_notifications')
+        .from('notifications')
         .select('*')
         .eq('user_id', user.id)
-        .or('expires_at.is.null,expires_at.gt.now()')
-        .order('priority', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
 
-      setNotifications((data || []).map((item: any) => ({
-        ...item,
-        type: item.type as 'info' | 'warning' | 'success' | 'error'
-      })));
+      setNotifications((data || []).map(mapNotification));
     } catch (error) {
       logError(error as Error, 'Error fetching notifications');
     }
@@ -99,18 +105,15 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const markAsRead = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('user_notifications')
-        .update({ 
-          read: true, 
-          read_at: new Date().toISOString() 
-        })
+        .from('notifications')
+        .update({ is_read: true })
         .eq('id', id)
         .eq('user_id', user?.id);
 
       if (error) throw error;
 
       setNotifications(prev => 
-        prev.map(n => n.id === id ? { ...n, read: true } : n)
+        prev.map(n => n.id === id ? { ...n, is_read: true } : n)
       );
     } catch (error) {
       logError(error as Error, 'Error marking notification as read');
@@ -120,18 +123,15 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const markAllAsRead = async () => {
     try {
       const { error } = await supabase
-        .from('user_notifications')
-        .update({ 
-          read: true, 
-          read_at: new Date().toISOString() 
-        })
+        .from('notifications')
+        .update({ is_read: true })
         .eq('user_id', user?.id)
-        .eq('read', false);
+        .eq('is_read', false);
 
       if (error) throw error;
 
       setNotifications(prev => 
-        prev.map(n => ({ ...n, read: true }))
+        prev.map(n => ({ ...n, is_read: true }))
       );
     } catch (error) {
       logError(error as Error, 'Error marking all notifications as read');
@@ -141,7 +141,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const deleteNotification = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('user_notifications')
+        .from('notifications')
         .delete()
         .eq('id', id)
         .eq('user_id', user?.id);
@@ -154,7 +154,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
     <NotificationContext.Provider value={{
@@ -221,7 +221,7 @@ export function NotificationsList() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">Notifications</h3>
-        {notifications.some(n => !n.read) && (
+        {notifications.some(n => !n.is_read) && (
           <Button
             variant="outline"
             size="sm"
@@ -245,7 +245,7 @@ export function NotificationsList() {
               <div
                 key={notification.id}
                 className={`p-3 rounded-lg border transition-all ${
-                  notification.read 
+                  notification.is_read 
                     ? 'bg-muted/50 opacity-75' 
                     : 'bg-white border-primary/20'
                 }`}
@@ -257,7 +257,7 @@ export function NotificationsList() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className={`text-sm font-medium ${
-                        notification.read ? 'text-muted-foreground' : 'text-foreground'
+                        notification.is_read ? 'text-muted-foreground' : 'text-foreground'
                       }`}>
                         {notification.title}
                       </h4>
@@ -271,7 +271,7 @@ export function NotificationsList() {
                   </div>
                   
                   <div className="flex items-center space-x-1">
-                    {!notification.read && (
+                    {!notification.is_read && (
                       <Button
                         variant="ghost"
                         size="sm"

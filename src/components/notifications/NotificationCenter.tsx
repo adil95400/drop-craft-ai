@@ -11,7 +11,7 @@ interface Notification {
   id: string;
   title: string;
   message: string;
-  read: boolean;
+  is_read: boolean;
   created_at: string;
 }
 
@@ -47,21 +47,28 @@ export const NotificationCenter = () => {
 
     const { data } = await supabase
       .from('notifications')
-      .select('*')
+      .select('id, title, message, is_read, created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(10);
 
     if (data) {
-      setNotifications(data);
-      setUnreadCount(data.filter(n => !n.read).length);
+      const mapped: Notification[] = data.map(n => ({
+        id: n.id,
+        title: n.title,
+        message: n.message || '',
+        is_read: n.is_read || false,
+        created_at: n.created_at || ''
+      }));
+      setNotifications(mapped);
+      setUnreadCount(mapped.filter(n => !n.is_read).length);
     }
   };
 
   const markAsRead = async (id: string) => {
     await supabase
       .from('notifications')
-      .update({ read: true })
+      .update({ is_read: true })
       .eq('id', id);
     
     loadNotifications();
@@ -92,7 +99,7 @@ export const NotificationCenter = () => {
                 <div
                   key={notification.id}
                   className={`p-3 rounded-lg border cursor-pointer ${
-                    !notification.read ? 'bg-accent' : ''
+                    !notification.is_read ? 'bg-accent' : ''
                   }`}
                   onClick={() => markAsRead(notification.id)}
                 >

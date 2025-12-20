@@ -54,16 +54,16 @@ export const AdminDashboard = () => {
   const { data: users, isLoading, refetch } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      // Get profiles
+      // Get profiles - use subscription_plan instead of plan
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, full_name, plan, created_at")
+        .select("id, full_name, subscription_plan, created_at")
         .order("created_at", { ascending: false });
 
       if (profilesError) throw profilesError;
 
       // Get roles for each user using secure function
-      const usersWithRoles = await Promise.all(
+      const usersWithRoles: UserProfile[] = await Promise.all(
         (profiles || []).map(async (profile) => {
           const { data: isAdmin } = await supabase.rpc('has_role', {
             _user_id: profile.id,
@@ -71,13 +71,16 @@ export const AdminDashboard = () => {
           });
           
           return {
-            ...profile,
+            id: profile.id,
+            full_name: profile.full_name,
+            plan: profile.subscription_plan || 'free',
+            created_at: profile.created_at || '',
             is_admin: Boolean(isAdmin)
           };
         })
       );
 
-      return usersWithRoles as UserProfile[];
+      return usersWithRoles;
     },
   });
 
@@ -99,6 +102,7 @@ export const AdminDashboard = () => {
 
   const getPlanBadge = (plan: string) => {
     const variants = {
+      free: "outline",
       standard: "outline",
       pro: "default",
       ultra_pro: "destructive",
@@ -111,9 +115,10 @@ export const AdminDashboard = () => {
     setIsChangingRole(true);
     try {
       const newRole = currentIsAdmin ? "user" : "admin";
-      const { error } = await supabase.rpc("admin_change_user_role", {
+      // Use admin_set_role function
+      const { error } = await supabase.rpc("admin_set_role", {
         target_user_id: userId,
-        new_role: newRole,
+        new_role: newRole as any,
       });
 
       if (error) throw error;
