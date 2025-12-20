@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ProductVariantManager } from './ProductVariantManager'
 import {
   Edit2,
@@ -37,6 +37,15 @@ interface ProductDetailsModalProps {
   onOpenChange: (open: boolean) => void
 }
 
+// Mock variant type since product_variants table doesn't exist
+interface MockVariant {
+  id: string
+  name: string
+  sku: string
+  price: number
+  stock_quantity: number
+}
+
 export function ProductDetailsModal({ product, open, onOpenChange }: ProductDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -44,26 +53,9 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  // Fetch product variants
-  const { data: variants = [], refetch: refetchVariants } = useQuery({
-    queryKey: ['product-variants', product?.id],
-    queryFn: async () => {
-      if (!product?.id) return []
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return []
-
-      const { data, error } = await supabase
-        .from('product_variants')
-        .select('*')
-        .eq('product_id', product.id)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      return data || []
-    },
-    enabled: open && !!product?.id,
-  })
+  // Mock variants data since product_variants table doesn't exist
+  const variants: MockVariant[] = []
+  const refetchVariants = () => {}
 
   // Fetch sync history - placeholder for future implementation
   const syncHistory: any[] = []
@@ -74,7 +66,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
       if (!user) throw new Error('Not authenticated')
 
       const { error } = await supabase
-        .from('imported_products')
+        .from('products')
         .update(updates)
         .eq('id', product.id)
         .eq('user_id', user.id)
@@ -82,7 +74,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
       if (error) throw error
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['imported-products'] })
+      queryClient.invalidateQueries({ queryKey: ['products'] })
       toast({
         title: 'Product updated',
         description: 'Changes saved successfully',
@@ -157,7 +149,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                     className="text-2xl font-bold"
                   />
                 ) : (
-                  product.name
+                  product.name || product.title
                 )}
               </DialogTitle>
               <div className="flex items-center gap-2 mt-2">
@@ -168,9 +160,6 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                   <Package className="h-3 w-3" />
                   {product.sku || 'No SKU'}
                 </Badge>
-                {product.platform_name && (
-                  <Badge variant="outline">{product.platform_name}</Badge>
-                )}
               </div>
             </div>
             <div className="flex gap-2">
@@ -367,28 +356,6 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                   )}
                 </CardContent>
               </Card>
-
-              {product.platform_url && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <ExternalLink className="h-4 w-4" />
-                      Platform Link
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <a
-                      href={product.platform_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline flex items-center gap-2"
-                    >
-                      View on {product.platform_name}
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </CardContent>
-                </Card>
-              )}
             </TabsContent>
 
             <TabsContent value="variants" className="space-y-4">
@@ -407,7 +374,7 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                       <div className="relative aspect-square bg-muted rounded-lg overflow-hidden">
                         <img
                           src={images[currentImageIndex]}
-                          alt={`${product.name} - Image ${currentImageIndex + 1}`}
+                          alt={`${product.name || product.title} - Image ${currentImageIndex + 1}`}
                           className="w-full h-full object-contain"
                         />
                         {hasMultipleImages && (
@@ -470,64 +437,34 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Tag className="h-4 w-4" />
-                    Product Metadata
+                    Tags & Categories
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-muted-foreground">Product ID</Label>
-                      <p className="font-mono text-sm">{product.id}</p>
-                    </div>
-                    {product.platform_product_id && (
-                      <div>
-                        <Label className="text-muted-foreground">Platform ID</Label>
-                        <p className="font-mono text-sm">{product.platform_product_id}</p>
-                      </div>
-                    )}
-                    {product.variant_id && (
-                      <div>
-                        <Label className="text-muted-foreground">Variant ID</Label>
-                        <p className="font-mono text-sm">{product.variant_id}</p>
-                      </div>
-                    )}
-                    <div>
-                      <Label className="text-muted-foreground">Created</Label>
-                      <p className="text-sm flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(product.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Last Updated</Label>
-                      <p className="text-sm flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {new Date(product.updated_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    {product.last_synced_at && (
-                      <div>
-                        <Label className="text-muted-foreground">Last Synced</Label>
-                        <p className="text-sm flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {new Date(product.last_synced_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    )}
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {product.tags?.map((tag: string, idx: number) => (
+                      <Badge key={idx} variant="secondary">{tag}</Badge>
+                    )) || <p className="text-muted-foreground">No tags</p>}
                   </div>
-                  <Separator />
-                  {product.raw_data && (
-                    <div>
-                      <Label className="text-muted-foreground mb-2 block">
-                        Raw Platform Data
-                      </Label>
-                      <ScrollArea className="h-[200px] w-full rounded-md border p-4">
-                        <pre className="text-xs font-mono">
-                          {JSON.stringify(product.raw_data, null, 2)}
-                        </pre>
-                      </ScrollArea>
-                    </div>
-                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Dates
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Created:</span>
+                    <span>{new Date(product.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Updated:</span>
+                    <span>{new Date(product.updated_at).toLocaleDateString()}</span>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -537,40 +474,29 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center gap-2">
                     <History className="h-4 w-4" />
-                    Synchronization History
+                    Sync History
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {syncHistory.length > 0 ? (
-                    <div className="space-y-3">
-                      {syncHistory.map((entry: any) => (
-                        <div
-                          key={entry.id}
-                          className="flex items-start justify-between border-l-2 border-primary pl-3 py-2"
-                        >
+                    <div className="space-y-2">
+                      {syncHistory.map((entry: any, idx: number) => (
+                        <div key={idx} className="flex items-center gap-3 p-2 rounded border">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
                           <div className="flex-1">
-                            <p className="font-medium text-sm">
-                              {entry.sync_type === 'import'
-                                ? 'Product Imported'
-                                : 'Product Synced'}
-                            </p>
+                            <p className="text-sm font-medium">{entry.action}</p>
                             <p className="text-xs text-muted-foreground">
-                              {new Date(entry.synced_at).toLocaleString()}
+                              {new Date(entry.created_at).toLocaleString()}
                             </p>
-                            {entry.changes_detected && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Changes: {JSON.stringify(entry.changes_detected)}
-                              </p>
-                            )}
                           </div>
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant={entry.status === 'success' ? 'default' : 'destructive'}>
                             {entry.status}
                           </Badge>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground text-center py-8">
+                    <p className="text-muted-foreground text-center py-4">
                       No sync history available
                     </p>
                   )}

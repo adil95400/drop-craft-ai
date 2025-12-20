@@ -27,12 +27,19 @@ import { ProductEditModal } from '@/components/modals/ProductEditModal'
 import { ProductVariantManager } from '@/components/products/ProductVariantManager'
 import { ProductImageManager } from '@/components/products/ProductImageManager'
 import { ProductPerformanceAnalytics } from '@/components/products/ProductPerformanceAnalytics'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/client'
 
 interface ProductDetailsProps {
   productId: string
   onClose: () => void
+}
+
+// Mock variants data since product_variants table doesn't exist
+interface MockVariant {
+  id: string
+  name: string
+  sku: string
+  price: number
+  stock_quantity: number
 }
 
 export function ProductDetails({ productId, onClose }: ProductDetailsProps) {
@@ -42,25 +49,9 @@ export function ProductDetails({ productId, onClose }: ProductDetailsProps) {
   
   const product = products.find(p => p.id === productId)
 
-  // Fetch product variants
-  const { data: variants = [], refetch: refetchVariants } = useQuery({
-    queryKey: ['product-variants', productId],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return []
-
-      const { data, error } = await supabase
-        .from('product_variants')
-        .select('*')
-        .eq('product_id', productId)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      return data || []
-    },
-    enabled: !!productId,
-  })
+  // Mock variants data
+  const variants: MockVariant[] = []
+  const refetchVariants = () => {}
   
   if (!product) {
     return (

@@ -41,6 +41,58 @@ interface ProductCatalogManagerProps {
   onImport?: (products: CatalogProduct[]) => void;
 }
 
+// Mock catalog products data
+const mockCatalogProducts: CatalogProduct[] = [
+  {
+    id: '1',
+    name: 'Casque Audio Bluetooth Premium',
+    price: 79.99,
+    category: 'Électronique',
+    supplier_name: 'TechSupply Co',
+    image_url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300',
+    rating: 4.5,
+    reviews_count: 128,
+    is_trending: true,
+    is_bestseller: false,
+    availability_status: 'in_stock',
+    delivery_time: '3-5j',
+    profit_margin: 35,
+    competition_score: 72
+  },
+  {
+    id: '2',
+    name: 'Montre Connectée Sport',
+    price: 129.99,
+    category: 'Électronique',
+    supplier_name: 'GadgetWorld',
+    image_url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300',
+    rating: 4.8,
+    reviews_count: 256,
+    is_trending: true,
+    is_bestseller: true,
+    availability_status: 'in_stock',
+    delivery_time: '2-4j',
+    profit_margin: 42,
+    competition_score: 85
+  },
+  {
+    id: '3',
+    name: 'Sac à Dos Voyage',
+    price: 49.99,
+    category: 'Mode & Accessoires',
+    supplier_name: 'FashionDirect',
+    image_url: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300',
+    rating: 4.2,
+    reviews_count: 89,
+    is_trending: false,
+    is_bestseller: false,
+    availability_status: 'in_stock',
+    delivery_time: '5-7j',
+    profit_margin: 28,
+    competition_score: 60
+  }
+];
+
 export function ProductCatalogManager({ onImport }: ProductCatalogManagerProps) {
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,16 +121,23 @@ export function ProductCatalogManager({ onImport }: ProductCatalogManagerProps) 
     try {
       setLoading(true);
       
-      // Appeler la fonction sécurisée pour récupérer les produits
-      const { data, error } = await supabase.rpc('get_secure_catalog_products', {
-        category_filter: selectedCategory || null,
-        search_term: searchTerm || null,
-        limit_count: 50
-      });
-
-      if (error) throw error;
+      // Use mock data filtered by search and category
+      let filteredProducts = [...mockCatalogProducts];
       
-      setProducts(data || []);
+      if (selectedCategory) {
+        filteredProducts = filteredProducts.filter(p => p.category === selectedCategory);
+      }
+      
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        filteredProducts = filteredProducts.filter(p => 
+          p.name.toLowerCase().includes(term) ||
+          p.category.toLowerCase().includes(term) ||
+          p.supplier_name.toLowerCase().includes(term)
+        );
+      }
+      
+      setProducts(filteredProducts);
     } catch (error) {
       console.error('Error fetching catalog products:', error);
       toast({
@@ -114,26 +173,25 @@ export function ProductCatalogManager({ onImport }: ProductCatalogManagerProps) 
       // Récupérer les produits sélectionnés
       const productsToImport = products.filter(p => selectedProducts.includes(p.id));
       
-      // Préparer les données d'import
+      // Préparer les données d'import for the products table
       const importData = productsToImport.map(product => ({
         user_id: user?.id,
+        title: product.name,
         name: product.name,
         price: product.price,
         cost_price: product.price * 0.7, // Estimation
         category: product.category,
-        supplier_name: product.supplier_name,
-        image_urls: [product.image_url],
+        supplier: product.supplier_name,
+        image_url: product.image_url,
         description: `Produit ${product.name} de qualité premium`,
         status: 'draft' as const,
         sku: `AUTO-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        stock_quantity: 100,
-        supplier_product_id: product.id,
-        currency: 'EUR' as const
+        stock_quantity: 100
       }));
 
-      // Importer les produits
+      // Importer les produits into the products table
       const { data: importedProducts, error: importError } = await supabase
-        .from('imported_products')
+        .from('products')
         .insert(importData)
         .select();
 

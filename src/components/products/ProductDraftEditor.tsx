@@ -109,8 +109,9 @@ export const ProductDraftEditor: React.FC<ProductDraftEditorProps> = ({
   const loadProduct = async () => {
     setLoading(true)
     try {
+      // Load from products table instead of imported_products
       const { data, error } = await supabase
-        .from('imported_products')
+        .from('products')
         .select('*')
         .eq('id', productId)
         .single()
@@ -119,25 +120,23 @@ export const ProductDraftEditor: React.FC<ProductDraftEditorProps> = ({
 
       setProduct({
         id: data.id,
-        name: data.name || '',
+        name: data.name || data.title || '',
         description: data.description || '',
         price: data.price || 0,
         cost_price: data.cost_price || 0,
-        currency: data.currency || 'EUR',
+        currency: 'EUR',
         sku: data.sku || '',
         category: data.category || '',
         brand: data.brand || '',
         tags: data.tags || [],
-        image_urls: data.image_urls || [],
-        variants: [], // Would load from variants table
+        image_urls: data.images ? (Array.isArray(data.images) ? (data.images as string[]) : []) : (data.image_url ? [data.image_url] : []),
+        variants: [],
         seo_data: {
           title: data.seo_title || '',
           description: data.seo_description || '',
-          keywords: data.seo_keywords || []
+          keywords: []
         },
-        translations: (data.ai_optimization_data && typeof data.ai_optimization_data === 'object' && data.ai_optimization_data !== null) 
-          ? (data.ai_optimization_data as any).translations || {} 
-          : {},
+        translations: {},
         status: (data.status === 'published' || data.status === 'draft' || data.status === 'review') 
           ? data.status 
           : 'draft'
@@ -162,36 +161,32 @@ export const ProductDraftEditor: React.FC<ProductDraftEditorProps> = ({
 
       const productData = {
         user_id: user.id,
+        title: product.name,
         name: product.name,
         description: product.description,
         price: product.price,
         cost_price: product.cost_price,
-        currency: product.currency,
         sku: product.sku,
         category: product.category,
         brand: product.brand,
         tags: product.tags,
-        image_urls: product.image_urls,
+        images: product.image_urls,
+        image_url: product.image_urls[0] || null,
         seo_title: product.seo_data.title,
         seo_description: product.seo_data.description,
-        seo_keywords: product.seo_data.keywords,
-        ai_optimization_data: {
-          translations: product.translations,
-          last_optimized: new Date().toISOString()
-        },
         status: product.status
       }
 
       if (productId) {
         const { error } = await supabase
-          .from('imported_products')
+          .from('products')
           .update(productData)
           .eq('id', productId)
         
         if (error) throw error
       } else {
         const { data, error } = await supabase
-          .from('imported_products')
+          .from('products')
           .insert([productData])
           .select()
           .single()
@@ -498,23 +493,31 @@ export const ProductDraftEditor: React.FC<ProductDraftEditorProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="price">Prix de vente</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    value={product.price}
-                    onChange={(e) => setProduct(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
-                  />
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.01"
+                      value={product.price}
+                      onChange={(e) => setProduct(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="cost_price">Prix de revient</Label>
-                  <Input
-                    id="cost_price"
-                    type="number"
-                    step="0.01"
-                    value={product.cost_price}
-                    onChange={(e) => setProduct(prev => ({ ...prev, cost_price: parseFloat(e.target.value) || 0 }))}
-                  />
+                  <Label htmlFor="cost_price">Prix d'achat</Label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="cost_price"
+                      type="number"
+                      step="0.01"
+                      value={product.cost_price || ''}
+                      onChange={(e) => setProduct(prev => ({ ...prev, cost_price: parseFloat(e.target.value) || 0 }))}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="currency">Devise</Label>
@@ -526,45 +529,45 @@ export const ProductDraftEditor: React.FC<ProductDraftEditorProps> = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="GBP">GBP</SelectItem>
+                      <SelectItem value="EUR">EUR (€)</SelectItem>
+                      <SelectItem value="USD">USD ($)</SelectItem>
+                      <SelectItem value="GBP">GBP (£)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
-              {product.cost_price && product.price > 0 && (
-                <div className="p-4 bg-muted rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-2">Analyse de marge :</p>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="font-medium">Marge :</span>
-                      <p>{(product.price - (product.cost_price || 0)).toFixed(2)} {product.currency}</p>
+              {product.price > 0 && product.cost_price && product.cost_price > 0 && (
+                <Card className="bg-muted/50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Marge bénéficiaire</span>
+                      <span className="text-lg font-bold text-green-600">
+                        {(((product.price - product.cost_price) / product.price) * 100).toFixed(1)}%
+                      </span>
                     </div>
-                    <div>
-                      <span className="font-medium">Marge % :</span>
-                      <p>{(((product.price - (product.cost_price || 0)) / product.price) * 100).toFixed(1)}%</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-sm font-medium">Bénéfice par unité</span>
+                      <span className="text-lg font-bold">
+                        {(product.price - product.cost_price).toFixed(2)} {product.currency}
+                      </span>
                     </div>
-                    <div>
-                      <span className="font-medium">Markup :</span>
-                      <p>{(product.cost_price ? ((product.price - product.cost_price) / product.cost_price * 100) : 0).toFixed(1)}%</p>
-                    </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               )}
             </TabsContent>
 
             <TabsContent value="images" className="space-y-4 mt-6">
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {product.image_urls.map((url, index) => (
-                    <div key={index} className="relative">
-                      <img src={url} alt={`Product ${index + 1}`} className="w-full h-32 object-cover rounded border" />
+              <div className="space-y-2">
+                <Label>Images du produit</Label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {product.image_urls.map((url, idx) => (
+                    <div key={idx} className="relative group">
+                      <img src={url} alt={`Image ${idx + 1}`} className="w-full h-32 object-cover rounded-lg" />
                       <Button
-                        variant="destructive"
                         size="sm"
-                        className="absolute top-1 right-1"
+                        variant="destructive"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={() => removeImage(url)}
                       >
                         ×
@@ -572,12 +575,12 @@ export const ProductDraftEditor: React.FC<ProductDraftEditorProps> = ({
                     </div>
                   ))}
                 </div>
-                
                 <div className="flex gap-2">
                   <Input
                     placeholder="URL de l'image"
                     value={newImageUrl}
                     onChange={(e) => setNewImageUrl(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && addImage()}
                   />
                   <Button onClick={addImage} variant="outline">
                     <ImageIcon className="h-4 w-4" />
@@ -587,70 +590,69 @@ export const ProductDraftEditor: React.FC<ProductDraftEditorProps> = ({
             </TabsContent>
 
             <TabsContent value="seo" className="space-y-4 mt-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="seo_title">Titre SEO</Label>
-                  <Input
-                    id="seo_title"
-                    value={product.seo_data.title || ''}
-                    onChange={(e) => setProduct(prev => ({
-                      ...prev,
-                      seo_data: { ...prev.seo_data, title: e.target.value }
-                    }))}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="seo_description">Meta description</Label>
-                  <Textarea
-                    id="seo_description"
-                    rows={3}
-                    value={product.seo_data.description || ''}
-                    onChange={(e) => setProduct(prev => ({
-                      ...prev,
-                      seo_data: { ...prev.seo_data, description: e.target.value }
-                    }))}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Mots-clés SEO</Label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {(product.seo_data.keywords || []).map((keyword, index) => (
-                      <Badge key={index} variant="outline">
-                        {keyword}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="seo_title">Titre SEO</Label>
+                <Input
+                  id="seo_title"
+                  value={product.seo_data.title || ''}
+                  onChange={(e) => setProduct(prev => ({
+                    ...prev,
+                    seo_data: { ...prev.seo_data, title: e.target.value }
+                  }))}
+                  placeholder="Titre optimisé pour les moteurs de recherche"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {(product.seo_data.title || '').length}/60 caractères
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="seo_description">Meta description</Label>
+                <Textarea
+                  id="seo_description"
+                  rows={3}
+                  value={product.seo_data.description || ''}
+                  onChange={(e) => setProduct(prev => ({
+                    ...prev,
+                    seo_data: { ...prev.seo_data, description: e.target.value }
+                  }))}
+                  placeholder="Description courte pour les résultats de recherche"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {(product.seo_data.description || '').length}/160 caractères
+                </p>
               </div>
             </TabsContent>
 
             <TabsContent value="translations" className="space-y-4 mt-6">
               <div className="space-y-4">
-                <div className="flex gap-2 mb-4">
-                  {supportedLanguages.map(lang => (
-                    <Button
-                      key={lang.code}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => translateProduct(lang.code)}
-                      disabled={translating}
-                    >
-                      <Globe className="h-4 w-4 mr-2" />
-                      {translating ? 'Traduction...' : `Traduire en ${lang.name}`}
-                    </Button>
-                  ))}
+                <div className="flex items-center justify-between">
+                  <Label>Traduire automatiquement</Label>
+                  <div className="flex gap-2">
+                    {supportedLanguages.filter(l => l.code !== 'fr').map(lang => (
+                      <Button
+                        key={lang.code}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => translateProduct(lang.code)}
+                        disabled={translating}
+                      >
+                        <Globe className="h-3 w-3 mr-1" />
+                        {lang.code.toUpperCase()}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
 
-                {Object.entries(product.translations).map(([lang, translation]) => (
-                  <Card key={lang}>
-                    <CardHeader>
-                      <CardTitle className="text-sm">
-                        {supportedLanguages.find(l => l.code === lang)?.name}
+                {Object.entries(product.translations).map(([langCode, translation]) => (
+                  <Card key={langCode}>
+                    <CardHeader className="py-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Globe className="h-4 w-4" />
+                        {supportedLanguages.find(l => l.code === langCode)?.name || langCode}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2">
+                    <CardContent className="space-y-3">
                       <div>
                         <Label className="text-xs">Nom</Label>
                         <p className="text-sm">{translation.name}</p>
