@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { 
@@ -20,7 +19,6 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table'
-import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 import { 
   TrendingUp, 
@@ -46,6 +44,47 @@ interface PricingRule {
   products_count: number
 }
 
+// Mock data for pricing rules
+const generateMockPricingRules = (): PricingRule[] => {
+  return [
+    {
+      id: 'pr-1',
+      supplier_id: 'sup-1',
+      supplier_name: 'Fournisseur Principal',
+      pricing_strategy: 'fixed_markup',
+      fixed_markup_percentage: 25,
+      minimum_price: 5,
+      maximum_price: 500,
+      auto_update: true,
+      last_updated: new Date().toISOString(),
+      products_count: 150
+    },
+    {
+      id: 'pr-2',
+      supplier_id: 'sup-2',
+      supplier_name: 'Grossiste Europe',
+      pricing_strategy: 'target_margin',
+      target_margin_percentage: 30,
+      minimum_price: 10,
+      maximum_price: 1000,
+      auto_update: false,
+      last_updated: new Date(Date.now() - 86400000).toISOString(),
+      products_count: 85
+    },
+    {
+      id: 'pr-3',
+      supplier_id: 'sup-3',
+      supplier_name: 'BTSWholesaler',
+      pricing_strategy: 'competitive',
+      fixed_markup_percentage: 20,
+      minimum_price: 1,
+      auto_update: true,
+      last_updated: new Date(Date.now() - 172800000).toISOString(),
+      products_count: 320
+    }
+  ]
+}
+
 export function DynamicPricingEngine() {
   const [pricingRules, setPricingRules] = useState<PricingRule[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -58,31 +97,15 @@ export function DynamicPricingEngine() {
 
   const loadPricingRules = async () => {
     try {
-      const { data, error } = await supabase
-        .from('supplier_pricing_rules')
-        .select(`
-          *,
-          supplier:suppliers(name)
-        `)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      const rules: PricingRule[] = (data || []).map((item: any) => ({
-        id: item.id,
-        supplier_id: item.supplier_id,
-        supplier_name: item.supplier?.name || 'Fournisseur inconnu',
-        pricing_strategy: item.pricing_strategy || 'fixed_markup',
-        fixed_markup_percentage: item.fixed_markup_percentage,
-        target_margin_percentage: item.target_margin_percentage,
-        minimum_price: item.minimum_price,
-        maximum_price: item.maximum_price,
-        auto_update: item.auto_update_enabled || false,
-        last_updated: item.updated_at,
-        products_count: 0 // À calculer depuis une autre requête si nécessaire
-      }))
-
-      setPricingRules(rules)
+      // Load from localStorage or use mock data
+      const stored = localStorage.getItem('supplier_pricing_rules')
+      if (stored) {
+        setPricingRules(JSON.parse(stored))
+      } else {
+        const mockRules = generateMockPricingRules()
+        setPricingRules(mockRules)
+        localStorage.setItem('supplier_pricing_rules', JSON.stringify(mockRules))
+      }
     } catch (error) {
       console.error('Error loading pricing rules:', error)
       toast.error('Erreur lors du chargement des règles de prix')
@@ -110,25 +133,17 @@ export function DynamicPricingEngine() {
 
   const saveRule = async (ruleId: string) => {
     try {
-      const { error } = await supabase
-        .from('supplier_pricing_rules')
-        .update({
-          pricing_strategy: editValues.pricing_strategy,
-          fixed_markup_percentage: editValues.fixed_markup_percentage,
-          target_margin_percentage: editValues.target_margin_percentage,
-          minimum_price: editValues.minimum_price,
-          maximum_price: editValues.maximum_price,
-          auto_update_enabled: editValues.auto_update,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', ruleId)
-
-      if (error) throw error
-
+      const updatedRules = pricingRules.map(r => 
+        r.id === ruleId 
+          ? { ...r, ...editValues, last_updated: new Date().toISOString() }
+          : r
+      )
+      setPricingRules(updatedRules)
+      localStorage.setItem('supplier_pricing_rules', JSON.stringify(updatedRules))
+      
       toast.success('Règle de prix mise à jour')
       setEditingRule(null)
       setEditValues({})
-      loadPricingRules()
     } catch (error) {
       console.error('Error saving pricing rule:', error)
       toast.error('Erreur lors de la sauvegarde')
@@ -137,24 +152,14 @@ export function DynamicPricingEngine() {
 
   const toggleAutoUpdate = async (ruleId: string, currentValue: boolean) => {
     try {
-      const { error } = await supabase
-        .from('supplier_pricing_rules')
-        .update({ 
-          auto_update_enabled: !currentValue,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', ruleId)
-
-      if (error) throw error
-
-      setPricingRules(prev => 
-        prev.map(r => 
-          r.id === ruleId 
-            ? { ...r, auto_update: !currentValue }
-            : r
-        )
+      const updatedRules = pricingRules.map(r => 
+        r.id === ruleId 
+          ? { ...r, auto_update: !currentValue, last_updated: new Date().toISOString() }
+          : r
       )
-
+      setPricingRules(updatedRules)
+      localStorage.setItem('supplier_pricing_rules', JSON.stringify(updatedRules))
+      
       toast.success('Mise à jour automatique ' + (!currentValue ? 'activée' : 'désactivée'))
     } catch (error) {
       toast.error('Erreur lors de la mise à jour')

@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
 import { 
   Table, 
   TableBody, 
@@ -20,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
 import { 
   Package, 
@@ -46,6 +44,43 @@ interface StockMapping {
   status: 'in_stock' | 'low_stock' | 'out_of_stock'
 }
 
+// Mock data generator
+const generateMockStockMappings = (): StockMapping[] => {
+  const products = [
+    'iPhone 15 Pro Case',
+    'Samsung Galaxy S24 Screen Protector',
+    'MacBook Pro 14" Sleeve',
+    'AirPods Pro Case',
+    'iPad Mini Cover',
+    'Apple Watch Band',
+    'Wireless Charger Pad',
+    'USB-C Hub Adapter'
+  ]
+  
+  const suppliers = ['Fournisseur A', 'Grossiste Europe', 'BTSWholesaler', 'Supplier Direct']
+  
+  return products.map((name, index) => {
+    const primaryStock = Math.floor(Math.random() * 100)
+    const backupStock = Math.floor(Math.random() * 50)
+    const totalStock = primaryStock + backupStock
+    const threshold = 10
+    
+    return {
+      id: `mapping-${index}`,
+      product_id: `prod-${index}`,
+      product_name: name,
+      primary_supplier: suppliers[index % suppliers.length],
+      backup_supplier: index % 2 === 0 ? suppliers[(index + 1) % suppliers.length] : undefined,
+      total_stock: totalStock,
+      primary_stock: primaryStock,
+      backup_stock: backupStock,
+      auto_switch: index % 3 === 0,
+      min_threshold: threshold,
+      status: totalStock === 0 ? 'out_of_stock' : totalStock <= threshold ? 'low_stock' : 'in_stock'
+    }
+  })
+}
+
 export function MultiSupplierStock() {
   const [stockMappings, setStockMappings] = useState<StockMapping[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -58,36 +93,15 @@ export function MultiSupplierStock() {
 
   const loadStockMappings = async () => {
     try {
-      const { data, error } = await supabase
-        .from('product_supplier_mapping')
-        .select(`
-          *,
-          product:products(name),
-          primary_supplier:suppliers!primary_supplier_id(name),
-          backup_supplier:suppliers!backup_supplier_id(name)
-        `)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      const mappings: StockMapping[] = (data || []).map((item: any) => ({
-        id: item.id,
-        product_id: item.product_id,
-        product_name: item.product?.name || 'Produit inconnu',
-        primary_supplier: item.primary_supplier?.name || 'N/A',
-        backup_supplier: item.backup_supplier?.name,
-        total_stock: (item.primary_stock || 0) + (item.backup_stock || 0),
-        primary_stock: item.primary_stock || 0,
-        backup_stock: item.backup_stock || 0,
-        auto_switch: item.auto_switch_enabled || false,
-        min_threshold: item.min_stock_threshold || 10,
-        status: getStockStatus(
-          (item.primary_stock || 0) + (item.backup_stock || 0),
-          item.min_stock_threshold || 10
-        )
-      }))
-
-      setStockMappings(mappings)
+      // Load from localStorage or use mock data
+      const stored = localStorage.getItem('product_supplier_mappings')
+      if (stored) {
+        setStockMappings(JSON.parse(stored))
+      } else {
+        const mockData = generateMockStockMappings()
+        setStockMappings(mockData)
+        localStorage.setItem('product_supplier_mappings', JSON.stringify(mockData))
+      }
     } catch (error) {
       console.error('Error loading stock mappings:', error)
       toast.error('Erreur lors du chargement des stocks')
@@ -96,29 +110,16 @@ export function MultiSupplierStock() {
     }
   }
 
-  const getStockStatus = (stock: number, threshold: number): 'in_stock' | 'low_stock' | 'out_of_stock' => {
-    if (stock === 0) return 'out_of_stock'
-    if (stock <= threshold) return 'low_stock'
-    return 'in_stock'
-  }
-
   const toggleAutoSwitch = async (mappingId: string, currentValue: boolean) => {
     try {
-      const { error } = await supabase
-        .from('product_supplier_mapping')
-        .update({ auto_switch_enabled: !currentValue })
-        .eq('id', mappingId)
-
-      if (error) throw error
-
-      setStockMappings(prev => 
-        prev.map(m => 
-          m.id === mappingId 
-            ? { ...m, auto_switch: !currentValue }
-            : m
-        )
+      const updatedMappings = stockMappings.map(m => 
+        m.id === mappingId 
+          ? { ...m, auto_switch: !currentValue }
+          : m
       )
-
+      setStockMappings(updatedMappings)
+      localStorage.setItem('product_supplier_mappings', JSON.stringify(updatedMappings))
+      
       toast.success('Basculement automatique ' + (!currentValue ? 'activé' : 'désactivé'))
     } catch (error) {
       toast.error('Erreur lors de la mise à jour')

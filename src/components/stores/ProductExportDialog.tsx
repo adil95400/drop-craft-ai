@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -29,7 +28,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Upload, RefreshCw, Package, Check, Search, Filter } from 'lucide-react'
+import { Upload, RefreshCw, Package, Search } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -66,28 +65,26 @@ export function ProductExportDialog({ storeId, storeName, platform }: ProductExp
   const fetchLocalProducts = async () => {
     setLoading(true)
     try {
-      // Récupérer les produits du catalog ou des imports
-      const { data, error } = await supabase.rpc('get_secure_catalog_products', {
-        category_filter: null,
-        search_term: null,
-        limit_count: 1000
-      })
+      // Récupérer les produits depuis la table products
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
         .limit(100)
 
       if (error) throw error
 
       // Mapper les données pour correspondre à l'interface Product
-      const mappedProducts = (data || []).map((item: any) => ({
+      const mappedProducts = (data || []).map((item) => ({
         id: item.id,
-        name: item.name,
+        name: item.name || item.title,
         sku: item.sku,
         price: item.price || 0,
         image_url: item.image_url,
         description: item.description,
         category: item.category,
         tags: item.tags,
-        status: item.availability_status === 'in_stock' ? 'active' : 'draft',
-        created_at: item.created_at
+        status: item.status === 'active' ? 'active' : 'draft',
+        created_at: item.created_at || ''
       }))
       
       setProducts(mappedProducts)
@@ -134,7 +131,7 @@ export function ProductExportDialog({ storeId, storeName, platform }: ProductExp
               images: product.image_url ? [product.image_url] : [],
               category: product.category,
               tags: product.tags || [],
-              inventory_quantity: 100 // Quantité par défaut
+              inventory_quantity: 100
             },
             action: 'export'
           }
@@ -212,7 +209,6 @@ export function ProductExportDialog({ storeId, storeName, platform }: ProductExp
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Filtres et recherche */}
           <div className="flex items-center space-x-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
