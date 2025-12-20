@@ -53,19 +53,19 @@ export const WebhookManager = () => {
       // Simulate webhooks data based on real integrations
       const { data: integrations } = await supabase
         .from('integrations')
-        .select('id, platform_name, platform_type')
+        .select('id, platform_name, platform')
         .eq('is_active', true)
 
       if (!integrations) return []
 
       // Generate mock webhook data
-      const mockWebhooks: WebhookConfig[] = integrations?.flatMap(integration => 
+      const mockWebhooks: WebhookConfig[] = (integrations as any[])?.flatMap((integration: any) => 
         Array.from({ length: Math.floor(Math.random() * 3) + 1 }, (_, i) => ({
           id: `webhook-${integration.id}-${i}`,
           integration_id: integration.id,
-          integration_name: integration.platform_name,
-          webhook_url: `https://your-domain.com/webhooks/${integration.platform_type}`,
-          events: getEventsByPlatform(integration.platform_type),
+          integration_name: integration.platform_name || integration.platform,
+          webhook_url: `https://your-domain.com/webhooks/${integration.platform}`,
+          events: getEventsByPlatform(integration.platform),
           is_active: Math.random() > 0.3,
           secret_key: generateSecretKey(),
           last_triggered: Math.random() > 0.5 ? new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString() : null,
@@ -473,9 +473,9 @@ const CreateWebhookForm = ({ onSubmit }: { onSubmit: (data: any) => void }) => {
             <SelectValue placeholder="Sélectionner une intégration" />
           </SelectTrigger>
           <SelectContent>
-            {integrations.map(integration => (
+            {(integrations as any[]).map((integration: any) => (
               <SelectItem key={integration.id} value={integration.id}>
-                {integration.platform_name}
+                {integration.platform_name || integration.platform}
               </SelectItem>
             ))}
           </SelectContent>

@@ -134,7 +134,7 @@ export function MarketplaceConnector() {
   const loadIntegrations = async () => {
     try {
       const { data, error } = await supabase
-        .from('platform_integrations')
+        .from('integrations')
         .select('*')
         .order('created_at', { ascending: false });
       

@@ -121,20 +121,16 @@ export const XMLFeedImporter = () => {
         description: `Import de ${data.totalFound} produits en cours...`
       })
 
-      // Create import connector if auto-sync is enabled
+      // Create import job if auto-sync is enabled
       if (config.autoSync) {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
-          await supabase.from('import_connectors').insert({
+          await supabase.from('import_jobs').insert({
             user_id: user.id,
-            name: `Flux XML - ${config.feedType}`,
-            provider: 'xml_feed',
-            config: {
-              url: config.url,
-              feedType: config.feedType,
-              syncInterval: config.syncInterval,
-              mapping: config.mapping
-            }
+            job_type: 'xml_feed',
+            source_platform: config.feedType,
+            source_url: config.url,
+            status: 'pending'
           })
         }
       }

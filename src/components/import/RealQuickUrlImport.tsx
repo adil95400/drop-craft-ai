@@ -114,25 +114,11 @@ export const RealQuickUrlImport: React.FC = () => {
       // Step 3: Insert into imported_products
       const productData = {
         user_id: user.id,
-        name: scrapedData?.name || `Produit importé depuis ${platform.name}`,
-        description: scrapedData?.description || '',
         price: scrapedData?.price || 0,
-        original_price: scrapedData?.original_price || scrapedData?.price || 0,
-        image_url: scrapedData?.image_url || '',
-        images: scrapedData?.images || [],
         source_url: url,
         source_platform: platform.id,
-        supplier_id: scrapedData?.supplier_id || null,
-        sku: scrapedData?.sku || `IMP-${Date.now()}`,
         category: scrapedData?.category || 'Imported',
-        tags: scrapedData?.tags || [],
-        attributes: scrapedData?.attributes || {},
-        status: 'pending_review',
-        review_status: 'pending',
-        ai_score: scrapedData?.ai_score || null,
-        profit_margin: scrapedData?.profit_margin || null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        status: 'pending_review'
       };
 
       const { data: insertedProduct, error: insertError } = await supabase
@@ -150,9 +136,9 @@ export const RealQuickUrlImport: React.FC = () => {
 
       setImportedProduct({
         id: insertedProduct.id,
-        name: insertedProduct.name,
-        price: insertedProduct.price,
-        image_url: insertedProduct.image_urls?.[0] || '',
+        name: scrapedData?.name || `Produit depuis ${platform.name}`,
+        price: insertedProduct.price || 0,
+        image_url: scrapedData?.image_url || '',
         source_url: url,
         platform: platform.name
       });
@@ -179,16 +165,11 @@ export const RealQuickUrlImport: React.FC = () => {
         if (user) {
           const fallbackProduct = {
             user_id: user.id,
-            name: `Produit depuis ${platform.name} - ${Date.now()}`,
-            description: `Importé depuis: ${url}`,
+            category: `Produit depuis ${platform.name}`,
             price: 0,
             source_url: url,
             source_platform: platform.id,
-            sku: `IMP-${Date.now()}`,
-            status: 'pending_review',
-            review_status: 'pending',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            status: 'pending_review'
           };
 
           const { data: fallbackInsert, error: fallbackError } = await supabase
@@ -200,7 +181,7 @@ export const RealQuickUrlImport: React.FC = () => {
           if (!fallbackError && fallbackInsert) {
             setImportedProduct({
               id: fallbackInsert.id,
-              name: fallbackInsert.name,
+              name: `Produit depuis ${platform.name}`,
               price: 0,
               image_url: '',
               source_url: url,

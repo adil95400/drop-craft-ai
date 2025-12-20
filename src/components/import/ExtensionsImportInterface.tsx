@@ -442,7 +442,7 @@ export const ExtensionsImportInterface = ({
                 <Card key={extension.id} className="relative">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">{extension.display_name}</CardTitle>
+                      <CardTitle className="text-base">{extension.name}</CardTitle>
                       <div className="flex items-center gap-2">
                         <Badge variant={extension.status === 'active' ? 'default' : 'secondary'}>
                           {extension.status === 'active' ? 'Actif' : 'Inactif'}
@@ -461,7 +461,7 @@ export const ExtensionsImportInterface = ({
                       <Button
                         onClick={() => handleRunExtension({ 
                           name: extension.name, 
-                          ai_enhanced: (extension.configuration as any)?.ai_enhanced || false 
+                          ai_enhanced: (extension.config as any)?.ai_enhanced || false 
                         })}
                         disabled={isStartingJob || extension.status !== 'active'}
                         size="sm"

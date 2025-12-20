@@ -52,19 +52,19 @@ export const APIKeysManager = () => {
       // Get integrations first
       const { data: integrations } = await supabase
         .from('integrations')
-        .select('id, platform_name, platform_type, is_active')
+        .select('id, platform_name, platform, is_active')
 
       if (!integrations) return []
 
       // Generate mock API keys for each integration
-      const mockKeys: APIKey[] = integrations?.flatMap(integration => 
+      const mockKeys: APIKey[] = (integrations as any[])?.flatMap((integration: any) => 
         Array.from({ length: Math.floor(Math.random() * 2) + 1 }, (_, i) => ({
           id: `key-${integration.id}-${i}`,
-          name: `${integration.platform_name} API Key ${i + 1}`,
+          name: `${integration.platform_name || integration.platform} API Key ${i + 1}`,
           key_preview: generateKeyPreview(),
-          platform: integration.platform_name,
+          platform: integration.platform_name || integration.platform,
           integration_id: integration.id,
-          permissions: getPermissionsByPlatform(integration.platform_type),
+          permissions: getPermissionsByPlatform(integration.platform),
           last_used: Math.random() > 0.3 ? new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString() : null,
           expires_at: Math.random() > 0.5 ? new Date(Date.now() + Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString() : null,
           is_active: integration.is_active && Math.random() > 0.2,
@@ -480,19 +480,19 @@ const CreateKeyForm = ({ onSubmit }: { onSubmit: (data: any) => void }) => {
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
           value={formData.integration_id} 
           onChange={(e) => {
-            const integration = integrations.find(i => i.id === e.target.value)
+            const integration = (integrations as any[]).find((i: any) => i.id === e.target.value)
             setFormData({ 
               ...formData, 
               integration_id: e.target.value,
-              platform: integration?.platform_name || ''
+              platform: (integration as any)?.platform_name || (integration as any)?.platform || ''
             })
           }}
           required
         >
           <option value="">Sélectionner une intégration</option>
-          {integrations.map(integration => (
+          {(integrations as any[]).map((integration: any) => (
             <option key={integration.id} value={integration.id}>
-              {integration.platform_name}
+              {integration.platform_name || integration.platform}
             </option>
           ))}
         </select>

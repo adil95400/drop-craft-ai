@@ -31,16 +31,30 @@ export function GlobalInsightsDashboard() {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) return;
 
+      // Use analytics_insights table as fallback for global insights
       const { data, error } = await supabase
-        .from('global_insights')
+        .from('analytics_insights')
         .select('*')
         .eq('user_id', userData.user.id)
-        .eq('is_active', true)
         .order('confidence_score', { ascending: false })
         .limit(10);
 
       if (error) throw error;
-      setInsights(data || []);
+      
+      // Map analytics_insights to GlobalInsight format
+      const mappedInsights: GlobalInsight[] = (data || []).map((item: any) => ({
+        id: item.id,
+        insight_type: item.metric_type || 'general',
+        title: item.metric_name,
+        description: item.category || '',
+        confidence_score: Number(item.confidence_score) * 100 || 80,
+        impact_level: item.trend === 'up' ? 'high' : item.trend === 'down' ? 'low' : 'medium',
+        regions: [],
+        recommendations: item.insights || [],
+        created_at: item.created_at
+      }));
+      
+      setInsights(mappedInsights);
     } catch (error: any) {
       toast({
         title: 'Error',

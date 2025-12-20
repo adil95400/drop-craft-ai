@@ -53,33 +53,17 @@ export const FTPImporter = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      const { data: connectorData, error: connectorError } = await supabase
-        .from('import_connectors')
-        .upsert({
-          user_id: user.id,
-          name: `FTP - ${config.url}`,
-          provider: 'ftp',
-          config: {
-            url: config.url,
-            file_path: config.filePath,
-            file_type: config.fileType,
-            secure: config.secure,
-            mapping: {}
-          },
-          credentials: {
-            username: config.username,
-            password: config.password
-          }
-        })
-        .select()
-        .single()
-
-      if (connectorError) throw connectorError
-
-      // Test the connection
+      // Test the connection via edge function
       const { data, error } = await supabase.functions.invoke('ftp-import', {
         body: {
-          connectorId: connectorData.id,
+          config: {
+            url: config.url,
+            username: config.username,
+            password: config.password,
+            filePath: config.filePath,
+            fileType: config.fileType,
+            secure: config.secure
+          },
           testMode: true
         }
       })
@@ -120,34 +104,33 @@ export const FTPImporter = () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      const { data: connectorData, error: connectorError } = await supabase
-        .from('import_connectors')
+      // Create import job instead of import_connectors
+      const { data: jobData, error: jobError } = await supabase
+        .from('import_jobs')
         .insert({
           user_id: user.id,
-          name: `FTP - ${config.url}`,
-          provider: 'ftp',
-          config: {
-            url: config.url,
-            file_path: config.filePath,
-            file_type: config.fileType,
-            secure: config.secure,
-            sync_interval: config.autoSync ? config.syncInterval : null,
-            mapping: {}
-          },
-          credentials: {
-            username: config.username,
-            password: config.password
-          }
+          job_type: 'ftp',
+          source_platform: 'ftp',
+          source_url: config.url,
+          status: 'pending'
         })
         .select()
         .single()
 
-      if (connectorError) throw connectorError
+      if (jobError) throw jobError
 
-      // Start import
+      // Start import via edge function
       const { data, error } = await supabase.functions.invoke('ftp-import', {
         body: {
-          connectorId: connectorData.id,
+          jobId: jobData.id,
+          config: {
+            url: config.url,
+            username: config.username,
+            password: config.password,
+            filePath: config.filePath,
+            fileType: config.fileType,
+            secure: config.secure
+          },
           immediate: true
         }
       })
