@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAdvancedAnalyticsService } from "@/hooks/useAdvancedAnalyticsService"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
-import { TrendingUp, Activity, BarChart3, Zap, PlayCircle, PlusCircle } from "lucide-react"
+import { TrendingUp, Activity, BarChart3, Zap, PlusCircle } from "lucide-react"
 
 export function AdvancedAnalyticsDashboard() {
   const {
@@ -78,29 +78,36 @@ export function AdvancedAnalyticsDashboard() {
 
         <TabsContent value="metrics" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {performanceMetrics?.map((metric, index) => (
-              <Card key={index}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {metric.metric_name}
-                  </CardTitle>
-                  <Activity className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{metric.metric_value}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Évolution depuis la dernière période
-                  </p>
-                  <div className="mt-2">
-                    <Progress 
-                      value={Number(metric.metric_value)} 
-                      max={100} 
-                      className="h-2"
-                    />
-                  </div>
+            {performanceMetrics && performanceMetrics.length > 0 ? (
+              performanceMetrics.map((metric: any, index: number) => (
+                <Card key={index}>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      {metric.metric_name || 'Métrique'}
+                    </CardTitle>
+                    <Activity className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{metric.metric_value || 0}</div>
+                    <p className="text-xs text-muted-foreground">
+                      Évolution depuis la dernière période
+                    </p>
+                    <div className="mt-2">
+                      <Progress 
+                        value={Math.min(Number(metric.metric_value) || 0, 100)} 
+                        className="h-2"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card className="col-span-full">
+                <CardContent className="p-6 text-center text-muted-foreground">
+                  Aucune métrique disponible. Lancez une analyse prédictive pour commencer.
                 </CardContent>
               </Card>
-            ))}
+            )}
           </div>
 
           {performanceMetrics && performanceMetrics.length > 0 && (
@@ -130,35 +137,45 @@ export function AdvancedAnalyticsDashboard() {
 
         <TabsContent value="predictive" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {predictiveAnalytics?.map((analysis, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5" />
-                    {analysis.prediction_type}
-                  </CardTitle>
-                  <CardDescription>
-                    Confiance: {(analysis.confidence_score * 100).toFixed(0)}%
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-medium mb-2">Prédictions</h4>
-                      <div className="text-sm text-muted-foreground">
-                        {JSON.stringify(analysis.predictions, null, 2)}
+            {predictiveAnalytics && predictiveAnalytics.length > 0 ? (
+              predictiveAnalytics.map((analysis: any, index: number) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5" />
+                      {analysis.prediction_type || 'Analyse'}
+                    </CardTitle>
+                    <CardDescription>
+                      Confiance: {((analysis.confidence_score || 0) * 100).toFixed(0)}%
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-medium mb-2">Prédictions</h4>
+                        <div className="text-sm text-muted-foreground">
+                          {typeof analysis.predictions === 'object' 
+                            ? JSON.stringify(analysis.predictions, null, 2)
+                            : 'Analyse générée avec succès'}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium mb-2">Recommandations</h4>
+                        <div className="text-sm">
+                          Analyse prédictive générée avec succès
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <h4 className="font-medium mb-2">Recommandations</h4>
-                      <div className="text-sm">
-                        Analyse prédictive générée avec succès
-                      </div>
-                    </div>
-                  </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card className="col-span-full">
+                <CardContent className="p-6 text-center text-muted-foreground">
+                  Aucune analyse prédictive disponible. Cliquez sur "Analyse Prédictive" pour en générer une.
                 </CardContent>
               </Card>
-            ))}
+            )}
           </div>
         </TabsContent>
 
@@ -183,61 +200,85 @@ export function AdvancedAnalyticsDashboard() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {abTests?.map((test, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    {test.experiment_name}
-                    <Badge variant={test.status === 'running' ? 'default' : 'secondary'}>
-                      {test.status}
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription>{test.hypothesis}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Confiance statistique:</span>
-                      <span>{test.statistical_significance ? (test.statistical_significance * 100).toFixed(1) + '%' : 'N/A'}</span>
+            {abTests && abTests.length > 0 ? (
+              abTests.map((test: any, index: number) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      {test.experiment_name || 'Test'}
+                      <Badge variant={test.status === 'running' ? 'default' : 'secondary'}>
+                        {test.status || 'draft'}
+                      </Badge>
+                    </CardTitle>
+                    <CardDescription>{test.hypothesis || 'Aucune hypothèse définie'}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Confiance statistique:</span>
+                        <span>
+                          {test.statistical_significance 
+                            ? (test.statistical_significance * 100).toFixed(1) + '%' 
+                            : 'N/A'}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={(test.statistical_significance || 0) * 100} 
+                        className="h-2"
+                      />
                     </div>
-                    <Progress 
-                      value={(test.statistical_significance || 0) * 100} 
-                      className="h-2"
-                    />
-                  </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card className="col-span-full">
+                <CardContent className="p-6 text-center text-muted-foreground">
+                  Aucun test A/B actif. Cliquez sur "Nouveau Test" pour en créer un.
                 </CardContent>
               </Card>
-            ))}
+            )}
           </div>
         </TabsContent>
 
         <TabsContent value="reports" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {reports?.map((report, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <CardTitle>{report.report_name}</CardTitle>
-                  <CardDescription>
-                    Type: {report.report_type} • 
-                    <Badge variant={report.status === 'completed' ? 'default' : 'secondary'} className="ml-1">
-                      {report.status}
-                    </Badge>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div>Généré: {new Date(report.generated_at).toLocaleDateString()}</div>
-                    {report.file_url && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={report.file_url} target="_blank" rel="noopener noreferrer">
-                          Télécharger
-                        </a>
-                      </Button>
-                    )}
-                  </div>
+            {reports && reports.length > 0 ? (
+              reports.map((report: any, index: number) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <CardTitle>{report.report_name || 'Rapport'}</CardTitle>
+                    <CardDescription>
+                      Type: {report.report_type || 'N/A'} • 
+                      <Badge variant={report.status === 'completed' ? 'default' : 'secondary'} className="ml-1">
+                        {report.status || 'pending'}
+                      </Badge>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        Généré: {report.generated_at 
+                          ? new Date(report.generated_at).toLocaleDateString() 
+                          : 'N/A'}
+                      </div>
+                      {report.file_url && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a href={report.file_url} target="_blank" rel="noopener noreferrer">
+                            Télécharger
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card className="col-span-full">
+                <CardContent className="p-6 text-center text-muted-foreground">
+                  Aucun rapport disponible. Cliquez sur "Générer Rapport" pour en créer un.
                 </CardContent>
               </Card>
-            ))}
+            )}
           </div>
         </TabsContent>
       </Tabs>
