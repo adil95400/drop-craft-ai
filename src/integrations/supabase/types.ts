@@ -112,6 +112,7 @@ export type Database = {
           id: string
           ip_address: string | null
           severity: string | null
+          source: string | null
           user_agent: string | null
           user_id: string | null
         }
@@ -125,6 +126,7 @@ export type Database = {
           id?: string
           ip_address?: string | null
           severity?: string | null
+          source?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -138,6 +140,7 @@ export type Database = {
           id?: string
           ip_address?: string | null
           severity?: string | null
+          source?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -185,6 +188,120 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      ai_optimization_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          input_data: Json | null
+          job_type: string
+          metrics: Json | null
+          output_data: Json | null
+          priority: number | null
+          started_at: string | null
+          status: string | null
+          target_id: string | null
+          target_type: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          input_data?: Json | null
+          job_type: string
+          metrics?: Json | null
+          output_data?: Json | null
+          priority?: number | null
+          started_at?: string | null
+          status?: string | null
+          target_id?: string | null
+          target_type?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          input_data?: Json | null
+          job_type?: string
+          metrics?: Json | null
+          output_data?: Json | null
+          priority?: number | null
+          started_at?: string | null
+          status?: string | null
+          target_id?: string | null
+          target_type?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      analytics_insights: {
+        Row: {
+          category: string | null
+          comparison_value: number | null
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          insights: Json | null
+          metadata: Json | null
+          metric_name: string
+          metric_type: string | null
+          metric_value: number | null
+          period: string | null
+          prediction_type: string | null
+          predictions: Json | null
+          recorded_at: string | null
+          trend: string | null
+          trend_percentage: number | null
+          user_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          comparison_value?: number | null
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          insights?: Json | null
+          metadata?: Json | null
+          metric_name: string
+          metric_type?: string | null
+          metric_value?: number | null
+          period?: string | null
+          prediction_type?: string | null
+          predictions?: Json | null
+          recorded_at?: string | null
+          trend?: string | null
+          trend_percentage?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          comparison_value?: number | null
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          insights?: Json | null
+          metadata?: Json | null
+          metric_name?: string
+          metric_type?: string | null
+          metric_value?: number | null
+          period?: string | null
+          prediction_type?: string | null
+          predictions?: Json | null
+          recorded_at?: string | null
+          trend?: string | null
+          trend_percentage?: number | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1397,6 +1514,59 @@ export type Database = {
         }
         Relationships: []
       }
+      price_history: {
+        Row: {
+          applied_at: string | null
+          change_reason: string | null
+          competitor_price: number | null
+          created_at: string | null
+          id: string
+          margin: number | null
+          new_price: number | null
+          old_price: number | null
+          price_change: number | null
+          product_id: string | null
+          rule_id: string | null
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          change_reason?: string | null
+          competitor_price?: number | null
+          created_at?: string | null
+          id?: string
+          margin?: number | null
+          new_price?: number | null
+          old_price?: number | null
+          price_change?: number | null
+          product_id?: string | null
+          rule_id?: string | null
+          user_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          change_reason?: string | null
+          competitor_price?: number | null
+          created_at?: string | null
+          id?: string
+          margin?: number | null
+          new_price?: number | null
+          old_price?: number | null
+          price_change?: number | null
+          product_id?: string | null
+          rule_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_history_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       price_stock_monitoring: {
         Row: {
           alert_threshold: number | null
@@ -1449,6 +1619,125 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "price_stock_monitoring_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_rules: {
+        Row: {
+          actions: Json | null
+          conditions: Json | null
+          created_at: string | null
+          description: string | null
+          execution_count: number | null
+          id: string
+          is_active: boolean | null
+          last_executed_at: string | null
+          max_price: number | null
+          min_price: number | null
+          name: string
+          priority: number | null
+          products_affected: number | null
+          rule_type: string | null
+          target_margin: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          actions?: Json | null
+          conditions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          max_price?: number | null
+          min_price?: number | null
+          name: string
+          priority?: number | null
+          products_affected?: number | null
+          rule_type?: string | null
+          target_margin?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          actions?: Json | null
+          conditions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          max_price?: number | null
+          min_price?: number | null
+          name?: string
+          priority?: number | null
+          products_affected?: number | null
+          rule_type?: string | null
+          target_margin?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      product_enrichment: {
+        Row: {
+          ai_suggestions: Json | null
+          completeness_score: number | null
+          created_at: string | null
+          enriched_at: string | null
+          enriched_data: Json | null
+          enrichment_status: string | null
+          enrichment_type: string | null
+          id: string
+          original_data: Json | null
+          product_id: string | null
+          quality_score: number | null
+          seo_score: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_suggestions?: Json | null
+          completeness_score?: number | null
+          created_at?: string | null
+          enriched_at?: string | null
+          enriched_data?: Json | null
+          enrichment_status?: string | null
+          enrichment_type?: string | null
+          id?: string
+          original_data?: Json | null
+          product_id?: string | null
+          quality_score?: number | null
+          seo_score?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_suggestions?: Json | null
+          completeness_score?: number | null
+          created_at?: string | null
+          enriched_at?: string | null
+          enriched_data?: Json | null
+          enrichment_status?: string | null
+          enrichment_type?: string | null
+          id?: string
+          original_data?: Json | null
+          product_id?: string | null
+          quality_score?: number | null
+          seo_score?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_enrichment_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
@@ -1705,6 +1994,99 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_products: {
+        Row: {
+          attributes: Json | null
+          cost_price: number | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          external_product_id: string | null
+          id: string
+          image_url: string | null
+          images: Json | null
+          is_active: boolean | null
+          last_synced_at: string | null
+          price: number | null
+          processing_time: string | null
+          product_id: string | null
+          shipping_info: Json | null
+          source_url: string | null
+          stock_quantity: number | null
+          stock_status: string | null
+          supplier_id: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          variants: Json | null
+        }
+        Insert: {
+          attributes?: Json | null
+          cost_price?: number | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          external_product_id?: string | null
+          id?: string
+          image_url?: string | null
+          images?: Json | null
+          is_active?: boolean | null
+          last_synced_at?: string | null
+          price?: number | null
+          processing_time?: string | null
+          product_id?: string | null
+          shipping_info?: Json | null
+          source_url?: string | null
+          stock_quantity?: number | null
+          stock_status?: string | null
+          supplier_id?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          variants?: Json | null
+        }
+        Update: {
+          attributes?: Json | null
+          cost_price?: number | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          external_product_id?: string | null
+          id?: string
+          image_url?: string | null
+          images?: Json | null
+          is_active?: boolean | null
+          last_synced_at?: string | null
+          price?: number | null
+          processing_time?: string | null
+          product_id?: string | null
+          shipping_info?: Json | null
+          source_url?: string | null
+          stock_quantity?: number | null
+          stock_status?: string | null
+          supplier_id?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          variants?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           api_endpoint: string | null
@@ -1959,6 +2341,7 @@ export type Database = {
           processed: boolean | null
           processed_at: string | null
           user_id: string | null
+          webhook_data: Json | null
         }
         Insert: {
           created_at?: string | null
@@ -1971,6 +2354,7 @@ export type Database = {
           processed?: boolean | null
           processed_at?: string | null
           user_id?: string | null
+          webhook_data?: Json | null
         }
         Update: {
           created_at?: string | null
@@ -1983,6 +2367,7 @@ export type Database = {
           processed?: boolean | null
           processed_at?: string | null
           user_id?: string | null
+          webhook_data?: Json | null
         }
         Relationships: [
           {

@@ -134,9 +134,9 @@ export function RealTimeMonitor() {
         status: log.severity === 'error' ? 'error' : 
                 log.severity === 'warning' ? 'warning' : 
                 'success',
-        message: log.description,
+        message: log.description || log.action,
         timestamp: log.created_at,
-        metadata: log.metadata
+        metadata: log.details
       }))
 
       setActivities(formattedActivities)

@@ -2,14 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
 import { 
   Sparkles, 
   TrendingUp, 
   CheckCircle, 
-  AlertCircle,
-  ArrowRight,
-  Zap
+  Zap,
+  ArrowRight
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -42,26 +40,19 @@ export function EnrichmentDashboardWidget() {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id);
 
-      // Get enriched products
-      const { count: enrichedProducts } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('enrichment_status', 'success');
-
-      // Get enrichment stats
+      // Get enrichment stats from product_enrichment table
       const { data: enrichments } = await supabase
         .from('product_enrichment')
         .select('enrichment_status')
         .eq('user_id', user.id);
 
       const pending = enrichments?.filter(e => e.enrichment_status === 'pending').length || 0;
-      const applied = enrichments?.filter(e => e.enrichment_status === 'applied').length || 0;
+      const applied = enrichments?.filter(e => e.enrichment_status === 'applied' || e.enrichment_status === 'success').length || 0;
       const failed = enrichments?.filter(e => e.enrichment_status === 'failed').length || 0;
 
       setStats({
         total_products: totalProducts || 0,
-        enriched_products: enrichedProducts || 0,
+        enriched_products: applied,
         pending_enrichments: pending,
         applied_enrichments: applied,
         failed_enrichments: failed,
