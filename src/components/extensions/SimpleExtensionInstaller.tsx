@@ -37,17 +37,21 @@ const SimpleExtensionInstaller: React.FC<SimpleExtensionInstallerProps> = ({
         throw new Error('Utilisateur non authentifié')
       }
 
-      // Simple installation record
+      // Simple installation record using the extensions table
       const { error } = await supabase
-        .from('user_extensions')
+        .from('extensions')
         .insert({
-          user_id: user.id,
-          extension_id: extension.id,
+          name: extension.name,
+          code: `extension_${extension.id}`,
+          description: extension.description,
           version: extension.version,
           status: 'active',
-          configuration: {},
-          installed_at: new Date().toISOString(),
-          usage_count: 0
+          is_premium: extension.price > 0,
+          config: {
+            marketplace_install: true,
+            price: extension.price,
+            downloads_count: extension.downloads_count
+          }
         })
 
       if (error) throw error
