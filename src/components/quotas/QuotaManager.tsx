@@ -13,7 +13,12 @@ import { useUnifiedPlan } from '@/lib/unified-plan-system';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-const QUOTA_DEFINITIONS = {
+const QUOTA_DEFINITIONS: Record<string, {
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  resetPeriod: string;
+}> = {
   monthly_imports: {
     name: 'Imports mensuels',
     description: 'Nombre d\'imports de produits par mois',
@@ -58,12 +63,22 @@ const QUOTA_DEFINITIONS = {
   }
 };
 
+interface QuotaData {
+  current: number;
+  resetDate?: string;
+  updatedAt?: string;
+}
+
+interface LimitData {
+  [key: string]: number;
+}
+
 export function QuotaManager() {
   const { user } = useAuth();
   const { currentPlan, isUltraPro, isPro } = useUnifiedPlan();
   const { toast } = useToast();
-  const [quotas, setQuotas] = useState({});
-  const [limits, setLimits] = useState({});
+  const [quotas, setQuotas] = useState<Record<string, QuotaData>>({});
+  const [limits, setLimits] = useState<LimitData>({});
   const [loading, setLoading] = useState(true);
 
   const loadQuotas = async () => {
@@ -72,7 +87,7 @@ export function QuotaManager() {
     try {
       setLoading(true);
       
-      // Load current quotas
+      // Load current quotas from user_quotas table
       const { data: quotaData, error: quotaError } = await supabase
         .from('user_quotas')
         .select('*')
@@ -80,26 +95,26 @@ export function QuotaManager() {
 
       if (quotaError) throw quotaError;
 
-      // Load plan limits
+      // Load plan limits from plan_limits table
       const { data: limitsData, error: limitsError } = await supabase
-        .from('plans_limits')
+        .from('plan_limits')
         .select('*')
-        .eq('plan', currentPlan);
+        .eq('plan_name', currentPlan);
 
       if (limitsError) throw limitsError;
 
       // Process quotas into object
-      const quotaMap = {};
+      const quotaMap: Record<string, QuotaData> = {};
       quotaData?.forEach(quota => {
         quotaMap[quota.quota_key] = {
-          current: quota.current_count,
-          resetDate: quota.reset_date,
-          updatedAt: quota.updated_at
+          current: quota.current_usage || 0,
+          resetDate: quota.period_end || undefined,
+          updatedAt: quota.updated_at || undefined
         };
       });
 
       // Process limits into object
-      const limitsMap = {};
+      const limitsMap: LimitData = {};
       limitsData?.forEach(limit => {
         limitsMap[limit.limit_key] = limit.limit_value;
       });
@@ -119,7 +134,7 @@ export function QuotaManager() {
     }
   };
 
-  const checkQuota = async (quotaKey, increment = 0) => {
+  const checkQuota = async (quotaKey: string, increment = 0) => {
     try {
       const { data, error } = await supabase.functions.invoke('check-quota', {
         body: {
@@ -141,7 +156,7 @@ export function QuotaManager() {
     loadQuotas();
   }, [user, currentPlan]);
 
-  const getUsagePercentage = (quotaKey) => {
+  const getUsagePercentage = (quotaKey: string) => {
     const current = quotas[quotaKey]?.current || 0;
     const limit = limits[quotaKey];
     
@@ -149,7 +164,7 @@ export function QuotaManager() {
     return Math.min((current / limit) * 100, 100);
   };
 
-  const getUsageStatus = (quotaKey) => {
+  const getUsageStatus = (quotaKey: string) => {
     const percentage = getUsagePercentage(quotaKey);
     
     if (percentage >= 90) return 'critical';
@@ -157,7 +172,7 @@ export function QuotaManager() {
     return 'normal';
   };
 
-  const formatLimit = (limit) => {
+  const formatLimit = (limit: number | undefined) => {
     if (limit === undefined || limit === null) return 'Non défini';
     if (limit === -1) return 'Illimité';
     if (limit >= 1000000) return `${(limit / 1000000).toFixed(1)}M`;
@@ -165,7 +180,7 @@ export function QuotaManager() {
     return limit.toString();
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'critical': return 'text-red-600';
       case 'warning': return 'text-yellow-600';
@@ -258,6 +273,8 @@ export function QuotaManager() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {availableQuotas.map((quotaKey) => {
           const quota = QUOTA_DEFINITIONS[quotaKey];
+          if (!quota) return null;
+          
           const current = quotas[quotaKey]?.current || 0;
           const limit = limits[quotaKey];
           const percentage = getUsagePercentage(quotaKey);

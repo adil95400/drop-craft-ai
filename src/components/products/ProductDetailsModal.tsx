@@ -37,15 +37,6 @@ interface ProductDetailsModalProps {
   onOpenChange: (open: boolean) => void
 }
 
-// Mock variant type since product_variants table doesn't exist
-interface MockVariant {
-  id: string
-  name: string
-  sku: string
-  price: number
-  stock_quantity: number
-}
-
 export function ProductDetailsModal({ product, open, onOpenChange }: ProductDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -53,8 +44,8 @@ export function ProductDetailsModal({ product, open, onOpenChange }: ProductDeta
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  // Mock variants data since product_variants table doesn't exist
-  const variants: MockVariant[] = []
+  // Mock variants data - using any type to match ProductVariantManager expectations
+  const variants: any[] = []
   const refetchVariants = () => {}
 
   // Fetch sync history - placeholder for future implementation

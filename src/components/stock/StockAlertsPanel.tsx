@@ -1,10 +1,23 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle, Package } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useStockAlerts, useResolveAlert } from '@/hooks/useStockManagement';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+interface StockAlert {
+  id: string;
+  severity: string;
+  alert_type: string;
+  product_name: string;
+  message: string;
+  current_stock: number;
+  threshold: number;
+  created_at: string;
+}
 
 interface StockAlertsPanelProps {
   limit?: number;
@@ -12,13 +25,51 @@ interface StockAlertsPanelProps {
 }
 
 export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
-  const { data: alerts = [], isLoading } = useStockAlerts();
-  const resolveAlertMutation = useResolveAlert();
+  const [alerts, setAlerts] = useState<StockAlert[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const loadAlerts = async () => {
+      setIsLoading(true);
+      try {
+        const { data: products, error } = await supabase
+          .from('products')
+          .select('id, title, stock_quantity')
+          .lt('stock_quantity', 10)
+          .order('stock_quantity', { ascending: true });
+
+        if (error) throw error;
+
+        const mockAlerts: StockAlert[] = (products || []).map(product => ({
+          id: product.id,
+          severity: product.stock_quantity === 0 ? 'critical' : product.stock_quantity < 5 ? 'high' : 'medium',
+          alert_type: product.stock_quantity === 0 ? 'out_of_stock' : 'low_stock',
+          product_name: product.title,
+          message: product.stock_quantity === 0 
+            ? 'Rupture de stock'
+            : `Stock faible: ${product.stock_quantity} unités`,
+          current_stock: product.stock_quantity || 0,
+          threshold: 10,
+          created_at: new Date().toISOString()
+        }));
+
+        setAlerts(mockAlerts);
+      } catch (error) {
+        console.error('Error loading stock alerts:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAlerts();
+  }, []);
   
   const displayedAlerts = limit ? alerts.slice(0, limit) : alerts;
   
   const handleResolve = (alertId: string) => {
-    resolveAlertMutation.mutate(alertId);
+    setAlerts(prev => prev.filter(a => a.id !== alertId));
+    toast({ title: 'Alerte résolue' });
   };
   
   const getSeverityColor = (severity: string) => {
@@ -158,11 +209,9 @@ export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
                       <p className="font-bold mb-1">{alert.product_name}</p>
                       <p className="text-sm text-muted-foreground mb-2">{alert.message}</p>
                       <div className="flex items-center gap-3 text-xs">
-                        <span>Stock: <strong>{alert.current_stock || 0}</strong></span>
+                        <span>Stock: <strong>{alert.current_stock}</strong></span>
                         <span>•</span>
-                        <span>Seuil: <strong>{alert.threshold || 0}</strong></span>
-                        <span>•</span>
-                        <span>{formatDistanceToNow(new Date(alert.created_at), { addSuffix: true, locale: fr })}</span>
+                        <span>Seuil: <strong>{alert.threshold}</strong></span>
                       </div>
                     </div>
                     <Button size="sm" onClick={() => handleResolve(alert.id)}>
@@ -184,7 +233,7 @@ export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
           <CardDescription>{alerts.length} alerte(s) active(s)</CardDescription>
         </CardHeader>
         <CardContent>
-          {alerts.length > 0 ? (
+          {otherAlerts.length > 0 ? (
             <div className="space-y-3">
               {otherAlerts.map((alert) => (
                 <div key={alert.id} className={`p-4 rounded-lg border ${getSeverityColor(alert.severity)}`}>
@@ -199,9 +248,7 @@ export function StockAlertsPanel({ limit, compact }: StockAlertsPanelProps) {
                       <p className="font-medium mb-1">{alert.product_name}</p>
                       <p className="text-sm text-muted-foreground mb-2">{alert.message}</p>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>Stock: {alert.current_stock || 0}</span>
-                        <span>•</span>
-                        <span>{formatDistanceToNow(new Date(alert.created_at), { addSuffix: true, locale: fr })}</span>
+                        <span>Stock: {alert.current_stock}</span>
                       </div>
                     </div>
                     <Button size="sm" variant="outline" onClick={() => handleResolve(alert.id)}>

@@ -33,15 +33,6 @@ interface ProductDetailsProps {
   onClose: () => void
 }
 
-// Mock variants data since product_variants table doesn't exist
-interface MockVariant {
-  id: string
-  name: string
-  sku: string
-  price: number
-  stock_quantity: number
-}
-
 export function ProductDetails({ productId, onClose }: ProductDetailsProps) {
   const { products } = useRealProducts()
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -49,8 +40,8 @@ export function ProductDetails({ productId, onClose }: ProductDetailsProps) {
   
   const product = products.find(p => p.id === productId)
 
-  // Mock variants data
-  const variants: MockVariant[] = []
+  // Mock variants data - using any type to match ProductVariantManager expectations
+  const variants: any[] = []
   const refetchVariants = () => {}
   
   if (!product) {

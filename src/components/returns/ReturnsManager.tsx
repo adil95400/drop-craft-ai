@@ -71,7 +71,7 @@ export const ReturnsManager = () => {
         .from('activity_logs')
         .select(`
           id,
-          metadata,
+          details,
           created_at,
           action
         `)
@@ -82,7 +82,7 @@ export const ReturnsManager = () => {
       if (error) throw error
 
       return data?.map(log => {
-        const meta = log.metadata as any || {}
+        const meta = (log.details as any) || {}
         return {
           id: log.id,
           order_id: meta.order_id,
@@ -90,7 +90,7 @@ export const ReturnsManager = () => {
           status: meta.status || 'pending',
           reason: meta.reason || '',
           refund_amount: meta.refund_amount || 0,
-          created_at: log.created_at,
+          created_at: log.created_at || new Date().toISOString(),
           order: { order_number: meta.order_number },
           customer: { name: meta.customer_name }
         }
@@ -109,7 +109,7 @@ export const ReturnsManager = () => {
           user_id: user?.id,
           action: 'return_request',
           description: `Demande de retour créée pour la commande ${order?.order_number}`,
-          metadata: {
+          details: {
             order_id: selectedOrder,
             order_number: order?.order_number,
             reason: returnReason,
@@ -147,7 +147,7 @@ export const ReturnsManager = () => {
       const { error } = await supabase
         .from('activity_logs')
         .update({
-          metadata: {
+          details: {
             ...returnItem,
             status: newStatus,
             updated_at: new Date().toISOString()
