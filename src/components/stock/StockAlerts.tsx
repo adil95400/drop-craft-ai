@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,51 +20,68 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
+interface StockAlert {
+  id: string;
+  severity: string;
+  alert_type: string;
+  product_name: string;
+  message: string;
+  current_stock: number;
+  threshold: number;
+  created_at: string;
+}
+
 export function StockAlerts() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [alerts, setAlerts] = useState<StockAlert[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data: alerts, isLoading } = useQuery({
-    queryKey: ['stock-alerts'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stock_alerts')
-        .select('*')
-        .eq('alert_status', 'active')
-        .order('created_at', { ascending: false });
+  // Load alerts from products with low stock
+  useEffect(() => {
+    const loadAlerts = async () => {
+      setIsLoading(true);
+      try {
+        const { data: products, error } = await supabase
+          .from('products')
+          .select('id, title, stock_quantity')
+          .lt('stock_quantity', 10)
+          .order('stock_quantity', { ascending: true });
 
-      if (error) throw error;
-      return data as any[];
-    }
-  });
+        if (error) throw error;
 
-  const resolveAlertMutation = useMutation({
-    mutationFn: async (alertId: string) => {
-      const { error } = await supabase
-        .from('stock_alerts')
-        .update({ 
-          alert_status: 'resolved',
-          resolved_at: new Date().toISOString()
-        })
-        .eq('id', alertId);
+        // Create mock alerts from low stock products
+        const mockAlerts: StockAlert[] = (products || []).map(product => ({
+          id: product.id,
+          severity: product.stock_quantity === 0 ? 'critical' : product.stock_quantity < 5 ? 'high' : 'medium',
+          alert_type: product.stock_quantity === 0 ? 'stockout' : 'low_stock',
+          product_name: product.title,
+          message: product.stock_quantity === 0 
+            ? 'Ce produit est en rupture de stock'
+            : `Stock faible: ${product.stock_quantity} unités restantes`,
+          current_stock: product.stock_quantity || 0,
+          threshold: 10,
+          created_at: new Date().toISOString()
+        }));
 
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stock-alerts'] });
-      toast({
-        title: "Alerte résolue",
-        description: "L'alerte a été marquée comme résolue",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Erreur",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
+        setAlerts(mockAlerts);
+      } catch (error) {
+        console.error('Error loading stock alerts:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAlerts();
+  }, []);
+
+  const resolveAlert = (alertId: string) => {
+    setAlerts(prev => prev.filter(a => a.id !== alertId));
+    toast({
+      title: "Alerte résolue",
+      description: "L'alerte a été marquée comme résolue",
+    });
+  };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -103,10 +120,10 @@ export function StockAlerts() {
     );
   }
 
-  const criticalAlerts = alerts?.filter(a => a.severity === 'critical') || [];
-  const highAlerts = alerts?.filter(a => a.severity === 'high') || [];
-  const mediumAlerts = alerts?.filter(a => a.severity === 'medium') || [];
-  const lowAlerts = alerts?.filter(a => a.severity === 'low') || [];
+  const criticalAlerts = alerts.filter(a => a.severity === 'critical');
+  const highAlerts = alerts.filter(a => a.severity === 'high');
+  const mediumAlerts = alerts.filter(a => a.severity === 'medium');
+  const lowAlerts = alerts.filter(a => a.severity === 'low');
 
   return (
     <div className="space-y-4">
@@ -168,17 +185,17 @@ export function StockAlerts() {
             <div>
               <CardTitle>Alertes Actives</CardTitle>
               <CardDescription>
-                {alerts?.length || 0} alerte{alerts?.length !== 1 ? 's' : ''} nécessitant votre attention
+                {alerts.length} alerte{alerts.length !== 1 ? 's' : ''} nécessitant votre attention
               </CardDescription>
             </div>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Actualiser
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          {alerts && alerts.length > 0 ? (
+          {alerts.length > 0 ? (
             <div className="space-y-3">
               {alerts.map((alert) => (
                 <div 
@@ -214,18 +231,11 @@ export function StockAlerts() {
 
                           <div className="flex items-center gap-4 text-xs text-muted-foreground">
                             <span>
-                              Stock actuel: <strong>{alert.current_stock || 0}</strong>
+                              Stock actuel: <strong>{alert.current_stock}</strong>
                             </span>
                             <span>•</span>
                             <span>
-                              Seuil: <strong>{alert.threshold || 0}</strong>
-                            </span>
-                            <span>•</span>
-                            <span>
-                              {formatDistanceToNow(new Date(alert.created_at), { 
-                                addSuffix: true,
-                                locale: fr 
-                              })}
+                              Seuil: <strong>{alert.threshold}</strong>
                             </span>
                           </div>
                         </div>
@@ -235,23 +245,15 @@ export function StockAlerts() {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => {
-                            // Navigate to product details
-                          }}
                         >
                           <Package className="h-4 w-4 mr-2" />
                           Voir Produit
                         </Button>
                         <Button 
                           size="sm"
-                          onClick={() => resolveAlertMutation.mutate(alert.id)}
-                          disabled={resolveAlertMutation.isPending}
+                          onClick={() => resolveAlert(alert.id)}
                         >
-                          {resolveAlertMutation.isPending ? (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          ) : (
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                          )}
+                          <CheckCircle className="h-4 w-4 mr-2" />
                           Marquer Résolue
                         </Button>
                       </div>

@@ -40,12 +40,25 @@ export function SecurityDashboardComplete() {
       if (eventsError) throw eventsError;
       setSecurityEvents(events || []);
 
-      // Fetch suspicious activity
-      const { data: suspicious, error: suspiciousError } = await supabase
-        .rpc('detect_suspicious_activity');
+      // Suspicious activity detection is done client-side since the RPC doesn't exist
+      const recentEvents = (events || []).reduce((acc: any, event) => {
+        const key = event.event_type;
+        if (!acc[key]) {
+          acc[key] = { event_type: key, count: 0, first_seen: event.created_at, last_seen: event.created_at };
+        }
+        acc[key].count++;
+        if (new Date(event.created_at) < new Date(acc[key].first_seen)) {
+          acc[key].first_seen = event.created_at;
+        }
+        if (new Date(event.created_at) > new Date(acc[key].last_seen)) {
+          acc[key].last_seen = event.created_at;
+        }
+        return acc;
+      }, {});
 
-      if (suspiciousError) throw suspiciousError;
-      setSuspiciousActivity(Array.isArray(suspicious) ? suspicious : []);
+      // Flag as suspicious if more than 10 events of the same type
+      const suspicious = Object.values(recentEvents).filter((e: any) => e.count > 10);
+      setSuspiciousActivity(suspicious as any[]);
 
     } catch (error) {
       console.error('Error fetching security data:', error);
@@ -222,7 +235,7 @@ export function SecurityDashboardComplete() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       {getSeverityIcon(event.severity)}
-                      <Badge variant={getSeverityColor(event.severity)}>
+                      <Badge variant={getSeverityColor(event.severity) as any}>
                         {event.severity.toUpperCase()}
                       </Badge>
                       <span className="text-sm font-medium">{event.event_type}</span>

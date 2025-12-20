@@ -11,7 +11,10 @@ export function FreeTrialBanner() {
 
   if (!hasActiveTrial) return null
 
-  const progress = trial ? ((trial.trial_days - daysRemaining) / trial.trial_days) * 100 : 0
+  // Get trial data from the trial object (from free_trial_subscriptions table)
+  const trialDays = (trial as any)?.trial_days || 14
+  const trialPlan = (trial as any)?.trial_plan || 'pro'
+  const progress = trialDays > 0 ? ((trialDays - daysRemaining) / trialDays) * 100 : 0
 
   return (
     <Card className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-500/20 p-6">
@@ -20,7 +23,7 @@ export function FreeTrialBanner() {
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-5 h-5 text-purple-500" />
             <h3 className="font-semibold text-lg">
-              Essai gratuit {trial?.trial_plan?.toUpperCase()} actif
+              Essai gratuit {trialPlan?.toUpperCase()} actif
             </h3>
           </div>
           
@@ -29,7 +32,7 @@ export function FreeTrialBanner() {
               <Clock className="w-4 h-4" />
               <span>
                 {daysRemaining} jour{daysRemaining > 1 ? 's' : ''} restant
-                {daysRemaining > 1 ? 's' : ''} sur {trial?.trial_days}
+                {daysRemaining > 1 ? 's' : ''} sur {trialDays}
               </span>
             </div>
 

@@ -38,7 +38,7 @@ export const RefundAutomation = () => {
 
       const total = data?.length || 0
       const successful = data?.filter(log => log.status === 'completed').length || 0
-      const avgTime = data?.reduce((acc, log) => acc + (log.execution_time_ms || 0), 0) / total || 0
+      const avgTime = data?.reduce((acc, log) => acc + (log.duration_ms || 0), 0) / total || 0
 
       return {
         total_processed: total,
@@ -210,13 +210,13 @@ export const RefundAutomation = () => {
           {recentProcessing?.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">Aucun traitement récent</p>
           ) : (
-            recentProcessing?.map((item) => {
-              const meta = item.metadata as any || {}
-              return (
-                <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div className="space-y-1">
-                    <p className="font-medium">Commande {meta.order_number || 'N/A'}</p>
-                    <p className="text-sm text-muted-foreground">
+          recentProcessing?.map((item) => {
+            const meta = (item.details as any) || {}
+            return (
+              <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div className="space-y-1">
+                  <p className="font-medium">Commande {meta.order_number || 'N/A'}</p>
+                  <p className="text-sm text-muted-foreground">
                       {meta.customer_name} - {meta.refund_amount}€
                     </p>
                   </div>

@@ -19,37 +19,37 @@ export const ReturnsAnalytics = () => {
 
       const total = returns?.length || 0
       const approved = returns?.filter(r => {
-        const meta = r.metadata as any || {}
+        const meta = (r.details as any) || {}
         return meta.status === 'approved'
       }).length || 0
       const rejected = returns?.filter(r => {
-        const meta = r.metadata as any || {}
+        const meta = (r.details as any) || {}
         return meta.status === 'rejected'
       }).length || 0
       const pending = returns?.filter(r => {
-        const meta = r.metadata as any || {}
+        const meta = (r.details as any) || {}
         return meta.status === 'pending'
       }).length || 0
 
       const totalRefunded = returns?.reduce((sum, r) => {
-        const meta = r.metadata as any || {}
+        const meta = (r.details as any) || {}
         return sum + (meta.refund_amount || 0)
       }, 0) || 0
       
       const reasonsData = returns?.reduce((acc: any, r) => {
-        const meta = r.metadata as any || {}
+        const meta = (r.details as any) || {}
         const reason = meta.reason || 'Non spécifié'
         acc[reason] = (acc[reason] || 0) + 1
         return acc
       }, {})
 
       const monthlyData = returns?.reduce((acc: any, r) => {
-        const month = new Date(r.created_at).toLocaleDateString('fr-FR', { month: 'short' })
+        const month = new Date(r.created_at || new Date()).toLocaleDateString('fr-FR', { month: 'short' })
         if (!acc[month]) {
           acc[month] = { month, count: 0, amount: 0 }
         }
         acc[month].count++
-        const meta = r.metadata as any || {}
+        const meta = (r.details as any) || {}
         acc[month].amount += meta.refund_amount || 0
         return acc
       }, {})
