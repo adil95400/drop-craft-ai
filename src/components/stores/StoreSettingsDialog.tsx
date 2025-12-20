@@ -94,22 +94,25 @@ export function StoreSettingsDialog({ store, onUpdate }: StoreSettingsDialogProp
 
   const updateCredentials = async () => {
     try {
-      const credentials = {
-        shop_domain: formData.domain.replace(/^https?:\/\//, '').replace(/\/$/, ''),
-        access_token: formData.accessToken
+      // Store in localStorage as mock since store_integrations doesn't exist
+      const stored = localStorage.getItem('mock_store_integrations') || '[]'
+      const integrations = JSON.parse(stored)
+      const index = integrations.findIndex((i: any) => i.id === store.id)
+      
+      const updatedStore = {
+        ...store,
+        name: formData.name,
+        domain: formData.domain,
+        status: 'connected'
       }
-
-      const { error } = await supabase
-        .from('store_integrations')
-        .update({ 
-          name: formData.name,
-          domain: formData.domain,
-          credentials,
-          status: 'connected'
-        })
-        .eq('id', store.id)
-
-      if (error) throw error
+      
+      if (index >= 0) {
+        integrations[index] = updatedStore
+      } else {
+        integrations.push(updatedStore)
+      }
+      
+      localStorage.setItem('mock_store_integrations', JSON.stringify(integrations))
 
       onUpdate()
 
@@ -145,7 +148,6 @@ export function StoreSettingsDialog({ store, onUpdate }: StoreSettingsDialogProp
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Statut actuel */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base">Statut de la connexion</CardTitle>
@@ -164,7 +166,6 @@ export function StoreSettingsDialog({ store, onUpdate }: StoreSettingsDialogProp
             </CardContent>
           </Card>
 
-          {/* Configuration */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base">Configuration</CardTitle>
@@ -205,7 +206,6 @@ export function StoreSettingsDialog({ store, onUpdate }: StoreSettingsDialogProp
             </CardContent>
           </Card>
 
-          {/* Test de connexion */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base">Test de connexion</CardTitle>

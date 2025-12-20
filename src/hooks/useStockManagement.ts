@@ -7,7 +7,7 @@ interface MockWarehouse {
   id: string
   name: string
   location: string
-  warehouse_type: 'standard' | 'cold_storage' | 'hazmat'
+  warehouse_type: 'standard' | 'cold_storage' | 'hazmat' | 'dropship'
   capacity: number
   current_utilization: number
   manager_name?: string

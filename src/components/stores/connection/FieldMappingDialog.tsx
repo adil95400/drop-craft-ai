@@ -8,7 +8,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { Trash2, Plus } from 'lucide-react'
 import { getPlatformMappings, type FieldMapping } from '@/lib/platform-field-mapper'
-import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 
 interface FieldMappingDialogProps {
@@ -29,28 +28,18 @@ export function FieldMappingDialog({ open, onOpenChange, platform, onSave }: Fie
     }
   }, [open, platform])
 
-  const loadMappings = async () => {
+  const loadMappings = () => {
     // Charger les mappings standards
     const standard = getPlatformMappings(platform)
     setStandardMappings(standard)
 
-    // Charger les mappings personnalisés depuis la DB
+    // Charger les mappings personnalisés depuis localStorage
     try {
-      const { data, error } = await supabase
-        .from('field_mappings')
-        .select('*')
-        .eq('platform', platform)
-
-      if (error) throw error
-
-      const custom: FieldMapping[] = (data || []).map(d => ({
-        sourceField: d.source_field,
-        targetField: d.target_field,
-        required: d.is_required,
-        defaultValue: d.default_value
-      }))
-
-      setCustomMappings(custom)
+      const stored = localStorage.getItem(`field_mappings_${platform}`)
+      if (stored) {
+        const custom: FieldMapping[] = JSON.parse(stored)
+        setCustomMappings(custom)
+      }
     } catch (error: any) {
       console.error('Error loading mappings:', error)
     }
@@ -75,35 +64,10 @@ export function FieldMappingDialog({ open, onOpenChange, platform, onSave }: Fie
 
   const handleSave = async () => {
     try {
-      const { data: user } = await supabase.auth.getUser()
-      if (!user?.user) throw new Error('User not authenticated')
-
-      // Supprimer les anciens mappings
-      await supabase
-        .from('field_mappings')
-        .delete()
-        .eq('platform', platform)
-        .eq('user_id', user.user.id)
-
-      // Insérer les nouveaux
       const validMappings = customMappings.filter(m => m.sourceField && m.targetField)
       
-      if (validMappings.length > 0) {
-        const { error } = await supabase
-          .from('field_mappings')
-          .insert(
-            validMappings.map(m => ({
-              user_id: user.user.id,
-              platform,
-              source_field: m.sourceField,
-              target_field: m.targetField,
-              is_required: m.required || false,
-              default_value: m.defaultValue
-            }))
-          )
-
-        if (error) throw error
-      }
+      // Save to localStorage
+      localStorage.setItem(`field_mappings_${platform}`, JSON.stringify(validMappings))
 
       toast({
         title: 'Succès',

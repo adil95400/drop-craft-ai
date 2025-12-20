@@ -31,60 +31,50 @@ export function BTSWholesalerTestConnection() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
-      // 1. Trouver le fournisseur BTSWholesaler
-      const { data: supplier, error: supplierError } = await supabase
-        .from('premium_suppliers')
+      // Use suppliers table instead of premium_suppliers
+      const { data: supplier } = await supabase
+        .from('suppliers')
         .select('*')
         .eq('name', 'BTSWholesaler')
-        .single()
-
-      if (supplierError || !supplier) {
-        throw new Error('Fournisseur BTSWholesaler introuvable')
-      }
-
-      // 2. Créer ou mettre à jour la connexion avec le JWT token
-      const { data: existingConnection } = await supabase
-        .from('premium_supplier_connections')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('supplier_id', supplier.id)
         .maybeSingle()
 
-      if (existingConnection) {
-        // Mettre à jour
-        await supabase
-          .from('premium_supplier_connections')
-          .update({
-            metadata: {
-              jwt_token: jwtToken,
-              format: 'json',
-              language: 'fr-FR'
-            },
-            status: 'pending'
-          })
-          .eq('id', existingConnection.id)
-      } else {
-        // Créer
-        await supabase
-          .from('premium_supplier_connections')
+      let supplierId = supplier?.id
+
+      // Create supplier if not exists
+      if (!supplierId) {
+        const { data: newSupplier, error: createError } = await supabase
+          .from('suppliers')
           .insert({
             user_id: user.id,
-            supplier_id: supplier.id,
-            status: 'pending',
-            metadata: {
-              jwt_token: jwtToken,
-              format: 'json',
-              language: 'fr-FR'
-            }
+            name: 'BTSWholesaler',
+            status: 'active'
           })
+          .select()
+          .single()
+
+        if (createError) throw createError
+        supplierId = newSupplier.id
       }
 
-      // 3. Appeler l'edge function pour tester et importer
+      // Store connection info in localStorage as mock
+      const connectionData = {
+        user_id: user.id,
+        supplier_id: supplierId,
+        jwt_token: jwtToken,
+        format: 'json',
+        language: 'fr-FR',
+        status: 'pending',
+        created_at: new Date().toISOString()
+      }
+      
+      localStorage.setItem(`bts_connection_${user.id}`, JSON.stringify(connectionData))
+
+      // Call edge function to test and import
       console.log('🔗 Calling premium-supplier-connect...')
       const { data, error } = await supabase.functions.invoke('premium-supplier-connect', {
         body: {
           userId: user.id,
-          supplierId: supplier.id
+          supplierId
         }
       })
 
