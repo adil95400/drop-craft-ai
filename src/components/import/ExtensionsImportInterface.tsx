@@ -174,14 +174,14 @@ export const ExtensionsImportInterface = ({
     try {
       await installExtension({
         name: extension.name,
-        display_name: extension.display_name,
         description: extension.description,
         category: extension.category,
         provider: extension.provider,
         configuration: {
           ai_enhanced: extension.ai_enhanced,
           auto_trigger: extension.auto_trigger,
-          compatible_with: extension.compatible_with
+          compatible_with: extension.compatible_with,
+          display_name: extension.display_name
         },
         permissions: {
           read_products: true,
@@ -193,7 +193,7 @@ export const ExtensionsImportInterface = ({
           pricing: extension.pricing,
           rating: extension.rating
         }
-      })
+      } as any)
       
       onExtensionActivated?.(extension)
       toast.success(`Extension ${extension.display_name} installée !`)

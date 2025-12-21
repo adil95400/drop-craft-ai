@@ -28,7 +28,7 @@ export function useFulfillmentShipments(filters?: {
     queryFn: async () => {
       if (!user) return [];
       
-      let query = supabase
+      let query = (supabase as any)
         .from('fulfillment_shipments')
         .select('*, carrier:fulfillment_carriers(*)')
         .eq('user_id', user.id)
@@ -45,7 +45,7 @@ export function useFulfillmentShipments(filters?: {
       const { data, error } = await query;
 
       if (error) throw error;
-      return data as (FulfillmentShipment & { carrier: any })[];
+      return (data || []) as (FulfillmentShipment & { carrier: any })[];
     },
     enabled: !!user,
   });

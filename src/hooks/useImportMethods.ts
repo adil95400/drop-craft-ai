@@ -53,7 +53,7 @@ export function useImportMethods() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setImportMethods(data || [])
+      setImportMethods((data || []).map((item: any) => ({ ...item, processed_products: item.processed_products || 0 })) as ImportMethod[])
     } catch (error) {
       console.error('Error fetching import methods:', error)
       toast({
@@ -88,7 +88,7 @@ export function useImportMethods() {
 
       if (error) throw error
 
-      setImportMethods(prev => [data, ...prev])
+      setImportMethods(prev => [{ ...data, processed_products: 0 } as ImportMethod, ...prev])
       toast({
         title: "Succès",
         description: `${template.title} configuré avec succès`

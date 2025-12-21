@@ -10,7 +10,7 @@ export interface ImportJob {
   supplier_id?: string
   product_ids?: string[]
   total_products: number
-  processed_products: number
+  processed_products?: number
   successful_imports: number
   failed_imports: number
   status: string
@@ -21,6 +21,8 @@ export interface ImportJob {
   completed_at?: string
   created_at: string
   updated_at?: string
+  source_platform?: string
+  source_url?: string
 }
 
 export function useImportJobs() {
@@ -41,7 +43,7 @@ export function useImportJobs() {
         .limit(50)
 
       if (error) throw error
-      return data as ImportJob[]
+      return (data || []).map((item: any) => ({ ...item, processed_products: item.processed_products || 0 })) as ImportJob[]
     },
     enabled: !!user?.id,
     refetchInterval: 5000, // Refresh every 5 seconds for active jobs
@@ -88,11 +90,14 @@ export function useImportJobs() {
 
   const retryJob = useMutation({
     mutationFn: async (jobId: string) => {
-      const { data, error } = await supabase
-        .rpc('retry_failed_import', { job_id: jobId })
+      // Update job status to pending for retry
+      const { error } = await supabase
+        .from('import_jobs')
+        .update({ status: 'pending', error_log: [] })
+        .eq('id', jobId)
 
       if (error) throw error
-      return data
+      return true
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['import-jobs'] })

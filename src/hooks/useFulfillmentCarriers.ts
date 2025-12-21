@@ -24,14 +24,14 @@ export function useFulfillmentCarriers() {
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('fulfillment_carriers')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as FulfillmentCarrier[];
+      return (data || []) as FulfillmentCarrier[];
     },
     enabled: !!user,
   });
@@ -67,7 +67,7 @@ export function useFulfillmentCarriers() {
 
   const updateCarrierMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<FulfillmentCarrier> }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('fulfillment_carriers')
         .update(updates)
         .eq('id', id)
@@ -89,7 +89,7 @@ export function useFulfillmentCarriers() {
 
   const deleteCarrierMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('fulfillment_carriers')
         .delete()
         .eq('id', id)

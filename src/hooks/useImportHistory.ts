@@ -23,7 +23,7 @@ export const useImportHistory = () => {
   return useQuery({
     queryKey: ['import-history'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('import_history')
         .select('*')
         .order('created_at', { ascending: false })
@@ -32,9 +32,9 @@ export const useImportHistory = () => {
       if (error) throw error;
       
       // Map data to include compatibility fields
-      const mappedData = (data || []).map(item => ({
+      const mappedData = (data || []).map((item: any) => ({
         ...item,
-        job_type: item.action_type,
+        job_type: item.action_type || 'import',
         supplier_id: item.supplier_product_id,
         successful_imports: item.status === 'success' ? 1 : 0,
         failed_imports: item.status === 'failed' ? 1 : 0
