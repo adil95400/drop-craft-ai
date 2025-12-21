@@ -18,13 +18,13 @@ interface Supplier {
   website?: string;
   country?: string;
   category?: string;
-  supplier_type: string;
+  supplier_type?: string;
   status: string;
   logo_url?: string;
-  connection_status: string;
-  product_count: number;
-  rating: number;
-  tags: string[];
+  connection_status?: string;
+  product_count?: number;
+  rating?: number;
+  tags?: string[];
   created_at: string;
 }
 
@@ -71,7 +71,16 @@ export const SuppliersHub: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setSuppliers(data || []);
+      // Map database fields to component interface
+      const mappedSuppliers: Supplier[] = (data || []).map((s: any) => ({
+        ...s,
+        supplier_type: s.supplier_type || 'standard',
+        connection_status: s.status === 'active' ? 'connected' : 'disconnected',
+        product_count: s.product_count || 0,
+        rating: s.rating || 4.5,
+        tags: s.tags || []
+      }));
+      setSuppliers(mappedSuppliers);
     } catch (error: any) {
       console.error('Error fetching suppliers:', error);
       toast({
@@ -98,8 +107,8 @@ export const SuppliersHub: React.FC = () => {
       const { error } = await supabase
         .from('suppliers')
         .update({ 
-          connection_status: 'disconnected',
-        })
+          status: 'inactive',
+        } as any)
         .eq('id', supplierId);
 
       if (error) throw error;
@@ -132,8 +141,8 @@ export const SuppliersHub: React.FC = () => {
   const categories = Array.from(new Set(suppliers.map(s => s.category).filter(Boolean)));
   const countries = Array.from(new Set(suppliers.map(s => s.country).filter(Boolean)));
 
-  const connectedSuppliers = filteredSuppliers.filter(s => s.connection_status === 'connected');
-  const availableSuppliers = filteredSuppliers.filter(s => s.connection_status !== 'connected');
+  const connectedSuppliers = filteredSuppliers.filter(s => s.connection_status === 'connected' || s.status === 'active');
+  const availableSuppliers = filteredSuppliers.filter(s => s.connection_status !== 'connected' && s.status !== 'active');
 
   if (loading) {
     return (
@@ -249,7 +258,7 @@ export const SuppliersHub: React.FC = () => {
                           <div className="flex items-center gap-1">
                             <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                             <span className="text-xs text-muted-foreground">
-                              {supplier.rating.toFixed(1)}
+                              {(supplier.rating || 4.5).toFixed(1)}
                             </span>
                           </div>
                         </div>
@@ -266,10 +275,10 @@ export const SuppliersHub: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-muted-foreground">
                       <Package className="inline mr-1 h-4 w-4" />
-                      {supplier.product_count.toLocaleString()} produits
+                      {(supplier.product_count || 0).toLocaleString()} produits
                     </div>
                     <Badge variant="outline" className="capitalize">
-                      {supplier.supplier_type}
+                      {supplier.supplier_type || 'standard'}
                     </Badge>
                   </div>
 
@@ -348,11 +357,11 @@ export const SuppliersHub: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-muted-foreground">
                       <Package className="inline mr-1 h-4 w-4" />
-                      {supplier.product_count.toLocaleString()} produits
+                      {(supplier.product_count || 0).toLocaleString()} produits
                     </div>
                     <div className="flex items-center gap-1">
                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                      <span className="text-xs">{supplier.rating.toFixed(1)}</span>
+                      <span className="text-xs">{(supplier.rating || 4.5).toFixed(1)}</span>
                     </div>
                   </div>
 

@@ -37,12 +37,12 @@ export const ProductionTrackingInterface = () => {
 
   useEffect(() => {
     if (shipmentsData) {
-      const filtered = shipmentsData.filter(shipment =>
+      const filtered = (shipmentsData as any[]).filter((shipment: any) =>
         shipment.tracking_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         shipment.orders?.order_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         shipment.orders?.customers?.name?.toLowerCase().includes(searchTerm.toLowerCase())
       )
-      setFilteredShipments(filtered)
+      setFilteredShipments(filtered as Shipment[])
     }
   }, [shipmentsData, searchTerm])
 
@@ -111,12 +111,13 @@ export const ProductionTrackingInterface = () => {
     )
   }
 
+  const shipmentsList = (shipmentsData || []) as any[];
   const stats = {
-    total: shipmentsData?.length || 0,
-    delivered: shipmentsData?.filter(s => s.status === 'delivered').length || 0,
-    in_transit: shipmentsData?.filter(s => s.status === 'in_transit').length || 0,
-    pending: shipmentsData?.filter(s => s.status === 'pending').length || 0,
-    exceptions: shipmentsData?.filter(s => s.status === 'exception').length || 0
+    total: shipmentsList.length,
+    delivered: shipmentsList.filter((s: any) => s.status === 'delivered').length,
+    in_transit: shipmentsList.filter((s: any) => s.status === 'in_transit').length,
+    pending: shipmentsList.filter((s: any) => s.status === 'pending').length,
+    exceptions: shipmentsList.filter((s: any) => s.status === 'exception').length
   }
 
   return (

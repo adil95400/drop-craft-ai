@@ -128,7 +128,7 @@ export function ProductionReadinessChecker() {
 
     // Marketplace feeds check
     const feedsCheck = await runCheck('Marketplace Feeds', 'integration', async () => {
-      const { count, error } = await supabase.from('marketplace_feeds').select('*', { count: 'exact', head: true })
+      const { count, error } = await (supabase.from('marketplace_feeds' as any) as any).select('*', { count: 'exact', head: true })
       if (error) throw error
       return `${count || 0} feeds configured`
     })

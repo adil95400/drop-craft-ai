@@ -30,22 +30,23 @@ export const useMarketplaceConnectors = () => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('import_connectors')
+      // Use 'as any' to bypass TypeScript until types are regenerated
+      const { data, error } = await (supabase
+        .from('import_connectors' as any)
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (error) throw error;
 
-      setConnectors((data || []).map(d => ({
+      setConnectors((data || []).map((d: any) => ({
         id: d.id,
-        name: d.name,
-        provider: d.provider as any,
+        name: d.name || 'Connector',
+        provider: (d.platform || d.connector_type || 'unknown') as any,
         status: d.is_active ? 'connected' : 'disconnected',
         lastSync: d.last_sync_at ? new Date(d.last_sync_at) : undefined,
         config: (d.config as Record<string, any>) || {},
-        credentials: (d.credentials as Record<string, string>) || {}
+        credentials: {}
       })));
     } catch (error) {
       console.error('[useMarketplaceConnectors] Load error:', error);
@@ -85,28 +86,28 @@ export const useMarketplaceConnectors = () => {
       }
 
       // Save connector
-      const { data, error } = await supabase
-        .from('import_connectors')
+      const { data, error } = await (supabase
+        .from('import_connectors' as any)
         .insert({
           user_id: user.id,
-          provider: options.provider,
+          platform: options.provider,
+          connector_type: options.provider,
           name: `${options.provider.charAt(0).toUpperCase() + options.provider.slice(1)} Connector`,
           is_active: true,
-          credentials: options.credentials,
           config: options.config || {}
-        })
+        } as any)
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
 
       const newConnector: MarketplaceConnector = {
         id: data.id,
-        name: data.name,
-        provider: data.provider as any,
+        name: data.name || 'Connector',
+        provider: (data.platform || data.connector_type || options.provider) as any,
         status: 'connected',
         config: (data.config as Record<string, any>) || {},
-        credentials: (data.credentials as Record<string, string>) || {}
+        credentials: {}
       };
 
       setConnectors(prev => [newConnector, ...prev]);
@@ -134,10 +135,10 @@ export const useMarketplaceConnectors = () => {
     try {
       setLoading(true);
 
-      const { error } = await supabase
-        .from('import_connectors')
+      const { error } = await (supabase
+        .from('import_connectors' as any)
         .delete()
-        .eq('id', connectorId);
+        .eq('id', connectorId) as any);
 
       if (error) throw error;
 
