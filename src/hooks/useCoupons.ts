@@ -1,10 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import type { Database } from '@/integrations/supabase/types'
 
-type PromotionalCoupon = Database['public']['Tables']['promotional_coupons']['Row']
-type CouponInsert = Database['public']['Tables']['promotional_coupons']['Insert']
+interface PromotionalCoupon {
+  id: string
+  user_id: string
+  code: string
+  discount_type: string
+  discount_value: number
+  min_purchase_amount?: number
+  max_uses?: number
+  current_uses?: number
+  starts_at?: string
+  expires_at?: string
+  is_active: boolean
+  applicable_products?: any
+  applicable_categories?: any
+  description?: string
+  created_at: string
+  updated_at: string
+}
+
+type CouponInsert = Omit<PromotionalCoupon, 'id' | 'created_at' | 'updated_at'>
 
 export function useCoupons() {
   const { toast } = useToast()
@@ -13,23 +30,23 @@ export function useCoupons() {
   const { data: coupons, isLoading } = useQuery({
     queryKey: ['promotional-coupons'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('promotional_coupons')
+      const { data, error } = await (supabase
+        .from('promotional_coupons' as any)
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false }) as any)
 
       if (error) throw error
-      return data as PromotionalCoupon[]
+      return (data || []) as PromotionalCoupon[]
     },
   })
 
   const createCouponMutation = useMutation({
     mutationFn: async (coupon: CouponInsert) => {
-      const { data, error } = await supabase
-        .from('promotional_coupons')
-        .insert(coupon)
+      const { data, error } = await (supabase
+        .from('promotional_coupons' as any)
+        .insert(coupon as any)
         .select()
-        .single()
+        .single() as any)
 
       if (error) throw error
       return data
@@ -52,12 +69,12 @@ export function useCoupons() {
 
   const updateCouponMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<CouponInsert> }) => {
-      const { data, error } = await supabase
-        .from('promotional_coupons')
-        .update(updates)
+      const { data, error } = await (supabase
+        .from('promotional_coupons' as any)
+        .update(updates as any)
         .eq('id', id)
         .select()
-        .single()
+        .single() as any)
 
       if (error) throw error
       return data
@@ -73,10 +90,10 @@ export function useCoupons() {
 
   const deleteCouponMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('promotional_coupons')
+      const { error } = await (supabase
+        .from('promotional_coupons' as any)
         .delete()
-        .eq('id', id)
+        .eq('id', id) as any)
 
       if (error) throw error
     },

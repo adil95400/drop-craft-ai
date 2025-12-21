@@ -1,33 +1,41 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import type { Database } from '@/integrations/supabase/types'
 
-type ExtensionRow = Database['public']['Tables']['extensions']['Row']
-type ExtensionInsert = Database['public']['Tables']['extensions']['Insert']
-type ExtensionJobRow = Database['public']['Tables']['extension_jobs']['Row']
-type ExtensionJobInsert = Database['public']['Tables']['extension_jobs']['Insert']
-type ExtensionDataRow = Database['public']['Tables']['extension_data']['Row']
+export interface Extension {
+  id: string
+  name: string
+  code: string
+  description?: string
+  version?: string
+  status?: string
+  is_premium?: boolean
+  config?: any
+  created_at: string
+  updated_at: string
+}
 
-export interface Extension extends ExtensionRow {}
-
-export interface ExtensionJob extends ExtensionJobRow {}
-
-export interface ExtensionData extends ExtensionDataRow {}
+export interface ExtensionJob {
+  id: string
+  extension_id?: string
+  job_type: string
+  status?: string
+  input_data?: any
+  output_data?: any
+  error_message?: string
+  started_at?: string
+  completed_at?: string
+  created_at: string
+  user_id: string
+}
 
 export interface ExtensionInstallConfig {
   name: string
-  display_name: string
   description?: string
-  category: string
-  provider: string
   version?: string
-  configuration?: any
-  permissions?: any
-  metadata?: any
-  api_endpoints?: any
-  rate_limits?: any
-  sync_frequency?: string
+  code?: string
+  is_premium?: boolean
+  config?: any
 }
 
 export const useExtensions = (category?: string) => {
@@ -42,16 +50,13 @@ export const useExtensions = (category?: string) => {
   } = useQuery({
     queryKey: ['extensions', category],
     queryFn: async (): Promise<Extension[]> => {
-      let query = supabase.from('extensions').select('*')
-      
-      if (category) {
-        query = query.eq('category', category)
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false })
+      const { data, error } = await supabase
+        .from('extensions')
+        .select('*')
+        .order('created_at', { ascending: false })
       
       if (error) throw error
-      return data || []
+      return (data || []) as Extension[]
     }
   })
 
@@ -69,21 +74,23 @@ export const useExtensions = (category?: string) => {
         .limit(50)
       
       if (error) throw error
-      return data || []
+      return (data || []) as ExtensionJob[]
     }
   })
 
   // Install extension
   const installExtension = useMutation({
     mutationFn: async (extensionConfig: ExtensionInstallConfig) => {
-      const user = await supabase.auth.getUser()
-      if (!user.data.user?.id) throw new Error('User not authenticated')
-      
       const { data, error } = await supabase
         .from('extensions')
         .insert({
-          ...extensionConfig,
-          user_id: user.data.user.id
+          name: extensionConfig.name,
+          code: extensionConfig.code || '',
+          description: extensionConfig.description,
+          version: extensionConfig.version,
+          is_premium: extensionConfig.is_premium,
+          config: extensionConfig.config,
+          status: 'active'
         })
         .select()
         .single()
@@ -113,7 +120,7 @@ export const useExtensions = (category?: string) => {
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Extension> }) => {
       const { data, error } = await supabase
         .from('extensions')
-        .update(updates)
+        .update(updates as any)
         .eq('id', id)
         .select()
         .single()
@@ -147,7 +154,7 @@ export const useExtensions = (category?: string) => {
       queryClient.invalidateQueries({ queryKey: ['extensions'] })
       toast({
         title: data.status === 'active' ? "Extension activée" : "Extension désactivée",
-        description: `${data.display_name} est maintenant ${data.status === 'active' ? 'activée' : 'désactivée'}`
+        description: `${data.name} est maintenant ${data.status === 'active' ? 'activée' : 'désactivée'}`
       })
     }
   })

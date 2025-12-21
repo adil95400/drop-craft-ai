@@ -886,6 +886,65 @@ export type Database = {
         }
         Relationships: []
       }
+      competitive_intelligence: {
+        Row: {
+          competitive_data: Json | null
+          competitor_name: string
+          competitor_price: number | null
+          competitor_url: string | null
+          created_at: string | null
+          id: string
+          last_checked_at: string | null
+          market_position: string | null
+          price_analysis: Json | null
+          price_difference: number | null
+          product_id: string | null
+          recommendations: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          competitive_data?: Json | null
+          competitor_name: string
+          competitor_price?: number | null
+          competitor_url?: string | null
+          created_at?: string | null
+          id?: string
+          last_checked_at?: string | null
+          market_position?: string | null
+          price_analysis?: Json | null
+          price_difference?: number | null
+          product_id?: string | null
+          recommendations?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          competitive_data?: Json | null
+          competitor_name?: string
+          competitor_price?: number | null
+          competitor_url?: string | null
+          created_at?: string | null
+          id?: string
+          last_checked_at?: string | null
+          market_position?: string | null
+          price_analysis?: Json | null
+          price_difference?: number | null
+          product_id?: string | null
+          recommendations?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competitive_intelligence_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
@@ -1904,6 +1963,56 @@ export type Database = {
         }
         Relationships: []
       }
+      product_ai_attributes: {
+        Row: {
+          attribute_key: string
+          attribute_type: string
+          attribute_value: string | null
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          is_approved: boolean | null
+          product_id: string | null
+          source: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attribute_key: string
+          attribute_type: string
+          attribute_value?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          is_approved?: boolean | null
+          product_id?: string | null
+          source?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attribute_key?: string
+          attribute_type?: string
+          attribute_value?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          is_approved?: boolean | null
+          product_id?: string | null
+          source?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_ai_attributes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_enrichment: {
         Row: {
           ai_suggestions: Json | null
@@ -1956,6 +2065,68 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "product_enrichment_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_rewrites: {
+        Row: {
+          applied_at: string | null
+          created_at: string | null
+          id: string
+          language: string | null
+          original_description: string | null
+          original_title: string | null
+          product_id: string | null
+          product_source: string | null
+          rewrite_type: string | null
+          rewritten_description: string | null
+          rewritten_title: string | null
+          tone: string | null
+          updated_at: string | null
+          user_id: string
+          was_applied: boolean | null
+        }
+        Insert: {
+          applied_at?: string | null
+          created_at?: string | null
+          id?: string
+          language?: string | null
+          original_description?: string | null
+          original_title?: string | null
+          product_id?: string | null
+          product_source?: string | null
+          rewrite_type?: string | null
+          rewritten_description?: string | null
+          rewritten_title?: string | null
+          tone?: string | null
+          updated_at?: string | null
+          user_id: string
+          was_applied?: boolean | null
+        }
+        Update: {
+          applied_at?: string | null
+          created_at?: string | null
+          id?: string
+          language?: string | null
+          original_description?: string | null
+          original_title?: string | null
+          product_id?: string | null
+          product_source?: string | null
+          rewrite_type?: string | null
+          rewritten_description?: string | null
+          rewritten_title?: string | null
+          tone?: string | null
+          updated_at?: string | null
+          user_id?: string
+          was_applied?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_rewrites_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
@@ -2191,6 +2362,63 @@ export type Database = {
           subscription_plan?: string | null
           timezone?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      promotional_coupons: {
+        Row: {
+          applicable_categories: Json | null
+          applicable_products: Json | null
+          code: string
+          created_at: string | null
+          current_uses: number | null
+          description: string | null
+          discount_type: string | null
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          min_purchase_amount: number | null
+          starts_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          applicable_categories?: Json | null
+          applicable_products?: Json | null
+          code: string
+          created_at?: string | null
+          current_uses?: number | null
+          description?: string | null
+          discount_type?: string | null
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          min_purchase_amount?: number | null
+          starts_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          applicable_categories?: Json | null
+          applicable_products?: Json | null
+          code?: string
+          created_at?: string | null
+          current_uses?: number | null
+          description?: string | null
+          discount_type?: string | null
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          min_purchase_amount?: number | null
+          starts_at?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }

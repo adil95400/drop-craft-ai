@@ -23,14 +23,14 @@ export function useCompetitiveAnalysis() {
   const { data: analyses, isLoading } = useQuery({
     queryKey: ['competitive-analyses'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('competitive_intelligence')
+      const { data, error } = await (supabase
+        .from('competitive_intelligence' as any)
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(20) as any);
 
       if (error) throw error;
-      return data as CompetitorAnalysis[];
+      return (data || []) as CompetitorAnalysis[];
     },
   });
 
@@ -135,10 +135,10 @@ export function useCompetitiveAnalysis() {
 
   const deleteAnalysis = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('competitive_intelligence')
+      const { error } = await (supabase
+        .from('competitive_intelligence' as any)
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any);
 
       if (error) throw error;
     },
