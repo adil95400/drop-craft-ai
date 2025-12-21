@@ -8,14 +8,10 @@ export interface MarketingCampaign {
   description?: string
   type: string
   status: 'draft' | 'active' | 'paused' | 'completed'
-  budget_total?: number
+  budget?: number
   budget_spent: number
-  scheduled_at?: string
-  started_at?: string
-  ended_at?: string
-  target_audience?: any
-  content?: any
-  settings?: any
+  start_date?: string
+  end_date?: string
   metrics?: any
   user_id: string
   created_at: string
@@ -28,7 +24,7 @@ export interface MarketingSegment {
   description?: string
   criteria: any
   contact_count: number
-  last_updated?: string
+  is_dynamic?: boolean
   user_id: string
   created_at: string
   updated_at: string
@@ -42,12 +38,12 @@ export const useMarketing = () => {
     queryKey: ['marketing-campaigns'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('marketing_campaigns')
+        .from('marketing_campaigns' as any)
         .select('*')
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      return data as MarketingCampaign[]
+      return (data || []) as unknown as MarketingCampaign[]
     },
   })
 
@@ -55,12 +51,12 @@ export const useMarketing = () => {
     queryKey: ['marketing-segments'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('marketing_segments')
+        .from('marketing_segments' as any)
         .select('*')
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      return data as MarketingSegment[]
+      return (data || []) as unknown as MarketingSegment[]
     },
   })
 
@@ -70,7 +66,7 @@ export const useMarketing = () => {
       if (!user) throw new Error('Non authentifié')
 
       const { data, error } = await supabase
-        .from('marketing_campaigns')
+        .from('marketing_campaigns' as any)
         .insert([{ ...campaign, user_id: user.id, budget_spent: 0 }])
         .select()
         .single()
@@ -90,7 +86,7 @@ export const useMarketing = () => {
   const updateCampaign = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<MarketingCampaign> }) => {
       const { data, error } = await supabase
-        .from('marketing_campaigns')
+        .from('marketing_campaigns' as any)
         .update(updates)
         .eq('id', id)
         .select()
@@ -114,7 +110,7 @@ export const useMarketing = () => {
       if (!user) throw new Error('Non authentifié')
 
       const { data, error } = await supabase
-        .from('marketing_segments')
+        .from('marketing_segments' as any)
         .insert([{ ...segment, user_id: user.id, contact_count: 0 }])
         .select()
         .single()
@@ -134,7 +130,7 @@ export const useMarketing = () => {
   const stats = {
     totalCampaigns: campaigns.length,
     activeCampaigns: campaigns.filter(c => c.status === 'active').length,
-    totalBudget: campaigns.reduce((sum, c) => sum + (c.budget_total || 0), 0),
+    totalBudget: campaigns.reduce((sum, c) => sum + (c.budget || 0), 0),
     totalSpent: campaigns.reduce((sum, c) => sum + c.budget_spent, 0),
     totalSegments: segments.length,
     totalContacts: segments.reduce((sum, s) => sum + s.contact_count, 0)

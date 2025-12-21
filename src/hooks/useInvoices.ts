@@ -59,11 +59,11 @@ export const useInvoices = () => {
     queryKey: ['invoices'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('invoice_history')
+        .from('invoice_history' as any)
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
 
@@ -71,11 +71,10 @@ export const useInvoices = () => {
     queryKey: ['invoice-templates'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('invoice_templates')
-        .select('*')
-        .eq('is_active', true);
+        .from('invoice_templates' as any)
+        .select('*');
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
 

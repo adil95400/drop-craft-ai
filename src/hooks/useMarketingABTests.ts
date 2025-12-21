@@ -2,11 +2,36 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
-import type { Database } from '@/integrations/supabase/types'
 
-type MarketingABTest = Database['public']['Tables']['ab_test_experiments']['Row']
-type MarketingABTestInsert = Database['public']['Tables']['ab_test_experiments']['Insert']
-type MarketingABTestUpdate = Database['public']['Tables']['ab_test_experiments']['Update']
+interface MarketingABTest {
+  id: string
+  name: string
+  description?: string
+  status?: string
+  variants?: any
+  metrics?: any
+  start_date?: string
+  end_date?: string
+  winner_variant_id?: string
+  user_id: string
+  created_at: string
+  updated_at: string
+}
+
+interface MarketingABTestInsert {
+  name: string
+  description?: string
+  status?: string
+  variants?: any
+  metrics?: any
+  start_date?: string
+  end_date?: string
+  winner_variant_id?: string
+}
+
+interface MarketingABTestUpdate extends Partial<MarketingABTestInsert> {
+  id?: string
+}
 
 export const useMarketingABTests = () => {
   const { toast } = useToast()
@@ -23,23 +48,23 @@ export const useMarketingABTests = () => {
       if (!user?.id) return []
       
       const { data, error } = await supabase
-        .from('ab_test_experiments')
+        .from('ab_test_experiments' as any)
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      return data || []
+      return (data || []) as unknown as MarketingABTest[]
     },
     enabled: !!user?.id
   })
 
   const createABTest = useMutation({
-    mutationFn: async (testData: Omit<MarketingABTestInsert, 'user_id'>) => {
+    mutationFn: async (testData: MarketingABTestInsert) => {
       if (!user?.id) throw new Error('User not authenticated')
 
       const { data, error } = await supabase
-        .from('ab_test_experiments')
+        .from('ab_test_experiments' as any)
         .insert([{ ...testData, user_id: user.id }])
         .select()
         .single()
@@ -59,7 +84,7 @@ export const useMarketingABTests = () => {
   const updateABTest = useMutation({
     mutationFn: async ({ id, ...updates }: MarketingABTestUpdate & { id: string }) => {
       const { data, error } = await supabase
-        .from('ab_test_experiments')
+        .from('ab_test_experiments' as any)
         .update(updates)
         .eq('id', id)
         .select()

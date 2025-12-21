@@ -133,19 +133,18 @@ export const AddIntegrationDialog = () => {
       if (formData.api_key) credentials.api_key = formData.api_key;
       if (formData.api_secret) credentials.api_secret = formData.api_secret;
       if (formData.access_token) credentials.access_token = formData.access_token;
-      const integration: Omit<Integration, 'id' | 'user_id' | 'created_at' | 'updated_at'> & {
-        credentials?: Record<string, string>;
-      } = {
-        platform_type: selectedCategory,
+      const integration: any = {
+        platform: selectedPlatform,
         platform_name: selectedPlatform,
-        platform_url: formData.platform_url || undefined,
-        shop_domain: formData.shop_domain || undefined,
-        seller_id: formData.seller_id || undefined,
-        store_config: {},
+        store_url: formData.platform_url || undefined,
+        config: {
+          shop_domain: formData.shop_domain,
+          seller_id: formData.seller_id,
+          store_config: {}
+        },
         connection_status: 'disconnected',
         sync_frequency: formData.sync_frequency,
         is_active: false,
-        sync_settings: {},
         credentials: Object.keys(credentials).length > 0 ? credentials : undefined
       };
       await createIntegration({

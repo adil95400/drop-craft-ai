@@ -23,13 +23,13 @@ export const RealIntegrationsTab = () => {
     let filtered = integrations;
 
     if (activeTab !== 'all') {
-      filtered = filtered.filter(integration => integration.platform_type === activeTab);
+      filtered = filtered.filter(integration => integration.platform_type === activeTab || integration.platform === activeTab);
     }
 
     if (searchTerm) {
       filtered = filtered.filter(integration =>
-        integration.platform_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        integration.shop_domain?.toLowerCase().includes(searchTerm.toLowerCase())
+        (integration.platform_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (integration.store_url || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 

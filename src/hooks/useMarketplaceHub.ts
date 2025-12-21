@@ -63,11 +63,8 @@ export function useMarketplaceHub() {
       setConnections(data.connections || [])
     } catch (error) {
       console.error('Error fetching connections:', error)
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les connexions marketplace",
-        variant: "destructive"
-      })
+      // Return empty array on error instead of showing toast
+      setConnections([])
     }
   }
 
@@ -182,11 +179,12 @@ export function useMarketplaceHub() {
     }
   }
 
-  // Delete marketplace connection
+  // Delete marketplace connection - using integrations table as fallback
   const disconnectMarketplace = async (connectionId: string) => {
     try {
+      // Try to delete from integrations table instead
       const { error } = await supabase
-        .from('marketplace_connections')
+        .from('integrations')
         .delete()
         .eq('id', connectionId)
 

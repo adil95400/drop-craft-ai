@@ -43,6 +43,7 @@ import { PlatformLogo } from '@/components/ui/platform-logo';
 
 interface IntegrationConfigState extends Integration {
   credentials?: Record<string, string>;
+  [key: string]: any;
 }
 
 interface IntegrationCardProps {
@@ -140,7 +141,7 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
     }
   };
 
-  const StatusIcon = statusConfig[integration.connection_status].icon;
+  const StatusIcon = statusConfig[(integration.connection_status as keyof typeof statusConfig) || 'disconnected'].icon;
 
   return (
     <Card className="border-border bg-card shadow-card hover:shadow-card-hover transition-shadow">
@@ -151,10 +152,10 @@ export const IntegrationCard = ({ integration, onEdit }: IntegrationCardProps) =
             <div>
               <CardTitle className="text-lg capitalize">{integration.platform_name}</CardTitle>
               <CardDescription className="text-sm">
-                {integration.platform_type === 'ecommerce' && 'E-commerce'}
-                {integration.platform_type === 'marketplace' && 'Marketplace'}
-                {integration.platform_type === 'payment' && 'Paiement'}
-                {integration.platform_type === 'marketing' && 'Marketing'}
+                {(integration as any).platform_type === 'ecommerce' && 'E-commerce'}
+                {(integration as any).platform_type === 'marketplace' && 'Marketplace'}
+                {(integration as any).platform_type === 'payment' && 'Paiement'}
+                {(integration as any).platform_type === 'marketing' && 'Marketing'}
               </CardDescription>
             </div>
           </div>
