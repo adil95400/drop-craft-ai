@@ -45,13 +45,13 @@ export function SupplierIntegrationTest() {
       const startTime = Date.now()
       
       try {
-        // Check credentials exist
-        const { data: creds } = await supabase
-          .from('supplier_credentials_vault')
+        // Check credentials exist - use 'as any' to bypass TypeScript checking until types are regenerated
+        const { data: creds } = await (supabase
+          .from('supplier_credentials_vault' as any)
           .select('id')
           .eq('supplier_id', supplier.id)
           .eq('connection_status', 'active')
-          .single()
+          .single() as any);
 
         if (!creds) {
           setResults(prev => prev.map((r, idx) => 

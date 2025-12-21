@@ -31,28 +31,28 @@ export function AutoSyncManager({
   const [saving, setSaving] = useState(false)
   const { toast } = useToast()
 
-  // Load current settings from store_integrations
+  // Load current settings from integrations table
   useEffect(() => {
     const loadSettings = async () => {
-      const { data } = await supabase
-        .from('store_integrations')
-        .select('sync_frequency, sync_settings, is_active')
+      const { data } = await (supabase
+        .from('integrations')
+        .select('is_active, sync_frequency, config')
         .eq('id', connectionId)
-        .single()
+        .single() as any);
 
       if (data) {
-        setEnabled(data.is_active || false)
-        setFrequency(data.sync_frequency || 'hourly')
-        const settings = data.sync_settings as any
+        setEnabled(data.is_active || false);
+        setFrequency(data.sync_frequency || 'hourly');
+        const settings = data.config as any;
         if (settings) {
-          setSyncProducts(settings.import_products ?? true)
-          setSyncOrders(settings.track_orders ?? true)
-          setSyncInventory(settings.sync_inventory ?? true)
+          setSyncProducts(settings.import_products ?? true);
+          setSyncOrders(settings.track_orders ?? true);
+          setSyncInventory(settings.sync_inventory ?? true);
         }
       }
-    }
-    loadSettings()
-  }, [connectionId])
+    };
+    loadSettings();
+  }, [connectionId]);
 
   const handleSave = async () => {
     setSaving(true)
@@ -65,17 +65,17 @@ export function AutoSyncManager({
         auto_sync: enabled
       }
 
-      const { error } = await supabase
-        .from('store_integrations')
+      const { error } = await (supabase
+        .from('integrations')
         .update({
           is_active: enabled,
           sync_frequency: frequency,
-          sync_settings: syncSettings,
+          config: syncSettings,
           updated_at: new Date().toISOString()
-        })
-        .eq('id', connectionId)
+        } as any)
+        .eq('id', connectionId) as any);
 
-      if (error) throw error
+      if (error) throw error;
 
       toast({
         title: 'Paramètres sauvegardés',

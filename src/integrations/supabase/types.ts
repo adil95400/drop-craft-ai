@@ -1101,6 +1101,51 @@ export type Database = {
         }
         Relationships: []
       }
+      field_mappings: {
+        Row: {
+          created_at: string | null
+          default_value: string | null
+          id: string
+          integration_id: string | null
+          is_required: boolean | null
+          source_entity: string
+          source_field: string
+          target_entity: string
+          target_field: string
+          transformation_rule: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          default_value?: string | null
+          id?: string
+          integration_id?: string | null
+          is_required?: boolean | null
+          source_entity: string
+          source_field: string
+          target_entity: string
+          target_field: string
+          transformation_rule?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          default_value?: string | null
+          id?: string
+          integration_id?: string | null
+          is_required?: boolean | null
+          source_entity?: string
+          source_field?: string
+          target_entity?: string
+          target_field?: string
+          transformation_rule?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       fulfilment_rules: {
         Row: {
           actions: Json | null
@@ -1514,6 +1559,122 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_supplier_connections: {
+        Row: {
+          connection_status: string | null
+          created_at: string | null
+          credentials_encrypted: string | null
+          error_message: string | null
+          id: string
+          last_sync_at: string | null
+          premium_supplier_id: string | null
+          settings: Json | null
+          sync_enabled: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          connection_status?: string | null
+          created_at?: string | null
+          credentials_encrypted?: string | null
+          error_message?: string | null
+          id?: string
+          last_sync_at?: string | null
+          premium_supplier_id?: string | null
+          settings?: Json | null
+          sync_enabled?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          connection_status?: string | null
+          created_at?: string | null
+          credentials_encrypted?: string | null
+          error_message?: string | null
+          id?: string
+          last_sync_at?: string | null
+          premium_supplier_id?: string | null
+          settings?: Json | null
+          sync_enabled?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "premium_supplier_connections_premium_supplier_id_fkey"
+            columns: ["premium_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "premium_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      premium_suppliers: {
+        Row: {
+          api_type: string | null
+          avg_shipping_days: number | null
+          category: string | null
+          country: string | null
+          created_at: string | null
+          description: string | null
+          features: Json | null
+          id: string
+          is_featured: boolean | null
+          is_verified: boolean | null
+          logo_url: string | null
+          min_order_value: number | null
+          name: string
+          pricing_info: Json | null
+          rating: number | null
+          review_count: number | null
+          slug: string | null
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          api_type?: string | null
+          avg_shipping_days?: number | null
+          category?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_featured?: boolean | null
+          is_verified?: boolean | null
+          logo_url?: string | null
+          min_order_value?: number | null
+          name: string
+          pricing_info?: Json | null
+          rating?: number | null
+          review_count?: number | null
+          slug?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          api_type?: string | null
+          avg_shipping_days?: number | null
+          category?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_featured?: boolean | null
+          is_verified?: boolean | null
+          logo_url?: string | null
+          min_order_value?: number | null
+          name?: string
+          pricing_info?: Json | null
+          rating?: number | null
+          review_count?: number | null
+          slug?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       price_history: {
         Row: {
           applied_at: string | null
@@ -1741,6 +1902,78 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_supplier_mapping: {
+        Row: {
+          auto_switch_enabled: boolean | null
+          created_at: string | null
+          id: string
+          is_primary: boolean | null
+          last_price_update: string | null
+          last_stock_update: string | null
+          lead_time_days: number | null
+          min_order_quantity: number | null
+          priority: number | null
+          product_id: string | null
+          supplier_id: string | null
+          supplier_price: number | null
+          supplier_sku: string | null
+          supplier_stock: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_switch_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          last_price_update?: string | null
+          last_stock_update?: string | null
+          lead_time_days?: number | null
+          min_order_quantity?: number | null
+          priority?: number | null
+          product_id?: string | null
+          supplier_id?: string | null
+          supplier_price?: number | null
+          supplier_sku?: string | null
+          supplier_stock?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_switch_enabled?: boolean | null
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          last_price_update?: string | null
+          last_stock_update?: string | null
+          lead_time_days?: number | null
+          min_order_quantity?: number | null
+          priority?: number | null
+          product_id?: string | null
+          supplier_id?: string | null
+          supplier_price?: number | null
+          supplier_sku?: string | null
+          supplier_stock?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_supplier_mapping_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_supplier_mapping_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -1993,6 +2226,491 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      stock_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          current_value: number | null
+          id: string
+          is_resolved: boolean | null
+          message: string | null
+          product_id: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string | null
+          threshold_value: number | null
+          user_id: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          is_resolved?: boolean | null
+          message?: string | null
+          product_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string | null
+          threshold_value?: number | null
+          user_id: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          current_value?: number | null
+          id?: string
+          is_resolved?: boolean | null
+          message?: string | null
+          product_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string | null
+          threshold_value?: number | null
+          user_id?: string
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_alerts_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_levels: {
+        Row: {
+          available_quantity: number | null
+          batch_number: string | null
+          created_at: string | null
+          expiry_date: string | null
+          id: string
+          last_counted_at: string | null
+          location_in_warehouse: string | null
+          max_stock_level: number | null
+          min_stock_level: number | null
+          product_id: string | null
+          quantity: number | null
+          reorder_point: number | null
+          reserved_quantity: number | null
+          updated_at: string | null
+          user_id: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          available_quantity?: number | null
+          batch_number?: string | null
+          created_at?: string | null
+          expiry_date?: string | null
+          id?: string
+          last_counted_at?: string | null
+          location_in_warehouse?: string | null
+          max_stock_level?: number | null
+          min_stock_level?: number | null
+          product_id?: string | null
+          quantity?: number | null
+          reorder_point?: number | null
+          reserved_quantity?: number | null
+          updated_at?: string | null
+          user_id: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          available_quantity?: number | null
+          batch_number?: string | null
+          created_at?: string | null
+          expiry_date?: string | null
+          id?: string
+          last_counted_at?: string | null
+          location_in_warehouse?: string | null
+          max_stock_level?: number | null
+          min_stock_level?: number | null
+          product_id?: string | null
+          quantity?: number | null
+          reorder_point?: number | null
+          reserved_quantity?: number | null
+          updated_at?: string | null
+          user_id?: string
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_levels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_levels_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          created_at: string | null
+          id: string
+          movement_type: string
+          notes: string | null
+          performed_by: string | null
+          product_id: string | null
+          quantity: number
+          reason: string | null
+          reference_id: string | null
+          reference_type: string | null
+          user_id: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          movement_type: string
+          notes?: string | null
+          performed_by?: string | null
+          product_id?: string | null
+          quantity: number
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          user_id: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          movement_type?: string
+          notes?: string | null
+          performed_by?: string | null
+          product_id?: string | null
+          quantity?: number
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          user_id?: string
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_integrations: {
+        Row: {
+          access_token_encrypted: string | null
+          api_key_encrypted: string | null
+          api_secret_encrypted: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          platform: string
+          settings: Json | null
+          store_name: string
+          store_url: string | null
+          sync_inventory: boolean | null
+          sync_orders: boolean | null
+          sync_products: boolean | null
+          sync_status: string | null
+          updated_at: string | null
+          user_id: string
+          webhook_secret: string | null
+        }
+        Insert: {
+          access_token_encrypted?: string | null
+          api_key_encrypted?: string | null
+          api_secret_encrypted?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          platform: string
+          settings?: Json | null
+          store_name: string
+          store_url?: string | null
+          sync_inventory?: boolean | null
+          sync_orders?: boolean | null
+          sync_products?: boolean | null
+          sync_status?: string | null
+          updated_at?: string | null
+          user_id: string
+          webhook_secret?: string | null
+        }
+        Update: {
+          access_token_encrypted?: string | null
+          api_key_encrypted?: string | null
+          api_secret_encrypted?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          platform?: string
+          settings?: Json | null
+          store_name?: string
+          store_url?: string | null
+          sync_inventory?: boolean | null
+          sync_orders?: boolean | null
+          sync_products?: boolean | null
+          sync_status?: string | null
+          updated_at?: string | null
+          user_id?: string
+          webhook_secret?: string | null
+        }
+        Relationships: []
+      }
+      supplier_analytics: {
+        Row: {
+          avg_delivery_time_days: number | null
+          communication_score: number | null
+          created_at: string | null
+          defect_rate: number | null
+          id: string
+          on_time_delivery_rate: number | null
+          period_end: string
+          period_start: string
+          quality_score: number | null
+          return_rate: number | null
+          supplier_id: string | null
+          total_amount: number | null
+          total_orders: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avg_delivery_time_days?: number | null
+          communication_score?: number | null
+          created_at?: string | null
+          defect_rate?: number | null
+          id?: string
+          on_time_delivery_rate?: number | null
+          period_end: string
+          period_start: string
+          quality_score?: number | null
+          return_rate?: number | null
+          supplier_id?: string | null
+          total_amount?: number | null
+          total_orders?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avg_delivery_time_days?: number | null
+          communication_score?: number | null
+          created_at?: string | null
+          defect_rate?: number | null
+          id?: string
+          on_time_delivery_rate?: number | null
+          period_end?: string
+          period_start?: string
+          quality_score?: number | null
+          return_rate?: number | null
+          supplier_id?: string | null
+          total_amount?: number | null
+          total_orders?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_analytics_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_credentials_vault: {
+        Row: {
+          created_at: string | null
+          credential_type: string
+          credentials_encrypted: string | null
+          expires_at: string | null
+          id: string
+          is_valid: boolean | null
+          last_validated_at: string | null
+          supplier_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          credential_type: string
+          credentials_encrypted?: string | null
+          expires_at?: string | null
+          id?: string
+          is_valid?: boolean | null
+          last_validated_at?: string | null
+          supplier_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          credential_type?: string
+          credentials_encrypted?: string | null
+          expires_at?: string | null
+          id?: string
+          is_valid?: boolean | null
+          last_validated_at?: string | null
+          supplier_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_credentials_vault_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_archived: boolean | null
+          is_read: boolean | null
+          message: string | null
+          metadata: Json | null
+          notification_type: string
+          priority: string | null
+          supplier_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_archived?: boolean | null
+          is_read?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          notification_type: string
+          priority?: string | null
+          supplier_id?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_archived?: boolean | null
+          is_read?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          notification_type?: string
+          priority?: string | null
+          supplier_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_notifications_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_pricing_rules: {
+        Row: {
+          applies_to_categories: string[] | null
+          applies_to_products: string[] | null
+          created_at: string | null
+          fixed_markup_amount: number | null
+          id: string
+          is_active: boolean | null
+          max_price: number | null
+          min_price: number | null
+          name: string
+          percentage_markup: number | null
+          pricing_type: string
+          priority: number | null
+          round_to: number | null
+          supplier_id: string | null
+          target_margin_percent: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          applies_to_categories?: string[] | null
+          applies_to_products?: string[] | null
+          created_at?: string | null
+          fixed_markup_amount?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_price?: number | null
+          min_price?: number | null
+          name: string
+          percentage_markup?: number | null
+          pricing_type: string
+          priority?: number | null
+          round_to?: number | null
+          supplier_id?: string | null
+          target_margin_percent?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          applies_to_categories?: string[] | null
+          applies_to_products?: string[] | null
+          created_at?: string | null
+          fixed_markup_amount?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_price?: number | null
+          min_price?: number | null
+          name?: string
+          percentage_markup?: number | null
+          pricing_type?: string
+          priority?: number | null
+          round_to?: number | null
+          supplier_id?: string | null
+          target_margin_percent?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_pricing_rules_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       supplier_products: {
         Row: {
@@ -2279,6 +2997,63 @@ export type Database = {
           video_url?: string | null
           view_count?: number | null
           youtube_id?: string | null
+        }
+        Relationships: []
+      }
+      warehouses: {
+        Row: {
+          address: string | null
+          capacity: number | null
+          city: string | null
+          code: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          country: string | null
+          created_at: string | null
+          current_occupancy: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+          user_id: string
+          warehouse_type: string | null
+        }
+        Insert: {
+          address?: string | null
+          capacity?: number | null
+          city?: string | null
+          code?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string | null
+          current_occupancy?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+          user_id: string
+          warehouse_type?: string | null
+        }
+        Update: {
+          address?: string | null
+          capacity?: number | null
+          city?: string | null
+          code?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string | null
+          current_occupancy?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+          warehouse_type?: string | null
         }
         Relationships: []
       }

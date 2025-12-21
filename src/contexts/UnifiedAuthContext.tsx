@@ -106,19 +106,31 @@ export const UnifiedAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
       fetchingRef.current = true;
       lastFetchedRef.current = userId;
       
-      // Use secure function that computes is_admin from user_roles table
-      const { data, error } = await supabase
-        .rpc('get_profile_with_role', { profile_user_id: userId })
+      // Fetch profile data directly from profiles table
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
         .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching profile:', error);
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
         setProfile(null);
         return;
       }
 
-      if (data) {
-        setProfile(data as Profile);
+      // Check if user is admin via the has_role function
+      const { data: isAdminData } = await supabase.rpc('has_role', { 
+        _user_id: userId, 
+        _role: 'admin' 
+      });
+
+      if (profileData) {
+        setProfile({
+          ...profileData,
+          is_admin: isAdminData === true,
+          plan: profileData.subscription_plan || 'free'
+        } as unknown as Profile);
       } else {
         setProfile(null);
       }

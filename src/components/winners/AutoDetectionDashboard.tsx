@@ -66,9 +66,8 @@ export const AutoDetectionDashboard: React.FC = () => {
   const loadDetectedProducts = async () => {
     setIsLoading(true);
     try {
-      let query = supabase
-        .from('winner_products')
-        .select('*');
+      // Use 'as any' to bypass TypeScript until types are regenerated
+      let query = (supabase.from('winner_products' as any) as any).select('*');
 
       // Apply filters
       if (filters.platform !== 'all') {
@@ -83,8 +82,8 @@ export const AutoDetectionDashboard: React.FC = () => {
 
       // Apply sorting
       const sortColumn = sortBy === 'virality' ? 'virality_score' 
-                       : sortBy === 'trending' ? 'trending_score' 
-                       : 'estimated_profit_margin';
+                       : sortBy === 'trending' ? 'engagement_rate' 
+                       : 'profit_potential';
       
       query = query.order(sortColumn, { ascending: false }).limit(50);
 
@@ -92,8 +91,29 @@ export const AutoDetectionDashboard: React.FC = () => {
 
       if (error) throw error;
 
-      setDetectedProducts(data || []);
-      calculateStats(data || []);
+      // Map data to DetectedProduct interface
+      const mappedProducts: DetectedProduct[] = (data || []).map((p: any) => ({
+        id: p.id,
+        product_name: p.product_name || 'Produit sans nom',
+        product_url: p.product_url || '',
+        source_platform: p.source_platform || 'unknown',
+        virality_score: p.virality_score || 0,
+        trending_score: p.engagement_rate || 0,
+        engagement_count: p.views_count || 0,
+        orders_count: p.estimated_sales || 0,
+        rating: 4.5,
+        price: 0,
+        estimated_profit_margin: p.profit_potential || 0,
+        competition_level: p.competition_level || 'medium',
+        social_proof: {},
+        trend_analysis: { trend_direction: p.trend_direction },
+        competitor_analysis: {},
+        detection_signals: [],
+        metadata: {}
+      }));
+
+      setDetectedProducts(mappedProducts);
+      calculateStats(mappedProducts);
     } catch (error) {
       console.error('Error loading detected products:', error);
       toast({
