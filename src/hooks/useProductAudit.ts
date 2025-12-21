@@ -88,19 +88,41 @@ export function useProductAudit() {
   }
 }
 
+// Use ai_optimization_jobs to store audit results instead of non-existent product_audits
 export function useProductAudits(userId: string, limit = 50) {
   return useQuery({
     queryKey: ['product-audits', userId, limit],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('product_audits')
+        .from('ai_optimization_jobs')
         .select('*')
         .eq('user_id', userId)
+        .eq('job_type', 'product_audit')
         .order('created_at', { ascending: false })
         .limit(limit)
 
       if (error) throw error
-      return data as ProductAudit[]
+      
+      // Transform to ProductAudit format
+      return (data || []).map(job => ({
+        id: job.id,
+        user_id: job.user_id,
+        product_id: job.target_id || '',
+        product_source: 'products' as const,
+        audit_type: 'full' as const,
+        overall_score: (job.output_data as any)?.overall_score || 0,
+        title_score: (job.output_data as any)?.title_score || 0,
+        description_score: (job.output_data as any)?.description_score || 0,
+        image_score: (job.output_data as any)?.image_score || 0,
+        seo_score: (job.output_data as any)?.seo_score || 0,
+        pricing_score: (job.output_data as any)?.pricing_score || 0,
+        variants_score: (job.output_data as any)?.variants_score || 0,
+        errors: (job.output_data as any)?.errors || [],
+        warnings: (job.output_data as any)?.warnings || [],
+        recommendations: (job.output_data as any)?.recommendations || [],
+        created_at: job.created_at || '',
+        updated_at: job.updated_at || ''
+      })) as ProductAudit[]
     },
   })
 }
@@ -110,31 +132,53 @@ export function useProductAuditById(auditId: string) {
     queryKey: ['product-audit', auditId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('product_audits')
+        .from('ai_optimization_jobs')
         .select('*')
         .eq('id', auditId)
+        .eq('job_type', 'product_audit')
         .single()
 
       if (error) throw error
-      return data as ProductAudit
+      
+      return {
+        id: data.id,
+        user_id: data.user_id,
+        product_id: data.target_id || '',
+        product_source: 'products' as const,
+        audit_type: 'full' as const,
+        overall_score: (data.output_data as any)?.overall_score || 0,
+        title_score: (data.output_data as any)?.title_score || 0,
+        description_score: (data.output_data as any)?.description_score || 0,
+        image_score: (data.output_data as any)?.image_score || 0,
+        seo_score: (data.output_data as any)?.seo_score || 0,
+        pricing_score: (data.output_data as any)?.pricing_score || 0,
+        variants_score: (data.output_data as any)?.variants_score || 0,
+        errors: (data.output_data as any)?.errors || [],
+        warnings: (data.output_data as any)?.warnings || [],
+        recommendations: (data.output_data as any)?.recommendations || [],
+        created_at: data.created_at || '',
+        updated_at: data.updated_at || ''
+      } as ProductAudit
     },
     enabled: !!auditId,
   })
 }
 
+// Use analytics_insights for audit analytics
 export function useAuditAnalytics(userId: string) {
   return useQuery({
     queryKey: ['audit-analytics', userId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('audit_analytics')
+        .from('analytics_insights')
         .select('*')
         .eq('user_id', userId)
-        .order('date', { ascending: false })
+        .eq('metric_type', 'audit')
+        .order('recorded_at', { ascending: false })
         .limit(30)
 
       if (error) throw error
-      return data
+      return data || []
     },
   })
 }

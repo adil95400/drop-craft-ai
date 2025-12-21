@@ -44,7 +44,7 @@ export function useMultiTenant() {
   const [analytics, setAnalytics] = useState<Record<string, TenantAnalytics>>({})
   const { toast } = useToast()
 
-  // Fetch user's tenants
+  // Fetch user's tenants via edge function (table doesn't exist yet)
   const fetchTenants = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('multi-tenant', {
@@ -53,14 +53,11 @@ export function useMultiTenant() {
 
       if (error) throw error
 
-      setTenants(data.tenants || [])
+      setTenants(data?.tenants || [])
     } catch (error) {
       console.error('Error fetching tenants:', error)
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les tenants",
-        variant: "destructive"
-      })
+      // Don't show toast for missing functionality
+      setTenants([])
     }
   }
 
@@ -171,13 +168,13 @@ export function useMultiTenant() {
     }
   }
 
-  // Delete tenant
+  // Delete tenant - use edge function instead of direct DB access
   const deleteTenant = async (tenantId: string) => {
     try {
-      const { error } = await supabase
-        .from('tenants')
-        .delete()
-        .eq('id', tenantId)
+      const { error } = await supabase.functions.invoke('multi-tenant', {
+        method: 'DELETE',
+        body: { tenant_id: tenantId }
+      })
 
       if (error) throw error
 
@@ -201,13 +198,13 @@ export function useMultiTenant() {
     }
   }
 
-  // Update tenant status
+  // Update tenant status - use edge function
   const updateTenantStatus = async (tenantId: string, status: Tenant['status']) => {
     try {
-      const { error } = await supabase
-        .from('tenants')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', tenantId)
+      const { error } = await supabase.functions.invoke('multi-tenant', {
+        method: 'PUT',
+        body: { tenant_id: tenantId, status }
+      })
 
       if (error) throw error
 

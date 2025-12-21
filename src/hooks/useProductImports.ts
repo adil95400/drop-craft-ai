@@ -60,16 +60,18 @@ export const useProductImports = () => {
       const transformedImports: ProductImport[] = (importJobs || []).map(job => ({
         id: job.id,
         import_type: job.job_type as any,
-        source_name: job.supplier_id || job.job_type,
-        source_url: job.supplier_id,
+        source_name: job.source_platform || job.job_type,
+        source_url: job.source_url || undefined,
         status: job.status as any,
         products_imported: job.successful_imports || 0,
         products_failed: job.failed_imports || 0,
         total_products: job.total_products || 0,
-        import_data: job.import_settings,
-        error_message: (job.error_log as any)?.[0],
-        created_at: job.created_at,
-        completed_at: job.completed_at,
+        import_data: null,
+        error_message: Array.isArray(job.error_log) && job.error_log.length > 0 
+          ? String((job.error_log as any[])[0]) 
+          : undefined,
+        created_at: job.created_at || '',
+        completed_at: job.completed_at || undefined,
       }));
       
       setImports(transformedImports);
@@ -92,7 +94,7 @@ export const useProductImports = () => {
         .order('created_at', { ascending: false });
       
       if (importId) {
-        query = query.eq('import_id', importId);
+        query = query.eq('import_job_id', importId);
       }
       
       const { data: products, error } = await query;
@@ -102,22 +104,22 @@ export const useProductImports = () => {
       // Transformer les données pour correspondre à notre interface
       const transformedProducts: ImportedProduct[] = (products || []).map(product => ({
         id: product.id,
-        import_id: product.import_id || 'direct',
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        cost_price: product.cost_price,
-        currency: product.currency,
-        sku: product.sku,
-        category: product.category,
-        supplier_name: product.supplier_name,
-        supplier_url: product.supplier_url,
-        image_urls: product.image_urls || [],
-        tags: product.tags || [],
-        status: product.status as any,
-        ai_optimized: product.ai_optimized,
-        optimization_data: product.ai_optimization_data,
-        created_at: product.created_at,
+        import_id: product.import_job_id || 'direct',
+        name: product.category || 'Produit importé', // imported_products doesn't have name column
+        description: undefined,
+        price: product.price || 0,
+        cost_price: undefined,
+        currency: 'EUR',
+        sku: undefined,
+        category: product.category || undefined,
+        supplier_name: product.source_platform || undefined,
+        supplier_url: product.source_url || undefined,
+        image_urls: [],
+        tags: [],
+        status: (product.status as any) || 'draft',
+        ai_optimized: false,
+        optimization_data: undefined,
+        created_at: product.created_at || '',
       }));
       
       setImportedProducts(transformedProducts);
@@ -138,10 +140,10 @@ export const useProductImports = () => {
         .insert([{
           user_id: user.user.id,
           job_type: importData.import_type || 'url',
-          supplier_id: importData.source_url,
+          source_url: importData.source_url || null,
+          source_platform: importData.source_name || null,
           status: 'pending',
           total_products: 0,
-          processed_products: 0,
           successful_imports: 0,
           failed_imports: 0
         }])
@@ -154,12 +156,12 @@ export const useProductImports = () => {
         id: newJob.id,
         import_type: newJob.job_type as any,
         source_name: importData.source_name || newJob.job_type,
-        source_url: newJob.job_type,
+        source_url: newJob.source_url || undefined,
         status: newJob.status as any,
         products_imported: 0,
         products_failed: 0,
         total_products: 0,
-        created_at: newJob.created_at,
+        created_at: newJob.created_at || '',
       };
 
       setImports(prev => [newImport, ...prev]);
@@ -192,15 +194,10 @@ export const useProductImports = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('Non authentifié');
 
-      // Mettre à jour le statut et publier le produit
+      // Mettre à jour le statut
       const { error: updateError } = await supabase
         .from('imported_products')
-        .update({ 
-          status: 'published', 
-          review_status: 'approved',
-          published_at: new Date().toISOString(),
-          reviewed_at: new Date().toISOString()
-        })
+        .update({ status: 'imported' })
         .eq('id', productId)
         .eq('user_id', user.user.id);
 
@@ -214,21 +211,16 @@ export const useProductImports = () => {
         .single();
 
       if (product) {
-        const { error: insertError } = await supabase
-          .from('products')
+        const { error: insertError } = await (supabase
+          .from('products') as any)
           .insert([{
             user_id: user.user.id,
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            cost_price: product.cost_price,
+            name: product.category || 'Produit importé',
+            title: product.category || 'Produit importé',
+            description: '',
+            price: product.price || 0,
             status: 'active',
-            stock_quantity: product.stock_quantity,
-            sku: product.sku,
-            category: product.category,
-            image_url: product.image_urls?.[0],
-            profit_margin: product.cost_price ? 
-              ((product.price - product.cost_price) / product.price * 100) : 0
+            category: product.category || undefined
           }]);
 
         if (insertError) throw insertError;
@@ -252,11 +244,7 @@ export const useProductImports = () => {
 
       const { error } = await supabase
         .from('imported_products')
-        .update({ 
-          status: 'rejected',
-          review_status: 'rejected',
-          reviewed_at: new Date().toISOString()
-        })
+        .update({ status: 'failed' })
         .eq('id', productId)
         .eq('user_id', user.user.id);
 
@@ -285,6 +273,8 @@ export const useProductImports = () => {
           user_id: user.user.id,
           job_type: 'product_optimization',
           status: 'completed',
+          target_id: productId,
+          target_type: 'imported_product',
           input_data: { product_id: productId },
           output_data: {
             title_optimized: true,
@@ -295,24 +285,6 @@ export const useProductImports = () => {
         }]);
 
       if (jobError) throw jobError;
-
-      // Mettre à jour le produit
-      const { error: updateError } = await supabase
-        .from('imported_products')
-        .update({ 
-          ai_optimized: true,
-          ai_optimization_data: {
-            title_optimized: true,
-            description_enhanced: true,
-            keywords_added: ['trending', 'premium', 'bestseller'],
-            seo_improved: true,
-            optimization_date: new Date().toISOString()
-          }
-        })
-        .eq('id', productId)
-        .eq('user_id', user.user.id);
-
-      if (updateError) throw updateError;
 
       setImportedProducts(prev => prev.map(p => 
         p.id === productId ? { 

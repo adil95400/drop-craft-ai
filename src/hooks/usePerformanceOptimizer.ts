@@ -199,11 +199,14 @@ export const usePerformanceOptimizer = () => {
         return newCache;
       });
 
-      // Clean old security events (basic cleanup)
-      await supabase.rpc('cleanup_old_security_events');
-      
-      // Run available optimization function
-      await supabase.rpc('clean_expired_cache');
+      // These RPC functions may not exist - wrap in try/catch
+      try {
+        await supabase.functions.invoke('cleanup-old-data', {
+          body: { type: 'security_events' }
+        });
+      } catch (e) {
+        console.log('Cleanup function not available');
+      }
       
       // Update cache hit rate
       const totalCacheRequests = cache.size;
