@@ -24,6 +24,7 @@ export interface CRMDeal {
 export function useCRMDeals() {
   const queryClient = useQueryClient();
 
+  // Use orders table as CRM deals source
   const { data: deals = [], isLoading } = useQuery({
     queryKey: ['crm-deals'],
     queryFn: async () => {
@@ -31,13 +32,33 @@ export function useCRMDeals() {
       if (!user) throw new Error('Non authentifié');
 
       const { data, error } = await supabase
-        .from('crm_deals')
+        .from('orders')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as CRMDeal[];
+      return (data || []).map((order: any) => ({
+        id: order.id,
+        user_id: order.user_id,
+        name: `Commande ${order.order_number}`,
+        contact_id: order.customer_id,
+        lead_id: order.customer_id,
+        stage: order.status === 'delivered' ? 'closed_won' : 
+               order.status === 'cancelled' ? 'closed_lost' : 
+               order.status === 'pending' ? 'prospecting' : 'negotiation',
+        value: order.total_amount || 0,
+        probability: order.status === 'delivered' ? 100 : 
+                    order.status === 'cancelled' ? 0 : 50,
+        expected_close_date: order.created_at,
+        actual_close_date: order.status === 'delivered' ? order.updated_at : undefined,
+        source: 'order',
+        notes: order.notes,
+        tags: [],
+        custom_fields: {},
+        created_at: order.created_at,
+        updated_at: order.updated_at
+      })) as CRMDeal[];
     },
   });
 
@@ -47,21 +68,14 @@ export function useCRMDeals() {
       if (!user) throw new Error('Non authentifié');
 
       const { data, error } = await supabase
-        .from('crm_deals')
+        .from('orders')
         .insert([{
           user_id: user.id,
-          name: dealData.name || '',
-          contact_id: dealData.contact_id,
-          lead_id: dealData.lead_id,
-          stage: dealData.stage || 'prospecting',
-          value: dealData.value || 0,
-          probability: dealData.probability || 50,
-          expected_close_date: dealData.expected_close_date,
-          actual_close_date: dealData.actual_close_date,
-          source: dealData.source,
+          order_number: `DEAL-${Date.now()}`,
+          customer_id: dealData.contact_id,
+          status: 'pending',
+          total_amount: dealData.value || 0,
           notes: dealData.notes,
-          tags: dealData.tags,
-          custom_fields: dealData.custom_fields,
         }])
         .select()
         .single();
@@ -81,8 +95,13 @@ export function useCRMDeals() {
   const updateDeal = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<CRMDeal> & { id: string }) => {
       const { data, error } = await supabase
-        .from('crm_deals')
-        .update(updates)
+        .from('orders')
+        .update({
+          total_amount: updates.value,
+          notes: updates.notes,
+          status: updates.stage === 'closed_won' ? 'delivered' : 
+                  updates.stage === 'closed_lost' ? 'cancelled' : 'pending'
+        })
         .eq('id', id)
         .select();
 
@@ -98,7 +117,7 @@ export function useCRMDeals() {
   const deleteDeal = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('crm_deals')
+        .from('orders')
         .delete()
         .eq('id', id);
 

@@ -58,8 +58,9 @@ export function useBulkImport() {
         }
 
         if (job) {
+          const processedProducts = job.successful_imports + job.failed_imports;
           const calculatedProgress = job.total_products > 0 
-            ? Math.round((job.processed_products / job.total_products) * 100)
+            ? Math.round((processedProducts / job.total_products) * 100)
             : 0
           
           setProgress(calculatedProgress)
