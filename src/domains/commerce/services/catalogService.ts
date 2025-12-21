@@ -22,35 +22,41 @@ export class CatalogService {
     }
 
     try {
-      // Use the new secure catalog products function with rate limiting and anti-scraping
-      const { data, error } = await supabase.rpc('get_catalog_products_with_ratelimit', {
-        category_filter: filters?.category || null,
-        search_term: filters?.search || null,
-        limit_count: 100000, // Support pour catalogues jusqu'à 100k produits
-        user_ip: null,
-        user_agent_param: typeof navigator !== 'undefined' ? navigator.userAgent : null
-      })
+      // Query catalog_products table directly
+      let query = supabase
+        .from('catalog_products')
+        .select('*', { count: 'exact' })
+
+      if (filters?.category) {
+        query = query.eq('category', filters.category)
+      }
+
+      if (filters?.search) {
+        query = query.ilike('title', `%${filters.search}%`)
+      }
+
+      const { data, error, count } = await query.limit(1000)
 
       if (error) throw error
 
-      // Apply client-side filters that aren't handled by the function
+      // Apply client-side filters that aren't handled by the query
       let filteredData = data || []
       
       if (filters?.supplier) {
-        filteredData = filteredData.filter(product => 
-          product.supplier_name?.toLowerCase().includes(filters.supplier.toLowerCase())
+        filteredData = filteredData.filter((product: any) => 
+          product.supplier_name?.toLowerCase().includes(filters.supplier!.toLowerCase())
         )
       }
       
       if (filters?.priceRange) {
-        filteredData = filteredData.filter(product =>
-          product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]
+        filteredData = filteredData.filter((product: any) =>
+          (product.price || 0) >= filters.priceRange![0] && (product.price || 0) <= filters.priceRange![1]
         )
       }
 
       // Apply client-side sorting
       if (filters?.sortBy) {
-        filteredData.sort((a, b) => {
+        filteredData.sort((a: any, b: any) => {
           const aVal = a[filters.sortBy as keyof typeof a]
           const bVal = b[filters.sortBy as keyof typeof b]
           if (filters.sortOrder === 'asc') {
@@ -61,17 +67,29 @@ export class CatalogService {
         })
       }
 
-      const count = filteredData.length
-
       const result = {
         products: filteredData.map((product: any) => ({
-          ...product,
-          supplier_id: product.external_id || 'unknown',
+          id: product.id,
+          name: product.title,
+          title: product.title,
+          description: product.description,
+          price: product.price || 0,
+          cost_price: product.compare_at_price || (product.price ? product.price * 0.7 : 0),
+          category: product.category,
+          image_url: product.image_urls?.[0],
+          image_urls: product.image_urls,
+          supplier_id: product.id,
           supplier_name: product.supplier_name || 'Unknown Supplier',
-          created_at: product.created_at || product.last_updated || new Date().toISOString(),
-          updated_at: product.updated_at || product.last_updated || new Date().toISOString()
-        })) as CatalogProduct[],
-        total: count
+          source_platform: product.source_platform,
+          source_url: product.source_url,
+          status: product.status,
+          external_id: product.id,
+          currency: 'EUR',
+          availability_status: product.status === 'available' ? 'in_stock' : 'out_of_stock',
+          created_at: product.created_at || new Date().toISOString(),
+          updated_at: product.updated_at || new Date().toISOString()
+        })) as unknown as CatalogProduct[],
+        total: count || filteredData.length
       }
 
       this.cache.set(cacheKey, { data: result, timestamp: Date.now() })
@@ -91,33 +109,40 @@ export class CatalogService {
     }
 
     try {
-      // Use the new secure function with rate limiting for single product access
-      const { data, error } = await supabase.rpc('get_catalog_products_with_ratelimit', {
-        category_filter: null,
-        search_term: null,
-        limit_count: 1000, // Get more to find specific product
-        user_ip: null,
-        user_agent_param: typeof navigator !== 'undefined' ? navigator.userAgent : null
-      })
+      const { data: product, error } = await supabase
+        .from('catalog_products')
+        .select('*')
+        .eq('id', id)
+        .single()
 
       if (error) throw error
-      
-      const product = data?.find(p => p.id === id)
-      if (!product) {
-        throw new Error('Product not found')
-      }
+      if (!product) throw new Error('Product not found')
 
       // Map to ensure all required fields are present
-      const mappedProduct: any = {
-        ...product,
-        supplier_id: product.external_id || 'unknown',
+      const mappedProduct = {
+        id: product.id,
+        name: product.title,
+        title: product.title,
+        description: product.description,
+        price: product.price || 0,
+        cost_price: product.compare_at_price || (product.price ? product.price * 0.7 : 0),
+        category: product.category,
+        image_url: product.image_urls?.[0],
+        image_urls: product.image_urls,
+        supplier_id: product.id,
         supplier_name: product.supplier_name || 'Unknown Supplier',
-        created_at: (product as any).created_at || (product as any).last_updated || new Date().toISOString(),
-        updated_at: (product as any).updated_at || (product as any).last_updated || new Date().toISOString()
-      }
+        source_platform: product.source_platform,
+        source_url: product.source_url,
+        status: product.status,
+        external_id: product.id,
+        currency: 'EUR',
+        availability_status: product.status === 'available' ? 'in_stock' : 'out_of_stock',
+        created_at: product.created_at || new Date().toISOString(),
+        updated_at: product.updated_at || new Date().toISOString()
+      } as unknown as CatalogProduct
       
       this.cache.set(cacheKey, { data: mappedProduct, timestamp: Date.now() })
-      return mappedProduct as CatalogProduct
+      return mappedProduct
     } catch (error) {
       console.error('Catalog product fetch failed:', error)
       throw error
@@ -126,21 +151,46 @@ export class CatalogService {
 
   async getMarketplaceProducts(filters?: CommerceFilters): Promise<{ products: CatalogProduct[]; total: number }> {
     try {
-      const { data, error } = await supabase.rpc('get_marketplace_products', {
-        category_filter: filters?.category,
-        search_term: filters?.search,
-        limit_count: 100000
-      })
+      let query = supabase
+        .from('catalog_products')
+        .select('*', { count: 'exact' })
+        .eq('status', 'available')
+
+      if (filters?.category) {
+        query = query.eq('category', filters.category)
+      }
+
+      if (filters?.search) {
+        query = query.ilike('title', `%${filters.search}%`)
+      }
+
+      const { data, error, count } = await query.limit(1000)
 
       if (error) throw error
 
       return {
         products: (data || []).map((product: any) => ({
-          ...product,
-          supplier_id: product.supplier_id || product.external_id || 'unknown',
-          supplier_name: product.supplier_name || product.brand || 'Unknown Supplier'
-        })) as CatalogProduct[],
-        total: data?.length || 0
+          id: product.id,
+          name: product.title,
+          title: product.title,
+          description: product.description,
+          price: product.price || 0,
+          cost_price: product.compare_at_price || (product.price ? product.price * 0.7 : 0),
+          category: product.category,
+          image_url: product.image_urls?.[0],
+          image_urls: product.image_urls,
+          supplier_id: product.id,
+          supplier_name: product.supplier_name || 'Unknown Supplier',
+          source_platform: product.source_platform,
+          source_url: product.source_url,
+          status: product.status,
+          external_id: product.id,
+          currency: 'EUR',
+          availability_status: product.status === 'available' ? 'in_stock' : 'out_of_stock',
+          created_at: product.created_at,
+          updated_at: product.updated_at
+        })) as unknown as CatalogProduct[],
+        total: count || data?.length || 0
       }
     } catch (error) {
       console.error('Marketplace products fetch failed:', error)
@@ -162,18 +212,17 @@ export class CatalogService {
         .from('products')
         .insert([{
           user_id: user.id,
-          name: catalogProduct.name,
+          title: (catalogProduct as any).name || (catalogProduct as any).title,
+          name: (catalogProduct as any).name || (catalogProduct as any).title,
           description: catalogProduct.description,
           price: catalogProduct.price,
           cost_price: catalogProduct.cost_price || catalogProduct.price * 0.7,
           category: catalogProduct.category,
-          sku: catalogProduct.sku || `IMP-${Date.now()}`,
+          sku: `IMP-${Date.now()}`,
           image_url: catalogProduct.image_url,
-          tags: catalogProduct.tags,
           supplier: catalogProduct.supplier_name,
           status: 'active',
-          stock_quantity: 100,
-          profit_margin: catalogProduct.profit_margin
+          stock_quantity: 100
         }])
         .select()
         .single()

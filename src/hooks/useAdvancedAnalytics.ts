@@ -39,11 +39,10 @@ export const useAdvancedAnalytics = () => {
         .order('created_at', { ascending: false })
         .limit(100)
 
-      const { data: products } = await supabase.rpc('get_secure_catalog_products', {
-        category_filter: null,
-        search_term: null,
-        limit_count: 100000
-      })
+      const { data: products } = await supabase
+        .from('catalog_products')
+        .select('*')
+        .limit(1000)
 
       // Generate advanced analytics with AI-like calculations
       const totalRevenue = orders?.reduce((sum, order) => sum + order.total_amount, 0) || 0

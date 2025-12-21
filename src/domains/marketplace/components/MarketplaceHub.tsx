@@ -59,13 +59,23 @@ export const MarketplaceHub = () => {
   const loadConnections = async () => {
     try {
       const { data, error } = await supabase
-        .from('marketplace_connections')
+        .from('integrations')
         .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setConnections(data || [])
+      // Map integrations to MarketplaceConnection format
+      setConnections((data || []).map((item: any) => ({
+        id: item.id,
+        platform: item.platform,
+        status: item.connection_status || 'pending',
+        last_sync_at: item.last_sync_at,
+        sync_stats: item.config || {},
+        credentials: {},
+        user_id: item.user_id,
+        created_at: item.created_at
+      })))
     } catch (error) {
       console.error('Error loading marketplace connections:', error)
       toast({
