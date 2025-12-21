@@ -123,23 +123,21 @@ export const importAdvancedService = {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      // Create FTP connector first
+      // Create FTP connector using integrations table
       const { data: connector, error: connectorError } = await supabase
-        .from('import_connectors')
+        .from('integrations' as any)
         .insert({
           user_id: user.id,
-          name: `FTP Import - ${new URL(options.ftpUrl).hostname}`,
-          provider: 'ftp',
+          platform: 'ftp',
+          platform_name: `FTP Import - ${new URL(options.ftpUrl).hostname}`,
           config: {
             url: options.ftpUrl,
             file_path: options.filePath,
             file_type: options.fileType,
+            username: options.username,
             ...options.config
           },
-          credentials: {
-            username: options.username,
-            password: options.password // In production, this should be encrypted
-          }
+          is_active: true
         })
         .select()
         .single();
@@ -149,7 +147,7 @@ export const importAdvancedService = {
       // Trigger FTP import
       const { data, error } = await supabase.functions.invoke('ftp-import', {
         body: {
-          connectorId: connector.id,
+          connectorId: (connector as any).id,
           immediate: true
         }
       });
@@ -181,8 +179,9 @@ export const importAdvancedService = {
   async getImportConnectors() {
     try {
       const { data, error } = await supabase
-        .from('import_connectors')
+        .from('integrations')
         .select('*')
+        .in('platform', ['ftp', 'sftp', 'api', 'webhook'])
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -196,7 +195,7 @@ export const importAdvancedService = {
   async updateConnector(id: string, updates: any) {
     try {
       const { data, error } = await supabase
-        .from('import_connectors')
+        .from('integrations')
         .update(updates)
         .eq('id', id)
         .select()
@@ -213,7 +212,7 @@ export const importAdvancedService = {
   async deleteConnector(id: string) {
     try {
       const { error } = await supabase
-        .from('import_connectors')
+        .from('integrations')
         .delete()
         .eq('id', id);
 

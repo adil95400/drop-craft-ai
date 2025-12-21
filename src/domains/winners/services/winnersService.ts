@@ -72,19 +72,19 @@ export class WinnersService {
         .from('products')
         .insert([{
           user_id: user.id,
+          title: product.title,
           name: product.title,
           description: `Produit gagnant importé depuis ${product.source}`,
           price: product.price,
           cost_price: estimatedCost,
           category: product.category || 'Imported Winners',
-          supplier_name: product.source,
+          supplier: product.source,
           supplier_url: product.url,
           image_url: product.image,
           tags: product.tags || ['winner', 'imported', product.source],
           status: 'active',
           sku: `WIN-${Date.now()}`,
-          stock_quantity: 100,
-          profit_margin: ((product.price - estimatedCost) / estimatedCost * 100)
+          stock_quantity: 100
         }])
         .select()
         .single()

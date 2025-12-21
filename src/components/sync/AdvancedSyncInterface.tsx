@@ -418,7 +418,7 @@ export const AdvancedSyncInterface = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {syncLogs.map((log) => (
+                {syncLogs.map((log: any) => (
                   <Card key={log.id} className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">

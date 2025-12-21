@@ -56,7 +56,8 @@ export const useAI = () => {
       return data.map(item => ({
         ...item,
         input_data: item.input_data || {},
-        output_data: item.output_data || {}
+        output_data: item.output_data || {},
+        progress: (item as any).progress || (item.status === 'completed' ? 100 : item.status === 'processing' ? 50 : 0)
       })) as AITask[]
     }
   })
