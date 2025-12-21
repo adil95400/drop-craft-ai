@@ -92,13 +92,13 @@ export function useObservability() {
 
       if (error) throw error
 
-      setMetrics(data.metrics)
+      setMetrics(data?.metrics || null)
     } catch (error) {
       console.error('Error fetching metrics:', error)
     }
   }, [])
 
-  // Fetch alert rules and active alerts
+  // Fetch alert rules and active alerts from edge function (tables don't exist)
   const fetchAlerts = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('observability', {
@@ -108,14 +108,16 @@ export function useObservability() {
 
       if (error) throw error
 
-      setAlertRules(data.alert_rules || [])
-      setActiveAlerts(data.active_alerts || [])
+      setAlertRules(data?.alert_rules || [])
+      setActiveAlerts(data?.active_alerts || [])
     } catch (error) {
       console.error('Error fetching alerts:', error)
+      setAlertRules([])
+      setActiveAlerts([])
     }
   }
 
-  // Create alert rule
+  // Create alert rule via edge function
   const createAlertRule = async (alertRule: Omit<AlertRule, 'id' | 'created_at'>) => {
     try {
       const { data, error } = await supabase.functions.invoke('observability', {
@@ -128,14 +130,16 @@ export function useObservability() {
 
       if (error) throw error
 
-      setAlertRules(prev => [...prev, data.alert_rule])
+      if (data?.alert_rule) {
+        setAlertRules(prev => [...prev, data.alert_rule])
+      }
       
       toast({
         title: "Succès",
         description: `Règle d'alerte "${alertRule.name}" créée`,
       })
 
-      return data.alert_rule
+      return data?.alert_rule
     } catch (error) {
       console.error('Error creating alert rule:', error)
       toast({
@@ -193,9 +197,10 @@ export function useObservability() {
 
       if (error) throw error
 
-      setSystemLogs(data.logs || [])
+      setSystemLogs(data?.logs || [])
     } catch (error) {
       console.error('Error fetching system logs:', error)
+      setSystemLogs([])
     }
   }
 
@@ -209,19 +214,19 @@ export function useObservability() {
 
       if (error) throw error
 
-      setHealthStatus(data.health)
+      setHealthStatus(data?.health || null)
     } catch (error) {
       console.error('Error fetching health status:', error)
     }
   }
 
-  // Delete alert rule
+  // Delete alert rule via edge function
   const deleteAlertRule = async (alertRuleId: string) => {
     try {
-      const { error } = await supabase
-        .from('alert_rules')
-        .delete()
-        .eq('id', alertRuleId)
+      const { error } = await supabase.functions.invoke('observability', {
+        method: 'DELETE',
+        body: { alert_rule_id: alertRuleId }
+      })
 
       if (error) throw error
 
@@ -241,12 +246,16 @@ export function useObservability() {
     }
   }
 
-  // Acknowledge alert
+  // Acknowledge alert - use active_alerts table which exists
   const acknowledgeAlert = async (alertId: string) => {
     try {
       const { error } = await supabase
         .from('active_alerts')
-        .update({ status: 'acknowledged' })
+        .update({ 
+          acknowledged: true,
+          acknowledged_at: new Date().toISOString(),
+          status: 'acknowledged' 
+        })
         .eq('id', alertId)
 
       if (error) throw error

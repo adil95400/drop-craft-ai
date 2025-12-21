@@ -57,19 +57,26 @@ export const usePOD = () => {
         body: { action: 'get_catalog' }
       });
       if (error) throw error;
-      return data.catalog;
+      return data?.catalog || [];
     }
   });
 
+  // Use products table filtered by a POD tag/category instead of non-existent pod_products table
   const getProducts = useQuery({
     queryKey: ['pod-products'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('pod_products')
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      
+      const { data, error } = await (supabase
+        .from('products') as any)
         .select('*')
+        .eq('user_id', user.id)
+        .eq('product_type', 'pod')
         .order('created_at', { ascending: false });
+      
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
 

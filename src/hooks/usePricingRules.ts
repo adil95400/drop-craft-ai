@@ -44,26 +44,27 @@ export function usePricingRules() {
     enabled: !!user?.id
   });
 
-  // Récupérer les jobs de repricing
+  // Use ai_optimization_jobs for repricing jobs instead of non-existent repricing_queue
   const { data: repricingJobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ['repricing-queue', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('repricing_queue')
+        .from('ai_optimization_jobs')
         .select('*')
         .eq('user_id', user!.id)
+        .eq('job_type', 'repricing')
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!user?.id
   });
 
   // Créer une règle
   const createRule = useMutation({
-    mutationFn: async (rule: Omit<PricingRule, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'products_affected' | 'last_applied_at' | 'total_applications'>) => {
+    mutationFn: async (rule: Omit<PricingRule, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'products_affected' | 'last_executed_at' | 'execution_count'>) => {
       const { data, error } = await supabase
         .from('pricing_rules')
         .insert({
@@ -144,7 +145,7 @@ export function usePricingRules() {
       queryClient.invalidateQueries({ queryKey: ['repricing-queue'] });
       toast({
         title: 'Repricing appliqué',
-        description: `${data.products_updated} produits mis à jour`
+        description: `${data?.products_updated || 0} produits mis à jour`
       });
     }
   });
@@ -176,7 +177,7 @@ export function usePricingRules() {
       queryClient.invalidateQueries({ queryKey: ['price-history'] });
       toast({
         title: 'Repricing global terminé',
-        description: `${data.products_updated} produits mis à jour`
+        description: `${data?.products_updated || 0} produits mis à jour`
       });
     }
   });
@@ -185,7 +186,7 @@ export function usePricingRules() {
     totalRules: rules.length,
     activeRules: rules.filter(r => r.is_active).length,
     recentChanges: priceHistory.length,
-    activeJobs: repricingJobs.filter(j => j.job_status === 'processing').length
+    activeJobs: repricingJobs.filter(j => j.status === 'processing').length
   };
 
   return {

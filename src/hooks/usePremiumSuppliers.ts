@@ -13,12 +13,11 @@ export function usePremiumSuppliers() {
       const { data, error } = await supabase
         .from('premium_suppliers')
         .select('*')
-        .eq('is_active', true)
-        .order('featured', { ascending: false })
-        .order('quality_score', { ascending: false })
+        .order('is_featured', { ascending: false })
+        .order('rating', { ascending: false })
 
       if (error) throw error
-      return data
+      return data || []
     }
   })
 
@@ -38,25 +37,27 @@ export function usePremiumSuppliers() {
         .eq('user_id', user.id)
 
       if (error) throw error
-      return data
+      return data || []
     }
   })
 
-  // Récupérer les produits premium
+  // Récupérer les produits premium from supplier_products or catalog_products
   const { data: premiumProducts, isLoading: isLoadingProducts } = useQuery({
     queryKey: ['premium-products'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+
+      // Use catalog_products which exists in the schema
       const { data, error } = await supabase
-        .from('premium_products')
-        .select(`
-          *,
-          supplier:premium_suppliers(name, country)
-        `)
-        .eq('is_active', true)
+        .from('catalog_products')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'available')
         .limit(100)
 
       if (error) throw error
-      return data
+      return data || []
     }
   })
 
@@ -82,7 +83,7 @@ export function usePremiumSuppliers() {
       
       toast({
         title: 'Connexion établie ! 🎉',
-        description: `${data.data.products_imported} produits premium importés`
+        description: `${data?.data?.products_imported || 0} produits premium importés`
       })
     },
     onError: (error: any) => {
@@ -94,12 +95,12 @@ export function usePremiumSuppliers() {
     }
   })
 
-  // Déconnecter un fournisseur
+  // Déconnecter un fournisseur - use connection_status column
   const disconnectSupplier = useMutation({
     mutationFn: async (connectionId: string) => {
       const { error } = await supabase
         .from('premium_supplier_connections')
-        .update({ status: 'suspended' })
+        .update({ connection_status: 'suspended' })
         .eq('id', connectionId)
 
       if (error) throw error
@@ -113,7 +114,7 @@ export function usePremiumSuppliers() {
     }
   })
 
-  // Synchroniser un fournisseur
+  // Synchroniser un fournisseur - use premium_supplier_id column
   const syncSupplier = useMutation({
     mutationFn: async (connectionId: string) => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -122,7 +123,7 @@ export function usePremiumSuppliers() {
       // Récupérer la connexion
       const { data: connection } = await supabase
         .from('premium_supplier_connections')
-        .select('supplier_id')
+        .select('premium_supplier_id')
         .eq('id', connectionId)
         .single()
 
@@ -132,7 +133,7 @@ export function usePremiumSuppliers() {
       const { data, error } = await supabase.functions.invoke('premium-supplier-connect', {
         body: {
           userId: user.id,
-          supplierId: connection.supplier_id
+          supplierId: connection.premium_supplier_id
         }
       })
 
@@ -145,7 +146,7 @@ export function usePremiumSuppliers() {
       
       toast({
         title: 'Synchronisation terminée',
-        description: `${data.data.products_imported} produits mis à jour`
+        description: `${data?.data?.products_imported || 0} produits mis à jour`
       })
     }
   })

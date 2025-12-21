@@ -32,15 +32,17 @@ export const useNewPlan = (user?: User | null) => {
     try {
       setPlanState(prev => ({ ...prev, loading: true, error: null }))
       
+      // Use subscription_plan column which exists in the profiles table
       const { data, error } = await supabase
         .from('profiles')
-        .select('plan')
+        .select('subscription_plan')
         .eq('id', userId)
         .maybeSingle()
 
       if (error) throw error
 
-      const userPlan = (data?.plan as PlanType) || 'free'
+      // Map subscription_plan to PlanType
+      const userPlan = (data?.subscription_plan as PlanType) || 'free'
       setPlanState({ plan: userPlan, loading: false, error: null })
     } catch (error: any) {
       console.error('Error fetching user plan:', error)
@@ -63,7 +65,7 @@ export const useNewPlan = (user?: User | null) => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ plan: newPlan as any })
+        .update({ subscription_plan: newPlan })
         .eq('id', user.id)
 
       if (error) throw error
@@ -82,8 +84,8 @@ export const useNewPlan = (user?: User | null) => {
   }
 
   const hasPlan = (minPlan: PlanType): boolean => {
-    const planHierarchy = { free: 0, pro: 1, ultra_pro: 2 }
-    return planHierarchy[planState.plan] >= planHierarchy[minPlan]
+    const planHierarchy: Record<PlanType, number> = { free: 0, standard: 1, pro: 2, ultra_pro: 3 }
+    return (planHierarchy[planState.plan] || 0) >= (planHierarchy[minPlan] || 0)
   }
 
   const isUltraPro = () => planState.plan === 'ultra_pro'
