@@ -26,6 +26,7 @@ export interface CRMLead {
 export function useCRMLeads() {
   const queryClient = useQueryClient();
 
+  // Use customers table as CRM leads source
   const { data: leads = [], isLoading, error } = useQuery({
     queryKey: ['crm-leads'],
     queryFn: async () => {
@@ -33,13 +34,32 @@ export function useCRMLeads() {
       if (!user) throw new Error('Non authentifié');
 
       const { data, error } = await supabase
-        .from('crm_leads')
+        .from('customers')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as CRMLead[];
+      return (data || []).map((customer: any) => ({
+        id: customer.id,
+        user_id: customer.user_id,
+        name: `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || customer.email,
+        email: customer.email,
+        phone: customer.phone,
+        company: customer.address,
+        position: '',
+        source: 'customer',
+        status: customer.total_orders > 0 ? 'won' : 'new',
+        lead_score: Math.min(100, (customer.total_orders || 0) * 20 + 10),
+        estimated_value: customer.total_spent || 0,
+        expected_close_date: customer.created_at,
+        notes: customer.notes,
+        tags: customer.tags || [],
+        custom_fields: {},
+        converted_to_customer_id: customer.total_orders > 0 ? customer.id : undefined,
+        created_at: customer.created_at,
+        updated_at: customer.updated_at
+      })) as CRMLead[];
     },
   });
 
@@ -48,23 +68,21 @@ export function useCRMLeads() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
 
+      const nameParts = (leadData.name || '').split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
       const { data, error } = await supabase
-        .from('crm_leads')
+        .from('customers')
         .insert([{
           user_id: user.id,
-          name: leadData.name || '',
+          first_name: firstName,
+          last_name: lastName,
           email: leadData.email || '',
           phone: leadData.phone,
-          company: leadData.company,
-          position: leadData.position,
-          source: leadData.source,
-          status: leadData.status || 'new',
-          lead_score: leadData.lead_score || 0,
-          estimated_value: leadData.estimated_value,
-          expected_close_date: leadData.expected_close_date,
+          address: leadData.company,
           notes: leadData.notes,
           tags: leadData.tags,
-          custom_fields: leadData.custom_fields,
         }])
         .select()
         .single();
@@ -83,9 +101,21 @@ export function useCRMLeads() {
 
   const updateLead = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<CRMLead> & { id: string }) => {
+      const nameParts = (updates.name || '').split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
       const { data, error } = await supabase
-        .from('crm_leads')
-        .update(updates)
+        .from('customers')
+        .update({
+          first_name: firstName,
+          last_name: lastName,
+          email: updates.email,
+          phone: updates.phone,
+          address: updates.company,
+          notes: updates.notes,
+          tags: updates.tags,
+        })
         .eq('id', id)
         .select()
         .single();
@@ -105,7 +135,7 @@ export function useCRMLeads() {
   const deleteLead = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('crm_leads')
+        .from('customers')
         .delete()
         .eq('id', id);
 

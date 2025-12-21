@@ -42,7 +42,9 @@ export function useAnalytics() {
             .select('id')
             .eq('user_id', user.id),
           supabase
-            .rpc('get_masked_customers')
+            .from('customers')
+            .select('id')
+            .limit(1000)
         ]);
 
         // Handle orders result

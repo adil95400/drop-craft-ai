@@ -23,6 +23,7 @@ export interface CRMActivity {
 export function useCRMActivities(leadId?: string) {
   const queryClient = useQueryClient();
 
+  // Use activity_logs table as CRM activities source
   const { data: activities = [], isLoading } = useQuery({
     queryKey: ['crm-activities', leadId],
     queryFn: async () => {
@@ -30,19 +31,36 @@ export function useCRMActivities(leadId?: string) {
       if (!user) throw new Error('Non authentifié');
 
       let query = supabase
-        .from('crm_activities')
+        .from('activity_logs')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .in('action', ['call', 'email', 'meeting', 'note', 'task', 'sms']);
 
       if (leadId) {
-        query = query.eq('lead_id', leadId);
+        query = query.eq('entity_id', leadId);
       }
 
       const { data, error } = await query
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as CRMActivity[];
+      return (data || []).map((log: any) => ({
+        id: log.id,
+        user_id: log.user_id,
+        contact_id: log.entity_id,
+        lead_id: log.entity_id,
+        activity_type: log.action || 'note',
+        subject: log.description || '',
+        description: log.description,
+        status: 'completed',
+        scheduled_at: log.created_at,
+        completed_at: log.created_at,
+        duration_minutes: 0,
+        outcome: '',
+        metadata: log.details,
+        created_at: log.created_at,
+        updated_at: log.created_at
+      })) as CRMActivity[];
     },
   });
 
@@ -52,20 +70,21 @@ export function useCRMActivities(leadId?: string) {
       if (!user) throw new Error('Non authentifié');
 
       const { data, error } = await supabase
-        .from('crm_activities')
+        .from('activity_logs')
         .insert([{
           user_id: user.id,
-          contact_id: activityData.contact_id,
-          lead_id: activityData.lead_id,
-          activity_type: activityData.activity_type || 'note',
-          subject: activityData.subject || '',
-          description: activityData.description,
-          status: activityData.status || 'completed',
-          scheduled_at: activityData.scheduled_at,
-          completed_at: activityData.completed_at,
-          duration_minutes: activityData.duration_minutes,
-          outcome: activityData.outcome,
-          metadata: activityData.metadata,
+          entity_type: 'crm_activity',
+          entity_id: activityData.contact_id || activityData.lead_id,
+          action: activityData.activity_type || 'note',
+          description: activityData.subject || '',
+          details: {
+            description: activityData.description,
+            status: activityData.status || 'completed',
+            scheduled_at: activityData.scheduled_at,
+            duration_minutes: activityData.duration_minutes,
+            outcome: activityData.outcome,
+            metadata: activityData.metadata,
+          },
         }])
         .select()
         .single();
@@ -85,8 +104,15 @@ export function useCRMActivities(leadId?: string) {
   const updateActivity = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<CRMActivity> & { id: string }) => {
       const { data, error } = await supabase
-        .from('crm_activities')
-        .update(updates)
+        .from('activity_logs')
+        .update({
+          action: updates.activity_type,
+          description: updates.subject,
+          details: {
+            description: updates.description,
+            status: updates.status,
+          }
+        })
         .eq('id', id)
         .select();
 
@@ -102,7 +128,7 @@ export function useCRMActivities(leadId?: string) {
   const deleteActivity = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('crm_activities')
+        .from('activity_logs')
         .delete()
         .eq('id', id);
 

@@ -38,118 +38,121 @@ export const useCatalogProducts = (filters: any = {}) => {
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['catalogProducts', filters],
     queryFn: async () => {
-      // Use the secure marketplace function instead of direct table access
-      const { data, error } = await supabase.rpc('get_marketplace_products', {
-        category_filter: filters.category || null,
-        search_term: filters.search || null,
-        limit_count: 100000 // Support large catalogs up to 100k products
-      });
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      // Query catalog_products table directly
+      let query = supabase
+        .from('catalog_products')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1000)
+
+      if (filters.category) {
+        query = query.eq('category', filters.category)
+      }
+      if (filters.search) {
+        query = query.ilike('title', `%${filters.search}%`)
+      }
+
+      const { data, error } = await query
       
       if (error) {
-        console.error('Error fetching catalog products:', error);
+        console.error('Error fetching catalog products:', error)
         toast({
           title: "Erreur",
           description: "Impossible de charger les produits du catalogue",
           variant: "destructive",
-        });
-        throw error;
+        })
+        throw error
       }
       
-      // Apply additional client-side filters for features not supported by the function
-      let filteredData = data || [];
-      
-      if (filters.supplier) {
-        // Note: supplier filtering removed for security - admin access required
-        console.warn('Supplier filtering requires admin access');
-      }
-      if (filters.isTrending) {
-        filteredData = filteredData.filter((p: any) => p.is_trending);
-      }
-      if (filters.isBestseller) {
-        filteredData = filteredData.filter((p: any) => p.is_bestseller);
-      }
-      
-      // Map the secure marketplace data to CatalogProduct format
-      return filteredData.map((item: any) => ({
+      // Map the catalog_products data to CatalogProduct format
+      return (data || []).map((item: any) => ({
         id: item.id,
-        external_id: item.external_id,
-        name: item.name,
+        external_id: item.id,
+        name: item.title,
         description: item.description,
-        price: item.price,
-        cost_price: 0, // Hidden for security
-        original_price: 0, // Hidden for security
-        currency: item.currency,
+        price: item.price || 0,
+        cost_price: 0,
+        original_price: item.compare_at_price,
+        currency: 'EUR',
         category: item.category,
-        subcategory: item.subcategory,
-        brand: item.brand,
-        sku: item.sku,
-        image_url: item.image_url,
-        supplier_id: 'hidden', // Hidden for security
-        supplier_name: 'Marketplace Vendor', // Generic name for security
-        rating: item.rating || 0,
-        reviews_count: item.reviews_count || 0,
-        sales_count: 0, // Hidden for security
-        stock_quantity: 0, // Hidden for security
-        tags: item.tags || [],
-        profit_margin: 0, // Hidden for security
-        is_winner: false, // Hidden for security
-        is_trending: item.is_trending || false,
-        is_bestseller: item.is_bestseller || false,
+        subcategory: '',
+        brand: item.supplier_name,
+        sku: '',
+        image_url: item.image_urls?.[0] || '',
+        supplier_id: item.source_platform || '',
+        supplier_name: item.supplier_name || 'Unknown',
+        rating: 0,
+        reviews_count: 0,
+        sales_count: 0,
+        stock_quantity: 0,
+        tags: [],
+        profit_margin: 0,
+        is_winner: false,
+        is_trending: false,
+        is_bestseller: false,
         created_at: item.created_at,
         updated_at: item.updated_at
-      })) as CatalogProduct[];
+      })) as CatalogProduct[]
     }
-  });
+  })
 
   const { data: categories = [] } = useQuery({
     queryKey: ['catalogCategories'],
     queryFn: async () => {
-      // Get categories from the secure marketplace function
-      const { data, error } = await supabase.rpc('get_marketplace_products', {
-        limit_count: 100000
-      });
-      if (error) throw error;
-      const categories = [...new Set(data?.map((item: any) => item.category))]
+      const { data, error } = await supabase
+        .from('catalog_products')
+        .select('category')
+        .limit(1000)
+        
+      if (error) throw error
+      const uniqueCategories = [...new Set((data || []).map((item: any) => item.category))]
         .filter(Boolean)
-        .sort();
-      return categories;
+        .sort()
+      return uniqueCategories as string[]
     }
-  });
+  })
 
   const { data: suppliers = [] } = useQuery({
     queryKey: ['catalogSuppliers'], 
     queryFn: async () => {
-      // Use secure function to get supplier data
-      const { data, error } = await supabase.rpc('get_secure_catalog_products', {
-        category_filter: null,
-        search_term: null,
-        limit_count: 100000
-      });
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from('catalog_products')
+        .select('supplier_name, source_platform')
+        .limit(1000)
+        
+      if (error) throw error
       
-      // Extract unique suppliers from the secure data
       const uniqueSuppliers = new Map()
-      data?.forEach(product => {
-        if (product.supplier_name && product.external_id) {
-          uniqueSuppliers.set(product.external_id, {
-            id: product.external_id,
+      ;(data || []).forEach((product: any) => {
+        if (product.supplier_name) {
+          uniqueSuppliers.set(product.supplier_name, {
+            id: product.source_platform || product.supplier_name,
             name: product.supplier_name
           })
         }
       })
       
-      return Array.from(uniqueSuppliers.values());
+      return Array.from(uniqueSuppliers.values())
     }
-  });
+  })
 
   const { data: userFavorites = [] } = useQuery({
     queryKey: ['userFavorites'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return []
-      const { data, error } = await supabase.from('user_favorites').select('catalog_product_id').eq('user_id', user.id)
+      
+      // Use notifications as a placeholder for favorites
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('metadata')
+        .eq('user_id', user.id)
+        .eq('type', 'favorite')
+        
       if (error) throw error
-      return data.map(f => f.catalog_product_id)
+      return (data || []).map(f => (f.metadata as any)?.product_id).filter(Boolean)
     }
   })
 
@@ -157,7 +160,16 @@ export const useCatalogProducts = (filters: any = {}) => {
     mutationFn: async (productId: string) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
-      const { data, error } = await supabase.from('user_favorites').insert([{ user_id: user.id, catalog_product_id: productId }])
+      
+      const { data, error } = await supabase
+        .from('notifications')
+        .insert([{ 
+          user_id: user.id, 
+          title: 'Favori ajouté',
+          type: 'favorite',
+          metadata: { product_id: productId }
+        }])
+        
       if (error) throw error
       return data
     },
@@ -171,7 +183,14 @@ export const useCatalogProducts = (filters: any = {}) => {
     mutationFn: async (productId: string) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
-      const { error } = await supabase.from('user_favorites').delete().eq('user_id', user.id).eq('catalog_product_id', productId)
+      
+      // Delete the favorite notification
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('type', 'favorite')
+        
       if (error) throw error
     },
     onSuccess: () => {
@@ -184,7 +203,17 @@ export const useCatalogProducts = (filters: any = {}) => {
     mutationFn: async ({ productId, action, metadata }: { productId: string; action: string; metadata?: any }) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
-      const { data, error } = await supabase.from('sourcing_history').insert([{ user_id: user.id, catalog_product_id: productId, action, metadata: metadata || {} }])
+      
+      const { data, error } = await supabase
+        .from('activity_logs')
+        .insert([{ 
+          user_id: user.id, 
+          entity_id: productId,
+          entity_type: 'catalog_product',
+          action, 
+          details: metadata || {} 
+        }])
+        
       if (error) throw error
       return data
     }

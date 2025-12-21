@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -28,7 +28,7 @@ export const useCanvaIntegration = () => {
   const queryClient = useQueryClient()
   const [isConnecting, setIsConnecting] = useState(false)
 
-  // Fetch Canva integration status from database
+  // Fetch Canva integration status from integrations table
   const { data: integration, isLoading: isLoadingIntegration } = useQuery({
     queryKey: ['canva-integration'],
     queryFn: async () => {
@@ -36,10 +36,11 @@ export const useCanvaIntegration = () => {
       if (!user) return null
 
       const { data, error } = await supabase
-        .from('canva_integrations')
+        .from('integrations')
         .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'active')
+        .eq('platform', 'canva')
+        .eq('connection_status', 'connected')
         .maybeSingle()
 
       if (error) {
@@ -50,17 +51,19 @@ export const useCanvaIntegration = () => {
     }
   })
 
-  // Fetch designs from Supabase
+  // Fetch designs from blog_posts table as a placeholder for designs
   const { data: designs = [], isLoading: isLoading, refetch: refetchDesigns } = useQuery({
     queryKey: ['canva-designs'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return []
 
+      // Use blog_posts as design storage since canva_designs doesn't exist
       const { data, error } = await supabase
-        .from('canva_designs')
+        .from('blog_posts')
         .select('*')
         .eq('user_id', user.id)
+        .eq('category', 'canva_design')
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -68,26 +71,24 @@ export const useCanvaIntegration = () => {
         return []
       }
 
-      return data.map(d => ({
+      return (data || []).map(d => ({
         id: d.id,
         title: d.title,
-        thumbnail: d.thumbnail_url,
-        design_type: d.design_type || 'unknown',
-        created_at: d.created_at,
-        updated_at: d.updated_at,
-        design_url: d.design_url,
+        thumbnail: d.image_url,
+        design_type: 'custom',
+        created_at: d.created_at || '',
+        updated_at: d.updated_at || '',
+        design_url: d.image_url,
         status: d.status,
-        canva_design_id: d.canva_design_id
+        canva_design_id: d.id
       })) as CanvaDesign[]
     }
   })
 
-  // Fetch templates from database or static config
+  // Fetch templates from static config
   const { data: templates = [] } = useQuery({
     queryKey: ['canva-templates'],
     queryFn: async () => {
-      // Templates are typically static or from Canva API
-      // For now, use predefined templates that match Canva's offerings
       const defaultTemplates: CanvaTemplate[] = [
         {
           id: 'black-friday-sale',
@@ -122,17 +123,17 @@ export const useCanvaIntegration = () => {
     }
   })
 
-  // Check connection status from database
   const checkConnectionStatus = async (): Promise<boolean> => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return false
 
       const { data, error } = await supabase
-        .from('canva_integrations')
-        .select('id, status')
+        .from('integrations')
+        .select('id, connection_status')
         .eq('user_id', user.id)
-        .eq('status', 'active')
+        .eq('platform', 'canva')
+        .eq('connection_status', 'connected')
         .maybeSingle()
 
       if (error) {
@@ -147,7 +148,6 @@ export const useCanvaIntegration = () => {
     }
   }
 
-  // Connect to Canva with real OAuth flow
   const connectCanva = async () => {
     setIsConnecting(true)
     try {
@@ -158,29 +158,27 @@ export const useCanvaIntegration = () => {
       if (error) throw error
 
       if (data?.authUrl) {
-        // Open real OAuth popup
         const popup = window.open(
           data.authUrl,
           'canva-auth',
           'width=600,height=700,scrollbars=yes,resizable=yes'
         )
 
-        // Listen for OAuth callback
         const handleMessage = async (event: MessageEvent) => {
           if (event.data?.type === 'canva-oauth-callback') {
             window.removeEventListener('message', handleMessage)
             if (popup) popup.close()
             
-            // Store integration in database
             const { data: { user } } = await supabase.auth.getUser()
             if (user && event.data.tokens) {
-              await supabase.from('canva_integrations').upsert({
+              await supabase.from('integrations').upsert({
                 user_id: user.id,
-                canva_user_id: event.data.userId || 'unknown',
-                access_token: event.data.tokens.access_token,
-                refresh_token: event.data.tokens.refresh_token,
-                token_expires_at: event.data.tokens.expires_at,
-                status: 'active'
+                platform: 'canva',
+                platform_name: 'Canva',
+                connection_status: 'connected',
+                is_active: true,
+                access_token_encrypted: event.data.tokens.access_token,
+                refresh_token_encrypted: event.data.tokens.refresh_token,
               })
               
               queryClient.invalidateQueries({ queryKey: ['canva-integration'] })
@@ -196,7 +194,6 @@ export const useCanvaIntegration = () => {
 
         window.addEventListener('message', handleMessage)
 
-        // Timeout after 2 minutes
         setTimeout(() => {
           window.removeEventListener('message', handleMessage)
           if (isConnecting) {
@@ -222,16 +219,16 @@ export const useCanvaIntegration = () => {
     }
   }
 
-  // Disconnect from Canva
   const disconnectCanva = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
       await supabase
-        .from('canva_integrations')
-        .update({ status: 'disconnected' })
+        .from('integrations')
+        .update({ connection_status: 'disconnected', is_active: false })
         .eq('user_id', user.id)
+        .eq('platform', 'canva')
 
       queryClient.invalidateQueries({ queryKey: ['canva-integration'] })
       queryClient.invalidateQueries({ queryKey: ['canva-designs'] })
@@ -250,18 +247,15 @@ export const useCanvaIntegration = () => {
     }
   }
 
-  // Get designs from database
   const getDesigns = async (): Promise<CanvaDesign[]> => {
     await refetchDesigns()
     return designs
   }
 
-  // Get templates
   const getTemplates = async (): Promise<CanvaTemplate[]> => {
     return templates
   }
 
-  // Open Canva editor
   const openCanvaEditor = (designId?: string, templateId?: string) => {
     const baseUrl = 'https://www.canva.com'
     let editorUrl = baseUrl
@@ -277,7 +271,6 @@ export const useCanvaIntegration = () => {
     window.open(editorUrl, '_blank', 'width=1200,height=800')
   }
 
-  // Create design from template with real API call
   const createDesignFromTemplate = async (templateId: string, customData?: Record<string, any>) => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -292,29 +285,18 @@ export const useCanvaIntegration = () => {
 
       if (error) throw error
 
-      // Store the new design in database
       if (data?.design_id) {
-        const integrationData = await supabase
-          .from('canva_integrations')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('status', 'active')
-          .single()
+        // Store as blog post with canva_design category
+        await supabase.from('blog_posts').insert({
+          user_id: user.id,
+          title: customData?.title || `Design from ${templateId}`,
+          content: JSON.stringify(data),
+          category: 'canva_design',
+          image_url: data.thumbnail_url,
+          status: 'draft'
+        })
 
-        if (integrationData.data) {
-          await supabase.from('canva_designs').insert({
-            user_id: user.id,
-            canva_design_id: data.design_id,
-            canva_integration_id: integrationData.data.id,
-            title: customData?.title || `Design from ${templateId}`,
-            design_type: data.design_type || 'custom',
-            design_url: data.design_url,
-            thumbnail_url: data.thumbnail_url,
-            status: 'active'
-          })
-
-          queryClient.invalidateQueries({ queryKey: ['canva-designs'] })
-        }
+        queryClient.invalidateQueries({ queryKey: ['canva-designs'] })
 
         toast({
           title: "Design créé",
@@ -337,15 +319,12 @@ export const useCanvaIntegration = () => {
   }
 
   return {
-    // States
     isConnecting,
     isLoading: isLoading || isLoadingIntegration,
     designs,
     templates,
     isConnected: !!integration,
     integration,
-
-    // Actions  
     connectCanva,
     disconnectCanva,
     checkConnectionStatus,

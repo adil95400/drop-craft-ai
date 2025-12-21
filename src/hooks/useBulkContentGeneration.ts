@@ -33,12 +33,28 @@ export function useBulkContentGeneration() {
     queryKey: ['bulk-content-jobs'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('bulk_content_jobs')
+        .from('ai_optimization_jobs')
         .select('*')
+        .eq('job_type', 'bulk_content')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as any;
+      return (data || []).map((j: any) => ({
+        id: j.id,
+        user_id: j.user_id,
+        job_type: j.target_type || 'videos',
+        status: j.status,
+        total_items: (j.input_data as any)?.total_items || 0,
+        completed_items: (j.metrics as any)?.completed || 0,
+        failed_items: (j.metrics as any)?.failed || 0,
+        input_data: j.input_data,
+        results: (j.output_data as any)?.results || [],
+        error_log: [],
+        started_at: j.started_at,
+        completed_at: j.completed_at,
+        created_at: j.created_at,
+        updated_at: j.updated_at
+      })) as BulkJob[];
     },
   });
 
@@ -46,16 +62,19 @@ export function useBulkContentGeneration() {
   const createBulkJob = useMutation({
     mutationFn: async (params: CreateBulkJobParams) => {
       const products = params.inputData.products || [];
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Non authentifié');
       
-      // Create job record
+      // Create job record using ai_optimization_jobs table
       const { data: jobData, error: jobError } = await supabase
-        .from('bulk_content_jobs')
+        .from('ai_optimization_jobs')
         .insert({
-          job_type: params.jobType,
+          job_type: 'bulk_content',
+          target_type: params.jobType,
           status: 'pending',
-          total_items: products.length,
-          input_data: params.inputData
-        } as any)
+          input_data: { ...params.inputData, total_items: products.length },
+          user_id: user.id
+        })
         .select()
         .single();
 
@@ -74,9 +93,10 @@ export function useBulkContentGeneration() {
       return { jobData, processingData: data };
     },
     onSuccess: (data) => {
+      const totalItems = (data.jobData.input_data as any)?.total_items || 0;
       toast({
         title: 'Job lancé avec succès!',
-        description: `Génération de ${data.jobData.total_items} contenus en cours...`,
+        description: `Génération de ${totalItems} contenus en cours...`,
       });
       queryClient.invalidateQueries({ queryKey: ['bulk-content-jobs'] });
     },
@@ -93,7 +113,7 @@ export function useBulkContentGeneration() {
   const cancelJob = useMutation({
     mutationFn: async (jobId: string) => {
       const { data, error } = await supabase
-        .from('bulk_content_jobs')
+        .from('ai_optimization_jobs')
         .update({ status: 'cancelled' })
         .eq('id', jobId)
         .select()

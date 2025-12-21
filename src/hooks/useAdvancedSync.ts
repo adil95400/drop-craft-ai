@@ -159,14 +159,6 @@ export const useAdvancedSync = () => {
         stock_quantity: p.stock_quantity || 0,
         created_at: p.created_at
       })) as unknown as ProductVariant[]
-        id: p.id,
-        product_id: p.id,
-        variant_sku: p.sku || '',
-        options: {},
-        price: p.price || 0,
-        stock_quantity: p.stock_quantity || 0,
-        created_at: p.created_at
-      })) as ProductVariant[]
     }
   })
 
