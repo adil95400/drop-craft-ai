@@ -2,9 +2,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
-import type { Database } from '@/integrations/supabase/types'
 
-type MarketingIntegration = Database['public']['Tables']['integrations']['Row']
+interface MarketingIntegration {
+  id: string
+  platform: string
+  platform_name?: string
+  connection_status?: string
+  is_active?: boolean
+  last_sync_at?: string
+  created_at?: string
+  updated_at?: string
+}
 
 export const useMarketingIntegrations = () => {
   const { toast } = useToast()
@@ -24,11 +32,10 @@ export const useMarketingIntegrations = () => {
         .from('integrations')
         .select('*')
         .eq('user_id', user.id)
-        .in('platform_type', ['email', 'ads', 'social', 'sms'])
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      return data || []
+      return (data || []) as unknown as MarketingIntegration[]
     },
     enabled: !!user?.id
   })
@@ -36,7 +43,7 @@ export const useMarketingIntegrations = () => {
   const connectIntegration = useMutation({
     mutationFn: async (integrationData: { 
       platform_name: string
-      platform_type: string
+      platform_type?: string
       api_key?: string
       access_token?: string 
     }) => {
@@ -45,18 +52,19 @@ export const useMarketingIntegrations = () => {
       const { data, error } = await supabase
         .from('integrations')
         .insert([{ 
-          ...integrationData, 
+          platform: integrationData.platform_name,
+          platform_name: integrationData.platform_name,
           user_id: user.id,
           connection_status: 'connected',
           is_active: true
-        }])
+        } as any])
         .select()
         .single()
 
       if (error) throw error
       return data
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['marketing-integrations'] })
       toast({
         title: `${data.platform_name} connecté`,

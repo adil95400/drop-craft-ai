@@ -2,11 +2,34 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
-import type { Database } from '@/integrations/supabase/types'
 
-type MarketingAutomation = Database['public']['Tables']['automated_campaigns']['Row']
-type MarketingAutomationInsert = Database['public']['Tables']['automated_campaigns']['Insert']
-type MarketingAutomationUpdate = Database['public']['Tables']['automated_campaigns']['Update']
+interface MarketingAutomation {
+  id: string
+  name: string
+  trigger_type: string
+  trigger_config?: any
+  actions?: any
+  is_active?: boolean
+  last_triggered_at?: string
+  trigger_count?: number
+  current_metrics?: any
+  user_id: string
+  created_at: string
+  updated_at: string
+}
+
+interface MarketingAutomationInsert {
+  name: string
+  trigger_type?: string
+  trigger_config?: any
+  actions?: any
+  is_active?: boolean
+  current_metrics?: any
+}
+
+interface MarketingAutomationUpdate extends Partial<MarketingAutomationInsert> {
+  id?: string
+}
 
 export const useMarketingAutomations = () => {
   const { toast } = useToast()
@@ -23,23 +46,23 @@ export const useMarketingAutomations = () => {
       if (!user?.id) return []
       
       const { data, error } = await supabase
-        .from('automated_campaigns')
+        .from('automated_campaigns' as any)
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      return data || []
+      return (data || []) as unknown as MarketingAutomation[]
     },
     enabled: !!user?.id
   })
 
   const createAutomation = useMutation({
-    mutationFn: async (automationData: Omit<MarketingAutomationInsert, 'user_id'>) => {
+    mutationFn: async (automationData: MarketingAutomationInsert) => {
       if (!user?.id) throw new Error('User not authenticated')
 
       const { data, error } = await supabase
-        .from('automated_campaigns')
+        .from('automated_campaigns' as any)
         .insert([{ ...automationData, user_id: user.id }])
         .select()
         .single()
@@ -59,7 +82,7 @@ export const useMarketingAutomations = () => {
   const updateAutomation = useMutation({
     mutationFn: async ({ id, ...updates }: MarketingAutomationUpdate & { id: string }) => {
       const { data, error } = await supabase
-        .from('automated_campaigns')
+        .from('automated_campaigns' as any)
         .update(updates)
         .eq('id', id)
         .select()
@@ -80,8 +103,8 @@ export const useMarketingAutomations = () => {
   const toggleAutomation = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
       const { data, error } = await supabase
-        .from('automated_campaigns')
-        .update({ is_active, status: is_active ? 'running' : 'paused' })
+        .from('automated_campaigns' as any)
+        .update({ is_active })
         .eq('id', id)
         .select()
         .single()

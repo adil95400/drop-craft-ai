@@ -4,24 +4,15 @@ import { useToast } from '@/hooks/use-toast'
 
 export interface Integration {
   id: string
-  platform_name: string
-  platform_url?: string
-  shop_domain?: string
-  connection_status: 'connected' | 'error' | 'connecting' | 'disconnected'
-  is_active: boolean
-  store_config?: {
-    name?: string
-    platform?: string
-    domain?: string
-  }
+  platform_name?: string
+  platform?: string
+  store_url?: string
+  connection_status?: string
+  is_active?: boolean
+  config?: any
   last_sync_at?: string
-  sync_settings?: {
-    auto_sync?: boolean
-    import_products?: boolean
-    track_orders?: boolean
-  }
-  created_at: string
-  updated_at: string
+  created_at?: string
+  updated_at?: string
 }
 
 export function useIntegrationsData() {
@@ -35,29 +26,23 @@ export function useIntegrationsData() {
       setLoading(true)
       const { data, error } = await supabase
         .from('integrations')
-        .select(`
-          id,
-          platform_name,
-          platform_url,
-          shop_domain,
-          connection_status,
-          is_active,
-          store_config,
-          last_sync_at,
-          sync_settings,
-          created_at,
-          updated_at
-        `)
+        .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
       setIntegrations((data || []).map(item => ({
-        ...item,
-        connection_status: item.connection_status as 'connected' | 'error' | 'connecting' | 'disconnected',
-        store_config: item.store_config as { name?: string; platform?: string; domain?: string } | undefined,
-        sync_settings: item.sync_settings as { auto_sync?: boolean; import_products?: boolean; track_orders?: boolean } | undefined
+        id: item.id,
+        platform_name: item.platform_name,
+        platform: item.platform,
+        store_url: item.store_url,
+        connection_status: item.connection_status,
+        is_active: item.is_active,
+        config: item.config,
+        last_sync_at: item.last_sync_at,
+        created_at: item.created_at,
+        updated_at: item.updated_at
       })))
       setError(null)
     } catch (error: any) {
@@ -70,7 +55,6 @@ export function useIntegrationsData() {
 
   const syncIntegration = async (integrationId: string) => {
     try {
-      // Mettre à jour le statut vers "connecting"
       await supabase
         .from('integrations')
         .update({ 
@@ -79,7 +63,6 @@ export function useIntegrationsData() {
         })
         .eq('id', integrationId)
 
-      // Simuler une synchronisation réussie
       setTimeout(async () => {
         await supabase
           .from('integrations')
