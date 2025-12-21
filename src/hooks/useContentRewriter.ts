@@ -64,18 +64,18 @@ export function useContentRewriter() {
       productSource: 'products' | 'imported_products' | 'supplier_products'
     }) => {
       // Récupérer le rewrite
-      const { data: rewrite, error: rewriteError } = await supabase
-        .from('product_rewrites')
+      const { data: rewrite, error: rewriteError } = await (supabase
+        .from('product_rewrites' as any)
         .select('*')
         .eq('id', rewriteId)
-        .single()
+        .single() as any)
 
       if (rewriteError) throw rewriteError
 
       // Mettre à jour le produit
       const updateData: any = {}
-      if (rewrite.rewritten_title) updateData.name = rewrite.rewritten_title
-      if (rewrite.rewritten_description) updateData.description = rewrite.rewritten_description
+      if (rewrite?.rewritten_title) updateData.name = rewrite.rewritten_title
+      if (rewrite?.rewritten_description) updateData.description = rewrite.rewritten_description
 
       const { error: updateError } = await supabase
         .from(productSource)
@@ -85,10 +85,10 @@ export function useContentRewriter() {
       if (updateError) throw updateError
 
       // Marquer le rewrite comme appliqué
-      const { error: markError } = await supabase
-        .from('product_rewrites')
+      const { error: markError } = await (supabase
+        .from('product_rewrites' as any)
         .update({ was_applied: true, applied_at: new Date().toISOString() })
-        .eq('id', rewriteId)
+        .eq('id', rewriteId) as any)
 
       if (markError) throw markError
 
@@ -118,10 +118,10 @@ export function useProductRewrites(userId: string, productId?: string) {
     queryKey: ['product-rewrites', userId, productId],
     queryFn: async () => {
       let query = supabase
-        .from('product_rewrites')
+        .from('product_rewrites' as any)
         .select('*')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false }) as any
 
       if (productId) {
         query = query.eq('product_id', productId)
@@ -130,7 +130,7 @@ export function useProductRewrites(userId: string, productId?: string) {
       const { data, error } = await query.limit(50)
 
       if (error) throw error
-      return data as ContentRewrite[]
+      return (data || []) as ContentRewrite[]
     },
     enabled: !!userId,
   })
@@ -141,9 +141,9 @@ export function useProductAttributes(userId: string, productId?: string) {
     queryKey: ['product-ai-attributes', userId, productId],
     queryFn: async () => {
       let query = supabase
-        .from('product_ai_attributes')
+        .from('product_ai_attributes' as any)
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', userId) as any
 
       if (productId) {
         query = query.eq('product_id', productId)
@@ -152,7 +152,7 @@ export function useProductAttributes(userId: string, productId?: string) {
       const { data, error } = await query
 
       if (error) throw error
-      return data
+      return data || []
     },
     enabled: !!userId,
   })

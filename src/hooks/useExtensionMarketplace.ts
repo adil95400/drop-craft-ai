@@ -38,11 +38,9 @@ export const useExtensionMarketplace = () => {
         .from('extensions')
         .insert([{
           name: extensionId,
-          display_name: extensionId,
-          provider: 'marketplace',
-          category: 'marketplace',
-          status: 'active',
-          user_id: user.data.user.id
+          code: '', // Required field
+          description: extensionId,
+          status: 'active'
         }])
         .select()
         .single()
@@ -71,7 +69,7 @@ export const useExtensionMarketplace = () => {
     const { data } = await supabase
       .from('extensions')
       .select('id')
-      .eq('display_name', extensionId)
+      .eq('name', extensionId)
       .maybeSingle()
     
     return !!data

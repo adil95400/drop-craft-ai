@@ -45,12 +45,13 @@ export function useConnectedStores() {
       // Récupérer les statistiques réelles pour chaque intégration
       const connectedStores: ConnectedStore[] = []
       
-      for (const integration of integrations || []) {
+        for (const integration of integrations || []) {
         try {
           let stats = { products: 0, orders: 0, revenue: 0 }
+          const integrationData = integration as any
           
           // Pour Shopify, récupérer les vraies statistiques
-          if (integration.platform_type === 'shopify' && integration.connection_status === 'active') {
+          if (integrationData.platform === 'shopify' && integration.connection_status === 'active') {
             try {
               const { data: shopifyStats } = await supabase.functions.invoke('shopify-stats', {
                 body: { integration_id: integration.id }
@@ -81,30 +82,31 @@ export function useConnectedStores() {
           
           connectedStores.push({
             id: integration.id,
-            platform_name: integration.platform_name,
-            platform_type: integration.platform_type,
-            shop_domain: integration.shop_domain,
-            connection_status: mapConnectionStatus(integration.connection_status),
-            last_sync_at: integration.last_sync_at,
-            is_active: integration.is_active,
-            store_config: integration.store_config,
+            platform_name: integrationData.platform_name || integrationData.platform || 'Unknown',
+            platform_type: integrationData.platform || 'unknown',
+            shop_domain: integrationData.store_url || '',
+            connection_status: mapConnectionStatus(integration.connection_status || 'disconnected'),
+            last_sync_at: integration.last_sync_at || undefined,
+            is_active: integration.is_active || false,
+            store_config: integrationData.config || {},
             products_count: stats.products,
             orders_count: stats.orders,
             sales_volume: stats.revenue
           })
         } catch (integrationError) {
-          console.error(`Erreur lors de la récupération des stats pour ${integration.platform_name}:`, integrationError)
+          console.error(`Erreur lors de la récupération des stats pour ${(integration as any).platform_name || (integration as any).platform}:`, integrationError)
+          const fallbackData = integration as any
           
           // En cas d'erreur, ajouter quand même l'intégration avec des stats à 0
           connectedStores.push({
             id: integration.id,
-            platform_name: integration.platform_name,
-            platform_type: integration.platform_type,
-            shop_domain: integration.shop_domain,
+            platform_name: fallbackData.platform_name || fallbackData.platform || 'Unknown',
+            platform_type: fallbackData.platform || 'unknown',
+            shop_domain: fallbackData.store_url || '',
             connection_status: 'error' as const,
-            last_sync_at: integration.last_sync_at,
-            is_active: integration.is_active,
-            store_config: integration.store_config,
+            last_sync_at: integration.last_sync_at || undefined,
+            is_active: integration.is_active || false,
+            store_config: fallbackData.config || {},
             products_count: 0,
             orders_count: 0,
             sales_volume: 0

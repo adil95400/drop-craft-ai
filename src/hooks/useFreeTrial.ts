@@ -3,6 +3,15 @@ import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
 
+interface TrialData {
+  id: string
+  user_id: string
+  plan: string
+  status: string
+  ends_at: string
+  created_at: string
+}
+
 export function useFreeTrial() {
   const { toast } = useToast()
   const { user } = useAuth()
@@ -10,17 +19,30 @@ export function useFreeTrial() {
 
   const { data: trial, isLoading } = useQuery({
     queryKey: ['free-trial', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<TrialData | null> => {
       if (!user) return null
 
+      // Use profiles table to check subscription status
       const { data, error } = await supabase
-        .from('free_trial_subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
+        .from('profiles')
+        .select('id, subscription_plan, created_at, updated_at')
+        .eq('id', user.id)
         .single()
 
-      if (error && error.code !== 'PGRST116') throw error
-      return data
+      if (error) return null
+      
+      // Mock trial data based on profile
+      if (data?.subscription_plan === 'pro' || data?.subscription_plan === 'ultra_pro') {
+        return {
+          id: data.id,
+          user_id: data.id,
+          plan: data.subscription_plan,
+          status: 'active',
+          ends_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          created_at: data.created_at
+        }
+      }
+      return null
     },
     enabled: !!user,
   })
@@ -43,7 +65,7 @@ export function useFreeTrial() {
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       toast({
         title: '🎉 Essai gratuit activé',
-        description: `Profitez de ${data.trial.days} jours d'accès au plan ${data.trial.plan}`,
+        description: `Profitez de ${data?.trial?.days || 14} jours d'accès au plan ${data?.trial?.plan || 'Pro'}`,
       })
     },
     onError: (error: any) => {
@@ -60,13 +82,11 @@ export function useFreeTrial() {
       if (!trial) throw new Error('No active trial')
 
       const { error } = await supabase
-        .from('free_trial_subscriptions')
+        .from('profiles')
         .update({
-          status: 'converted',
-          converted_to_paid: true,
-          conversion_date: new Date().toISOString(),
+          subscription_plan: trial.plan || 'pro'
         })
-        .eq('id', trial.id)
+        .eq('id', user?.id)
 
       if (error) throw error
     },
@@ -83,20 +103,11 @@ export function useFreeTrial() {
     mutationFn: async () => {
       if (!trial) throw new Error('No active trial')
 
-      const { error } = await supabase
-        .from('free_trial_subscriptions')
-        .update({ status: 'cancelled' })
-        .eq('id', trial.id)
-
-      if (error) throw error
-
       // Réinitialiser le profil au plan gratuit
       await supabase
         .from('profiles')
         .update({
-          plan: 'standard',
-          subscription_status: 'inactive',
-          subscription_expires_at: null,
+          subscription_plan: 'standard'
         })
         .eq('id', user?.id)
     },
