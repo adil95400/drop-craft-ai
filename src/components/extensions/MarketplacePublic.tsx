@@ -235,7 +235,6 @@ export const MarketplacePublic = () => {
     try {
       await installExtension({
         name: extension.name,
-        display_name: extension.display_name,
         description: extension.description,
         category: extension.category,
         provider: extension.developer,
@@ -243,7 +242,8 @@ export const MarketplacePublic = () => {
         configuration: {
           marketplace_install: true,
           price: extension.price,
-          pricing_model: extension.pricing_model
+          pricing_model: extension.pricing_model,
+          display_name: extension.display_name
         },
         permissions: {
           read_products: true,
@@ -255,7 +255,7 @@ export const MarketplacePublic = () => {
           downloads: extension.downloads,
           verified: extension.verified
         }
-      })
+      } as any)
 
       // Simuler un achat si payant
       if (extension.price > 0) {

@@ -1262,6 +1262,135 @@ export type Database = {
         }
         Relationships: []
       }
+      fulfillment_carriers: {
+        Row: {
+          account_number: string | null
+          api_key_encrypted: string | null
+          api_secret_encrypted: string | null
+          carrier_code: string
+          carrier_name: string
+          created_at: string | null
+          default_service: string | null
+          id: string
+          is_active: boolean | null
+          supported_services: Json | null
+          tracking_url_template: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_number?: string | null
+          api_key_encrypted?: string | null
+          api_secret_encrypted?: string | null
+          carrier_code: string
+          carrier_name: string
+          created_at?: string | null
+          default_service?: string | null
+          id?: string
+          is_active?: boolean | null
+          supported_services?: Json | null
+          tracking_url_template?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_number?: string | null
+          api_key_encrypted?: string | null
+          api_secret_encrypted?: string | null
+          carrier_code?: string
+          carrier_name?: string
+          created_at?: string | null
+          default_service?: string | null
+          id?: string
+          is_active?: boolean | null
+          supported_services?: Json | null
+          tracking_url_template?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      fulfillment_shipments: {
+        Row: {
+          carrier_code: string | null
+          carrier_id: string | null
+          created_at: string | null
+          delivered_at: string | null
+          dimensions: Json | null
+          estimated_delivery: string | null
+          id: string
+          label_data: Json | null
+          label_url: string | null
+          order_id: string | null
+          service_code: string | null
+          shipped_at: string | null
+          shipping_cost: number | null
+          status: string | null
+          tracking_events: Json | null
+          tracking_number: string | null
+          updated_at: string | null
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          carrier_code?: string | null
+          carrier_id?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          dimensions?: Json | null
+          estimated_delivery?: string | null
+          id?: string
+          label_data?: Json | null
+          label_url?: string | null
+          order_id?: string | null
+          service_code?: string | null
+          shipped_at?: string | null
+          shipping_cost?: number | null
+          status?: string | null
+          tracking_events?: Json | null
+          tracking_number?: string | null
+          updated_at?: string | null
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          carrier_code?: string | null
+          carrier_id?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          dimensions?: Json | null
+          estimated_delivery?: string | null
+          id?: string
+          label_data?: Json | null
+          label_url?: string | null
+          order_id?: string | null
+          service_code?: string | null
+          shipped_at?: string | null
+          shipping_cost?: number | null
+          status?: string | null
+          tracking_events?: Json | null
+          tracking_number?: string | null
+          updated_at?: string | null
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fulfillment_shipments_carrier_id_fkey"
+            columns: ["carrier_id"]
+            isOneToOne: false
+            referencedRelation: "fulfillment_carriers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fulfillment_shipments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fulfilment_rules: {
         Row: {
           actions: Json | null
@@ -1300,6 +1429,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      import_history: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          import_job_id: string | null
+          metadata: Json | null
+          shopify_product_id: string | null
+          status: string | null
+          supplier_product_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          import_job_id?: string | null
+          metadata?: Json | null
+          shopify_product_id?: string | null
+          status?: string | null
+          supplier_product_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          import_job_id?: string | null
+          metadata?: Json | null
+          shopify_product_id?: string | null
+          status?: string | null
+          supplier_product_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_history_import_job_id_fkey"
+            columns: ["import_job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       import_jobs: {
         Row: {

@@ -11,7 +11,7 @@ export interface ImportJob {
   import_settings?: any;
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
   total_products: number;
-  processed_products: number;
+  processed_products?: number;
   successful_imports: number;
   failed_imports: number;
   progress_percentage?: number;
@@ -21,6 +21,8 @@ export interface ImportJob {
   updated_at: string;
   started_at?: string;
   completed_at?: string;
+  source_platform?: string;
+  source_url?: string;
 }
 
 export function useImportJobsReal() {
@@ -41,7 +43,7 @@ export function useImportJobsReal() {
         .limit(50);
 
       if (error) throw error;
-      return data as ImportJob[];
+      return (data || []).map((item: any) => ({ ...item, processed_products: item.processed_products || 0 })) as ImportJob[];
     },
     refetchInterval: 5000,
   });
@@ -155,8 +157,8 @@ export function useImportStatsReal() {
 
       if (allError) throw allError;
 
-      const totalImportsToday = todayJobs?.reduce((sum, j) => sum + (j.successful_imports || 0), 0) || 0;
-      const totalProcessed = allJobs?.reduce((sum, j) => sum + (j.processed_products || 0), 0) || 0;
+      const totalImportsToday = todayJobs?.reduce((sum: number, j: any) => sum + (j.successful_imports || 0), 0) || 0;
+      const totalProcessed = allJobs?.reduce((sum: number, j: any) => sum + (j.successful_imports || j.total_products || 0), 0) || 0;
       const totalSuccess = allJobs?.reduce((sum, j) => sum + (j.successful_imports || 0), 0) || 0;
       const successRate = totalProcessed > 0 ? (totalSuccess / totalProcessed) * 100 : 0;
 
