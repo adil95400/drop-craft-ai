@@ -37,7 +37,7 @@ export const ShopifySyncManager = () => {
     isSyncing 
   } = useShopifySync()
 
-  const [newConfigDirection, setNewConfigDirection] = useState<'import' | 'export' | 'bidirectional'>('import')
+  const [newConfigDirection, setNewConfigDirection] = useState<'import' | 'export' | 'both'>('import')
   const [newConfigFrequency, setNewConfigFrequency] = useState<'manual' | 'hourly' | 'daily' | 'weekly'>('daily')
 
   const handleCreateConfig = async () => {
@@ -62,8 +62,8 @@ export const ShopifySyncManager = () => {
     updateConfig({ id: configId, updates: { auto_sync_enabled: enabled } })
   }
 
-  const handleTriggerSync = (configId: string, direction: 'import' | 'export' | 'bidirectional') => {
-    if (direction === 'bidirectional') {
+  const handleTriggerSync = (configId: string, direction: 'import' | 'export' | 'both') => {
+    if (direction === 'both') {
       // Trigger both import and export
       triggerSync({ configId, direction: 'import' })
       setTimeout(() => {
@@ -78,6 +78,7 @@ export const ShopifySyncManager = () => {
     switch (direction) {
       case 'import': return <Download className="h-4 w-4" />
       case 'export': return <Upload className="h-4 w-4" />
+      case 'both':
       case 'bidirectional': return <ArrowLeftRight className="h-4 w-4" />
     }
   }
@@ -86,6 +87,7 @@ export const ShopifySyncManager = () => {
     switch (status) {
       case 'success': return <CheckCircle className="h-4 w-4 text-green-500" />
       case 'error': return <XCircle className="h-4 w-4 text-red-500" />
+      case 'syncing':
       case 'running': return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />
       default: return <Clock className="h-4 w-4 text-muted-foreground" />
     }
@@ -94,6 +96,7 @@ export const ShopifySyncManager = () => {
   const getStatusBadge = (status: string) => {
     const variants: Record<string, any> = {
       'idle': 'secondary',
+      'syncing': 'default',
       'running': 'default',
       'success': 'default',
       'error': 'destructive'
@@ -120,7 +123,7 @@ export const ShopifySyncManager = () => {
               <SelectContent>
                 <SelectItem value="import">Import (Shopify → Catalogue)</SelectItem>
                 <SelectItem value="export">Export (Catalogue → Shopify)</SelectItem>
-                <SelectItem value="bidirectional">Bidirectionnel</SelectItem>
+                <SelectItem value="both">Bidirectionnel</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -203,7 +206,7 @@ export const ShopifySyncManager = () => {
                       size="sm"
                       variant="outline"
                       onClick={() => handleTriggerSync(config.id, config.sync_direction as any)}
-                      disabled={isSyncing || config.sync_status === 'running'}
+                      disabled={isSyncing || config.sync_status === 'syncing'}
                     >
                       <Play className="h-3 w-3 mr-1" />
                       Lancer

@@ -30,30 +30,28 @@ export function useStoreConnection() {
         throw new Error("Utilisateur non authentifié")
       }
 
-      const { data: integration, error } = await supabase
+      const { data: integration, error } = await (supabase
         .from('integrations')
         .insert({
           user_id: user.user.id,
-          platform_type: 'ecommerce',
-          platform_name: data.platform,
-          platform_url: data.domain,
-          shop_domain: data.domain,
+          platform: data.platform,
+          platform_name: data.name,
+          store_url: data.domain,
           is_active: true,
           connection_status: 'connected',
-          store_config: {
+          config: {
             name: data.name,
             platform: data.platform,
-            domain: data.domain
-          },
-          encrypted_credentials: data.credentials,
-          sync_settings: {
-            auto_sync: data.credentials.features?.auto_sync || false,
-            import_products: data.credentials.features?.import_products || true,
-            track_orders: data.credentials.features?.track_orders || true
+            domain: data.domain,
+            sync_settings: {
+              auto_sync: data.credentials.features?.auto_sync || false,
+              import_products: data.credentials.features?.import_products || true,
+              track_orders: data.credentials.features?.track_orders || true
+            }
           }
         })
         .select()
-        .single()
+        .single() as any)
 
       if (error) throw error
 
@@ -64,8 +62,7 @@ export function useStoreConnection() {
         await supabase
           .from('integrations')
           .update({
-            connection_status: 'error',
-            last_error: connectionTest.error
+            connection_status: 'error'
           })
           .eq('id', integration.id)
 
@@ -79,7 +76,7 @@ export function useStoreConnection() {
         description: `Boutique ${data.name} connectée avec succès`,
         entity_type: 'integration',
         entity_id: integration.id,
-        metadata: {
+        details: {
           platform: data.platform,
           domain: data.domain
         }

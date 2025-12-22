@@ -26,7 +26,6 @@ export interface Store {
     sync_products: boolean
     sync_orders: boolean
     sync_customers: boolean
-    // Paramètres avancés
     notification_email?: boolean
     webhook_enabled?: boolean
     inventory_tracking?: boolean
@@ -39,10 +38,9 @@ export interface Store {
   }
 }
 
-// Calcul du revenue basé sur les statistiques
+// Calculate revenue based on statistics
 const calculateRevenue = (productsCount: number, ordersCount: number) => {
-  const avgOrderValue = 85.50 // Moyenne des commandes
-  const conversionRate = 0.162 // 16.2% de taux de conversion
+  const avgOrderValue = 85.50
   return Math.round(ordersCount * avgOrderValue)
 }
 
@@ -58,10 +56,12 @@ export const useStores = () => {
     try {
       setLoading(true)
       
+      // Use integrations table instead of store_integrations
       const { data, error } = await supabase
-        .from('store_integrations')
+        .from('integrations')
         .select('*')
         .eq('user_id', user.id)
+        .in('platform', ['shopify', 'woocommerce', 'prestashop', 'magento'])
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -74,34 +74,39 @@ export const useStores = () => {
         return
       }
 
-      const storeData = data?.map(store => ({
-        id: store.id,
-        name: store.store_name,
-        platform: store.platform as 'shopify' | 'woocommerce' | 'prestashop' | 'magento',
-        domain: store.store_url || '',
-        status: store.connection_status as 'connected' | 'disconnected' | 'syncing' | 'error',
-        last_sync: store.last_sync_at,
-        products_count: store.product_count || 0,
-        orders_count: store.order_count || 0,
-        revenue: calculateRevenue(store.product_count || 0, store.order_count || 0),
-        currency: 'EUR',
-        logo_url: undefined,
-        created_at: store.created_at,
-        credentials: (store.credentials as { shop_domain?: string; access_token?: string }) || {},
-        settings: (store.sync_settings as any) || {
-          auto_sync: true,
-          sync_frequency: 'hourly',
-          sync_products: true,
-          sync_orders: true,
-          sync_customers: true,
-          notification_email: true,
-          webhook_enabled: true,
-          inventory_tracking: true,
-          price_sync: true,
-          stock_alerts: true,
-          low_stock_threshold: 10
+      const storeData = data?.map(store => {
+        const config = store.config as any || {}
+        const syncSettings = config.sync_settings || {}
+        
+        return {
+          id: store.id,
+          name: store.platform_name || store.platform || 'Ma Boutique',
+          platform: store.platform as 'shopify' | 'woocommerce' | 'prestashop' | 'magento',
+          domain: store.store_url || '',
+          status: (store.connection_status || 'disconnected') as 'connected' | 'disconnected' | 'syncing' | 'error',
+          last_sync: store.last_sync_at,
+          products_count: config.product_count || 0,
+          orders_count: config.order_count || 0,
+          revenue: calculateRevenue(config.product_count || 0, config.order_count || 0),
+          currency: 'EUR',
+          logo_url: undefined,
+          created_at: store.created_at,
+          credentials: config.credentials || {},
+          settings: {
+            auto_sync: syncSettings.auto_sync ?? true,
+            sync_frequency: syncSettings.sync_frequency || 'hourly',
+            sync_products: syncSettings.sync_products ?? true,
+            sync_orders: syncSettings.sync_orders ?? true,
+            sync_customers: syncSettings.sync_customers ?? true,
+            notification_email: syncSettings.notification_email ?? true,
+            webhook_enabled: syncSettings.webhook_enabled ?? true,
+            inventory_tracking: syncSettings.inventory_tracking ?? true,
+            price_sync: syncSettings.price_sync ?? true,
+            stock_alerts: syncSettings.stock_alerts ?? true,
+            low_stock_threshold: syncSettings.low_stock_threshold || 10
+          }
         }
-      })) || []
+      }) || []
       
       setStores(storeData)
     } catch (error) {
@@ -136,20 +141,23 @@ export const useStores = () => {
       }
 
       const { data, error } = await supabase
-        .from('store_integrations')
+        .from('integrations')
         .insert([{
           user_id: user.id,
-          store_name: storeData.name || '',
+          platform_name: storeData.name || '',
           platform: storeData.platform || 'shopify',
           store_url: storeData.domain || '',
-          credentials: storeData.credentials || {},
           connection_status: 'connected',
-          sync_settings: {
-            auto_sync: true,
-            sync_frequency: 'hourly',
-            sync_products: true,
-            sync_orders: true,
-            sync_customers: true
+          is_active: true,
+          config: {
+            credentials: storeData.credentials || {},
+            sync_settings: {
+              auto_sync: true,
+              sync_frequency: 'hourly',
+              sync_products: true,
+              sync_orders: true,
+              sync_customers: true
+            }
           }
         }])
         .select()
@@ -167,18 +175,18 @@ export const useStores = () => {
 
       const newStore: Store = {
         id: data.id,
-        name: data.store_name,
+        name: data.platform_name || data.platform,
         platform: data.platform as 'shopify' | 'woocommerce' | 'prestashop' | 'magento',
         domain: data.store_url || '',
-        status: data.connection_status as 'connected' | 'disconnected' | 'syncing' | 'error',
+        status: 'connected',
         last_sync: data.last_sync_at,
-        products_count: data.product_count || 0,
-        orders_count: data.order_count || 0,
+        products_count: 0,
+        orders_count: 0,
         revenue: 0,
         currency: 'EUR',
         logo_url: undefined,
         created_at: data.created_at,
-        settings: (data.sync_settings as any) || {
+        settings: {
           auto_sync: true,
           sync_frequency: 'hourly',
           sync_products: true,
@@ -209,7 +217,7 @@ export const useStores = () => {
   const disconnectStore = async (storeId: string) => {
     try {
       const { error } = await supabase
-        .from('store_integrations')
+        .from('integrations')
         .delete()
         .eq('id', storeId)
         .eq('user_id', user?.id)
@@ -253,7 +261,6 @@ export const useStores = () => {
         description: type === 'full' ? "Synchronisation complète en cours..." : `Synchronisation des ${type === 'products' ? 'produits' : 'commandes'} en cours...`,
       })
 
-      // Use new unified shopify-operations function
       const operation = type === 'full' ? 'sync_full' : type === 'products' ? 'sync_products' : 'sync_orders'
       
       const { data: syncData, error: syncError } = await supabase.functions.invoke('shopify-operations', {
@@ -272,7 +279,6 @@ export const useStores = () => {
         throw new Error(syncData?.error || 'Échec de la synchronisation')
       }
 
-      // Update store status to connected after successful sync
       setStores(prev => prev.map(store => 
         store.id === storeId 
           ? { 
@@ -294,9 +300,8 @@ export const useStores = () => {
     } catch (error) {
       console.error('Error syncing store:', error)
       
-      // Update status to error on failure
       await supabase
-        .from('store_integrations')
+        .from('integrations')
         .update({ connection_status: 'error' })
         .eq('id', storeId)
         .eq('user_id', user?.id)
@@ -317,9 +322,23 @@ export const useStores = () => {
 
   const updateStoreSettings = async (storeId: string, settings: Store['settings']) => {
     try {
+      // Get current config first
+      const { data: currentStore } = await supabase
+        .from('integrations')
+        .select('config')
+        .eq('id', storeId)
+        .single()
+
+      const currentConfig = (currentStore?.config as any) || {}
+      
       const { error } = await supabase
-        .from('store_integrations')
-        .update({ sync_settings: settings })
+        .from('integrations')
+        .update({ 
+          config: {
+            ...currentConfig,
+            sync_settings: settings
+          }
+        })
         .eq('id', storeId)
         .eq('user_id', user?.id)
 
@@ -364,63 +383,12 @@ export const useStores = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'store_integrations',
+          table: 'integrations',
           filter: `user_id=eq.${user?.id}`
         },
         (payload) => {
           console.log('Store change received:', payload)
-          
-          if (payload.eventType === 'INSERT') {
-            const newStore = {
-              id: payload.new.id,
-              name: payload.new.store_name,
-              platform: payload.new.platform as 'shopify' | 'woocommerce' | 'prestashop' | 'magento',
-              domain: payload.new.store_url || '',
-              status: payload.new.connection_status as 'connected' | 'disconnected' | 'syncing' | 'error',
-              last_sync: payload.new.last_sync_at,
-              products_count: payload.new.product_count || 0,
-              orders_count: payload.new.order_count || 0,
-              revenue: 0,
-              currency: 'EUR',
-              logo_url: undefined,
-              created_at: payload.new.created_at,
-              settings: (payload.new.sync_settings as any) || {
-                auto_sync: true,
-                sync_frequency: 'hourly',
-                sync_products: true,
-                sync_orders: true,
-                sync_customers: true
-              }
-            }
-            setStores(prev => [...prev, newStore])
-          } else if (payload.eventType === 'UPDATE') {
-            const updatedStore = {
-              id: payload.new.id,
-              name: payload.new.store_name,
-              platform: payload.new.platform as 'shopify' | 'woocommerce' | 'prestashop' | 'magento',
-              domain: payload.new.store_url || '',
-              status: payload.new.connection_status as 'connected' | 'disconnected' | 'syncing' | 'error',
-              last_sync: payload.new.last_sync_at,
-              products_count: payload.new.product_count || 0,
-              orders_count: payload.new.order_count || 0,
-              revenue: 0,
-              currency: 'EUR',
-              logo_url: undefined,
-              created_at: payload.new.created_at,
-              settings: (payload.new.sync_settings as any) || {
-                auto_sync: true,
-                sync_frequency: 'hourly',
-                sync_products: true,
-                sync_orders: true,
-                sync_customers: true
-              }
-            }
-            setStores(prev => prev.map(store => 
-              store.id === payload.new.id ? updatedStore : store
-            ))
-          } else if (payload.eventType === 'DELETE') {
-            setStores(prev => prev.filter(store => store.id !== payload.old.id))
-          }
+          fetchStores() // Refetch on any change
         }
       )
       .subscribe()

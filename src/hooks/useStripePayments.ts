@@ -1,7 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { Subscription } from '@/types/database'
+
+interface Subscription {
+  id: string
+  user_id: string
+  stripe_subscription_id: string
+  stripe_customer_id: string
+  status: string
+  plan_id: string
+  current_period_start: string
+  current_period_end: string
+  cancel_at_period_end: boolean
+  created_at: string
+  updated_at: string
+}
 
 interface PaymentMethod {
   id: string
@@ -27,24 +40,43 @@ export const useStripePayments = () => {
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
-  // Fetch user subscription
+  // Fetch user subscription from profiles table
   const {
     data: subscription,
     isLoading: isLoadingSubscription
   } = useQuery({
     queryKey: ['user-subscription'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Subscription | null> => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
+      // Get subscription info from profiles
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('subscription_plan, stripe_customer_id')
+        .eq('id', user.id)
         .maybeSingle()
       
       if (error) throw error
-      return data as Subscription | null
+      
+      if (!profile?.subscription_plan || profile.subscription_plan === 'standard' || profile.subscription_plan === 'free') {
+        return null
+      }
+
+      // Return a subscription-like object based on profile
+      return {
+        id: user.id,
+        user_id: user.id,
+        stripe_subscription_id: '',
+        stripe_customer_id: (profile as any).stripe_customer_id || '',
+        status: 'active',
+        plan_id: profile.subscription_plan,
+        current_period_start: new Date().toISOString(),
+        current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        cancel_at_period_end: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
     }
   })
 
@@ -71,7 +103,6 @@ export const useStripePayments = () => {
       return data
     },
     onSuccess: (data) => {
-      // Redirect to Stripe Checkout
       if (data.url) {
         window.open(data.url, '_blank')
       }
@@ -98,7 +129,6 @@ export const useStripePayments = () => {
       return data
     },
     onSuccess: (data) => {
-      // Redirect to Stripe Customer Portal
       if (data.url) {
         window.open(data.url, '_blank')
       }
@@ -180,7 +210,7 @@ export const useStripePayments = () => {
     }) => {
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
-          amount: amount * 100, // Convert to cents
+          amount: amount * 100,
           currency,
           description
         }
@@ -198,7 +228,6 @@ export const useStripePayments = () => {
 
   // Get usage statistics for billing
   const getUsageStats = () => {
-    // This would typically fetch from your usage tracking
     return {
       products_imported: 0,
       orders_processed: 0,

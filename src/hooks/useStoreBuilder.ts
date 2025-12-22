@@ -2,6 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+interface GeneratedStore {
+  id: string;
+  user_id: string;
+  name: string;
+  theme: string;
+  config: any;
+  status: string;
+  created_at: string;
+}
+
 export const useStoreBuilder = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -47,15 +57,32 @@ export const useStoreBuilder = () => {
     }
   });
 
+  // Use integrations table as a proxy for generated stores
   const getGeneratedStores = useQuery({
     queryKey: ['generated-stores'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('generated_stores')
+    queryFn: async (): Promise<GeneratedStore[]> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      
+      // Use integrations table with platform = 'generated_store'
+      const { data, error } = await (supabase
+        .from('integrations')
         .select('*')
-        .order('created_at', { ascending: false });
+        .eq('user_id', user.id)
+        .eq('platform', 'generated_store')
+        .order('created_at', { ascending: false }) as any);
+      
       if (error) throw error;
-      return data;
+      
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        user_id: item.user_id,
+        name: item.platform_name || 'Ma Boutique',
+        theme: (item.config as any)?.theme || 'default',
+        config: item.config,
+        status: item.connection_status || 'draft',
+        created_at: item.created_at
+      }));
     }
   });
 

@@ -3,63 +3,121 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
+interface StockSyncConfig {
+  id: string;
+  user_id: string;
+  supplier_id?: string;
+  sync_enabled: boolean;
+  sync_frequency_minutes: number;
+  last_sync_at?: string;
+  next_sync_at?: string;
+  created_at: string;
+}
+
+interface StockHistoryEntry {
+  id: string;
+  product_id: string;
+  previous_stock: number;
+  new_stock: number;
+  change_reason: string;
+  created_at: string;
+}
+
+interface StockAlert {
+  id: string;
+  product_id: string;
+  alert_type: string;
+  severity: string;
+  message: string;
+  alert_status: string;
+  created_at: string;
+}
+
 export function useStockSync() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Récupérer les configurations de sync
+  // Fetch configurations from price_stock_monitoring table
   const { data: configs = [], isLoading: configsLoading } = useQuery({
     queryKey: ['stock-sync-configs', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stock_sync_configs')
-        .select('*, suppliers(*)')
+    queryFn: async (): Promise<StockSyncConfig[]> => {
+      const { data, error } = await (supabase
+        .from('price_stock_monitoring')
+        .select('*')
         .eq('user_id', user!.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (error) throw error;
-      return data;
+      
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        user_id: item.user_id,
+        supplier_id: item.product_id,
+        sync_enabled: item.is_active || false,
+        sync_frequency_minutes: 60,
+        last_sync_at: item.last_checked_at,
+        next_sync_at: item.last_checked_at,
+        created_at: item.created_at
+      }));
     },
     enabled: !!user?.id
   });
 
-  // Récupérer l'historique des changements de stock
+  // Fetch stock history from price_history table
   const { data: stockHistory = [], isLoading: historyLoading } = useQuery({
     queryKey: ['stock-history', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stock_history')
+    queryFn: async (): Promise<StockHistoryEntry[]> => {
+      const { data, error } = await (supabase
+        .from('price_history')
         .select('*')
         .eq('user_id', user!.id)
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(100) as any);
 
       if (error) throw error;
-      return data;
+      
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        product_id: item.product_id,
+        previous_stock: item.old_price || 0,
+        new_stock: item.new_price || 0,
+        change_reason: item.change_reason || 'stock_update',
+        created_at: item.created_at
+      }));
     },
     enabled: !!user?.id
   });
 
-  // Récupérer les alertes actives
+  // Fetch alerts from active_alerts table
   const { data: alerts = [], isLoading: alertsLoading } = useQuery({
     queryKey: ['stock-alerts', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stock_alerts')
+    queryFn: async (): Promise<StockAlert[]> => {
+      const { data, error } = await (supabase
+        .from('active_alerts')
         .select('*')
         .eq('user_id', user!.id)
-        .eq('alert_status', 'active')
+        .eq('status', 'active')
+        .eq('alert_type', 'stock')
         .order('severity', { ascending: false })
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (error) throw error;
-      return data;
+      
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        product_id: item.metadata?.product_id || '',
+        alert_type: item.alert_type,
+        severity: item.severity,
+        message: item.message,
+        alert_status: item.status,
+        created_at: item.created_at
+      }));
     },
     enabled: !!user?.id
   });
 
-  // Synchroniser tous les fournisseurs
+  // Synchronize all suppliers
   const syncAll = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke('stock-sync-realtime', {
@@ -75,7 +133,7 @@ export function useStockSync() {
       queryClient.invalidateQueries({ queryKey: ['stock-alerts'] });
       toast({
         title: 'Synchronisation terminée',
-        description: `${data.synced_suppliers} fournisseurs synchronisés`
+        description: `${data?.synced_suppliers || 0} fournisseurs synchronisés`
       });
     },
     onError: (error: any) => {
@@ -87,7 +145,7 @@ export function useStockSync() {
     }
   });
 
-  // Synchroniser un fournisseur spécifique
+  // Synchronize a specific supplier
   const syncSupplier = useMutation({
     mutationFn: async (supplierId: string) => {
       const { data, error } = await supabase.functions.invoke('stock-sync-realtime', {
@@ -102,23 +160,25 @@ export function useStockSync() {
       queryClient.invalidateQueries({ queryKey: ['stock-history'] });
       toast({
         title: 'Synchronisation terminée',
-        description: `${data.products_updated} produits mis à jour`
+        description: `${data?.products_updated || 0} produits mis à jour`
       });
     }
   });
 
-  // Créer/mettre à jour une config
+  // Create/update a config
   const upsertConfig = useMutation({
     mutationFn: async (config: any) => {
-      const { data, error } = await supabase
-        .from('stock_sync_configs')
+      const { data, error } = await (supabase
+        .from('price_stock_monitoring')
         .upsert({
-          ...config,
+          id: config.id,
           user_id: user!.id,
-          next_sync_at: new Date(Date.now() + (config.sync_frequency_minutes * 60 * 1000)).toISOString()
+          product_id: config.supplier_id,
+          is_active: config.sync_enabled,
+          last_checked_at: new Date().toISOString()
         })
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
       return data;
@@ -132,16 +192,17 @@ export function useStockSync() {
     }
   });
 
-  // Résoudre une alerte
+  // Resolve an alert
   const resolveAlert = useMutation({
     mutationFn: async (alertId: string) => {
-      const { error } = await supabase
-        .from('stock_alerts')
+      const { error } = await (supabase
+        .from('active_alerts')
         .update({
-          alert_status: 'resolved',
-          resolved_at: new Date().toISOString()
+          status: 'resolved',
+          acknowledged: true,
+          acknowledged_at: new Date().toISOString()
         })
-        .eq('id', alertId);
+        .eq('id', alertId) as any);
 
       if (error) throw error;
     },
