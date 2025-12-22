@@ -120,7 +120,7 @@ export function PublishProductButton({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem
-            onClick={() => syncStock(productId)}
+            onClick={() => syncStock(productId, 0)}
             disabled={isSyncing}
           >
             <RefreshCw className="h-4 w-4 mr-2" />

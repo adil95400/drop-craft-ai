@@ -127,31 +127,17 @@ export class MultiTenantService {
   // Get tenant by domain or slug
   async getTenantByDomain(domain: string): Promise<Tenant | null> {
     try {
-      const { data, error } = await supabase
-        .from('tenants')
-        .select('*')
-        .or(`domain.eq.${domain},slug.eq.${domain}`)
-        .single();
+      // Use edge function since tenants table doesn't exist in schema
+      const { data, error } = await supabase.functions.invoke('multi-tenant', {
+        body: {
+          action: 'get_tenant_by_domain',
+          domain
+        }
+      });
 
-      if (error || !data) return null;
+      if (error || !data?.tenant) return null;
       
-      // Transform database record to Tenant format
-      return {
-        id: data.id,
-        name: data.name,
-        slug: data.slug,
-        domain: data.domain,
-        branding: data.branding as any,
-        settings: data.settings as any,
-        subscription: {
-          plan: data.plan_type,
-          status: 'active' as any,
-          billing_cycle: 'monthly' as any
-        },
-        owner_id: data.owner_id,
-        created_at: data.created_at,
-        updated_at: data.updated_at
-      };
+      return data.tenant as Tenant;
     } catch (error) {
       console.error('Failed to get tenant by domain:', error);
       return null;
@@ -287,23 +273,17 @@ export class MultiTenantService {
   // Get tenant users
   async getTenantUsers(tenantId: string): Promise<TenantUser[]> {
     try {
-      const { data, error } = await supabase
-        .from('tenant_users')
-        .select('*')
-        .eq('tenant_id', tenantId);
+      // Use edge function since tenant_users table doesn't exist in schema
+      const { data, error } = await supabase.functions.invoke('multi-tenant', {
+        body: {
+          action: 'get_tenant_users',
+          tenant_id: tenantId
+        }
+      });
 
       if (error) throw error;
       
-      // Transform database records to TenantUser format
-      return (data || []).map(item => ({
-        id: item.id,
-        tenant_id: item.tenant_id,
-        user_id: item.user_id,
-        role: (item.role as any) || 'user',
-        permissions: item.permissions || [],
-        invited_by: item.invited_by,
-        joined_at: item.joined_at
-      }));
+      return (data?.users || []) as TenantUser[];
     } catch (error) {
       console.error('Failed to get tenant users:', error);
       return [];
