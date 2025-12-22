@@ -59,7 +59,7 @@ export default function VideoTutorialsAdmin() {
   const fetchVideos = async () => {
     try {
       const { data, error } = await supabase
-        .from('video_tutorials')
+        .from('video_tutorials' as any)
         .select('*')
         .eq('platform', selectedPlatform)
         .order('order_index', { ascending: true })

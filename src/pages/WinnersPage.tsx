@@ -30,24 +30,17 @@ export default function WinnersPage() {
   };
 
   const winningProducts = winnersData?.products || [];
-  const metrics = winnersData?.metrics;
+  const metricsData = winnersData?.metrics;
 
   const filteredProducts = winningProducts.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const displayMetrics = [
-    { label: 'Produits Winners', value: metrics?.totalWinners?.toString() || '0', icon: Trophy, color: 'text-yellow-500' },
-    { label: 'Score Moyen', value: metrics?.avgScore?.toString() || '0', icon: Star, color: 'text-blue-500' },
-    { label: 'Tendance Moyenne', value: metrics?.avgTrend || '+0%', icon: TrendingUp, color: 'text-green-500' },
-    { label: 'Profit Potentiel', value: `€${((metrics?.potentialProfit || 0) / 1000).toFixed(1)}K`, icon: DollarSign, color: 'text-purple-500' }
-  ];
-
-  const metrics = [
-    { label: 'Produits Winners', value: '127', icon: Trophy, color: 'text-yellow-500' },
-    { label: 'Score Moyen', value: '94.2', icon: Star, color: 'text-blue-500' },
-    { label: 'Tendance Moyenne', value: '+183%', icon: TrendingUp, color: 'text-green-500' },
-    { label: 'Profit Potentiel', value: '€52.4K', icon: DollarSign, color: 'text-purple-500' }
+    { label: 'Produits Winners', value: metricsData?.totalWinners?.toString() || '0', icon: Trophy, color: 'text-yellow-500' },
+    { label: 'Score Moyen', value: metricsData?.avgScore?.toString() || '0', icon: Star, color: 'text-blue-500' },
+    { label: 'Tendance Moyenne', value: metricsData?.avgTrend || '+0%', icon: TrendingUp, color: 'text-green-500' },
+    { label: 'Profit Potentiel', value: `€${((metricsData?.potentialProfit || 0) / 1000).toFixed(1)}K`, icon: DollarSign, color: 'text-purple-500' }
   ];
 
   return (
@@ -116,7 +109,7 @@ export default function WinnersPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toutes</SelectItem>
-                {metrics?.categories?.map(cat => (
+                {metricsData?.categories?.map(cat => (
                   <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                 ))}
               </SelectContent>

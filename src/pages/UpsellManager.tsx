@@ -159,9 +159,9 @@ export default function UpsellManager() {
                   <SelectValue placeholder="Sélectionnez un produit" />
                 </SelectTrigger>
                 <SelectContent>
-                  {products?.slice(0, 10).map((product) => (
+                  {products?.slice(0, 10).map((product: any) => (
                     <SelectItem key={product.id} value={product.id}>
-                      {product.name || ''}
+                      {product.product_id || product.id}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -175,9 +175,9 @@ export default function UpsellManager() {
                   <SelectValue placeholder="Sélectionnez un produit" />
                 </SelectTrigger>
                 <SelectContent>
-                  {products?.slice(0, 10).map((product) => (
+                  {products?.slice(0, 10).map((product: any) => (
                     <SelectItem key={product.id} value={product.id}>
-                      {product.name || ''}
+                      {product.product_id || product.id}
                     </SelectItem>
                   ))}
                 </SelectContent>

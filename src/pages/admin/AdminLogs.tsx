@@ -126,7 +126,7 @@ export default function AdminLogs() {
           message: log.description,
           user_id: log.user_id,
           ip_address: log.ip_address,
-          metadata: log.metadata
+          metadata: log.details
         }))
       ]
 

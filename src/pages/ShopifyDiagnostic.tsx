@@ -38,8 +38,7 @@ export default function ShopifyDiagnostic() {
       const { data, error } = await supabase
         .from('imported_products')
         .select('*', { count: 'exact' })
-        .eq('user_id', user.id)
-        .eq('supplier_name', 'Shopify');
+        .eq('user_id', user.id) as any;
 
       if (error) throw error;
       return data;
@@ -126,12 +125,12 @@ export default function ShopifyDiagnostic() {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">État</span>
-              {getStatusBadge(integration.connection_status || 'unknown')}
+              {getStatusBadge(integration.is_active ? 'connected' : 'unknown')}
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Magasin</span>
               <span className="text-sm text-muted-foreground">
-                {(integration.credentials as any)?.shop_domain || 'N/A'}
+                {integration.store_url || 'N/A'}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -142,11 +141,6 @@ export default function ShopifyDiagnostic() {
                   : 'Jamais'}
               </span>
             </div>
-            {(integration.error_log as any)?.message && (
-              <div className="p-3 bg-destructive/10 rounded-md">
-                <p className="text-sm text-destructive">{(integration.error_log as any).message}</p>
-              </div>
-            )}
           </CardContent>
         </Card>
 
@@ -159,17 +153,6 @@ export default function ShopifyDiagnostic() {
               <span className="text-sm font-medium">Produits synchronisés</span>
               <span className="text-2xl font-bold">{products?.length || 0}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Produits Shopify (déclaré)</span>
-              <span className="text-2xl font-bold">{integration.product_count || 0}</span>
-            </div>
-            {products && integration.product_count && products.length !== integration.product_count && (
-              <div className="p-3 bg-yellow-500/10 rounded-md">
-                <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                  ⚠️ Différence détectée : {integration.product_count - products.length} produits manquants
-                </p>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

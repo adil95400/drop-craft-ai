@@ -137,14 +137,14 @@ const SubscriptionManagement = () => {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('plan')
+        .select('subscription_plan')
         .eq('id', user?.id)
         .single()
 
       if (error) throw error
 
-      if (profile?.plan) {
-        setCurrentPlan(profile.plan)
+      if (profile?.subscription_plan) {
+        setCurrentPlan(profile.subscription_plan)
       }
     } catch (error) {
       console.error('Error loading subscription:', error)
@@ -185,7 +185,7 @@ const SubscriptionManagement = () => {
       const { error } = await supabase
         .from('profiles')
         .update({
-          plan: planId as 'standard' | 'pro' | 'ultra_pro',
+          subscription_plan: planId,
           updated_at: new Date().toISOString()
         })
         .eq('id', user?.id)

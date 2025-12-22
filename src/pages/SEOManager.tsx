@@ -39,7 +39,7 @@ export default function SEOManager() {
     queryFn: async () => {
       let query = supabase
         .from('products')
-        .select('id, name, description, category, seo_title, seo_description, seo_keywords, ai_score')
+        .select('id, name, description, category, seo_title, seo_description')
         .order('created_at', { ascending: false })
         .limit(100)
 
@@ -49,7 +49,12 @@ export default function SEOManager() {
 
       const { data, error } = await query
       if (error) throw error
-      return data || []
+      // Map to ProductSEO type with seo_keywords as empty array
+      return (data || []).map((p: any) => ({
+        ...p,
+        seo_keywords: [] as string[],
+        ai_score: null
+      })) as ProductSEO[]
     }
   })
 

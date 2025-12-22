@@ -33,9 +33,9 @@ export default function WorkflowsPage() {
     queryKey: ['workflow-executions'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('automation_executions')
+        .from('automation_execution_logs')
         .select('*')
-        .order('started_at', { ascending: false })
+        .order('executed_at', { ascending: false })
         .limit(10)
       if (error) throw error
       return data
@@ -48,7 +48,7 @@ export default function WorkflowsPage() {
     0
   )
   const totalSuccess = workflows?.reduce(
-    (sum, w) => sum + (w.success_count || 0),
+    (sum, w) => sum + (w.run_count || 0),
     0
   )
 
@@ -64,8 +64,11 @@ export default function WorkflowsPage() {
   const getExecutionStatusIcon = (status: string) => {
     const icons: Record<string, any> = {
       completed: CheckCircle2,
+      success: CheckCircle2,
       failed: XCircle,
+      error: XCircle,
       running: Clock,
+      pending: Clock,
     }
     const Icon = icons[status] || Clock
     return <Icon className="w-4 h-4" />
@@ -105,7 +108,7 @@ export default function WorkflowsPage() {
         <Card className="p-3 sm:p-6">
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="p-2 sm:p-3 rounded-lg bg-green-500/10">
-              <Play className="w-4 h-4 sm:w-6 sm:h-6 text-green-500" />
+              <CheckCircle2 className="w-4 h-4 sm:w-6 sm:h-6 text-green-500" />
             </div>
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Active</p>
@@ -117,7 +120,7 @@ export default function WorkflowsPage() {
         <Card className="p-3 sm:p-6">
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="p-2 sm:p-3 rounded-lg bg-blue-500/10">
-              <CheckCircle2 className="w-4 h-4 sm:w-6 sm:h-6 text-blue-500" />
+              <Play className="w-4 h-4 sm:w-6 sm:h-6 text-blue-500" />
             </div>
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Runs</p>
@@ -133,12 +136,7 @@ export default function WorkflowsPage() {
             </div>
             <div>
               <p className="text-xs sm:text-sm text-muted-foreground">Success</p>
-              <p className="text-lg sm:text-2xl font-bold">
-                {totalExecutions
-                  ? ((totalSuccess! / totalExecutions) * 100).toFixed(0)
-                  : 0}
-                %
-              </p>
+              <p className="text-lg sm:text-2xl font-bold">{totalSuccess || 0}</p>
             </div>
           </div>
         </Card>
@@ -146,45 +144,30 @@ export default function WorkflowsPage() {
 
       <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
         <div className="space-y-3 sm:space-y-4">
-          <h2 className="text-lg sm:text-xl font-semibold">Active Workflows</h2>
+          <h2 className="text-lg sm:text-xl font-semibold">Workflows</h2>
           {workflows?.length === 0 ? (
             <Card className="p-6 sm:p-8 text-center">
               <Zap className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
-              <p className="text-sm sm:text-base text-muted-foreground">No workflows created yet</p>
+              <p className="text-sm sm:text-base text-muted-foreground">No workflows yet</p>
+              <Button className="mt-3 sm:mt-4" size="sm">
+                <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                Create First
+              </Button>
             </Card>
           ) : (
             workflows?.map((workflow) => (
-              <Card key={workflow.id} className="p-4 sm:p-6">
+              <Card key={workflow.id} className="p-3 sm:p-6">
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2 flex-wrap">
-                        <h3 className="text-sm sm:text-base font-semibold truncate">{workflow.name}</h3>
-                        <Badge className={`${getStatusColor(workflow.status || '')} text-xs`}>
-                          {workflow.status}
-                        </Badge>
-                      </div>
-                      {workflow.description && (
-                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
-                          {workflow.description}
-                        </p>
-                      )}
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-sm sm:text-base truncate">{workflow.name}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                        {workflow.description || 'No description'}
+                      </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={
-                        workflow.status === 'active'
-                          ? 'text-yellow-500'
-                          : 'text-green-500'
-                      }
-                    >
-                      {workflow.status === 'active' ? (
-                        <Pause className="w-4 h-4" />
-                      ) : (
-                        <Play className="w-4 h-4" />
-                      )}
-                    </Button>
+                    <Badge className={`shrink-0 ${getStatusColor(workflow.status || '')}`}>
+                      {workflow.status}
+                    </Badge>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-3 sm:pt-4 border-t">
@@ -197,22 +180,22 @@ export default function WorkflowsPage() {
                     <div>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">Success</p>
                       <p className="text-sm sm:text-lg font-semibold text-green-500">
-                        {workflow.success_count || 0}
+                        {workflow.run_count || 0}
                       </p>
                     </div>
                     <div>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">Failed</p>
-                      <p className="text-sm sm:text-lg font-semibold text-red-500">
-                        {workflow.failure_count || 0}
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Status</p>
+                      <p className="text-sm sm:text-lg font-semibold">
+                        {workflow.is_active ? 'Active' : 'Inactive'}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between pt-2 sm:pt-3 border-t gap-2">
                     <span className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                      {workflow.last_executed_at
+                      {workflow.last_run_at
                         ? `${formatDistanceToNow(
-                            new Date(workflow.last_executed_at),
+                            new Date(workflow.last_run_at),
                             { addSuffix: true }
                           )}`
                         : 'Never executed'}
@@ -242,9 +225,9 @@ export default function WorkflowsPage() {
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <div
                       className={`p-1.5 sm:p-2 rounded-lg shrink-0 ${
-                        execution.status === 'completed'
+                        execution.status === 'success'
                           ? 'bg-green-500/10 text-green-500'
-                          : execution.status === 'failed'
+                          : execution.status === 'error'
                           ? 'bg-red-500/10 text-red-500'
                           : 'bg-blue-500/10 text-blue-500'
                       }`}
@@ -253,19 +236,19 @@ export default function WorkflowsPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-medium truncate">
-                        ID: {execution.workflow_id.slice(0, 8)}
+                        ID: {execution.id.slice(0, 8)}
                       </p>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">
-                        {execution.started_at &&
-                          formatDistanceToNow(new Date(execution.started_at), {
+                        {execution.executed_at &&
+                          formatDistanceToNow(new Date(execution.executed_at), {
                             addSuffix: true,
                           })}
                       </p>
                     </div>
                   </div>
-                  {execution.execution_time_ms && (
+                  {execution.duration_ms && (
                     <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
-                      {execution.execution_time_ms}ms
+                      {execution.duration_ms}ms
                     </span>
                   )}
                 </div>
