@@ -40,35 +40,34 @@ export class DeduplicationService {
 
   // Récupération des produits existants
   private async getExistingProducts(): Promise<SupplierProduct[]> {
-    const { data: products } = await supabase
-      .from('imported_products')
+    const { data: products } = await (supabase
+      .from('products') as any)
       .select(`
-        id, sku, name, description, price, cost_price, currency,
-        stock_quantity, image_urls, supplier_sku, supplier_name,
-        category, brand, weight, ean, gtin
+        id, sku, title, description, price, cost_price,
+        stock_quantity, image_url, category, vendor, weight
       `)
 
-    return products?.map(p => ({
+    return (products || []).map((p: any) => ({
       id: p.id || '',
       sku: p.sku || '',
-      title: p.name || '',
+      title: p.title || '',
       description: p.description || '',
       price: p.price || 0,
       costPrice: p.cost_price || 0,
-      currency: p.currency || 'EUR',
+      currency: 'EUR',
       stock: p.stock_quantity || 0,
-      images: Array.isArray(p.image_urls) ? p.image_urls : [],
+      images: p.image_url ? [p.image_url] : [],
       category: p.category || '',
-      brand: p.brand || '',
+      brand: p.vendor || '',
       weight: p.weight || 0,
       variants: [],
       attributes: {},
       supplier: {
-        id: p.supplier_name || 'unknown',
-        name: p.supplier_name || 'Unknown',
-        sku: p.supplier_sku || p.sku || ''
+        id: p.vendor || 'unknown',
+        name: p.vendor || 'Unknown',
+        sku: p.sku || ''
       }
-    })) || []
+    }))
   }
 
   // Détection des doublons
@@ -250,12 +249,6 @@ export class DeduplicationService {
 
   // Sélection du meilleur produit dans un groupe de doublons
   private selectBestProduct(products: SupplierProduct[], reason: string): SupplierProduct {
-    // Critères de sélection par ordre de priorité :
-    // 1. Produit avec le plus d'informations complètes
-    // 2. Produit avec le meilleur prix (rapport qualité/prix)
-    // 3. Produit avec le plus de stock
-    // 4. Produit le plus récent
-
     let bestProduct = products[0]
     let bestScore = this.calculateProductScore(bestProduct)
 
@@ -303,12 +296,11 @@ export class DeduplicationService {
     const discardedSkus = duplicateSkus.filter(sku => sku !== selectedProduct.sku)
 
     try {
-      // Utiliser activity_logs en attendant que deduplication_logs soit créé
       await supabase.from('activity_logs').insert({
-        user_id: 'system', // Placeholder
+        user_id: (await supabase.auth.getUser()).data.user?.id || '',
         action: 'deduplication',
         description: `Deduplication performed: ${group.reason}`,
-        metadata: {
+        details: {
           reason: group.reason,
           confidence: group.confidence,
           selected_sku: selectedProduct.sku,
@@ -336,23 +328,23 @@ export class DeduplicationService {
     const stats = {
       total_duplicates_found: data?.length || 0,
       total_products_discarded: data?.reduce((sum, log) => {
-        const metadata = log.metadata as any
-        return sum + (metadata?.discarded_skus?.length || 0)
+        const details = (log.details || {}) as any
+        return sum + (details?.discarded_skus?.length || 0)
       }, 0) || 0,
       by_reason: {} as Record<string, number>,
       average_confidence: 0
     }
 
     data?.forEach(log => {
-      const metadata = log.metadata as any
-      const reason = metadata?.reason || 'unknown'
+      const details = (log.details || {}) as any
+      const reason = details?.reason || 'unknown'
       stats.by_reason[reason] = (stats.by_reason[reason] || 0) + 1
     })
 
     if (data && data.length > 0) {
       stats.average_confidence = data.reduce((sum, log) => {
-        const metadata = log.metadata as any
-        return sum + (metadata?.confidence || 0)
+        const details = (log.details || {}) as any
+        return sum + (details?.confidence || 0)
       }, 0) / data.length
     }
 

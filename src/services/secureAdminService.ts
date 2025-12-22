@@ -1,5 +1,4 @@
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 export interface AdminActionResult {
   success: boolean;
@@ -23,7 +22,7 @@ export class SecureAdminService {
    */
   async changeUserRole(targetUserId: string, newRole: 'admin' | 'user'): Promise<AdminActionResult> {
     try {
-      const { data, error } = await supabase.rpc('secure_admin_set_role', {
+      const { data, error } = await supabase.rpc('admin_set_role', {
         target_user_id: targetUserId,
         new_role: newRole
       });
@@ -37,11 +36,10 @@ export class SecureAdminService {
         };
       }
 
-      const result = data as { success: boolean; message: string; target_user_id: string; new_role: string };
       return {
         success: true,
-        message: result.message,
-        data: result
+        message: `Role changed to ${newRole}`,
+        data: { target_user_id: targetUserId, new_role: newRole }
       };
     } catch (error: any) {
       console.error('Role change exception:', error);

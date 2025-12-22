@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePublishProducts } from '@/hooks/usePublishProducts';
-import { CheckCircle2, Clock, AlertCircle, TrendingUp } from 'lucide-react';
+import { CheckCircle2, Clock, AlertCircle, TrendingUp, Archive } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function PublishStatsCard() {
@@ -55,38 +55,27 @@ export function PublishStatsCard() {
             <div className="p-3 bg-muted rounded-lg">
               <div className="flex items-center gap-2 mb-1">
                 <Clock className="h-4 w-4 text-orange-600" />
-                <p className="text-xs text-muted-foreground">En attente</p>
+                <p className="text-xs text-muted-foreground">Brouillons</p>
               </div>
-              <p className="text-xl font-bold">{stats.pending}</p>
+              <p className="text-xl font-bold">{stats.draft}</p>
             </div>
 
             <div className="p-3 bg-muted rounded-lg">
               <div className="flex items-center gap-2 mb-1">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />
-                <p className="text-xs text-muted-foreground">Synchronisés</p>
+                <p className="text-xs text-muted-foreground">Total</p>
               </div>
-              <p className="text-xl font-bold">{stats.synced}</p>
+              <p className="text-xl font-bold">{stats.total}</p>
             </div>
 
             <div className="p-3 bg-muted rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <p className="text-xs text-muted-foreground">Erreurs</p>
+                <Archive className="h-4 w-4 text-gray-600" />
+                <p className="text-xs text-muted-foreground">Archivés</p>
               </div>
-              <p className="text-xl font-bold">{stats.errors}</p>
+              <p className="text-xl font-bold">{stats.archived}</p>
             </div>
           </div>
-
-          {stats.outdated > 0 && (
-            <div className="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-orange-600" />
-                <p className="text-sm font-medium">
-                  {stats.outdated} produit(s) nécessitent une mise à jour
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>

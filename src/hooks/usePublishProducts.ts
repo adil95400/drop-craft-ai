@@ -48,8 +48,8 @@ export function usePublishProducts() {
   });
 
   const syncStockMutation = useMutation({
-    mutationFn: (productId: string) =>
-      PublishProductsService.syncStock(productId, user!.id),
+    mutationFn: ({ productId, quantity }: { productId: string; quantity: number }) =>
+      PublishProductsService.syncStock(productId, user!.id, quantity),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Stock synchronisé');
@@ -83,7 +83,8 @@ export function usePublishProducts() {
     isLoadingStats,
     publishProduct: publishMutation.mutate,
     bulkPublish: bulkPublishMutation.mutate,
-    syncStock: syncStockMutation.mutate,
+    syncStock: (productId: string, quantity: number) => 
+      syncStockMutation.mutate({ productId, quantity }),
     unpublishProduct: unpublishMutation.mutate,
     isPublishing: publishMutation.isPending,
     isBulkPublishing: bulkPublishMutation.isPending,

@@ -84,7 +84,10 @@ export class PublicationService {
       .select('id, title')
       .in('id', productIds)
 
-    const productMap = new Map((products || []).map((p: any) => [p.id, p.title || 'Unknown']))
+    const productMap = new Map<string, string>()
+    ;(products || []).forEach((p: any) => {
+      productMap.set(p.id, p.title || 'Unknown')
+    })
 
     for (const productId of productIds) {
       try {

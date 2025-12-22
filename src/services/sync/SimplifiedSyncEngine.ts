@@ -55,7 +55,7 @@ export class SimplifiedSyncEngine {
       description: `Created sync configuration for connector ${config.connector_id}`,
       entity_type: 'sync_configuration',
       entity_id: newConfig.id,
-      metadata: newConfig as any
+      details: newConfig as any
     });
     
     return newConfig;
@@ -70,7 +70,7 @@ export class SimplifiedSyncEngine {
       .eq('action', 'sync_config_created')
       .order('created_at', { ascending: false });
 
-    return data?.map(log => log.metadata as any as SyncConfiguration) || [];
+    return (data || []).map(log => (log.details || {}) as any as SyncConfiguration);
   }
 
   async triggerManualSync(configurationId: string, userId: string): Promise<SyncOperation> {
@@ -106,7 +106,7 @@ export class SimplifiedSyncEngine {
       description: `Started manual sync for configuration ${configurationId}`,
       entity_type: 'sync_operation',
       entity_id: operation.id,
-      metadata: operation as any
+      details: operation as any
     });
 
     // Simulate sync process
@@ -124,7 +124,7 @@ export class SimplifiedSyncEngine {
       .like('action', 'sync_operation_%')
       .order('created_at', { ascending: false });
 
-    return data?.map(log => log.metadata as any as SyncOperation) || [];
+    return (data || []).map(log => (log.details || {}) as any as SyncOperation);
   }
 
   private async simulateSync(operation: SyncOperation): Promise<void> {
@@ -151,7 +151,7 @@ export class SimplifiedSyncEngine {
         description: `Sync progress: ${i}%`,
         entity_type: 'sync_operation',
         entity_id: operation.id,
-        metadata: { ...operation, progress_update: i }
+        details: { ...operation, progress_update: i }
       });
 
       // Wait a bit to simulate real processing
