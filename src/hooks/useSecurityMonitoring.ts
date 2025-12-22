@@ -64,18 +64,20 @@ export const useSecurityMonitoring = () => {
       const clientIP = await getClientIP();
       const userAgent = navigator.userAgent;
 
-      // Use activity_logs table since security_events doesn't have user_agent column
+      // Use activity_logs table (keep payload minimal for compatibility)
       const { error } = await supabase
         .from('activity_logs')
-        .insert([{
-          user_id: currentUser?.id || null,
-          action: eventType,
-          severity,
-          description,
-          details: { ...metadata, user_agent: userAgent },
-          ip_address: clientIP,
-          source: 'security_monitoring'
-        }]);
+        .insert([
+          {
+            user_id: currentUser?.id || null,
+            action: eventType,
+            severity,
+            description,
+            user_agent: userAgent,
+            ip_address: clientIP,
+            source: 'security_monitoring',
+          } as any,
+        ]);
 
       if (error) {
         console.error('Failed to log security event:', error);
@@ -116,16 +118,16 @@ export const useSecurityMonitoring = () => {
 
       if (eventsError) throw eventsError;
 
-      const formattedEvents: SecurityEvent[] = (eventsData || []).map(event => ({
+      const formattedEvents: SecurityEvent[] = (eventsData || []).map((event: any) => ({
         id: event.id,
         user_id: event.user_id,
         event_type: event.action,
         severity: (event.severity as 'info' | 'warning' | 'error' | 'critical') || 'info',
         description: event.description || '',
-        metadata: (event.details as Record<string, any>) || {},
+        metadata: (event.details as Record<string, any>) || (event.metadata as Record<string, any>) || {},
         ip_address: event.ip_address,
-        user_agent: (event.details as any)?.user_agent || event.user_agent,
-        created_at: event.created_at || new Date().toISOString()
+        user_agent: event.user_agent || (event.details as any)?.user_agent,
+        created_at: event.created_at || new Date().toISOString(),
       }));
 
       setEvents(formattedEvents);
