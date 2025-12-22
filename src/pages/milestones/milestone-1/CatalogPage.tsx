@@ -83,11 +83,11 @@ export default function CatalogPage() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      const mappedProducts = data?.map(p => ({
+      const mappedProducts = (data || []).map(p => ({
         ...p,
-        currency: 'EUR', // Default currency since not in DB schema
-        variants: [] as ProductVariant[]
-      })) || [];
+        currency: 'EUR',
+        variants: [] as any[]
+      })) as any;
       setProducts(mappedProducts);
     } catch (error) {
       console.error('Error loading products:', error);
@@ -110,15 +110,15 @@ export default function CatalogPage() {
         .limit(10);
 
       if (error) throw error;
-              const mappedJobs = data?.map(j => ({
-                ...j,
-                progress: Math.floor(((j.processed_products || 0) / Math.max(j.total_products || 1, 1)) * 100),
-                total_items: j.total_products || 0,
-                processed_items: j.processed_products || 0,
-                success_items: j.successful_imports || 0,
-                error_items: j.failed_imports || 0
-              })) || [];
-      setImportJobs(mappedJobs);
+      const mappedJobs = data?.map(j => ({
+        ...j,
+        progress: Math.floor(((j.successful_imports || 0) / Math.max(j.total_products || 1, 1)) * 100),
+        total_items: j.total_products || 0,
+        processed_items: j.successful_imports || 0,
+        success_items: j.successful_imports || 0,
+        error_items: j.failed_imports || 0
+      })) || [];
+      setImportJobs(mappedJobs as any);
     } catch (error) {
       console.error('Error loading import jobs:', error);
     }

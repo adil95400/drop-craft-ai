@@ -79,7 +79,7 @@ export default function SupplierImportPage() {
         id: job.id,
         job_type: job.job_type,
         status: job.status,
-        processed_products: job.processed_products || 0,
+        processed_products: job.successful_imports || 0,
         total_products: job.total_products || 0,
         created_at: job.created_at,
         completed_at: job.completed_at,

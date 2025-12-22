@@ -99,27 +99,28 @@ export default function UnifiedDashboard() {
     try {
       setLoading(true)
       
-      // Fetch dashboard analytics
-      const { data: analyticsData } = await supabase
-        .rpc('get_dashboard_analytics', { user_id_param: user.id })
-      
-      if (analyticsData && typeof analyticsData === 'object' && !Array.isArray(analyticsData)) {
-        setStats(analyticsData as unknown as DashboardStats)
-      }
-
-      // Fetch recent orders
+      // Fetch dashboard analytics from orders table
       const { data: ordersData } = await supabase
         .from('orders')
-        .select(`
-          *,
-          customers (name, email)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(5)
-
+      
       if (ordersData) {
-        setRecentOrders(ordersData)
+        // Calculate stats from orders
+        const totalRevenue = ordersData.reduce((sum, o) => sum + (o.total_amount || 0), 0)
+        const completedOrders = ordersData.filter(o => o.status === 'delivered').length
+        const pendingOrders = ordersData.filter(o => o.status === 'pending').length
+        
+        setStats({
+          totalRevenue,
+          totalOrders: ordersData.length,
+          completedOrders,
+          pendingOrders,
+          avgOrderValue: ordersData.length > 0 ? totalRevenue / ordersData.length : 0
+        } as any)
+        
+        setRecentOrders(ordersData.slice(0, 5))
       }
 
       // Fetch top products
@@ -167,11 +168,10 @@ export default function UnifiedDashboard() {
     
     try {
       const { data: insights } = await supabase
-        .from('user_notifications')
+        .from('notifications')
         .select('*')
         .eq('user_id', user.id)
-        .eq('read', false)
-        .gte('priority', 7)
+        .eq('is_read', false)
         .order('created_at', { ascending: false })
         .limit(3)
       

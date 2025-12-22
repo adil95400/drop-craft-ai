@@ -144,29 +144,29 @@ export default function StoresPage() {
             <Card key={integration.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                       <Store className="w-5 h-5 text-primary" />
                     </div>
                     <div>
                       <CardTitle className="text-base">
-                        {integration.store_config?.name || integration.platform_name}
+                        {(integration as any).config?.name || integration.platform_name}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
                         {integration.platform_name}
                       </p>
                     </div>
                   </div>
-                  <StoreConnectionStatus status={integration.connection_status} />
+                  <StoreConnectionStatus status={integration.connection_status as any} />
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="space-y-3">
-                  {integration.shop_domain && (
+                  {integration.store_url && (
                     <div className="flex items-center gap-2 text-sm">
                       <ExternalLink className="w-4 h-4 text-muted-foreground" />
                       <span className="text-muted-foreground truncate">
-                        {integration.shop_domain}
+                        {integration.store_url}
                       </span>
                     </div>
                   )}

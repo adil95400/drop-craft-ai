@@ -27,16 +27,38 @@ export interface AutomationExecution {
   executedActions: number;
 }
 
+// Helper to map DB records to AutomationRule
+function mapToAutomationRule(record: any): AutomationRule {
+  return {
+    id: record.id,
+    user_id: record.user_id,
+    name: record.name,
+    description: record.description,
+    rule_type: record.trigger_type || 'custom',
+    trigger_conditions: record.trigger_config || {},
+    ai_conditions: {},
+    actions: record.action_config || {},
+    is_active: record.is_active ?? true,
+    priority: 5,
+    execution_count: record.trigger_count || 0,
+    success_rate: 100,
+    last_executed_at: record.last_triggered_at,
+    performance_metrics: {},
+    created_at: record.created_at,
+    updated_at: record.updated_at
+  };
+}
+
 export class AutomationEngineService {
   
   static async getAllRules(): Promise<AutomationRule[]> {
     const { data, error } = await supabase
       .from('automation_rules')
       .select('*')
-      .order('priority', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return (data || []) as AutomationRule[];
+    return (data || []).map(mapToAutomationRule);
   }
 
   static async createRule(ruleData: {
@@ -58,33 +80,37 @@ export class AutomationEngineService {
         user_id: currentUser.user.id,
         name: ruleData.name,
         description: ruleData.description || '',
-        rule_type: ruleData.rule_type,
-        trigger_conditions: ruleData.trigger_conditions || {},
-        ai_conditions: ruleData.ai_conditions || {},
-        actions: ruleData.actions || [],
+        trigger_type: ruleData.rule_type,
+        action_type: 'custom',
+        trigger_config: ruleData.trigger_conditions || {},
+        action_config: ruleData.actions || {},
         is_active: ruleData.is_active ?? true,
-        priority: ruleData.priority ?? 5,
-        execution_count: 0,
-        success_rate: 100.0,
-        performance_metrics: {}
+        trigger_count: 0
       })
       .select()
       .single();
 
     if (error) throw error;
-    return data as AutomationRule;
+    return mapToAutomationRule(data);
   }
 
   static async updateRule(id: string, updates: Partial<AutomationRule>): Promise<AutomationRule> {
+    const dbUpdates: any = {};
+    if (updates.name) dbUpdates.name = updates.name;
+    if (updates.description !== undefined) dbUpdates.description = updates.description;
+    if (updates.is_active !== undefined) dbUpdates.is_active = updates.is_active;
+    if (updates.trigger_conditions) dbUpdates.trigger_config = updates.trigger_conditions;
+    if (updates.actions) dbUpdates.action_config = updates.actions;
+
     const { data, error } = await supabase
       .from('automation_rules')
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return mapToAutomationRule(data);
   }
 
   static async deleteRule(id: string): Promise<void> {
@@ -117,27 +143,27 @@ export class AutomationEngineService {
   }
 
   static async getExecutionHistory(ruleId: string) {
-    const { data, error } = await supabase
-      .from('automation_executions')
+    const { data, error } = await (supabase
+      .from('automation_execution_logs') as any)
       .select('*')
-      .eq('workflow_id', ruleId)
-      .order('started_at', { ascending: false })
+      .eq('trigger_id', ruleId)
+      .order('executed_at', { ascending: false })
       .limit(50);
 
     if (error) throw error;
     return data || [];
   }
 
-  static async getRulesByType(ruleType: AutomationRule['rule_type']): Promise<AutomationRule[]> {
+  static async getRulesByType(ruleType: string): Promise<AutomationRule[]> {
     const { data, error } = await supabase
       .from('automation_rules')
       .select('*')
-      .eq('rule_type', ruleType)
+      .eq('trigger_type', ruleType)
       .eq('is_active', true)
-      .order('priority', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return (data || []) as AutomationRule[];
+    return (data || []).map(mapToAutomationRule);
   }
 
   // Templates de règles prédéfinies

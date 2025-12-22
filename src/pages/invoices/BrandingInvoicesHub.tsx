@@ -17,13 +17,14 @@ export default function BrandingInvoicesHub() {
   const templates = getTemplates.data || [];
 
   const handleGenerate = () => {
+    const template = templates[0] as any;
     generateInvoice.mutate({
       invoiceData: {
         customer_name: customerName,
         customer_email: 'client@example.com',
         total_amount: parseFloat(totalAmount)
       },
-      templateId: templates[0]?.id
+      templateId: template?.id
     });
   };
 

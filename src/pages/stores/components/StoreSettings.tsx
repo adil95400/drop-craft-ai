@@ -69,10 +69,10 @@ export function StoreSettings({ store, onUpdate }: StoreSettingsProps) {
   const handleSaveSettings = async () => {
     setSaving(true)
     try {
-      const { error } = await supabase
-        .from('store_integrations')
+      const { error } = await (supabase
+        .from('store_integrations') as any)
         .update({
-          sync_settings: settings,
+          settings: settings as any,
           sync_frequency: settings.sync_frequency
         })
         .eq('id', store.id)

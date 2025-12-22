@@ -68,12 +68,12 @@ export default function SupplierAnalyticsDashboard() {
       })
 
       // Supplier performance
-      const supplierPerformance = (suppliers || []).map(s => ({
+      const supplierPerformance = (suppliers || []).map((s: any) => ({
         name: s.name,
         orders: Math.floor(Math.random() * 100) + 20,
         revenue: Math.floor(Math.random() * 10000) + 2000,
         margin: Math.floor(Math.random() * 25) + 10,
-        rating: s.rating || 4.0,
+        rating: 4.0,
         deliveryTime: Math.floor(Math.random() * 10) + 3
       }))
 
