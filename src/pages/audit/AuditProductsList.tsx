@@ -10,16 +10,12 @@ import {
   Filter, 
   Sparkles,
   Package,
-  AlertCircle,
-  CheckCircle2,
-  Clock,
   ArrowRight
 } from 'lucide-react'
 import { useUnifiedAuth } from '@/contexts/UnifiedAuthContext'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
-import { useProductAudit } from '@/hooks/useProductAudit'
-import { toast } from 'sonner'
+import { useProductAudit, useProductAudits } from '@/hooks/useProductAudit'
 
 export default function AuditProductsList() {
   const navigate = useNavigate()
@@ -28,45 +24,62 @@ export default function AuditProductsList() {
   const [activeTab, setActiveTab] = useState<'products' | 'imported_products' | 'supplier_products'>('products')
   const { auditProduct, isAuditing } = useProductAudit()
 
-  // Récupérer les produits selon la source
+  // Fetch products from the products table
   const { data: products, isLoading } = useQuery({
     queryKey: ['products-for-audit', activeTab, user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from(activeTab)
-        .select('*')
-        .eq('user_id', user?.id)
-        .limit(50)
-
-      if (error) throw error
-      return data
+      if (activeTab === 'products') {
+        const { data, error } = await supabase
+          .from('products')
+          .select('id, name, description, price, category, image_url')
+          .eq('user_id', user?.id)
+          .limit(50)
+        if (error) throw error
+        return data || []
+      } else if (activeTab === 'imported_products') {
+        const { data, error } = await supabase
+          .from('imported_products')
+          .select('id, product_id, price, category, source_platform')
+          .eq('user_id', user?.id)
+          .limit(50)
+        if (error) throw error
+        return (data || []).map(p => ({
+          id: p.id,
+          name: `Product ${p.product_id?.slice(0, 8) || p.id.slice(0, 8)}`,
+          description: `Imported from ${p.source_platform || 'unknown'}`,
+          price: p.price,
+          category: p.category,
+          image_url: null
+        }))
+      } else {
+        const { data, error } = await (supabase.from('supplier_products') as any)
+          .select('id, title, description, supplier_price, image_url')
+          .eq('user_id', user?.id)
+          .limit(50)
+        if (error) throw error
+        return (data || []).map((p: any) => ({
+          id: p.id,
+          name: p.title || 'Supplier Product',
+          description: p.description,
+          price: p.supplier_price,
+          category: null,
+          image_url: p.image_url
+        }))
+      }
     },
     enabled: !!user?.id,
   })
 
-  // Récupérer les audits existants
-  const { data: existingAudits } = useQuery({
-    queryKey: ['product-audits-map', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('product_audits')
-        .select('product_id, product_source, overall_score, created_at')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
+  // Fetch existing audits using the hook
+  const { data: existingAudits } = useProductAudits(user?.id || '', 100)
 
-      if (error) throw error
-      
-      // Créer une map pour accès rapide
-      const map = new Map()
-      data.forEach(audit => {
-        const key = `${audit.product_source}-${audit.product_id}`
-        if (!map.has(key)) {
-          map.set(key, audit)
-        }
-      })
-      return map
-    },
-    enabled: !!user?.id,
+  // Create a map for quick lookup
+  const auditsMap = new Map()
+  existingAudits?.forEach(audit => {
+    const key = `${audit.product_source}-${audit.product_id}`
+    if (!auditsMap.has(key)) {
+      auditsMap.set(key, audit)
+    }
   })
 
   const handleAuditProduct = async (productId: string, productSource: typeof activeTab) => {
@@ -87,7 +100,7 @@ export default function AuditProductsList() {
 
   const getAuditStatus = (productId: string) => {
     const key = `${activeTab}-${productId}`
-    return existingAudits?.get(key)
+    return auditsMap.get(key)
   }
 
   const getScoreColor = (score: number) => {
@@ -170,9 +183,9 @@ export default function AuditProductsList() {
                         className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                       >
                         <div className="flex items-center gap-4 flex-1">
-                          {(product as any).image_url && (
+                          {product.image_url && (
                             <img
-                              src={(product as any).image_url}
+                              src={product.image_url}
                               alt={product.name || 'Product'}
                               className="w-12 h-12 object-cover rounded"
                             />
@@ -200,7 +213,7 @@ export default function AuditProductsList() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => navigate(`/audit/${audit.product_id}`)}
+                                onClick={() => navigate(`/audit/${audit.id}`)}
                               >
                                 Voir l'audit
                                 <ArrowRight className="ml-2 h-4 w-4" />

@@ -228,7 +228,7 @@ export default function OrderDetail() {
                 {order.customer ? (
                   <>
                     <div>
-                      <p className="font-semibold">{order.customer.name}</p>
+                      <p className="font-semibold">{order.customer.first_name} {order.customer.last_name}</p>
                       {order.customer.email && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                           <Mail className="h-3 w-3" />

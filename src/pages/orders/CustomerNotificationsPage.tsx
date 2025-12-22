@@ -23,11 +23,11 @@ export default function CustomerNotificationsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
-        .from('customer_confirmations')
+      const { data, error } = await (supabase
+        .from('notifications') as any)
         .select('*')
         .eq('user_id', user.id)
-        .order('sent_at', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;

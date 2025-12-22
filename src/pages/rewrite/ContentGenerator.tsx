@@ -36,13 +36,13 @@ export default function ContentGenerator() {
     queryKey: ['products-for-rewrite', selectedSource, user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from(selectedSource)
+        .from('products')
         .select('id, name, description, price, category')
         .eq('user_id', user?.id)
         .limit(100)
 
       if (error) throw error
-      return data
+      return data as any[]
     },
     enabled: !!user?.id,
   })

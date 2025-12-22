@@ -24,10 +24,11 @@ export default function AuditDashboard() {
 
   const latestAnalytics = analytics?.[0]
   
-  const avgScore = latestAnalytics?.avg_overall_score || 0
-  const totalAudits = latestAnalytics?.total_audits || 0
-  const productsWithErrors = latestAnalytics?.products_with_errors || 0
-  const productsOptimized = latestAnalytics?.products_optimized || 0
+  // Use available fields from analytics_insights table
+  const avgScore = latestAnalytics?.metric_value || 0
+  const totalAudits = audits?.length || 0
+  const productsWithErrors = audits?.filter(a => a.errors?.length > 0).length || 0
+  const productsOptimized = audits?.filter(a => a.overall_score >= 80).length || 0
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600'

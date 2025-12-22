@@ -85,7 +85,7 @@ const WebScrapingPage: React.FC = () => {
       if (jobError) throw jobError;
 
       // Extraire les données des produits
-      const fileData = jobData.import_settings as any;
+      const fileData = (jobData as any).import_settings || (jobData.error_log as any);
       const products = fileData?.scrapedProducts || [];
       
       setScrapedData(products);

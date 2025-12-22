@@ -31,11 +31,11 @@ const CategoryPage: React.FC = () => {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.rpc('get_secure_catalog_products', {
-        category_filter: category,
-        search_term: null,
-        limit_count: 50
-      });
+      const { data, error } = await supabase
+        .from('catalog_products')
+        .select('*')
+        .eq('category', category)
+        .limit(50);
 
       if (error) throw error;
 

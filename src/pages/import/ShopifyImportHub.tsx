@@ -229,9 +229,9 @@ export default function ShopifyImportHub() {
 
                           {job.status === 'processing' && (
                             <div className="space-y-2">
-                              <Progress value={job.progress_percentage || 0} />
+                              <Progress value={((job.successful_imports || 0) / Math.max(job.total_products || 1, 1)) * 100} />
                               <p className="text-sm text-muted-foreground">
-                                {job.processed_products} / {job.total_products} produits
+                                {job.successful_imports || 0} / {job.total_products || 0} produits
                               </p>
                             </div>
                           )}
