@@ -13,6 +13,7 @@ import { ExtensionMenu } from '@/components/navigation/ExtensionMenu';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SupportWidget } from '@/components/layout/SupportWidget';
+import { NavigationBreadcrumbs } from '@/components/navigation/NavigationBreadcrumbs';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -114,7 +115,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           {/* Page Content */}
           <div className="flex-1 overflow-auto">
-            <div className="p-6">
+            <div className="p-6 space-y-4">
+              {/* Breadcrumb Navigation */}
+              <NavigationBreadcrumbs className="mb-2" />
               {children}
             </div>
           </div>
