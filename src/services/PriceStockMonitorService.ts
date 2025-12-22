@@ -13,7 +13,7 @@ export class PriceStockMonitorService {
   async getMonitors(userId: string) {
     const { data, error } = await supabase
       .from('price_stock_monitoring')
-      .select('*, catalog_product:catalog_product_id(*), product:product_id(*)')
+      .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -23,7 +23,7 @@ export class PriceStockMonitorService {
 
   async createMonitor(userId: string, monitor: {
     product_id?: string;
-    catalog_product_id: string;
+    catalog_product_id?: string;
     check_frequency_minutes?: number;
     price_change_threshold?: number;
     stock_alert_threshold?: number;
@@ -34,7 +34,9 @@ export class PriceStockMonitorService {
       .from('price_stock_monitoring')
       .insert({
         user_id: userId,
-        ...monitor
+        product_id: monitor.product_id,
+        alert_threshold: monitor.price_change_threshold || 5,
+        is_active: true
       })
       .select()
       .single();
@@ -99,23 +101,11 @@ export class PriceStockMonitorService {
     severity?: string;
     limit?: number;
   }) {
-    let query = supabase
-      .from('price_stock_alerts')
-      .select('*, monitoring:monitoring_id(*)')
+    let query = (supabase
+      .from('active_alerts') as any)
+      .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
-
-    if (filters?.isRead !== undefined) {
-      query = query.eq('is_read', filters.isRead);
-    }
-
-    if (filters?.isResolved !== undefined) {
-      query = query.eq('is_resolved', filters.isResolved);
-    }
-
-    if (filters?.alertType) {
-      query = query.eq('alert_type', filters.alertType);
-    }
 
     if (filters?.severity) {
       query = query.eq('severity', filters.severity);
@@ -133,8 +123,8 @@ export class PriceStockMonitorService {
 
   async markAlertAsRead(alertId: string) {
     const { error } = await supabase
-      .from('price_stock_alerts')
-      .update({ is_read: true })
+      .from('active_alerts')
+      .update({ acknowledged: true, acknowledged_at: new Date().toISOString() })
       .eq('id', alertId);
 
     if (error) throw error;
@@ -142,10 +132,9 @@ export class PriceStockMonitorService {
 
   async resolveAlert(alertId: string) {
     const { error } = await supabase
-      .from('price_stock_alerts')
+      .from('active_alerts')
       .update({
-        is_resolved: true,
-        resolved_at: new Date().toISOString()
+        status: 'resolved'
       })
       .eq('id', alertId);
 

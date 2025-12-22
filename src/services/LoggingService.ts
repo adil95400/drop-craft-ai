@@ -45,21 +45,21 @@ class LoggingService {
     this.logQueue = [];
 
     try {
-      // Store logs in Supabase for analytics
+      // Store logs in activity_logs table since system_logs doesn't exist
       const { error } = await supabase
-        .from('system_logs')
+        .from('activity_logs')
         .insert(
           logsToSend.map(log => ({
-            level: log.level,
-            message: log.message,
-            component: log.component,
-            metadata: log.metadata,
+            action: `log_${log.level}`,
+            description: log.message,
+            source: log.component || 'system',
+            details: log.metadata || {},
             user_id: log.userId,
           }))
         );
 
       if (error) {
-        console.error('Failed to flush logs to Supabase:', error);
+        console.error('Failed to flush logs to database:', error);
       }
     } catch (error) {
       console.error('Error flushing logs:', error);
@@ -72,9 +72,11 @@ class LoggingService {
     }, this.flushInterval);
 
     // Flush on page unload
-    window.addEventListener('beforeunload', () => {
-      this.flushLogs();
-    });
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', () => {
+        this.flushLogs();
+      });
+    }
   }
 
   private addToQueue(entry: LogEntry) {

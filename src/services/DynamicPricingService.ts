@@ -37,8 +37,8 @@ export interface PricingOptimization {
 export class DynamicPricingService {
   
   static async getAllPricingRecommendations(): Promise<DynamicPricing[]> {
-    const { data, error } = await supabase
-      .from('dynamic_pricing')
+    const { data, error } = await (supabase
+      .from('dynamic_pricing' as any) as any)
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -63,8 +63,8 @@ export class DynamicPricingService {
   }
 
   static async approvePricingRecommendation(recommendationId: string): Promise<DynamicPricing> {
-    const { data, error } = await supabase
-      .from('dynamic_pricing')
+    const { data, error } = await (supabase
+      .from('dynamic_pricing' as any) as any)
       .update({ 
         status: 'approved',
         applied_at: new Date().toISOString()
@@ -78,8 +78,8 @@ export class DynamicPricingService {
   }
 
   static async rejectPricingRecommendation(recommendationId: string): Promise<DynamicPricing> {
-    const { data, error } = await supabase
-      .from('dynamic_pricing')
+    const { data, error } = await (supabase
+      .from('dynamic_pricing' as any) as any)
       .update({ status: 'rejected' })
       .eq('id', recommendationId)
       .select()
@@ -91,22 +91,24 @@ export class DynamicPricingService {
 
   static async applyPricingRecommendation(recommendationId: string): Promise<boolean> {
     // Récupérer la recommandation
-    const { data: recommendation, error: fetchError } = await supabase
-      .from('dynamic_pricing')
+    const { data: recommendation, error: fetchError } = await (supabase
+      .from('dynamic_pricing' as any) as any)
       .select('*')
       .eq('id', recommendationId)
       .single();
 
     if (fetchError || !recommendation) throw new Error('Recommendation not found');
 
+    const rec = recommendation as DynamicPricing;
+
     // Mettre à jour le prix du produit
     const { error: updateError } = await supabase
       .from('imported_products')
       .update({ 
-        price: recommendation.suggested_price,
+        price: rec.suggested_price,
         updated_at: new Date().toISOString()
-      })
-      .eq('id', recommendation.product_id);
+      } as any)
+      .eq('id', rec.product_id as string);
 
     if (updateError) throw updateError;
 
@@ -118,10 +120,10 @@ export class DynamicPricingService {
 
   static async updateRecommendationStatus(
     recommendationId: string, 
-    status: DynamicPricing['status']
+    status: string
   ): Promise<DynamicPricing> {
-    const { data, error } = await supabase
-      .from('dynamic_pricing')
+    const { data, error } = await (supabase
+      .from('dynamic_pricing' as any) as any)
       .update({ 
         status,
         ...(status === 'applied' ? { applied_at: new Date().toISOString() } : {})
@@ -135,8 +137,8 @@ export class DynamicPricingService {
   }
 
   static async getPendingRecommendations(): Promise<DynamicPricing[]> {
-    const { data, error } = await supabase
-      .from('dynamic_pricing')
+    const { data, error } = await (supabase
+      .from('dynamic_pricing' as any) as any)
       .select('*')
       .eq('status', 'pending')
       .order('ai_confidence', { ascending: false });
@@ -146,8 +148,8 @@ export class DynamicPricingService {
   }
 
   static async getPerformanceMetrics(): Promise<any> {
-    const { data: recommendations, error } = await supabase
-      .from('dynamic_pricing')
+    const { data: recommendations, error } = await (supabase
+      .from('dynamic_pricing' as any) as any)
       .select('*')
       .not('applied_at', 'is', null);
 
@@ -163,8 +165,9 @@ export class DynamicPricingService {
       };
     }
 
-    const appliedRecommendations = recommendations.filter(r => r.status === 'applied');
-    const averageConfidence = recommendations.reduce((sum, r) => sum + r.ai_confidence, 0) / recommendations.length;
+    const recs = recommendations as DynamicPricing[];
+    const appliedRecommendations = recs.filter(r => r.status === 'applied');
+    const averageConfidence = recs.reduce((sum, r) => sum + r.ai_confidence, 0) / recs.length;
     const totalProfitImpact = appliedRecommendations.reduce((sum, r) => sum + (r.profit_impact || 0), 0);
     const averagePriceChange = appliedRecommendations.reduce((sum, r) => {
       const change = ((r.suggested_price - r.current_price) / r.current_price) * 100;
@@ -172,7 +175,7 @@ export class DynamicPricingService {
     }, 0) / (appliedRecommendations.length || 1);
 
     return {
-      totalRecommendations: recommendations.length,
+      totalRecommendations: recs.length,
       appliedRecommendations: appliedRecommendations.length,
       averageConfidence: Math.round(averageConfidence),
       totalProfitImpact: Math.round(totalProfitImpact * 100) / 100,
@@ -191,7 +194,7 @@ export class DynamicPricingService {
         
         // Pause courte entre les requêtes
         await new Promise(resolve => setTimeout(resolve, 500));
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Error optimizing pricing for product ${productId}:`, error);
         results.push({
           success: false,

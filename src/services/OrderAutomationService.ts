@@ -71,16 +71,15 @@ export class OrderAutomationService {
         .insert([{
           user_id: user.id,
           name: rule.name,
-          rule_type: 'order_automation',
-          trigger_conditions: {
+          trigger_type: rule.trigger_type,
+          action_type: 'order_automation',
+          trigger_config: {
             trigger_type: rule.trigger_type,
             ...rule.conditions
-          } as any,
-          actions: rule.actions as any,
+          },
+          action_config: rule.actions,
           is_active: rule.is_active,
-          execution_count: 0,
-          success_rate: 100.0,
-          performance_metrics: {} as any
+          trigger_count: 0
         }])
         .select()
         .single()
@@ -102,7 +101,7 @@ export class OrderAutomationService {
         .from('automation_rules')
         .select('*')
         .eq('user_id', user.id)
-        .eq('rule_type', 'order_automation')
+        .eq('action_type', 'order_automation')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -180,7 +179,7 @@ export class OrderAutomationService {
         .from('automation_execution_logs')
         .select('*')
         .eq('user_id', user.id)
-        .order('started_at', { ascending: false })
+        .order('executed_at', { ascending: false })
         .limit(100)
 
       if (status) {
@@ -195,8 +194,8 @@ export class OrderAutomationService {
         order_id: (log.input_data as any)?.order_id || '',
         rule_id: log.trigger_id || '',
         status: log.status as 'pending' | 'processing' | 'completed' | 'failed',
-        scheduled_at: log.started_at,
-        completed_at: log.completed_at,
+        scheduled_at: log.executed_at,
+        completed_at: log.executed_at,
         error_message: log.error_message,
         actions_executed: 1,
         total_actions: 1
@@ -264,13 +263,13 @@ export class OrderAutomationService {
     return {
       id: dbRule.id,
       name: dbRule.name,
-      trigger_type: dbRule.trigger_conditions?.trigger_type || 'order_placed',
-      conditions: dbRule.trigger_conditions || {},
-      actions: dbRule.actions || [],
+      trigger_type: dbRule.trigger_config?.trigger_type || dbRule.trigger_type || 'order_placed',
+      conditions: dbRule.trigger_config || {},
+      actions: dbRule.action_config || [],
       is_active: dbRule.is_active,
-      execution_count: dbRule.execution_count || 0,
-      success_rate: dbRule.success_rate || 100,
-      last_executed_at: dbRule.last_executed_at
+      execution_count: dbRule.trigger_count || 0,
+      success_rate: 100,
+      last_executed_at: dbRule.last_triggered_at
     }
   }
 }

@@ -127,20 +127,18 @@ export class PlanService {
 
   async initialize(userId: string): Promise<void> {
     try {
-      // @ts-expect-error - Supabase types cause infinite recursion in TypeScript
-      const response = await supabase
-        .from('profiles')
+      const { data: profile, error } = await (supabase
+        .from('profiles') as any)
         .select('subscription_plan')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      if (response.error) {
-        console.error('Error fetching profile:', response.error);
+      if (error) {
+        console.error('Error fetching profile:', error);
         this.currentPlan = 'free';
         return;
       }
 
-      const profile = response.data as { subscription_plan: string | null } | null;
       this.currentPlan = (profile?.subscription_plan as PlanTier) || 'free';
       await this.refreshUsage(userId);
     } catch (error) {
@@ -155,7 +153,7 @@ export class PlanService {
         supabase.from('products').select('*', { count: 'exact', head: true }).eq('user_id', userId),
         supabase.from('integrations').select('*', { count: 'exact', head: true }).eq('user_id', userId),
         supabase.from('orders').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-        supabase.from('ai_tasks').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+        (supabase.from('ai_optimization_jobs' as any) as any).select('*', { count: 'exact', head: true }).eq('user_id', userId),
         supabase.from('api_logs').select('*', { count: 'exact', head: true }).eq('user_id', userId),
       ]);
 
@@ -258,8 +256,8 @@ export class PlanService {
 
   async upgradePlan(newPlan: PlanTier, userId: string): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('profiles')
+      const { error } = await (supabase
+        .from('profiles') as any)
         .update({ subscription_plan: newPlan })
         .eq('user_id', userId);
 
