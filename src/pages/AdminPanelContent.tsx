@@ -70,11 +70,10 @@ const AdminPanelContent = () => {
       setLoading(true)
       
       // Récupérer les données réelles depuis Supabase
-      const [usersData, ordersData, suppliersData, productsData] = await Promise.all([
+      const [usersData, ordersData, productsData] = await Promise.all([
         supabase.from('profiles').select('*'),
         supabase.from('orders').select('*'),
-        supabase.from('suppliers').select('*'),
-        supabase.rpc('get_secure_catalog_products', { category_filter: null, search_term: null, limit_count: 1000 })
+        supabase.from('products').select('id')
       ])
 
       const totalUsers = usersData.data?.length || 0
@@ -84,7 +83,7 @@ const AdminPanelContent = () => {
       
       const totalOrders = ordersData.data?.length || 0
       const totalRevenue = ordersData.data?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
-      const totalSuppliers = suppliersData.data?.length || 0
+      const totalSuppliers = 0 // Table suppliers n'existe pas
       const totalProducts = productsData.data?.length || 0
 
       setDashboardStats({
