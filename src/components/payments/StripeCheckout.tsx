@@ -17,6 +17,20 @@ interface PricingPlan {
   stripePriceId: string
 }
 
+// Helper to get plan display name from plan_id
+const getPlanDisplayName = (planId?: string): string => {
+  if (!planId) return 'Inconnu'
+  const planNames: Record<string, string> = {
+    'starter': 'Starter',
+    'pro': 'Pro',
+    'enterprise': 'Enterprise',
+    'price_starter_monthly': 'Starter',
+    'price_pro_monthly': 'Pro',
+    'price_enterprise_monthly': 'Enterprise'
+  }
+  return planNames[planId] || planId
+}
+
 const pricingPlans: PricingPlan[] = [
   {
     id: 'starter',
@@ -122,7 +136,7 @@ export function StripeCheckout() {
           <CardHeader>
             <CardTitle className="text-green-800">Abonnement Actif</CardTitle>
             <CardDescription className="text-green-600">
-              Votre abonnement {subscription?.plan_name} est actif jusqu'au{' '}
+              Votre abonnement {getPlanDisplayName(subscription?.plan_id)} est actif jusqu'au{' '}
               {subscription?.current_period_end 
                 ? new Date(subscription.current_period_end).toLocaleDateString()
                 : 'date inconnue'
@@ -210,7 +224,7 @@ export function StripeCheckout() {
                 >
                   {isCreatingCheckout && selectedPlan === plan.id
                     ? 'Redirection...'
-                    : hasActiveSubscription && subscription?.plan_name === plan.name
+                    : hasActiveSubscription && getPlanDisplayName(subscription?.plan_id) === plan.name
                     ? 'Plan actuel'
                     : 'Choisir ce plan'
                   }

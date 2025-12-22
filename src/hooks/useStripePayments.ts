@@ -53,13 +53,14 @@ export const useStripePayments = () => {
       // Get subscription info from profiles
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('subscription_plan, stripe_customer_id')
+        .select('subscription_plan')
         .eq('id', user.id)
         .maybeSingle()
       
       if (error) throw error
       
-      if (!profile?.subscription_plan || profile.subscription_plan === 'standard' || profile.subscription_plan === 'free') {
+      const subscriptionPlan = (profile as any)?.subscription_plan
+      if (!subscriptionPlan || subscriptionPlan === 'standard' || subscriptionPlan === 'free') {
         return null
       }
 
@@ -68,9 +69,9 @@ export const useStripePayments = () => {
         id: user.id,
         user_id: user.id,
         stripe_subscription_id: '',
-        stripe_customer_id: (profile as any).stripe_customer_id || '',
+        stripe_customer_id: '',
         status: 'active',
-        plan_id: profile.subscription_plan,
+        plan_id: subscriptionPlan,
         current_period_start: new Date().toISOString(),
         current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         cancel_at_period_end: false,

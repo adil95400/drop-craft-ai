@@ -87,12 +87,12 @@ export function useUnifiedProducts(filters?: any) {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(100000)
+        .limit(1000) as { data: any[] | null; error: any }
       
       if (productsData) {
         results.push(...productsData.map((item: any): UnifiedProduct => ({
           id: item.id,
-          name: item.name || 'Produit sans nom',
+          name: item.title || 'Produit sans nom',
           description: item.description,
           price: item.price || 0,
           cost_price: item.cost_price,
@@ -101,7 +101,7 @@ export function useUnifiedProducts(filters?: any) {
           category: item.category,
           sku: item.sku,
           image_url: item.image_url,
-          image_urls: item.images || [],
+          image_urls: item.images ? (Array.isArray(item.images) ? item.images : []) : [],
           supplier: item.supplier,
           supplier_name: item.supplier,
           profit_margin: item.profit_margin,
@@ -121,60 +121,61 @@ export function useUnifiedProducts(filters?: any) {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(100000)
+        .limit(1000) as { data: any[] | null; error: any }
       
       if (importedData) {
         results.push(...importedData.map((item: any): UnifiedProduct => ({
           id: item.id,
-          name: item.name || 'Produit sans nom',
-          description: item.description,
+          name: item.product_id || 'Produit importé',
+          description: '',
           price: item.price || 0,
-          cost_price: item.cost_price,
-          stock_quantity: item.stock_quantity,
+          cost_price: undefined,
+          stock_quantity: undefined,
           status: item.status || 'draft',
           category: item.category,
-          sku: item.sku,
-          image_url: item.image_url || (item.image_urls?.[0]),
-          image_urls: item.image_urls || [],
-          supplier: item.supplier,
-          supplier_name: item.supplier_name,
-          profit_margin: item.profit_margin,
-          tags: item.tags || [],
-          seo_title: item.seo_title,
-          seo_description: item.seo_description,
-          seo_keywords: item.seo_keywords || [],
+          sku: '',
+          image_url: undefined,
+          image_urls: [],
+          supplier: item.source_platform,
+          supplier_name: item.source_platform,
+          profit_margin: undefined,
+          tags: [],
+          seo_title: undefined,
+          seo_description: undefined,
+          seo_keywords: [],
           user_id: item.user_id,
           created_at: item.created_at,
-          updated_at: item.updated_at
+          updated_at: item.created_at
         })))
       }
       
-      // 3. Supplier products table (global catalog - no user filter)
-      const { data: supplierData } = await supabase
-        .from('supplier_products')
+      // 3. Catalog products table
+      const { data: catalogData } = await supabase
+        .from('catalog_products')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(100000)
+        .limit(1000) as { data: any[] | null; error: any }
       
-      if (supplierData) {
-        results.push(...supplierData.map((item: any): UnifiedProduct => ({
+      if (catalogData) {
+        results.push(...catalogData.map((item: any): UnifiedProduct => ({
           id: item.id,
-          name: item.name || 'Produit sans nom',
+          name: item.title || 'Produit catalogue',
           description: item.description,
           price: item.price || 0,
-          cost_price: item.cost_price,
-          stock_quantity: item.stock_quantity,
+          cost_price: item.compare_at_price,
+          stock_quantity: undefined,
           status: item.status || 'active',
           category: item.category,
-          sku: item.sku,
-          image_url: item.image_url,
-          image_urls: item.images || [],
+          sku: '',
+          image_url: item.image_urls?.[0],
+          image_urls: item.image_urls || [],
           supplier: item.supplier_name,
           supplier_name: item.supplier_name,
-          profit_margin: item.profit_margin,
-          tags: item.tags || [],
-          seo_title: null,
-          seo_description: null,
+          profit_margin: undefined,
+          tags: [],
+          seo_title: undefined,
+          seo_description: undefined,
           seo_keywords: [],
           user_id: item.user_id,
           created_at: item.created_at,
@@ -209,8 +210,19 @@ export function useUnifiedProducts(filters?: any) {
       if (!user) throw new Error('Non authentifié')
       
       const { data, error } = await supabase
-        .from('imported_products')
-        .insert([{ ...newItem, user_id: user.id, name: newItem.name || 'Nouveau produit', price: newItem.price || 0 }])
+        .from('products')
+        .insert([{ 
+          title: newItem.name || 'Nouveau produit',
+          description: newItem.description,
+          price: newItem.price || 0,
+          cost_price: newItem.cost_price,
+          stock_quantity: newItem.stock_quantity,
+          status: newItem.status || 'draft',
+          category: newItem.category,
+          sku: newItem.sku,
+          image_url: newItem.image_url,
+          user_id: user.id 
+        }])
         .select()
         .single()
       
@@ -229,8 +241,18 @@ export function useUnifiedProducts(filters?: any) {
   const updateMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<UnifiedProduct> }) => {
       const { data, error } = await supabase
-        .from('imported_products')
-        .update(updates)
+        .from('products')
+        .update({
+          title: updates.name,
+          description: updates.description,
+          price: updates.price,
+          cost_price: updates.cost_price,
+          stock_quantity: updates.stock_quantity,
+          status: updates.status,
+          category: updates.category,
+          sku: updates.sku,
+          image_url: updates.image_url
+        })
         .eq('id', id)
         .eq('user_id', user?.id)
         .select()
@@ -251,7 +273,7 @@ export function useUnifiedProducts(filters?: any) {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('imported_products')
+        .from('products')
         .delete()
         .eq('id', id)
         .eq('user_id', user?.id)
@@ -292,7 +314,6 @@ export function useUnifiedProducts(filters?: any) {
 
 export function useUnifiedSuppliers(filters?: any) {
   const { user } = useAuth()
-  const { toast } = useToast()
   const queryClient = useQueryClient()
   
   const { data = [], isLoading, error } = useQuery({
@@ -300,42 +321,38 @@ export function useUnifiedSuppliers(filters?: any) {
     queryFn: async () => {
       if (!user) return []
       
-      let query = supabase
-        .from('suppliers')
+      const { data, error } = await supabase
+        .from('premium_suppliers')
         .select('*')
-        .eq('user_id', user.id)
-      
-      if (filters?.status) {
-        query = query.eq('connection_status', filters.status)
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching suppliers:', error);
+        return [];
       }
       
-      query = query.order('created_at', { ascending: false })
-      
-      const { data, error } = await query
-      if (error) throw error
-      
-      return data?.map((item: any): UnifiedSupplier => ({
+      return (data || []).map((item: any): UnifiedSupplier => ({
         id: item.id,
         name: item.name,
-        display_name: item.display_name || item.name,
+        display_name: item.name,
         description: item.description,
-        supplier_type: item.supplier_type || 'api',
-        category: item.category || item.sector || 'General',
+        supplier_type: item.api_type || 'api',
+        category: item.category || 'General',
         country: item.country,
-        sector: item.sector,
-        status: item.status || 'active',
-        connection_status: item.connection_status || 'disconnected',
-        product_count: item.product_count || 0,
+        sector: item.category,
+        status: item.is_verified ? 'verified' : 'pending',
+        connection_status: item.is_verified ? 'connected' : 'disconnected',
+        product_count: 0,
         rating: item.rating || 0,
-        success_rate: item.success_rate || 100,
-        error_count: item.error_count || 0,
-        access_count: item.access_count || 0,
-        is_premium: item.is_premium || false,
-        tags: item.tags || [],
-        user_id: item.user_id,
+        success_rate: 100,
+        error_count: 0,
+        access_count: 0,
+        is_premium: item.is_featured || false,
+        tags: [],
+        user_id: user.id,
         created_at: item.created_at,
         updated_at: item.updated_at
-      })) || []
+      }));
     },
     enabled: !!user
   })
@@ -357,7 +374,6 @@ export function useUnifiedSuppliers(filters?: any) {
 
 export function useUnifiedCustomers(filters?: any) {
   const { user } = useAuth()
-  const { toast } = useToast()
   const queryClient = useQueryClient()
   
   const { data = [], isLoading, error } = useQuery({
@@ -370,27 +386,23 @@ export function useUnifiedCustomers(filters?: any) {
         .select('*')
         .eq('user_id', user.id)
       
-      if (filters?.status) {
-        query = query.eq('status', filters.status)
-      }
-      
       query = query.order('created_at', { ascending: false })
       
       const { data, error } = await query
       if (error) throw error
       
-      return data?.map((item: any): UnifiedCustomer => ({
+      return (data || []).map((item: any): UnifiedCustomer => ({
         id: item.id,
-        name: item.name,
+        name: `${item.first_name || ''} ${item.last_name || ''}`.trim() || item.email,
         email: item.email,
         phone: item.phone,
-        status: item.status || 'active',
+        status: (item.total_orders || 0) > 0 ? 'active' : 'inactive',
         total_spent: item.total_spent || 0,
         total_orders: item.total_orders || 0,
         user_id: item.user_id,
         created_at: item.created_at,
         updated_at: item.updated_at
-      })) || []
+      }));
     },
     enabled: !!user
   })

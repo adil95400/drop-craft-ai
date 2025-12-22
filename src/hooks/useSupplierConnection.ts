@@ -22,21 +22,24 @@ export function useSupplierConnection() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
+      // Use premium_supplier_connections table instead
       const { data, error } = await supabase
-        .from('supplier_credentials_vault')
-        .select('supplier_id, connection_status, last_validation_at')
+        .from('premium_supplier_connections')
+        .select('premium_supplier_id, connection_status, last_sync_at')
         .eq('user_id', user.id)
       
       if (error) throw error
 
       const connections = new Map<string, SupplierConnectionStatus>()
       data?.forEach(cred => {
-        connections.set(cred.supplier_id, {
-          supplierId: cred.supplier_id,
-          isConnected: cred.connection_status === 'active' || cred.connection_status === 'connected',
-          connectionStatus: cred.connection_status as any,
-          lastSyncAt: cred.last_validation_at
-        })
+        if (cred.premium_supplier_id) {
+          connections.set(cred.premium_supplier_id, {
+            supplierId: cred.premium_supplier_id,
+            isConnected: cred.connection_status === 'active' || cred.connection_status === 'connected',
+            connectionStatus: (cred.connection_status || 'inactive') as any,
+            lastSyncAt: cred.last_sync_at || undefined
+          })
+        }
       })
       
       setConnectedSuppliers(connections)
@@ -56,7 +59,7 @@ export function useSupplierConnection() {
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'supplier_credentials_vault'
+        table: 'premium_supplier_connections'
       }, () => {
         loadConnections()
       })
@@ -86,14 +89,13 @@ export function useSupplierConnection() {
       if (error) {
         // Fallback to direct insert if edge function fails
         const { error: insertError } = await supabase
-          .from('supplier_credentials_vault')
+          .from('premium_supplier_connections')
           .insert({
             user_id: user.id,
-            supplier_id: supplierId,
-            connection_type: 'api',
-            connection_status: 'active',
-            api_key_encrypted: apiKey || null,
-            last_validated_at: new Date().toISOString()
+            premium_supplier_id: supplierId,
+            connection_status: 'connected',
+            credentials_encrypted: apiKey || null,
+            sync_enabled: true
           })
         
         if (insertError) throw insertError
@@ -132,9 +134,9 @@ export function useSupplierConnection() {
       if (!user) throw new Error('Non authentifié')
 
       const { error } = await supabase
-        .from('supplier_credentials_vault')
+        .from('premium_supplier_connections')
         .delete()
-        .eq('supplier_id', supplierId)
+        .eq('premium_supplier_id', supplierId)
         .eq('user_id', user.id)
 
       if (error) throw error

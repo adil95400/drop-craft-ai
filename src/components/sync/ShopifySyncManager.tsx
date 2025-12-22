@@ -53,8 +53,7 @@ export const ShopifySyncManager = () => {
     createConfig({
       sync_direction: newConfigDirection,
       sync_frequency: newConfigFrequency,
-      auto_sync_enabled: false,
-      integration_id: integrationId || null
+      auto_sync_enabled: false
     })
   }
 

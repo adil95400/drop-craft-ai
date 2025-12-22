@@ -32,49 +32,75 @@ export interface SyncConfiguration {
 export function useSyncConfig() {
   const queryClient = useQueryClient();
 
-  // Récupérer toutes les configurations
+  // Use integrations table as a proxy for sync configurations
   const { data: configs, isLoading } = useQuery({
     queryKey: ['sync-configurations'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
       const { data, error } = await supabase
-        .from('sync_configurations')
+        .from('integrations')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as SyncConfiguration[];
+      if (error) {
+        console.error('Error fetching sync configs:', error);
+        return [];
+      }
+
+      // Transform to SyncConfiguration interface
+      return (data || []).map((item: any): SyncConfiguration => ({
+        id: item.id,
+        user_id: item.user_id,
+        connector_id: item.platform,
+        sync_direction: (item.config as any)?.sync_direction || 'import',
+        sync_frequency: (item.sync_frequency as any) || 'manual',
+        sync_entities: (item.config as any)?.sync_entities || ['products'],
+        auto_resolve_conflicts: (item.config as any)?.auto_resolve_conflicts || false,
+        conflict_resolution_rules: (item.config as any)?.conflict_resolution_rules || {},
+        field_mappings: (item.config as any)?.field_mappings || {},
+        filters: (item.config as any)?.filters || {},
+        is_active: item.is_active || false,
+        last_sync_at: item.last_sync_at || undefined,
+        created_at: item.created_at,
+        updated_at: item.updated_at
+      }));
     },
   });
 
-  // Récupérer une configuration spécifique
+  // Get a specific configuration
   const getConfig = (connectorId: string) => {
     return configs?.find(c => c.connector_id === connectorId);
   };
 
-  // Créer ou mettre à jour une configuration
+  // Create or update a configuration
   const saveMutation = useMutation({
     mutationFn: async (config: Partial<SyncConfiguration>) => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error('Not authenticated');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
 
-      const configData = {
-        connector_id: config.connector_id,
-        sync_direction: config.sync_direction,
-        sync_frequency: config.sync_frequency,
-        sync_entities: config.sync_entities,
+      const integrationData = {
+        platform: config.connector_id || 'generic',
+        sync_frequency: config.sync_frequency || 'manual',
         is_active: config.is_active,
-        auto_resolve_conflicts: config.auto_resolve_conflicts,
-        conflict_resolution_rules: config.conflict_resolution_rules as any,
-        field_mappings: config.field_mappings as any,
-        filters: config.filters as any,
-        user_id: user.user.id,
+        config: {
+          sync_direction: config.sync_direction,
+          sync_entities: config.sync_entities,
+          auto_resolve_conflicts: config.auto_resolve_conflicts,
+          conflict_resolution_rules: config.conflict_resolution_rules,
+          field_mappings: config.field_mappings,
+          filters: config.filters,
+        },
+        user_id: user.id,
         updated_at: new Date().toISOString(),
       };
 
       if (config.id) {
         const { data, error } = await supabase
-          .from('sync_configurations')
-          .update(configData)
+          .from('integrations')
+          .update(integrationData as any)
           .eq('id', config.id)
           .select()
           .single();
@@ -83,8 +109,8 @@ export function useSyncConfig() {
         return data;
       } else {
         const { data, error } = await supabase
-          .from('sync_configurations')
-          .insert(configData)
+          .from('integrations')
+          .insert(integrationData as any)
           .select()
           .single();
 
@@ -102,11 +128,11 @@ export function useSyncConfig() {
     },
   });
 
-  // Supprimer une configuration
+  // Delete a configuration
   const deleteMutation = useMutation({
     mutationFn: async (configId: string) => {
       const { error } = await supabase
-        .from('sync_configurations')
+        .from('integrations')
         .delete()
         .eq('id', configId);
 

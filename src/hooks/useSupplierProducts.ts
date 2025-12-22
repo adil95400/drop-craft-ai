@@ -20,21 +20,34 @@ export function useSupplierProducts(supplierId: string | undefined, limit = 50) 
     queryFn: async () => {
       if (!supplierId) return { products: [], count: 0 };
 
-      // Query products by supplier_id UUID or by vendor name
+      // Query products by supplier column
       const { data: products, error, count } = await supabase
         .from('products')
-        .select('id, name, sku, price, cost_price, stock_quantity, image_url, status, vendor, created_at', { count: 'exact' })
-        .or(`supplier_id.eq.${supplierId},vendor.ilike.%bts%`)
+        .select('id, title, sku, price, cost_price, stock_quantity, image_url, status, supplier, created_at', { count: 'exact' })
+        .eq('supplier', supplierId)
         .order('created_at', { ascending: false })
-        .limit(limit);
+        .limit(limit) as { data: any[] | null; error: any; count: number | null };
 
       if (error) {
         console.error('Error fetching supplier products:', error);
         throw error;
       }
 
+      const transformedProducts: SupplierProduct[] = (products || []).map((p: any) => ({
+        id: p.id,
+        name: p.title || '',
+        sku: p.sku || '',
+        price: p.price || 0,
+        cost_price: p.cost_price || 0,
+        stock_quantity: p.stock_quantity || 0,
+        image_url: p.image_url,
+        status: p.status || 'active',
+        vendor: p.supplier || '',
+        created_at: p.created_at
+      }));
+
       return {
-        products: (products || []) as SupplierProduct[],
+        products: transformedProducts,
         count: count || 0
       };
     },
@@ -52,7 +65,7 @@ export function useSupplierProductCount(supplierId: string | undefined) {
       const { count, error } = await supabase
         .from('products')
         .select('id', { count: 'exact', head: true })
-        .or(`supplier_id.eq.${supplierId},vendor.ilike.%bts%`);
+        .eq('supplier', supplierId);
 
       if (error) {
         console.error('Error counting supplier products:', error);

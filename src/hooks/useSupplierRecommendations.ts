@@ -23,25 +23,49 @@ export function useSupplierRecommendations() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Charger les recommandations
+  // Use business_intelligence_insights table as a proxy for AI recommendations
   const { data: recommendations = [], isLoading, refetch } = useQuery({
     queryKey: ['supplier-recommendations'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
       const { data, error } = await supabase
-        .from('supplier_ai_recommendations')
+        .from('business_intelligence_insights')
         .select('*')
-        .eq('is_active', true)
-        .eq('status', 'pending')
+        .eq('user_id', user.id)
+        .eq('insight_type', 'supplier_recommendation')
+        .eq('status', 'new')
         .order('confidence_score', { ascending: false })
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return (data || []) as AIRecommendation[];
+      if (error) {
+        console.error('Error fetching recommendations:', error);
+        return [];
+      }
+
+      // Transform to AIRecommendation interface
+      return (data || []).map((item: any): AIRecommendation => ({
+        id: item.id,
+        recommendation_type: item.insight_type,
+        target_entity_type: 'supplier',
+        target_entity_id: '',
+        title: item.title,
+        description: item.description || '',
+        confidence_score: item.confidence_score || 0.8,
+        suggested_actions: (item.actionable_recommendations as any[]) || [],
+        estimated_impact: { score: item.impact_score || 0.5 },
+        reasoning: item.supporting_data || {},
+        status: item.status || 'new',
+        is_active: !item.is_read,
+        created_at: item.created_at,
+        expires_at: item.expires_at || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      }));
     },
-    refetchInterval: 60000, // Rafraîchir toutes les minutes
+    refetchInterval: 60000,
   });
 
-  // Générer de nouvelles recommandations
+  // Generate new recommendations
   const generateMutation = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke('supplier-ai-recommendations');
@@ -51,11 +75,10 @@ export function useSupplierRecommendations() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['supplier-recommendations'] });
-      queryClient.invalidateQueries({ queryKey: ['supplier-notifications'] });
       
       toast({
         title: 'Recommandations générées',
-        description: `${data.count} nouvelles recommandations disponibles`,
+        description: `${data?.count || 0} nouvelles recommandations disponibles`,
       });
     },
     onError: (error: Error) => {
@@ -67,14 +90,14 @@ export function useSupplierRecommendations() {
     },
   });
 
-  // Accepter une recommandation
+  // Accept a recommendation
   const acceptMutation = useMutation({
     mutationFn: async (recommendationId: string) => {
       const { error } = await supabase
-        .from('supplier_ai_recommendations')
+        .from('business_intelligence_insights')
         .update({
           status: 'accepted',
-          acted_at: new Date().toISOString(),
+          is_read: true,
         })
         .eq('id', recommendationId);
 
@@ -88,15 +111,14 @@ export function useSupplierRecommendations() {
     },
   });
 
-  // Rejeter une recommandation
+  // Reject a recommendation
   const rejectMutation = useMutation({
     mutationFn: async (recommendationId: string) => {
       const { error } = await supabase
-        .from('supplier_ai_recommendations')
+        .from('business_intelligence_insights')
         .update({
-          status: 'rejected',
-          is_active: false,
-          acted_at: new Date().toISOString(),
+          status: 'dismissed',
+          is_read: true,
         })
         .eq('id', recommendationId);
 
@@ -107,7 +129,7 @@ export function useSupplierRecommendations() {
     },
   });
 
-  // Statistiques
+  // Statistics
   const stats = {
     total: recommendations.length,
     highConfidence: recommendations.filter(r => r.confidence_score >= 0.8).length,

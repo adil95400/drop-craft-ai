@@ -47,26 +47,27 @@ export function useSupplierSync() {
   const syncAllSuppliers = async () => {
     setIsSyncing(true)
     try {
-      const { data: credentials } = await supabase
-        .from('supplier_credentials_vault')
-        .select('supplier_id')
-        .eq('connection_status', 'active')
+      // Use premium_supplier_connections instead
+      const { data: connections } = await supabase
+        .from('premium_supplier_connections')
+        .select('premium_supplier_id')
+        .eq('connection_status', 'connected')
 
-      if (!credentials || credentials.length === 0) {
+      if (!connections || connections.length === 0) {
         toast.info('Aucun fournisseur actif à synchroniser')
         return { success: true, count: 0 }
       }
 
       const results = await Promise.allSettled(
-        credentials.map(({ supplier_id }) => 
+        connections.map(({ premium_supplier_id }) => 
           supabase.functions.invoke('supplier-sync-products', {
-            body: { supplierId: supplier_id, limit: 1000 }
+            body: { supplierId: premium_supplier_id, limit: 1000 }
           })
         )
       )
 
       const successCount = results.filter(r => r.status === 'fulfilled').length
-      toast.success(`${successCount}/${credentials.length} fournisseurs synchronisés`)
+      toast.success(`${successCount}/${connections.length} fournisseurs synchronisés`)
       
       queryClient.invalidateQueries({ queryKey: ['supplier-products'] })
       queryClient.invalidateQueries({ queryKey: ['suppliers'] })
