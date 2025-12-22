@@ -187,7 +187,7 @@ export class SmartInventoryService {
   }
 
   static async updateStockLevel(productId: string, newStock: number): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('smart_inventory')
       .update({ 
         current_stock: newStock,
@@ -198,32 +198,33 @@ export class SmartInventoryService {
     if (error) throw error;
 
     // Mettre à jour également le stock dans la table des produits
-    await supabase
-      .from('imported_products')
+    await (supabase as any)
+      .from('products')
       .update({ stock_quantity: newStock })
       .eq('id', productId);
   }
 
   static async getPredictiveInsights(): Promise<any> {
-    const { data: inventory, error } = await supabase
+    const { data: inventory, error } = await (supabase as any)
       .from('smart_inventory')
       .select('*')
-      .order('next_reorder_prediction', { ascending: true })
+      .order('created_at', { ascending: false })
       .limit(10);
 
     if (error) throw error;
 
-    const upcomingReorders = inventory?.filter(i => 
+    const items = (inventory || []) as SmartInventory[];
+    const upcomingReorders = items.filter(i => 
       i.next_reorder_prediction && 
       new Date(i.next_reorder_prediction) <= new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
-    ) || [];
+    );
 
     return {
       upcomingReorders: upcomingReorders.length,
       next7Days: upcomingReorders.filter(i => 
         new Date(i.next_reorder_prediction!) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
       ).length,
-      criticalActions: inventory?.filter(i => i.stock_risk_level === 'critical').length || 0,
+      criticalActions: items.filter(i => i.stock_risk_level === 'critical').length,
       recommendations: [
         'Vérifier les prédictions de demande',
         'Optimiser les niveaux de sécurité',

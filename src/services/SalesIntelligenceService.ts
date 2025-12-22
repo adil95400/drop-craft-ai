@@ -49,6 +49,22 @@ export class SalesIntelligenceService {
     return SalesIntelligenceService.instance;
   }
 
+  private mapToSalesIntelligenceData(d: any): SalesIntelligenceData {
+    return {
+      id: d.id || '',
+      user_id: d.user_id || '',
+      product_id: d.product_id,
+      analysis_type: d.analysis_type || 'forecast',
+      time_period: d.time_period || 'month',
+      predictions: d.predictions || {},
+      confidence_score: d.confidence_score || 0,
+      market_insights: d.market_insights || {},
+      recommended_actions: d.recommended_actions || [],
+      created_at: d.created_at || new Date().toISOString(),
+      updated_at: d.updated_at || new Date().toISOString(),
+    };
+  }
+
   async generateForecast(params: ForecastRequest): Promise<SalesIntelligenceData> {
     try {
       console.log('[SalesIntelligenceService] Generating forecast', params);

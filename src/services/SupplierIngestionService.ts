@@ -370,7 +370,7 @@ export class SupplierIngestionService {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non authentifié');
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('supplier_feeds')
         .update({
           sync_schedule: schedule,

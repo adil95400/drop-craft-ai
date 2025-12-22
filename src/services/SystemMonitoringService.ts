@@ -1,28 +1,39 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
 
-type SystemHealthMonitoring = Database['public']['Tables']['system_health_monitoring']['Row'];
+interface SystemHealthMonitoring {
+  id: string;
+  component_name: string;
+  health_status: 'healthy' | 'warning' | 'critical';
+  performance_score: number;
+  error_rate?: number;
+  response_time_ms?: number;
+  uptime_percentage?: number;
+  metrics_data?: any;
+  alerts_triggered?: any[];
+  last_check_at?: string;
+  created_at?: string;
+}
 
 export class SystemMonitoringService {
   static async getSystemHealth() {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('system_health_monitoring')
       .select('*')
-      .order('last_check_at', { ascending: false })
+      .order('last_check_at', { ascending: false });
     
-    if (error) throw error
-    return data
+    if (error) throw error;
+    return (data || []) as SystemHealthMonitoring[];
   }
 
   static async getPerformanceMetrics() {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('performance_metrics')
       .select('*')
       .eq('metric_type', 'system')
-      .order('collected_at', { ascending: false })
+      .order('collected_at', { ascending: false });
     
-    if (error) throw error
-    return data
+    if (error) throw error;
+    return data || [];
   }
 
   static async runSystemHealthCheck() {
@@ -30,10 +41,10 @@ export class SystemMonitoringService {
       body: {
         action: 'health_check'
       }
-    })
+    });
 
-    if (error) throw error
-    return data
+    if (error) throw error;
+    return data;
   }
 
   static async optimizeSystemPerformance() {
@@ -41,10 +52,10 @@ export class SystemMonitoringService {
       body: {
         action: 'optimize_system'
       }
-    })
+    });
 
-    if (error) throw error
-    return data
+    if (error) throw error;
+    return data;
   }
 
   async getSystemHealth() {
@@ -154,13 +165,13 @@ export class SystemMonitoringService {
 
   async getHealthMonitoring(): Promise<SystemHealthMonitoring[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('system_health_monitoring')
         .select('*')
         .order('last_check_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as SystemHealthMonitoring[];
     } catch (error) {
       console.error('Error fetching health monitoring data:', error);
       throw error;
@@ -169,14 +180,14 @@ export class SystemMonitoringService {
 
   async getComponentHealth(componentName: string): Promise<SystemHealthMonitoring | null> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('system_health_monitoring')
         .select('*')
         .eq('component_name', componentName)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
-      return data;
+      if (error) throw error;
+      return data as SystemHealthMonitoring | null;
     } catch (error) {
       console.error('Error fetching component health:', error);
       throw error;
@@ -295,7 +306,7 @@ export class SystemMonitoringService {
       const filteredAlerts = alerts.filter((alert: any) => alert.type !== alertType);
 
       // Update component with resolved alert
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('system_health_monitoring')
         .update({
           alerts_triggered: filteredAlerts,

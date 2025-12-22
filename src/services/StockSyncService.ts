@@ -103,34 +103,33 @@ export class StockSyncService {
           const thresholdDate = new Date();
           thresholdDate.setHours(thresholdDate.getHours() - (config.sync_frequency === 'hourly' ? 1 : 24));
 
-          const { data: products, error: productsError } = await supabase
-            .from('imported_products')
+          const { data: products, error: productsError } = await (supabase as any)
+            .from('products')
             .select('*')
             .eq('user_id', userId)
-            .eq('supplier_name', supplier.name)
-            .or(`updated_at.lt.${thresholdDate.toISOString()},stock_quantity.lt.${config.stock_threshold}`)
+            .eq('supplier', supplier.name)
             .limit(100);
 
           if (productsError) throw productsError;
 
           // Simulate supplier API calls (replace with real connector logic)
           for (const product of products || []) {
-            const updatedStock = await this.fetchSupplierStock(supplier, product);
-            const updatedPrice = await this.fetchSupplierPrice(supplier, product);
+            const p = product as any;
+            const updatedStock = await this.fetchSupplierStock(supplier, p);
+            const updatedPrice = await this.fetchSupplierPrice(supplier, p);
 
             // Update local inventory
-            const { error: updateError } = await supabase
-              .from('imported_products')
+            const { error: updateError } = await (supabase as any)
+              .from('products')
               .update({
                 stock_quantity: updatedStock,
                 price: updatedPrice,
-                updated_at: new Date().toISOString(),
-                last_synced_at: new Date().toISOString()
+                updated_at: new Date().toISOString()
               })
-              .eq('id', product.id);
+              .eq('id', p.id);
 
             if (updateError) {
-              errors.push(`Failed to update product ${product.sku}: ${updateError?.message || 'Unknown error'}`);
+              errors.push(`Failed to update product ${p.sku || p.id}: ${updateError?.message || 'Unknown error'}`);
             } else {
               productsSynced++;
             }
@@ -158,36 +157,38 @@ export class StockSyncService {
         .from('integrations')
         .select('*')
         .eq('user_id', userId)
-        .eq('is_active', true)
-        .in('platform_type', ['shopify', 'woocommerce']);
+        .eq('is_active', true);
 
       if (integrationsError) throw integrationsError;
 
       console.log(`🛍️ Syncing to ${integrations?.length || 0} platforms`);
 
       for (const integration of integrations || []) {
+        const int = integration as any;
+        const platformType = int.platform || int.platform_name || 'unknown';
         try {
-          console.log(`📤 Syncing to ${integration.platform_type}`);
+          console.log(`📤 Syncing to ${platformType}`);
 
           // Get products that have been updated locally
-          const { data: products, error: productsError } = await supabase
-            .from('imported_products')
+          const { data: products, error: productsError } = await (supabase as any)
+            .from('products')
             .select('*')
             .eq('user_id', userId)
-            .eq('status', 'published')
-            .gte('updated_at', integration.last_sync_at || '2024-01-01')
+            .eq('status', 'active')
+            .gte('updated_at', int.last_sync_at || '2024-01-01')
             .limit(50);
 
           if (productsError) throw productsError;
 
           // Sync each product to the platform
           for (const product of products || []) {
-            const syncResult = await this.syncProductToPlatform(product, integration);
+            const p = product as any;
+            const syncResult = await this.syncProductToPlatform(p, int);
             
             if (syncResult.success) {
               productsSynced++;
             } else {
-              errors.push(`Failed to sync ${product.sku} to ${integration.platform_type}: ${syncResult.error}`);
+              errors.push(`Failed to sync ${p.sku || p.id} to ${platformType}: ${syncResult.error}`);
             }
           }
 
@@ -195,10 +196,10 @@ export class StockSyncService {
           await supabase
             .from('integrations')
             .update({ last_sync_at: new Date().toISOString() })
-            .eq('id', integration.id);
+            .eq('id', int.id);
 
         } catch (error: any) {
-          errors.push(`Platform sync error (${integration.platform_type}): ${error?.message || 'Unknown error'}`);
+          errors.push(`Platform sync error (${platformType}): ${error?.message || 'Unknown error'}`);
         }
       }
 
@@ -322,59 +323,60 @@ export class StockSyncService {
       console.log('💰 Auto-adjusting prices based on stock levels...');
 
       // Get products that might need price adjustment
-      const { data: products, error: productsError } = await supabase
-        .from('imported_products')
+      const { data: products, error: productsError } = await (supabase as any)
+        .from('products')
         .select('*')
         .eq('user_id', userId)
-        .or(`stock_quantity.lt.${config.stock_threshold},stock_quantity.gt.${config.stock_threshold * 3}`)
         .limit(50);
 
       if (productsError) throw productsError;
 
       for (const product of products || []) {
         try {
-          let newPrice = product.price;
+          const p = product as any;
+          let newPrice = p.price;
           let reason = '';
+          const stockQty = p.stock_quantity || 0;
 
           // Increase price if stock is low
-          if (product.stock_quantity < config.stock_threshold) {
+          if (stockQty < config.stock_threshold) {
             const increase = 1 + (config.price_variance_limit / 100);
-            newPrice = Math.round(product.price * increase * 100) / 100;
+            newPrice = Math.round(p.price * increase * 100) / 100;
             reason = 'Low stock - price increased';
           }
           // Decrease price if stock is high
-          else if (product.stock_quantity > config.stock_threshold * 3) {
+          else if (stockQty > config.stock_threshold * 3) {
             const decrease = 1 - (config.price_variance_limit / 100 * 0.5);
-            newPrice = Math.round(product.price * decrease * 100) / 100;
+            newPrice = Math.round(p.price * decrease * 100) / 100;
             reason = 'High stock - price decreased';
           }
 
-          if (newPrice !== product.price) {
-            const { error: updateError } = await supabase
-              .from('imported_products')
+          if (newPrice !== p.price) {
+            const { error: updateError } = await (supabase as any)
+              .from('products')
               .update({
                 price: newPrice,
                 updated_at: new Date().toISOString()
               })
-              .eq('id', product.id);
+              .eq('id', p.id);
 
             if (updateError) {
-              errors.push(`Failed to update price for ${product.sku}: ${updateError?.message || 'Unknown error'}`);
+              errors.push(`Failed to update price for ${p.sku || p.id}: ${updateError?.message || 'Unknown error'}`);
             } else {
-              console.log(`💲 ${product.sku}: ${product.price} → ${newPrice} (${reason})`);
+              console.log(`💲 ${p.sku || p.id}: ${p.price} → ${newPrice} (${reason})`);
 
               // Log price change
               await supabase.from('activity_logs').insert({
                 user_id: userId,
                 action: 'price_auto_adjusted',
                 entity_type: 'product',
-                entity_id: product.id,
-                description: `${reason}: ${product.price} → ${newPrice}`,
-                metadata: {
-                  sku: product.sku,
-                  old_price: product.price,
+                entity_id: p.id,
+                description: `${reason}: ${p.price} → ${newPrice}`,
+                details: {
+                  sku: p.sku,
+                  old_price: p.price,
                   new_price: newPrice,
-                  stock_quantity: product.stock_quantity,
+                  stock_quantity: stockQty,
                   reason
                 }
               });
@@ -382,7 +384,8 @@ export class StockSyncService {
           }
 
         } catch (error: any) {
-          errors.push(`Price adjustment error for ${product.sku}: ${error?.message || 'Unknown error'}`);
+          const p = product as any;
+          errors.push(`Price adjustment error for ${p.sku || p.id}: ${error?.message || 'Unknown error'}`);
         }
       }
 
@@ -400,7 +403,7 @@ export class StockSyncService {
         action: 'stock_sync_completed',
         entity_type: 'sync',
         description: `Stock sync completed: ${activity.products_synced} products, ${activity.errors} errors`,
-        metadata: activity
+        details: activity
       });
     } catch (error) {
       console.error('Failed to log sync activity:', error);
@@ -488,20 +491,20 @@ export class StockSyncService {
 
     const { data: todayLogs } = await supabase
       .from('activity_logs')
-      .select('metadata')
+      .select('details')
       .eq('user_id', userId)
       .eq('action', 'stock_sync_completed')
       .gte('created_at', today.toISOString());
 
     const productsSyncedToday = todayLogs?.reduce((total, log) => {
-      const metadata = log.metadata as any || {};
-      return total + (metadata.products_synced || 0);
+      const details = (log as any).details as any || {};
+      return total + (details.products_synced || 0);
     }, 0) || 0;
 
     const totalSyncs = todayLogs?.length || 0;
     const errorSyncs = todayLogs?.filter(log => {
-      const metadata = log.metadata as any || {};
-      return (metadata.errors || 0) > 0;
+      const details = (log as any).details as any || {};
+      return (details.errors || 0) > 0;
     }).length || 0;
     const errorRate = totalSyncs > 0 ? (errorSyncs / totalSyncs) * 100 : 0;
 
