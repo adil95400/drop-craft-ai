@@ -73,7 +73,7 @@ export class SalesIntelligenceService {
 
   async getForecastHistory(): Promise<SalesIntelligenceData[]> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('sales_intelligence')
         .select('*')
         .order('created_at', { ascending: false })
@@ -81,7 +81,7 @@ export class SalesIntelligenceService {
 
       if (error) throw error;
 
-      return data || [];
+      return (data || []).map((d: any) => this.mapToSalesIntelligenceData(d));
     } catch (error) {
       console.error('[SalesIntelligenceService] Error fetching forecast history:', error);
       throw error;
@@ -90,7 +90,7 @@ export class SalesIntelligenceService {
 
   async getForecastById(id: string): Promise<SalesIntelligenceData | null> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('sales_intelligence')
         .select('*')
         .eq('id', id)
@@ -98,7 +98,7 @@ export class SalesIntelligenceService {
 
       if (error) throw error;
 
-      return data;
+      return data ? this.mapToSalesIntelligenceData(data) : null;
     } catch (error) {
       console.error('[SalesIntelligenceService] Error fetching forecast:', error);
       throw error;
@@ -107,7 +107,7 @@ export class SalesIntelligenceService {
 
   async deleteForecast(id: string): Promise<void> {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('sales_intelligence')
         .delete()
         .eq('id', id);

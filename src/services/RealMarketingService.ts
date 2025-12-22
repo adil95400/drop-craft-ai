@@ -79,7 +79,7 @@ export class RealMarketingService {
     type?: string;
     limit?: number;
   }): Promise<MarketingCampaign[]> {
-    let query = supabase
+    let query = (supabase as any)
       .from('marketing_campaigns')
       .select('*');
 
@@ -100,17 +100,23 @@ export class RealMarketingService {
     
     if (error) throw error;
     
-    return (data || []).map(campaign => ({
-      ...campaign,
-      content: typeof campaign.content === 'object' && campaign.content !== null
-        ? campaign.content as Record<string, any>
-        : {},
-      settings: typeof campaign.settings === 'object' && campaign.settings !== null
-        ? campaign.settings as Record<string, any>
-        : {},
+    return (data || []).map((campaign: any) => ({
+      id: campaign.id,
+      user_id: campaign.user_id,
+      name: campaign.name,
+      type: campaign.type || 'email',
+      status: campaign.status || 'draft',
+      content: {},
+      settings: {},
       metrics: typeof campaign.metrics === 'object' && campaign.metrics !== null
         ? campaign.metrics as any
         : { sent: 0, delivered: 0, opened: 0, clicked: 0, converted: 0 },
+      budget: campaign.budget,
+      scheduled_at: campaign.scheduled_at,
+      started_at: campaign.start_date,
+      completed_at: campaign.end_date,
+      created_at: campaign.created_at,
+      updated_at: campaign.updated_at,
     } as MarketingCampaign));
   }
 
@@ -118,12 +124,15 @@ export class RealMarketingService {
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('marketing_campaigns')
       .insert({
-        ...campaign,
-        user_id: user.user.id,
+        name: campaign.name,
+        type: campaign.type,
+        status: campaign.status,
+        budget: campaign.budget,
         metrics: campaign.metrics || { sent: 0, delivered: 0, opened: 0, clicked: 0, converted: 0 },
+        user_id: user.user.id,
       })
       .select()
       .single();
@@ -131,23 +140,33 @@ export class RealMarketingService {
     if (error) throw error;
     
     return {
-      ...data,
-      content: typeof data.content === 'object' && data.content !== null
-        ? data.content as Record<string, any>
-        : {},
-      settings: typeof data.settings === 'object' && data.settings !== null
-        ? data.settings as Record<string, any>
-        : {},
+      id: data.id,
+      user_id: data.user_id,
+      name: data.name,
+      type: data.type || 'email',
+      status: data.status || 'draft',
+      content: {},
+      settings: {},
       metrics: typeof data.metrics === 'object' && data.metrics !== null
         ? data.metrics as any
         : { sent: 0, delivered: 0, opened: 0, clicked: 0, converted: 0 },
+      budget: data.budget,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
     } as MarketingCampaign;
   }
 
   async updateCampaign(id: string, updates: Partial<MarketingCampaign>): Promise<MarketingCampaign> {
-    const { data, error } = await supabase
+    const updateData: any = {};
+    if (updates.name !== undefined) updateData.name = updates.name;
+    if (updates.type !== undefined) updateData.type = updates.type;
+    if (updates.status !== undefined) updateData.status = updates.status;
+    if (updates.budget !== undefined) updateData.budget = updates.budget;
+    if (updates.metrics !== undefined) updateData.metrics = updates.metrics;
+
+    const { data, error } = await (supabase as any)
       .from('marketing_campaigns')
-      .update(updates)
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
@@ -155,21 +174,24 @@ export class RealMarketingService {
     if (error) throw error;
     
     return {
-      ...data,
-      content: typeof data.content === 'object' && data.content !== null
-        ? data.content as Record<string, any>
-        : {},
-      settings: typeof data.settings === 'object' && data.settings !== null
-        ? data.settings as Record<string, any>
-        : {},
+      id: data.id,
+      user_id: data.user_id,
+      name: data.name,
+      type: data.type || 'email',
+      status: data.status || 'draft',
+      content: {},
+      settings: {},
       metrics: typeof data.metrics === 'object' && data.metrics !== null
         ? data.metrics as any
         : { sent: 0, delivered: 0, opened: 0, clicked: 0, converted: 0 },
+      budget: data.budget,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
     } as MarketingCampaign;
   }
 
   async deleteCampaign(id: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('marketing_campaigns')
       .delete()
       .eq('id', id);
@@ -179,7 +201,7 @@ export class RealMarketingService {
 
   // Launch campaign
   async launchCampaign(campaignId: string): Promise<void> {
-    const campaign = await supabase
+    const campaign = await (supabase as any)
       .from('marketing_campaigns')
       .select('*')
       .eq('id', campaignId)
@@ -188,24 +210,23 @@ export class RealMarketingService {
     if (!campaign.data) throw new Error('Campaign not found');
 
     // Update campaign status
-    await supabase
+    await (supabase as any)
       .from('marketing_campaigns')
       .update({
         status: 'running',
-        started_at: new Date().toISOString(),
+        start_date: new Date().toISOString(),
       })
       .eq('id', campaignId);
 
     // Log campaign launch
-    await supabase.from('activity_logs').insert({
+    await (supabase as any).from('activity_logs').insert({
       user_id: campaign.data.user_id,
       action: 'campaign_launched',
       entity_type: 'campaign',
       entity_id: campaignId,
       description: `Campaign "${campaign.data.name}" launched`,
-      metadata: {
+      details: {
         campaign_type: campaign.data.type,
-        // Remove target_segment_id as it doesn't exist in the database
         campaign_name: campaign.data.name,
       },
     });
@@ -216,7 +237,7 @@ export class RealMarketingService {
     channel?: string;
     limit?: number;
   }): Promise<MarketingIntelligence[]> {
-    let query = supabase
+    let query = (supabase as any)
       .from('marketing_intelligence')
       .select('*');
 
@@ -233,10 +254,10 @@ export class RealMarketingService {
     if (error) throw error;
     
     // Map database fields to interface
-    return (data || []).map(intel => ({
+    return (data || []).map((intel: any) => ({
       id: intel.id,
       user_id: intel.user_id,
-      analysis_type: 'campaign_performance', // Default since this field doesn't exist in DB
+      analysis_type: 'campaign_performance' as const,
       insights: typeof intel.audience_insights === 'object' && intel.audience_insights !== null
         ? intel.audience_insights as Record<string, any>
         : {},
@@ -254,7 +275,7 @@ export class RealMarketingService {
 
     // Fetch relevant data for analysis
     const campaignsData = await this.getCampaigns();
-    const { data: contacts } = await supabase
+    const { data: contacts } = await (supabase as any)
       .from('crm_contacts')
       .select('*')
       .limit(1000);
@@ -290,11 +311,11 @@ export class RealMarketingService {
     }
 
     // Store intelligence in database using actual schema
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('marketing_intelligence')
       .insert({
         user_id: user.user.id,
-        channel: analysisType, // Use analysis type as channel
+        channel: analysisType,
         attribution_model: 'last_click',
         performance_score: confidenceScore,
         roi_analysis: insights,
@@ -311,7 +332,7 @@ export class RealMarketingService {
     return {
       id: data.id,
       user_id: data.user_id,
-      analysis_type: analysisType,
+      analysis_type: analysisType as any,
       insights: typeof data.audience_insights === 'object' && data.audience_insights !== null
         ? data.audience_insights as Record<string, any>
         : {},
@@ -345,7 +366,7 @@ export class RealMarketingService {
     }
 
     // Update campaign metrics
-    await supabase
+    await (supabase as any)
       .from('marketing_campaigns')
       .update({
         metrics: {
