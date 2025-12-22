@@ -22,13 +22,19 @@ export default function MultiStoreManager() {
       if (!user) throw new Error('Non authentifié')
 
       const { data, error } = await supabase
-        .from('tenants')
+        .from('integrations')
         .select('*')
-        .eq('owner_id', user.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
       
       if (error) throw error
-      return data || []
+      return (data || []).map(item => ({
+        id: item.id,
+        name: item.platform_name || item.platform,
+        domain: item.store_url || '',
+        status: item.connection_status || 'disconnected',
+        created_at: item.created_at
+      }))
     }
   })
 
@@ -38,12 +44,13 @@ export default function MultiStoreManager() {
       if (!user) throw new Error('Non authentifié')
 
       const { error } = await supabase
-        .from('tenants')
+        .from('integrations')
         .insert({
-          name: storeData.name,
-          domain: storeData.domain,
-          owner_id: user.id,
-          status: 'active'
+          platform: 'custom',
+          platform_name: storeData.name,
+          store_url: storeData.domain,
+          user_id: user.id,
+          connection_status: 'connected'
         })
       
       if (error) throw error

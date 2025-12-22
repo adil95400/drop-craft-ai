@@ -25,11 +25,11 @@ export default function QuickDropshippingPage() {
     isOptimizing
   } = useQuickDropshipping()
   
-  const [autoImport, setAutoImport] = useState(config?.auto_import || false)
-  const [autoFulfill, setAutoFulfill] = useState(config?.auto_fulfill || false)
-  const [priceOptimization, setPriceOptimization] = useState(config?.price_optimization ?? true)
-  const [targetMargin, setTargetMargin] = useState(config?.target_margin || 30)
-  const [syncFrequency, setSyncFrequency] = useState(config?.sync_frequency || '1hour')
+  const [autoImport, setAutoImport] = useState((config as any)?.auto_import || false)
+  const [autoFulfill, setAutoFulfill] = useState((config as any)?.auto_fulfill || false)
+  const [priceOptimization, setPriceOptimization] = useState((config as any)?.price_optimization ?? true)
+  const [targetMargin, setTargetMargin] = useState((config as any)?.target_margin || 30)
+  const [syncFrequency, setSyncFrequency] = useState((config as any)?.sync_frequency || '1hour')
   const [selectedSupplier, setSelectedSupplier] = useState<string>('')
   const [minPrice, setMinPrice] = useState<number>()
   const [maxPrice, setMaxPrice] = useState<number>()

@@ -324,8 +324,8 @@ export default function PremiumNetworkPage() {
             ) : (
               <div className="space-y-4">
                 {filteredSuppliers.map((supplier) => {
-                  const isConnected = connections?.some(c => c.supplier_id === supplier.id && c.status === 'active')
-                  const connection = connections?.find(c => c.supplier_id === supplier.id)
+                  const isConnected = connections?.some(c => c.premium_supplier_id === supplier.id && c.connection_status === 'active')
+                  const connection = connections?.find(c => c.premium_supplier_id === supplier.id)
                   
                   const getTierBadge = (tier?: string) => {
                     const variants: Record<string, { variant: any; label: string; icon: any }> = {
