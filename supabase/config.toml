@@ -672,3 +672,9 @@ verify_jwt = true
 
 [functions.process-import-job]
 verify_jwt = true
+
+[functions.ai-product-research]
+verify_jwt = true
+
+[functions.order-workflow-processor]
+verify_jwt = true
