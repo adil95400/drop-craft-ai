@@ -25,37 +25,37 @@ export function useQuotas() {
     try {
       setError(null)
       
-      // Récupérer le plan utilisateur
+      // Récupérer le plan utilisateur from profiles
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('plan')
+        .select('subscription_plan')
         .eq('id', user.id)
         .single()
 
       if (profileError) throw profileError
 
-      const userPlan = profile?.plan || 'standard'
+      const userPlan = profile?.subscription_plan || 'free'
       
       // Récupérer les limites du plan
       const { data: limits, error: limitsError } = await supabase
         .from('plan_limits')
         .select('*')
-        .eq('plan_type', userPlan)
+        .eq('plan_name', userPlan)
 
       if (limitsError) throw limitsError
 
       // Récupérer les quotas utilisateur actuels
-      const { data: userQuotas, error: quotasError } = await supabase
-        .from('user_quotas')
+      const { data: userQuotas, error: quotasError } = await (supabase as any)
+        .from('quota_usage')
         .select('*')
         .eq('user_id', user.id)
 
       if (quotasError) throw quotasError
 
       // Construire la liste des quotas
-      const quotasList: QuotaStatus[] = (limits || []).map(limit => {
-        const userQuota = userQuotas?.find(q => q.quota_key === limit.limit_key)
-        const currentCount = userQuota?.current_count || 0
+      const quotasList: QuotaStatus[] = (limits || []).map((limit: any) => {
+        const userQuota = (userQuotas as any[])?.find((q: any) => q.quota_key === limit.limit_key)
+        const currentCount = userQuota?.current_usage || 0
         const limitValue = limit.limit_value
         const percentageUsed = limitValue === -1 ? 0 : Math.round((currentCount / limitValue) * 100)
         
@@ -64,7 +64,7 @@ export function useQuotas() {
           current_count: currentCount,
           limit_value: limitValue,
           percentage_used: percentageUsed,
-          reset_date: userQuota?.reset_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+          reset_date: userQuota?.period_end || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         }
       })
       
@@ -81,17 +81,34 @@ export function useQuotas() {
     if (!user) return false
 
     try {
-      const { data, error: quotaError } = await supabase.rpc('check_user_quota', {
-        quota_key_param: quotaKey,
-        increment_by: incrementBy
-      })
+      // Find the quota in local state
+      const quota = quotas.find(q => q.quota_key === quotaKey)
+      if (!quota) return true // If no quota found, allow
+      if (quota.limit_value === -1) return true // Unlimited
       
-      if (quotaError) throw quotaError
+      const canIncrement = quota.current_count + incrementBy <= quota.limit_value
       
-      // Refresh quotas after check
-      await fetchQuotas()
+      if (canIncrement) {
+        // Update the quota usage
+        const { error: updateError } = await (supabase as any)
+          .from('quota_usage')
+          .upsert({
+            user_id: user.id,
+            quota_key: quotaKey,
+            current_usage: quota.current_count + incrementBy,
+            period_start: new Date().toISOString(),
+            period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+          }, {
+            onConflict: 'user_id,quota_key'
+          })
+        
+        if (updateError) throw updateError
+        
+        // Refresh quotas after update
+        await fetchQuotas()
+      }
       
-      return data || false
+      return canIncrement
     } catch (err) {
       console.error('Error checking quota:', err)
       setError(err instanceof Error ? err.message : 'Failed to check quota')

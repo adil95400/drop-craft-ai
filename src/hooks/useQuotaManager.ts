@@ -42,8 +42,8 @@ export const useQuotaManager = () => {
       if (limitsError) throw limitsError
 
       // Fetch user quotas from quota_usage table
-      const { data: userQuotas, error: quotasError } = await (supabase
-        .from('quota_usage') as any)
+      const { data: userQuotas, error: quotasError } = await (supabase as any)
+        .from('quota_usage')
         .select('*')
         .eq('user_id', user.id)
 
@@ -51,7 +51,7 @@ export const useQuotaManager = () => {
 
       // Combine data
       const quotaInfo: QuotaInfo[] = (limits || []).map((limit: any) => {
-        const userQuota = userQuotas?.find((q: any) => q.quota_key === limit.limit_key)
+        const userQuota = (userQuotas as any[])?.find((q: any) => q.quota_key === limit.limit_key)
         const currentCount = userQuota?.current_usage || 0
         const isUnlimited = limit.limit_value === -1
         
@@ -113,8 +113,8 @@ export const useQuotaManager = () => {
       }
 
       // Upsert user quota in quota_usage table
-      const { error } = await (supabase
-        .from('quota_usage') as any)
+      const { error } = await (supabase as any)
+        .from('quota_usage')
         .upsert({
           user_id: user.id,
           quota_key: quotaKey,

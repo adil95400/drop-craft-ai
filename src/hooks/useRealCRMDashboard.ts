@@ -63,29 +63,30 @@ export const useRealCRMDashboard = () => {
           : null
 
         let segment: CRMCustomer['segment'] = 'new'
-        if (c.total_orders === 0) segment = 'inactive'
-        else if (c.total_orders >= 5 && c.total_spent > 500) segment = 'vip'
-        else if (c.total_orders >= 3) segment = 'loyal'
+        const totalOrders = c.total_orders || 0
+        const totalSpent = c.total_spent || 0
+        
+        if (totalOrders === 0) segment = 'inactive'
+        else if (totalOrders >= 5 && totalSpent > 500) segment = 'vip'
+        else if (totalOrders >= 3) segment = 'loyal'
         else if (daysSinceLastOrder && daysSinceLastOrder > 60) segment = 'at_risk'
 
-        const nameParts = (c.name || '').split(' ')
-        const firstName = nameParts[0] || ''
-        const lastName = nameParts.slice(1).join(' ') || ''
+        const fullName = [c.first_name, c.last_name].filter(Boolean).join(' ') || c.email
 
         return {
           id: c.id,
           email: c.email,
-          first_name: firstName || undefined,
-          last_name: lastName || undefined,
-          full_name: c.name || c.email,
+          first_name: c.first_name || undefined,
+          last_name: c.last_name || undefined,
+          full_name: fullName,
           phone: c.phone || undefined,
-          status: (c.status as 'active' | 'inactive') || 'inactive',
-          total_orders: c.total_orders,
-          total_spent: c.total_spent,
+          status: totalOrders > 0 ? 'active' : 'inactive',
+          total_orders: totalOrders,
+          total_spent: totalSpent,
           last_order_date: c.updated_at || undefined,
           segment,
-          lifetime_value: c.total_spent,
-          avg_order_value: c.total_orders > 0 ? c.total_spent / c.total_orders : 0,
+          lifetime_value: totalSpent,
+          avg_order_value: totalOrders > 0 ? totalSpent / totalOrders : 0,
           days_since_last_order: daysSinceLastOrder || undefined
         }
       })

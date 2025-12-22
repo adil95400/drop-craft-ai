@@ -62,8 +62,8 @@ export const useRealAdsManager = () => {
 
       // Generate ad campaigns based on product categories and integrations
       const campaigns: AdCampaign[] = []
-      const hasGoogleAds = integrations?.some(i => i.platform_type === 'ads' && i.platform_name.includes('Google'))
-      const hasFacebookAds = integrations?.some(i => i.platform_type === 'ads' && i.platform_name.includes('Facebook'))
+      const hasGoogleAds = integrations?.some(i => i.platform?.includes('google') || i.platform_name?.includes('Google'))
+      const hasFacebookAds = integrations?.some(i => i.platform?.includes('facebook') || i.platform_name?.includes('Facebook'))
 
       // Group products by category
       const categories = products?.reduce((acc, p) => {
@@ -75,7 +75,7 @@ export const useRealAdsManager = () => {
 
       // Create campaigns for top categories
       Object.entries(categories).slice(0, 5).forEach(([category, categoryProducts], idx) => {
-        const avgPrice = categoryProducts.reduce((sum, p) => sum + p.price, 0) / categoryProducts.length
+        const avgPrice = (categoryProducts as any[]).reduce((sum, p) => sum + p.price, 0) / (categoryProducts as any[]).length
         const budget = Math.min(avgPrice * 10, 500)
         const spent = budget * (0.3 + Math.random() * 0.5)
         const impressions = Math.floor(spent * 100 * (1 + Math.random()))

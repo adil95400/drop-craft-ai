@@ -22,15 +22,15 @@ export const useProductionData = () => {
         supabase.from('orders').select('*', { count: 'exact', head: true }),
         supabase.from('customers').select('*', { count: 'exact', head: true }),
         supabase.from('orders')
-          .select('*, customers(name)')
+          .select('*')
           .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
           .order('created_at', { ascending: false }),
         supabase.from('products')
-          .select('*, order_items(qty)')
+          .select('*')
           .limit(5)
       ])
 
-      const revenue7d = recentOrders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0
+      const revenue7d = recentOrders?.reduce((sum, order) => sum + Number(order.total_amount || 0), 0) || 0
       
       return {
         totalProducts: totalProducts || 0,
@@ -72,21 +72,13 @@ export const useProductionData = () => {
     }
   })
 
-  // Get shipments data
+  // Get shipments data - using fulfillment_shipments table
   const { data: shipmentsData = [], isLoading: isLoadingShipments } = useQuery({
     queryKey: ['production-shipments'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('shipments')
-        .select(`
-          *,
-          orders!inner(
-            id,
-            order_number,
-            total_amount,
-            customers(name, email)
-          )
-        `)
+        .from('fulfillment_shipments')
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(100)
       
@@ -101,17 +93,14 @@ export const useProductionData = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('customers')
-        .select(`
-          *,
-          orders(total_amount, status, created_at)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
       if (error) throw error
       return data?.map(customer => ({
         ...customer,
-        total_spent: customer.orders?.reduce((sum: number, order: any) => sum + Number(order.total_amount), 0) || 0,
-        total_orders: customer.orders?.length || 0
+        total_spent: customer.total_spent || 0,
+        total_orders: customer.total_orders || 0
       })) || []
     }
   })
@@ -126,7 +115,7 @@ export const useProductionData = () => {
     onSuccess: (data) => {
       toast({
         title: "Database seeded successfully!",
-        description: `Created ${data.data.products} products, ${data.data.orders} orders, ${data.data.customers} customers`
+        description: `Created ${data.data?.products || 0} products, ${data.data?.orders || 0} orders, ${data.data?.customers || 0} customers`
       })
       queryClient.invalidateQueries()
     },

@@ -47,7 +47,7 @@ export const useRealAdminStats = () => {
       // Calculate active users (users with orders in last 30 days)
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
       const recentOrders = orders?.filter(o => 
-        new Date(o.created_at) > thirtyDaysAgo
+        new Date(o.created_at || '') > thirtyDaysAgo
       ) || []
       const activeUserIds = new Set(recentOrders.map(o => o.user_id))
       const activeUsers = activeUserIds.size
@@ -105,24 +105,24 @@ export const useRealAdminStats = () => {
     const activities: RecentActivity[] = []
 
     // Add recent signups
-    recentProfiles?.slice(0, 3).forEach((profile, i) => {
+    recentProfiles?.slice(0, 3).forEach((profile) => {
       activities.push({
         type: 'user_signup',
         message: 'Nouvel utilisateur inscrit',
-        user: profile.business_name || profile.company_name || 'Utilisateur',
-        time: getRelativeTime(profile.created_at),
+        user: profile.company_name || profile.full_name || 'Utilisateur',
+        time: getRelativeTime(profile.created_at || ''),
         icon: null,
         color: 'text-green-600'
       })
     })
 
     // Add recent orders
-    recentOrders?.slice(0, 3).forEach((order, i) => {
+    recentOrders?.slice(0, 3).forEach((order) => {
       activities.push({
         type: 'order_placed',
         message: `Nouvelle commande #${order.order_number}`,
         user: 'Client',
-        time: getRelativeTime(order.created_at),
+        time: getRelativeTime(order.created_at || ''),
         icon: null,
         color: 'text-blue-600'
       })
