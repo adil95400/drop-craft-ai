@@ -157,14 +157,15 @@ export class StockManagementService {
       if (!user) throw new Error('User not authenticated')
 
       // Using existing automation_rules table for stock rules  
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('automation_rules')
         .insert({
           user_id: user.id,
           name: `Auto-reorder: ${rule.product_id}`,
-          rule_type: 'stock_management',
-          trigger_conditions: rule as any,
-          actions: [] as any,
+          trigger_type: 'stock_management',
+          action_type: 'reorder',
+          trigger_config: rule as any,
+          action_config: {} as any,
           is_active: rule.is_active
         })
         .select()
@@ -356,8 +357,8 @@ export class StockManagementService {
 
       const totalProducts = 150
       const lowStockCount = Math.max((stockData || []).filter(log => {
-        const metadata = log.metadata as any
-        return metadata?.current_stock && metadata.current_stock < 10
+        const details = (log as any).details as any
+        return details?.current_stock && details.current_stock < 10
       }).length, 8)
 
       return {

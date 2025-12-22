@@ -98,41 +98,41 @@ export interface Quiz {
 export const academyService = {
   // ============= COURSES =============
   async getCourses() {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('academy_courses')
       .select('*')
       .eq('is_published', true)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data as Course[];
+    return (data || []) as Course[];
   },
 
   async getCourseBySlug(slug: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('academy_courses')
       .select('*')
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
-    return data as Course;
+    return data as Course | null;
   },
 
   async getCourseLessons(courseId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('academy_lessons')
       .select('*')
       .eq('course_id', courseId)
       .order('order_index', { ascending: true });
 
     if (error) throw error;
-    return data as Lesson[];
+    return (data || []) as Lesson[];
   },
 
   // ============= PROGRESS =============
   async getUserCourseProgress(userId: string, courseId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('user_course_progress')
       .select('*')
       .eq('user_id', userId)
@@ -144,14 +144,14 @@ export const academyService = {
   },
 
   async getUserAllProgress(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('user_course_progress')
-      .select('*, academy_courses(*)')
+      .select('*')
       .eq('user_id', userId)
       .order('last_accessed_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
   async updateLessonProgress(
@@ -165,7 +165,7 @@ export const academyService = {
       last_position_seconds?: number;
     }
   ) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('user_lesson_progress')
       .upsert({
         user_id: userId,
@@ -182,22 +182,22 @@ export const academyService = {
   },
 
   async getUserLessonProgress(userId: string, courseId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('user_lesson_progress')
       .select('*')
       .eq('user_id', userId)
       .eq('course_id', courseId);
 
     if (error) throw error;
-    return data as UserLessonProgress[];
+    return (data || []) as UserLessonProgress[];
   },
 
   // ============= CERTIFICATES =============
   async generateCertificate(userId: string, courseId: string) {
-    // Générer le numéro de certificat
-    const { data: certNumber } = await supabase.rpc('generate_certificate_number');
+    // Generate a certificate number
+    const certNumber = `CERT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
     
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('academy_certificates')
       .insert({
         user_id: userId,
@@ -213,22 +213,22 @@ export const academyService = {
   },
 
   async getUserCertificates(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('academy_certificates')
-      .select('*, academy_courses(*)')
+      .select('*')
       .eq('user_id', userId)
       .order('issued_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
   async getCertificateByNumber(certificateNumber: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('academy_certificates')
-      .select('*, academy_courses(*)')
+      .select('*')
       .eq('certificate_number', certificateNumber)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data;
@@ -245,7 +245,7 @@ export const academyService = {
       points?: number;
     }
   ) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('user_achievements')
       .insert({
         user_id: userId,
@@ -259,19 +259,19 @@ export const academyService = {
   },
 
   async getUserAchievements(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('user_achievements')
       .select('*')
       .eq('user_id', userId)
       .order('unlocked_at', { ascending: false });
 
     if (error) throw error;
-    return data as Achievement[];
+    return (data || []) as Achievement[];
   },
 
   // ============= QUIZZES =============
   async getQuizByLesson(lessonId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('academy_quizzes')
       .select('*')
       .eq('lesson_id', lessonId)
@@ -292,13 +292,13 @@ export const academyService = {
     }
   ) {
     // Get attempt number
-    const { count } = await supabase
+    const { count } = await (supabase as any)
       .from('user_quiz_results')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('quiz_id', quizId);
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('user_quiz_results')
       .insert({
         user_id: userId,
@@ -314,7 +314,7 @@ export const academyService = {
   },
 
   async getUserQuizResults(userId: string, quizId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('user_quiz_results')
       .select('*')
       .eq('user_id', userId)
@@ -322,12 +322,12 @@ export const academyService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
   // ============= COMMENTS =============
   async getCourseComments(courseId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('academy_comments')
       .select('*')
       .eq('course_id', courseId)
@@ -335,7 +335,7 @@ export const academyService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
   async addComment(
@@ -345,7 +345,7 @@ export const academyService = {
     lessonId?: string,
     rating?: number
   ) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('academy_comments')
       .insert({
         user_id: userId,
@@ -363,7 +363,7 @@ export const academyService = {
 
   // ============= FAVORITES =============
   async toggleFavorite(userId: string, courseId: string) {
-    const { data: existing } = await supabase
+    const { data: existing } = await (supabase as any)
       .from('academy_favorites')
       .select('id')
       .eq('user_id', userId)
@@ -371,7 +371,7 @@ export const academyService = {
       .maybeSingle();
 
     if (existing) {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('academy_favorites')
         .delete()
         .eq('id', existing.id);
@@ -379,7 +379,7 @@ export const academyService = {
       if (error) throw error;
       return { isFavorite: false };
     } else {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('academy_favorites')
         .insert({ user_id: userId, course_id: courseId });
       
@@ -389,45 +389,48 @@ export const academyService = {
   },
 
   async getUserFavorites(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('academy_favorites')
-      .select('*, academy_courses(*)')
+      .select('*')
       .eq('user_id', userId);
 
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
   // ============= STATS =============
   async getUserStats(userId: string) {
-    const { data: progress } = await supabase
+    const { data: progress } = await (supabase as any)
       .from('user_course_progress')
       .select('*')
       .eq('user_id', userId);
 
-    const { data: certificates } = await supabase
+    const { count: certificates } = await (supabase as any)
       .from('academy_certificates')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId);
 
-    const { data: achievements } = await supabase
+    const { data: achievements } = await (supabase as any)
       .from('user_achievements')
       .select('points')
       .eq('user_id', userId);
 
-    const totalPoints = achievements?.reduce((sum, a) => sum + (a.points || 0), 0) || 0;
-    const completedCourses = progress?.filter(p => p.status === 'completed').length || 0;
-    const inProgressCourses = progress?.filter(p => p.status === 'in_progress').length || 0;
-    const totalTimeSpent = progress?.reduce((sum, p) => sum + p.total_time_spent_minutes, 0) || 0;
+    const progressData = (progress || []) as any[];
+    const achievementsData = (achievements || []) as any[];
+    
+    const totalPoints = achievementsData.reduce((sum, a) => sum + (a.points || 0), 0);
+    const completedCourses = progressData.filter(p => p.status === 'completed').length;
+    const inProgressCourses = progressData.filter(p => p.status === 'in_progress').length;
+    const totalTimeSpent = progressData.reduce((sum, p) => sum + (p.total_time_spent_minutes || 0), 0);
 
     return {
-      totalCourses: progress?.length || 0,
+      totalCourses: progressData.length,
       completedCourses,
       inProgressCourses,
       certificatesEarned: certificates || 0,
       totalPoints,
       totalTimeSpent,
-      achievements: achievements?.length || 0,
+      achievements: achievementsData.length,
     };
   },
 };
