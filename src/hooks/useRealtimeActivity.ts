@@ -25,13 +25,13 @@ export const useRealtimeActivity = () => {
       const allActivities: ActivityItem[] = []
 
       try {
-        // Fetch automation executions
-        const { data: executions } = await supabase
-          .from('automation_executions')
+        // Fetch automation execution logs (this table exists)
+        const { data: executions } = await (supabase
+          .from('automation_execution_logs')
           .select('*')
           .eq('user_id', user.id)
-          .order('started_at', { ascending: false })
-          .limit(20)
+          .order('executed_at', { ascending: false })
+          .limit(20) as any)
 
         if (executions) {
           executions.forEach((exec: any) => {
@@ -41,10 +41,11 @@ export const useRealtimeActivity = () => {
               title: 'Exécution de workflow',
               description: exec.error_message || `Workflow ${exec.status === 'success' ? 'complété' : exec.status === 'error' ? 'échoué' : 'en cours'}`,
               status: exec.status === 'running' ? 'processing' : exec.status === 'success' ? 'success' : 'error',
-              timestamp: new Date(exec.started_at),
+              timestamp: new Date(exec.executed_at || exec.created_at),
               metadata: {
-                workflow_id: exec.workflow_id,
-                execution_time: exec.execution_time_ms
+                trigger_id: exec.trigger_id,
+                action_id: exec.action_id,
+                duration_ms: exec.duration_ms
               }
             })
           })
@@ -63,18 +64,18 @@ export const useRealtimeActivity = () => {
             allActivities.push({
               id: job.id,
               type: 'import',
-              title: `Import ${job.source_type}`,
+              title: `Import ${job.source_platform || job.job_type}`,
               description: job.status === 'completed' 
-                ? `${job.success_rows || 0} produits importés avec succès`
+                ? `${job.successful_imports || 0} produits importés avec succès`
                 : job.status === 'failed' 
-                ? `Import échoué: ${job.error_message || 'Erreur inconnue'}`
+                ? `Import échoué`
                 : 'Import en cours...',
               status: job.status === 'completed' ? 'success' : job.status === 'failed' ? 'error' : 'processing',
               timestamp: new Date(job.created_at),
               metadata: {
-                source: job.source_type,
-                total: job.total_rows,
-                success: job.success_rows
+                source: job.source_platform,
+                total: job.total_products,
+                success: job.successful_imports
               }
             })
           })
@@ -98,12 +99,11 @@ export const useRealtimeActivity = () => {
                 ? 'Optimisation terminée avec succès'
                 : job.status === 'failed'
                 ? `Échec: ${job.error_message || 'Erreur inconnue'}`
-                : `En cours... ${job.progress || 0}%`,
+                : `En cours...`,
               status: job.status === 'completed' ? 'success' : job.status === 'failed' ? 'error' : 'processing',
               timestamp: new Date(job.created_at),
               metadata: {
-                job_type: job.job_type,
-                progress: job.progress
+                job_type: job.job_type
               }
             })
           })
@@ -121,36 +121,7 @@ export const useRealtimeActivity = () => {
 
     fetchInitialActivities()
 
-    // Subscribe to realtime updates
-    const executionsChannel = supabase
-      .channel('automation-executions-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'automation_executions',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          const exec = payload.new as any
-          const newActivity: ActivityItem = {
-            id: exec.id,
-            type: 'automation',
-            title: 'Exécution de workflow',
-            description: exec.error_message || `Workflow ${exec.status === 'success' ? 'complété' : 'en cours'}`,
-            status: exec.status === 'running' ? 'processing' : exec.status === 'success' ? 'success' : 'error',
-            timestamp: new Date(exec.started_at || new Date()),
-            metadata: {
-              workflow_id: exec.workflow_id,
-              execution_time: exec.execution_time_ms
-            }
-          }
-          setActivities(prev => [newActivity, ...prev.slice(0, 49)])
-        }
-      )
-      .subscribe()
-
+    // Subscribe to realtime updates for import_jobs
     const importsChannel = supabase
       .channel('import-jobs-changes')
       .on(
@@ -166,17 +137,17 @@ export const useRealtimeActivity = () => {
           const newActivity: ActivityItem = {
             id: job.id,
             type: 'import',
-            title: `Import ${job.source_type}`,
+            title: `Import ${job.source_platform || job.job_type}`,
             description: job.status === 'completed' 
-              ? `${job.success_rows || 0} produits importés`
+              ? `${job.successful_imports || 0} produits importés`
               : job.status === 'failed'
               ? `Import échoué`
               : 'Import en cours...',
             status: job.status === 'completed' ? 'success' : job.status === 'failed' ? 'error' : 'processing',
             timestamp: new Date(job.created_at || new Date()),
             metadata: {
-              source: job.source_type,
-              total: job.total_rows
+              source: job.source_platform,
+              total: job.total_products
             }
           }
           setActivities(prev => [newActivity, ...prev.slice(0, 49)])
@@ -204,12 +175,11 @@ export const useRealtimeActivity = () => {
               ? 'Optimisation terminée'
               : job.status === 'failed'
               ? 'Optimisation échouée'
-              : `En cours... ${job.progress || 0}%`,
+              : `En cours...`,
             status: job.status === 'completed' ? 'success' : job.status === 'failed' ? 'error' : 'processing',
             timestamp: new Date(job.created_at || new Date()),
             metadata: {
-              job_type: job.job_type,
-              progress: job.progress
+              job_type: job.job_type
             }
           }
           setActivities(prev => [newActivity, ...prev.slice(0, 49)])
@@ -218,7 +188,6 @@ export const useRealtimeActivity = () => {
       .subscribe()
 
     return () => {
-      supabase.removeChannel(executionsChannel)
       supabase.removeChannel(importsChannel)
       supabase.removeChannel(aiJobsChannel)
     }

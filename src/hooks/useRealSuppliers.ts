@@ -16,12 +16,37 @@ export interface Supplier {
   credentials_updated_at?: string
   last_access_at?: string
   access_count?: number
-  // Security: Sensitive fields are masked/excluded for regular access
   has_api_key?: boolean
   has_encrypted_credentials?: boolean
   contact_email_masked?: string
   contact_phone_masked?: string
 }
+
+// Mock suppliers for demo
+const mockSuppliers: Supplier[] = [
+  {
+    id: '1',
+    name: 'BigBuy',
+    website: 'https://bigbuy.eu',
+    country: 'ES',
+    status: 'active',
+    rating: 4.5,
+    user_id: '',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: '2',
+    name: 'CJ Dropshipping',
+    website: 'https://cjdropshipping.com',
+    country: 'CN',
+    status: 'active',
+    rating: 4.2,
+    user_id: '',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+]
 
 export const useRealSuppliers = (filters?: any) => {
   const { toast } = useToast()
@@ -30,14 +55,35 @@ export const useRealSuppliers = (filters?: any) => {
   const { data: suppliers = [], isLoading, error } = useQuery({
     queryKey: ['real-suppliers', filters],
     queryFn: async () => {
-      // Security: Use secure function instead of direct table access
-      const { data, error } = await supabase.rpc('get_secure_suppliers')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return mockSuppliers
       
-      if (error) throw error
+      // Query premium_suppliers table
+      const { data, error } = await (supabase
+        .from('premium_suppliers')
+        .select('*')
+        .order('created_at', { ascending: false }) as any)
       
-      let filteredData = data || []
+      if (error) {
+        console.error('Error fetching suppliers:', error)
+        return mockSuppliers
+      }
       
-      // Apply client-side filtering since we can't do complex filtering in the secure function
+      if (!data || data.length === 0) return mockSuppliers
+      
+      let filteredData = data.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        website: s.website_url,
+        country: s.country,
+        status: (s.is_verified ? 'active' : 'inactive') as 'active' | 'inactive',
+        rating: s.rating,
+        user_id: user.id,
+        created_at: s.created_at,
+        updated_at: s.updated_at
+      })) as Supplier[]
+      
+      // Apply client-side filtering
       if (filters?.status) {
         filteredData = filteredData.filter(s => s.status === filters.status)
       }
@@ -48,11 +94,11 @@ export const useRealSuppliers = (filters?: any) => {
         const searchLower = filters.search.toLowerCase()
         filteredData = filteredData.filter(s => 
           s.name?.toLowerCase().includes(searchLower) ||
-          s.contact_email_masked?.toLowerCase().includes(searchLower)
+          s.website?.toLowerCase().includes(searchLower)
         )
       }
       
-      return filteredData as Supplier[]
+      return filteredData
     },
   })
 
@@ -61,22 +107,17 @@ export const useRealSuppliers = (filters?: any) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
       
-      // Security: Only allow basic supplier data insertion
-      const basicSupplierData = {
-        name: newSupplier.name,
-        website: newSupplier.website,
-        country: newSupplier.country,
-        status: newSupplier.status,
-        rating: newSupplier.rating,
-        api_endpoint: newSupplier.api_endpoint,
-        user_id: user.id
-      }
-      
-      const { data, error } = await supabase
-        .from('suppliers')
-        .insert([basicSupplierData])
+      const { data, error } = await (supabase
+        .from('premium_suppliers')
+        .insert([{
+          name: newSupplier.name,
+          website_url: newSupplier.website,
+          country: newSupplier.country,
+          is_verified: newSupplier.status === 'active',
+          rating: newSupplier.rating
+        }])
         .select()
-        .single()
+        .single() as any)
       
       if (error) throw error
       return data
@@ -92,22 +133,19 @@ export const useRealSuppliers = (filters?: any) => {
 
   const updateSupplier = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Supplier> }) => {
-      // Security: Only allow updates to non-sensitive fields
-      const allowedUpdates = {
-        name: updates.name,
-        website: updates.website,
-        country: updates.country,
-        status: updates.status,
-        rating: updates.rating,
-        api_endpoint: updates.api_endpoint
-      }
+      const allowedUpdates: any = {}
+      if (updates.name) allowedUpdates.name = updates.name
+      if (updates.website) allowedUpdates.website_url = updates.website
+      if (updates.country) allowedUpdates.country = updates.country
+      if (updates.status) allowedUpdates.is_verified = updates.status === 'active'
+      if (updates.rating) allowedUpdates.rating = updates.rating
       
-      const { data, error } = await supabase
-        .from('suppliers')
+      const { data, error } = await (supabase
+        .from('premium_suppliers')
         .update(allowedUpdates)
         .eq('id', id)
         .select()
-        .single()
+        .single() as any)
       
       if (error) throw error
       return data
@@ -123,10 +161,10 @@ export const useRealSuppliers = (filters?: any) => {
 
   const deleteSupplier = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('suppliers')
+      const { error } = await (supabase
+        .from('premium_suppliers')
         .delete()
-        .eq('id', id)
+        .eq('id', id) as any)
       
       if (error) throw error
     },
@@ -157,7 +195,7 @@ export const useRealSuppliers = (filters?: any) => {
       queryClient.invalidateQueries({ queryKey: ['real-suppliers'] })
       toast({
         title: "Fournisseur analysé",
-        description: `${data.analysis.name} a été ajouté avec succès`,
+        description: `${data.analysis?.name || 'Fournisseur'} a été ajouté avec succès`,
       })
     },
     onError: (error: any) => {

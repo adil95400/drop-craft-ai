@@ -59,7 +59,7 @@ export const useSEOAnalytics = () => {
       // Fetch products and calculate SEO metrics from them
       const { data: products, error } = await supabase
         .from('products')
-        .select('id, name, description, seo_title, seo_description, seo_keywords, image_url, tags, category, sku')
+        .select('id, title, description, seo_title, seo_description, image_url, tags, category, sku')
         .eq('user_id', user.id)
         .limit(50);
 
@@ -69,11 +69,11 @@ export const useSEOAnalytics = () => {
       }
 
       // Calculate SEO metrics from products
-      return (products || []).map(product => {
-        const title = product.seo_title || product.name || '';
+      return (products || []).map((product: any) => {
+        const title = product.seo_title || product.title || '';
         const description = product.seo_description || product.description || '';
         const hasImage = !!product.image_url;
-        const keywords = product.seo_keywords || product.tags || [];
+        const keywords = product.tags || [];
 
         // Calculate SEO score based on product data
         let seoScore = 0;
@@ -132,13 +132,13 @@ export const useSEOAnalytics = () => {
     queryFn: async () => {
       if (!user) return [];
 
-      const { data: insights, error } = await supabase
+      const { data: insights, error } = await (supabase
         .from('analytics_insights')
         .select('*')
         .eq('user_id', user.id)
-        .eq('insight_category', 'seo')
+        .eq('category', 'seo')
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(20) as any);
 
       if (error) {
         console.error('Error fetching SEO rankings:', error);
@@ -146,22 +146,22 @@ export const useSEOAnalytics = () => {
       }
 
       if (insights && insights.length > 0) {
-        return insights.map(insight => {
-          const dataPoints = insight.data_points as Record<string, any> || {};
+        return insights.map((insight: any) => {
+          const metadata = insight.metadata as Record<string, any> || {};
           return {
             id: insight.id,
-            keyword: insight.title || 'Unknown keyword',
-            url: dataPoints.url || '/',
-            position: dataPoints.position || 50,
-            previousPosition: dataPoints.previousPosition || null,
-            searchVolume: dataPoints.searchVolume || 1000,
-            difficulty: dataPoints.difficulty || 50,
-            ctr: dataPoints.ctr || 2.0,
-            impressions: dataPoints.impressions || 1000,
-            clicks: dataPoints.clicks || 20,
+            keyword: insight.metric_name || 'Unknown keyword',
+            url: metadata.url || '/',
+            position: metadata.position || 50,
+            previousPosition: metadata.previousPosition || null,
+            searchVolume: metadata.searchVolume || 1000,
+            difficulty: metadata.difficulty || 50,
+            ctr: metadata.ctr || 2.0,
+            impressions: metadata.impressions || 1000,
+            clicks: metadata.clicks || 20,
             country: 'FR',
             device: 'desktop' as const,
-            lastChecked: new Date(insight.updated_at || insight.created_at || new Date())
+            lastChecked: new Date(insight.created_at || new Date())
           } as SEORanking;
         });
       }
@@ -207,15 +207,14 @@ export const useSEOAnalytics = () => {
     mutationFn: async ({ keyword, url }: { keyword: string; url: string }) => {
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from('analytics_insights')
         .insert({
           user_id: user.id,
-          insight_type: 'keyword_tracking',
-          insight_category: 'seo',
-          title: keyword,
-          description: `Suivi du mot-clé "${keyword}" pour ${url}`,
-          data_points: {
+          metric_type: 'keyword_tracking',
+          category: 'seo',
+          metric_name: keyword,
+          metadata: {
             url,
             position: null,
             previousPosition: null,
@@ -224,12 +223,10 @@ export const useSEOAnalytics = () => {
             ctr: 0,
             impressions: 0,
             clicks: 0
-          },
-          severity: 'info',
-          impact_score: 50
+          }
         })
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
       return data;

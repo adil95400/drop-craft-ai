@@ -118,18 +118,16 @@ export const useRealWinnersAPI = () => {
         .from('products')
         .insert([{
           user_id: user.id,
-          name: product.title,
+          title: product.title,
           description: `Imported from ${product.source}`,
           price: product.price,
           cost_price: estimatedCost,
           category: 'Imported',
-          supplier_name: product.source,
-          supplier_url: product.url,
           image_url: product.image,
           tags: ['winner', 'imported', product.source],
           status: 'active',
           sku: `WIN-${Date.now()}`,
-          stock_quantity: 100 // Default stock
+          stock_quantity: 100
         }])
         .select()
         .single()
@@ -166,7 +164,7 @@ export const useRealWinnersAPI = () => {
     onSuccess: (data) => {
       toast({
         title: "Analyse terminée",
-        description: `Tendances pour "${data.trends.keyword}" analysées`
+        description: `Tendances pour "${data.trends?.keyword || 'mot-clé'}" analysées`
       })
     }
   })
