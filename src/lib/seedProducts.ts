@@ -21,7 +21,7 @@ export async function seedSampleProducts() {
   const sampleProducts = [
     {
       user_id: user.id,
-      name: 'Chaise de Bureau Ergonomique',
+      title: 'Chaise de Bureau Ergonomique',
       description: 'Chaise de bureau moderne avec support lombaire ajustable et accoudoirs réglables',
       price: 249.99,
       cost_price: 120.00,
@@ -30,11 +30,11 @@ export async function seedSampleProducts() {
       brand: 'OfficeComfort',
       stock_quantity: 45,
       status: 'active',
-      images: ['/placeholder.svg'],
+      image_url: '/placeholder.svg',
     },
     {
       user_id: user.id,
-      name: 'Bureau Ajustable en Hauteur',
+      title: 'Bureau Ajustable en Hauteur',
       description: 'Bureau électrique avec ajustement motorisé de la hauteur, surface en bambou',
       price: 599.99,
       cost_price: 300.00,
@@ -43,11 +43,11 @@ export async function seedSampleProducts() {
       brand: 'WorkPro',
       stock_quantity: 22,
       status: 'active',
-      images: ['/placeholder.svg'],
+      image_url: '/placeholder.svg',
     },
     {
       user_id: user.id,
-      name: 'Lampe LED Architecte',
+      title: 'Lampe LED Architecte',
       description: 'Lampe de bureau LED avec bras articulé et contrôle de luminosité',
       price: 89.99,
       cost_price: 35.00,
@@ -56,11 +56,11 @@ export async function seedSampleProducts() {
       brand: 'LightDesign',
       stock_quantity: 78,
       status: 'active',
-      images: ['/placeholder.svg'],
+      image_url: '/placeholder.svg',
     },
     {
       user_id: user.id,
-      name: 'Tapis de Souris XXL',
+      title: 'Tapis de Souris XXL',
       description: 'Tapis de souris gaming extra-large avec surface lisse et base antidérapante',
       price: 29.99,
       cost_price: 8.00,
@@ -69,11 +69,11 @@ export async function seedSampleProducts() {
       brand: 'GamePro',
       stock_quantity: 156,
       status: 'active',
-      images: ['/placeholder.svg'],
+      image_url: '/placeholder.svg',
     },
     {
       user_id: user.id,
-      name: 'Support Moniteur Double',
+      title: 'Support Moniteur Double',
       description: 'Support ergonomique pour deux écrans avec ajustement en hauteur et rotation',
       price: 179.99,
       cost_price: 75.00,
@@ -82,13 +82,13 @@ export async function seedSampleProducts() {
       brand: 'TechMount',
       stock_quantity: 34,
       status: 'active',
-      images: ['/placeholder.svg'],
+      image_url: '/placeholder.svg',
     },
   ]
 
   const { error } = await supabase
     .from('products')
-    .insert(sampleProducts)
+    .insert(sampleProducts as any)
 
   if (error) {
     console.error('Error seeding products:', error)

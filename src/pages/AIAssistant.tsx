@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -13,15 +12,11 @@ import {
   Mic, 
   MicOff,
   Volume2,
-  VolumeX,
   Brain,
   Zap,
   Sparkles,
   MessageSquare,
   Settings,
-  History,
-  Download,
-  RefreshCw,
   Star,
   ThumbsUp,
   ThumbsDown
@@ -65,7 +60,6 @@ export default function AIAssistant() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [currentMessage, setCurrentMessage] = useState('')
   const [isRecording, setIsRecording] = useState(false)
-  const [isPlaying, setIsPlaying] = useState(false)
   const [selectedModel, setSelectedModel] = useState('gpt-4')
   const [aiTasks, setAITasks] = useState<AITask[]>([])
   const [loading, setLoading] = useState(false)
@@ -135,8 +129,9 @@ export default function AIAssistant() {
     if (!user?.id) return
 
     try {
+      // Use ai_optimization_jobs table instead of non-existent ai_tasks
       const { data, error } = await supabase
-        .from('ai_tasks')
+        .from('ai_optimization_jobs')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
@@ -144,16 +139,16 @@ export default function AIAssistant() {
 
       if (error) throw error
 
-      // Map ai_tasks to AITask format
-      const mappedTasks: AITask[] = (data || []).map(task => ({
-        id: task.id,
-        type: task.task_type,
-        title: `${task.task_type} - ${task.status}`,
-        description: task.error_message || 'Tâche IA en cours',
-        status: task.status as 'pending' | 'processing' | 'completed' | 'failed',
-        progress: task.status === 'completed' ? 100 : task.status === 'processing' ? 50 : 0,
-        result: task.output_data,
-        created_at: task.created_at
+      // Map ai_optimization_jobs to AITask format
+      const mappedTasks: AITask[] = (data || []).map(job => ({
+        id: job.id,
+        type: job.job_type,
+        title: `${job.job_type} - ${job.status}`,
+        description: job.error_message || 'Tâche IA en cours',
+        status: job.status as 'pending' | 'processing' | 'completed' | 'failed',
+        progress: job.status === 'completed' ? 100 : job.status === 'processing' ? 50 : 0,
+        result: job.output_data,
+        created_at: job.created_at || new Date().toISOString()
       }))
 
       setAITasks(mappedTasks)
@@ -219,10 +214,6 @@ export default function AIAssistant() {
       title: "Enregistrement terminé",
       description: "Traitement de votre message vocal...",
     })
-  }
-
-  const togglePlayback = () => {
-    setIsPlaying(!isPlaying)
   }
 
   const getStatusColor = (status: string) => {
@@ -468,6 +459,11 @@ export default function AIAssistant() {
                   )}
                 </div>
               ))}
+              {aiTasks.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Aucune tâche récente
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -498,12 +494,9 @@ export default function AIAssistant() {
                       <div>
                         <p className="font-medium">{task.title}</p>
                         <p className="text-sm text-muted-foreground">{task.description}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(task.created_at).toLocaleString()}
-                        </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       {task.status === 'processing' && (
                         <div className="w-32">
                           <Progress value={task.progress} />
@@ -512,61 +505,30 @@ export default function AIAssistant() {
                       <Badge variant={getStatusColor(task.status) as any}>
                         {task.status}
                       </Badge>
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="outline">
-                          <RefreshCw className="w-4 h-4" />
-                        </Button>
-                        {task.status === 'completed' && (
-                          <Button size="sm" variant="outline">
-                            <Download className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
                     </div>
                   </div>
                 ))}
+                {aiTasks.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Brain className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Aucune tâche IA en cours</p>
+                    <p className="text-sm">Lancez une analyse ou une optimisation pour commencer</p>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
-            <TabsContent value="analytics" className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-3">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Tâches Complétées</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-2xl font-bold">247</p>
-                    <p className="text-xs text-muted-foreground">+12% ce mois</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Temps Moyen</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-2xl font-bold">2.3s</p>
-                    <p className="text-xs text-muted-foreground">-15% vs mois dernier</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Précision</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-2xl font-bold">94.2%</p>
-                    <p className="text-xs text-muted-foreground">+2.1% amélioration</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="history" className="space-y-4">
+            <TabsContent value="analytics">
               <div className="text-center py-8 text-muted-foreground">
-                <History className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>Historique des conversations et tâches IA</p>
-                <p className="text-sm">Fonctionnalité disponible prochainement</p>
+                <Zap className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Analytics IA bientôt disponible</p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="history">
+              <div className="text-center py-8 text-muted-foreground">
+                <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Historique des conversations bientôt disponible</p>
               </div>
             </TabsContent>
           </Tabs>

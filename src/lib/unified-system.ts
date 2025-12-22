@@ -7,8 +7,6 @@ import { supabase } from '@/integrations/supabase/client'
 import { Database } from '@/integrations/supabase/types'
 
 // Types centralisés
-type Profile = Database['public']['Tables']['profiles']['Row']
-type Supplier = Database['public']['Tables']['suppliers']['Row']
 type ImportedProduct = Database['public']['Tables']['imported_products']['Row']
 type ImportJob = Database['public']['Tables']['import_jobs']['Row']
 type Order = Database['public']['Tables']['orders']['Row']
@@ -16,7 +14,7 @@ type Customer = Database['public']['Tables']['customers']['Row']
 
 export interface UnifiedSystemConfig {
   user: any
-  profile: Profile | null
+  profile: any
   loading: boolean
 }
 
@@ -93,23 +91,15 @@ export class UnifiedSystem {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('plan, feature_flags')
+        .select('subscription_plan')
         .eq('id', userId)
         .single()
       
       if (error) throw error
       
-      const plan = data?.plan || 'standard'
-      const featureFlags = data?.feature_flags as any
+      const plan = data?.subscription_plan || 'standard'
       
-      // Vérifier d'abord les feature flags personnalisés
-      if (featureFlags && typeof featureFlags === 'object') {
-        if (featureFlags[feature] !== undefined) {
-          return featureFlags[feature]
-        }
-      }
-      
-      // Sinon, vérifier selon le plan
+      // Vérifier selon le plan
       const planFeatures: Record<string, string[]> = {
         'standard': ['basic_import', 'bulk_import'],
         'pro': ['basic_import', 'bulk_import', 'advanced_analytics'],
@@ -123,13 +113,12 @@ export class UnifiedSystem {
     }
   }
 
-  // Gestion des fournisseurs
+  // Gestion des fournisseurs - use premium_suppliers
   async getSuppliers(userId: string) {
     try {
       const { data, error } = await supabase
-        .from('suppliers')
+        .from('premium_suppliers')
         .select('*')
-        .eq('user_id', userId)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -220,10 +209,8 @@ export class UnifiedSystem {
         .from('imported_products')
         .insert([{ 
           ...productData, 
-          user_id: userId,
-          name: productData.name,
-          price: productData.price
-        }])
+          user_id: userId
+        } as any])
         .select()
         .single()
 
@@ -240,7 +227,7 @@ export class UnifiedSystem {
     try {
       const { data, error } = await supabase
         .from('imported_products')
-        .update(productData)
+        .update(productData as any)
         .eq('id', productId)
         .select()
         .single()
@@ -280,10 +267,9 @@ export class UnifiedSystem {
           job_type: jobData.source_type,
           status: jobData.status || 'pending',
           total_products: 0,
-          processed_products: 0,
           successful_imports: 0,
           failed_imports: 0
-        }])
+        } as any])
         .select()
         .single()
 

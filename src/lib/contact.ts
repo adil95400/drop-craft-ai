@@ -18,15 +18,15 @@ export const contactActions = {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser()
       
-      // Store contact submission in database
+      // Store contact submission in activity_logs
       const { data, error } = await supabase
         .from('activity_logs')
         .insert({
-          user_id: user?.id || '00000000-0000-0000-0000-000000000000',
+          user_id: user?.id || null,
           action: 'contact_form_submitted',
           description: `Contact form submitted by ${formData.name}`,
           entity_type: 'contact',
-          metadata: {
+          details: {
             name: formData.name,
             email: formData.email,
             company: formData.company,
@@ -34,26 +34,12 @@ export const contactActions = {
             budget: formData.budget,
             timeline: formData.timeline,
             message_length: formData.message.length
-          } as any
+          }
         })
         .select()
         .single()
 
       if (error) throw error
-
-      // Also log as security event for tracking
-      await supabase
-        .from('security_events')
-        .insert({
-          event_type: 'contact_form_submission',
-          severity: 'info',
-          description: `Contact form submitted: ${formData.subject}`,
-          metadata: {
-            email: formData.email,
-            company: formData.company,
-            budget: formData.budget
-          }
-        })
 
       toast({
         title: "Message envoyé !",
@@ -72,19 +58,30 @@ export const contactActions = {
     }
   },
 
-  // Start live chat
+  // Start live chat - uses notifications table as chat placeholder
   async startLiveChat() {
     try {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser()
       
-      // Create a chat session entry
+      if (!user) {
+        toast({
+          title: "Connexion requise",
+          description: "Veuillez vous connecter pour utiliser le chat.",
+          variant: "destructive"
+        })
+        return { success: false, error: 'Not authenticated' }
+      }
+      
+      // Create a notification for the chat request
       const { data, error } = await supabase
-        .from('realtime_chat_sessions')
+        .from('notifications')
         .insert({
-          user_id: user?.id || '00000000-0000-0000-0000-000000000000',
-          session_name: 'Support Chat',
-          status: 'active'
+          user_id: user.id,
+          title: 'Chat support demandé',
+          message: 'Un agent va vous répondre dans quelques instants',
+          type: 'chat_request',
+          is_read: false
         })
         .select()
         .single()
@@ -114,18 +111,18 @@ export const contactActions = {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser()
       
-      // Log demo request
+      // Log demo request in activity_logs
       const { data, error } = await supabase
         .from('activity_logs')
         .insert({
-          user_id: user?.id || '00000000-0000-0000-0000-000000000000',
+          user_id: user?.id || null,
           action: 'demo_requested',
           description: 'Demo scheduling requested',
           entity_type: 'demo',
-          metadata: {
+          details: {
             requested_at: new Date().toISOString(),
             type: 'personalized_demo'
-          } as any
+          }
         })
         .select()
         .single()

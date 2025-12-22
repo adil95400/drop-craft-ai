@@ -32,19 +32,22 @@ export const roleService = {
 
   /**
    * Get user's primary role from user_roles table
-   * SECURITY: Uses secure database function
+   * SECURITY: Uses secure database query
    */
   async getUserRole(userId: string): Promise<{ success: boolean; role?: UserRole; error?: string }> {
     try {
-      const { data, error } = await supabase.rpc('get_user_primary_role', {
-        _user_id: userId
-      });
+      // Query user_roles table directly
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
 
       if (error) throw error;
 
       return {
         success: true,
-        role: data as UserRole
+        role: (data?.role as UserRole) || 'user'
       };
     } catch (error: any) {
       console.error('Error fetching user role:', error);
@@ -88,10 +91,12 @@ export const roleService = {
 
       if (profileError) throw profileError;
 
-      // Get role from user_roles
-      const { data: roleData, error: roleError } = await supabase.rpc('get_user_primary_role', {
-        _user_id: userId
-      });
+      // Get role from user_roles table
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
 
       if (roleError) throw roleError;
 
@@ -99,7 +104,7 @@ export const roleService = {
         success: true,
         data: {
           ...profile,
-          role: roleData
+          role: roleData?.role || 'user'
         }
       };
     } catch (error: any) {

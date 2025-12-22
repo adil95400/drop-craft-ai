@@ -249,12 +249,21 @@ export function useProduct(productId: string) {
         .single()
       
       if (product) {
+        // Parse variants safely
+        let variants: any[] = []
+        if (product.variants) {
+          try {
+            variants = Array.isArray(product.variants) ? product.variants : []
+          } catch { variants = [] }
+        }
+        
         return {
           ...product,
           status: product.status as 'active' | 'inactive',
           source: 'products' as const,
-          images: product.image_url ? [product.image_url] : []
-        } as UnifiedProduct
+          images: product.image_url ? [product.image_url] : [],
+          variants
+        } as unknown as UnifiedProduct
       }
       
       // Sinon chercher dans imported_products

@@ -6,7 +6,6 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { supabase } from '@/integrations/supabase/client'
-import type { User } from '@supabase/supabase-js'
 
 export type PlanType = 'standard' | 'pro' | 'ultra_pro' | 'free'
 export type UserRole = 'admin' | 'user'
@@ -213,30 +212,37 @@ export const useUnifiedPlan = create<UnifiedPlanState>()(
       try {
         set({ loading: true, error: null })
         
-        // Use secure function that computes is_admin from user_roles
-        const { data, error } = await supabase
-          .rpc('get_profile_with_role', { profile_user_id: userId })
+        // Get profile with subscription_plan
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('subscription_plan, admin_mode')
+          .eq('id', userId)
           .maybeSingle()
         
-        if (error) throw error
+        if (profileError) throw profileError
         
-        const profile: UserProfile = {
-          plan: (data?.plan as PlanType) || 'standard',
-          role: data?.is_admin ? 'admin' : 'user',
-          admin_mode: (data?.admin_mode as AdminMode) || null
-        }
+        // Check if user is admin via has_role
+        const { data: isAdmin } = await supabase.rpc('has_role', {
+          _user_id: userId,
+          _role: 'admin'
+        })
         
-        // Normaliser 'free' en 'standard'
-        if (profile.plan === 'free') {
-          profile.plan = 'standard';
-        }
+        // Map subscription_plan to PlanType
+        let plan: PlanType = 'standard'
+        const subPlan = profile?.subscription_plan?.toLowerCase()
+        if (subPlan === 'pro') plan = 'pro'
+        else if (subPlan === 'ultra_pro' || subPlan === 'ultra-pro') plan = 'ultra_pro'
+        else if (subPlan === 'free') plan = 'standard'
         
-        const effectivePlan = calculateEffectivePlan(profile.plan, profile.role, profile.admin_mode)
+        const role: UserRole = isAdmin ? 'admin' : 'user'
+        const adminMode = (profile?.admin_mode as AdminMode) || null
+        
+        const effectivePlan = calculateEffectivePlan(plan, role, adminMode)
         
         set({
-          currentPlan: profile.plan,
-          userRole: profile.role,
-          adminMode: profile.admin_mode,
+          currentPlan: plan,
+          userRole: role,
+          adminMode,
           effectivePlan,
           loading: false
         })
@@ -254,7 +260,7 @@ export const useUnifiedPlan = create<UnifiedPlanState>()(
         
         const { error } = await supabase
           .from('profiles')
-          .update({ plan })
+          .update({ subscription_plan: plan } as any)
           .eq('id', userId)
         
         if (error) throw error
