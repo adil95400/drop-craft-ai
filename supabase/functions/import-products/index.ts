@@ -18,6 +18,8 @@ interface ImportRequest {
 }
 
 serve(async (req) => {
+  console.log('Import products function called')
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -36,6 +38,7 @@ serve(async (req) => {
     const token = authHeader.replace('Bearer ', '')
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     if (authError || !user) {
+      console.error('Auth error:', authError)
       throw new Error('Invalid authorization')
     }
 
@@ -48,76 +51,96 @@ serve(async (req) => {
       .from('import_jobs')
       .insert({
         user_id: user.id,
-        source_type: source,
+        source_platform: source,
+        job_type: 'import',
         status: 'processing',
-        file_data: data,
-        mapping_config: data.mapping || {}
+        started_at: new Date().toISOString()
       })
       .select()
       .single()
 
-    if (jobError) throw jobError
+    if (jobError) {
+      console.error('Job creation error:', jobError)
+      throw new Error(`Failed to create import job: ${jobError.message}`)
+    }
 
     let importedProducts: any[] = []
 
-    // Process based on source type
-    switch (source) {
-      case 'url':
-        importedProducts = await importFromURL(data.url!, data.config)
-        break
-      case 'csv':
-        importedProducts = await importFromCSV(data.csvData!, data.mapping!)
-        break
-      case 'supplier':
-        importedProducts = await importFromSupplier(data.supplier!, data.config)
-        break
-      default:
-        throw new Error(`Unsupported import source: ${source}`)
+    // Process based on source type with timeout protection
+    const timeoutMs = 25000 // 25 seconds to stay under edge function limits
+    
+    try {
+      const importPromise = (async () => {
+        switch (source) {
+          case 'url':
+            return await importFromURL(data.url!, data.config)
+          case 'csv':
+            return await importFromCSV(data.csvData!, data.mapping!)
+          case 'supplier':
+            return await importFromSupplier(data.supplier!, data.config)
+          default:
+            throw new Error(`Unsupported import source: ${source}`)
+        }
+      })()
+
+      importedProducts = await Promise.race([
+        importPromise,
+        new Promise<any[]>((_, reject) => 
+          setTimeout(() => reject(new Error('Import timeout')), timeoutMs)
+        )
+      ])
+    } catch (error) {
+      console.error('Import processing error:', error)
+      
+      // Update job as failed
+      await supabase
+        .from('import_jobs')
+        .update({
+          status: 'failed',
+          error_log: [error.message],
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', importJob.id)
+      
+      throw error
     }
 
-    // Save imported products
+    // Save imported products to products table
     if (importedProducts.length > 0) {
       const productsToInsert = importedProducts.map(product => ({
         user_id: user.id,
-        import_id: importJob.id,
-        name: product.name || 'Produit sans nom',
-        description: product.description || '',
-        price: parseFloat(product.price) || 0,
-        cost_price: parseFloat(product.cost_price) || (parseFloat(product.price) * 0.7),
-        currency: product.currency || 'EUR',
-        sku: product.sku || `IMP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        category: product.category || 'Divers',
-        supplier_name: product.supplier_name || (source === 'supplier' ? data.supplier : 'Import'),
-        supplier_url: product.supplier_url || data.url,
-        image_urls: Array.isArray(product.images) ? product.images : product.images ? [product.images] : [],
+        title: (product.name || 'Produit sans nom').substring(0, 500),
+        description: (product.description || '').substring(0, 5000),
+        price: Math.min(parseFloat(product.price) || 0, 999999.99),
+        cost_price: Math.min(parseFloat(product.cost_price) || (parseFloat(product.price) * 0.7), 999999.99),
+        sku: (product.sku || `IMP-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`).substring(0, 100),
+        category: (product.category || 'Divers').substring(0, 100),
+        supplier: product.supplier_name || (source === 'supplier' ? data.supplier : 'Import'),
+        image_url: Array.isArray(product.images) ? product.images[0] : product.images || null,
+        images: Array.isArray(product.images) ? product.images.slice(0, 10) : [],
         tags: product.tags || [`${source}-import`],
         status: 'draft',
-        review_status: 'pending',
-        ai_optimized: product.ai_optimized || false,
-        import_quality_score: calculateQualityScore(product),
-        data_completeness_score: calculateCompletenessScore(product)
       }))
 
       const { error: insertError } = await supabase
-        .from('imported_products')
+        .from('products')
         .insert(productsToInsert)
 
-      if (insertError) throw insertError
+      if (insertError) {
+        console.error('Insert error:', insertError)
+        throw new Error(`Failed to save products: ${insertError.message}`)
+      }
     }
 
-    // Update import job
+    // Update import job as completed
     await supabase
       .from('import_jobs')
       .update({
         status: 'completed',
-        total_rows: importedProducts.length,
-        success_rows: importedProducts.length,
-        error_rows: 0,
-        processed_rows: importedProducts.length,
-        result_data: {
-          products_imported: importedProducts.length,
-          completed_at: new Date().toISOString()
-        }
+        total_products: importedProducts.length,
+        successful_imports: importedProducts.length,
+        failed_imports: 0,
+        completed_at: new Date().toISOString()
       })
       .eq('id', importJob.id)
 
@@ -136,7 +159,7 @@ serve(async (req) => {
     console.error('Import error:', error)
     return new Response(JSON.stringify({
       success: false,
-      error: error.message
+      error: error.message || 'Unknown error'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -146,26 +169,32 @@ serve(async (req) => {
 
 async function importFromURL(url: string, config: any = {}): Promise<any[]> {
   try {
+    console.log(`Fetching URL: ${url}`)
+    
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10s timeout for fetch
+    
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
+      },
+      signal: controller.signal
     })
+    
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       throw new Error(`Failed to fetch URL: ${response.status}`)
     }
 
     const content = await response.text()
-    
-    // Try to extract product data from the page
-    const products = []
+    const products: any[] = []
     
     // Look for JSON-LD structured data
     const jsonLdMatches = content.match(/<script[^>]*type="application\/ld\+json"[^>]*>(.*?)<\/script>/gis)
     
     if (jsonLdMatches) {
-      for (const match of jsonLdMatches) {
+      for (const match of jsonLdMatches.slice(0, 5)) { // Limit to 5 matches
         try {
           const jsonContent = match.replace(/<script[^>]*>|<\/script>/gi, '')
           const data = JSON.parse(jsonContent)
@@ -173,10 +202,10 @@ async function importFromURL(url: string, config: any = {}): Promise<any[]> {
           if (data['@type'] === 'Product') {
             products.push({
               name: data.name,
-              description: data.description,
+              description: data.description?.substring(0, 2000),
               price: data.offers?.price || 0,
               currency: data.offers?.priceCurrency || 'EUR',
-              images: Array.isArray(data.image) ? data.image : [data.image].filter(Boolean),
+              images: Array.isArray(data.image) ? data.image.slice(0, 5) : [data.image].filter(Boolean),
               category: data.category || 'Divers',
               sku: data.sku || data.productID,
               supplier_url: url,
@@ -184,7 +213,7 @@ async function importFromURL(url: string, config: any = {}): Promise<any[]> {
             })
           }
         } catch (e) {
-          console.error('Error parsing JSON-LD:', e)
+          console.warn('Error parsing JSON-LD:', e)
         }
       }
     }
@@ -209,7 +238,9 @@ async function importFromURL(url: string, config: any = {}): Promise<any[]> {
       })
     }
 
+    console.log(`Extracted ${products.length} products from URL`)
     return products
+    
   } catch (error) {
     console.error('URL import error:', error)
     return []
@@ -217,72 +248,27 @@ async function importFromURL(url: string, config: any = {}): Promise<any[]> {
 }
 
 async function importFromCSV(csvData: any[], mapping: Record<string, string>): Promise<any[]> {
-  return csvData.map((row, index) => ({
-    name: row[mapping.name] || `Produit ${index + 1}`,
-    description: row[mapping.description] || '',
-    price: parseFloat(row[mapping.price]) || 0,
-    cost_price: parseFloat(row[mapping.cost_price]) || 0,
-    currency: row[mapping.currency] || 'EUR',
-    sku: row[mapping.sku] || `CSV-${Date.now()}-${index}`,
-    category: row[mapping.category] || 'Divers',
-    images: row[mapping.images] ? [row[mapping.images]] : [],
+  if (!csvData || !Array.isArray(csvData)) {
+    return []
+  }
+  
+  return csvData.slice(0, 1000).map((row, index) => ({ // Limit to 1000 products
+    name: row[mapping?.name] || `Produit ${index + 1}`,
+    description: row[mapping?.description] || '',
+    price: parseFloat(row[mapping?.price]) || 0,
+    cost_price: parseFloat(row[mapping?.cost_price]) || 0,
+    currency: row[mapping?.currency] || 'EUR',
+    sku: row[mapping?.sku] || `CSV-${Date.now()}-${index}`,
+    category: row[mapping?.category] || 'Divers',
+    images: row[mapping?.images] ? [row[mapping?.images]] : [],
     supplier_name: 'Import CSV'
   }))
 }
 
 async function importFromSupplier(supplier: string, config: any = {}): Promise<any[]> {
-  // Mock supplier data - in real implementation, this would call actual supplier APIs
-  const mockProducts = [
-    {
-      name: `Produit ${supplier} 1`,
-      description: 'Description du produit importé depuis le fournisseur',
-      price: 29.99,
-      cost_price: 19.99,
-      currency: 'EUR',
-      category: 'Électronique',
-      images: ['https://example.com/image1.jpg'],
-      supplier_name: supplier,
-      sku: `${supplier.toUpperCase()}-001`
-    },
-    {
-      name: `Produit ${supplier} 2`,
-      description: 'Autre produit du fournisseur',
-      price: 49.99,
-      cost_price: 34.99,
-      currency: 'EUR',
-      category: 'Accessoires',
-      images: ['https://example.com/image2.jpg'],
-      supplier_name: supplier,
-      sku: `${supplier.toUpperCase()}-002`
-    }
-  ]
-
-  return mockProducts
-}
-
-function calculateQualityScore(product: any): number {
-  let score = 0
+  console.log(`Importing from supplier: ${supplier}`)
   
-  if (product.name && product.name.length > 10) score += 25
-  if (product.description && product.description.length > 50) score += 25
-  if (product.price && product.price > 0) score += 20
-  if (product.images && product.images.length > 0) score += 20
-  if (product.category && product.category !== 'Divers') score += 10
-  
-  return Math.min(100, score)
-}
-
-function calculateCompletenessScore(product: any): number {
-  const fields = ['name', 'description', 'price', 'images', 'category', 'sku']
-  let filledFields = 0
-  
-  fields.forEach(field => {
-    if (product[field] && 
-        (typeof product[field] === 'string' ? product[field].trim() : true) &&
-        (Array.isArray(product[field]) ? product[field].length > 0 : true)) {
-      filledFields++
-    }
-  })
-  
-  return Math.round((filledFields / fields.length) * 100)
+  // This would be replaced with actual supplier API calls
+  // For now, return empty array to indicate no mock data
+  return []
 }

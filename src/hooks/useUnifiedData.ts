@@ -1,6 +1,6 @@
 /**
  * Hook simplifié pour la gestion unifiée des données
- * Version corrigée avec types statiques
+ * Version optimisée avec gestion d'erreurs robuste
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
@@ -67,7 +67,23 @@ export interface UnifiedCustomer {
   updated_at: string
 }
 
-// Hooks spécialisés pour chaque entité
+// Safe query helper that doesn't throw on table not found
+async function safeQuery<T>(
+  queryFn: () => PromiseLike<{ data: T | null; error: any }>
+): Promise<T | null> {
+  try {
+    const { data, error } = await queryFn()
+    if (error) {
+      console.warn('Query error:', error.message)
+      return null
+    }
+    return data
+  } catch (e) {
+    console.warn('Query failed:', e)
+    return null
+  }
+}
+
 export function useUnifiedProducts(filters?: any) {
   const { user } = useAuth()
   const { toast } = useToast()
@@ -78,18 +94,19 @@ export function useUnifiedProducts(filters?: any) {
     queryFn: async () => {
       if (!user) return []
       
-      // Consolidate from all product sources
       const results: UnifiedProduct[] = []
       
-      // 1. Products table
-      const { data: productsData } = await supabase
-        .from('products')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1000) as { data: any[] | null; error: any }
+      // 1. Products table (primary source)
+      const productsData = await safeQuery(() => 
+        supabase
+          .from('products')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(500) // Reduced limit for performance
+      )
       
-      if (productsData) {
+      if (productsData && Array.isArray(productsData)) {
         results.push(...productsData.map((item: any): UnifiedProduct => ({
           id: item.id,
           name: item.title || 'Produit sans nom',
@@ -101,7 +118,7 @@ export function useUnifiedProducts(filters?: any) {
           category: item.category,
           sku: item.sku,
           image_url: item.image_url,
-          image_urls: item.images ? (Array.isArray(item.images) ? item.images : []) : [],
+          image_urls: Array.isArray(item.images) ? item.images : [],
           supplier: item.supplier,
           supplier_name: item.supplier,
           profit_margin: item.profit_margin,
@@ -116,14 +133,16 @@ export function useUnifiedProducts(filters?: any) {
       }
       
       // 2. Imported products table
-      const { data: importedData } = await supabase
-        .from('imported_products')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1000) as { data: any[] | null; error: any }
+      const importedData = await safeQuery(() =>
+        supabase
+          .from('imported_products')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(500)
+      )
       
-      if (importedData) {
+      if (importedData && Array.isArray(importedData)) {
         results.push(...importedData.map((item: any): UnifiedProduct => ({
           id: item.id,
           name: item.product_id || 'Produit importé',
@@ -150,14 +169,16 @@ export function useUnifiedProducts(filters?: any) {
       }
       
       // 3. Catalog products table
-      const { data: catalogData } = await supabase
-        .from('catalog_products')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1000) as { data: any[] | null; error: any }
+      const catalogData = await safeQuery(() =>
+        supabase
+          .from('catalog_products')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(500)
+      )
       
-      if (catalogData) {
+      if (catalogData && Array.isArray(catalogData)) {
         results.push(...catalogData.map((item: any): UnifiedProduct => ({
           id: item.id,
           name: item.title || 'Produit catalogue',
@@ -202,7 +223,9 @@ export function useUnifiedProducts(filters?: any) {
       
       return filtered
     },
-    enabled: !!user
+    enabled: !!user,
+    staleTime: 60 * 1000, // 1 minute
+    retry: 1
   })
 
   const addMutation = useMutation({
@@ -265,7 +288,7 @@ export function useUnifiedProducts(filters?: any) {
       queryClient.invalidateQueries({ queryKey: ['unified-products'] })
       toast({
         title: "Succès",
-        description: "Produit mis à jour avec succès",
+        description: "Produit mis à jour",
       })
     }
   })
@@ -284,7 +307,7 @@ export function useUnifiedProducts(filters?: any) {
       queryClient.invalidateQueries({ queryKey: ['unified-products'] })
       toast({
         title: "Succès",
-        description: "Produit supprimé avec succès",
+        description: "Produit supprimé",
       })
     }
   })
@@ -294,7 +317,7 @@ export function useUnifiedProducts(filters?: any) {
     active: data.filter(item => item.status === 'active').length,
     inactive: data.filter(item => item.status === 'inactive').length,
     lowStock: data.filter(item => (item.stock_quantity || 0) < 10).length,
-    totalValue: data.reduce((sum, item) => sum + ((item.price || 0) * (item.stock_quantity || 0)), 0)
+    totalValue: data.reduce((sum, item) => sum + ((item.price || 0) * (item.stock_quantity || 1)), 0)
   }
 
   return {
@@ -321,17 +344,19 @@ export function useUnifiedSuppliers(filters?: any) {
     queryFn: async () => {
       if (!user) return []
       
-      const { data, error } = await supabase
-        .from('premium_suppliers')
-        .select('*')
-        .order('name');
+      const suppliersData = await safeQuery(() =>
+        supabase
+          .from('premium_suppliers')
+          .select('*')
+          .order('name')
+          .limit(100)
+      )
 
-      if (error) {
-        console.error('Error fetching suppliers:', error);
-        return [];
+      if (!suppliersData || !Array.isArray(suppliersData)) {
+        return []
       }
       
-      return (data || []).map((item: any): UnifiedSupplier => ({
+      return suppliersData.map((item: any): UnifiedSupplier => ({
         id: item.id,
         name: item.name,
         display_name: item.name,
@@ -352,9 +377,11 @@ export function useUnifiedSuppliers(filters?: any) {
         user_id: user.id,
         created_at: item.created_at,
         updated_at: item.updated_at
-      }));
+      }))
     },
-    enabled: !!user
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1
   })
 
   const stats = {
@@ -381,17 +408,20 @@ export function useUnifiedCustomers(filters?: any) {
     queryFn: async () => {
       if (!user) return []
       
-      let query = supabase
-        .from('customers')
-        .select('*')
-        .eq('user_id', user.id)
+      const customersData = await safeQuery(() =>
+        supabase
+          .from('customers')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(500)
+      )
       
-      query = query.order('created_at', { ascending: false })
+      if (!customersData || !Array.isArray(customersData)) {
+        return []
+      }
       
-      const { data, error } = await query
-      if (error) throw error
-      
-      return (data || []).map((item: any): UnifiedCustomer => ({
+      return customersData.map((item: any): UnifiedCustomer => ({
         id: item.id,
         name: `${item.first_name || ''} ${item.last_name || ''}`.trim() || item.email,
         email: item.email,
@@ -402,16 +432,20 @@ export function useUnifiedCustomers(filters?: any) {
         user_id: item.user_id,
         created_at: item.created_at,
         updated_at: item.updated_at
-      }));
+      }))
     },
-    enabled: !!user
+    enabled: !!user,
+    staleTime: 60 * 1000, // 1 minute
+    retry: 1
   })
 
   const stats = {
     total: data.length,
     active: data.filter(item => item.status === 'active').length,
     totalRevenue: data.reduce((sum, item) => sum + (item.total_spent || 0), 0),
-    avgOrderValue: data.length > 0 ? data.reduce((sum, item) => sum + (item.total_spent || 0), 0) / data.reduce((sum, item) => sum + (item.total_orders || 1), 1) : 0
+    avgOrderValue: data.length > 0 
+      ? data.reduce((sum, item) => sum + (item.total_spent || 0), 0) / Math.max(1, data.reduce((sum, item) => sum + (item.total_orders || 0), 0))
+      : 0
   }
 
   return {

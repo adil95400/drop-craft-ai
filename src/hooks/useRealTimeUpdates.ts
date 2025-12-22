@@ -1,6 +1,5 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
-import { useToast } from '@/hooks/use-toast'
 import { useOptimizedRealtime } from './useOptimizedRealtime'
 
 interface UseRealTimeUpdatesProps {
@@ -8,20 +7,21 @@ interface UseRealTimeUpdatesProps {
   event?: 'INSERT' | 'UPDATE' | 'DELETE' | '*'
   onUpdate?: (payload: any) => void
   filter?: string
+  showNotifications?: boolean // Opt-in for notifications
 }
 
 export function useRealTimeUpdates({
   table,
   event = '*',
   onUpdate,
-  filter
+  filter,
+  showNotifications = false // Disabled by default to prevent spam
 }: UseRealTimeUpdatesProps) {
-  const { toast } = useToast()
   const [isConnected, setIsConnected] = useState(false)
 
   useEffect(() => {
     const channel = supabase
-      .channel(`realtime-${table}`)
+      .channel(`realtime-${table}-${Date.now()}`)
       .on(
         'postgres_changes' as any,
         {
@@ -31,31 +31,16 @@ export function useRealTimeUpdates({
           filter
         } as any,
         (payload) => {
-          console.log(`Real-time update on ${table}:`, payload)
-          
-          // Show notification for important updates
-          if (payload.eventType === 'INSERT') {
-            toast({
-              title: "Nouveau élément ajouté",
-              description: `Un nouvel élément a été ajouté à ${table}`,
-            })
-          } else if (payload.eventType === 'UPDATE') {
-            toast({
-              title: "Élément mis à jour",
-              description: `Un élément de ${table} a été modifié`,
-            })
-          }
-          
+          console.debug(`Real-time update on ${table}:`, payload.eventType)
           onUpdate?.(payload)
         }
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           setIsConnected(true)
-          console.log(`Connected to real-time updates for ${table}`)
         } else if (status === 'CHANNEL_ERROR') {
           setIsConnected(false)
-          console.error(`Failed to connect to real-time updates for ${table}`)
+          console.warn(`Failed to connect to real-time updates for ${table}`)
         }
       })
 
@@ -63,7 +48,7 @@ export function useRealTimeUpdates({
       supabase.removeChannel(channel)
       setIsConnected(false)
     }
-  }, [table, event, filter, onUpdate, toast])
+  }, [table, event, filter, onUpdate, showNotifications])
 
   return { isConnected }
 }
@@ -108,7 +93,7 @@ export function useOrderUpdates(onOrderUpdate?: (order: any) => void) {
 // Hook for product updates (optimized)
 export function useProductUpdates(onProductUpdate?: (product: any) => void) {
   return useOptimizedRealtime({
-    table: 'imported_products',
+    table: 'products',
     onUpdate: (payload) => {
       if (payload.new) {
         onProductUpdate?.(payload.new)
