@@ -245,7 +245,7 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
     <>
       {/* Bottom Navigation Bar - Toujours visible sur mobile */}
       <nav 
-        className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-lg z-50"
+        className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t shadow-lg z-[80]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="grid grid-cols-5 h-16">
@@ -300,7 +300,7 @@ export function MobileNav({ notifications = 0 }: MobileNavProps) {
             {/* Full Sidebar Sheet */}
             <SheetContent 
               side="left" 
-              className="w-[85vw] max-w-[320px] p-0 bg-background"
+              className="w-[85vw] max-w-[320px] p-0 bg-background border-r"
             >
               <div className="flex flex-col h-full">
                 {/* Header */}
@@ -439,10 +439,10 @@ export function MobileHeader() {
   
   return (
     <header 
-      className="bg-background border-b sticky top-0 z-40"
+      className="bg-background/95 backdrop-blur-lg border-b sticky top-0 z-[70]"
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
-      <div className="flex items-center justify-between px-4 py-3">
+      <div className="flex items-center justify-between px-4 py-3 gap-3">
         <div className="flex items-center space-x-3">
           <div className="w-9 h-9 bg-gradient-to-br from-primary to-purple-600 rounded-lg flex items-center justify-center">
             <Sparkles className="h-5 w-5 text-white" />
