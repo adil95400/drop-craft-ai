@@ -1,12 +1,25 @@
 /**
  * Moteur de règles simplifié pour la marketplace
- * Version utilisant product_rules existant
+ * Version utilisant automation_rules existant
  */
 
 import { supabase } from '@/integrations/supabase/client'
-import type { Database } from '@/integrations/supabase/types'
 
-type ProductRule = Database['public']['Tables']['product_rules']['Row']
+interface ProductRule {
+  id: string
+  user_id: string
+  name: string
+  description?: string
+  trigger_type: string
+  action_type: string
+  trigger_config?: any
+  action_config?: any
+  is_active: boolean
+  priority?: number
+  created_at: string
+  updated_at: string
+}
+
 type UnifiedProduct = {
   id: string
   name: string
@@ -37,13 +50,12 @@ export class MarketplaceRuleEngine {
     modifications: Record<string, any>
     appliedRules: string[]
   }> {
-    // Récupérer les règles actives
-    const { data: rules, error } = await supabase
-      .from('product_rules')
+    // Récupérer les règles actives from automation_rules
+    const { data: rules, error } = await (supabase.from('automation_rules') as any)
       .select('*')
       .eq('user_id', userId)
-      .eq('enabled', true)
-      .order('priority', { ascending: true })
+      .eq('is_active', true)
+      .order('trigger_count', { ascending: true })
 
     if (error) throw error
 
@@ -51,9 +63,9 @@ export class MarketplaceRuleEngine {
     const modifications: Record<string, any> = {}
     const appliedRules: string[] = []
 
-    for (const rule of rules || []) {
-      const conditionGroup = rule.condition_group as any
-      const actions = rule.actions as any[]
+    for (const rule of (rules || []) as any[]) {
+      const conditionGroup = rule.trigger_config as any
+      const actions = (rule.action_config?.actions || []) as any[]
 
       // Évaluer les conditions
       if (this.evaluateConditions(product, conditionGroup)) {
@@ -131,20 +143,17 @@ export class MarketplaceRuleEngine {
     condition_group: any
     actions: any[]
   }): Promise<string> {
-    const { data, error } = await supabase
-      .from('product_rules')
+    const { data, error } = await (supabase.from('automation_rules') as any)
       .insert({
         user_id: userId,
         name: rule.name,
         description: rule.description,
-        channel: rule.channel || 'all',
-        priority: rule.priority,
-        enabled: true,
-        condition_group: rule.condition_group,
-        actions: rule.actions,
-        execution_count: 0,
-        success_count: 0,
-        error_count: 0
+        trigger_type: 'product_rule',
+        action_type: 'modify_product',
+        is_active: true,
+        trigger_config: rule.condition_group,
+        action_config: { actions: rule.actions },
+        trigger_count: 0,
       })
       .select('id')
       .single()
@@ -157,23 +166,35 @@ export class MarketplaceRuleEngine {
    * Liste toutes les règles d'un utilisateur
    */
   async listRules(userId: string): Promise<ProductRule[]> {
-    const { data, error } = await supabase
-      .from('product_rules')
+    const { data, error } = await (supabase.from('automation_rules') as any)
       .select('*')
       .eq('user_id', userId)
-      .order('priority', { ascending: true })
+      .eq('trigger_type', 'product_rule')
+      .order('trigger_count', { ascending: true })
 
     if (error) throw error
-    return data || []
+    return (data || []).map((rule: any) => ({
+      id: rule.id,
+      user_id: rule.user_id,
+      name: rule.name,
+      description: rule.description,
+      trigger_type: rule.trigger_type,
+      action_type: rule.action_type,
+      trigger_config: rule.trigger_config,
+      action_config: rule.action_config,
+      is_active: rule.is_active,
+      priority: rule.trigger_count,
+      created_at: rule.created_at,
+      updated_at: rule.updated_at
+    }))
   }
 
   /**
    * Active/désactive une règle
    */
   async toggleRule(ruleId: string, enabled: boolean): Promise<void> {
-    const { error } = await supabase
-      .from('product_rules')
-      .update({ enabled })
+    const { error } = await (supabase.from('automation_rules') as any)
+      .update({ is_active: enabled })
       .eq('id', ruleId)
 
     if (error) throw error
@@ -183,8 +204,7 @@ export class MarketplaceRuleEngine {
    * Supprime une règle
    */
   async deleteRule(ruleId: string): Promise<void> {
-    const { error } = await supabase
-      .from('product_rules')
+    const { error } = await (supabase.from('automation_rules') as any)
       .delete()
       .eq('id', ruleId)
 
