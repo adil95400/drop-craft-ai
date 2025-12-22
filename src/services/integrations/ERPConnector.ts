@@ -139,8 +139,7 @@ export class ERPConnector {
   // Get ERP integrations for user
   async getERPIntegrations(userId: string): Promise<ERPIntegration[]> {
     try {
-      const { data, error } = await supabase
-        .from('enterprise_integrations')
+      const { data, error } = await (supabase.from('enterprise_integrations') as any)
         .select('*')
         .eq('user_id', userId)
         .eq('integration_type', 'erp');
@@ -148,18 +147,18 @@ export class ERPConnector {
       if (error) throw error;
       
       // Transform database records to ERPIntegration format
-      return (data || []).map(item => ({
+      return (data || []).map((item: any) => ({
         id: item.id,
-        provider: item.provider_name as any,
-        name: item.provider_name,
+        provider: item.name as any,
+        name: item.name,
         status: item.sync_status as any,
-        credentials: item.authentication_data as any,
+        credentials: (item.config || {}) as any,
         sync_settings: {
           frequency: 'daily' as any,
           entities: [],
           last_sync: item.last_sync_at
         },
-        configuration: item.configuration as any
+        configuration: (item.config || {}) as any
       }));
     } catch (error) {
       console.error('Failed to fetch ERP integrations:', error);

@@ -243,8 +243,7 @@ export class CRMConnector {
   // Get CRM integrations
   async getCRMIntegrations(userId: string): Promise<CRMIntegration[]> {
     try {
-      const { data, error } = await supabase
-        .from('enterprise_integrations')
+      const { data, error } = await (supabase.from('enterprise_integrations') as any)
         .select('*')
         .eq('user_id', userId)
         .eq('integration_type', 'crm');
@@ -252,18 +251,18 @@ export class CRMConnector {
       if (error) throw error;
       
       // Transform database records to CRMIntegration format
-      return (data || []).map(item => ({
+      return (data || []).map((item: any) => ({
         id: item.id,
-        provider: item.provider_name as any,
-        name: item.provider_name,
+        provider: item.name as any,
+        name: item.name,
         status: item.sync_status as any,
-        credentials: item.authentication_data as any,
+        credentials: (item.config || {}) as any,
         sync_settings: {
           frequency: 'daily' as any,
           entities: [],
           last_sync: item.last_sync_at
         },
-        configuration: item.configuration as any
+        configuration: (item.config || {}) as any
       }));
     } catch (error) {
       console.error('Failed to fetch CRM integrations:', error);

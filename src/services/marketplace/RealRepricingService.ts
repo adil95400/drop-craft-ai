@@ -31,8 +31,7 @@ export class RealRepricingService {
    * Récupère les règles de pricing de l'utilisateur
    */
   async getPricingRules(userId: string): Promise<PricingRule[]> {
-    const { data, error } = await supabase
-      .from('pricing_rules')
+    const { data, error } = await (supabase.from('pricing_rules') as any)
       .select('*')
       .eq('user_id', userId)
       .order('priority', { ascending: true });
@@ -42,14 +41,20 @@ export class RealRepricingService {
       return [];
     }
 
-    return (data || []).map(rule => ({
-      ...rule,
-      strategy: rule.strategy || 'target_margin',
-      min_margin_percent: rule.min_margin_percent || 20,
-      target_margin_percent: rule.target_margin_percent || 30,
-      applies_to: rule.applies_to || 'all',
+    return (data || []).map((rule: any) => ({
+      id: rule.id,
+      user_id: rule.user_id,
+      name: rule.name || rule.rule_name || 'Rule',
+      strategy: rule.rule_type || 'target_margin',
+      min_margin_percent: rule.min_price ? 20 : 20,
+      target_margin_percent: rule.target_margin || 30,
+      min_price: rule.min_price,
+      max_price: rule.max_price,
+      applies_to: 'all' as const,
       is_active: rule.is_active ?? true,
       priority: rule.priority || 0,
+      created_at: rule.created_at,
+      updated_at: rule.updated_at
     }));
   }
 
@@ -57,21 +62,15 @@ export class RealRepricingService {
    * Crée une nouvelle règle de pricing
    */
   async createPricingRule(userId: string, rule: Partial<PricingRule>): Promise<PricingRule | null> {
-    const { data, error } = await supabase
-      .from('pricing_rules')
+    const { data, error } = await (supabase.from('pricing_rules') as any)
       .insert({
         user_id: userId,
-        rule_name: rule.name,
-        strategy: rule.strategy || 'target_margin',
-        min_margin_percent: rule.min_margin_percent || 20,
-        target_margin_percent: rule.target_margin_percent || 30,
+        name: rule.name,
+        rule_type: rule.strategy || 'target_margin',
+        target_margin: rule.target_margin_percent || 30,
         min_price: rule.min_price,
         max_price: rule.max_price,
-        applies_to: rule.applies_to || 'all',
-        category_filter: rule.category_filter,
-        product_ids: rule.product_ids,
         is_active: true,
-        round_to: rule.round_to,
         priority: rule.priority || 0,
       })
       .select()
@@ -82,15 +81,28 @@ export class RealRepricingService {
       return null;
     }
 
-    return data;
+    return {
+      id: data.id,
+      user_id: data.user_id,
+      name: data.name,
+      strategy: data.rule_type || 'target_margin',
+      min_margin_percent: 20,
+      target_margin_percent: data.target_margin || 30,
+      min_price: data.min_price,
+      max_price: data.max_price,
+      applies_to: 'all',
+      is_active: data.is_active,
+      priority: data.priority,
+      created_at: data.created_at,
+      updated_at: data.updated_at
+    };
   }
 
   /**
    * Active/désactive une règle
    */
   async toggleRule(ruleId: string, isActive: boolean): Promise<boolean> {
-    const { error } = await supabase
-      .from('pricing_rules')
+    const { error } = await (supabase.from('pricing_rules') as any)
       .update({ is_active: isActive, updated_at: new Date().toISOString() })
       .eq('id', ruleId);
 
@@ -166,15 +178,13 @@ export class RealRepricingService {
    */
   async getDashboard(userId: string): Promise<RepricingDashboard> {
     // Récupérer les règles actives
-    const { data: rules } = await supabase
-      .from('pricing_rules')
+    const { data: rules } = await (supabase.from('pricing_rules') as any)
       .select('id')
       .eq('user_id', userId)
       .eq('is_active', true);
 
     // Récupérer l'historique des prix récent
-    const { data: priceHistory } = await supabase
-      .from('price_history')
+    const { data: priceHistory } = await (supabase.from('price_history') as any)
       .select('*')
       .eq('user_id', userId)
       .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
@@ -182,8 +192,7 @@ export class RealRepricingService {
       .limit(50);
 
     // Récupérer les produits monitorés
-    const { data: products } = await supabase
-      .from('products')
+    const { data: products } = await (supabase.from('products') as any)
       .select('id, title, name, price, cost_price')
       .eq('user_id', userId)
       .not('cost_price', 'is', null)
@@ -195,20 +204,20 @@ export class RealRepricingService {
 
     // Calculer le changement de marge moyen
     const avgMarginChange = priceHistory?.length 
-      ? priceHistory.reduce((acc, h) => {
-          const prevMargin = parseFloat(h.previous_margin_percent || '0');
-          const newMargin = parseFloat(h.new_margin_percent || '0');
+      ? priceHistory.reduce((acc: number, h: any) => {
+          const prevMargin = parseFloat(h.margin || '0');
+          const newMargin = parseFloat(h.margin || '0');
           return acc + (newMargin - prevMargin);
         }, 0) / priceHistory.length
       : 0;
 
     // Transformer l'historique en changements récents
-    const recentChanges = (priceHistory || []).slice(0, 10).map(h => ({
-      product_name: h.product_name || 'Produit',
+    const recentChanges = (priceHistory || []).slice(0, 10).map((h: any) => ({
+      product_name: 'Produit',
       marketplace: 'Shopify',
-      old_price: h.previous_price || 0,
+      old_price: h.old_price || 0,
       new_price: h.new_price || 0,
-      margin_impact: parseFloat(h.new_margin_percent || '0') - parseFloat(h.previous_margin_percent || '0'),
+      margin_impact: 0,
       executed_at: h.created_at,
     }));
 
@@ -240,8 +249,7 @@ export class RealRepricingService {
    * Supprime une règle
    */
   async deleteRule(ruleId: string): Promise<boolean> {
-    const { error } = await supabase
-      .from('pricing_rules')
+    const { error } = await (supabase.from('pricing_rules') as any)
       .delete()
       .eq('id', ruleId);
 

@@ -170,21 +170,20 @@ export class MarketplaceAnalyticsService {
     endDate: string
   ): Promise<ChannelComparison[]> {
     // Récupérer intégrations (simplifié)
-    const { data: integrations } = await supabase
-      .from('marketplace_integrations')
-      .select('id, platform, is_active, last_sync_at, total_products_synced')
+    const { data: integrations } = await (supabase.from('integrations') as any)
+      .select('id, platform, is_active, last_sync_at')
       .eq('user_id', userId)
 
     const channelStats: ChannelComparison[] = []
 
-    for (const integration of integrations || []) {
+    for (const integration of (integrations || []) as any[]) {
       // Mock revenue for now
       const revenue = Math.floor(Math.random() * 10000) + 5000
       const ordersCount = Math.floor(Math.random() * 50) + 10
 
       channelStats.push({
-        marketplace: integration.platform,
-        marketplace_name: integration.platform,
+        marketplace: integration.platform || 'unknown',
+        marketplace_name: integration.platform || 'Unknown',
         revenue,
         revenue_change_percent: 0,
         orders_count: ordersCount,
@@ -192,7 +191,7 @@ export class MarketplaceAnalyticsService {
         avg_order_value: ordersCount > 0 ? revenue / ordersCount : 0,
         margin_percent: 30,
         total_margin: revenue * 0.3,
-        active_products: integration.total_products_synced || 0,
+        active_products: 0,
         out_of_stock_products: 0,
         last_sync_at: integration.last_sync_at || undefined,
         sync_status: integration.is_active ? 'success' : 'error'
@@ -207,15 +206,13 @@ export class MarketplaceAnalyticsService {
    */
   private async getAlertSummary(userId: string): Promise<AlertSummary> {
     // Produits faible stock (simplifié)
-    const { data: lowStockProducts } = await supabase
-      .from('products')
+    const { data: lowStockProducts } = await (supabase.from('products') as any)
       .select('id')
       .eq('user_id', userId)
       .lt('stock_quantity', 10)
 
     // Intégrations en erreur (simplifié)
-    const { data: failedIntegrations } = await supabase
-      .from('marketplace_integrations')
+    const { data: failedIntegrations } = await (supabase.from('integrations') as any)
       .select('id')
       .eq('user_id', userId)
       .eq('is_active', false)

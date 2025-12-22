@@ -8,7 +8,7 @@ import { Loader2, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { toast } from 'sonner';
 import { useState } from 'react';
-
+import DOMPurify from 'dompurify';
 export default function ShopifyProductDetail() {
   const { handle } = useParams<{ handle: string }>();
   const addItem = useCartStore(state => state.addItem);
@@ -109,7 +109,12 @@ export default function ShopifyProductDetail() {
                 <h2 className="text-lg font-semibold mb-2">Description</h2>
                 <div 
                   className="text-muted-foreground prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: product.description }}
+                  dangerouslySetInnerHTML={{ 
+                    __html: DOMPurify.sanitize(product.description, {
+                      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'a', 'span'],
+                      ALLOWED_ATTR: ['href', 'target', 'rel']
+                    })
+                  }}
                 />
               </div>
             )}

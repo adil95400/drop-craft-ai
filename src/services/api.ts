@@ -178,13 +178,10 @@ export class ApiService {
   // Customers API
   static async getCustomers(filters?: any) {
     try {
-      let query = supabase.from('customers').select('*');
+      let query = (supabase.from('customers') as any).select('*');
       
       if (filters?.search) {
         query = query.or(`email.ilike.%${filters.search}%,first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%`);
-      }
-      if (filters?.status) {
-        query = query.eq('status', filters.status);
       }
       
       const { data, error } = await query.order('created_at', { ascending: false });
