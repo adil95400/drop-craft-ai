@@ -89,17 +89,39 @@ export const useUnifiedMarketing = () => {
     },
   })
 
-  // Fetch CRM contacts
+  // Fetch CRM contacts from customers table (crm_contacts doesn't exist)
   const { data: contacts = [], isLoading: isLoadingContacts } = useQuery({
     queryKey: ['crm-contacts-unified'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('crm_contacts')
+        .from('customers')
         .select('*')
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      return data as CRMContact[]
+      
+      // Transform customers to CRMContact format
+      return (data || []).map(customer => ({
+        id: customer.id,
+        external_id: undefined,
+        name: `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || customer.email,
+        email: customer.email,
+        phone: customer.phone || undefined,
+        company: undefined,
+        position: undefined,
+        tags: customer.tags || [],
+        lead_score: undefined,
+        status: 'active',
+        lifecycle_stage: 'customer',
+        source: undefined,
+        user_id: customer.user_id,
+        created_at: customer.created_at || new Date().toISOString(),
+        last_activity_at: customer.updated_at || undefined,
+        updated_at: customer.updated_at || new Date().toISOString(),
+        last_contacted_at: undefined,
+        custom_fields: undefined,
+        attribution: undefined,
+      })) as CRMContact[]
     },
   })
 
@@ -173,15 +195,27 @@ export const useUnifiedMarketing = () => {
     }
   })
 
-  // Create contact mutation
+  // Create contact mutation (uses customers table)
   const createContact = useMutation({
     mutationFn: async (contact: Omit<CRMContact, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Non authentifié')
 
+      // Parse name into first_name and last_name
+      const nameParts = contact.name?.split(' ') || []
+      const first_name = nameParts[0] || ''
+      const last_name = nameParts.slice(1).join(' ') || ''
+
       const { data, error } = await supabase
-        .from('crm_contacts')
-        .insert([{ ...contact, user_id: user.id }])
+        .from('customers')
+        .insert([{ 
+          email: contact.email,
+          first_name,
+          last_name,
+          phone: contact.phone,
+          tags: contact.tags,
+          user_id: user.id 
+        }])
         .select()
         .single()
 

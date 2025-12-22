@@ -266,23 +266,24 @@ export function useProduct(productId: string) {
         .single()
       
       if (imported) {
+        // imported_products has limited fields, so we use defaults for missing ones
         return {
           id: imported.id,
-          name: imported.name || 'Produit',
-          description: imported.description,
+          name: `Imported Product ${imported.id.slice(0, 8)}`,
+          description: undefined,
           price: imported.price || 0,
-          cost_price: imported.cost_price,
+          cost_price: undefined,
           status: (imported.status === 'published' ? 'active' : 'inactive') as 'active' | 'inactive',
-          stock_quantity: imported.stock_quantity,
-          sku: imported.sku,
-          category: imported.category,
-          image_url: Array.isArray(imported.image_urls) && imported.image_urls.length > 0 ? imported.image_urls[0] : undefined,
-          images: Array.isArray(imported.image_urls) ? imported.image_urls : [],
-          profit_margin: imported.cost_price ? ((imported.price - imported.cost_price) / imported.price * 100) : undefined,
+          stock_quantity: 0,
+          sku: undefined,
+          category: imported.category || undefined,
+          image_url: undefined,
+          images: [],
+          profit_margin: undefined,
           user_id: imported.user_id,
           source: 'imported' as const,
-          created_at: imported.created_at,
-          updated_at: imported.updated_at
+          created_at: imported.created_at || new Date().toISOString(),
+          updated_at: imported.created_at || new Date().toISOString()
         } as UnifiedProduct
       }
       
